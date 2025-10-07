@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "出国啰",
+    "slug": "chuguoluo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#07C160"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tripsecretary.chuguoluo",
+      "infoPlist": {
+        "NSCameraUsageDescription": "需要使用相机扫描您的护照信息",
+        "NSPhotoLibraryUsageDescription": "需要访问相册以选择护照照片",
+        "NSPhotoLibraryAddUsageDescription": "需要保存TDAC入境卡二维码到相册"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#07C160"
+      },
+      "package": "com.tripsecretary.chuguoluo",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "需要使用相机扫描您的护照信息"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "需要访问相册以选择护照照片"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "需要保存TDAC入境卡二维码到相册",
+          "savePhotosPermission": "需要保存TDAC入境卡二维码到相册",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ]
+  }
+}

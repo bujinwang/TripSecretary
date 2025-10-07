@@ -1,0 +1,25 @@
+name = "chuguoluo-api"
+main = "src/index-simple.ts"
+compatibility_date = "2024-01-01"
+
+# Force port 8787 for local development
+[dev]
+port = 8787
+
+# D1 Database (commented out for local development)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "chuguoluo-db"
+# database_id = "your-database-id-here"
+
+# R2 Storage (commented out for local development)
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "chuguoluo-storage"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "development"
+
+# Secrets for local development are in .dev.vars
+# For production, use: wrangler secret put <name>
