@@ -262,10 +262,26 @@ const ResultScreen = ({ navigation, route }) => {
               ))}
               {features.digitalInfo.url && (
                 <TouchableOpacity 
-                  onPress={() => {
-                    // 泰国使用内置浏览器，其他国家直接打开网址
+                  onPress={async () => {
+                    // 泰国显示选择界面，其他国家打开网址
                     if (destination?.id === 'th') {
-                      navigation.navigate('TDACWebView', { passport, destination, travelInfo });
+                      // 映射字段供两个版本使用
+                      const tdacTravelInfo = {
+                        ...passport,
+                        ...travelInfo,
+                        // 字段映射
+                        flightNo: travelInfo?.flightNumber || '',
+                        arrivalDate: travelInfo?.arrivalDate || '',
+                        address: travelInfo?.hotelAddress || travelInfo?.hotelName || '',
+                        purpose: travelInfo?.travelPurpose || 'HOLIDAY',
+                        cloudflareToken: 'auto',
+                        email: passport?.email || '',
+                      };
+                      
+                      // 跳转到选择界面（API或WebView）
+                      navigation.navigate('TDACSelection', { 
+                        travelerInfo: tdacTravelInfo
+                      });
                     } else {
                       Linking.openURL(features.digitalInfo.url);
                     }
@@ -273,7 +289,7 @@ const ResultScreen = ({ navigation, route }) => {
                   style={styles.digitalInfoButton}
                 >
                   <Text style={styles.digitalInfoButtonText}>
-                    {destination?.id === 'th' ? '开始填写 ›' : '前往申请 ›'}
+                    {destination?.id === 'th' ? '⚡ 自动填写' : '前往申请 ›'}
                   </Text>
                 </TouchableOpacity>
               )}

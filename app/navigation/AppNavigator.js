@@ -20,6 +20,9 @@ import PresentToCustomsScreen from '../screens/PresentToCustomsScreen';
 import PIKGuideScreen from '../screens/PIKGuideScreen';
 import CopyWriteModeScreen from '../screens/CopyWriteModeScreen';
 import TDACWebViewScreen from '../screens/TDACWebViewScreen';
+import TDACAPIScreen from '../screens/TDACAPIScreen';
+import TDACSelectionScreen from '../screens/TDACSelectionScreen';
+import TDACHybridScreen from '../screens/TDACHybridScreen';
 
 import { colors } from '../theme';
 
@@ -188,8 +191,32 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="TDACSelection"
+          component={TDACSelectionScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
           name="TDACWebView"
           component={TDACWebViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="TDACAPI"
+          component={TDACAPIScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="TDACHybrid"
+          component={TDACHybridScreen}
           options={{
             headerShown: false,
             presentation: 'fullScreenModal',
