@@ -66,29 +66,36 @@
 
 **工作原理**:
 ```javascript
-1. 显示加载界面
-2. 后台加载隐藏WebView（1x1像素，不可见）
-3. 自动解决Cloudflare验证（2-5秒）
-4. 提取Cloudflare Token
-5. 调用TDACAPIService执行9步API:
+1. 显示加载界面（正在初始化...）
+2. 启动隐藏WebView加载 https://tdac.immigration.go.th/
+   - 尺寸: 全屏但透明度 0.01（Cloudflare需要检测可见性）
+   - 位置: 绝对定位在加载界面之下
+3. 注入CloudflareTokenExtractor脚本
+   - injectedJavaScriptBeforeContentLoaded: 拦截脚本
+   - onLoadEnd后1秒: 提取脚本
+4. 自动解决Cloudflare验证（2-5秒）
+   - 轮询检测Token（每500ms，最多60次）
+   - 支持多种检测方式：Turnstile API、DOM查找、回调拦截
+5. Token提取成功，通过postMessage发送给React Native
+6. 停止WebView加载，调用TDACAPIService执行9步API:
    - initActionToken (使用提取的Token)
    - gotoAdd
-   - checkHealthDeclaration
+   - checkHealthDeclaration  
    - next (提交数据)
    - gotoPreview (生成hiddenToken)
    - submit
    - gotoSubmitted
    - downloadPdf
-6. 5-8秒内完成，返回QR码
-7. 自动保存到相册和App
+7. 5-8秒内完成，显示QR码和入境卡号
+8. 自动保存PDF到App存储（相册保存需手动触发）
 ```
 
 **代码位置**:
 ```
-app/screens/TDACHybridScreen.js            (400行 混合逻辑)
-app/services/CloudflareTokenExtractor.js   (200行 Token提取)
-app/services/TDACAPIService.js             (600行 API逻辑)
-app/services/TDACAPIService.test.js        (200行 测试)
+app/screens/TDACHybridScreen.js            (443行 混合逻辑)
+app/services/CloudflareTokenExtractor.js   (178行 Token提取)
+app/services/TDACAPIService.js             (400行 API逻辑)
+app/services/TDACAPIService.test.js        (150行 测试)
 ```
 
 ---
@@ -132,10 +139,11 @@ app/services/TDACAPIService.test.js        (200行 测试)
 ```
 app/navigation/AppNavigator.js
 
-添加了三个Screen:
+添加了四个Screen:
 - TDACSelection (选择界面)
-- TDACAPI (API版本)
-- TDACWebView (WebView版本)
+- TDACHybrid (混合版本 - 推荐)
+- TDACAPI (纯API版本 - 不推荐，Token问题)
+- TDACWebView (WebView版本 - 备用)
 ```
 
 ### 3. 修改了入口
@@ -182,13 +190,21 @@ TripSecretary/
 ```
 1. 点击 "泰国入境卡"
    ↓
-2. 看到选择界面
+2. 看到选择界面 (TDACSelectionScreen)
    ↓
-3. 选择 "API直提版本" (推荐) 或 "WebView版本"
+3. 选择 "混合极速版本" (推荐) 或 "WebView自动化版本" (备用)
    ↓
-4. 进入对应的填写界面
+4. 混合版本:
+   - 看到加载界面（5-8秒）
+   - 自动完成（无需手动操作）
+   - 直接显示结果
    ↓
-5. 完成提交，获得QR码
+   WebView版本:
+   - 看到网页界面（24秒）
+   - 可见自动填表过程
+   - 完成后显示结果
+   ↓
+5. 获得QR码和入境卡号
 ```
 
 ### 开发者视角
@@ -198,22 +214,82 @@ ResultScreen (入口)
     ↓
 TDACSelectionScreen (选择)
     ↓
-    ├─→ TDACAPIScreen (API版本)
+    ├─→ TDACHybridScreen (混合版本 - 推荐)
     │      ↓
-    │   TDACAPIService (9步API)
+    │   隐藏WebView获取Token (2-5秒)
+    │      ↓
+    │   TDACAPIService (9步API, 3秒)
     │      ↓
     │   返回QR码
     │
-    └─→ TDACWebViewScreen (WebView版本)
+    ├─→ TDACAPIScreen (纯API版本 - 不可用)
+    │      ↓
+    │   需要手动提供Token
+    │      ↓
+    │   TDACAPIService (9步API)
+    │
+    └─→ TDACWebViewScreen (WebView版本 - 备用)
            ↓
-        WebView自动化
+        WebView完整自动化 (24秒)
            ↓
         返回QR码
 ```
 
 ---
 
+## ⚠️ 关键实现细节
+
+### WebView 可见性问题
+
+**重要**: Cloudflare 会检测 WebView 是否真正可见。如果 WebView 完全隐藏或移到屏幕外，Token 提取会失败。
+
+**当前实现** (已修复):
+```javascript
+hiddenWebView: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  opacity: 0.01,  // 几乎不可见但技术上已渲染
+}
+```
+
+**错误实现** (会导致失败):
+```javascript
+// ❌ 不要这样做
+hiddenWebView: {
+  position: 'absolute',
+  top: -10000,      // 移到屏幕外
+  left: -10000,
+  width: 1,         // 1x1 像素
+  height: 1,
+  opacity: 0,       // 完全隐藏
+}
+```
+
+### Token 提取超时处理
+
+Token 提取最多等待 30 秒（60 次轮询 × 500ms）。如果超时：
+1. 显示友好错误提示
+2. 提供重试选项
+3. 建议使用 WebView 备用方案
+
+---
+
 ## 🔧 测试方法
+
+### 测试混合版本
+
+```bash
+1. npx expo start
+2. 扫码打开App
+3. 选择泰国
+4. 点击入境卡
+5. 选择 "混合极速版本"
+6. 观察加载过程（5-8秒）
+7. 检查是否成功获取QR码
+```
 
 ### 测试API版本
 

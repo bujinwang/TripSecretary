@@ -23,7 +23,16 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
   // Form state
   const [flightNumber, setFlightNumber] = useState('');
-  const [arrivalDate, setArrivalDate] = useState('');
+  // Default to a date within 72 hours (TDAC requirement)
+  // Add 2 days to current date as default
+  const getDefaultArrivalDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 2); // 2 days from now
+    const defaultDate = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    console.log('📅 Default arrival date:', defaultDate);
+    return defaultDate;
+  };
+  const [arrivalDate, setArrivalDate] = useState(getDefaultArrivalDate());
   const [hotelName, setHotelName] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -146,7 +155,32 @@ const TravelInfoScreen = ({ navigation, route }) => {
   };
 
   const handleGenerate = () => {
-    // TODO: Validate required fields
+    // Validate arrival date for Thailand (72-hour rule)
+    if (destination?.id === 'th' && arrivalDate) {
+      const arrivalDateObj = new Date(arrivalDate);
+      const now = new Date();
+      const hoursDiff = (arrivalDateObj - now) / (1000 * 60 * 60);
+      
+      if (hoursDiff > 72) {
+        const daysUntilArrival = Math.ceil(hoursDiff / 24);
+        Alert.alert(
+          '日期超出范围',
+          `泰国入境卡只能在到达前72小时内提交。您的到达日期是${daysUntilArrival}天后。请选择更近的日期。`,
+          [{ text: '知道了' }]
+        );
+        return;
+      }
+      
+      if (hoursDiff < -24) {
+        Alert.alert(
+          '日期已过期',
+          '到达日期不能是过去的日期。请选择正确的到达日期。',
+          [{ text: '知道了' }]
+        );
+        return;
+      }
+    }
+    
     const travelInfo = {
       flightNumber,
       arrivalDate,
@@ -427,13 +461,18 @@ const TravelInfoScreen = ({ navigation, route }) => {
             />
 
             {requiredFields.includes('arrivalDate') && (
-              <Input
-                label="到达日期"
-                placeholder="例如: 2025-01-15"
-                value={arrivalDate}
-                onChangeText={setArrivalDate}
-                required
-              />
+              <>
+                <Input
+                  label="到达日期"
+                  placeholder="例如: 2025-01-15"
+                  value={arrivalDate}
+                  onChangeText={setArrivalDate}
+                  required
+                />
+                <Text style={styles.helpText}>
+                  ⚠️ 泰国入境卡只能在到达前72小时内提交
+                </Text>
+              </>
             )}
           </View>
 
@@ -911,6 +950,13 @@ const styles = StyleSheet.create({
   modalCloseText: {
     ...typography.body1,
     color: colors.textSecondary,
+  },
+  helpText: {
+    ...typography.caption,
+    color: colors.warning || '#f59e0b',
+    marginTop: -spacing.sm,
+    marginBottom: spacing.md,
+    paddingLeft: spacing.sm,
   },
 });
 

@@ -63,7 +63,8 @@ const HistoryScreen = ({ navigation }) => {
           },
           travelInfoData: {
             flightNumber: 'CA981',
-            arrivalDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            // Changed from +7 days to +2 days to comply with TDAC 72-hour rule
+            arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             hotelName: 'Bangkok Grand Hotel',
             hotelAddress: '123 Sukhumvit Road, Bangkok',
             contactPhone: '+66 2 123 4567',

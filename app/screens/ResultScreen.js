@@ -18,6 +18,7 @@ import Button from '../components/Button';
 import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
+import { mergeTDACData } from '../data/mockTDACData';
 
 const ResultScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo, generationId } = route.params || {};
@@ -267,20 +268,52 @@ const ResultScreen = ({ navigation, route }) => {
                     if (destination?.id === 'th') {
                       // 映射字段供两个版本使用
                       const tdacTravelInfo = {
-                        ...passport,
-                        ...travelInfo,
-                        // 字段映射
-                        flightNo: travelInfo?.flightNumber || '',
-                        arrivalDate: travelInfo?.arrivalDate || '',
-                        address: travelInfo?.hotelAddress || travelInfo?.hotelName || '',
-                        purpose: travelInfo?.travelPurpose || 'HOLIDAY',
-                        cloudflareToken: 'auto',
+                        // Personal Information In Passport
+                        familyName: passport?.familyName || passport?.lastName || '',
+                        firstName: passport?.firstName || passport?.givenName || '',
+                        middleName: passport?.middleName || '',
+                        passportNo: passport?.passportNo || passport?.passportNumber || '',
+                        nationality: passport?.nationality || 'CHN',
+                        
+                        // Personal Information
+                        birthDate: passport?.birthDate || passport?.dateOfBirth || '',
+                        occupation: passport?.occupation || 'ENGINEER',
+                        gender: passport?.gender || passport?.sex || 'MALE',
+                        countryResidence: passport?.countryResidence || passport?.nationality || 'CHN',
+                        cityResidence: passport?.cityResidence || 'BEIJING',
+                        phoneCode: passport?.phoneCode || '86',
+                        phoneNo: passport?.phoneNo || passport?.phone || '',
+                        visaNo: passport?.visaNo || '',
+                        
+                        // Contact
                         email: passport?.email || '',
+                        
+                        // Trip Information
+                        arrivalDate: travelInfo?.arrivalDate || '',
+                        departureDate: travelInfo?.departureDate || null,
+                        countryBoarded: travelInfo?.countryBoarded || passport?.nationality || 'CHN',
+                        purpose: travelInfo?.travelPurpose || 'HOLIDAY', // Must be English: HOLIDAY, BUSINESS, etc.
+                        travelMode: travelInfo?.travelMode || 'AIR',
+                        flightNo: travelInfo?.flightNumber || travelInfo?.flightNo || '',
+                        tranModeId: '',
+                        
+                        // Accommodation
+                        accommodationType: travelInfo?.accommodationType || 'HOTEL',
+                        province: travelInfo?.province || 'BANGKOK',
+                        district: travelInfo?.district || 'BANG_BON',
+                        subDistrict: travelInfo?.subDistrict || 'BANG_BON_NUEA',
+                        postCode: travelInfo?.postCode || '10150',
+                        address: travelInfo?.hotelAddress || travelInfo?.hotelName || '',
+                        
+                        // Token
+                        cloudflareToken: 'auto',
                       };
                       
-                      // 跳转到选择界面（API或WebView）
-                      navigation.navigate('TDACSelection', { 
-                        travelerInfo: tdacTravelInfo
+                      // 直接跳转到混合模式
+                      const travelerInfoWithFallbacks = mergeTDACData(tdacTravelInfo);
+                      
+                      navigation.navigate('TDACHybrid', { 
+                        travelerInfo: travelerInfoWithFallbacks
                       });
                     } else {
                       Linking.openURL(features.digitalInfo.url);

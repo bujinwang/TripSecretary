@@ -27,3 +27,10 @@ android/
 *.log
 *.tmp
 .cache/
+
+# TDAC HAR files (may contain tokens)
+*.har
+
+# TDAC debugging docs (may contain sensitive data)
+docs/arrival-cards/DEBUGGING_*.md
+docs/arrival-cards/TDAC_COMPLETE_*.md

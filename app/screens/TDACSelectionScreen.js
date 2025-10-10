@@ -11,9 +11,11 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { mergeTDACData } from '../data/mockTDACData';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
-  const { travelerInfo } = route.params || {};
+  const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
+  const travelerInfo = mergeTDACData(incomingTravelerInfo);
 
   return (
     <ScrollView style={styles.container}>

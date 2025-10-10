@@ -30,7 +30,7 @@ npx expo start
 - 🤖 **AI Generation**: Auto-fill immigration forms and customs Q&A
 - 💾 **History**: Save all generated documents
 - 👨‍👩‍👧 **Family Assist**: Children can help parents remotely (V1.1)
-- ⚡ **TDAC Direct API**: Submit Thailand arrival cards in 3 seconds (98% reliability)
+- ⚡ **TDAC Hybrid Mode**: Submit Thailand arrival cards in 5-8 seconds (95%+ reliability)
 
 ---
 
@@ -129,10 +129,12 @@ See [UI Design Guidelines](docs/UI设计规范.md) (Chinese)
 - [x] Complete UI (8 screens)
 - [x] Navigation setup
 - [x] Design system
-- [x] **TDAC API Implementation** (⚡ 3s submission, 98% reliability)
-- [ ] API integration
+- [x] **TDAC Hybrid Implementation** (⚡ 5-8s submission, 95%+ reliability, auto Cloudflare token)
+- [x] Frontend-Backend API integration
+- [x] PDF generation & sharing
+- [ ] Real OCR API integration (Alibaba Cloud)
+- [ ] Real AI API integration (Qwen)
 - [ ] WeChat login
-- [ ] PDF generation
 
 ### 🔄 V1.1 (Planned)
 - [ ] Family account feature

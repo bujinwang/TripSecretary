@@ -121,40 +121,79 @@ class CloudflareTokenExtractor {
         }, true);
 
         // Monitor for token in hidden fields (polling)
+        // IMPORTANT: Cloudflare Turnstile in interactive mode requires USER CLICK
+        // Token is only generated AFTER user completes the challenge
         let pollCount = 0;
-        const maxPolls = 60; // 30 seconds max
+        const maxPolls = 120; // 60 seconds max (give user time to click)
         const pollInterval = setInterval(() => {
           pollCount++;
           
+          // Method 1: Check hidden input field
           const input = document.querySelector('input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"]');
-          if (input && input.value) {
-            window.__cfTurnstileToken = input.value;
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'CLOUDFLARE_TOKEN_EXTRACTED',
-              token: input.value,
-              timestamp: Date.now()
-            }));
-            clearInterval(pollInterval);
+          if (input) {
+            console.log('[Poll ' + pollCount + '/' + maxPolls + '] Found input field, value length:', input.value?.length || 0);
+            if (input.value && input.value.length > 10) {
+              console.log('✅ Token found in input! Length:', input.value.length);
+              window.__cfTurnstileToken = input.value;
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'CLOUDFLARE_TOKEN_EXTRACTED',
+                token: input.value,
+                tokenLength: input.value.length,
+                method: 'input_field',
+                timestamp: Date.now()
+              }));
+              clearInterval(pollInterval);
+              return;
+            }
           }
 
-          // Check turnstile API
+          // Method 2: Check turnstile API
           if (window.turnstile && window.turnstile.getResponse) {
             const token = window.turnstile.getResponse();
-            if (token) {
+            if (pollCount % 4 === 0) { // Log every 2 seconds
+              console.log('[Poll ' + pollCount + '/' + maxPolls + '] Turnstile API response length:', token?.length || 0);
+            }
+            if (token && token.length > 10) {
+              console.log('✅ Token found via Turnstile API! Length:', token.length);
               window.__cfTurnstileToken = token;
               window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'CLOUDFLARE_TOKEN_EXTRACTED',
                 token: token,
+                tokenLength: token.length,
+                method: 'turnstile_api',
                 timestamp: Date.now()
               }));
               clearInterval(pollInterval);
+              return;
             }
+          }
+
+          // Method 3: Check for token in iframe (Cloudflare uses iframe)
+          try {
+            const iframes = document.querySelectorAll('iframe[src*="challenges.cloudflare"]');
+            if (iframes.length > 0 && pollCount % 10 === 0) { // Log every 5 seconds
+              console.log('[Poll ' + pollCount + '/' + maxPolls + '] Cloudflare iframe detected, waiting for user interaction...');
+            }
+          } catch (e) {
+            // Ignore cross-origin errors
+          }
+
+          // Send progress update every 10 polls (5 seconds)
+          if (pollCount % 10 === 0) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'CLOUDFLARE_TOKEN_POLLING',
+              pollCount: pollCount,
+              maxPolls: maxPolls,
+              timestamp: Date.now()
+            }));
           }
 
           if (pollCount >= maxPolls) {
             clearInterval(pollInterval);
+            console.log('⏰ Token extraction timeout after ' + (maxPolls * 0.5) + ' seconds');
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'CLOUDFLARE_TOKEN_TIMEOUT',
+              pollCount: pollCount,
               timestamp: Date.now()
             }));
           }

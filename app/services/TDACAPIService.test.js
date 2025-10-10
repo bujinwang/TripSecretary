@@ -33,7 +33,8 @@ const testTraveler = {
   phoneNo: '13800138000',
   
   // Trip Information
-  arrivalDate: '2025/12/01',
+  // Note: TDAC can only be submitted within 72 hours (3 days) before arrival
+  arrivalDate: '2025/10/13',
   departureDate: null, // Can be null
   countryBoarded: 'CHN',
   purpose: 'HOLIDAY',

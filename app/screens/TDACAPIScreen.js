@@ -23,9 +23,12 @@ import TDACAPIService from '../services/TDACAPIService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
+import { mergeTDACData } from '../data/mockTDACData';
 
 const TDACAPIScreen = ({ navigation, route }) => {
-  const { travelerInfo, autoSubmit } = route.params || {};
+  const params = route.params || {};
+  const travelerInfo = mergeTDACData(params.travelerInfo || {});
+  const { autoSubmit } = params;
   
   // Cloudflare verification
   const [cloudflareVerified, setCloudflareVerified] = useState(autoSubmit || false);
