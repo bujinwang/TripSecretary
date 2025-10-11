@@ -445,24 +445,7 @@ const ResultScreen = ({ navigation, route }) => {
           <Text style={styles.entryPackTimestamp}>最后更新：{formattedGeneratedAt}</Text>
         </View>
 
-        {isHistoryItem && (
-          <View style={styles.historyBanner}>
-            <TouchableOpacity
-              style={styles.historyPrimaryCta}
-              onPress={handleStartArrivalFlow}
-              activeOpacity={0.85}
-            >
-              <View style={styles.historyPrimaryContent}>
-                <Text style={styles.historyPrimaryIcon}>🛬</Text>
-                <View>
-                  <Text style={styles.historyPrimaryTitle}>{t('result.historyBanner.primaryCta.title')}</Text>
-                  <Text style={styles.historyPrimarySubtitle}>{t('result.historyBanner.primaryCta.subtitle')}</Text>
-                </View>
-              </View>
-              <Text style={styles.historyPrimaryArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+
 
         {/* Digital Entry System Info */}
         {features.digitalInfo && (
