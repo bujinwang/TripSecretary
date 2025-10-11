@@ -9,8 +9,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import { useTranslation } from '../i18n/LocaleContext';
 
 const ProfileScreen = ({ navigation }) => {
+  const { t, locale } = useTranslation();
+  
   // Mock passport data (in real app, get from context/storage)
   const passportData = {
     type: '中国护照',
@@ -32,6 +35,7 @@ const ProfileScreen = ({ navigation }) => {
     {
       section: '设置与帮助',
       items: [
+        { id: 'language', icon: '🌐', title: '语言 / Language', subtitle: locale === 'zh' ? '中文' : locale === 'en' ? 'English' : locale === 'fr' ? 'Français' : locale === 'de' ? 'Deutsch' : 'Español' },
         { id: 'settings', icon: '⚙️', title: '设置' },
         { id: 'help', icon: '❓', title: '帮助中心' },
         { id: 'about', icon: '📱', title: '关于我们' },
@@ -42,6 +46,10 @@ const ProfileScreen = ({ navigation }) => {
 
   const handleMenuPress = (itemId) => {
     console.log('Menu pressed:', itemId);
+    if (itemId === 'language') {
+      // Navigate back to login to change language
+      navigation.replace('Login');
+    }
     // TODO: Navigate to respective screens
   };
 
