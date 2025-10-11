@@ -21,21 +21,21 @@ const HomeScreen = ({ navigation }) => {
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 热门目的地（目前只启用日本和泰国）
+  const { t, language, setLanguage } = useLocale();
   const hotCountries = [
-    { id: 'jp', flag: '🇯🇵', name: '日本', flightTime: '3小时飞行', enabled: true },
-    { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行', enabled: true },
-    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
-    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: false },
-    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
-    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: false },
-    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
+    { id: 'jp', flag: '🇯🇵', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
+    { id: 'th', flag: '🇹🇭', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
+    { id: 'hk', flag: '🇭🇰', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: false },
+    { id: 'tw', flag: '🇹🇼', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: false },
+    { id: 'kr', flag: '🇰🇷', flightTimeKey: 'home.destinations.korea.flightTime', enabled: false },
+    { id: 'my', flag: '🇲🇾', flightTimeKey: 'home.destinations.malaysia.flightTime', enabled: false },
+    { id: 'us', flag: '🇺🇸', flightTimeKey: 'home.destinations.usa.flightTime', enabled: false },
   ];
 
   // Mock: 用户已有护照
   const hasPassport = true;
   const passportData = {
-    type: '中国护照',
+    type: t('home.passport.type'),
     name: '张伟',
     nameEn: 'ZHANG WEI',
     passportNo: 'E12345678',
@@ -71,7 +71,7 @@ const HomeScreen = ({ navigation }) => {
   const handleCountrySelect = async (country) => {
     // Check if country is enabled
     if (!country.enabled) {
-      Alert.alert('暂未开放', '该目的地暂未开放，敬请期待！');
+      Alert.alert(t('home.alerts.notAvailableTitle'), t('home.alerts.notAvailableBody'));
       return;
     }
 
@@ -114,23 +114,36 @@ const HomeScreen = ({ navigation }) => {
       const summary = generateSummary(recentRecord);
       const { validity } = recentRecord;
 
-      let message = `已找到${country.name}的通关包：\n\n`;
-      message += `航班：${recentRecord.travelInfo?.flightNumber || '未知'}\n`;
-      message += `日期：${formatDate(recentRecord.travelInfo?.arrivalDate)}\n`;
-      message += `酒店：${recentRecord.travelInfo?.hotelName || '未知'}\n\n`;
+      const countryName = t(`home.destinationNames.${country.id}`, {
+        defaultValue: country.name || country.id,
+      });
+
+      let message = t('home.alerts.historyFoundBody.pre', {
+        country: countryName,
+      });
+      message += '\n\n';
+      message += `${t('home.alerts.historyFoundBody.flight')}: ${
+        recentRecord.travelInfo?.flightNumber || t('home.common.unknown')
+      }\n`;
+      message += `${t('home.alerts.historyFoundBody.date')}: ${
+        formatDate(recentRecord.travelInfo?.arrivalDate) || t('home.common.unknown')
+      }\n`;
+      message += `${t('home.alerts.historyFoundBody.hotel')}: ${
+        recentRecord.travelInfo?.hotelName || t('home.common.unknown')
+      }\n\n`;
 
       if (validity.warning) {
         message += `⚠️ ${validity.warning}\n\n`;
       }
 
-      message += '是否使用这个通关包？';
+      message += t('home.alerts.historyFoundBody.question');
 
       Alert.alert(
-        '发现历史记录',
+        t('home.alerts.historyFoundTitle'),
         message,
         [
           {
-            text: '查看',
+            text: t('common.view'),
             onPress: () => {
               // 直接查看历史记录
               navigation.navigate('Result', {
@@ -143,7 +156,7 @@ const HomeScreen = ({ navigation }) => {
             },
           },
           {
-            text: '重新生成',
+            text: t('home.alerts.historyFoundBody.regenerate'),
             onPress: () => {
               // 重新生成
               navigation.navigate('TravelInfo', {
