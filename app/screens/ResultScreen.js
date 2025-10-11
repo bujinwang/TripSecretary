@@ -428,7 +428,60 @@ const ResultScreen = ({ navigation, route }) => {
           <Text style={styles.entryPackTimestamp}>最后更新：{formattedGeneratedAt}</Text>
         </View>
 
+        {isHistoryItem && (
+          <View style={styles.historyBanner}>
+            <View style={styles.historyHeaderRow}>
+              <Text style={styles.historyBadge}>待入境旅程</Text>
+              <View style={styles.historyStatusPill}>
+                <Text style={styles.historyStatusText}>已自动保存</Text>
+              </View>
+            </View>
+            <Text style={styles.historyDescription}>
+              信息已留存在入境包中，可随时修改或分享给亲友复核。
+            </Text>
 
+            <TouchableOpacity
+              style={styles.historyPrimaryCta}
+              onPress={handleStartArrivalFlow}
+              activeOpacity={0.85}
+            >
+              <View style={styles.historyPrimaryContent}>
+                <Text style={styles.historyPrimaryIcon}>🛬</Text>
+                <View>
+                  <Text style={styles.historyPrimaryTitle}>{t('result.historyBanner.primaryCta.title')}</Text>
+                  <Text style={styles.historyPrimarySubtitle}>{t('result.historyBanner.primaryCta.subtitle')}</Text>
+                </View>
+              </View>
+              <Text style={styles.historyPrimaryArrow}>›</Text>
+            </TouchableOpacity>
+
+            <View style={styles.historySecondaryRow}>
+              <TouchableOpacity
+                style={styles.historySecondaryButton}
+                onPress={handleShare}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.historySecondaryIcon}>🤝</Text>
+                <Text style={styles.historySecondaryText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.historyTertiaryButton}
+                onPress={handleEditInfo}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.historyTertiaryIcon}>🛠️</Text>
+                <Text style={styles.historyTertiaryText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.historyFooter}>
+              <Text style={styles.historyFooterTitle}>🛃 最后一环：向海关出示通关包</Text>
+              <Text style={styles.historyFooterNote}>
+                抄写模式只是整个流程中的一步，落地后按指引逐步完成即可。
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Digital Entry System Info */}
         {features.digitalInfo && (
@@ -708,7 +761,146 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     textAlign: 'right',
   },
-
+  historyBanner: {
+    backgroundColor: '#E6F8EE',
+    borderRadius: 20,
+    padding: spacing.lg,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.18)',
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyBadge: {
+    ...typography.body2,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  historyStatusPill: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.25)',
+  },
+  historyStatusText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  historyDescription: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  historyPrimaryCta: {
+    backgroundColor: colors.primary,
+    borderRadius: 18,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  historyPrimaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  historyPrimaryIcon: {
+    fontSize: 28,
+    marginRight: spacing.md,
+  },
+  historyPrimaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  historyPrimarySubtitle: {
+    ...typography.caption,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
+  },
+  historyPrimaryArrow: {
+    fontSize: 36,
+    color: colors.white,
+    fontWeight: '600',
+    marginLeft: spacing.md,
+  },
+  historySecondaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
+  historySecondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(7, 193, 96, 0.12)',
+    borderRadius: 14,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.3)',
+  },
+  historySecondaryIcon: {
+    fontSize: 20,
+    marginRight: spacing.xs,
+  },
+  historySecondaryText: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  historyTertiaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  historyTertiaryIcon: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    marginRight: spacing.xs,
+  },
+  historyTertiaryText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  historyFooter: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(7, 193, 96, 0.15)',
+  },
+  historyFooterTitle: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  historyFooterNote: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
   digitalInfoCard: {
     flexDirection: 'row',
     backgroundColor: '#E3F2FD',
