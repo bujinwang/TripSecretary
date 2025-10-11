@@ -228,7 +228,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                 })}
               >
                 <Text style={styles.viewFormIcon}>📝</Text>
-                <Text style={styles.viewFormText}>查看入境表</Text>
+                <Text style={styles.viewFormText}>对照填写入境表</Text>
                 <Text style={styles.viewFormArrow}>›</Text>
               </TouchableOpacity>
             </>
@@ -256,7 +256,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                 })}
               >
                 <Text style={styles.viewFormIcon}>📋</Text>
-                <Text style={styles.viewFormText}>查看海关申报表</Text>
+                <Text style={styles.viewFormText}>对照填写申报表</Text>
                 <Text style={styles.viewFormArrow}>›</Text>
               </TouchableOpacity>
             </>
