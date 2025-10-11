@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
-import { useTranslation } from '../i18n/useTranslation';
+import { useTranslation } from '../i18n/LocaleContext';
 
 import {
   LoginScreen,
