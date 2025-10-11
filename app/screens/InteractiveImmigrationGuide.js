@@ -74,7 +74,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
     },
     {
       id: 6,
-      title: '🛃 第七步：完成入境',
+      title: '✅ 第七步：完成入境',
       description: '通关包仅在需要时使用',
       instruction: '点击下方按钮打开“向海关出示”页面，准备好给边检查看',
       action: '打开通关包',
