@@ -462,7 +462,7 @@ const ResultScreen = ({ navigation, route }) => {
                 activeOpacity={0.75}
               >
                 <Text style={styles.historySecondaryIcon}>🤝</Text>
-                <Text style={styles.historySecondaryText}>发给亲友复核</Text>
+                <Text style={styles.historySecondaryText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.historyTertiaryButton}
@@ -470,7 +470,7 @@ const ResultScreen = ({ navigation, route }) => {
                 activeOpacity={0.75}
               >
                 <Text style={styles.historyTertiaryIcon}>🛠️</Text>
-                <Text style={styles.historyTertiaryText}>更改资料</Text>
+                <Text style={styles.historyTertiaryText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
               </TouchableOpacity>
             </View>
 
