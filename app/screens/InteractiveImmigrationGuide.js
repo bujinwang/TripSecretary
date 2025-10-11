@@ -222,6 +222,22 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             </TouchableOpacity>
           )}
 
+          {/* Show "View Customs Declaration" button for step 3 */}
+          {currentStep === 2 && (
+            <TouchableOpacity
+              style={styles.viewFormButton}
+              onPress={() => navigation.navigate('CopyWrite', {
+                passport,
+                destination,
+                travelInfo,
+              })}
+            >
+              <Text style={styles.viewFormIcon}>📋</Text>
+              <Text style={styles.viewFormText}>查看海关申报表</Text>
+              <Text style={styles.viewFormArrow}>›</Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       </ScrollView>
 
