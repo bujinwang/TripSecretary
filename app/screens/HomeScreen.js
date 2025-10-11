@@ -27,7 +27,6 @@ const HomeScreen = ({ navigation }) => {
     { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
     { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: false },
     { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
-    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: false }, // Singapore flag
     { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: false },
     { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
   ];
