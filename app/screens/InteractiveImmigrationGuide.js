@@ -24,7 +24,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '📋 第一步：领取表格',
       description: '在入境大厅找到入境卡和海关申报单',
       instruction: '找到标有"入境卡"和"海关申报"的柜台或自动发放机',
-      action: '我已拿到表格',
+      action: '下一步：填写入境卡',
       voiceText: '请走到入境大厅的表格发放区，领取蓝色入境卡和黄色海关申报单',
     },
     {
@@ -32,7 +32,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '✍️ 第二步：填写入境卡',
       description: '用黑色或蓝色笔填写蓝色入境卡',
       instruction: '对照手机上的信息，仔细抄写到表格上',
-      action: '开始填写入境卡',
+      action: '下一步：海关申报表',
       voiceText: '现在请用笔填写蓝色入境卡，姓名、护照号码、航班号等信息',
     },
     {
@@ -40,7 +40,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '📝 第三步：填写海关申报单',
       description: '填写黄色海关申报单',
       instruction: '如实申报携带物品，回答是否有违禁品等问题',
-      action: '开始填写申报单',
+      action: '下一步：入境审查',
       voiceText: '接下来填写黄色海关申报单，诚实回答所有问题',
     },
     {
@@ -48,7 +48,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '🏢 第四步：前往入境审查',
       description: '拿着填好的表格前往入境审查柜台',
       instruction: '排队等待叫号，交给工作人员检查',
-      action: '前往入境柜台',
+      action: '下一步：生物识别',
       voiceText: '请前往入境审查柜台，准备好护照和填好的表格',
     },
     {
@@ -56,7 +56,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '👤 第五步：生物识别检查',
       description: '接受指纹和面部识别',
       instruction: '按照工作人员指示完成生物识别',
-      action: '开始生物识别',
+      action: '下一步：海关检查',
       voiceText: '工作人员会采集您的指纹和面部信息，请配合完成',
     },
     {
@@ -64,7 +64,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '🛃 第六步：海关检查',
       description: '前往海关检查区',
       instruction: '可能需要开箱检查行李，请耐心等待',
-      action: '前往海关检查',
+      action: '下一步：出示通关包',
       voiceText: '现在前往海关检查区，准备接受行李检查',
     },
     {
