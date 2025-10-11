@@ -402,20 +402,20 @@ const ResultScreen = ({ navigation, route }) => {
 
           <View style={styles.entryPackInfoGrid}>
             {entryPackItems.map((item, index) => {
-              const isRightColumn = (index + 1) % 2 === 0;
+              const isLast = index === entryPackItems.length - 1;
               return (
                 <View
                   key={`${item.label}-${index}`}
                   style={[
                     styles.entryPackInfoItem,
                     item.fullWidth && styles.entryPackInfoItemFull,
-                    isRightColumn && !item.fullWidth && styles.entryPackInfoItemRight,
+                    isLast && styles.entryPackInfoItemLast,
                   ]}
                 >
                   <Text style={styles.entryPackInfoLabel}>{item.label}</Text>
                   <Text
                     style={styles.entryPackInfoValue}
-                    numberOfLines={item.fullWidth ? 2 : 1}
+                    numberOfLines={item.fullWidth ? 3 : 1}
                   >
                     {item.value}
                   </Text>
@@ -587,52 +587,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.md,
+    paddingBottom: spacing.xl,
   },
   headerContainer: {
     alignItems: 'center',
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.white,
   },
   successIcon: {
-    fontSize: 48,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    ...typography.h2,
-    color: colors.text,
+    fontSize: 40,
     marginBottom: spacing.xs,
   },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
   subtitle: {
-    ...typography.body2,
+    fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
   },
   entryPackCard: {
     backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: spacing.lg,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 4,
+    borderRadius: 16,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
   },
   entryPackHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: spacing.lg,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
   entryPackIcon: {
-    fontSize: 40,
+    fontSize: 32,
     marginRight: spacing.md,
   },
   entryPackHeaderText: {
     flex: 1,
   },
   entryPackTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '600',
     color: colors.text,
   },
   entryPackSubtitle: {
@@ -652,36 +656,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   entryPackInfoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: spacing.lg,
+    padding: spacing.lg,
+    paddingTop: spacing.md,
   },
   entryPackInfoItem: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.md,
-    flexBasis: '48%',
-    marginBottom: spacing.sm,
-    marginRight: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
   },
-  entryPackInfoItemRight: {
-    marginRight: 0,
-  },
+  entryPackInfoItemRight: {},
   entryPackInfoItemFull: {
-    flexBasis: '100%',
-    marginRight: 0,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  entryPackInfoItemLast: {
+    borderBottomWidth: 0,
   },
   entryPackInfoLabel: {
-    ...typography.caption,
+    fontSize: 15,
     color: colors.textSecondary,
-    marginBottom: spacing.xs,
+    flex: 1,
   },
   entryPackInfoValue: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
     color: colors.text,
+    textAlign: 'right',
+    flex: 2,
   },
   entryPackActions: {
     marginTop: spacing.lg,
@@ -703,10 +707,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   entryPackTimestamp: {
-    ...typography.caption,
+    fontSize: 13,
     color: colors.textSecondary,
-    marginTop: spacing.lg,
-    textAlign: 'right',
+    padding: spacing.lg,
+    paddingTop: spacing.md,
+    textAlign: 'center',
   },
   historyBanner: {
     backgroundColor: '#E6F8EE',
@@ -747,18 +752,19 @@ const styles = StyleSheet.create({
   },
   historyPrimaryCta: {
     backgroundColor: colors.primary,
-    borderRadius: 18,
-    paddingVertical: spacing.md,
+    borderRadius: 14,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   historyPrimaryContent: {
     flexDirection: 'row',
@@ -770,8 +776,8 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   historyPrimaryTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '600',
     color: colors.white,
   },
   historyPrimarySubtitle: {
@@ -780,9 +786,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   historyPrimaryArrow: {
-    fontSize: 36,
+    fontSize: 24,
     color: colors.white,
-    fontWeight: '600',
+    fontWeight: '400',
     marginLeft: spacing.md,
   },
   actionButtonsRow: {
