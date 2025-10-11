@@ -386,7 +386,7 @@ const ResultScreen = ({ navigation, route }) => {
           <View style={styles.entryPackHeader}>
             <Text style={styles.entryPackIcon}>🧳</Text>
             <View style={styles.entryPackHeaderText}>
-              <Text style={styles.entryPackTitle}>入境包</Text>
+              <Text style={styles.entryPackTitle}>基本信息</Text>
               <Text style={styles.entryPackSubtitle}>{entrySubtitle}</Text>
             </View>
             {canShareInline && (
