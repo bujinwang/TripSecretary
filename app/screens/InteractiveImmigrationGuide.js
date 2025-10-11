@@ -208,34 +208,58 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
 
           {/* Show "View Form" button for step 2 (filling out entry card) */}
           {currentStep === 1 && (
-            <TouchableOpacity
-              style={styles.viewFormButton}
-              onPress={() => navigation.navigate('CopyWrite', {
-                passport,
-                destination,
-                travelInfo,
-              })}
-            >
-              <Text style={styles.viewFormIcon}>📝</Text>
-              <Text style={styles.viewFormText}>查看入境表</Text>
-              <Text style={styles.viewFormArrow}>›</Text>
-            </TouchableOpacity>
+            <>
+              <View style={styles.formPreview}>
+                <Text style={styles.formPreviewTitle}>📋 入境卡样本</Text>
+                <View style={styles.formPlaceholder}>
+                  <Text style={styles.formPlaceholderText}>蓝色入境卡</Text>
+                  <Text style={styles.formPlaceholderHint}>
+                    包含个人信息、护照号码、{'\n'}
+                    航班信息、住宿地址等
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.viewFormButton}
+                onPress={() => navigation.navigate('CopyWrite', {
+                  passport,
+                  destination,
+                  travelInfo,
+                })}
+              >
+                <Text style={styles.viewFormIcon}>📝</Text>
+                <Text style={styles.viewFormText}>查看入境表</Text>
+                <Text style={styles.viewFormArrow}>›</Text>
+              </TouchableOpacity>
+            </>
           )}
 
           {/* Show "View Customs Declaration" button for step 3 */}
           {currentStep === 2 && (
-            <TouchableOpacity
-              style={styles.viewFormButton}
-              onPress={() => navigation.navigate('CopyWrite', {
-                passport,
-                destination,
-                travelInfo,
-              })}
-            >
-              <Text style={styles.viewFormIcon}>📋</Text>
-              <Text style={styles.viewFormText}>查看海关申报表</Text>
-              <Text style={styles.viewFormArrow}>›</Text>
-            </TouchableOpacity>
+            <>
+              <View style={styles.formPreview}>
+                <Text style={styles.formPreviewTitle}>📋 海关申报单样本</Text>
+                <View style={styles.formPlaceholder}>
+                  <Text style={styles.formPlaceholderText}>黄色海关申报单</Text>
+                  <Text style={styles.formPlaceholderHint}>
+                    包含携带物品申报、{'\n'}
+                    是否携带违禁品等问题
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.viewFormButton}
+                onPress={() => navigation.navigate('CopyWrite', {
+                  passport,
+                  destination,
+                  travelInfo,
+                })}
+              >
+                <Text style={styles.viewFormIcon}>📋</Text>
+                <Text style={styles.viewFormText}>查看海关申报表</Text>
+                <Text style={styles.viewFormArrow}>›</Text>
+              </TouchableOpacity>
+            </>
           )}
 
         </View>
@@ -399,6 +423,43 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     flex: 1,
     lineHeight: 22,
+  },
+  formPreview: {
+    marginTop: spacing.md,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  formPreviewTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: spacing.sm,
+  },
+  formPlaceholder: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D1D6',
+    borderStyle: 'dashed',
+    minHeight: 100,
+    justifyContent: 'center',
+  },
+  formPlaceholderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#34C759',
+    marginBottom: spacing.xs,
+  },
+  formPlaceholderHint: {
+    fontSize: 13,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   viewFormButton: {
     backgroundColor: '#34C759',
