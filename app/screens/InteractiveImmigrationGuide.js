@@ -206,6 +206,22 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
           </View>
 
+          {/* Show "View Form" button for step 2 (filling out entry card) */}
+          {currentStep === 1 && (
+            <TouchableOpacity
+              style={styles.viewFormButton}
+              onPress={() => navigation.navigate('CopyWrite', {
+                passport,
+                destination,
+                travelInfo,
+              })}
+            >
+              <Text style={styles.viewFormIcon}>📝</Text>
+              <Text style={styles.viewFormText}>进入抄写模式</Text>
+              <Text style={styles.viewFormArrow}>›</Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       </ScrollView>
 
@@ -359,6 +375,30 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
     lineHeight: 24,
+  },
+  viewFormButton: {
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.lg,
+    borderRadius: 12,
+    marginTop: spacing.md,
+  },
+  viewFormIcon: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  viewFormText: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '600',
+    flex: 1,
+  },
+  viewFormArrow: {
+    fontSize: 24,
+    color: colors.white,
+    fontWeight: '400',
   },
   navigationContainer: {
     flexDirection: 'row',
