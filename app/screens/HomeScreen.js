@@ -399,8 +399,11 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
-          <TouchableOpacity style={styles.headerRight}>
-            <Text style={styles.settingsIcon}>⚙️</Text>
+          <TouchableOpacity 
+            style={styles.headerRight}
+            onPress={() => navigation.replace('Login')}
+          >
+            <Text style={styles.settingsIcon}>🌐</Text>
           </TouchableOpacity>
         </View>
 
