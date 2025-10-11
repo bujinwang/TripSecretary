@@ -299,6 +299,21 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             </>
           )}
 
+          {/* Show "Complete Entry" button for steps 6 and 7 */}
+          {(currentStep === 5 || currentStep === 6) && (
+            <TouchableOpacity
+              style={styles.completeEntryButton}
+              onPress={() => navigation.navigate('Result', {
+                passport,
+                destination,
+                travelInfo,
+              })}
+            >
+              <Text style={styles.completeEntryIcon}>🎉</Text>
+              <Text style={styles.completeEntryText}>结束入境，返回入境包</Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       </ScrollView>
 
@@ -580,6 +595,24 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.white,
     fontWeight: '400',
+  },
+  completeEntryButton: {
+    backgroundColor: '#FF9500',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: 12,
+    marginTop: spacing.lg,
+  },
+  completeEntryIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+  },
+  completeEntryText: {
+    fontSize: 17,
+    color: colors.white,
+    fontWeight: '600',
   },
   navigationContainer: {
     flexDirection: 'row',
