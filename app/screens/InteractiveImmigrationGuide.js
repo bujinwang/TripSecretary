@@ -69,7 +69,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       title: '🛃 第六步：海关检查',
       description: '前往海关检查区',
       instruction: '可能需要开箱检查行李，请耐心等待',
-      action: '下一步：出示通关包',
+      action: '完成海关检查',
       voiceText: '现在前往海关检查区，准备接受行李检查',
     },
     {
