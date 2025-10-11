@@ -566,11 +566,6 @@ const ResultScreen = ({ navigation, route }) => {
 
         </View>
 
-        {/* Footer */}
-        <TouchableOpacity onPress={handleGoHome} style={styles.footer}>
-          <Text style={styles.footerText}>完成！返回首页</Text>
-        </TouchableOpacity>
-
         {/* Additional Info */}
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>💡</Text>
