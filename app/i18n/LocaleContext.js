@@ -1,8 +1,33 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SUPPORTED_LANGUAGES, translations } from './locales';
 
 const DEFAULT_LANGUAGE = 'en';
 const FALLBACK_LANGUAGE = 'en';
+const STORAGE_KEY = '@tripassistant.locale';
+
+const normalizeLanguage = (code) => {
+  if (!code) return DEFAULT_LANGUAGE;
+  const lower = code.toLowerCase();
+  if (SUPPORTED_LANGUAGES.includes(lower)) {
+    return lower;
+  }
+  if (lower.startsWith('zh')) return 'zh';
+  if (lower.startsWith('en')) return 'en';
+  if (lower.startsWith('fr')) return 'fr';
+  if (lower.startsWith('de')) return 'de';
+  if (lower.startsWith('es')) return 'es';
+  return DEFAULT_LANGUAGE;
+};
+
+const detectDeviceLanguage = () => {
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+    return normalizeLanguage(locale);
+  } catch (error) {
+    return DEFAULT_LANGUAGE;
+  }
+};
 
 const LocaleContext = createContext({
   language: DEFAULT_LANGUAGE,
@@ -33,6 +58,31 @@ export const LocaleProvider = ({ initialLanguage = DEFAULT_LANGUAGE, children })
   const [language, setLanguage] = useState(
     SUPPORTED_LANGUAGES.includes(initialLanguage) ? initialLanguage : DEFAULT_LANGUAGE
   );
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      try {
+        const persisted = await AsyncStorage.getItem(STORAGE_KEY);
+        if (persisted) {
+          setLanguage(normalizeLanguage(persisted));
+        } else {
+          setLanguage(normalizeLanguage(detectDeviceLanguage()));
+        }
+      } catch (error) {
+        setLanguage((prev) => prev || detectDeviceLanguage());
+      } finally {
+        setReady(true);
+      }
+    };
+
+    bootstrap();
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    AsyncStorage.setItem(STORAGE_KEY, language).catch(() => {});
+  }, [language, ready]);
 
   const value = useMemo(() => {
     const t = (key, options = {}) => {
@@ -58,13 +108,17 @@ export const LocaleProvider = ({ initialLanguage = DEFAULT_LANGUAGE, children })
       return key;
     };
 
+    const changeLanguage = (nextLanguage) => {
+      setLanguage(normalizeLanguage(nextLanguage));
+    };
+
     return {
       language,
-      setLanguage,
+      setLanguage: changeLanguage,
       t,
       translations,
     };
-  }, [language]);
+  }, [language, ready]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 };

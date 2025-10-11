@@ -85,20 +85,44 @@ export const isRecordValid = (record) => {
  * @param {string} arrivalDate - 到达日期
  * @returns {string} - 人性化的时间描述
  */
-export const getTimeUntilArrival = (arrivalDate) => {
+export const getTimeUntilArrival = (arrivalDate, t) => {
   if (!arrivalDate) return '';
-  
+
+  const translator = typeof t === 'function' ? t : (key, options) => options?.defaultValue ?? key;
+
   const arrival = new Date(arrivalDate);
   const now = new Date();
   const diffMs = arrival - now;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) return '已过期';
-  if (diffDays === 0) return '今天';
-  if (diffDays === 1) return '明天';
-  if (diffDays <= 7) return `${diffDays}天后`;
-  if (diffDays <= 30) return `${Math.floor(diffDays / 7)}周后`;
-  return `${Math.floor(diffDays / 30)}个月后`;
+
+  if (diffDays < 0) {
+    return translator('travelInfo.timeUntil.past', { defaultValue: 'Past' });
+  }
+  if (diffDays === 0) {
+    return translator('travelInfo.timeUntil.today', { defaultValue: 'Today' });
+  }
+  if (diffDays === 1) {
+    return translator('travelInfo.timeUntil.tomorrow', { defaultValue: 'Tomorrow' });
+  }
+  if (diffDays <= 7) {
+    return translator('travelInfo.timeUntil.days', {
+      count: diffDays,
+      defaultValue: `${diffDays} days`,
+    });
+  }
+  if (diffDays <= 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return translator('travelInfo.timeUntil.weeks', {
+      count: weeks,
+      defaultValue: `${weeks} weeks`,
+    });
+  }
+
+  const months = Math.floor(diffDays / 30);
+  return translator('travelInfo.timeUntil.months', {
+    count: months,
+    defaultValue: `${months} months`,
+  });
 };
 
 export default {

@@ -1,5 +1,5 @@
 // 出境通 - History Screen
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,75 +10,87 @@ import {
 } from 'react-native';
 import Card from '../components/Card';
 import { colors, typography, spacing } from '../theme';
+import { useLocale } from '../i18n/LocaleContext';
+
+const HISTORY_SECTIONS = [
+  {
+    id: 'today',
+    titleKey: 'history.sections.today',
+    items: [
+      {
+        id: 'hk-today',
+        flag: '🇭🇰',
+        destinationKey: 'history.items.hk.title',
+        timeKey: 'history.items.hk.time',
+        passportKey: 'history.items.hk.passport',
+        destinationData: { id: 'hk', flag: '🇭🇰' },
+        travelInfoData: {
+          flightNumber: 'CX888',
+          arrivalDate: new Date().toISOString().split('T')[0],
+          hotelName: 'Mandarin Oriental Hong Kong',
+          hotelAddress: '5 Connaught Road Central, Central',
+          contactPhone: '+852 2522 0111',
+          stayDuration: '3',
+          travelPurpose: 'tourism',
+        },
+      },
+    ],
+  },
+  {
+    id: 'yesterday',
+    titleKey: 'history.sections.yesterday',
+    items: [
+      {
+        id: 'th-yesterday',
+        flag: '🇹🇭',
+        destinationKey: 'history.items.th.title',
+        timeKey: 'history.items.th.time',
+        passportKey: 'history.items.th.passport',
+        destinationData: { id: 'th', flag: '🇹🇭' },
+        travelInfoData: {
+          flightNumber: 'CA981',
+          arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
+          hotelName: 'Bangkok Grand Hotel',
+          hotelAddress: '123 Sukhumvit Road, Bangkok',
+          contactPhone: '+66 2 123 4567',
+          stayDuration: '7',
+          travelPurpose: 'tourism',
+        },
+      },
+    ],
+  },
+];
 
 const HistoryScreen = ({ navigation }) => {
-  // Mock history data with full details for navigation
-  const historyData = [
-    {
-      id: 1,
-      section: '今天',
-      items: [
-        {
-          id: '1-1',
-          flag: '🇭🇰',
-          destination: '香港入境表格',
-          time: '2小时前',
-          passport: '中国护照',
-          // Full data for navigation
-          destinationData: { id: 'hk', name: '香港', flag: '🇭🇰' },
-          passportData: {
-            type: '中国护照',
-            name: '张伟',
-            passportNo: 'E12345678',
-            expiry: '2030-12-31',
-          },
-          travelInfoData: {
-            flightNumber: 'CX888',
-            arrivalDate: new Date().toISOString().split('T')[0],
-            hotelName: '香港文华东方酒店',
-            hotelAddress: '中环干诺道中5号',
-            contactPhone: '+852 2522 0111',
-            stayDuration: '3',
-            travelPurpose: '旅游',
-          },
+  const { t } = useLocale();
+
+  const historyData = useMemo(() => {
+    return HISTORY_SECTIONS.map((section) => ({
+      ...section,
+      title: t(section.titleKey),
+      items: section.items.map((item) => ({
+        ...item,
+        destinationData: {
+          ...item.destinationData,
+          name: t(`home.destinationNames.${item.destinationData.id}`),
         },
-      ],
-    },
-    {
-      id: 2,
-      section: '昨天',
-      items: [
-        {
-          id: '2-1',
-          flag: '🇹🇭',
-          destination: '泰国入境表格',
-          time: '昨天 15:20',
-          passport: '中国护照',
-          destinationData: { id: 'th', name: '泰国', flag: '🇹🇭' },
-          passportData: {
-            type: '中国护照',
-            name: '张伟',
-            passportNo: 'E12345678',
-            expiry: '2030-12-31',
-          },
-          travelInfoData: {
-            flightNumber: 'CA981',
-            // Changed from +7 days to +2 days to comply with TDAC 72-hour rule
-            arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            hotelName: 'Bangkok Grand Hotel',
-            hotelAddress: '123 Sukhumvit Road, Bangkok',
-            contactPhone: '+66 2 123 4567',
-            stayDuration: '7',
-            travelPurpose: '旅游',
-          },
+        passportData: {
+          ...item.passportData,
+          type: t('home.passport.type'),
         },
-      ],
-    },
-  ];
+        destinationLabel: t(item.destinationKey),
+        timeLabel: t(item.timeKey),
+        passportLabel: t(item.passportKey),
+      })),
+    }));
+  }, [t]);
+
 
   const handleViewItem = (item) => {
-    console.log('History item clicked:', item.destination);
-    
+    console.log('History item clicked:', item.destinationLabel);
+
     // Navigate to Result screen with the history item's data
     navigation.navigate('Result', {
       passport: item.passportData,
@@ -93,9 +105,9 @@ const HistoryScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>生成历史</Text>
+        <Text style={styles.headerTitle}>{t('history.headerTitle')}</Text>
         <TouchableOpacity>
-          <Text style={styles.filterButton}>筛选</Text>
+          <Text style={styles.filterButton}>{t('history.filterButton')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -106,28 +118,30 @@ const HistoryScreen = ({ navigation }) => {
       >
         {historyData.map((section) => (
           <View key={section.id} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.section}</Text>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
 
             {section.items.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 style={styles.historyCard}
                 onPress={() => {
-                  console.log('TouchableOpacity pressed!', item.destination);
+                  console.log('TouchableOpacity pressed!', item.destinationLabel);
                   handleViewItem(item);
                 }}
                 activeOpacity={0.7}
               >
                 <Text style={styles.flag}>{item.flag}</Text>
                 <View style={styles.cardInfo}>
-                  <Text style={styles.destination}>{item.destination}</Text>
-                  <Text style={styles.time}>生成时间: {item.time}</Text>
+                  <Text style={styles.destination}>{item.destinationLabel}</Text>
+                  <Text style={styles.time}>
+                    {t('history.timePrefix')} {item.timeLabel}
+                  </Text>
                   <Text style={styles.passport}>
-                    使用证件: {item.passport}
+                    {t('history.passportPrefix')} {item.passportLabel}
                   </Text>
                 </View>
                 <View style={styles.cardAction}>
-                  <Text style={styles.actionText}>查看</Text>
+                  <Text style={styles.actionText}>{t('common.view')}</Text>
                   <Text style={styles.arrow}>›</Text>
                 </View>
               </TouchableOpacity>
@@ -139,10 +153,8 @@ const HistoryScreen = ({ navigation }) => {
         {historyData.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>📋</Text>
-            <Text style={styles.emptyTitle}>还没有生成记录</Text>
-            <Text style={styles.emptyText}>
-              开始扫描证件，生成第一个通关包
-            </Text>
+            <Text style={styles.emptyTitle}>{t('history.empty.title')}</Text>
+            <Text style={styles.emptyText}>{t('history.empty.subtitle')}</Text>
           </View>
         )}
       </ScrollView>

@@ -17,8 +17,23 @@ import Card from '../components/Card';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { checkDuplicate, getTimeUntilArrival } from '../utils/generationHistory';
 import api from '../services/api';
+import { useLocale } from '../i18n/LocaleContext';
+
+const YES_VALUE = '是';
+const NO_VALUE = '否';
+const ARRIVING_FROM_US = '美国';
+const ARRIVING_FROM_OTHER = '其他国家';
+
+const PURPOSE_OPTIONS = [
+  { value: '旅游', key: 'tourism' },
+  { value: '商务', key: 'business' },
+  { value: '探亲', key: 'visiting' },
+  { value: '学习', key: 'study' },
+  { value: '工作', key: 'work' },
+];
 
 const TravelInfoScreen = ({ navigation, route }) => {
+  const { t, language } = useLocale();
   const {
     passport,
     destination,
@@ -28,10 +43,10 @@ const TravelInfoScreen = ({ navigation, route }) => {
     fromHistory = false,
   } = route.params || {};
 
-  const normalizeYesNo = (value, fallback = '否') => {
-    if (value === '是' || value === '否') return value;
-    if (value === true) return '是';
-    if (value === false) return '否';
+  const normalizeYesNo = (value, fallback = NO_VALUE) => {
+    if (value === YES_VALUE || value === NO_VALUE) return value;
+    if (value === true) return YES_VALUE;
+    if (value === false) return NO_VALUE;
     return fallback;
   };
 
@@ -41,6 +56,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
       holiday: '旅游',
       TOURISM: '旅游',
       tourism: '旅游',
+      'tourism/leisure': '旅游',
       BUSINESS: '商务',
       business: '商务',
       VISITING: '探亲',
@@ -57,12 +73,12 @@ const TravelInfoScreen = ({ navigation, route }) => {
   };
 
   const normalizeArrivingFrom = (value) => {
-    if (!value) return '其他国家';
+    if (!value) return ARRIVING_FROM_OTHER;
     if (['美国', 'USA', 'U.S.A.', 'us', 'United States'].includes(value)) {
-      return '美国';
+      return ARRIVING_FROM_US;
     }
-    if (['其他国家', 'Other', 'OTHER'].includes(value)) {
-      return '其他国家';
+    if ([ARRIVING_FROM_OTHER, 'Other', 'OTHER'].includes(value)) {
+      return ARRIVING_FROM_OTHER;
     }
     return value;
   };
@@ -114,32 +130,45 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
   // Get required fields based on destination
   const getRequiredFields = () => {
-    const destName = destination?.name || '';
+    const destId = destination?.id;
 
-    switch (destName) {
-      case '香港':
-        return []; // 香港不需要额外信息
-      case '台湾':
+    switch (destId) {
+      case 'hk':
+        return [];
+      case 'tw':
         return ['flightNumber', 'hotelAddress', 'contactPhone', 'travelPurpose'];
-      case '泰国':
+      case 'th':
         return ['flightNumber', 'arrivalDate', 'hotelName', 'hotelAddress', 'contactPhone', 'stayDuration', 'hasFever'];
-      case '美国':
+      case 'us':
         return ['flightNumber', 'hotelAddress', 'travelPurpose', 'cashAmount', 'carryingFood'];
+      case 'ca':
+        return ['flightNumber', 'hotelAddress', 'contactPhone', 'stayDuration', 'travelPurpose', 'hasHighCurrency'];
       default:
         return ['flightNumber', 'hotelAddress', 'contactPhone', 'stayDuration', 'travelPurpose'];
     }
   };
 
   const requiredFields = getRequiredFields();
-  const needsHealthDeclaration = destination?.name === '泰国';
-  const needsUSCustoms = destination?.name === '美国';
-  const needsCanadaCustoms = destination?.name === '加拿大' || destination?.id === 'ca';
+  const needsHealthDeclaration = destination?.id === 'th';
+  const needsUSCustoms = destination?.id === 'us';
+  const needsCanadaCustoms = destination?.id === 'ca';
+
+  const destinationName = t(`home.destinationNames.${destination?.id}`, {
+    defaultValue: destination?.name || '',
+  });
+
+  const yesLabel = t('common.yes');
+  const noLabel = t('common.no');
 
   const handleScanTicket = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('需要权限', '请允许访问相册');
+        Alert.alert(
+          t('travelInfo.alerts.permissionPhotoTitle'),
+          t('travelInfo.alerts.permissionPhotoBody'),
+          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+        );
         return;
       }
 
@@ -154,20 +183,36 @@ const TravelInfoScreen = ({ navigation, route }) => {
           const ocrResult = await api.recognizeTicket(result.assets[0].uri);
           if (ocrResult.flightNumber) setFlightNumber(ocrResult.flightNumber);
           if (ocrResult.arrivalDate) setArrivalDate(ocrResult.arrivalDate);
-          Alert.alert('识别成功', '已自动填充航班信息');
+          Alert.alert(
+            t('travelInfo.alerts.ocrSuccessFlight'),
+            '',
+            [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+          );
         } catch (error) {
           if (error.message.includes('未授权')) {
-            Alert.alert('需要登录', '请先登录后使用OCR识别功能', [
-              { text: '手动输入', style: 'cancel' },
-              { text: '去登录', onPress: () => navigation.navigate('Login') }
-            ]);
+            Alert.alert(
+              t('travelInfo.alerts.loginRequiredTitle'),
+              t('travelInfo.alerts.loginRequiredBody'),
+              [
+                { text: t('travelInfo.alerts.manualEntryButton'), style: 'cancel' },
+                { text: t('travelInfo.alerts.loginButton'), onPress: () => navigation.navigate('Login') },
+              ]
+            );
           } else {
-            Alert.alert('识别失败', error.message || '请手动输入或重试');
+            Alert.alert(
+              t('travelInfo.alerts.ocrFailTitle'),
+              error.message || t('travelInfo.alerts.ocrFailBody'),
+              [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+            );
           }
         }
       }
     } catch (error) {
-      Alert.alert('错误', '无法打开相册');
+      Alert.alert(
+        t('travelInfo.alerts.genericErrorTitle'),
+        t('travelInfo.alerts.galleryError'),
+        [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+      );
     }
   };
 
@@ -175,7 +220,11 @@ const TravelInfoScreen = ({ navigation, route }) => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('需要权限', '请允许访问相册');
+        Alert.alert(
+          t('travelInfo.alerts.permissionPhotoTitle'),
+          t('travelInfo.alerts.permissionPhotoBody'),
+          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+        );
         return;
       }
 
@@ -191,20 +240,36 @@ const TravelInfoScreen = ({ navigation, route }) => {
           if (ocrResult.hotelName) setHotelName(ocrResult.hotelName);
           if (ocrResult.address) setHotelAddress(ocrResult.address);
           if (ocrResult.phone) setContactPhone(ocrResult.phone);
-          Alert.alert('识别成功', '已自动填充酒店信息');
+          Alert.alert(
+            t('travelInfo.alerts.ocrSuccessHotel'),
+            '',
+            [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+          );
         } catch (error) {
           if (error.message.includes('未授权')) {
-            Alert.alert('需要登录', '请先登录后使用OCR识别功能', [
-              { text: '手动输入', style: 'cancel' },
-              { text: '去登录', onPress: () => navigation.navigate('Login') }
-            ]);
+            Alert.alert(
+              t('travelInfo.alerts.loginRequiredTitle'),
+              t('travelInfo.alerts.loginRequiredBody'),
+              [
+                { text: t('travelInfo.alerts.manualEntryButton'), style: 'cancel' },
+                { text: t('travelInfo.alerts.loginButton'), onPress: () => navigation.navigate('Login') },
+              ]
+            );
           } else {
-            Alert.alert('识别失败', error.message || '请手动输入或重试');
+            Alert.alert(
+              t('travelInfo.alerts.ocrFailTitle'),
+              error.message || t('travelInfo.alerts.ocrFailBody'),
+              [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+            );
           }
         }
       }
     } catch (error) {
-      Alert.alert('错误', '无法打开相册');
+      Alert.alert(
+        t('travelInfo.alerts.genericErrorTitle'),
+        t('travelInfo.alerts.galleryError'),
+        [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+      );
     }
   };
 
@@ -218,18 +283,18 @@ const TravelInfoScreen = ({ navigation, route }) => {
       if (hoursDiff > 72) {
         const daysUntilArrival = Math.ceil(hoursDiff / 24);
         Alert.alert(
-          '日期超出范围',
-          `泰国入境卡只能在到达前72小时内提交。您的到达日期是${daysUntilArrival}天后。请选择更近的日期。`,
-          [{ text: '知道了' }]
+          t('travelInfo.alerts.dateTooFarTitle'),
+          t('travelInfo.alerts.dateTooFarBody', { days: daysUntilArrival }),
+          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
         );
         return;
       }
       
       if (hoursDiff < -24) {
         Alert.alert(
-          '日期已过期',
-          '到达日期不能是过去的日期。请选择正确的到达日期。',
-          [{ text: '知道了' }]
+          t('travelInfo.alerts.datePastTitle'),
+          t('travelInfo.alerts.datePastBody'),
+          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
         );
         return;
       }
@@ -263,7 +328,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
         {
           id: 'existing-1',
           passport: { passportNo: 'E12345678' },
-          destination: { id: 'th', name: '泰国' },
+          destination: { id: 'th', name: t('home.destinationNames.th', { defaultValue: 'Thailand' }), flag: '🇹🇭' },
           travelInfo: {
             flightNumber: 'CA981',
             arrivalDate: '2025-01-15',
@@ -341,26 +406,24 @@ const TravelInfoScreen = ({ navigation, route }) => {
   };
 
   const renderPurposeOptions = () => {
-    const purposes = ['旅游', '商务', '探亲', '学习', '工作'];
-
     return (
       <View style={styles.optionsContainer}>
-        {purposes.map((purpose) => (
+        {PURPOSE_OPTIONS.map(({ value, key }) => (
           <TouchableOpacity
-            key={purpose}
+            key={value}
             style={[
               styles.optionButton,
-              travelPurpose === purpose && styles.optionButtonActive,
+              travelPurpose === value && styles.optionButtonActive,
             ]}
-            onPress={() => setTravelPurpose(purpose)}
+            onPress={() => setTravelPurpose(value)}
           >
             <Text
               style={[
                 styles.optionText,
-                travelPurpose === purpose && styles.optionTextActive,
+                travelPurpose === value && styles.optionTextActive,
               ]}
             >
-              {purpose}
+              {t(`travelInfo.purposes.${key}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -374,33 +437,33 @@ const TravelInfoScreen = ({ navigation, route }) => {
         <TouchableOpacity
           style={[
             styles.yesNoButton,
-            value === '是' && styles.yesNoButtonActive,
+            value === YES_VALUE && styles.yesNoButtonActive,
           ]}
-          onPress={() => setValue('是')}
+          onPress={() => setValue(YES_VALUE)}
         >
           <Text
             style={[
               styles.yesNoText,
-              value === '是' && styles.yesNoTextActive,
+              value === YES_VALUE && styles.yesNoTextActive,
             ]}
           >
-            是
+            {yesLabel}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.yesNoButton,
-            value === '否' && styles.yesNoButtonActive,
+            value === NO_VALUE && styles.yesNoButtonActive,
           ]}
-          onPress={() => setValue('否')}
+          onPress={() => setValue(NO_VALUE)}
         >
           <Text
             style={[
               styles.yesNoText,
-              value === '否' && styles.yesNoTextActive,
+              value === NO_VALUE && styles.yesNoTextActive,
             ]}
           >
-            否
+            {noLabel}
           </Text>
         </TouchableOpacity>
       </View>
@@ -414,51 +477,59 @@ const TravelInfoScreen = ({ navigation, route }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalIcon}>⚠️</Text>
-            <Text style={styles.modalTitle}>发现重复记录</Text>
+            <Text style={styles.modalTitle}>{t('travelInfo.duplicateModal.title')}</Text>
             <Text style={styles.modalMessage}>
-              你已经生成过相同航班的入境表格：
+              {t('travelInfo.duplicateModal.message')}
             </Text>
             
             <Card style={styles.duplicateInfoCard}>
-              <Text style={styles.duplicateLabel}>目的地</Text>
+              <Text style={styles.duplicateLabel}>{t('travelInfo.duplicateModal.labels.destination')}</Text>
               <Text style={styles.duplicateValue}>
-                {duplicateRecord?.destination?.flag} {duplicateRecord?.destination?.name}
+                {duplicateRecord?.destination?.flag}{' '}
+                {t(`home.destinationNames.${duplicateRecord?.destination?.id}`, {
+                  defaultValue: duplicateRecord?.destination?.name || '',
+                })}
               </Text>
               
-              <Text style={styles.duplicateLabel}>航班号</Text>
+              <Text style={styles.duplicateLabel}>{t('travelInfo.duplicateModal.labels.flight')}</Text>
               <Text style={styles.duplicateValue}>
                 {duplicateRecord?.travelInfo?.flightNumber}
               </Text>
               
               {duplicateRecord?.travelInfo?.arrivalDate && (
                 <>
-                  <Text style={styles.duplicateLabel}>到达日期</Text>
+                  <Text style={styles.duplicateLabel}>{t('travelInfo.duplicateModal.labels.arrival')}</Text>
                   <Text style={styles.duplicateValue}>
-                    {duplicateRecord?.travelInfo?.arrivalDate}
-                    {' '}({getTimeUntilArrival(duplicateRecord?.travelInfo?.arrivalDate)})
+                    {duplicateRecord?.travelInfo?.arrivalDate}{' '}
+                    {t('travelInfo.duplicateModal.arrivalSuffix', {
+                      relative: getTimeUntilArrival(
+                        duplicateRecord?.travelInfo?.arrivalDate,
+                        t
+                      ),
+                    })}
                   </Text>
                 </>
               )}
               
-              <Text style={styles.duplicateLabel}>生成时间</Text>
+              <Text style={styles.duplicateLabel}>{t('travelInfo.duplicateModal.labels.generated')}</Text>
               <Text style={styles.duplicateValue}>
-                {new Date(duplicateRecord?.createdAt).toLocaleString('zh-CN')}
+                {duplicateRecord?.createdAt
+                  ? new Date(duplicateRecord?.createdAt).toLocaleString(language)
+                  : ''}
               </Text>
             </Card>
 
-            <Text style={styles.modalHint}>
-              建议直接使用已有记录，避免重复生成
-            </Text>
+            <Text style={styles.modalHint}>{t('travelInfo.duplicateModal.hint')}</Text>
 
             <View style={styles.modalButtons}>
               <Button
-                title="使用已有记录"
+                title={t('travelInfo.duplicateModal.useExisting')}
                 onPress={handleUseDuplicate}
                 variant="primary"
                 style={styles.modalButton}
               />
               <Button
-                title="重新生成"
+                title={t('travelInfo.duplicateModal.regenerate')}
                 onPress={handleGenerateAnyway}
                 variant="secondary"
                 style={styles.modalButton}
@@ -469,7 +540,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
               style={styles.modalClose}
               onPress={() => setShowDuplicateWarning(false)}
             >
-              <Text style={styles.modalCloseText}>取消</Text>
+              <Text style={styles.modalCloseText}>{t('travelInfo.duplicateModal.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -479,9 +550,9 @@ const TravelInfoScreen = ({ navigation, route }) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backButton}>‹ 返回</Text>
+            <Text style={styles.backButton}>{t('travelInfo.header.back')}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>补充旅行信息</Text>
+          <Text style={styles.headerTitle}>{t('travelInfo.header.title')}</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -490,9 +561,11 @@ const TravelInfoScreen = ({ navigation, route }) => {
           <View style={styles.infoRow}>
             <Text style={styles.infoIcon}>{destination?.flag || '🌍'}</Text>
             <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>目的地: {destination?.name || ''}</Text>
+              <Text style={styles.infoTitle}>
+                {t('travelInfo.infoCard.title', { destination: destinationName })}
+              </Text>
               <Text style={styles.infoSubtitle}>
-                请填写以下信息以生成入境表格
+                {t('travelInfo.infoCard.subtitle')}
               </Text>
             </View>
           </View>
@@ -503,19 +576,19 @@ const TravelInfoScreen = ({ navigation, route }) => {
           {/* Flight Information */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>✈️ 航班信息</Text>
+              <Text style={styles.sectionTitle}>{t('travelInfo.sections.flight')}</Text>
               <TouchableOpacity 
                 style={styles.scanButton}
                 onPress={handleScanTicket}
               >
                 <Text style={styles.scanIcon}>📸</Text>
-                <Text style={styles.scanText}>照机票</Text>
+                <Text style={styles.scanText}>{t('travelInfo.scanButtons.ticket')}</Text>
               </TouchableOpacity>
             </View>
             
             <Input
-              label="航班号"
-              placeholder="例如: CA981, CZ309"
+              label={t('travelInfo.fields.flightNumber.label')}
+              placeholder={t('travelInfo.fields.flightNumber.placeholder')}
               value={flightNumber}
               onChangeText={setFlightNumber}
               required={requiredFields.includes('flightNumber')}
@@ -524,14 +597,14 @@ const TravelInfoScreen = ({ navigation, route }) => {
             {requiredFields.includes('arrivalDate') && (
               <>
                 <Input
-                  label="到达日期"
-                  placeholder="例如: 2025-01-15"
+                  label={t('travelInfo.fields.arrivalDate.label')}
+                  placeholder={t('travelInfo.fields.arrivalDate.placeholder')}
                   value={arrivalDate}
                   onChangeText={setArrivalDate}
                   required
                 />
                 <Text style={styles.helpText}>
-                  ⚠️ 泰国入境卡只能在到达前72小时内提交
+                  ⚠️ {t('travelInfo.fields.arrivalDate.help')}
                 </Text>
               </>
             )}
@@ -541,20 +614,20 @@ const TravelInfoScreen = ({ navigation, route }) => {
           {/* Accommodation Information */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>🏨 住宿信息</Text>
+              <Text style={styles.sectionTitle}>{t('travelInfo.sections.accommodation')}</Text>
               <TouchableOpacity 
                 style={styles.scanButton}
                 onPress={handleScanHotel}
               >
                 <Text style={styles.scanIcon}>📸</Text>
-                <Text style={styles.scanText}>照酒店预定单</Text>
+                <Text style={styles.scanText}>{t('travelInfo.scanButtons.hotel')}</Text>
               </TouchableOpacity>
             </View>
             
             {requiredFields.includes('hotelName') && (
               <Input
-                label="酒店名称"
-                placeholder="例如: Bangkok Grand Hotel"
+                label={t('travelInfo.fields.hotelName.label')}
+                placeholder={t('travelInfo.fields.hotelName.placeholder')}
                 value={hotelName}
                 onChangeText={setHotelName}
                 required
@@ -562,8 +635,8 @@ const TravelInfoScreen = ({ navigation, route }) => {
             )}
 
             <Input
-              label="酒店地址"
-              placeholder="例如: 123 Sukhumvit Road, Bangkok"
+              label={t('travelInfo.fields.hotelAddress.label')}
+              placeholder={t('travelInfo.fields.hotelAddress.placeholder')}
               value={hotelAddress}
               onChangeText={setHotelAddress}
               multiline
@@ -572,8 +645,8 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
             {requiredFields.includes('contactPhone') && (
               <Input
-                label="联系电话"
-                placeholder="例如: +66 123456789"
+                label={t('travelInfo.fields.contactPhone.label')}
+                placeholder={t('travelInfo.fields.contactPhone.placeholder')}
                 value={contactPhone}
                 onChangeText={setContactPhone}
                 keyboardType="phone-pad"
@@ -584,12 +657,12 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
           {/* Trip Information */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📅 行程信息</Text>
+            <Text style={styles.sectionTitle}>{t('travelInfo.sections.trip')}</Text>
             
             {requiredFields.includes('stayDuration') && (
               <Input
-                label="停留天数"
-                placeholder="例如: 7"
+                label={t('travelInfo.fields.stayDuration.label')}
+                placeholder={t('travelInfo.fields.stayDuration.placeholder')}
                 value={stayDuration}
                 onChangeText={setStayDuration}
                 keyboardType="numeric"
@@ -600,7 +673,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
             {requiredFields.includes('travelPurpose') && (
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  入境目的 <Text style={styles.required}>*</Text>
+                  {t('travelInfo.fields.purpose')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderPurposeOptions()}
               </View>
@@ -610,11 +683,11 @@ const TravelInfoScreen = ({ navigation, route }) => {
           {/* Health Declaration (Thailand) */}
           {needsHealthDeclaration && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🩺 健康申报（泰国要求）</Text>
+              <Text style={styles.sectionTitle}>{t('travelInfo.sections.health')}</Text>
               
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  近期是否有发烧、咳嗽等症状？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.fever')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(hasFever, setHasFever)}
               </View>
@@ -624,18 +697,18 @@ const TravelInfoScreen = ({ navigation, route }) => {
           {/* US Customs Declaration */}
           {needsUSCustoms && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🛃 美国海关申报</Text>
+              <Text style={styles.sectionTitle}>{t('travelInfo.sections.usCustoms')}</Text>
               
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带现金或等值货币超过 $10,000？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.usCash')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(cashAmount, setCashAmount)}
               </View>
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带食品、植物、动物产品？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.usFood')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(carryingFood, setCarryingFood)}
               </View>
@@ -645,43 +718,43 @@ const TravelInfoScreen = ({ navigation, route }) => {
           {/* Canada Customs Declaration (E311) */}
           {needsCanadaCustoms && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🍁 加拿大海关申报 (E311)</Text>
+              <Text style={styles.sectionTitle}>{t('travelInfo.sections.caCustoms')}</Text>
               
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  从哪个国家入境？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.arrivingFrom.label')} <Text style={styles.required}>*</Text>
                 </Text>
                 <View style={styles.optionsContainer}>
                   <TouchableOpacity
                     style={[
                       styles.optionButton,
-                      arrivingFrom === '美国' && styles.optionButtonActive,
+                      arrivingFrom === ARRIVING_FROM_US && styles.optionButtonActive,
                     ]}
-                    onPress={() => setArrivingFrom('美国')}
+                    onPress={() => setArrivingFrom(ARRIVING_FROM_US)}
                   >
                     <Text
                       style={[
                         styles.optionText,
-                        arrivingFrom === '美国' && styles.optionTextActive,
+                        arrivingFrom === ARRIVING_FROM_US && styles.optionTextActive,
                       ]}
                     >
-                      美国 (U.S.A.)
+                      {t('travelInfo.arrivingFrom.us')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.optionButton,
-                      arrivingFrom === '其他国家' && styles.optionButtonActive,
+                      arrivingFrom === ARRIVING_FROM_OTHER && styles.optionButtonActive,
                     ]}
-                    onPress={() => setArrivingFrom('其他国家')}
+                    onPress={() => setArrivingFrom(ARRIVING_FROM_OTHER)}
                   >
                     <Text
                       style={[
                         styles.optionText,
-                        arrivingFrom === '其他国家' && styles.optionTextActive,
+                        arrivingFrom === ARRIVING_FROM_OTHER && styles.optionTextActive,
                       ]}
                     >
-                      其他国家 (Other)
+                      {t('travelInfo.arrivingFrom.other')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -689,38 +762,38 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带现金或货币工具总额 ≥ $10,000加元？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.caCurrency')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(hasHighCurrency, setHasHighCurrency)}
               </View>
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带物品总价值超过免税额度？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.caDuty')} <Text style={styles.required}>*</Text>
                 </Text>
-                <Text style={styles.fieldHint}>礼品超过$60加元需申报</Text>
+                <Text style={styles.fieldHint}>{t('travelInfo.hints.caDuty')}</Text>
                 {renderYesNoOptions(exceedsDutyFree, setExceedsDutyFree)}
               </View>
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带枪支或武器？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.caFirearms')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(hasFirearms, setHasFirearms)}
               </View>
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带商业物品、样品或用于转售的商品？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.caCommercial')} <Text style={styles.required}>*</Text>
                 </Text>
                 {renderYesNoOptions(hasCommercialGoods, setHasCommercialGoods)}
               </View>
 
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>
-                  携带食品、植物、动物或相关产品？ <Text style={styles.required}>*</Text>
+                  {t('travelInfo.yesNoQuestion.caFood')} <Text style={styles.required}>*</Text>
                 </Text>
-                <Text style={styles.fieldHint}>包括：水果、肉类、种子、木制品等</Text>
+                <Text style={styles.fieldHint}>{t('travelInfo.hints.caFood')}</Text>
                 {renderYesNoOptions(visitedFarm, setVisitedFarm)}
               </View>
             </View>
@@ -730,20 +803,20 @@ const TravelInfoScreen = ({ navigation, route }) => {
         {/* Tips */}
         <Card style={styles.tipsCard}>
           <Text style={styles.tipsIcon}>💡</Text>
-          <Text style={styles.tipsTitle}>温馨提示</Text>
-          <Text style={styles.tipsText}>
-            • 可以点击"照机票"自动识别航班信息{'\n'}
-            • 可以点击"照酒店预定单"自动识别酒店信息{'\n'}
-            • 也可以手动输入，请确保信息准确{'\n'}
-            • 酒店地址需填写英文{'\n'}
-            • 联系电话需包含国家区号（如 +66）
-          </Text>
+          <Text style={styles.tipsTitle}>{t('travelInfo.tips.title')}</Text>
+          {t('travelInfo.tips.body')
+            .split('\n')
+            .map((line, index) => (
+              <Text key={index} style={styles.tipsText}>
+                {line}
+              </Text>
+            ))}
         </Card>
 
         {/* Generate Button */}
         <View style={styles.buttonContainer}>
           <Button
-            title="开始生成通关包"
+            title={t('travelInfo.generateButton')}
             onPress={handleGenerate}
             variant="primary"
             icon={<Text style={styles.buttonIcon}>✨</Text>}
