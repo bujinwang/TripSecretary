@@ -504,24 +504,24 @@ class AIAssistantService {
 export default AIAssistantService;
 ```
 
-### 3. OpenAIService.js
+### 3. QwenService.js (Tongyi Qianwen - Alibaba)
 
 ```javascript
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-class OpenAIService {
+class QwenService {
   constructor() {
     this.apiKey = null;
-    this.baseURL = 'https://api.openai.com/v1';
-    this.model = 'gpt-4';
+    this.baseURL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+    this.model = 'qwen-turbo'; // or 'qwen-plus' for better quality
   }
 
   async initialize() {
     // Get API key from secure storage
-    this.apiKey = await AsyncStorage.getItem('openai_api_key');
+    this.apiKey = await AsyncStorage.getItem('qwen_api_key');
     
     if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error('Tongyi Qianwen API key not configured');
     }
   }
 
@@ -535,32 +535,37 @@ class OpenAIService {
     ];
 
     try {
-      const response = await fetch(`${this.baseURL}/chat/completions`, {
+      const response = await fetch(this.baseURL, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          'X-DashScope-SSE': 'disable' // Disable streaming for simplicity
         },
         body: JSON.stringify({
           model: this.model,
-          messages,
-          temperature: 0.7,
-          max_tokens: 500
+          input: { messages },
+          parameters: {
+            result_format: 'message',
+            temperature: 0.7,
+            top_p: 0.8,
+            max_tokens: 500
+          }
         })
       });
 
       const data = await response.json();
       
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'OpenAI API error');
+      if (data.code) {
+        throw new Error(`Qwen API error: ${data.message}`);
       }
 
       return {
-        text: data.choices[0].message.content,
+        text: data.output.choices[0].message.content,
         usage: data.usage
       };
     } catch (error) {
-      console.error('OpenAI error:', error);
+      console.error('Qwen error:', error);
       throw error;
     }
   }
@@ -624,7 +629,7 @@ class OpenAIService {
   }
 }
 
-export default OpenAIService;
+export default QwenService;
 ```
 
 ### 4. IntentRecognizer.js

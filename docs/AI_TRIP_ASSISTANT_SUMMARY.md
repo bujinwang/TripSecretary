@@ -102,12 +102,18 @@ User: Reviews and books
 
 ## Key Decisions Made
 
-### 1. AI Provider: OpenAI GPT-4
-**Why**: Best natural language understanding, reliable, well-documented
+### 1. AI Provider: 通义千问 (Tongyi Qianwen) - Alibaba Cloud
+**Why**: 
+- Accessible in mainland China (OpenAI is blocked)
+- Excellent Chinese language understanding
+- 95% cheaper than OpenAI (¥0.008 vs $0.21 per 1K tokens)
+- Fast response time in China
+- Alibaba ecosystem integration
 
 **Alternatives considered**:
-- Claude (backup option)
-- Open-source models (future consideration for privacy)
+- OpenAI GPT-4 (for international users only)
+- 文心一言 ERNIE Bot (Baidu) - backup option
+- ChatGLM (智谱AI) - budget option
 
 ### 2. MVP Uses Mock Booking APIs
 **Why**: 
@@ -140,9 +146,10 @@ User: Reviews and books
 - **Designer**: UI/UX review and refinement
 
 ### APIs & Services
-- **OpenAI API**: ~$50-200/month (depending on usage)
+- **通义千问 API**: ~¥50-200/month (~$7-28 USD, depending on usage)
 - **Hosting**: Free (client-side for MVP)
 - **Analytics**: Free tier (Firebase/Mixpanel)
+- **Optional OpenAI**: For international users (~$50-200/month)
 
 ### Phase 2 (Real Booking)
 - **Amadeus API**: Enterprise plan ($500-2000/month)
