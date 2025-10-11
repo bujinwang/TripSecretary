@@ -154,13 +154,13 @@ const ResultScreen = ({ navigation, route }) => {
 
   const entryPackItems = useMemo(
     () => [
-      { label: '旅客', value: travelerName },
-      { label: '护照号', value: passportNumber },
-      { label: '航班号', value: flightNumberDisplay },
-      { label: '到达日期', value: arrivalDateDisplay },
-      { label: '住宿地点', value: accommodationDisplay, fullWidth: true },
+      { label: t('result.entryPack.fields.traveler'), value: travelerName },
+      { label: t('result.entryPack.fields.passportNo'), value: passportNumber },
+      { label: t('result.entryPack.fields.flightNo'), value: flightNumberDisplay },
+      { label: t('result.entryPack.fields.arrivalDate'), value: arrivalDateDisplay },
+      { label: t('result.entryPack.fields.accommodation'), value: accommodationDisplay, fullWidth: true },
     ],
-    [travelerName, passportNumber, flightNumberDisplay, arrivalDateDisplay, accommodationDisplay],
+    [t, travelerName, passportNumber, flightNumberDisplay, arrivalDateDisplay, accommodationDisplay],
   );
 
   const generatePDF = async () => {
