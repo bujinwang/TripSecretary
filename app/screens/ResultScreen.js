@@ -18,8 +18,10 @@ import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
 import { mergeTDACData } from '../data/mockTDACData';
+import { useTranslation } from '../i18n/LocaleContext';
 
 const ResultScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const routeParams = route.params || {};
   const { generationId, fromHistory = false } = routeParams;
   
@@ -446,8 +448,8 @@ const ResultScreen = ({ navigation, route }) => {
               <View style={styles.historyPrimaryContent}>
                 <Text style={styles.historyPrimaryIcon}>🛬</Text>
                 <View>
-                  <Text style={styles.historyPrimaryTitle}>我落地了，开始入境流程</Text>
-                  <Text style={styles.historyPrimarySubtitle}>进入逐步指引 · 支持大字号展示</Text>
+                  <Text style={styles.historyPrimaryTitle}>{t('result.historyBanner.primaryCta.title')}</Text>
+                  <Text style={styles.historyPrimarySubtitle}>{t('result.historyBanner.primaryCta.subtitle')}</Text>
                 </View>
               </View>
               <Text style={styles.historyPrimaryArrow}>›</Text>

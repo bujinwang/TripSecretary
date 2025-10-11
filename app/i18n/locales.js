@@ -204,8 +204,8 @@ export const translations = {
         status: 'Auto-saved',
         description: 'Information saved in entry pack. Can be edited or shared anytime.',
         primaryCta: {
-          title: 'I\'ve arrived, start entry process',
-          subtitle: 'Step-by-step guidance · Large font support',
+          title: 'Start Entry Guide',
+          subtitle: 'Step-by-step · Large font available',
         },
         secondaryCta: {
           shareFamily: 'Share with family',
@@ -496,8 +496,8 @@ export const translations = {
         status: '已自动保存',
         description: '信息已留存在入境包中，可随时修改或分享给亲友复核。',
         primaryCta: {
-          title: '我落地了，开始入境流程',
-          subtitle: '进入逐步指引 · 支持大字号展示',
+          title: '开始入境指引',
+          subtitle: '逐步引导 · 大字显示',
         },
         secondaryCta: {
           shareFamily: '发给亲友复核',
@@ -660,7 +660,7 @@ export const translations = {
       title: '{{flag}} {{country}} Pack prêt',
       subtitle: 'Tous les documents sont prêts',
       entryPack: { title: 'Pack d\'entrée', subtitle: '{{subtitle}}', share: 'Partager', fields: { traveler: 'Voyageur', passportNo: 'N° passeport', flightNo: 'N° vol', arrivalDate: 'Date d\'arrivée', accommodation: 'Hébergement' }, notFilled: 'Non rempli', toBeConfirmed: 'À confirmer', actions: { startGuide: 'Démarrer le guide', editInfo: 'Modifier' }, lastUpdated: 'Mis à jour: {{time}}' },
-      historyBanner: { badge: 'Voyage en attente', status: 'Sauvegardé', description: 'Informations sauvegardées, modifiables à tout moment.', primaryCta: { title: 'Je suis arrivé, commencer', subtitle: 'Guide étape par étape' }, secondaryCta: { shareFamily: 'Partager', editInfo: 'Modifier' }, footer: { title: '🛃 Dernière étape: Douane', note: 'Le mode copie n\'est qu\'une étape.' } },
+      historyBanner: { badge: 'Voyage en attente', status: 'Sauvegardé', description: 'Informations sauvegardées, modifiables à tout moment.', primaryCta: { title: 'Commencer le guide', subtitle: 'Étape par étape · Grande police' }, secondaryCta: { shareFamily: 'Partager', editInfo: 'Modifier' }, footer: { title: '🛃 Dernière étape: Douane', note: 'Le mode copie n\'est qu\'une étape.' } },
       digitalInfo: { title: '{{systemName}} en ligne requis', button: 'Postuler', autoFill: '⚡ Auto-remplir' },
       checkSection: { title: 'Vérifier les infos?', viewForm: { title: 'Voir le formulaire', subtitle: '{{count}} champs' }, qaGuide: { title: 'Guide Q&R douane', subtitle: '{{count}} questions' } },
       footer: 'Terminé! Retour accueil',
@@ -761,7 +761,7 @@ export const translations = {
       title: '{{flag}} {{country}} Paket bereit',
       subtitle: 'Alle Dokumente bereit',
       entryPack: { title: 'Einreisepaket', subtitle: '{{subtitle}}', share: 'Teilen', fields: { traveler: 'Reisender', passportNo: 'Pass-Nr', flightNo: 'Flug-Nr', arrivalDate: 'Ankunftsdatum', accommodation: 'Unterkunft' }, notFilled: 'Nicht ausgefüllt', toBeConfirmed: 'Zu bestätigen', actions: { startGuide: 'Guide starten', editInfo: 'Bearbeiten' }, lastUpdated: 'Aktualisiert: {{time}}' },
-      historyBanner: { badge: 'Anstehende Reise', status: 'Gespeichert', description: 'Informationen gespeichert, jederzeit änderbar.', primaryCta: { title: 'Angekommen, starten', subtitle: 'Schritt-für-Schritt' }, secondaryCta: { shareFamily: 'Teilen', editInfo: 'Bearbeiten' }, footer: { title: '🛃 Letzter Schritt: Zoll', note: 'Kopiermodus ist nur ein Schritt.' } },
+      historyBanner: { badge: 'Anstehende Reise', status: 'Gespeichert', description: 'Informationen gespeichert, jederzeit änderbar.', primaryCta: { title: 'Guide starten', subtitle: 'Schritt-für-Schritt · Große Schrift' }, secondaryCta: { shareFamily: 'Teilen', editInfo: 'Bearbeiten' }, footer: { title: '🛃 Letzter Schritt: Zoll', note: 'Kopiermodus ist nur ein Schritt.' } },
       digitalInfo: { title: '{{systemName}} online erforderlich', button: 'Bewerben', autoFill: '⚡ Auto-ausfüllen' },
       checkSection: { title: 'Infos prüfen?', viewForm: { title: 'Formular ansehen', subtitle: '{{count}} Felder' }, qaGuide: { title: 'Zoll-Q&A', subtitle: '{{count}} Fragen' } },
       footer: 'Fertig! Zurück',
@@ -862,7 +862,7 @@ export const translations = {
       title: '{{flag}} {{country}} Paquete listo',
       subtitle: 'Todos los documentos listos',
       entryPack: { title: 'Paquete de entrada', subtitle: '{{subtitle}}', share: 'Compartir', fields: { traveler: 'Viajero', passportNo: 'N° pasaporte', flightNo: 'N° vuelo', arrivalDate: 'Fecha de llegada', accommodation: 'Alojamiento' }, notFilled: 'No rellenado', toBeConfirmed: 'Por confirmar', actions: { startGuide: 'Iniciar guía', editInfo: 'Editar' }, lastUpdated: 'Actualizado: {{time}}' },
-      historyBanner: { badge: 'Viaje pendiente', status: 'Guardado', description: 'Información guardada, modificable en cualquier momento.', primaryCta: { title: 'He llegado, empezar', subtitle: 'Guía paso a paso' }, secondaryCta: { shareFamily: 'Compartir', editInfo: 'Editar' }, footer: { title: '🛃 Último paso: Aduana', note: 'El modo copia es solo un paso.' } },
+      historyBanner: { badge: 'Viaje pendiente', status: 'Guardado', description: 'Información guardada, modificable en cualquier momento.', primaryCta: { title: 'Iniciar guía', subtitle: 'Paso a paso · Letra grande' }, secondaryCta: { shareFamily: 'Compartir', editInfo: 'Editar' }, footer: { title: '🛃 Último paso: Aduana', note: 'El modo copia es solo un paso.' } },
       digitalInfo: { title: '{{systemName}} en línea requerido', button: 'Aplicar', autoFill: '⚡ Auto-rellenar' },
       checkSection: { title: '¿Verificar información?', viewForm: { title: 'Ver formulario', subtitle: '{{count}} campos' }, qaGuide: { title: 'Guía Q&A aduana', subtitle: '{{count}} preguntas' } },
       footer: '¡Listo! Volver',
