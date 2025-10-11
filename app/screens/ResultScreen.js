@@ -547,37 +547,6 @@ const ResultScreen = ({ navigation, route }) => {
 
         </View>
 
-        {/* Optional: Check Details - Moved to bottom */}
-        <View style={styles.checkSection}>
-          <Text style={styles.checkSectionTitle}>需要检查信息？</Text>
-          
-          <TouchableOpacity 
-            style={styles.checkCard}
-            onPress={() => {/* TODO: Navigate to preview */}}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.checkIcon}>📋</Text>
-            <View style={styles.checkTextContainer}>
-              <Text style={styles.checkTitle}>查看完整表格</Text>
-              <Text style={styles.checkSubtitle}>已填写 12 项信息</Text>
-            </View>
-            <Text style={styles.checkArrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.checkCard}
-            onPress={() => {/* TODO: Navigate to Q&A */}}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.checkIcon}>💬</Text>
-            <View style={styles.checkTextContainer}>
-              <Text style={styles.checkTitle}>海关问答参考</Text>
-              <Text style={styles.checkSubtitle}>20个常见问题</Text>
-            </View>
-            <Text style={styles.checkArrow}>›</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Footer */}
         <TouchableOpacity onPress={handleGoHome} style={styles.footer}>
           <Text style={styles.footerText}>完成！返回首页</Text>
