@@ -74,11 +74,11 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
     },
     {
       id: 6,
-      title: '🛃 第七步：向海关出示通关包',
-      description: '把手机里的通关包或打印件递给工作人员',
+      title: '🛃 第七步：完成入境',
+      description: '通关包仅在需要时使用',
       instruction: '点击下方按钮打开“向海关出示”页面，准备好给边检查看',
       action: '打开通关包',
-      voiceText: '请打开手机中的通关包，并递给海关工作人员核对信息。',
+      voiceText: '入境流程即将完成。通关包已准备好，如果移民官员有疑问，可以随时打开给他们查看。',
       isFinal: true,
     },
   ] : [
