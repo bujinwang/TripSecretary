@@ -22,6 +22,16 @@ export const translations = {
       yes: 'Yes',
       no: 'No',
     },
+    tabs: {
+      home: 'Home',
+      history: 'History',
+      profile: 'Profile',
+    },
+    screenTitles: {
+      scanPassport: 'Scan Document',
+      selectDestination: 'Select Destination',
+      result: 'Entry Pack',
+    },
     login: {
       hotlistLabel: 'Trending destinations',
       hotlistDescription: 'Popular picks this week',
@@ -303,6 +313,16 @@ export const translations = {
       unknown: '未知',
       yes: '是',
       no: '否',
+    },
+    tabs: {
+      home: '首页',
+      history: '历史',
+      profile: '我的',
+    },
+    screenTitles: {
+      scanPassport: '扫描证件',
+      selectDestination: '选择目的地',
+      result: '入境包',
     },
     login: {
       hotlistLabel: '热门目的地',
@@ -586,6 +606,16 @@ export const translations = {
       yes: 'Oui',
       no: 'Non',
     },
+    tabs: {
+      home: 'Accueil',
+      history: 'Historique',
+      profile: 'Profil',
+    },
+    screenTitles: {
+      scanPassport: 'Scanner document',
+      selectDestination: 'Choisir destination',
+      result: 'Pack d\'entrée',
+    },
     login: {
       hotlistLabel: 'Destinations en tendance',
       hotlistDescription: 'Les favoris de la semaine',
@@ -677,6 +707,16 @@ export const translations = {
       yes: 'Ja',
       no: 'Nein',
     },
+    tabs: {
+      home: 'Startseite',
+      history: 'Verlauf',
+      profile: 'Profil',
+    },
+    screenTitles: {
+      scanPassport: 'Dokument scannen',
+      selectDestination: 'Ziel wählen',
+      result: 'Einreisepaket',
+    },
     login: {
       hotlistLabel: 'Reisetrends',
       hotlistDescription: 'Beliebte Ziele dieser Woche',
@@ -767,6 +807,16 @@ export const translations = {
       unknown: 'Desconocido',
       yes: 'Sí',
       no: 'No',
+    },
+    tabs: {
+      home: 'Inicio',
+      history: 'Historial',
+      profile: 'Perfil',
+    },
+    screenTitles: {
+      scanPassport: 'Escanear documento',
+      selectDestination: 'Elegir destino',
+      result: 'Paquete de entrada',
     },
     login: {
       hotlistLabel: 'Destinos en tendencia',

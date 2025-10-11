@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+import { useTranslation } from '../i18n/useTranslation';
 
 import {
   LoginScreen,
@@ -41,6 +42,8 @@ const TabBarIcon = ({ emoji, focused }) => (
 
 // Main Tab Navigator
 const MainTabs = () => {
+  const { t } = useTranslation();
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -62,7 +65,7 @@ const MainTabs = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: '首页',
+          tabBarLabel: t('tabs.home'),
           tabBarIcon: ({ focused }) => (
             <TabBarIcon emoji="🏠" focused={focused} />
           ),
@@ -72,7 +75,7 @@ const MainTabs = () => {
         name="History"
         component={HistoryScreen}
         options={{
-          tabBarLabel: '历史',
+          tabBarLabel: t('tabs.history'),
           tabBarIcon: ({ focused }) => (
             <TabBarIcon emoji="📋" focused={focused} />
           ),
@@ -82,7 +85,7 @@ const MainTabs = () => {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: '我的',
+          tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ focused }) => (
             <TabBarIcon emoji="👤" focused={focused} />
           ),
@@ -94,6 +97,8 @@ const MainTabs = () => {
 
 // Root Stack Navigator
 const AppNavigator = () => {
+  const { t } = useTranslation();
+  
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -126,7 +131,7 @@ const AppNavigator = () => {
           component={ScanPassportScreen}
           options={{
             headerShown: true,
-            title: '扫描证件',
+            title: t('screenTitles.scanPassport'),
             headerTintColor: colors.text,
             headerStyle: {
               backgroundColor: colors.white,
@@ -138,7 +143,7 @@ const AppNavigator = () => {
           component={SelectDestinationScreen}
           options={{
             headerShown: true,
-            title: '选择目的地',
+            title: t('screenTitles.selectDestination'),
             headerTintColor: colors.text,
             headerStyle: {
               backgroundColor: colors.white,
@@ -165,7 +170,7 @@ const AppNavigator = () => {
           component={ResultScreen}
           options={{
             headerShown: true,
-            title: '入境包',
+            title: t('screenTitles.result'),
             headerTintColor: colors.text,
             headerStyle: {
               backgroundColor: colors.white,
