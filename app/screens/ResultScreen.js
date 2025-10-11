@@ -430,13 +430,6 @@ const ResultScreen = ({ navigation, route }) => {
 
         {isHistoryItem && (
           <View style={styles.historyBanner}>
-            <View style={styles.historyHeaderRow}>
-              <Text style={styles.historyBadge}>待入境旅程</Text>
-              <View style={styles.historyStatusPill}>
-                <Text style={styles.historyStatusText}>已自动保存</Text>
-              </View>
-            </View>
-
             <TouchableOpacity
               style={styles.historyPrimaryCta}
               onPress={handleStartArrivalFlow}
