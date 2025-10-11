@@ -644,11 +644,11 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.md,
   },
   successIcon: {
-    fontSize: 64,
-    marginBottom: spacing.md,
+    fontSize: 48,
+    marginBottom: spacing.sm,
   },
   title: {
     ...typography.h2,
