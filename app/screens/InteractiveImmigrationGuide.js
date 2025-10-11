@@ -9,12 +9,17 @@ import {
   TouchableOpacity,
   Alert,
   Vibration,
+  Image,
+  Modal,
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
+
+const japanEntryCardSample = require('../../assets/forms/japan-entry-card-sample.jpg');
 
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const { passport, destination, travelInfo, currentStep: initialStep = 0 } = route.params || {};
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const [isFormSampleVisible, setFormSampleVisible] = useState(false);
 
   const isJapan = destination?.id === 'jp' || destination?.name === '日本';
 
@@ -23,9 +28,9 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       id: 0,
       title: '📋 第一步：领取表格',
       description: '在入境大厅找到入境卡和海关申报单',
-      instruction: '找到标有"入境卡"和"海关申报"的柜台或自动发放机',
+      instruction: '找到标有"入境卡"和"海关申报"的柜台或自动发放机，可先查看样本了解填写内容',
       action: '下一步：填写入境卡',
-      voiceText: '请走到入境大厅的表格发放区，领取蓝色入境卡和黄色海关申报单',
+      voiceText: '请走到入境大厅的表格发放区，领取蓝色入境卡和黄色海关申报单，可以先参考手机里的样本了解填写内容',
     },
     {
       id: 1,
@@ -157,7 +162,8 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const currentStepData = steps[currentStep];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <>
+      <SafeAreaView style={styles.container}>
       {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -206,6 +212,35 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
           </View>
 
+          {isJapan && currentStep === 0 && (
+            <>
+              <View style={styles.formPreview}>
+                <Text style={styles.formPreviewTitle}>🇯🇵 入境卡样本</Text>
+                <TouchableOpacity
+                  style={styles.sampleImageContainer}
+                  onPress={() => setFormSampleVisible(true)}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel="查看日本入境卡样本大图"
+                >
+                  <Image
+                    source={japanEntryCardSample}
+                    style={styles.sampleImageThumb}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.viewFormButton}
+                onPress={() => setFormSampleVisible(true)}
+              >
+                <Text style={styles.viewFormIcon}>📄</Text>
+                <Text style={styles.viewFormText}>打开日本入境卡样本</Text>
+                <Text style={styles.viewFormArrow}>›</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
           {/* Show "View Form" button for step 2 (filling out entry card) */}
           {currentStep === 1 && (
             <>
@@ -225,6 +260,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   passport,
                   destination,
                   travelInfo,
+                  formType: 'entry', // 入境卡
                 })}
               >
                 <Text style={styles.viewFormIcon}>📝</Text>
@@ -253,6 +289,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   passport,
                   destination,
                   travelInfo,
+                  formType: 'customs', // 海关申报单
                 })}
               >
                 <Text style={styles.viewFormIcon}>📋</Text>
@@ -286,6 +323,45 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+
+      <Modal
+        visible={isFormSampleVisible}
+        animationType="slide"
+        onRequestClose={() => setFormSampleVisible(false)}
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setFormSampleVisible(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.modalCloseText}>关闭</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>日本入境卡样本</Text>
+            <View style={styles.modalHeaderSpacer} />
+          </View>
+          <ScrollView
+            style={styles.modalScroll}
+            maximumZoomScale={3}
+            minimumZoomScale={1}
+            contentContainerStyle={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
+            <Image
+              source={japanEntryCardSample}
+              style={styles.sampleImageFull}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel="日本入境卡样本大图"
+            />
+            <Text style={styles.modalHint}>可截图或放大查看每一栏位的填写示例</Text>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+    </>
   );
 };
 
@@ -438,6 +514,26 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     marginBottom: spacing.sm,
   },
+  sampleImageContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.sm,
+  },
+  sampleImageThumb: {
+    width: '100%',
+    height: 160,
+  },
+  imageHint: {
+    marginTop: spacing.xs,
+    fontSize: 12,
+    color: '#8E8E93',
+    textAlign: 'center',
+  },
   formPlaceholder: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
@@ -518,6 +614,56 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.white,
     fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E5EA',
+  },
+  modalCloseButton: {
+    paddingVertical: spacing.xs,
+    paddingRight: spacing.sm,
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  modalTitle: {
+    fontSize: 17,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  modalHeaderSpacer: {
+    width: 60,
+  },
+  modalScroll: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  modalContent: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  sampleImageFull: {
+    width: '100%',
+    aspectRatio: 860 / 540,
+    borderRadius: 12,
+  },
+  modalHint: {
+    marginTop: spacing.sm,
+    fontSize: 13,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
