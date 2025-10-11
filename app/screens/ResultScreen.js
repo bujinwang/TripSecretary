@@ -446,22 +446,22 @@ const ResultScreen = ({ navigation, route }) => {
         </View>
 
         {isHistoryItem && (
-          <View style={styles.historySecondaryRow}>
+          <View style={styles.actionButtonsRow}>
             <TouchableOpacity
-              style={styles.historySecondaryButton}
+              style={styles.actionButton}
               onPress={handleShare}
-              activeOpacity={0.75}
+              activeOpacity={0.6}
             >
-              <Text style={styles.historySecondaryIcon}>🤝</Text>
-              <Text style={styles.historySecondaryText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
+              <Text style={styles.actionButtonIcon}>↗</Text>
+              <Text style={styles.actionButtonText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.historyTertiaryButton}
+              style={styles.actionButton}
               onPress={handleEditInfo}
-              activeOpacity={0.75}
+              activeOpacity={0.6}
             >
-              <Text style={styles.historyTertiaryIcon}>🛠️</Text>
-              <Text style={styles.historyTertiaryText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
+              <Text style={styles.actionButtonIcon}>✎</Text>
+              <Text style={styles.actionButtonText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -785,50 +785,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: spacing.md,
   },
-  historySecondaryRow: {
+  actionButtonsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: spacing.md,
     marginTop: spacing.md,
+    gap: spacing.sm,
   },
-  historySecondaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  actionButton: {
     flex: 1,
-    backgroundColor: 'rgba(7, 193, 96, 0.12)',
-    borderRadius: 14,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginRight: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(7, 193, 96, 0.3)',
-  },
-  historySecondaryIcon: {
-    fontSize: 20,
-    marginRight: spacing.xs,
-  },
-  historySecondaryText: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  historyTertiaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 14,
+    justifyContent: 'center',
     backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  historyTertiaryIcon: {
+  actionButtonIcon: {
     fontSize: 18,
-    color: colors.textSecondary,
+    color: colors.primary,
     marginRight: spacing.xs,
+    fontWeight: '600',
   },
-  historyTertiaryText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+  actionButtonText: {
+    fontSize: 15,
+    color: colors.text,
     fontWeight: '500',
   },
   historyFooter: {
