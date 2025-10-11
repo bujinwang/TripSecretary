@@ -365,6 +365,23 @@ const ResultScreen = ({ navigation, route }) => {
           <Text style={styles.subtitle}>所有资料已整理，随时可在机场出示</Text>
         </View>
 
+        {isHistoryItem && (
+          <TouchableOpacity
+            style={styles.historyPrimaryCta}
+            onPress={handleStartArrivalFlow}
+            activeOpacity={0.85}
+          >
+            <View style={styles.historyPrimaryContent}>
+              <Text style={styles.historyPrimaryIcon}>🛬</Text>
+              <View>
+                <Text style={styles.historyPrimaryTitle}>{t('result.historyBanner.primaryCta.title')}</Text>
+                <Text style={styles.historyPrimarySubtitle}>{t('result.historyBanner.primaryCta.subtitle')}</Text>
+              </View>
+            </View>
+            <Text style={styles.historyPrimaryArrow}>›</Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.entryPackCard}>
           <View style={styles.entryPackHeader}>
             <Text style={styles.entryPackIcon}>🧳</Text>
