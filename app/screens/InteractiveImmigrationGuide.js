@@ -217,7 +217,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               })}
             >
               <Text style={styles.viewFormIcon}>📝</Text>
-              <Text style={styles.viewFormText}>进入抄写模式</Text>
+              <Text style={styles.viewFormText}>查看入境表</Text>
               <Text style={styles.viewFormArrow}>›</Text>
             </TouchableOpacity>
           )}
