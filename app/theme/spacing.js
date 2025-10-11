@@ -1,4 +1,4 @@
-// 出国啰 - Spacing System (8px grid)
+// 出境通 - Spacing System (8px grid)
 // Based on UI设计规范.md
 
 export const spacing = {

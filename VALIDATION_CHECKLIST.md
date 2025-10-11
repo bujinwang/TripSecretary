@@ -74,7 +74,7 @@
 - ☐ `wrangler.toml` contains production D1 database ID and R2 bucket binding.
 - ☐ Schema applied: `npx wrangler d1 execute <db> --file=src/db/schema.sql`.
 - ☐ Secrets set via `wrangler secret put` for OCR, Qwen, WeChat, JWT.
-- ☐ `npm run deploy` succeeds; Worker accessible at `https://api.chuguoluo.com` (or chosen domain).
+- ☐ `npm run deploy` succeeds; Worker accessible at `https://api.chujingtong.com` (or chosen domain).
 - ☐ CORS permits Expo dev origins and production app bundle.
 - ☐ R2 receives generated PDFs when live services enabled.
 - ☐ Monitor set up (Cloudflare Analytics / Sentry or equivalent).

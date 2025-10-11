@@ -1,5 +1,5 @@
 // 出境通 - Home Screen
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import CountryCard from '../components/CountryCard';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { findRecentValidGeneration, generateSummary, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
+import { useLocale } from '../i18n/LocaleContext';
 
 const HomeScreen = ({ navigation }) => {
   const [historyList, setHistoryList] = useState([]);

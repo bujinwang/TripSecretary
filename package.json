@@ -1,7 +1,7 @@
 {
-  "name": "chuguoluo",
+  "name": "chujingtong",
   "version": "1.0.0",
-  "description": "出国啰 - 智能出入境助手",
+  "description": "出境通 - 智能出入境助手",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",

@@ -1,4 +1,4 @@
-// 出国啰 - Travel Info Screen (补充旅行信息)
+// 出境通 - Travel Info Screen (补充旅行信息)
 import React, { useState } from 'react';
 import {
   View,
@@ -19,41 +19,94 @@ import { checkDuplicate, getTimeUntilArrival } from '../utils/generationHistory'
 import api from '../services/api';
 
 const TravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const {
+    passport,
+    destination,
+    travelInfo: initialTravelInfo = {},
+    editing = false,
+    generationId: editingGenerationId,
+    fromHistory = false,
+  } = route.params || {};
 
-  // Form state
-  const [flightNumber, setFlightNumber] = useState('');
+  const normalizeYesNo = (value, fallback = '否') => {
+    if (value === '是' || value === '否') return value;
+    if (value === true) return '是';
+    if (value === false) return '否';
+    return fallback;
+  };
+
+  const normalizePurpose = (value) => {
+    const map = {
+      HOLIDAY: '旅游',
+      holiday: '旅游',
+      TOURISM: '旅游',
+      tourism: '旅游',
+      BUSINESS: '商务',
+      business: '商务',
+      VISITING: '探亲',
+      visiting: '探亲',
+      FAMILY: '探亲',
+      family: '探亲',
+      STUDY: '学习',
+      study: '学习',
+      WORK: '工作',
+      work: '工作',
+    };
+    if (!value) return '旅游';
+    return map[value] || value;
+  };
+
+  const normalizeArrivingFrom = (value) => {
+    if (!value) return '其他国家';
+    if (['美国', 'USA', 'U.S.A.', 'us', 'United States'].includes(value)) {
+      return '美国';
+    }
+    if (['其他国家', 'Other', 'OTHER'].includes(value)) {
+      return '其他国家';
+    }
+    return value;
+  };
+
   // Default to a date within 72 hours (TDAC requirement)
   // Add 2 days to current date as default
   const getDefaultArrivalDate = () => {
+    if (initialTravelInfo?.arrivalDate) {
+      return initialTravelInfo.arrivalDate;
+    }
     const date = new Date();
     date.setDate(date.getDate() + 2); // 2 days from now
     const defaultDate = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     console.log('📅 Default arrival date:', defaultDate);
     return defaultDate;
   };
-  const [arrivalDate, setArrivalDate] = useState(getDefaultArrivalDate());
-  const [hotelName, setHotelName] = useState('');
-  const [hotelAddress, setHotelAddress] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [stayDuration, setStayDuration] = useState('');
-  const [travelPurpose, setTravelPurpose] = useState('旅游');
 
-  
+  // Form state
+  const [flightNumber, setFlightNumber] = useState(initialTravelInfo?.flightNumber || '');
+  const [arrivalDate, setArrivalDate] = useState(initialTravelInfo?.arrivalDate || getDefaultArrivalDate());
+  const [hotelName, setHotelName] = useState(initialTravelInfo?.hotelName || '');
+  const [hotelAddress, setHotelAddress] = useState(initialTravelInfo?.hotelAddress || '');
+  const [contactPhone, setContactPhone] = useState(initialTravelInfo?.contactPhone || '');
+  const [stayDuration, setStayDuration] = useState(
+    initialTravelInfo?.stayDuration !== undefined && initialTravelInfo?.stayDuration !== null
+      ? String(initialTravelInfo.stayDuration)
+      : ''
+  );
+  const [travelPurpose, setTravelPurpose] = useState(normalizePurpose(initialTravelInfo?.travelPurpose));
+
   // For US customs
-  const [cashAmount, setCashAmount] = useState('否');
-  const [carryingFood, setCarryingFood] = useState('否');
+  const [cashAmount, setCashAmount] = useState(normalizeYesNo(initialTravelInfo?.cashAmount));
+  const [carryingFood, setCarryingFood] = useState(normalizeYesNo(initialTravelInfo?.carryingFood));
   
   // For Canada customs (E311)
-  const [exceedsDutyFree, setExceedsDutyFree] = useState('否');
-  const [hasFirearms, setHasFirearms] = useState('否');
-  const [hasCommercialGoods, setHasCommercialGoods] = useState('否');
-  const [visitedFarm, setVisitedFarm] = useState('否');
-  const [hasHighCurrency, setHasHighCurrency] = useState('否');
-  const [arrivingFrom, setArrivingFrom] = useState('其他国家'); // '美国' or '其他国家'
+  const [exceedsDutyFree, setExceedsDutyFree] = useState(normalizeYesNo(initialTravelInfo?.exceedsDutyFree));
+  const [hasFirearms, setHasFirearms] = useState(normalizeYesNo(initialTravelInfo?.hasFirearms));
+  const [hasCommercialGoods, setHasCommercialGoods] = useState(normalizeYesNo(initialTravelInfo?.hasCommercialGoods));
+  const [visitedFarm, setVisitedFarm] = useState(normalizeYesNo(initialTravelInfo?.visitedFarm));
+  const [hasHighCurrency, setHasHighCurrency] = useState(normalizeYesNo(initialTravelInfo?.hasHighCurrency));
+  const [arrivingFrom, setArrivingFrom] = useState(normalizeArrivingFrom(initialTravelInfo?.arrivingFrom)); // '美国' or '其他国家'
   
   // For Thailand health declaration
-  const [hasFever, setHasFever] = useState('否');
+  const [hasFever, setHasFever] = useState(normalizeYesNo(initialTravelInfo?.hasFever));
   
   // Duplicate check state
   const [duplicateRecord, setDuplicateRecord] = useState(null);
@@ -204,30 +257,32 @@ const TravelInfoScreen = ({ navigation, route }) => {
       hasFever,
     };
 
-    // Mock history data - 实际应该从 AsyncStorage 或 API 获取
-    const historyList = [
-      {
-        id: 'existing-1',
-        passport: { passportNo: 'E12345678' },
-        destination: { id: 'th', name: '泰国' },
-        travelInfo: {
-          flightNumber: 'CA981',
-          arrivalDate: '2025-01-15',
+    if (!editing) {
+      // Mock history data - 实际应该从 AsyncStorage 或 API 获取
+      const historyList = [
+        {
+          id: 'existing-1',
+          passport: { passportNo: 'E12345678' },
+          destination: { id: 'th', name: '泰国' },
+          travelInfo: {
+            flightNumber: 'CA981',
+            arrivalDate: '2025-01-15',
+          },
+          createdAt: '2025-01-10T10:00:00Z',
         },
-        createdAt: '2025-01-10T10:00:00Z',
-      },
-    ];
+      ];
 
-    // 检查是否有重复记录
-    const duplicate = checkDuplicate(
-      { passport, destination, travelInfo },
-      historyList
-    );
+      // 检查是否有重复记录
+      const duplicate = checkDuplicate(
+        { passport, destination, travelInfo },
+        historyList
+      );
 
-    if (duplicate) {
-      setDuplicateRecord(duplicate);
-      setShowDuplicateWarning(true);
-      return;
+      if (duplicate) {
+        setDuplicateRecord(duplicate);
+        setShowDuplicateWarning(true);
+        return;
+      }
     }
 
     // 没有重复，继续生成
@@ -235,6 +290,8 @@ const TravelInfoScreen = ({ navigation, route }) => {
       passport,
       destination,
       travelInfo,
+      fromHistory: editing || fromHistory,
+      generationId: editingGenerationId,
     });
   };
 
@@ -277,6 +334,8 @@ const TravelInfoScreen = ({ navigation, route }) => {
       passport,
       destination,
       travelInfo,
+      fromHistory: editing || fromHistory,
+      generationId: editingGenerationId,
       forceRegenerate: true,
     });
   };

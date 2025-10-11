@@ -214,6 +214,6 @@ export const colors = {
 
 ---
 
-**出国啰** - 5 分钟跑起来! ⚡️
+**出境通** - 5 分钟跑起来! ⚡️
 
 开始开发: `npx expo start` 🚀

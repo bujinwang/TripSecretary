@@ -1,6 +1,6 @@
 # TripSecretary Cloudflare Workers Backend
 
-This is the backend API for the TripSecretary (出国啰) app, built on Cloudflare Workers.
+This is the backend API for the TripSecretary (出境通) app, built on Cloudflare Workers.
 
 ## Setup
 
@@ -14,18 +14,18 @@ npm install
 
 ```bash
 # Create the database
-npx wrangler d1 create chuguoluo-db
+npx wrangler d1 create chujingtong-db
 
 # Copy the database_id from output and update wrangler.toml
 
 # Initialize schema
-npx wrangler d1 execute chuguoluo-db --file=./src/db/schema.sql
+npx wrangler d1 execute chujingtong-db --file=./src/db/schema.sql
 ```
 
 ### 3. Create R2 Bucket
 
 ```bash
-npx wrangler r2 bucket create chuguoluo-storage
+npx wrangler r2 bucket create chujingtong-storage
 ```
 
 ### 4. Set Secrets

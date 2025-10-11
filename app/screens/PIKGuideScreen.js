@@ -1,4 +1,4 @@
-// 出国啰 - PIK Guide Screen (自助通关机操作指南)
+// 出境通 - PIK Guide Screen (自助通关机操作指南)
 import React, { useState } from 'react';
 import {
   View,

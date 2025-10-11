@@ -1,4 +1,4 @@
-// 出国啰 - Components Index
+// 出境通 - Components Index
 // Central export for all reusable components
 
 export { default as Button } from './Button';

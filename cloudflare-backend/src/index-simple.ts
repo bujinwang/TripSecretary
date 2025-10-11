@@ -15,7 +15,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 // CORS middleware
 app.use('*', cors({
-  origin: ['http://localhost:8081', 'http://localhost:19000', 'https://chuguoluo.com'],
+  origin: ['http://localhost:8081', 'http://localhost:19000', 'https://chujingtong.com'],
   credentials: true,
 }));
 
@@ -23,7 +23,7 @@ app.use('*', cors({
 app.get('/', (c) => {
   return c.json({
     status: 'ok',
-    service: 'chuguoluo-api',
+    service: 'chujingtong-api',
     version: '1.0.0',
     message: 'Backend is running!',
   });

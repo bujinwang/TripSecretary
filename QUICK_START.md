@@ -92,7 +92,7 @@ Edit `app/services/api.js`:
 ```javascript
 const API_BASE_URL = __DEV__ 
   ? 'http://localhost:8787'  // Local backend
-  : 'https://api.chuguoluo.com';  // Production
+  : 'https://api.chujingtong.com';  // Production
 ```
 
 ### Backend Configuration

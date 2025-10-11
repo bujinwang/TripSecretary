@@ -1,5 +1,5 @@
 {
-  "name": "chuguoluo-api",
+  "name": "chujingtong-api",
   "version": "1.0.0",
   "description": "Cloudflare Workers API for TripSecretary",
   "main": "src/index.ts",

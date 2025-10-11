@@ -1,4 +1,4 @@
-// 出国啰 - History Screen
+// 出境通 - History Screen
 import React from 'react';
 import {
   View,

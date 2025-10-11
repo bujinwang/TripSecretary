@@ -1,6 +1,6 @@
-# 出国啰 - React Native UI Prototypes
+# 出境通 - React Native UI Prototypes
 
-这是 **出国啰** APP 的 React Native UI 原型代码，基于 `UI设计规范.md` 实现。
+这是 **出境通** APP 的 React Native UI 原型代码，基于 `UI设计规范.md` 实现。
 
 ## 📁 项目结构
 
@@ -166,13 +166,13 @@ import { theme } from './src/app/theme';
 
 ```bash
 # 创建新项目
-npx create-expo-app ChuGuoLuo
+npx create-expo-app ChuJingTong
 
 # 将 app 文件夹复制进去
-cp -r app ChuGuoLuo/
+cp -r app ChuJingTong/
 
 # 安装依赖
-cd ChuGuoLuo
+cd ChuJingTong
 npm install @react-navigation/native @react-navigation/native-stack
 npx expo install react-native-screens react-native-safe-area-context
 

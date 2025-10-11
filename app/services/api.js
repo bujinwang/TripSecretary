@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = __DEV__ 
   ? 'http://localhost:8787' 
-  : 'https://api.chuguoluo.com';
+  : 'https://api.chujingtong.com';
 
 class ApiClient {
   constructor() {
@@ -61,8 +61,12 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `API 错误: ${response.status}`);
+        const errorBody = await response.json().catch(() => ({}));
+        const message = errorBody.message || `API 错误: ${response.status}`;
+        const error = new Error(message);
+        error.status = response.status;
+        error.body = errorBody;
+        throw error;
       }
 
       return response.json();
@@ -231,6 +235,17 @@ class ApiClient {
   async deletePassport(id) {
     return this.request(`/api/passports/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  async getTrendingDestinations({ campaign = 'national-day', limit = 12 } = {}) {
+    const params = new URLSearchParams({
+      campaign,
+      limit: String(limit),
+    });
+
+    return this.request(`/api/discovery/trending-destinations?${params.toString()}`, {
+      method: 'GET',
     });
   }
 }

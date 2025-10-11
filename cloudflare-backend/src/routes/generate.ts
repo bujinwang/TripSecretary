@@ -49,7 +49,7 @@ generateRouter.post('/', async (c) => {
     
     // Generate PDF URL (simplified - in production would actually generate PDF)
     const pdfKey = `pdfs/${userId}/${Date.now()}-${destination.id}.pdf`;
-    const pdfUrl = `https://storage.chuguoluo.com/${pdfKey}`;
+    const pdfUrl = `https://storage.chujingtong.com/${pdfKey}`;
     
     // Save to database
     const generation = await c.env.DB.prepare(

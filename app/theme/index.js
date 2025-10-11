@@ -1,4 +1,4 @@
-// 出国啰 - Theme System
+// 出境通 - Theme System
 // Central export for all theme constants
 
 export { colors } from './colors';

@@ -109,7 +109,7 @@ All documentation has been updated to reflect the final tech stack decision: **C
 | 离线模式与访客模式设计.md | ✅ Cloudflare Workers | ✅ D1 (SQLite) | ✅ R2 | ✅ 已同步 |
 | 最终技术栈确认.md | ✅ Cloudflare Workers | ✅ D1 (SQLite) | ✅ R2 | ✅ 已同步 |
 | 项目总结-精简版.md | ✅ Cloudflare Workers | ✅ D1 (SQLite) | ✅ R2 | ✅ 已同步 |
-| 出国啰-最终确认.md | ✅ Cloudflare Workers | ✅ D1 (SQLite) | ✅ R2 | ✅ 已同步 |
+| 出境通-最终确认.md | ✅ Cloudflare Workers | ✅ D1 (SQLite) | ✅ R2 | ✅ 已同步 |
 
 ---
 

@@ -1,4 +1,4 @@
-// 出国啰 - Profile Screen
+// 出境通 - Profile Screen
 import React from 'react';
 import {
   View,

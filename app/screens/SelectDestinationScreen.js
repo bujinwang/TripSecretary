@@ -1,4 +1,4 @@
-// 出国啰 - Select Destination Screen
+// 出境通 - Select Destination Screen
 import React, { useState } from 'react';
 import {
   View,

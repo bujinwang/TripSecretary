@@ -1,4 +1,4 @@
-name = "chuguoluo-api"
+name = "chujingtong-api"
 main = "src/index-simple.ts"
 compatibility_date = "2024-01-01"
 
@@ -9,13 +9,13 @@ port = 8787
 # D1 Database (commented out for local development)
 # [[d1_databases]]
 # binding = "DB"
-# database_name = "chuguoluo-db"
+# database_name = "chujingtong-db"
 # database_id = "your-database-id-here"
 
 # R2 Storage (commented out for local development)
 # [[r2_buckets]]
 # binding = "STORAGE"
-# bucket_name = "chuguoluo-storage"
+# bucket_name = "chujingtong-storage"
 
 # Environment Variables
 [vars]

@@ -1,4 +1,4 @@
-// 出国啰 - Japan Requirements Screen (日本入境要求)
+// 出境通 - Japan Requirements Screen (日本入境要求)
 import React, { useState } from 'react';
 import {
   View,

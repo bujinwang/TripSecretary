@@ -98,7 +98,7 @@ For entry form generation, use:
 
 1. Add your server domain to **Server Domain** whitelist
 2. Add your API domain to **Request Domain** whitelist
-3. Example: `https://api.chuguoluo.com`
+3. Example: `https://api.chujingtong.com`
 
 ### 3.4 Development Mode
 
@@ -156,7 +156,7 @@ curl -X POST http://localhost:8787/api/ocr/passport \
 cd cloudflare-backend
 
 # Create database
-npx wrangler d1 create chuguoluo-db
+npx wrangler d1 create chujingtong-db
 
 # Output will show database_id - copy it!
 # Example: database_id = "abc123-def456-ghi789"
@@ -168,17 +168,17 @@ npx wrangler d1 create chuguoluo-db
 
 ```bash
 # Run schema.sql
-npx wrangler d1 execute chuguoluo-db --file=./src/db/schema.sql
+npx wrangler d1 execute chujingtong-db --file=./src/db/schema.sql
 
 # Verify tables created
-npx wrangler d1 execute chuguoluo-db --command="SELECT name FROM sqlite_master WHERE type='table';"
+npx wrangler d1 execute chujingtong-db --command="SELECT name FROM sqlite_master WHERE type='table';"
 ```
 
 ### 5.3 Create R2 Bucket
 
 ```bash
 # Create bucket for PDFs and images
-npx wrangler r2 bucket create chuguoluo-storage
+npx wrangler r2 bucket create chujingtong-storage
 
 # Verify it exists
 npx wrangler r2 bucket list
@@ -206,12 +206,12 @@ Uncomment the D1 and R2 bindings:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "chuguoluo-db"
+database_name = "chujingtong-db"
 database_id = "your-actual-database-id"
 
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "chuguoluo-storage"
+bucket_name = "chujingtong-storage"
 ```
 
 ### 5.6 Deploy!
@@ -221,7 +221,7 @@ bucket_name = "chuguoluo-storage"
 npm run deploy
 
 # Output will show your worker URL
-# Example: https://chuguoluo-api.your-subdomain.workers.dev
+# Example: https://chujingtong-api.your-subdomain.workers.dev
 ```
 
 ### 5.7 Set Custom Domain (Optional)
@@ -229,7 +229,7 @@ npm run deploy
 1. Go to Cloudflare Dashboard → Workers
 2. Select your worker
 3. Click **Triggers** → **Add Custom Domain**
-4. Enter: `api.chuguoluo.com`
+4. Enter: `api.chujingtong.com`
 5. Cloudflare will automatically handle SSL
 
 ---
@@ -240,12 +240,12 @@ npm run deploy
 
 ```bash
 # Test passport recognition
-curl -X POST https://api.chuguoluo.com/api/ocr/passport \
+curl -X POST https://api.chujingtong.com/api/ocr/passport \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -F "image=@real-passport.jpg"
 
 # Test ticket recognition
-curl -X POST https://api.chuguoluo.com/api/ocr/ticket \
+curl -X POST https://api.chujingtong.com/api/ocr/ticket \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -F "image=@flight-ticket.jpg"
 ```
@@ -253,7 +253,7 @@ curl -X POST https://api.chuguoluo.com/api/ocr/ticket \
 ### 6.2 Test AI Generation
 
 ```bash
-curl -X POST https://api.chuguoluo.com/api/generate \
+curl -X POST https://api.chujingtong.com/api/generate \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -290,12 +290,12 @@ In `app/services/api.js`:
 
 ```javascript
 // Change from localhost to production
-const API_BASE_URL = 'https://api.chuguoluo.com';
+const API_BASE_URL = 'https://api.chujingtong.com';
 
 // Or use environment variables
 const API_BASE_URL = __DEV__ 
   ? 'http://localhost:8787' 
-  : 'https://api.chuguoluo.com';
+  : 'https://api.chujingtong.com';
 ```
 
 ### 7.2 Test on Real Device

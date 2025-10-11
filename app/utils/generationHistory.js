@@ -1,4 +1,4 @@
-// 出国啰 - Generation History Management
+// 出境通 - Generation History Management
 // 管理生成历史，避免重复生成
 
 /**

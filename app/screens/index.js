@@ -1,4 +1,4 @@
-// 出国啰 - Screens Index
+// 出境通 - Screens Index
 // Central export for all screens
 
 export { default as LoginScreen } from './LoginScreen';

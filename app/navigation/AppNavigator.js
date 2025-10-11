@@ -165,7 +165,7 @@ const AppNavigator = () => {
           component={ResultScreen}
           options={{
             headerShown: true,
-            title: '生成结果',
+            title: '入境包',
             headerTintColor: colors.text,
             headerStyle: {
               backgroundColor: colors.white,

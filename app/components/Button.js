@@ -1,4 +1,4 @@
-// 出国啰 - Button Component
+// 出境通 - Button Component
 import React from 'react';
 import {
   TouchableOpacity,

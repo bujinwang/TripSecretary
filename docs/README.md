@@ -29,7 +29,7 @@ All project documentation organized by category.
 | Document | Description |
 |----------|-------------|
 | [智能出入境助手-产品设计文档.md](智能出入境助手-产品设计文档.md) | Main product design document |
-| [出国啰-最终确认.md](出国啰-最终确认.md) | Final product confirmation |
+| [出境通-最终确认.md](出境通-最终确认.md) | Final product confirmation |
 | [UI设计规范.md](UI设计规范.md) | UI design guidelines |
 | [家庭账号与远程协助设计.md](家庭账号与远程协助设计.md) | Family account & remote assistance design (1,131 lines) |
 
@@ -142,5 +142,5 @@ All project documentation organized by category.
 ---
 
 **Last Updated**: 2025-01  
-**Project**: 出国啰 (TripSecretary)  
+**Project**: 出境通 (TripSecretary)
 **Status**: MVP Ready ✅

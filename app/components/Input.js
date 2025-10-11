@@ -1,4 +1,4 @@
-// 出国啰 - Input Component
+// 出境通 - Input Component
 import React, { useState } from 'react';
 import {
   View,

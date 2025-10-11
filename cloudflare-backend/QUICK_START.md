@@ -204,15 +204,15 @@ Quick version:
 
 ```bash
 # 1. Create D1 database
-npx wrangler d1 create chuguoluo-db
+npx wrangler d1 create chujingtong-db
 
 # 2. Update wrangler.toml with database_id
 
 # 3. Initialize schema
-npx wrangler d1 execute chuguoluo-db --file=./src/db/schema.sql
+npx wrangler d1 execute chujingtong-db --file=./src/db/schema.sql
 
 # 4. Create R2 bucket
-npx wrangler r2 bucket create chuguoluo-storage
+npx wrangler r2 bucket create chujingtong-storage
 
 # 5. Set production secrets
 npx wrangler secret put ALIBABA_OCR_KEY

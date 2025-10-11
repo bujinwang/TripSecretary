@@ -1,4 +1,4 @@
-# 出国啰 - 完整实现计划
+# 出境通 - 完整实现计划
 
 ## 📋 总览
 
@@ -164,31 +164,31 @@ CREATE TABLE family_members (
 
 ```bash
 # 创建 D1 数据库
-npx wrangler d1 create chuguoluo-db
+npx wrangler d1 create chujingtong-db
 
 # 输出会给你一个 database_id，添加到 wrangler.toml
 
 # 执行 schema
-npx wrangler d1 execute chuguoluo-db --file=./src/db/schema.sql
+npx wrangler d1 execute chujingtong-db --file=./src/db/schema.sql
 ```
 
 **wrangler.toml** 配置:
 
 ```toml
-name = "chuguoluo-api"
+name = "chujingtong-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 # D1 数据库
 [[d1_databases]]
 binding = "DB"
-database_name = "chuguoluo-db"
+database_name = "chujingtong-db"
 database_id = "your-database-id-here"
 
 # R2 存储
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "chuguoluo-storage"
+bucket_name = "chujingtong-storage"
 
 # 环境变量
 [vars]
@@ -433,7 +433,7 @@ export async function generateEntryForm(request: Request, env: Env) {
   const pdfBuffer = await generatePDF(entryForm);
   const pdfKey = `pdfs/${userId}/${Date.now()}-${destination.id}.pdf`;
   await env.STORAGE.put(pdfKey, pdfBuffer);
-  const pdfUrl = `https://storage.chuguoluo.com/${pdfKey}`;
+  const pdfUrl = `https://storage.chujingtong.com/${pdfKey}`;
   
   // 5. 保存到数据库
   const generation = await env.DB.prepare(
@@ -484,7 +484,7 @@ export async function generateEntryForm(request: Request, env: Env) {
 **文件**: `app/services/api.js`
 
 ```javascript
-const API_BASE_URL = 'https://api.chuguoluo.com';
+const API_BASE_URL = 'https://api.chujingtong.com';
 
 class ApiClient {
   constructor() {

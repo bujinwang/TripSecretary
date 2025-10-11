@@ -1,4 +1,4 @@
-// 出国啰 - Japan Info Screen (日本入境信息)
+// 出境通 - Japan Info Screen (日本入境信息)
 import React from 'react';
 import {
   View,

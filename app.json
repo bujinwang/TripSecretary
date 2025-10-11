@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "出国啰",
-    "slug": "chuguoluo",
+    "name": "出境通",
+    "slug": "chujingtong",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -14,7 +14,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tripsecretary.chuguoluo",
+      "bundleIdentifier": "com.tripsecretary.chujingtong",
       "infoPlist": {
         "NSCameraUsageDescription": "需要使用相机扫描您的护照信息",
         "NSPhotoLibraryUsageDescription": "需要访问相册以选择护照照片",
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#07C160"
       },
-      "package": "com.tripsecretary.chuguoluo",
+      "package": "com.tripsecretary.chujingtong",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

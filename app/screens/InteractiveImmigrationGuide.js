@@ -1,4 +1,4 @@
-// 出国啰 - Interactive Immigration Guide (互动入境指南)
+// 出境通 - Interactive Immigration Guide (互动入境指南)
 import React, { useState } from 'react';
 import {
   View,
@@ -69,26 +69,54 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
     },
     {
       id: 6,
-      title: '✅ 第七步：完成入境',
-      description: '领取入境章，正式进入日本',
-      instruction: '保留入境卡副联，祝旅途愉快！',
-      action: '完成入境',
-      voiceText: '恭喜您成功入境日本，祝您旅途愉快！',
+      title: '🛃 第七步：向海关出示通关包',
+      description: '把手机里的通关包或打印件递给工作人员',
+      instruction: '点击下方按钮打开“向海关出示”页面，准备好给边检查看',
+      action: '打开通关包',
+      voiceText: '请打开手机中的通关包，并递给海关工作人员核对信息。',
+      isFinal: true,
     },
   ] : [
-    // Canada steps would go here
     {
       id: 0,
-      title: '📋 第一步：领取E311表格',
-      description: '在入境大厅领取加拿大海关申报表格',
-      instruction: '找到标有"E311"的表格发放处',
-      action: '我已拿到表格',
-      voiceText: '请在入境大厅领取E311海关申报表格',
+      title: '📋 第一步：领取入境材料',
+      description: '在入境大厅领取纸质表格或确认电子申报',
+      instruction: '确认机场指引，领取或准备好需要的表格',
+      action: '我已准备好',
+      voiceText: '请先在入境大厅领取或确认需要填写的入境表格。',
     },
-    // Add more Canada-specific steps...
+    {
+      id: 1,
+      title: '✍️ 第二步：核对并填写资料',
+      description: '对照通关包填写或确认个人信息',
+      instruction: '可点击“抄写模式”对照填写，确保信息准确',
+      action: '填写完成',
+      voiceText: '请按照手机里的通关包逐项填写或确认信息。',
+    },
+    {
+      id: 2,
+      title: '🛃 最后一步：向海关出示通关包',
+      description: '将手机里的通关包展示给边检或海关',
+      instruction: '打开“向海关出示”页面，递给工作人员核对',
+      action: '打开通关包',
+      voiceText: '请向海关工作人员展示手机中的通关包，便于快速通关。',
+      isFinal: true,
+    },
   ];
 
   const handleNextStep = () => {
+    const stepData = steps[currentStep];
+
+    if (stepData?.isFinal) {
+      Vibration.vibrate(120);
+      navigation.navigate('PresentToCustoms', {
+        passport,
+        destination,
+        travelInfo,
+      });
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       Vibration.vibrate(100); // Short vibration for feedback
       setCurrentStep(currentStep + 1);
@@ -186,18 +214,25 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
         <View style={styles.actionsCard}>
           <Text style={styles.actionsTitle}>快捷操作</Text>
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleFormHelp}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.primaryActionButton]}
+              onPress={handleFormHelp}
+            >
               <Text style={styles.actionIcon}>📝</Text>
               <Text style={styles.actionText}>查看表格</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={styles.actionIcon}>📍</Text>
-              <Text style={styles.actionText}>找洗手间</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={styles.actionIcon}>☕</Text>
-              <Text style={styles.actionText}>找休息区</Text>
-            </TouchableOpacity>
+            {!isJapan && (
+              <>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Text style={styles.actionIcon}>📍</Text>
+                  <Text style={styles.actionText}>找洗手间</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Text style={styles.actionIcon}>☕</Text>
+                  <Text style={styles.actionText}>找休息区</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -374,6 +409,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     borderRadius: 12,
     minWidth: 80,
+  },
+  primaryActionButton: {
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    minWidth: 140,
   },
   actionIcon: {
     fontSize: 24,

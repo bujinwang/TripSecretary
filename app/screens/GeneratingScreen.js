@@ -1,4 +1,4 @@
-// 出国啰 - Generating Screen
+// 出境通 - Generating Screen
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -12,7 +12,14 @@ import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
 
 const GeneratingScreen = ({ navigation, route }) => {
-  const { passport, destination, travelInfo, passportId } = route.params || {};
+  const {
+    passport,
+    destination,
+    travelInfo,
+    passportId,
+    fromHistory = false,
+    generationId: sourceGenerationId,
+  } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState(null);
@@ -53,6 +60,7 @@ const GeneratingScreen = ({ navigation, route }) => {
           name: destination?.name || '泰国',
         },
         travelInfo: travelInfo || {},
+        generationId: sourceGenerationId,
       });
 
       clearInterval(progressInterval);
@@ -69,6 +77,7 @@ const GeneratingScreen = ({ navigation, route }) => {
           destination,
           travelInfo,
           generationId: result.id,
+          fromHistory: fromHistory || false,
         });
       }, 500);
     } catch (error) {

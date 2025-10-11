@@ -1,4 +1,4 @@
-// 出国啰 - Japan Procedures Screen (日本入境流程)
+// 出境通 - Japan Procedures Screen (日本入境流程)
 import React from 'react';
 import {
   View,

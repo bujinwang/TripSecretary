@@ -1,4 +1,4 @@
-# TripSecretary (出国啰) - Implementation Status
+# TripSecretary (出境通) - Implementation Status
 
 ## ✅ Completed Implementation
 
@@ -157,14 +157,14 @@ cd /Users/bujin/Documents/Projects/TripSecretary/cloudflare-backend
 npm install
 
 # Create D1 database
-npx wrangler d1 create chuguoluo-db
+npx wrangler d1 create chujingtong-db
 # Copy database_id to wrangler.toml
 
 # Initialize database schema
-npx wrangler d1 execute chuguoluo-db --file=./src/db/schema.sql
+npx wrangler d1 execute chujingtong-db --file=./src/db/schema.sql
 
 # Create R2 bucket
-npx wrangler r2 bucket create chuguoluo-storage
+npx wrangler r2 bucket create chujingtong-storage
 
 # Set secrets
 npx wrangler secret put ALIBABA_OCR_KEY

@@ -1,5 +1,5 @@
 // 出国啰 - Result Screen
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import {
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
-import Card from '../components/Card';
 import Button from '../components/Button';
 import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
@@ -21,14 +20,25 @@ import { getAvailableFeatures, getEntryInstructions } from '../config/destinatio
 import { mergeTDACData } from '../data/mockTDACData';
 
 const ResultScreen = ({ navigation, route }) => {
-  const { passport, destination, travelInfo, generationId } = route.params || {};
+  const routeParams = route.params || {};
+  const { generationId, fromHistory = false } = routeParams;
   
-  // 获取目的地特定的功能配置
-  const features = getAvailableFeatures(destination?.id);
-  const entryInstructions = getEntryInstructions(destination?.id);
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState(null);
+
+  const currentPassport = resultData?.passport || routeParams.passport;
+  const currentDestination = resultData?.destination || routeParams.destination;
+  const currentTravelInfo = resultData?.travelInfo || routeParams.travelInfo;
+
+  const passport = currentPassport;
+  const destination = currentDestination;
+  const travelInfo = currentTravelInfo;
+
+  // 获取目的地特定的功能配置
+  const features = getAvailableFeatures(destination?.id);
+  const entryInstructions = getEntryInstructions(destination?.id);
+  const isHistoryItem = Boolean(fromHistory || resultData?.fromHistory);
 
   useEffect(() => {
     if (generationId) {
@@ -49,6 +59,107 @@ const ResultScreen = ({ navigation, route }) => {
       // 这样即使没有后端，应用也能正常工作
     }
   };
+
+  const handleEditInfo = () => {
+    navigation.navigate('TravelInfo', {
+      passport,
+      destination,
+      travelInfo,
+      editing: true,
+      generationId,
+      fromHistory: true,
+    });
+  };
+
+  const handleStartArrivalFlow = () => {
+    navigation.navigate('ImmigrationGuide', {
+      passport,
+      destination,
+      travelInfo,
+      currentStep: 0,
+    });
+  };
+
+  const canShareInline = features.showShare && !isHistoryItem;
+
+  const travelerName = useMemo(() => {
+    if (!passport) {
+      return '未填写';
+    }
+    const {
+      name,
+      fullName,
+      firstName,
+      givenName,
+      lastName,
+      familyName,
+    } = passport;
+    const composed = [
+      lastName || familyName,
+      firstName || givenName,
+    ].filter(Boolean).join(' ');
+    return name || fullName || composed || '未填写';
+  }, [passport]);
+
+  const passportNumber = useMemo(() => {
+    if (!passport) {
+      return '—';
+    }
+    return (
+      passport.passportNo ||
+      passport.passportNumber ||
+      passport.no ||
+      '—'
+    );
+  }, [passport]);
+
+  const flightNumberDisplay = travelInfo?.flightNumber || travelInfo?.flightNo || '待确认';
+  const arrivalDateDisplay = travelInfo?.arrivalDate || '待确认';
+  const accommodationDisplay =
+    travelInfo?.hotelName ||
+    travelInfo?.hotelAddress ||
+    travelInfo?.accommodationName ||
+    '待确认';
+
+  const entrySubtitle = useMemo(() => {
+    const parts = [];
+    if (destination?.name) {
+      parts.push(destination.name);
+    }
+    if (arrivalDateDisplay !== '待确认') {
+      parts.push(arrivalDateDisplay);
+    }
+    if (flightNumberDisplay !== '待确认') {
+      parts.push(`航班 ${flightNumberDisplay}`);
+    }
+    return parts.join(' · ') || '请补齐行程信息';
+  }, [destination?.name, arrivalDateDisplay, flightNumberDisplay]);
+
+  const generatedAtSource =
+    resultData?.updatedAt ||
+    resultData?.createdAt ||
+    routeParams?.generatedAt;
+
+  const formattedGeneratedAt = useMemo(() => {
+    if (!generatedAtSource) {
+      return new Date().toLocaleString();
+    }
+    const parsed = new Date(generatedAtSource);
+    return Number.isNaN(parsed.getTime())
+      ? generatedAtSource
+      : parsed.toLocaleString();
+  }, [generatedAtSource]);
+
+  const entryPackItems = useMemo(
+    () => [
+      { label: '旅客', value: travelerName },
+      { label: '护照号', value: passportNumber },
+      { label: '航班号', value: flightNumberDisplay },
+      { label: '到达日期', value: arrivalDateDisplay },
+      { label: '住宿地点', value: accommodationDisplay, fullWidth: true },
+    ],
+    [travelerName, passportNumber, flightNumberDisplay, arrivalDateDisplay, accommodationDisplay],
+  );
 
   const generatePDF = async () => {
     if (pdfUri) return pdfUri;
@@ -167,7 +278,7 @@ const ResultScreen = ({ navigation, route }) => {
               </tr>
             </table>
             <div class="footer">
-              <p>Generated by 出国啰 TripSecretary</p>
+              <p>Generated by 出境通 TripSecretary</p>
               <p>生成时间 / Generated: ${new Date().toLocaleString('zh-CN')}</p>
             </div>
           </body>
@@ -247,10 +358,128 @@ const ResultScreen = ({ navigation, route }) => {
         <View style={styles.headerContainer}>
           <Text style={styles.successIcon}>✅</Text>
           <Text style={styles.title}>
-            {destination?.flag} {destination?.name || ''}入境表已生成
+            {destination?.flag} {destination?.name || ''}入境包已准备好
           </Text>
-          <Text style={styles.subtitle}>已填写完整信息，可直接使用</Text>
+          <Text style={styles.subtitle}>所有资料已整理，随时可在机场出示</Text>
         </View>
+
+        <View style={styles.entryPackCard}>
+          <View style={styles.entryPackHeader}>
+            <Text style={styles.entryPackIcon}>🧳</Text>
+            <View style={styles.entryPackHeaderText}>
+              <Text style={styles.entryPackTitle}>入境包</Text>
+              <Text style={styles.entryPackSubtitle}>{entrySubtitle}</Text>
+            </View>
+            {canShareInline && (
+              <TouchableOpacity
+                style={styles.entryPackShareButton}
+                onPress={handleShare}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.entryPackShareText}>分享</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.entryPackInfoGrid}>
+            {entryPackItems.map((item, index) => {
+              const isRightColumn = (index + 1) % 2 === 0;
+              return (
+                <View
+                  key={`${item.label}-${index}`}
+                  style={[
+                    styles.entryPackInfoItem,
+                    item.fullWidth && styles.entryPackInfoItemFull,
+                    isRightColumn && !item.fullWidth && styles.entryPackInfoItemRight,
+                  ]}
+                >
+                  <Text style={styles.entryPackInfoLabel}>{item.label}</Text>
+                  <Text
+                    style={styles.entryPackInfoValue}
+                    numberOfLines={item.fullWidth ? 2 : 1}
+                  >
+                    {item.value}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {!isHistoryItem && (
+            <View style={styles.entryPackActions}>
+              <Button
+                title="启动入境指南"
+                onPress={handleStartArrivalFlow}
+                icon={<Text style={styles.entryPackActionIcon}>🛬</Text>}
+                style={styles.entryPackPrimaryButton}
+              />
+              <TouchableOpacity
+                onPress={handleEditInfo}
+                style={styles.entryPackSecondaryButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.entryPackSecondaryText}>更改资料</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Text style={styles.entryPackTimestamp}>最后更新：{formattedGeneratedAt}</Text>
+        </View>
+
+        {isHistoryItem && (
+          <View style={styles.historyBanner}>
+            <View style={styles.historyHeaderRow}>
+              <Text style={styles.historyBadge}>待入境旅程</Text>
+              <View style={styles.historyStatusPill}>
+                <Text style={styles.historyStatusText}>已自动保存</Text>
+              </View>
+            </View>
+            <Text style={styles.historyDescription}>
+              信息已留存在入境包中，可随时修改或分享给亲友复核。
+            </Text>
+
+            <TouchableOpacity
+              style={styles.historyPrimaryCta}
+              onPress={handleStartArrivalFlow}
+              activeOpacity={0.85}
+            >
+              <View style={styles.historyPrimaryContent}>
+                <Text style={styles.historyPrimaryIcon}>🛬</Text>
+                <View>
+                  <Text style={styles.historyPrimaryTitle}>我落地了，开始入境流程</Text>
+                  <Text style={styles.historyPrimarySubtitle}>进入逐步指引 · 支持大字号展示</Text>
+                </View>
+              </View>
+              <Text style={styles.historyPrimaryArrow}>›</Text>
+            </TouchableOpacity>
+
+            <View style={styles.historySecondaryRow}>
+              <TouchableOpacity
+                style={styles.historySecondaryButton}
+                onPress={handleShare}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.historySecondaryIcon}>🤝</Text>
+                <Text style={styles.historySecondaryText}>发给亲友复核</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.historyTertiaryButton}
+                onPress={handleEditInfo}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.historyTertiaryIcon}>🛠️</Text>
+                <Text style={styles.historyTertiaryText}>更改资料</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.historyFooter}>
+              <Text style={styles.historyFooterTitle}>🛃 最后一环：向海关出示通关包</Text>
+              <Text style={styles.historyFooterNote}>
+                抄写模式只是整个流程中的一步，落地后按指引逐步完成即可。
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Digital Entry System Info */}
         {features.digitalInfo && (
@@ -332,43 +561,7 @@ const ResultScreen = ({ navigation, route }) => {
 
         {/* Action Buttons - Dynamic based on destination */}
         <View style={styles.buttonsContainer}>
-          {/* 1. 向海关出示 - 仅当需要纸质表格时显示 */}
-          {features.showPresentToCustoms && (
-            <TouchableOpacity 
-              style={styles.actionCardPrimary} 
-              onPress={() => navigation.navigate('PresentToCustoms', { passport, destination, travelInfo })}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionIconPrimary}>👮</Text>
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.actionTitlePrimary}>向海关出示</Text>
-                <Text style={styles.actionSubtitlePrimary}>Present to Customs Officer</Text>
-              </View>
-              <Text style={styles.actionArrowPrimary}>›</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* 2. 抄写模式 - 仅当需要手写时显示 */}
-          {features.showCopyMode && (
-            <TouchableOpacity 
-              style={features.showPresentToCustoms ? styles.actionCard : styles.actionCardPrimary} 
-              onPress={() => navigation.navigate('CopyWrite', { passport, destination, travelInfo })}
-              activeOpacity={0.8}
-            >
-              <Text style={features.showPresentToCustoms ? styles.actionIcon : styles.actionIconPrimary}>✍️</Text>
-              <View style={styles.actionTextContainer}>
-                <Text style={features.showPresentToCustoms ? styles.actionTitle : styles.actionTitlePrimary}>
-                  抄写模式
-                </Text>
-                <Text style={features.showPresentToCustoms ? styles.actionSubtitle : styles.actionSubtitlePrimary}>
-                  适合老人手写表格
-                </Text>
-              </View>
-              <Text style={features.showPresentToCustoms ? styles.actionArrow : styles.actionArrowPrimary}>›</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* 3. 自助通关机指南 - 仅当有自助机时显示 */}
+          {/* 自助通关机指南 - 仅当有自助机时显示 */}
           {features.showKioskGuide && (
             <TouchableOpacity 
               style={styles.actionCard} 
@@ -386,39 +579,6 @@ const ResultScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           )}
 
-          {/* 4. 下载PDF - 仅当有PDF格式时显示 */}
-          {features.showDownloadPDF && (
-            <TouchableOpacity 
-              style={styles.actionCard} 
-              onPress={handleDownload}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionIcon}>⬇️</Text>
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.actionTitle}>下载PDF</Text>
-                <Text style={styles.actionSubtitle}>
-                  {entryInstructions?.pdfFormat || '保存到手机'}
-                </Text>
-              </View>
-              <Text style={styles.actionArrow}>›</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* 5. 分享 - 总是显示 */}
-          {features.showShare && (
-            <TouchableOpacity 
-              style={styles.actionCard} 
-              onPress={handleShare}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionIcon}>📤</Text>
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.actionTitle}>分享</Text>
-                <Text style={styles.actionSubtitle}>发送给家人朋友</Text>
-              </View>
-              <Text style={styles.actionArrow}>›</Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* Optional: Check Details - Moved to bottom */}
@@ -498,6 +658,247 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  entryPackCard: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: spacing.lg,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  entryPackHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  entryPackIcon: {
+    fontSize: 40,
+    marginRight: spacing.md,
+  },
+  entryPackHeaderText: {
+    flex: 1,
+  },
+  entryPackTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  entryPackSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  entryPackShareButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: 999,
+  },
+  entryPackShareText: {
+    ...typography.caption,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  entryPackInfoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: spacing.lg,
+  },
+  entryPackInfoItem: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: spacing.md,
+    flexBasis: '48%',
+    marginBottom: spacing.sm,
+    marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  entryPackInfoItemRight: {
+    marginRight: 0,
+  },
+  entryPackInfoItemFull: {
+    flexBasis: '100%',
+    marginRight: 0,
+  },
+  entryPackInfoLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  entryPackInfoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  entryPackActions: {
+    marginTop: spacing.lg,
+  },
+  entryPackPrimaryButton: {
+    width: '100%',
+  },
+  entryPackActionIcon: {
+    fontSize: 20,
+    marginRight: spacing.xs,
+  },
+  entryPackSecondaryButton: {
+    alignSelf: 'center',
+    marginTop: spacing.md,
+  },
+  entryPackSecondaryText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  entryPackTimestamp: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
+    textAlign: 'right',
+  },
+  historyBanner: {
+    backgroundColor: '#E6F8EE',
+    borderRadius: 20,
+    padding: spacing.lg,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.18)',
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyBadge: {
+    ...typography.body2,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  historyStatusPill: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.25)',
+  },
+  historyStatusText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  historyDescription: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  historyPrimaryCta: {
+    backgroundColor: colors.primary,
+    borderRadius: 18,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  historyPrimaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  historyPrimaryIcon: {
+    fontSize: 28,
+    marginRight: spacing.md,
+  },
+  historyPrimaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  historyPrimarySubtitle: {
+    ...typography.caption,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
+  },
+  historyPrimaryArrow: {
+    fontSize: 36,
+    color: colors.white,
+    fontWeight: '600',
+    marginLeft: spacing.md,
+  },
+  historySecondaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
+  historySecondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(7, 193, 96, 0.12)',
+    borderRadius: 14,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(7, 193, 96, 0.3)',
+  },
+  historySecondaryIcon: {
+    fontSize: 20,
+    marginRight: spacing.xs,
+  },
+  historySecondaryText: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  historyTertiaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  historyTertiaryIcon: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    marginRight: spacing.xs,
+  },
+  historyTertiaryText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  historyFooter: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(7, 193, 96, 0.15)',
+  },
+  historyFooterTitle: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  historyFooterNote: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
   digitalInfoCard: {
     flexDirection: 'row',
     backgroundColor: '#E3F2FD',
@@ -540,32 +941,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  card: {
-    marginBottom: spacing.md,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  cardIcon: {
-    fontSize: 32,
-    marginRight: spacing.sm,
-  },
-  cardTitle: {
-    ...typography.h3,
-    color: colors.text,
-  },
-  previewContainer: {
-    marginBottom: spacing.md,
-  },
-  previewPlaceholder: {
-    height: 120,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   previewText: {
     ...typography.body1,
     color: colors.textTertiary,
@@ -602,19 +977,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingHorizontal: spacing.md,
   },
-  actionCardPrimary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    padding: spacing.lg,
-    borderRadius: 12,
-    marginBottom: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -625,10 +987,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
   },
-  actionIconPrimary: {
-    fontSize: 40,
-    marginRight: spacing.md,
-  },
   actionIcon: {
     fontSize: 32,
     marginRight: spacing.md,
@@ -636,30 +994,15 @@ const styles = StyleSheet.create({
   actionTextContainer: {
     flex: 1,
   },
-  actionTitlePrimary: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.white,
-    marginBottom: 2,
-  },
   actionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.primary,
     marginBottom: 2,
   },
-  actionSubtitlePrimary: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
   actionSubtitle: {
     fontSize: 13,
     color: colors.textSecondary,
-  },
-  actionArrowPrimary: {
-    fontSize: 36,
-    color: colors.white,
-    fontWeight: 'bold',
   },
   actionArrow: {
     fontSize: 28,
