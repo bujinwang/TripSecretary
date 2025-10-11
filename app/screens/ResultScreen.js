@@ -360,9 +360,9 @@ const ResultScreen = ({ navigation, route }) => {
         <View style={styles.headerContainer}>
           <Text style={styles.successIcon}>✅</Text>
           <Text style={styles.title}>
-            {destination?.flag} {destination?.name || ''}入境包已准备好
+            {t('result.title', { flag: destination?.flag || '', country: destination?.name || '' })}
           </Text>
-          <Text style={styles.subtitle}>所有资料已整理，随时可在机场出示</Text>
+          <Text style={styles.subtitle}>{t('result.subtitle')}</Text>
         </View>
 
         {isHistoryItem && (
@@ -386,7 +386,7 @@ const ResultScreen = ({ navigation, route }) => {
           <View style={styles.entryPackHeader}>
             <Text style={styles.entryPackIcon}>🧳</Text>
             <View style={styles.entryPackHeaderText}>
-              <Text style={styles.entryPackTitle}>基本信息</Text>
+              <Text style={styles.entryPackTitle}>{t('result.entryPack.title')}</Text>
               <Text style={styles.entryPackSubtitle}>{entrySubtitle}</Text>
             </View>
             {canShareInline && (
@@ -442,7 +442,7 @@ const ResultScreen = ({ navigation, route }) => {
             </View>
           )}
 
-          <Text style={styles.entryPackTimestamp}>最后更新：{formattedGeneratedAt}</Text>
+          <Text style={styles.entryPackTimestamp}>{t('result.entryPack.lastUpdated', { time: formattedGeneratedAt })}</Text>
         </View>
 
         {isHistoryItem && (
@@ -570,7 +570,7 @@ const ResultScreen = ({ navigation, route }) => {
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
-            已自动保存到「历史记录」，随时可以查看
+            {t('result.infoBox')}
           </Text>
         </View>
       </ScrollView>
