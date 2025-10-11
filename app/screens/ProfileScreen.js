@@ -86,7 +86,7 @@ const ProfileScreen = ({ navigation }) => {
 
         {/* Passport Info */}
         <View style={styles.passportSection}>
-          <Card style={styles.passportCard}>
+          <View style={styles.passportCard}>
             <View style={styles.passportHeader}>
               <Text style={styles.passportIcon}>📘</Text>
               <View style={styles.passportInfo}>
@@ -103,7 +103,7 @@ const ProfileScreen = ({ navigation }) => {
               <Text style={styles.updatePassportText}>更新护照信息</Text>
               <Text style={styles.updatePassportArrow}>›</Text>
             </TouchableOpacity>
-          </Card>
+          </View>
         </View>
 
         {/* VIP Upgrade Card */}
