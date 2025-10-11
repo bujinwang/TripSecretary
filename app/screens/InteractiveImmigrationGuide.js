@@ -154,14 +154,6 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
     );
   };
 
-  const handleFormHelp = () => {
-    navigation.navigate('CopyWrite', {
-      passport,
-      destination,
-      travelInfo,
-    });
-  };
-
   const currentStepData = steps[currentStep];
 
   return (
@@ -214,37 +206,6 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
           </View>
 
-          {/* Voice Guidance (placeholder) */}
-          <TouchableOpacity style={styles.voiceButton}>
-            <Text style={styles.voiceIcon}>🔊</Text>
-            <Text style={styles.voiceText}>语音指导</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.actionsCard}>
-          <Text style={styles.actionsTitle}>快捷操作</Text>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryActionButton]}
-              onPress={handleFormHelp}
-            >
-              <Text style={styles.actionIcon}>📝</Text>
-              <Text style={styles.actionText}>查看表格</Text>
-            </TouchableOpacity>
-            {!isJapan && (
-              <>
-                <TouchableOpacity style={styles.actionButton}>
-                  <Text style={styles.actionIcon}>📍</Text>
-                  <Text style={styles.actionText}>找洗手间</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                  <Text style={styles.actionIcon}>☕</Text>
-                  <Text style={styles.actionText}>找休息区</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
         </View>
       </ScrollView>
 
@@ -398,60 +359,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
     lineHeight: 24,
-  },
-  voiceButton: {
-    backgroundColor: '#E3F2FD',
-    padding: spacing.md,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  voiceIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
-  },
-  voiceText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  actionsCard: {
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    borderRadius: 16,
-    marginBottom: spacing.xl,
-  },
-  actionsTitle: {
-    ...typography.h3,
-    color: colors.text,
-    marginBottom: spacing.md,
-    fontWeight: 'bold',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  actionButton: {
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 12,
-    minWidth: 80,
-  },
-  primaryActionButton: {
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    minWidth: 140,
-  },
-  actionIcon: {
-    fontSize: 24,
-    marginBottom: spacing.xs,
-  },
-  actionText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '600',
   },
   navigationContainer: {
     flexDirection: 'row',
