@@ -461,27 +461,6 @@ const ResultScreen = ({ navigation, route }) => {
               </View>
               <Text style={styles.historyPrimaryArrow}>›</Text>
             </TouchableOpacity>
-
-            <View style={styles.historySecondaryRow}>
-              <TouchableOpacity
-                style={styles.historySecondaryButton}
-                onPress={handleShare}
-                activeOpacity={0.75}
-              >
-                <Text style={styles.historySecondaryIcon}>🤝</Text>
-                <Text style={styles.historySecondaryText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.historyTertiaryButton}
-                onPress={handleEditInfo}
-                activeOpacity={0.75}
-              >
-                <Text style={styles.historyTertiaryIcon}>🛠️</Text>
-                <Text style={styles.historyTertiaryText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
-              </TouchableOpacity>
-            </View>
-
-
           </View>
         )}
 
