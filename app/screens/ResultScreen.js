@@ -436,9 +436,6 @@ const ResultScreen = ({ navigation, route }) => {
                 <Text style={styles.historyStatusText}>已自动保存</Text>
               </View>
             </View>
-            <Text style={styles.historyDescription}>
-              信息已留存在入境包中，可随时修改或分享给亲友复核。
-            </Text>
 
             <TouchableOpacity
               style={styles.historyPrimaryCta}
@@ -474,12 +471,7 @@ const ResultScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.historyFooter}>
-              <Text style={styles.historyFooterTitle}>🛃 最后一环：向海关出示通关包</Text>
-              <Text style={styles.historyFooterNote}>
-                抄写模式只是整个流程中的一步，落地后按指引逐步完成即可。
-              </Text>
-            </View>
+
           </View>
         )}
 
