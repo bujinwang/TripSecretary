@@ -23,13 +23,13 @@ const HomeScreen = ({ navigation }) => {
 
   const { t, language, setLanguage } = useLocale();
   const hotCountries = [
-    { id: 'jp', flag: '🇯🇵', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
-    { id: 'th', flag: '🇹🇭', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
-    { id: 'hk', flag: '🇭🇰', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: false },
-    { id: 'tw', flag: '🇹🇼', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: false },
-    { id: 'kr', flag: '🇰🇷', flightTimeKey: 'home.destinations.korea.flightTime', enabled: false },
-    { id: 'my', flag: '🇲🇾', flightTimeKey: 'home.destinations.malaysia.flightTime', enabled: false },
-    { id: 'us', flag: '🇺🇸', flightTimeKey: 'home.destinations.usa.flightTime', enabled: false },
+    { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
+    { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
+    { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: false },
+    { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: false },
+    { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: false },
+    { id: 'my', flag: '🇲🇾', name: 'Malaysia', flightTimeKey: 'home.destinations.malaysia.flightTime', enabled: false },
+    { id: 'us', flag: '🇺🇸', name: 'United States', flightTimeKey: 'home.destinations.usa.flightTime', enabled: false },
   ];
 
   // Mock: 用户已有护照
@@ -207,8 +207,8 @@ const HomeScreen = ({ navigation }) => {
         <Card style={styles.historyCard}>
           <View style={styles.historyItem}>
             <View style={styles.historyInfo}>
-              <Text style={styles.historyTitle}>暂无生成记录</Text>
-              <Text style={styles.historyTime}>去选择目的地试试吧</Text>
+              <Text style={styles.historyTitle}>{t('home.history.emptyTitle')}</Text>
+              <Text style={styles.historyTime}>{t('home.history.emptySubtitle')}</Text>
             </View>
           </View>
         </Card>

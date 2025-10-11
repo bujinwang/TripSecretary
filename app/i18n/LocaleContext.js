@@ -39,8 +39,17 @@ export const LocaleProvider = ({ initialLanguage = DEFAULT_LANGUAGE, children })
       if (!key) {
         return options.defaultValue ?? '';
       }
-      const translation = getTranslationByPath(language, key);
+      let translation = getTranslationByPath(language, key);
       if (translation !== undefined) {
+        // Handle variable interpolation like {{name}}, {{country}}, etc.
+        if (typeof translation === 'string' && options) {
+          Object.keys(options).forEach((param) => {
+            if (param !== 'defaultValue') {
+              const regex = new RegExp(`\\{\\{${param}\\}\\}`, 'g');
+              translation = translation.replace(regex, options[param]);
+            }
+          });
+        }
         return translation;
       }
       if (options.defaultValue !== undefined) {
