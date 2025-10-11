@@ -16,6 +16,9 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo } = route.params || {};
   const [fontSize, setFontSize] = useState(24);
 
+  // Check destination for conditional content
+  const isJapan = destination?.id === 'jp' || destination?.name === '日本';
+
   useEffect(() => {
     // 保持屏幕常亮，防止抄写时黑屏
     const keepAwake = async () => {
@@ -55,133 +58,225 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
     return dateStr;
   };
 
-  // E311 表格的所有字段，按照表格顺序排列
-  const formFields = [
-    {
-      section: '第一部分：旅客信息',
-      sectionEn: 'Part 1: Traveler Information',
-      fields: [
+  // 根据目的地显示不同的表格字段
+  const getFormFields = () => {
+    const isJapan = destination?.id === 'jp' || destination?.name === '日本';
+
+    if (isJapan) {
+      // 日本入境卡和海关申报单
+      return [
         {
-          label: '姓 (Last Name)',
-          value: passport?.nameEn?.split(' ').pop() || passport?.name || 'ZHANG',
-          instruction: '填写护照上的姓（大写字母）',
+          section: '入境卡 (蓝色表格)',
+          sectionEn: 'Landing Card (Blue Form)',
+          fields: [
+            {
+              label: '姓 (Family Name)',
+              value: passport?.nameEn?.split(' ').pop() || 'ZHANG',
+              instruction: '填写护照上的姓氏',
+            },
+            {
+              label: '名 (Given Name)',
+              value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
+              instruction: '填写护照上的名字',
+            },
+            {
+              label: '出生日期 (Date of Birth)',
+              value: passport?.birthDate || '1980-01-01',
+              instruction: '格式：年月日 (YYYYMMDD)',
+            },
+            {
+              label: '国籍 (Nationality)',
+              value: 'CHINA',
+              instruction: '填写国籍',
+            },
+            {
+              label: '护照号码 (Passport Number)',
+              value: passport?.passportNo || 'E12345678',
+              instruction: '填写护照号码',
+            },
+            {
+              label: '航班号 (Flight Number)',
+              value: travelInfo?.flightNumber || '',
+              instruction: '例如：CA981, CZ309',
+            },
+            {
+              label: '入境目的 (Purpose of Visit)',
+              value: 'TOURISM',
+              instruction: '填写 TOURISM',
+            },
+            {
+              label: '住宿地址 (Address in Japan)',
+              value: travelInfo?.hotelName + ', ' + travelInfo?.hotelAddress || '',
+              instruction: '填写酒店名称和地址',
+              multiline: true,
+            },
+          ],
         },
         {
-          label: '名 (First Name)',
-          value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
-          instruction: '填写护照上的名（大写字母）',
+          section: '海关申报单 (黄色表格)',
+          sectionEn: 'Customs Declaration (Yellow Form)',
+          fields: [
+            {
+              label: '姓名 (Name)',
+              value: passport?.name || '张伟',
+              instruction: '填写中文姓名',
+            },
+            {
+              label: '是否有违禁品？(Prohibited Items?)',
+              value: 'NO',
+              instruction: '如果没有违禁品，填 NO',
+            },
+            {
+              label: '携带现金超过10,000日元？(Cash > ¥10,000?)',
+              value: 'NO',
+              instruction: '如实回答',
+            },
+            {
+              label: '是否有商业物品？(Commercial Goods?)',
+              value: 'NO',
+              instruction: '如实回答',
+            },
+            {
+              label: '携带物品总价值 (Total Value of Goods)',
+              value: travelInfo?.goodsValue || 'UNDER ¥200,000',
+              instruction: '一般填写 UNDER ¥200,000',
+            },
+          ],
+        },
+      ];
+    } else {
+      // E311 表格 (加拿大)
+      const e311Fields = [
+        {
+          section: '第一部分：旅客信息',
+          sectionEn: 'Part 1: Traveler Information',
+          fields: [
+            {
+              label: '姓 (Last Name)',
+              value: passport?.nameEn?.split(' ').pop() || passport?.name || 'ZHANG',
+              instruction: '填写护照上的姓（大写字母）',
+            },
+            {
+              label: '名 (First Name)',
+              value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
+              instruction: '填写护照上的名（大写字母）',
+            },
+            {
+              label: '中间名首字母 (Initial)',
+              value: '',
+              instruction: '如果没有中间名，留空',
+            },
+            {
+              label: '出生日期 (Date of Birth)',
+              value: passport?.birthDate || '1980-01-01',
+              instruction: '格式：年-月-日 (YYYY-MM-DD)',
+            },
+            {
+              label: '国籍 (Citizenship)',
+              value: passport?.nationality || 'CHINA',
+              instruction: '填写国籍（大写字母）',
+            },
+          ],
         },
         {
-          label: '中间名首字母 (Initial)',
-          value: '',
-          instruction: '如果没有中间名，留空',
+          section: '第二部分：地址信息',
+          sectionEn: 'Part 2: Address Information',
+          fields: [
+            {
+              label: '家庭住址 (Home Address)',
+              value: travelInfo?.hotelAddress || '',
+              instruction: '填写在加拿大的住址（酒店地址）',
+              multiline: true,
+            },
+            {
+              label: '邮编 (Postal/ZIP Code)',
+              value: '',
+              instruction: '酒店的邮编（如果知道的话）',
+            },
+          ],
         },
         {
-          label: '出生日期 (Date of Birth)',
-          value: passport?.birthDate || '1980-01-01',
-          instruction: '格式：年-月-日 (YYYY-MM-DD)',
+          section: '第三部分：旅行详情',
+          sectionEn: 'Part 3: Travel Details',
+          fields: [
+            {
+              label: '航班号 (Airline/Flight Number)',
+              value: travelInfo?.flightNumber || '',
+              instruction: '例如：AC088, CZ329',
+            },
+            {
+              label: '到达日期 (Arrival Date)',
+              value: formatDate(travelInfo?.arrivalDate) || '',
+              instruction: '格式：年-月-日',
+            },
+            {
+              label: '来自哪个国家 (Arriving From)',
+              value: 'CHINA',
+              instruction: '如果从美国转机，填 U.S.A.',
+            },
+            {
+              label: '入境目的 (Purpose of Trip)',
+              value: travelInfo?.travelPurpose === '旅游' ? 'Personal' :
+                     travelInfo?.travelPurpose === '商务' ? 'Business' :
+                     travelInfo?.travelPurpose === '学习' ? 'Study' : 'Personal',
+              instruction: '选项：Study / Personal / Business',
+            },
+          ],
         },
         {
-          label: '国籍 (Citizenship)',
-          value: passport?.nationality || 'CHINA',
-          instruction: '填写国籍（大写字母）',
+          section: '第四部分：海关申报（打勾 ✓ 或 ✗）',
+          sectionEn: 'Part 4: Customs Declaration (Check YES or NO)',
+          fields: [
+            {
+              label: '携带现金超过$10,000加元？',
+              labelEn: 'Currency/monetary instruments ≥ CAN$10,000?',
+              value: travelInfo?.hasHighCurrency === '是' ? '✓ YES' : '✗ NO',
+              instruction: '如实回答',
+              highlight: travelInfo?.hasHighCurrency === '是',
+            },
+            {
+              label: '携带商业物品、样品或用于转售的商品？',
+              labelEn: 'Commercial goods, samples, or goods for resale?',
+              value: travelInfo?.hasCommercialGoods === '是' ? '✓ YES' : '✗ NO',
+              instruction: '如实回答',
+              highlight: travelInfo?.hasCommercialGoods === '是',
+            },
+            {
+              label: '携带食品、植物、动物或相关产品？',
+              labelEn: 'Food, plants, animals, or related products?',
+              value: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是' ? '✓ YES' : '✗ NO',
+              instruction: '包括：水果、肉类、种子、木制品等',
+              highlight: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是',
+            },
+            {
+              label: '近期访问过农场或接触过农场动物？',
+              labelEn: 'Visited a farm or been in contact with farm animals?',
+              value: travelInfo?.visitedFarm === '是' ? '✓ YES' : '✗ NO',
+              instruction: '如实回答',
+              highlight: travelInfo?.visitedFarm === '是',
+            },
+            {
+              label: '携带枪支或武器？',
+              labelEn: 'Firearms or weapons?',
+              value: travelInfo?.hasFirearms === '是' ? '✓ YES' : '✗ NO',
+              instruction: '如实回答',
+              highlight: travelInfo?.hasFirearms === '是',
+            },
+            {
+              label: '携带物品超过免税额度？',
+              labelEn: 'Goods exceed duty-free allowance?',
+              value: travelInfo?.exceedsDutyFree === '是' ? '✓ YES' : '✗ NO',
+              instruction: '礼品超过$60加元需申报',
+              highlight: travelInfo?.exceedsDutyFree === '是',
+            },
+          ],
         },
-      ],
-    },
-    {
-      section: '第二部分：地址信息',
-      sectionEn: 'Part 2: Address Information',
-      fields: [
-        {
-          label: '家庭住址 (Home Address)',
-          value: travelInfo?.hotelAddress || '',
-          instruction: '填写在加拿大的住址（酒店地址）',
-          multiline: true,
-        },
-        {
-          label: '邮编 (Postal/ZIP Code)',
-          value: '',
-          instruction: '酒店的邮编（如果知道的话）',
-        },
-      ],
-    },
-    {
-      section: '第三部分：旅行详情',
-      sectionEn: 'Part 3: Travel Details',
-      fields: [
-        {
-          label: '航班号 (Airline/Flight Number)',
-          value: travelInfo?.flightNumber || '',
-          instruction: '例如：AC088, CZ329',
-        },
-        {
-          label: '到达日期 (Arrival Date)',
-          value: formatDate(travelInfo?.arrivalDate) || '',
-          instruction: '格式：年-月-日',
-        },
-        {
-          label: '来自哪个国家 (Arriving From)',
-          value: 'CHINA',
-          instruction: '如果从美国转机，填 U.S.A.',
-        },
-        {
-          label: '入境目的 (Purpose of Trip)',
-          value: travelInfo?.travelPurpose === '旅游' ? 'Personal' : 
-                 travelInfo?.travelPurpose === '商务' ? 'Business' : 
-                 travelInfo?.travelPurpose === '学习' ? 'Study' : 'Personal',
-          instruction: '选项：Study / Personal / Business',
-        },
-      ],
-    },
-    {
-      section: '第四部分：海关申报（打勾 ✓ 或 ✗）',
-      sectionEn: 'Part 4: Customs Declaration (Check YES or NO)',
-      fields: [
-        {
-          label: '携带现金超过$10,000加元？',
-          labelEn: 'Currency/monetary instruments ≥ CAN$10,000?',
-          value: travelInfo?.hasHighCurrency === '是' ? '✓ YES' : '✗ NO',
-          instruction: '如实回答',
-          highlight: travelInfo?.hasHighCurrency === '是',
-        },
-        {
-          label: '携带商业物品、样品或用于转售的商品？',
-          labelEn: 'Commercial goods, samples, or goods for resale?',
-          value: travelInfo?.hasCommercialGoods === '是' ? '✓ YES' : '✗ NO',
-          instruction: '如实回答',
-          highlight: travelInfo?.hasCommercialGoods === '是',
-        },
-        {
-          label: '携带食品、植物、动物或相关产品？',
-          labelEn: 'Food, plants, animals, or related products?',
-          value: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是' ? '✓ YES' : '✗ NO',
-          instruction: '包括：水果、肉类、种子、木制品等',
-          highlight: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是',
-        },
-        {
-          label: '近期访问过农场或接触过农场动物？',
-          labelEn: 'Visited a farm or been in contact with farm animals?',
-          value: travelInfo?.visitedFarm === '是' ? '✓ YES' : '✗ NO',
-          instruction: '如实回答',
-          highlight: travelInfo?.visitedFarm === '是',
-        },
-        {
-          label: '携带枪支或武器？',
-          labelEn: 'Firearms or weapons?',
-          value: travelInfo?.hasFirearms === '是' ? '✓ YES' : '✗ NO',
-          instruction: '如实回答',
-          highlight: travelInfo?.hasFirearms === '是',
-        },
-        {
-          label: '携带物品超过免税额度？',
-          labelEn: 'Goods exceed duty-free allowance?',
-          value: travelInfo?.exceedsDutyFree === '是' ? '✓ YES' : '✗ NO',
-          instruction: '礼品超过$60加元需申报',
-          highlight: travelInfo?.exceedsDutyFree === '是',
-        },
-      ],
-    },
-  ];
+      ];
+      return e311Fields;
+    }
+  }
+
+  const formFields = getFormFields();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -232,13 +327,13 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           <Text style={styles.instructionIcon}>💡</Text>
           <Text style={styles.instructionTitle}>使用说明</Text>
           <Text style={styles.instructionText}>
-            1. 在飞机上或入境大厅拿一张空白的 E311 表格
+            1. 在飞机上或入境大厅拿一张空白的{isJapan ? '入境卡和海关申报单' : 'E311表格'}
             {'\n\n'}
             2. 对照手机屏幕上的内容，用笔抄写到纸质表格上
             {'\n\n'}
-            3. 字段按照 E311 表格的顺序排列，从上到下依次填写
+            3. 字段按照表格的顺序排列，从上到下依次填写
             {'\n\n'}
-            4. 填写完成后，交给海关官员
+            4. 填写完成后，交给入境官员
           </Text>
         </Card>
 
@@ -318,15 +413,31 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             重要提示
           </Text>
           <Text style={[styles.tipsText, { fontSize: fontSize - 2 }]}>
-            • 请用<Text style={styles.bold}>大写英文字母</Text>填写姓名和国籍
-            {'\n\n'}
-            • 日期格式：年-月-日 (例如：2025-01-15)
-            {'\n\n'}
-            • 海关申报部分一定要<Text style={styles.bold}>如实填写</Text>
-            {'\n\n'}
-            • 填写完成后，在表格底部<Text style={styles.bold}>签名</Text>
-            {'\n\n'}
-            • 16岁以下的儿童可由父母代签
+            {isJapan ? (
+              <>
+                • 请用<Text style={styles.bold}>黑色或蓝色笔</Text>填写表格
+                {'\n\n'}
+                • 字迹要<Text style={styles.bold}>清晰工整</Text>，避免涂改
+                {'\n\n'}
+                • 海关申报部分一定要<Text style={styles.bold}>如实填写</Text>
+                {'\n\n'}
+                • 填写完成后，交给入境官员检查
+                {'\n\n'}
+                • 保留入境卡副联直到离境
+              </>
+            ) : (
+              <>
+                • 请用<Text style={styles.bold}>大写英文字母</Text>填写姓名和国籍
+                {'\n\n'}
+                • 日期格式：年-月-日 (例如：2025-01-15)
+                {'\n\n'}
+                • 海关申报部分一定要<Text style={styles.bold}>如实填写</Text>
+                {'\n\n'}
+                • 填写完成后，在表格底部<Text style={styles.bold}>签名</Text>
+                {'\n\n'}
+                • 16岁以下的儿童可由父母代签
+              </>
+            )}
           </Text>
         </Card>
 
@@ -334,11 +445,11 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         <Card style={styles.sampleCard}>
           <Text style={styles.sampleIcon}>📄</Text>
           <Text style={[styles.sampleTitle, { fontSize: fontSize }]}>
-            E311 表格样式
+            {isJapan ? '入境卡和申报单样式' : 'E311 表格样式'}
           </Text>
           <View style={styles.sampleImagePlaceholder}>
             <Text style={styles.sampleImageText}>
-              E311 Declaration Card
+              {isJapan ? 'Landing Card & Customs Declaration' : 'E311 Declaration Card'}
               {'\n\n'}
               (纸质表格图片示例)
               {'\n\n'}

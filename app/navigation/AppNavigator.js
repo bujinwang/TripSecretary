@@ -23,6 +23,11 @@ import TDACWebViewScreen from '../screens/TDACWebViewScreen';
 import TDACAPIScreen from '../screens/TDACAPIScreen';
 import TDACSelectionScreen from '../screens/TDACSelectionScreen';
 import TDACHybridScreen from '../screens/TDACHybridScreen';
+import JapanInfoScreen from '../screens/JapanInfoScreen';
+import JapanRequirementsScreen from '../screens/JapanRequirementsScreen';
+import JapanProceduresScreen from '../screens/JapanProceduresScreen';
+import AirportArrivalScreen from '../screens/AirportArrivalScreen';
+import InteractiveImmigrationGuide from '../screens/InteractiveImmigrationGuide';
 
 import { colors } from '../theme';
 
@@ -220,6 +225,43 @@ const AppNavigator = () => {
           options={{
             headerShown: false,
             presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="AirportArrival"
+          component={AirportArrivalScreen}
+          options={{
+            headerShown: false,
+            gestureEnabled: false, // Prevent accidental back during immigration
+          }}
+        />
+        <Stack.Screen
+          name="ImmigrationGuide"
+          component={InteractiveImmigrationGuide}
+          options={{
+            headerShown: false,
+            gestureEnabled: false, // Prevent accidental back during immigration
+          }}
+        />
+        <Stack.Screen
+          name="JapanInfo"
+          component={JapanInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanRequirements"
+          component={JapanRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanProcedures"
+          component={JapanProceduresScreen}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

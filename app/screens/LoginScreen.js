@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Button from '../components/Button';
 import { colors, typography, spacing } from '../theme';
+import api from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const handleWeChatLogin = () => {
@@ -17,9 +18,16 @@ const LoginScreen = ({ navigation }) => {
     navigation.replace('MainTabs');
   };
 
-  const handlePhoneLogin = () => {
+  const handlePhoneLogin = async () => {
     console.log('Phone login pressed');
-    // TODO: Implement phone login
+    
+    try {
+      await api.phoneLogin('13800138000', '0000');
+      console.log('Phone login success, token stored');
+    } catch (error) {
+      console.warn('Phone login failed, continue without backend:', error.message);
+    }
+
     navigation.replace('MainTabs');
   };
 

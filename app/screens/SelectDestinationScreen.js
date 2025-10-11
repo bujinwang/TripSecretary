@@ -11,47 +11,79 @@ import {
 import Card from '../components/Card';
 import CountryCard from '../components/CountryCard';
 import { colors, typography, spacing } from '../theme';
+import { findRecentValidGeneration } from '../utils/historyChecker';
+import { Alert } from 'react-native';
 
 const SelectDestinationScreen = ({ navigation, route }) => {
   const { passport, country } = route.params || {};
   const [selectedCountry, setSelectedCountry] = useState(country || null);
 
   const countries = [
-    // 亚洲 - 热门
-    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行' },
-    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行' },
-    { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行' },
-    { id: 'jp', flag: '🇯🇵', name: '日本', flightTime: '3小时飞行' },
-    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行' },
-    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行' },
-    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行' },
-    
-    // 北美洲
-    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行' },
-    { id: 'ca', flag: '🇨🇦', name: '加拿大', flightTime: '14小时飞行' },
-    
-    // 大洋洲
-    { id: 'au', flag: '🇦🇺', name: '澳大利亚', flightTime: '9小时飞行' },
-    { id: 'nz', flag: '🇳🇿', name: '新西兰', flightTime: '11小时飞行' },
-    
-    // 欧洲
-    { id: 'gb', flag: '🇬🇧', name: '英国', flightTime: '11小时飞行' },
-    { id: 'fr', flag: '🇫🇷', name: '法国', flightTime: '12小时飞行' },
-    { id: 'de', flag: '🇩🇪', name: '德国', flightTime: '11小时飞行' },
-    { id: 'it', flag: '🇮🇹', name: '意大利', flightTime: '12小时飞行' },
-    { id: 'es', flag: '🇪🇸', name: '西班牙', flightTime: '13小时飞行' },
+    // 目前启用的目的地
+    { id: 'jp', flag: '🇯🇵', name: '日本', flightTime: '3小时飞行', enabled: true },
+    { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行', enabled: true },
+
+    // 暂未启用的目的地
+    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
+    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: false },
+    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
+    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: false },
+    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: false },
+    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
+    { id: 'ca', flag: '🇨🇦', name: '加拿大', flightTime: '14小时飞行', enabled: false },
+    { id: 'au', flag: '🇦🇺', name: '澳大利亚', flightTime: '9小时飞行', enabled: false },
+    { id: 'nz', flag: '🇳🇿', name: '新西兰', flightTime: '11小时飞行', enabled: false },
+    { id: 'gb', flag: '🇬🇧', name: '英国', flightTime: '11小时飞行', enabled: false },
+    { id: 'fr', flag: '🇫🇷', name: '法国', flightTime: '12小时飞行', enabled: false },
+    { id: 'de', flag: '🇩🇪', name: '德国', flightTime: '11小时飞行', enabled: false },
+    { id: 'it', flag: '🇮🇹', name: '意大利', flightTime: '12小时飞行', enabled: false },
+    { id: 'es', flag: '🇪🇸', name: '西班牙', flightTime: '13小时飞行', enabled: false },
   ];
 
   // 移除自动跳转逻辑 - 现在从首页直接跳转到TravelInfo
   // 这个屏幕只在从ScanPassport扫描完护照后使用
 
   const handleCountrySelect = (country) => {
+    // Check if country is enabled
+    if (!country.enabled) {
+      Alert.alert('暂未开放', '该目的地暂未开放，敬请期待！');
+      return;
+    }
+
     setSelectedCountry(country);
-    // Navigate to travel info screen
+
+    // Special handling for Japan
+    if (country.id === 'jp') {
+      // Mock history data - in real app, this would come from AsyncStorage or API
+      const historyList = [
+        // Add mock history if needed for testing
+      ];
+
+      const recentJapanEntry = findRecentValidGeneration('jp', passport?.passportNo, historyList);
+
+      setTimeout(() => {
+        if (!recentJapanEntry) {
+          // First time user - show info screen
+          navigation.navigate('JapanInfo', {
+            passport,
+            destination: country
+          });
+        } else {
+          // Returning user - show requirements screen
+          navigation.navigate('JapanRequirements', {
+            passport,
+            destination: country
+          });
+        }
+      }, 300);
+      return;
+    }
+
+    // Default navigation for other countries
     setTimeout(() => {
-      navigation.navigate('TravelInfo', { 
-        passport, 
-        destination: country 
+      navigation.navigate('TravelInfo', {
+        passport,
+        destination: country
       });
     }, 300);
   };
@@ -109,6 +141,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
                 flightTime={country.flightTime}
                 selected={selectedCountry?.id === country.id}
                 onPress={() => handleCountrySelect(country)}
+                disabled={!country.enabled}
               />
             ))}
           </View>

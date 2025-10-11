@@ -11,6 +11,15 @@ import {
 import { colors, typography, spacing, borderRadius } from '../theme';
 
 const ProfileScreen = ({ navigation }) => {
+  // Mock passport data (in real app, get from context/storage)
+  const passportData = {
+    type: '中国护照',
+    name: '张伟',
+    nameEn: 'ZHANG WEI',
+    passportNo: 'E12345678',
+    expiry: '2030-12-31',
+  };
+
   const menuItems = [
     {
       section: '我的服务',
@@ -65,6 +74,28 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.userName}>张伟</Text>
             <Text style={styles.userPhone}>手机: 138****1234</Text>
           </View>
+        </View>
+
+        {/* Passport Info */}
+        <View style={styles.passportSection}>
+          <Card style={styles.passportCard}>
+            <View style={styles.passportHeader}>
+              <Text style={styles.passportIcon}>📘</Text>
+              <View style={styles.passportInfo}>
+                <Text style={styles.passportLabel}>我的护照</Text>
+                <Text style={styles.passportDetails}>
+                  {passportData.passportNo} · 有效期至 {passportData.expiry}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.updatePassportButton}
+              onPress={() => navigation.navigate('ScanPassport')}
+            >
+              <Text style={styles.updatePassportText}>更新护照信息</Text>
+              <Text style={styles.updatePassportArrow}>›</Text>
+            </TouchableOpacity>
+          </Card>
         </View>
 
         {/* VIP Upgrade Card */}
@@ -184,6 +215,56 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.textSecondary,
   },
+
+  // Passport Section Styles
+  passportSection: {
+    margin: spacing.md,
+  },
+  passportCard: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  passportHeader: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+  },
+  passportIcon: {
+    fontSize: 56,
+    marginRight: spacing.md,
+  },
+  passportInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  passportLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  passportDetails: {
+    ...typography.body1,
+    color: colors.textSecondary,
+  },
+  updatePassportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  updatePassportText: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  updatePassportArrow: {
+    ...typography.h3,
+    color: colors.primary,
+    marginLeft: spacing.xs,
+  },
+
   vipCard: {
     margin: spacing.md,
     padding: spacing.md,

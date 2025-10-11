@@ -1,4 +1,4 @@
-// 出国啰 - Home Screen (优化版)
+// 出国啰 - Home Screen (优化版) 
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -20,16 +20,16 @@ const HomeScreen = ({ navigation }) => {
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 热门目的地（增加到8个）
+  // 热门目的地（目前只启用日本和泰国）
   const hotCountries = [
-    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行' },
-    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行' },
-    { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行' },
-    { id: 'jp', flag: '🇯🇵', name: '日本', flightTime: '3小时飞行' },
-    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行' },
-    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行' },
-    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行' },
-    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行' },
+    { id: 'jp', flag: '🇯🇵', name: '日本', flightTime: '3小时飞行', enabled: true },
+    { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行', enabled: true },
+    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
+    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: false },
+    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
+    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: false },
+    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: false },
+    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
   ];
 
   // Mock: 用户已有护照
@@ -69,9 +69,36 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleCountrySelect = async (country) => {
+    // Check if country is enabled
+    if (!country.enabled) {
+      Alert.alert('暂未开放', '该目的地暂未开放，敬请期待！');
+      return;
+    }
+
     if (!hasPassport) {
       // 没有护照，先扫描
       navigation.navigate('ScanPassport');
+      return;
+    }
+
+    // Special handling for Japan
+    if (country.id === 'jp') {
+      // Check if user has previous Japan entries
+      const recentJapanEntry = findRecentValidGeneration('jp', passportData.passportNo, historyList);
+
+      if (!recentJapanEntry) {
+        // First time user - show info screen
+        navigation.navigate('JapanInfo', {
+          passport: passportData,
+          destination: country
+        });
+      } else {
+        // Returning user - show requirements screen
+        navigation.navigate('JapanRequirements', {
+          passport: passportData,
+          destination: country
+        });
+      }
       return;
     }
 
@@ -86,16 +113,16 @@ const HomeScreen = ({ navigation }) => {
       // 有有效的历史记录，询问用户
       const summary = generateSummary(recentRecord);
       const { validity } = recentRecord;
-      
+
       let message = `已找到${country.name}的通关包：\n\n`;
       message += `航班：${recentRecord.travelInfo?.flightNumber || '未知'}\n`;
       message += `日期：${formatDate(recentRecord.travelInfo?.arrivalDate)}\n`;
       message += `酒店：${recentRecord.travelInfo?.hotelName || '未知'}\n\n`;
-      
+
       if (validity.warning) {
         message += `⚠️ ${validity.warning}\n\n`;
       }
-      
+
       message += '是否使用这个通关包？';
 
       Alert.alert(
@@ -145,6 +172,67 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
+  const getHistoryDisplayTime = (item) => {
+    if (item?.travelInfo?.generatedAtLabel) {
+      return item.travelInfo.generatedAtLabel;
+    }
+
+    if (item?.travelInfo?.arrivalDate) {
+      return formatDate(item.travelInfo.arrivalDate);
+    }
+
+    if (item?.createdAt) {
+      return formatDate(item.createdAt);
+    }
+
+    return '';
+  };
+
+  const renderHistoryCards = () => {
+    if (!historyList.length) {
+      return (
+        <Card style={styles.historyCard}>
+          <View style={styles.historyItem}>
+            <View style={styles.historyInfo}>
+              <Text style={styles.historyTitle}>暂无生成记录</Text>
+              <Text style={styles.historyTime}>去选择目的地试试吧</Text>
+            </View>
+          </View>
+        </Card>
+      );
+    }
+
+    return historyList.slice(0, 2).map((item) => (
+      <Card
+        key={item.id}
+        style={styles.historyCard}
+        pressable
+        onPress={() =>
+          navigation.navigate('Result', {
+            passport: item.passport,
+            destination: item.destination,
+            travelInfo: item.travelInfo,
+            generationId: item.id,
+            fromHistory: true,
+          })
+        }
+      >
+        <View style={styles.historyItem}>
+          <Text style={styles.historyFlag}>{item.destination?.flag || '🌍'}</Text>
+          <View style={styles.historyInfo}>
+            <Text style={styles.historyTitle}>
+              {item.destination?.name
+                ? `${item.destination.name}入境表格`
+                : '入境表格'}
+            </Text>
+            <Text style={styles.historyTime}>{getHistoryDisplayTime(item)}</Text>
+          </View>
+          <Text style={styles.historyArrow}>›</Text>
+        </View>
+      </Card>
+    ));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -167,120 +255,191 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.welcomeText}>选择目的地，立即生成通关包</Text>
         </View>
 
-        {/* Passport Card - 已有护照时显示 */}
-        {hasPassport ? (
-          <Card style={styles.passportCard}>
-            <View style={styles.passportHeader}>
-              <Text style={styles.passportIcon}>📘</Text>
-              <View style={styles.passportInfo}>
-                <Text style={styles.passportLabel}>我的护照</Text>
-                <Text style={styles.passportName}>{passportData.name}</Text>
-                <Text style={styles.passportDetails}>
-                  {passportData.passportNo} · 有效期至 {passportData.expiry}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity 
-              style={styles.updatePassportButton}
-              onPress={handleScanPassport}
+        {/* Pending Entries - Show only if there are upcoming trips */}
+        {true && ( // In real app, check if user has pending trips
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🛬 待入境</Text>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'jp', name: '日本', flag: '🇯🇵' },
+                travelInfo: {
+                  flightNumber: 'CA981',
+                  arrivalDate: new Date().toISOString().split('T')[0],
+                  hotelName: '东京新大谷酒店',
+                  hotelAddress: '千代田区纪尾井町4-1',
+                  contactPhone: '+81 3 3261 9111',
+                  stayDuration: '7',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
             >
-              <Text style={styles.updatePassportText}>更新护照信息</Text>
-              <Text style={styles.updatePassportArrow}>›</Text>
-            </TouchableOpacity>
-          </Card>
-        ) : (
-          /* 没有护照时 - 显示扫描按钮 */
-          <View style={styles.scanSection}>
-            <Button
-              title="扫描护照"
-              onPress={handleScanPassport}
-              variant="primary"
-              icon={<Text style={styles.scanIcon}>📸</Text>}
-              style={styles.scanButton}
-            />
-            <Text style={styles.scanHint}>扫描护照，3秒生成通关包</Text>
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇯🇵</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>日本东京</Text>
+                  <Text style={styles.historyTime}>{new Date().toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'th', name: '泰国', flag: '🇹🇭' },
+                travelInfo: {
+                  flightNumber: 'CA981',
+                  arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  hotelName: 'Bangkok Grand Hotel',
+                  hotelAddress: '123 Sukhumvit Road, Bangkok',
+                  contactPhone: '+66 2 123 4567',
+                  stayDuration: '7',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
+            >
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇹🇭</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>泰国曼谷</Text>
+                  <Text style={styles.historyTime}>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'us', name: '美国', flag: '🇺🇸' },
+                travelInfo: {
+                  flightNumber: 'CA987',
+                  arrivalDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  hotelName: 'New York Hilton',
+                  hotelAddress: '1335 Avenue of the Americas, New York',
+                  contactPhone: '+1 212 586 7000',
+                  stayDuration: '14',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
+            >
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇺🇸</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>美国纽约</Text>
+                  <Text style={styles.historyTime}>{new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'ca', name: '加拿大', flag: '🇨🇦' },
+                travelInfo: {
+                  flightNumber: 'CA025',
+                  arrivalDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  hotelName: 'Toronto Marriott Downtown',
+                  hotelAddress: '525 Bay Street, Toronto',
+                  contactPhone: '+1 416 597 9200',
+                  stayDuration: '10',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
+            >
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇨🇦</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>加拿大多伦多</Text>
+                  <Text style={styles.historyTime}>{new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'tw', name: '台湾', flag: '🇹🇼' },
+                travelInfo: {
+                  flightNumber: 'CI053',
+                  arrivalDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  hotelName: 'Taipei Marriott',
+                  hotelAddress: '199 Lequn 2nd Rd, Zhongshan District',
+                  contactPhone: '+886 2 8509 5800',
+                  stayDuration: '7',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
+            >
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇹🇼</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>台湾台北</Text>
+                  <Text style={styles.historyTime}>{new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
+            <Card
+              style={styles.historyCard}
+              pressable
+              onPress={() => navigation.navigate('Result', {
+                passport: passportData,
+                destination: { id: 'hk', name: '香港', flag: '🇭🇰' },
+                travelInfo: {
+                  flightNumber: 'CX711',
+                  arrivalDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  hotelName: 'Hong Kong Marriott',
+                  hotelAddress: 'Pacific Place, 88 Queensway',
+                  contactPhone: '+852 2840 7777',
+                  stayDuration: '5',
+                  travelPurpose: '旅游',
+                },
+                fromHistory: true,
+              })}
+            >
+              <View style={styles.historyItem}>
+                <Text style={styles.historyFlag}>🇭🇰</Text>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyTitle}>香港</Text>
+                  <Text style={styles.historyTime}>{new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} 起飞</Text>
+                </View>
+                <Text style={styles.historyArrow}>›</Text>
+              </View>
+            </Card>
           </View>
         )}
 
-        {/* Hot Destinations */}
+
+        {/* Where to Go */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🔥 热门目的地</Text>
-            <TouchableOpacity onPress={handleViewAllCountries}>
-              <Text style={styles.viewAllText}>查看全部 ›</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.sectionTitle}>想去哪儿？</Text>
           <View style={styles.countriesGrid}>
             {hotCountries.map((country) => (
               <CountryCard
                 key={country.id}
                 flag={country.flag}
                 name={country.name}
-                subtitle={country.flightTime}
+                flightTime={country.flightTime}
                 onPress={() => handleCountrySelect(country)}
+                disabled={!country.enabled}
               />
             ))}
           </View>
-        </View>
-
-        {/* Recent Generations */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📋 最近生成</Text>
-          <Card 
-            style={styles.historyCard} 
-            pressable
-            onPress={() => navigation.navigate('Result', {
-              passport: passportData,
-              destination: { id: 'hk', name: '香港', flag: '🇭🇰' },
-              travelInfo: {
-                flightNumber: 'CX888',
-                arrivalDate: new Date().toISOString().split('T')[0],
-                hotelName: '香港文华东方酒店',
-                hotelAddress: '中环干诺道中5号',
-                contactPhone: '+852 2522 0111',
-                stayDuration: '3',
-                travelPurpose: '旅游',
-              },
-              fromHistory: true,
-            })}
-          >
-            <View style={styles.historyItem}>
-              <Text style={styles.historyFlag}>🇭🇰</Text>
-              <View style={styles.historyInfo}>
-                <Text style={styles.historyTitle}>香港入境表格</Text>
-                <Text style={styles.historyTime}>2小时前</Text>
-              </View>
-              <Text style={styles.historyArrow}>›</Text>
-            </View>
-          </Card>
-          <Card 
-            style={styles.historyCard} 
-            pressable
-            onPress={() => navigation.navigate('Result', {
-              passport: passportData,
-              destination: { id: 'th', name: '泰国', flag: '🇹🇭' },
-              travelInfo: {
-                flightNumber: 'CA981',
-                // Changed from +7 days to +2 days to comply with TDAC 72-hour rule
-                arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                hotelName: 'Bangkok Grand Hotel',
-                hotelAddress: '123 Sukhumvit Road, Bangkok',
-                contactPhone: '+66 2 123 4567',
-                stayDuration: '7',
-                travelPurpose: '旅游',
-              },
-              fromHistory: true,
-            })}
-          >
-            <View style={styles.historyItem}>
-              <Text style={styles.historyFlag}>🇹🇭</Text>
-              <View style={styles.historyInfo}>
-                <Text style={styles.historyTitle}>泰国入境表格</Text>
-                <Text style={styles.historyTime}>昨天 15:20</Text>
-              </View>
-              <Text style={styles.historyArrow}>›</Text>
-            </View>
-          </Card>
         </View>
 
         {/* Bottom Spacing */}
@@ -397,6 +556,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: spacing.xs,
   },
+
 
   // Scan Section (when no passport)
   scanSection: {

@@ -38,6 +38,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
   const [contactPhone, setContactPhone] = useState('');
   const [stayDuration, setStayDuration] = useState('');
   const [travelPurpose, setTravelPurpose] = useState('旅游');
+
   
   // For US customs
   const [cashAmount, setCashAmount] = useState('否');
@@ -61,7 +62,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
   // Get required fields based on destination
   const getRequiredFields = () => {
     const destName = destination?.name || '';
-    
+
     switch (destName) {
       case '香港':
         return []; // 香港不需要额外信息
@@ -282,6 +283,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
 
   const renderPurposeOptions = () => {
     const purposes = ['旅游', '商务', '探亲', '学习', '工作'];
+
     return (
       <View style={styles.optionsContainer}>
         {purposes.map((purpose) => (
@@ -448,7 +450,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
                 onPress={handleScanTicket}
               >
                 <Text style={styles.scanIcon}>📸</Text>
-                <Text style={styles.scanText}>扫描机票</Text>
+                <Text style={styles.scanText}>照机票</Text>
               </TouchableOpacity>
             </View>
             
@@ -476,6 +478,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
             )}
           </View>
 
+
           {/* Accommodation Information */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -485,7 +488,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
                 onPress={handleScanHotel}
               >
                 <Text style={styles.scanIcon}>📸</Text>
-                <Text style={styles.scanText}>扫描预订单</Text>
+                <Text style={styles.scanText}>照酒店预定单</Text>
               </TouchableOpacity>
             </View>
             
@@ -670,8 +673,8 @@ const TravelInfoScreen = ({ navigation, route }) => {
           <Text style={styles.tipsIcon}>💡</Text>
           <Text style={styles.tipsTitle}>温馨提示</Text>
           <Text style={styles.tipsText}>
-            • 可以点击"扫描机票"自动识别航班信息{'\n'}
-            • 可以点击"扫描预订单"自动识别酒店信息{'\n'}
+            • 可以点击"照机票"自动识别航班信息{'\n'}
+            • 可以点击"照酒店预定单"自动识别酒店信息{'\n'}
             • 也可以手动输入，请确保信息准确{'\n'}
             • 酒店地址需填写英文{'\n'}
             • 联系电话需包含国家区号（如 +66）
