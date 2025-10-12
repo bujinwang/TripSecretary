@@ -303,6 +303,8 @@ export const translations = {
       entryCardModalHint: 'Screenshot or zoom to view each field\'s example',
       biometricModalTitle: 'Japan Biometric Guide',
       biometricModalHint: 'Place your finger lightly on the scanner to complete collection',
+      customsModalTitle: 'Japan Customs Declaration Sample',
+      customsModalHint: 'Screenshot or zoom to view how to answer each question',
       helpMenu: {
         title: 'Need Help?',
         message: 'Please select the type of help you need:',
@@ -341,6 +343,7 @@ export const translations = {
           formPreviewTitle: '📋 Customs Declaration Sample',
           formPlaceholderText: 'Yellow Customs Declaration',
           formPlaceholderHint: 'Includes item declarations,\\nprohibited items questions',
+          imageHint: 'Tap to view full-size image before filling',
           viewFormButton: 'Fill Out Declaration',
         },
         step4: {
@@ -675,6 +678,8 @@ export const translations = {
       entryCardModalHint: '可截图或放大查看每一栏位的填写示例',
       biometricModalTitle: '日本生物识别示意',
       biometricModalHint: '示意需要将手指轻放在扫描器上完成采集',
+      customsModalTitle: '日本海关申报单样本',
+      customsModalHint: '可截图或放大查看每一项填写示例',
       helpMenu: {
         title: '需要帮助吗？',
         message: '请选择您需要的帮助类型：',
@@ -713,6 +718,7 @@ export const translations = {
           formPreviewTitle: '📋 海关申报单样本',
           formPlaceholderText: '黄色海关申报单',
           formPlaceholderHint: '包含携带物品申报、\\n是否携带违禁品等问题',
+          imageHint: '点击查看大图，方便截图或对照填写',
           viewFormButton: '对照填写申报表',
         },
         step4: {

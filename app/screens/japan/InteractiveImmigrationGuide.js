@@ -16,6 +16,7 @@ import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 
 const japanEntryCardSample = require('../../../assets/forms/japan-entry-card-sample.jpg');
+const japanCustomsSample = require('../../../assets/forms/japan-customs-declaration.jpg');
 const japanBiometricSample = require('../../../assets/forms/japan-biometric-scan.jpg');
 
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
@@ -23,6 +24,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const { passport, destination, travelInfo, currentStep: initialStep = 0 } = route.params || {};
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isFormSampleVisible, setFormSampleVisible] = useState(false);
+  const [isCustomsSampleVisible, setCustomsSampleVisible] = useState(false);
   const [isBiometricSampleVisible, setBiometricSampleVisible] = useState(false);
 
   const isJapan = destination?.id === 'jp' || destination?.name === '日本';
@@ -313,7 +315,20 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             <>
               <View style={styles.formPreview}>
                 <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step3.formPreviewTitle')}</Text>
-                <View style={styles.formPlaceholder}>
+                <TouchableOpacity
+                  style={styles.sampleImageContainer}
+                  onPress={() => setCustomsSampleVisible(true)}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={t('immigrationGuide.japanSteps.step3.formPreviewTitle')}
+                >
+                  <Image
+                    source={japanCustomsSample}
+                    style={styles.sampleImageThumb}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <Text style={styles.imageHint}>{t('immigrationGuide.japanSteps.step3.imageHint')}</Text>
+                <View style={[styles.formPlaceholder, styles.formPlaceholderSpacing]}>
                   <Text style={styles.formPlaceholderText}>{t('immigrationGuide.japanSteps.step3.formPlaceholderText')}</Text>
                   <Text style={styles.formPlaceholderHint}>
                     {t('immigrationGuide.japanSteps.step3.formPlaceholderHint')}
@@ -410,6 +425,44 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               accessibilityLabel="日本入境卡样本大图"
             />
             <Text style={styles.modalHint}>{t('immigrationGuide.entryCardModalHint')}</Text>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={isCustomsSampleVisible}
+        animationType="slide"
+        onRequestClose={() => setCustomsSampleVisible(false)}
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setCustomsSampleVisible(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.modalCloseText}>{t('immigrationGuide.modalClose')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>{t('immigrationGuide.customsModalTitle')}</Text>
+            <View style={styles.modalHeaderSpacer} />
+          </View>
+          <ScrollView
+            style={styles.modalScroll}
+            maximumZoomScale={3}
+            minimumZoomScale={1}
+            contentContainerStyle={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
+            <Image
+              source={japanCustomsSample}
+              style={styles.sampleImageFull}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel={t('immigrationGuide.customsModalTitle')}
+            />
+            <Text style={styles.modalHint}>{t('immigrationGuide.customsModalHint')}</Text>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -634,6 +687,9 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     minHeight: 100,
     justifyContent: 'center',
+  },
+  formPlaceholderSpacing: {
+    marginTop: spacing.md,
   },
   formPlaceholderText: {
     fontSize: 16,
