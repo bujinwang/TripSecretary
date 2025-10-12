@@ -348,8 +348,8 @@ export const translations = {
         },
         step4: {
           title: '🏢 Step 4: Go to Immigration',
-          description: 'Take completed forms to immigration counter',
-          instruction: 'Queue and wait for your turn, hand forms to officer',
+          description: 'Take your passport and completed forms to immigration counter',
+          instruction: 'Find the "Foreigner" lane and queue up. When it\'s your turn, hand your passport and entry card to the officer. Smile and answer simple questions (purpose of visit, duration of stay, etc.)',
           action: 'Next: Biometric Check',
         },
         step5: {
@@ -723,8 +723,8 @@ export const translations = {
         },
         step4: {
           title: '🏢 第四步：前往入境审查',
-          description: '拿着填好的表格前往入境审查柜台',
-          instruction: '排队等待叫号，交给工作人员检查',
+          description: '拿着护照和填好的表格前往入境审查柜台',
+          instruction: '找到"外国人"(Foreigner)通道，排队等候。轮到你时，将护照和入境卡交给工作人员，保持微笑，简单回答问题（如访问目的、停留时间等）',
           action: '下一步：生物识别',
         },
         step5: {
