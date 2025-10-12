@@ -243,12 +243,12 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       {isJapan && currentStep === 0 && (
         <>
           <View style={styles.formPreview}>
-            <Text style={styles.formPreviewTitle}>入境卡样本</Text>
+            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.entryCardSampleTitle')}</Text>
             <TouchableOpacity
               style={styles.sampleImageContainer}
               onPress={() => setFormSampleVisible(true)}
               accessibilityRole="imagebutton"
-              accessibilityLabel="查看日本入境卡样本大图"
+              accessibilityLabel={t('immigrationGuide.entryCardModalTitle')}
             >
               <Image
                 source={japanEntryCardSample}
@@ -256,16 +256,16 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <Text style={styles.imageHint}>点击查看大图</Text>
+            <Text style={styles.imageHint}>{t('immigrationGuide.clickToViewLarge')}</Text>
           </View>
 
           <View style={[styles.formPreview, { marginTop: spacing.md }]}>
-            <Text style={styles.formPreviewTitle}>海关申报单样本</Text>
+            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.customsDeclarationSampleTitle')}</Text>
             <TouchableOpacity
               style={styles.sampleImageContainer}
               onPress={() => setCustomsSampleVisible(true)}
               accessibilityRole="imagebutton"
-              accessibilityLabel="查看日本海关申报单样本大图"
+              accessibilityLabel={t('immigrationGuide.customsModalTitle')}
             >
               <Image
                 source={japanCustomsSample}
@@ -273,7 +273,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <Text style={styles.imageHint}>点击查看大图</Text>
+            <Text style={styles.imageHint}>{t('immigrationGuide.clickToViewLarge')}</Text>
           </View>
         </>
       )}
