@@ -68,80 +68,80 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
       // 日本入境卡和海关申报单
       return [
         {
-          section: '入境卡 (蓝色表格)',
+          section: t('copyWriteMode.japanLandingCard'),
           sectionEn: 'Landing Card (Blue Form)',
           fields: [
             {
-              label: '姓 (Family Name)',
+              label: `${t('copyWriteMode.familyName')} (Family Name)`,
               value: passport?.nameEn?.split(' ').pop() || 'ZHANG',
-              instruction: '填写护照上的姓氏',
+              instruction: t('copyWriteMode.instructionFamilyName'),
             },
             {
-              label: '名 (Given Name)',
+              label: `${t('copyWriteMode.givenName')} (Given Name)`,
               value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
-              instruction: '填写护照上的名字',
+              instruction: t('copyWriteMode.instructionGivenName'),
             },
             {
-              label: '出生日期 (Date of Birth)',
+              label: `${t('copyWriteMode.dateOfBirth')} (Date of Birth)`,
               value: passport?.birthDate || '1980-01-01',
-              instruction: '格式：年月日 (YYYYMMDD)',
+              instruction: t('copyWriteMode.instructionDateOfBirth'),
             },
             {
-              label: '国籍 (Nationality)',
+              label: `${t('copyWriteMode.nationality')} (Nationality)`,
               value: 'CHINA',
-              instruction: '填写国籍',
+              instruction: t('copyWriteMode.instructionNationality'),
             },
             {
-              label: '护照号码 (Passport Number)',
+              label: `${t('copyWriteMode.passportNumber')} (Passport Number)`,
               value: passport?.passportNo || 'E12345678',
-              instruction: '填写护照号码',
+              instruction: t('copyWriteMode.instructionPassportNumber'),
             },
             {
-              label: '航班号 (Flight Number)',
+              label: `${t('copyWriteMode.flightNumber')} (Flight Number)`,
               value: travelInfo?.flightNumber || '',
-              instruction: '例如：CA981, CZ309',
+              instruction: t('copyWriteMode.instructionFlightNumber'),
             },
             {
-              label: '入境目的 (Purpose of Visit)',
+              label: `${t('copyWriteMode.purposeOfVisit')} (Purpose of Visit)`,
               value: 'TOURISM',
-              instruction: '填写 TOURISM',
+              instruction: t('copyWriteMode.instructionPurposeOfVisit'),
             },
             {
-              label: '住宿地址 (Address in Japan)',
+              label: `${t('copyWriteMode.addressInJapan')} (Address in Japan)`,
               value: travelInfo?.hotelName + ', ' + travelInfo?.hotelAddress || '',
-              instruction: '填写酒店名称和地址',
+              instruction: t('copyWriteMode.instructionAddressInJapan'),
               multiline: true,
             },
           ],
         },
         {
-          section: '海关申报单 (黄色表格)',
+          section: t('copyWriteMode.japanCustomsDeclaration'),
           sectionEn: 'Customs Declaration (Yellow Form)',
           fields: [
             {
-              label: '姓名 (Name)',
-              value: passport?.name || '张伟',
-              instruction: '填写中文姓名',
+              label: `${t('copyWriteMode.name')} (Name)`,
+              value: passport?.name || t('copyWriteMode.defaultChineseName'),
+              instruction: t('copyWriteMode.instructionName'),
             },
             {
-              label: '是否有违禁品？(Prohibited Items?)',
+              label: `${t('copyWriteMode.prohibitedItems')} (Prohibited Items?)`,
               value: 'NO',
-              instruction: '如果没有违禁品，填 NO',
+              instruction: t('copyWriteMode.instructionProhibitedItems'),
             },
             {
-              label: '携带现金超过10,000日元？(Cash > ¥10,000?)',
+              label: `${t('copyWriteMode.cashOverLimit')} (Cash > ¥10,000?)`,
               value: 'NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
             },
             {
-              label: '是否有商业物品？(Commercial Goods?)',
+              label: `${t('copyWriteMode.commercialGoods')} (Commercial Goods?)`,
               value: 'NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
             },
             {
-              label: '携带物品总价值 (Total Value of Goods)',
+              label: `${t('copyWriteMode.totalValueOfGoods')} (Total Value of Goods)`,
               value: travelInfo?.goodsValue || 'UNDER ¥200,000',
-              instruction: '一般填写 UNDER ¥200,000',
+              instruction: t('copyWriteMode.instructionTotalValue'),
             },
           ],
         },
@@ -150,125 +150,125 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
       // E311 表格 (加拿大)
       const e311Fields = [
         {
-          section: '第一部分：旅客信息',
+          section: t('copyWriteMode.canadaPart1'),
           sectionEn: 'Part 1: Traveler Information',
           fields: [
             {
-              label: '姓 (Last Name)',
+              label: `${t('copyWriteMode.lastName')} (Last Name)`,
               value: passport?.nameEn?.split(' ').pop() || passport?.name || 'ZHANG',
-              instruction: '填写护照上的姓（大写字母）',
+              instruction: t('copyWriteMode.instructionLastName'),
             },
             {
-              label: '名 (First Name)',
+              label: `${t('copyWriteMode.firstName')} (First Name)`,
               value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
-              instruction: '填写护照上的名（大写字母）',
+              instruction: t('copyWriteMode.instructionFirstName'),
             },
             {
-              label: '中间名首字母 (Initial)',
+              label: `${t('copyWriteMode.middleInitial')} (Initial)`,
               value: '',
-              instruction: '如果没有中间名，留空',
+              instruction: t('copyWriteMode.instructionMiddleInitial'),
             },
             {
-              label: '出生日期 (Date of Birth)',
+              label: `${t('copyWriteMode.dateOfBirth')} (Date of Birth)`,
               value: passport?.birthDate || '1980-01-01',
-              instruction: '格式：年-月-日 (YYYY-MM-DD)',
+              instruction: t('copyWriteMode.instructionDateOfBirthDash'),
             },
             {
-              label: '国籍 (Citizenship)',
+              label: `${t('copyWriteMode.citizenship')} (Citizenship)`,
               value: passport?.nationality || 'CHINA',
-              instruction: '填写国籍（大写字母）',
+              instruction: t('copyWriteMode.instructionCitizenship'),
             },
           ],
         },
         {
-          section: '第二部分：地址信息',
+          section: t('copyWriteMode.canadaPart2'),
           sectionEn: 'Part 2: Address Information',
           fields: [
             {
-              label: '家庭住址 (Home Address)',
+              label: `${t('copyWriteMode.homeAddress')} (Home Address)`,
               value: travelInfo?.hotelAddress || '',
-              instruction: '填写在加拿大的住址（酒店地址）',
+              instruction: t('copyWriteMode.instructionCanadaAddress'),
               multiline: true,
             },
             {
-              label: '邮编 (Postal/ZIP Code)',
+              label: `${t('copyWriteMode.postalCode')} (Postal/ZIP Code)`,
               value: '',
-              instruction: '酒店的邮编（如果知道的话）',
+              instruction: t('copyWriteMode.instructionPostalCode'),
             },
           ],
         },
         {
-          section: '第三部分：旅行详情',
+          section: t('copyWriteMode.canadaPart3'),
           sectionEn: 'Part 3: Travel Details',
           fields: [
             {
-              label: '航班号 (Airline/Flight Number)',
+              label: `${t('copyWriteMode.airlineFlightNumber')} (Airline/Flight Number)`,
               value: travelInfo?.flightNumber || '',
-              instruction: '例如：AC088, CZ329',
+              instruction: t('copyWriteMode.instructionFlightNumberCanada'),
             },
             {
-              label: '到达日期 (Arrival Date)',
+              label: `${t('copyWriteMode.arrivalDate')} (Arrival Date)`,
               value: formatDate(travelInfo?.arrivalDate) || '',
-              instruction: '格式：年-月-日',
+              instruction: t('copyWriteMode.instructionDateFormat'),
             },
             {
-              label: '来自哪个国家 (Arriving From)',
+              label: `${t('copyWriteMode.arrivingFrom')} (Arriving From)`,
               value: 'CHINA',
-              instruction: '如果从美国转机，填 U.S.A.',
+              instruction: t('copyWriteMode.instructionArrivingFrom'),
             },
             {
-              label: '入境目的 (Purpose of Trip)',
+              label: `${t('copyWriteMode.purposeOfTrip')} (Purpose of Trip)`,
               value: travelInfo?.travelPurpose === '旅游' ? 'Personal' :
                      travelInfo?.travelPurpose === '商务' ? 'Business' :
                      travelInfo?.travelPurpose === '学习' ? 'Study' : 'Personal',
-              instruction: '选项：Study / Personal / Business',
+              instruction: t('copyWriteMode.instructionPurposeOptions'),
             },
           ],
         },
         {
-          section: '第四部分：海关申报（打勾 ✓ 或 ✗）',
+          section: t('copyWriteMode.canadaPart4'),
           sectionEn: 'Part 4: Customs Declaration (Check YES or NO)',
           fields: [
             {
-              label: '携带现金超过$10,000加元？',
+              label: t('copyWriteMode.currencyOverLimit'),
               labelEn: 'Currency/monetary instruments ≥ CAN$10,000?',
               value: travelInfo?.hasHighCurrency === '是' ? '✓ YES' : '✗ NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
               highlight: travelInfo?.hasHighCurrency === '是',
             },
             {
-              label: '携带商业物品、样品或用于转售的商品？',
+              label: t('copyWriteMode.commercialGoodsForResale'),
               labelEn: 'Commercial goods, samples, or goods for resale?',
               value: travelInfo?.hasCommercialGoods === '是' ? '✓ YES' : '✗ NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
               highlight: travelInfo?.hasCommercialGoods === '是',
             },
             {
-              label: '携带食品、植物、动物或相关产品？',
+              label: t('copyWriteMode.foodPlantsAnimals'),
               labelEn: 'Food, plants, animals, or related products?',
               value: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是' ? '✓ YES' : '✗ NO',
-              instruction: '包括：水果、肉类、种子、木制品等',
+              instruction: t('copyWriteMode.instructionFoodItems'),
               highlight: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是',
             },
             {
-              label: '近期访问过农场或接触过农场动物？',
+              label: t('copyWriteMode.visitedFarm'),
               labelEn: 'Visited a farm or been in contact with farm animals?',
               value: travelInfo?.visitedFarm === '是' ? '✓ YES' : '✗ NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
               highlight: travelInfo?.visitedFarm === '是',
             },
             {
-              label: '携带枪支或武器？',
+              label: t('copyWriteMode.firearms'),
               labelEn: 'Firearms or weapons?',
               value: travelInfo?.hasFirearms === '是' ? '✓ YES' : '✗ NO',
-              instruction: '如实回答',
+              instruction: t('copyWriteMode.instructionTruthfulAnswer'),
               highlight: travelInfo?.hasFirearms === '是',
             },
             {
-              label: '携带物品超过免税额度？',
+              label: t('copyWriteMode.exceedsDutyFree'),
               labelEn: 'Goods exceed duty-free allowance?',
               value: travelInfo?.exceedsDutyFree === '是' ? '✓ YES' : '✗ NO',
-              instruction: '礼品超过$60加元需申报',
+              instruction: t('copyWriteMode.instructionGiftsLimit'),
               highlight: travelInfo?.exceedsDutyFree === '是',
             },
           ],
@@ -332,8 +332,6 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             {t('copyWriteMode.step2')}
             {'\n\n'}
             {t('copyWriteMode.step3')}
-            {'\n\n'}
-            {t('copyWriteMode.step4')}
           </Text>
         </Card>
 
@@ -387,7 +385,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
                         ]}
                         selectable
                       >
-                        {field.value || '（留空）'}
+                        {field.value || t('copyWriteMode.valueLeaveBlank')}
                       </Text>
                     </View>
 
@@ -410,32 +408,32 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         <Card style={styles.tipsCard}>
           <Text style={styles.tipsIcon}>⚠️</Text>
           <Text style={[styles.tipsTitle, { fontSize: fontSize }]}>
-            重要提示
+            {t('copyWriteMode.tipsTitle')}
           </Text>
           <Text style={[styles.tipsText, { fontSize: fontSize - 2 }]}>
             {isJapan ? (
               <>
-                • 请用<Text style={styles.bold}>黑色或蓝色笔</Text>填写表格
+                • {t('copyWriteMode.tipJapan1')}
                 {'\n\n'}
-                • 字迹要<Text style={styles.bold}>清晰工整</Text>，避免涂改
+                • {t('copyWriteMode.tipJapan2')}
                 {'\n\n'}
-                • 海关申报部分一定要<Text style={styles.bold}>如实填写</Text>
+                • {t('copyWriteMode.tipJapan3')}
                 {'\n\n'}
-                • 填写完成后，交给入境官员检查
+                • {t('copyWriteMode.tipJapan4')}
                 {'\n\n'}
-                • 保留入境卡副联直到离境
+                • {t('copyWriteMode.tipJapan5')}
               </>
             ) : (
               <>
-                • 请用<Text style={styles.bold}>大写英文字母</Text>填写姓名和国籍
+                • {t('copyWriteMode.tipCanada1')}
                 {'\n\n'}
-                • 日期格式：年-月-日 (例如：2025-01-15)
+                • {t('copyWriteMode.tipCanada2')}
                 {'\n\n'}
-                • 海关申报部分一定要<Text style={styles.bold}>如实填写</Text>
+                • {t('copyWriteMode.tipCanada3')}
                 {'\n\n'}
-                • 填写完成后，在表格底部<Text style={styles.bold}>签名</Text>
+                • {t('copyWriteMode.tipCanada4')}
                 {'\n\n'}
-                • 16岁以下的儿童可由父母代签
+                • {t('copyWriteMode.tipCanada5')}
               </>
             )}
           </Text>
@@ -445,15 +443,15 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         <Card style={styles.sampleCard}>
           <Text style={styles.sampleIcon}>📄</Text>
           <Text style={[styles.sampleTitle, { fontSize: fontSize }]}>
-            {isJapan ? '入境卡和申报单样式' : 'E311 表格样式'}
+            {isJapan ? t('copyWriteMode.sampleTitleJapan') : t('copyWriteMode.sampleTitleCanada')}
           </Text>
           <View style={styles.sampleImagePlaceholder}>
             <Text style={styles.sampleImageText}>
-              {isJapan ? 'Landing Card & Customs Declaration' : 'E311 Declaration Card'}
+              {isJapan ? t('copyWriteMode.sampleImageTitleJapan') : t('copyWriteMode.sampleImageTitleCanada')}
               {'\n\n'}
-              (纸质表格图片示例)
+              {t('copyWriteMode.sampleSubtitle')}
               {'\n\n'}
-              表格上的字段顺序与本页面一致
+              {t('copyWriteMode.sampleDescription')}
             </Text>
           </View>
         </Card>
@@ -462,9 +460,9 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         <View style={styles.bottomTip}>
           <Text style={styles.bottomTipIcon}>✨</Text>
           <Text style={[styles.bottomTipText, { fontSize: fontSize - 2 }]}>
-            抄写完成后，记得检查一遍
+            {t('copyWriteMode.bottomTipTitle')}
             {'\n'}
-            确保姓名、护照号、航班号等重要信息正确
+            {t('copyWriteMode.bottomTipDescription')}
           </Text>
         </View>
 
