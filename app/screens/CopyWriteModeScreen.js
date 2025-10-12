@@ -11,8 +11,10 @@ import {
 import { activateKeepAwakeAsync, deactivateKeepAwakeAsync } from 'expo-keep-awake';
 import Card from '../components/Card';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import { useTranslation } from '../i18n/LocaleContext';
 
 const CopyWriteModeScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { passport, destination, travelInfo } = route.params || {};
   const [fontSize, setFontSize] = useState(24);
 
@@ -283,9 +285,9 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹ 返回</Text>
+          <Text style={styles.backButton}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>抄写模式</Text>
+        <Text style={styles.headerTitle}>{t('copyWriteMode.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -293,20 +295,18 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         {/* Title */}
         <View style={styles.titleSection}>
           <Text style={styles.icon}>✍️</Text>
-          <Text style={styles.title}>抄写模式</Text>
+          <Text style={styles.title}>{t('copyWriteMode.title')}</Text>
           <Text style={styles.subtitle}>
-            对照此屏幕填写纸质表格
+            {t('copyWriteMode.subtitle')}
           </Text>
           <Text style={styles.description}>
-            屏幕会保持常亮，不会自动锁屏
-            {'\n'}
-            您可以慢慢抄写，不用着急
+            {t('copyWriteMode.description')}
           </Text>
         </View>
 
         {/* Font Size Controls */}
         <View style={styles.fontControls}>
-          <Text style={styles.fontLabel}>字体大小：</Text>
+          <Text style={styles.fontLabel}>{t('copyWriteMode.fontSizeLabel')}</Text>
           <TouchableOpacity
             style={styles.fontButton}
             onPress={decreaseFontSize}
@@ -325,15 +325,15 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         {/* Instructions */}
         <Card style={styles.instructionCard}>
           <Text style={styles.instructionIcon}>💡</Text>
-          <Text style={styles.instructionTitle}>使用说明</Text>
+          <Text style={styles.instructionTitle}>{t('copyWriteMode.instructionsTitle')}</Text>
           <Text style={styles.instructionText}>
-            1. 在飞机上或入境大厅拿一张空白的{isJapan ? '入境卡和海关申报单' : 'E311表格'}
+            {t('copyWriteMode.step1')}
             {'\n\n'}
-            2. 对照手机屏幕上的内容，用笔抄写到纸质表格上
+            {t('copyWriteMode.step2')}
             {'\n\n'}
-            3. 字段按照表格的顺序排列，从上到下依次填写
+            {t('copyWriteMode.step3')}
             {'\n\n'}
-            4. 填写完成后，交给入境官员
+            {t('copyWriteMode.step4')}
           </Text>
         </Card>
 
