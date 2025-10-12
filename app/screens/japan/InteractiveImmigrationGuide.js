@@ -243,7 +243,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       {isJapan && currentStep === 0 && (
         <>
           <View style={styles.formPreview}>
-            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step1.title')}</Text>
+            <Text style={styles.formPreviewTitle}>入境卡样本</Text>
             <TouchableOpacity
               style={styles.sampleImageContainer}
               onPress={() => setFormSampleVisible(true)}
@@ -256,7 +256,24 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
+            <Text style={styles.imageHint}>点击查看大图</Text>
+          </View>
+
+          <View style={[styles.formPreview, { marginTop: spacing.md }]}>
+            <Text style={styles.formPreviewTitle}>海关申报单样本</Text>
+            <TouchableOpacity
+              style={styles.sampleImageContainer}
+              onPress={() => setCustomsSampleVisible(true)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel="查看日本海关申报单样本大图"
+            >
+              <Image
+                source={japanCustomsSample}
+                style={styles.sampleImageThumb}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <Text style={styles.imageHint}>点击查看大图</Text>
           </View>
         </>
       )}
