@@ -107,8 +107,8 @@ const AppNavigator = () => {
         screenOptions={{
           headerShown: false,
           animation: 'slide_from_right',
-          headerBackTitle: t('common.back'),
-          headerBackTitleVisible: true,
+          headerBackTitle: '',
+          headerBackTitleVisible: false,
         }}
       >
         {/* Auth Stack */}

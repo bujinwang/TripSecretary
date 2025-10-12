@@ -240,7 +240,7 @@ const TDACAPIInterceptScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>{t('common.back')}</Text>
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.title}>TDAC API分析器</Text>
         <TouchableOpacity onPress={exportAllCalls}>

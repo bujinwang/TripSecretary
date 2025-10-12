@@ -199,7 +199,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.backButtonText}>{t('immigrationGuide.back')}</Text>
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
       </View>
 

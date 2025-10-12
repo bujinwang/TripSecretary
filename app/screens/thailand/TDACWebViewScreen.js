@@ -1020,7 +1020,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>{t('common.back')}</Text>
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.title}>TDAC 填写</Text>
         <View style={styles.headerRight} />
