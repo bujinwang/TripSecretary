@@ -363,8 +363,8 @@ export const translations = {
         },
         step6: {
           title: '🛃 Step 6: Customs Inspection',
-          description: 'Proceed to customs inspection area',
-          instruction: 'May need to open luggage for inspection, please be patient',
+          description: 'After collecting luggage, proceed to customs inspection area',
+          instruction: 'Hand your customs declaration form to the officer. If you checked "Yes" on any question or are asked by officer, use the red channel for inspection. If all answers are "No" and you have nothing to declare, use the green channel for quick exit',
           action: 'Complete Customs Check',
         },
         step7: {
@@ -738,8 +738,8 @@ export const translations = {
         },
         step6: {
           title: '🛃 第六步：海关检查',
-          description: '前往海关检查区',
-          instruction: '可能需要开箱检查行李，请耐心等待',
+          description: '领取行李后，前往海关检查区',
+          instruction: '将填好的海关申报单交给工作人员。如果申报单上勾选了"是"，或被工作人员要求，需要走红色通道接受检查。如果都勾选"否"且没有违禁品，走绿色通道即可快速通过',
           action: '完成海关检查',
         },
         step7: {
