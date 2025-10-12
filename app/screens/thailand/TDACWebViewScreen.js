@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { colors, typography, spacing } from '../../theme';
+import { useTranslation } from '../../i18n/LocaleContext';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,6 +27,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const TDACWebViewScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { passport, destination, travelInfo } = route.params || {};
   const [showHelper, setShowHelper] = useState(false); // 控制浮动助手显示
   const [copiedField, setCopiedField] = useState(null);
@@ -1018,7 +1020,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>‹ 返回</Text>
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.title}>TDAC 填写</Text>
         <View style={styles.headerRight} />

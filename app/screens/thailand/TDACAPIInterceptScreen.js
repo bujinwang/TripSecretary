@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { colors, spacing } from '../../theme';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const TDACAPIInterceptScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [apiCalls, setApiCalls] = useState([]);
   const [showCloudflareReminder, setShowCloudflareReminder] = useState(false);
   const webViewRef = useRef(null);
@@ -238,7 +240,7 @@ const TDACAPIInterceptScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.title}>TDAC API分析器</Text>
         <TouchableOpacity onPress={exportAllCalls}>
