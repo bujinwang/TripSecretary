@@ -11,7 +11,7 @@ import {
   Clipboard,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { colors, spacing } from '../theme';
+import { colors, spacing } from '../../theme';
 
 const TDACAPIInterceptScreen = ({ navigation }) => {
   const [apiCalls, setApiCalls] = useState([]);

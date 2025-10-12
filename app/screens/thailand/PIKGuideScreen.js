@@ -9,9 +9,9 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import Card from '../components/Card';
-import Button from '../components/Button';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import Card from '../../components/Card';
+import Button from '../../components/Button';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 
 const PIKGuideScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo } = route.params || {};

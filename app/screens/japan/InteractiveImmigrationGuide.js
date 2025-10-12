@@ -12,11 +12,11 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import { colors, typography, spacing } from '../theme';
-import { useTranslation } from '../i18n/LocaleContext';
+import { colors, typography, spacing } from '../../theme';
+import { useTranslation } from '../../i18n/LocaleContext';
 
-const japanEntryCardSample = require('../../assets/forms/japan-entry-card-sample.jpg');
-const japanBiometricSample = require('../../assets/forms/japan-biometric-scan.jpg');
+const japanEntryCardSample = require('../../../assets/forms/japan-entry-card-sample.jpg');
+const japanBiometricSample = require('../../../assets/forms/japan-biometric-scan.jpg');
 
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const { t } = useTranslation();

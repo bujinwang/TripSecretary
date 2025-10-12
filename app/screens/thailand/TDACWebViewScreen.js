@@ -18,7 +18,7 @@ import {
   Platform,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { colors, typography, spacing } from '../theme';
+import { colors, typography, spacing } from '../../theme';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';

@@ -11,7 +11,7 @@ import {
   Linking,
   Clipboard,
 } from 'react-native';
-import { colors, typography, spacing } from '../theme';
+import { colors, typography, spacing } from '../../theme';
 
 const TDACGuideScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo } = route.params || {};

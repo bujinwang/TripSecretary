@@ -19,11 +19,11 @@ import {
   Modal
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import TDACAPIService from '../services/TDACAPIService';
+import TDACAPIService from '../../services/TDACAPIService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import { mergeTDACData } from '../data/mockTDACData';
+import { mergeTDACData } from '../../data/mockTDACData';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};

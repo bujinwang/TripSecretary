@@ -23,12 +23,12 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import TDACAPIService from '../services/TDACAPIService';
-import CloudflareTokenExtractor from '../services/CloudflareTokenExtractor';
+import TDACAPIService from '../../services/TDACAPIService';
+import CloudflareTokenExtractor from '../../services/CloudflareTokenExtractor';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import { mergeTDACData } from '../data/mockTDACData';
+import { mergeTDACData } from '../../data/mockTDACData';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};

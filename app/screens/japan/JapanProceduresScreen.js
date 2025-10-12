@@ -8,7 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { colors, typography, spacing } from '../theme';
+import { colors, typography, spacing } from '../../theme';
 
 const JapanProceduresScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
