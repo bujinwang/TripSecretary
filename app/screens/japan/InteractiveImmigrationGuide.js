@@ -240,26 +240,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
         <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
       </View>
 
-      {isJapan && currentStep === 0 && (
-        <>
-          <View style={styles.formPreview}>
-            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step1.title')}</Text>
-            <TouchableOpacity
-              style={styles.sampleImageContainer}
-              onPress={() => setFormSampleVisible(true)}
-              accessibilityRole="imagebutton"
-              accessibilityLabel="查看日本入境卡样本大图"
-            >
-              <Image
-                source={japanEntryCardSample}
-                style={styles.sampleImageThumb}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
-          </View>
-        </>
-      )}
+
 
       {isJapan && currentStep === 4 && (
         <>
