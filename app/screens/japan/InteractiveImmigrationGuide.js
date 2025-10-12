@@ -286,29 +286,36 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       {currentStep === 1 && (
         <>
           <View style={styles.formPreview}>
-                <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step2.formPreviewTitle')}</Text>
-                <View style={styles.formPlaceholder}>
-                  <Text style={styles.formPlaceholderText}>{t('immigrationGuide.japanSteps.step2.formPlaceholderText')}</Text>
-                  <Text style={styles.formPlaceholderHint}>
-                    {t('immigrationGuide.japanSteps.step2.formPlaceholderHint')}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.viewFormButton}
-                onPress={() => navigation.navigate('CopyWrite', {
-                  passport,
-                  destination,
-                  travelInfo,
-                  formType: 'entry',
-                })}
-              >
-                <Text style={styles.viewFormIcon}>📝</Text>
-                <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step2.viewFormButton')}</Text>
-                <Text style={styles.viewFormArrow}>›</Text>
-              </TouchableOpacity>
-            </>
-          )}
+            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step2.formPreviewTitle')}</Text>
+            <TouchableOpacity
+              style={styles.sampleImageContainer}
+              onPress={() => setFormSampleVisible(true)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel="查看日本入境卡样本大图"
+            >
+              <Image
+                source={japanEntryCardSample}
+                style={styles.sampleImageThumb}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.viewFormButton}
+            onPress={() => navigation.navigate('CopyWrite', {
+              passport,
+              destination,
+              travelInfo,
+              formType: 'entry',
+            })}
+          >
+            <Text style={styles.viewFormIcon}>📝</Text>
+            <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step2.viewFormButton')}</Text>
+            <Text style={styles.viewFormArrow}>›</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
           {/* Show "View Customs Declaration" button for step 3 */}
           {currentStep === 2 && (
