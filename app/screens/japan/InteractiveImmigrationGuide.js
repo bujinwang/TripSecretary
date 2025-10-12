@@ -525,9 +525,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   backButtonText: {
-    fontSize: 17,
+    fontSize: 28,
     color: '#007AFF',
-    fontWeight: '400',
+    fontWeight: '300',
   },
   progressContainer: {
     paddingHorizontal: spacing.lg,
