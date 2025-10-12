@@ -70,13 +70,13 @@ export const translations = {
       pendingTrips: {
         departSuffix: 'Departure',
         cards: {
-          jp: { title: 'Trip to Japan' },
-          th: { title: 'Trip to Thailand' },
-          us: { title: 'Trip to USA' },
-          kr: { title: 'Trip to South Korea' },
-          my: { title: 'Trip to Malaysia' },
-          tw: { title: 'Trip to Taiwan' },
-          hk: { title: 'Trip to Hong Kong' },
+          jp: { title: 'Japan · Tokyo' },
+          th: { title: 'Thailand · Bangkok' },
+          us: { title: 'USA · New York' },
+          kr: { title: 'South Korea · Seoul' },
+          my: { title: 'Malaysia · Kuala Lumpur' },
+          tw: { title: 'Taiwan · Taipei' },
+          hk: { title: 'Hong Kong' },
         },
       },
       alerts: {
@@ -445,13 +445,13 @@ export const translations = {
       pendingTrips: {
         departSuffix: '出发',
         cards: {
-          jp: { title: '日本之旅' },
-          th: { title: '泰国之旅' },
-          us: { title: '美国之旅' },
-          kr: { title: '韩国之旅' },
-          my: { title: '马来西亚之旅' },
-          tw: { title: '台湾之旅' },
-          hk: { title: '香港之旅' },
+          jp: { title: '日本 · 东京' },
+          th: { title: '泰国 · 曼谷' },
+          us: { title: '美国 · 纽约' },
+          kr: { title: '韩国 · 首尔' },
+          my: { title: '马来西亚 · 吉隆坡' },
+          tw: { title: '台湾 · 台北' },
+          hk: { title: '香港' },
         },
       },
       alerts: {
