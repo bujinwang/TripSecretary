@@ -13,75 +13,81 @@ import {
   Modal,
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
+import { useTranslation } from '../i18n/LocaleContext';
 
 const japanEntryCardSample = require('../../assets/forms/japan-entry-card-sample.jpg');
+const japanBiometricSample = require('../../assets/forms/japan-biometric-scan.jpg');
 
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { passport, destination, travelInfo, currentStep: initialStep = 0 } = route.params || {};
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isFormSampleVisible, setFormSampleVisible] = useState(false);
+  const [isBiometricSampleVisible, setBiometricSampleVisible] = useState(false);
 
   const isJapan = destination?.id === 'jp' || destination?.name === '日本';
 
-  const steps = isJapan ? [
+  const japanSteps = [
     {
       id: 0,
-      title: '📋 第一步：领取表格',
-      description: '在入境大厅找到入境卡和海关申报单',
-      instruction: '找到标有"入境卡"和"海关申报"的柜台或自动发放机，可先查看样本了解填写内容',
-      action: '下一步：填写入境卡',
+      title: t('immigrationGuide.japanSteps.step1.title'),
+      description: t('immigrationGuide.japanSteps.step1.description'),
+      instruction: t('immigrationGuide.japanSteps.step1.instruction'),
+      action: t('immigrationGuide.japanSteps.step1.action'),
       voiceText: '请走到入境大厅的表格发放区，领取蓝色入境卡和黄色海关申报单，可以先参考手机里的样本了解填写内容',
     },
     {
       id: 1,
-      title: '✍️ 第二步：填写入境卡',
-      description: '用黑色或蓝色笔填写蓝色入境卡',
-      instruction: '对照手机上的信息，仔细抄写到表格上',
-      action: '下一步：海关申报表',
+      title: t('immigrationGuide.japanSteps.step2.title'),
+      description: t('immigrationGuide.japanSteps.step2.description'),
+      instruction: t('immigrationGuide.japanSteps.step2.instruction'),
+      action: t('immigrationGuide.japanSteps.step2.action'),
       voiceText: '现在请用笔填写蓝色入境卡，姓名、护照号码、航班号等信息',
     },
     {
       id: 2,
-      title: '📝 第三步：填写海关申报单',
-      description: '填写黄色海关申报单',
-      instruction: '如实申报携带物品，回答是否有违禁品等问题',
-      action: '下一步：入境审查',
+      title: t('immigrationGuide.japanSteps.step3.title'),
+      description: t('immigrationGuide.japanSteps.step3.description'),
+      instruction: t('immigrationGuide.japanSteps.step3.instruction'),
+      action: t('immigrationGuide.japanSteps.step3.action'),
       voiceText: '接下来填写黄色海关申报单，诚实回答所有问题',
     },
     {
       id: 3,
-      title: '🏢 第四步：前往入境审查',
-      description: '拿着填好的表格前往入境审查柜台',
-      instruction: '排队等待叫号，交给工作人员检查',
-      action: '下一步：生物识别',
+      title: t('immigrationGuide.japanSteps.step4.title'),
+      description: t('immigrationGuide.japanSteps.step4.description'),
+      instruction: t('immigrationGuide.japanSteps.step4.instruction'),
+      action: t('immigrationGuide.japanSteps.step4.action'),
       voiceText: '请前往入境审查柜台，准备好护照和填好的表格',
     },
     {
       id: 4,
-      title: '👤 第五步：生物识别检查',
-      description: '接受指纹和面部识别',
-      instruction: '按照工作人员指示完成生物识别',
-      action: '下一步：海关检查',
+      title: t('immigrationGuide.japanSteps.step5.title'),
+      description: t('immigrationGuide.japanSteps.step5.description'),
+      instruction: t('immigrationGuide.japanSteps.step5.instruction'),
+      action: t('immigrationGuide.japanSteps.step5.action'),
       voiceText: '工作人员会采集您的指纹和面部信息，请配合完成',
     },
     {
       id: 5,
-      title: '🛃 第六步：海关检查',
-      description: '前往海关检查区',
-      instruction: '可能需要开箱检查行李，请耐心等待',
-      action: '完成海关检查',
+      title: t('immigrationGuide.japanSteps.step6.title'),
+      description: t('immigrationGuide.japanSteps.step6.description'),
+      instruction: t('immigrationGuide.japanSteps.step6.instruction'),
+      action: t('immigrationGuide.japanSteps.step6.action'),
       voiceText: '现在前往海关检查区，准备接受行李检查',
     },
     {
       id: 6,
-      title: '✅ 第七步：完成入境',
-      description: '通关包仅在需要时使用',
-      instruction: '如果移民官员询问信息或遇到语言困难，可以打开通关包辅助沟通',
-      action: '打开通关包',
+      title: t('immigrationGuide.japanSteps.step7.title'),
+      description: t('immigrationGuide.japanSteps.step7.description'),
+      instruction: t('immigrationGuide.japanSteps.step7.instruction'),
+      action: t('immigrationGuide.japanSteps.step7.action'),
       voiceText: '入境流程即将完成。通关包已准备好，如果移民官员有疑问，可以随时打开给他们查看。',
       isFinal: true,
     },
-  ] : [
+  ];
+
+  const genericSteps = [
     {
       id: 0,
       title: '📋 第一步：领取入境材料',
@@ -108,6 +114,8 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       isFinal: true,
     },
   ];
+
+  const steps = isJapan ? japanSteps : genericSteps;
 
   const handleNextStep = () => {
     const stepData = steps[currentStep];
@@ -148,13 +156,31 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
 
   const handleEmergency = () => {
     Alert.alert(
-      '需要帮助吗？',
-      '请选择您需要的帮助类型：',
+      t('immigrationGuide.helpMenu.title'),
+      t('immigrationGuide.helpMenu.message'),
       [
-        { text: '找工作人员', onPress: () => Alert.alert('提示', '请寻找穿制服的工作人员') },
-        { text: '语言帮助', onPress: () => Alert.alert('提示', '工作人员会说英语和日语') },
-        { text: '医疗帮助', onPress: () => Alert.alert('紧急', '请拨打机场医疗急救电话') },
-        { text: '取消', style: 'cancel' },
+        { 
+          text: t('immigrationGuide.helpMenu.findStaff'), 
+          onPress: () => Alert.alert(
+            t('immigrationGuide.helpMenu.notice'), 
+            t('immigrationGuide.helpMenu.findStaffMessage')
+          ) 
+        },
+        { 
+          text: t('immigrationGuide.helpMenu.languageHelp'), 
+          onPress: () => Alert.alert(
+            t('immigrationGuide.helpMenu.notice'), 
+            t('immigrationGuide.helpMenu.languageHelpMessage')
+          ) 
+        },
+        { 
+          text: t('immigrationGuide.helpMenu.medicalHelp'), 
+          onPress: () => Alert.alert(
+            t('immigrationGuide.helpMenu.emergency'), 
+            t('immigrationGuide.helpMenu.medicalHelpMessage')
+          ) 
+        },
+        { text: t('immigrationGuide.helpMenu.cancel'), style: 'cancel' },
       ]
     );
   };
@@ -171,7 +197,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.backButtonText}>← 返回</Text>
+          <Text style={styles.backButtonText}>{t('immigrationGuide.back')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -193,7 +219,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       {/* Emergency Button */}
       <TouchableOpacity style={styles.emergencyButton} onPress={handleEmergency}>
         <Text style={styles.emergencyIcon}>🚨</Text>
-        <Text style={styles.emergencyText}>需要帮助</Text>
+        <Text style={styles.emergencyText}>{t('immigrationGuide.needHelp')}</Text>
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
@@ -204,53 +230,65 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>{currentStepData.title}</Text>
               <Text style={styles.stepDescription}>{currentStepData.description}</Text>
-            </View>
+        </View>
+      </View>
+
+      <View style={styles.instructionBox}>
+        <Text style={styles.instructionIcon}>💡</Text>
+        <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
+      </View>
+
+      {isJapan && currentStep === 0 && (
+        <>
+          <View style={styles.formPreview}>
+            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step1.title')}</Text>
+            <TouchableOpacity
+              style={styles.sampleImageContainer}
+              onPress={() => setFormSampleVisible(true)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel="查看日本入境卡样本大图"
+            >
+              <Image
+                source={japanEntryCardSample}
+                style={styles.sampleImageThumb}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
           </View>
+        </>
+      )}
 
-          <View style={styles.instructionBox}>
-            <Text style={styles.instructionIcon}>💡</Text>
-            <Text style={styles.instructionText}>{currentStepData.instruction}</Text>
+      {isJapan && currentStep === 4 && (
+        <>
+          <View style={styles.formPreview}>
+            <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step5.biometricNotice')}</Text>
+            <TouchableOpacity
+              style={styles.sampleImageContainer}
+              onPress={() => setBiometricSampleVisible(true)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel="查看生物识别示意图大图"
+            >
+              <Image
+                source={japanBiometricSample}
+                style={styles.sampleImageThumb}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <Text style={styles.imageHint}>{t('immigrationGuide.japanSteps.step5.biometricCaption')}</Text>
           </View>
+        </>
+      )}
 
-          {isJapan && currentStep === 0 && (
-            <>
-              <View style={styles.formPreview}>
-                <Text style={styles.formPreviewTitle}>🇯🇵 入境卡样本</Text>
-                <TouchableOpacity
-                  style={styles.sampleImageContainer}
-                  onPress={() => setFormSampleVisible(true)}
-                  accessibilityRole="imagebutton"
-                  accessibilityLabel="查看日本入境卡样本大图"
-                >
-                  <Image
-                    source={japanEntryCardSample}
-                    style={styles.sampleImageThumb}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-                <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.viewFormButton}
-                onPress={() => setFormSampleVisible(true)}
-              >
-                <Text style={styles.viewFormIcon}>📄</Text>
-                <Text style={styles.viewFormText}>打开日本入境卡样本</Text>
-                <Text style={styles.viewFormArrow}>›</Text>
-              </TouchableOpacity>
-            </>
-          )}
-
-          {/* Show "View Form" button for step 2 (filling out entry card) */}
-          {currentStep === 1 && (
-            <>
-              <View style={styles.formPreview}>
-                <Text style={styles.formPreviewTitle}>📋 入境卡样本</Text>
+      {/* Show "View Form" button for step 2 (filling out entry card) */}
+      {currentStep === 1 && (
+        <>
+          <View style={styles.formPreview}>
+                <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step2.formPreviewTitle')}</Text>
                 <View style={styles.formPlaceholder}>
-                  <Text style={styles.formPlaceholderText}>蓝色入境卡</Text>
+                  <Text style={styles.formPlaceholderText}>{t('immigrationGuide.japanSteps.step2.formPlaceholderText')}</Text>
                   <Text style={styles.formPlaceholderHint}>
-                    包含个人信息、护照号码、{'\n'}
-                    航班信息、住宿地址等
+                    {t('immigrationGuide.japanSteps.step2.formPlaceholderHint')}
                   </Text>
                 </View>
               </View>
@@ -260,11 +298,11 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   passport,
                   destination,
                   travelInfo,
-                  formType: 'entry', // 入境卡
+                  formType: 'entry',
                 })}
               >
                 <Text style={styles.viewFormIcon}>📝</Text>
-                <Text style={styles.viewFormText}>对照填写入境表</Text>
+                <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step2.viewFormButton')}</Text>
                 <Text style={styles.viewFormArrow}>›</Text>
               </TouchableOpacity>
             </>
@@ -274,12 +312,11 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
           {currentStep === 2 && (
             <>
               <View style={styles.formPreview}>
-                <Text style={styles.formPreviewTitle}>📋 海关申报单样本</Text>
+                <Text style={styles.formPreviewTitle}>{t('immigrationGuide.japanSteps.step3.formPreviewTitle')}</Text>
                 <View style={styles.formPlaceholder}>
-                  <Text style={styles.formPlaceholderText}>黄色海关申报单</Text>
+                  <Text style={styles.formPlaceholderText}>{t('immigrationGuide.japanSteps.step3.formPlaceholderText')}</Text>
                   <Text style={styles.formPlaceholderHint}>
-                    包含携带物品申报、{'\n'}
-                    是否携带违禁品等问题
+                    {t('immigrationGuide.japanSteps.step3.formPlaceholderHint')}
                   </Text>
                 </View>
               </View>
@@ -289,11 +326,11 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   passport,
                   destination,
                   travelInfo,
-                  formType: 'customs', // 海关申报单
+                  formType: 'customs',
                 })}
               >
                 <Text style={styles.viewFormIcon}>📋</Text>
-                <Text style={styles.viewFormText}>对照填写申报表</Text>
+                <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step3.viewFormButton')}</Text>
                 <Text style={styles.viewFormArrow}>›</Text>
               </TouchableOpacity>
             </>
@@ -310,7 +347,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               })}
             >
               <Text style={styles.completeEntryIcon}>🎉</Text>
-              <Text style={styles.completeEntryText}>结束入境，返回入境包</Text>
+              <Text style={styles.completeEntryText}>{t('immigrationGuide.completeEntry')}</Text>
             </TouchableOpacity>
           )}
 
@@ -324,7 +361,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             style={styles.navButtonSecondary}
             onPress={handlePreviousStep}
           >
-            <Text style={styles.navButtonTextSecondary}>上一步</Text>
+            <Text style={styles.navButtonTextSecondary}>{t('immigrationGuide.previousStep')}</Text>
           </TouchableOpacity>
         )}
 
@@ -352,9 +389,9 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               onPress={() => setFormSampleVisible(false)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Text style={styles.modalCloseText}>关闭</Text>
+              <Text style={styles.modalCloseText}>{t('immigrationGuide.modalClose')}</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>日本入境卡样本</Text>
+            <Text style={styles.modalTitle}>{t('immigrationGuide.entryCardModalTitle')}</Text>
             <View style={styles.modalHeaderSpacer} />
           </View>
           <ScrollView
@@ -372,7 +409,45 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               accessibilityRole="image"
               accessibilityLabel="日本入境卡样本大图"
             />
-            <Text style={styles.modalHint}>可截图或放大查看每一栏位的填写示例</Text>
+            <Text style={styles.modalHint}>{t('immigrationGuide.entryCardModalHint')}</Text>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={isBiometricSampleVisible}
+        animationType="slide"
+        onRequestClose={() => setBiometricSampleVisible(false)}
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setBiometricSampleVisible(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.modalCloseText}>{t('immigrationGuide.modalClose')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>{t('immigrationGuide.biometricModalTitle')}</Text>
+            <View style={styles.modalHeaderSpacer} />
+          </View>
+          <ScrollView
+            style={styles.modalScroll}
+            maximumZoomScale={3}
+            minimumZoomScale={1}
+            contentContainerStyle={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
+            <Image
+              source={japanBiometricSample}
+              style={styles.biometricImageFull}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel="日本入境生物识别采集照片"
+            />
+            <Text style={styles.modalHint}>{t('immigrationGuide.biometricModalHint')}</Text>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -689,6 +764,11 @@ const styles = StyleSheet.create({
   sampleImageFull: {
     width: '100%',
     aspectRatio: 860 / 540,
+    borderRadius: 12,
+  },
+  biometricImageFull: {
+    width: '100%',
+    aspectRatio: 468 / 224,
     borderRadius: 12,
   },
   modalHint: {
