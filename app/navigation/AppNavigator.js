@@ -16,19 +16,21 @@ import {
   ResultScreen,
   HistoryScreen,
   ProfileScreen,
+  PresentToCustomsScreen,
+  CopyWriteModeScreen,
+  AirportArrivalScreen,
+  // Japan screens
+  JapanInfoScreen,
+  JapanRequirementsScreen,
+  JapanProceduresScreen,
+  InteractiveImmigrationGuide,
+  // Thailand screens
+  PIKGuideScreen,
+  TDACWebViewScreen,
+  TDACAPIScreen,
+  TDACSelectionScreen,
+  TDACHybridScreen,
 } from '../screens';
-import PresentToCustomsScreen from '../screens/PresentToCustomsScreen';
-import PIKGuideScreen from '../screens/PIKGuideScreen';
-import CopyWriteModeScreen from '../screens/CopyWriteModeScreen';
-import TDACWebViewScreen from '../screens/TDACWebViewScreen';
-import TDACAPIScreen from '../screens/TDACAPIScreen';
-import TDACSelectionScreen from '../screens/TDACSelectionScreen';
-import TDACHybridScreen from '../screens/TDACHybridScreen';
-import JapanInfoScreen from '../screens/JapanInfoScreen';
-import JapanRequirementsScreen from '../screens/JapanRequirementsScreen';
-import JapanProceduresScreen from '../screens/JapanProceduresScreen';
-import AirportArrivalScreen from '../screens/AirportArrivalScreen';
-import InteractiveImmigrationGuide from '../screens/InteractiveImmigrationGuide';
 
 import { colors } from '../theme';
 
