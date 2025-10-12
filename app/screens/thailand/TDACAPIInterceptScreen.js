@@ -11,6 +11,7 @@ import {
   Clipboard,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import BackButton from '../../components/BackButton';
 import { colors, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 
@@ -236,12 +237,11 @@ const TDACAPIInterceptScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <BackButton
           onPress={() => navigation.goBack()}
+          showLabel={false}
           style={styles.backButton}
-        >
-          <Text style={styles.backButtonText}>‹</Text>
-        </TouchableOpacity>
+        />
         <Text style={styles.title}>TDAC API分析器</Text>
         <TouchableOpacity onPress={exportAllCalls}>
           <Text style={styles.exportButton}>导出({apiCalls.length})</Text>
@@ -334,12 +334,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    padding: spacing.xs,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: '#007AFF',
-    fontWeight: '300',
+    marginLeft: -spacing.sm,
   },
   title: {
     fontSize: 18,

@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
+import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { checkDuplicate, getTimeUntilArrival } from '../utils/generationHistory';
 import api from '../services/api';
@@ -549,9 +550,11 @@ const TravelInfoScreen = ({ navigation, route }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backButton}>{t('travelInfo.header.back')}</Text>
-          </TouchableOpacity>
+          <BackButton
+            onPress={() => navigation.goBack()}
+            label={t('common.back')}
+            style={styles.backButton}
+          />
           <Text style={styles.headerTitle}>{t('travelInfo.header.title')}</Text>
           <View style={styles.headerRight} />
         </View>
@@ -845,8 +848,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    ...typography.h2,
-    color: colors.primary,
+    marginLeft: -spacing.sm,
   },
   headerTitle: {
     ...typography.body2,

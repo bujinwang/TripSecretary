@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { activateKeepAwakeAsync, deactivateKeepAwakeAsync } from 'expo-keep-awake';
 import Card from '../components/Card';
+import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 
@@ -140,7 +141,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             },
             {
               label: `${t('copyWriteMode.totalValueOfGoods')} (Total Value of Goods)`,
-              value: travelInfo?.goodsValue || 'UNDER ¥200,000',
+              value: travelInfo?.goodsValue || '¥0',
               instruction: t('copyWriteMode.instructionTotalValue'),
             },
           ],
@@ -284,9 +285,11 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹</Text>
-        </TouchableOpacity>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          showLabel={false}
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>{t('copyWriteMode.title')}</Text>
         <View style={styles.headerRight} />
       </View>
@@ -488,8 +491,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    ...typography.h2,
-    color: colors.primary,
+    marginLeft: -spacing.sm,
   },
   headerTitle: {
     ...typography.body2,

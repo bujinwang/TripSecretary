@@ -12,6 +12,7 @@ import {
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import api from '../services/api';
 
@@ -91,9 +92,11 @@ const ScanPassportScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backButton}>‹ 返回</Text>
-          </TouchableOpacity>
+          <BackButton
+            onPress={() => navigation.goBack()}
+            label="返回"
+            style={styles.backButton}
+          />
           <Text style={styles.headerTitle}>扫描证件</Text>
           <View style={styles.headerRight} />
         </View>
@@ -114,9 +117,11 @@ const ScanPassportScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹ 返回</Text>
-        </TouchableOpacity>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          label="返回"
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>扫描证件</Text>
         <View style={styles.headerRight} />
       </View>
@@ -193,8 +198,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    ...typography.body2,
-    color: colors.primary,
+    marginLeft: -spacing.sm,
   },
   headerTitle: {
     ...typography.body2,

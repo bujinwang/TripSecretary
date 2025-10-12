@@ -98,7 +98,7 @@ export const translations = {
       instructionName: 'Fill in Chinese name',
       instructionProhibitedItems: 'If no prohibited items, fill NO',
       instructionTruthfulAnswer: 'Answer truthfully',
-      instructionTotalValue: 'Generally fill UNDER ¥200,000',
+      instructionTotalValue: 'Fill in ¥0 unless you need to declare goods over ¥200,000',
       instructionCanadaAddress: 'Fill in address in Canada (hotel address)',
       instructionPostalCode: 'Hotel postal code (if known)',
       instructionDateFormat: 'Format: YYYY-MM-DD',
@@ -228,7 +228,7 @@ export const translations = {
       },
     },
     travelInfo: {
-      header: { title: 'Travel Information', back: '← Back' },
+      header: { title: 'Travel Information', back: 'Back' },
       infoCard: { title: 'Traveling to {{destination}}', subtitle: 'Fill in your travel details' },
       sections: { flight: 'Flight Information', accommodation: 'Accommodation', trip: 'Trip Details', health: 'Health Declaration', usCustoms: 'US Customs Declaration', caCustoms: 'Canada Customs Declaration' },
       fields: {
@@ -576,7 +576,7 @@ export const translations = {
       instructionName: '填写中文姓名',
       instructionProhibitedItems: '如果没有违禁品，填 NO',
       instructionTruthfulAnswer: '如实回答',
-      instructionTotalValue: '一般填写 UNDER ¥200,000',
+      instructionTotalValue: '一般填写 ¥0（无需要申报的物品）',
       instructionCanadaAddress: '填写在加拿大的住址（酒店地址）',
       instructionPostalCode: '酒店的邮编（如果知道的话）',
       instructionDateFormat: '格式：年-月-日',
@@ -706,7 +706,7 @@ export const translations = {
       },
     },
     travelInfo: {
-      header: { title: '旅行信息', back: '← 返回' },
+      header: { title: '旅行信息', back: '返回' },
       infoCard: { title: '前往{{destination}}', subtitle: '填写您的旅行详情' },
       sections: { flight: '航班信息', accommodation: '住宿信息', trip: '行程详情', health: '健康申报', usCustoms: '美国海关申报', caCustoms: '加拿大海关申报' },
       fields: {
@@ -1014,7 +1014,7 @@ export const translations = {
       empty: { title: 'Aucun historique', subtitle: 'Vos packs générés apparaîtront ici' },
     },
     travelInfo: {
-      header: { title: 'Informations de voyage', back: '← Retour' },
+      header: { title: 'Informations de voyage', back: 'Retour' },
       infoCard: { title: 'Voyage vers {{destination}}', subtitle: 'Remplissez vos détails de voyage' },
       sections: { flight: 'Informations de vol', accommodation: 'Hébergement', trip: 'Détails du voyage', health: 'Déclaration de santé', usCustoms: 'Douane américaine', caCustoms: 'Douane canadienne' },
       fields: { flightNumber: { label: 'Numéro de vol', placeholder: 'ex: CA981' }, arrivalDate: { label: 'Date d\'arrivée', placeholder: 'AAAA-MM-JJ', help: 'Dans les 72 heures' }, hotelName: { label: 'Hôtel', placeholder: 'Nom de l\'hôtel' }, hotelAddress: { label: 'Adresse', placeholder: 'Adresse complète' }, contactPhone: { label: 'Téléphone', placeholder: '+1234567890' }, stayDuration: { label: 'Durée (jours)', placeholder: 'ex: 7' }, purpose: 'But du voyage' },
@@ -1115,7 +1115,7 @@ export const translations = {
       empty: { title: 'Keine Historie', subtitle: 'Ihre generierten Pakete erscheinen hier' },
     },
     travelInfo: {
-      header: { title: 'Reiseinformationen', back: '← Zurück' },
+      header: { title: 'Reiseinformationen', back: 'Zurück' },
       infoCard: { title: 'Reise nach {{destination}}', subtitle: 'Füllen Sie Ihre Reisedetails aus' },
       sections: { flight: 'Fluginformationen', accommodation: 'Unterkunft', trip: 'Reisedetails', health: 'Gesundheitserklärung', usCustoms: 'US-Zoll', caCustoms: 'Kanadischer Zoll' },
       fields: { flightNumber: { label: 'Flugnummer', placeholder: 'z.B. CA981' }, arrivalDate: { label: 'Ankunftsdatum', placeholder: 'JJJJ-MM-TT', help: 'Innerhalb 72 Stunden' }, hotelName: { label: 'Hotel', placeholder: 'Hotelname' }, hotelAddress: { label: 'Adresse', placeholder: 'Vollständige Adresse' }, contactPhone: { label: 'Telefon', placeholder: '+1234567890' }, stayDuration: { label: 'Aufenthalt (Tage)', placeholder: 'z.B. 7' }, purpose: 'Reisezweck' },
@@ -1216,7 +1216,7 @@ export const translations = {
       empty: { title: 'Sin historial', subtitle: 'Tus paquetes generados aparecerán aquí' },
     },
     travelInfo: {
-      header: { title: 'Información de viaje', back: '← Atrás' },
+      header: { title: 'Información de viaje', back: 'Atrás' },
       infoCard: { title: 'Viaje a {{destination}}', subtitle: 'Complete sus detalles de viaje' },
       sections: { flight: 'Información de vuelo', accommodation: 'Alojamiento', trip: 'Detalles del viaje', health: 'Declaración de salud', usCustoms: 'Aduana de EE.UU.', caCustoms: 'Aduana de Canadá' },
       fields: { flightNumber: { label: 'Número de vuelo', placeholder: 'ej: CA981' }, arrivalDate: { label: 'Fecha de llegada', placeholder: 'AAAA-MM-DD', help: 'Dentro de 72 horas' }, hotelName: { label: 'Hotel', placeholder: 'Nombre del hotel' }, hotelAddress: { label: 'Dirección', placeholder: 'Dirección completa' }, contactPhone: { label: 'Teléfono', placeholder: '+1234567890' }, stayDuration: { label: 'Duración (días)', placeholder: 'ej: 7' }, purpose: 'Propósito del viaje' },

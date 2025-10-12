@@ -12,6 +12,7 @@ import {
   Clipboard,
 } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
+import BackButton from '../../components/BackButton';
 
 const TDACGuideScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo } = route.params || {};
@@ -58,9 +59,11 @@ const TDACGuideScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹ 返回</Text>
-        </TouchableOpacity>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          label="返回"
+          style={styles.backButton}
+        />
         <Text style={styles.title}>TDAC填写助手</Text>
       </View>
 
@@ -186,10 +189,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    fontSize: 32,
-    color: colors.primary,
-    fontWeight: 'bold',
-    marginRight: spacing.md,
+    marginLeft: -spacing.sm,
+    marginRight: spacing.sm,
   },
   title: {
     ...typography.h2,

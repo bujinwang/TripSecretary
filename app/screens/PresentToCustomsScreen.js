@@ -6,11 +6,11 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
 import { translateField, getDestinationLanguage, DESTINATION_LANGUAGES } from '../utils/translations';
+import BackButton from '../components/BackButton';
 
 const PresentToCustomsScreen = ({ navigation, route }) => {
   const { passport, destination, travelInfo } = route.params || {};
@@ -132,12 +132,11 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header - Full Width Back Button */}
-      <TouchableOpacity 
-        onPress={() => navigation.goBack()} 
+      <BackButton
+        onPress={() => navigation.goBack()}
         style={styles.headerBackButton}
-        activeOpacity={0.7}
+        iconStyle={styles.backArrow}
       >
-        <Text style={styles.backArrow}>‹</Text>
         <View style={styles.backTextContainer}>
           <Text style={styles.backTextPrimary}>{translateField('back', destination?.id)}</Text>
           {/* 如果目的地语言不是中文，显示简体中文帮助老人 */}
@@ -145,7 +144,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
             <Text style={styles.backTextSecondary}>返回</Text>
           )}
         </View>
-      </TouchableOpacity>
+      </BackButton>
 
       <ScrollView 
         style={styles.scrollView}
@@ -309,9 +308,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.primary,
   },
   backArrow: {
-    fontSize: 36,
+    fontSize: 28,
     color: colors.primary,
-    fontWeight: 'bold',
+    fontWeight: '300',
     marginRight: spacing.md,
   },
   backTextContainer: {

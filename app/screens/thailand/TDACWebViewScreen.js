@@ -23,6 +23,7 @@ import { useTranslation } from '../../i18n/LocaleContext';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BackButton from '../../components/BackButton';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -1016,12 +1017,11 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <BackButton
           onPress={() => navigation.goBack()}
+          showLabel={false}
           style={styles.backButton}
-        >
-          <Text style={styles.backButtonText}>‹</Text>
-        </TouchableOpacity>
+        />
         <Text style={styles.title}>TDAC 填写</Text>
         <View style={styles.headerRight} />
       </View>
@@ -1279,12 +1279,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    padding: spacing.xs,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: '#007AFF',
-    fontWeight: '300',
+    marginLeft: -spacing.sm,
   },
   title: {
     fontSize: 18,

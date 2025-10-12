@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
+import BackButton from '../../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
 const PIKGuideScreen = ({ navigation, route }) => {
@@ -92,9 +93,11 @@ const PIKGuideScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹ 返回</Text>
-        </TouchableOpacity>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          label="返回"
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>自助通关指南</Text>
         <View style={styles.headerRight} />
       </View>
@@ -508,8 +511,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    ...typography.h2,
-    color: colors.primary,
+    marginLeft: -spacing.sm,
   },
   headerTitle: {
     ...typography.body2,

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
+import BackButton from '../../components/BackButton';
 
 const JapanRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
@@ -65,9 +66,11 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹ 返回</Text>
-        </TouchableOpacity>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          label="返回"
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>入境要求确认</Text>
         <View style={styles.headerRight} />
       </View>
@@ -155,8 +158,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   backButton: {
-    ...typography.body2,
-    color: colors.primary,
+    marginLeft: -spacing.sm,
   },
   headerTitle: {
     ...typography.body2,

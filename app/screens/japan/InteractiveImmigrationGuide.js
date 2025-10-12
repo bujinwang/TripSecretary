@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
+import BackButton from '../../components/BackButton';
 
 const japanEntryCardSample = require('../../../assets/forms/japan-entry-card-sample.jpg');
 const japanCustomsSample = require('../../../assets/forms/japan-customs-declaration.jpg');
@@ -194,13 +195,11 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
       <SafeAreaView style={styles.container}>
       {/* Header with Back Button */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
+        <BackButton
           onPress={() => navigation.goBack()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.backButtonText}>‹</Text>
-        </TouchableOpacity>
+          showLabel={false}
+          style={styles.backButton}
+        />
       </View>
 
       {/* Progress Bar */}
@@ -545,13 +544,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   backButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: '#007AFF',
-    fontWeight: '300',
+    marginLeft: -spacing.sm,
   },
   progressContainer: {
     paddingHorizontal: spacing.lg,
