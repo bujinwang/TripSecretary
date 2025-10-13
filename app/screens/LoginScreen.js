@@ -26,6 +26,33 @@ const DESTINATION_NAME_I18N = {
     ae: 'United Arab Emirates',
     us: 'United States',
   },
+  'zh-CN': {
+    jp: '日本',
+    th: '泰国',
+    kr: '韩国',
+    sg: '新加坡',
+    my: '马来西亚',
+    ae: '阿联酋',
+    us: '美国',
+  },
+  'zh-TW': {
+    jp: '日本',
+    th: '泰國',
+    kr: '韓國',
+    sg: '新加坡',
+    my: '馬來西亞',
+    ae: '阿聯酋',
+    us: '美國',
+  },
+  'zh-HK': {
+    jp: '日本',
+    th: '泰國',
+    kr: '韓國',
+    sg: '新加坡',
+    my: '馬來西亞',
+    ae: '阿聯酋',
+    us: '美國',
+  },
   zh: {
     jp: '日本',
     th: '泰国',
@@ -188,7 +215,7 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <View style={styles.languageBar}>
+        <View style={styles.languageBarWrapper}>
           {languageOptions.map(({ code, label }) => {
             const isActive = selectedLanguage === code;
             return (
@@ -276,16 +303,18 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.xxl * 1.5,
   },
-  languageBar: {
+  languageBarWrapper: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: colors.background,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: spacing.lg,
     marginBottom: spacing.md,
-    alignSelf: 'center',
     gap: spacing.xs,
+    rowGap: spacing.xs,
   },
   languageOption: {
     paddingVertical: spacing.xs,

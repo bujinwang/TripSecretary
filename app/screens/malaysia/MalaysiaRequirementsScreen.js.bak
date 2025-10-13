@@ -14,13 +14,28 @@ import { useLocale } from '../../i18n/LocaleContext';
 
 const MalaysiaRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
+  const [requirements, setRequirements] = useState({
+    validPassport: false,
+    submissionWindow: false,
+    contactableEmail: false,
+    travelDetails: false,
+    captchaReady: false,
+  });
   const { t } = useLocale();
-  
-  // For info screen, we show success status by default
-  const allChecked = true;
+
+  const allChecked = Object.values(requirements).every(Boolean);
+
+  const toggleRequirement = (key) => {
+    setRequirements((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    if (allChecked) {
+      navigation.navigate('TravelInfo', { passport, destination });
+    }
   };
 
   const requirementItems = useMemo(
@@ -32,22 +47,28 @@ const MalaysiaRequirementsScreen = ({ navigation, route }) => {
         details: t('malaysia.requirements.items.validPassport.details'),
       },
       {
-        key: 'returnTicket',
-        title: t('malaysia.requirements.items.returnTicket.title'),
-        description: t('malaysia.requirements.items.returnTicket.description'),
-        details: t('malaysia.requirements.items.returnTicket.details'),
+        key: 'submissionWindow',
+        title: t('malaysia.requirements.items.submissionWindow.title'),
+        description: t('malaysia.requirements.items.submissionWindow.description'),
+        details: t('malaysia.requirements.items.submissionWindow.details'),
       },
       {
-        key: 'accommodation',
-        title: t('malaysia.requirements.items.accommodation.title'),
-        description: t('malaysia.requirements.items.accommodation.description'),
-        details: t('malaysia.requirements.items.accommodation.details'),
+        key: 'contactableEmail',
+        title: t('malaysia.requirements.items.contactableEmail.title'),
+        description: t('malaysia.requirements.items.contactableEmail.description'),
+        details: t('malaysia.requirements.items.contactableEmail.details'),
       },
       {
-        key: 'sufficientFunds',
-        title: t('malaysia.requirements.items.sufficientFunds.title'),
-        description: t('malaysia.requirements.items.sufficientFunds.description'),
-        details: t('malaysia.requirements.items.sufficientFunds.details'),
+        key: 'travelDetails',
+        title: t('malaysia.requirements.items.travelDetails.title'),
+        description: t('malaysia.requirements.items.travelDetails.description'),
+        details: t('malaysia.requirements.items.travelDetails.details'),
+      },
+      {
+        key: 'captchaReady',
+        title: t('malaysia.requirements.items.captchaReady.title'),
+        description: t('malaysia.requirements.items.captchaReady.description'),
+        details: t('malaysia.requirements.items.captchaReady.details'),
       },
     ],
     [t]
@@ -76,13 +97,17 @@ const MalaysiaRequirementsScreen = ({ navigation, route }) => {
         {/* Requirements List */}
         <View style={styles.requirementsList}>
           {requirementItems.map((item) => (
-            <View
+            <TouchableOpacity
               key={item.key}
               style={styles.requirementCard}
+              onPress={() => toggleRequirement(item.key)}
+              activeOpacity={0.85}
             >
               <View style={styles.requirementHeader}>
-                <View style={styles.bulletContainer}>
-                  <View style={styles.bullet} />
+                <View style={styles.checkboxContainer}>
+                  <Text style={styles.checkbox}>
+                    {requirements[item.key] ? '✓' : '○'}
+                  </Text>
                 </View>
                 <View style={styles.requirementContent}>
                   <Text style={styles.requirementTitle}>{item.title}</Text>
@@ -90,7 +115,7 @@ const MalaysiaRequirementsScreen = ({ navigation, route }) => {
                 </View>
               </View>
               <Text style={styles.requirementDetails}>{item.details}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -122,12 +147,21 @@ const MalaysiaRequirementsScreen = ({ navigation, route }) => {
         {/* Continue Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.continueButton}
+            style={[
+              styles.continueButton,
+              !allChecked && styles.continueButtonDisabled,
+            ]}
             onPress={handleContinue}
+            disabled={!allChecked}
             activeOpacity={0.9}
           >
-            <Text style={styles.continueButtonText}>
-              {t('malaysia.requirements.startButton')}
+            <Text
+              style={[
+                styles.continueButtonText,
+                !allChecked && styles.continueButtonTextDisabled,
+              ]}
+            >
+              {t('malaysia.requirements.continueButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -194,18 +228,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: spacing.md,
   },
-  bulletContainer: {
+  checkboxContainer: {
     width: 32,
     height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E3F2FD',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  bullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
+  checkbox: {
+    fontSize: 18,
+    color: colors.primary,
+    fontWeight: 'bold',
   },
   requirementContent: {
     flex: 1,
@@ -230,29 +265,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginTop: spacing.lg,
   },
-  infoCard: {
-    backgroundColor: '#E3F2FD',
+  successCard: {
+    backgroundColor: '#E8F5E9',
     borderRadius: 12,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#90CAF9',
+    borderColor: '#A5D6A7',
     alignItems: 'center',
   },
-  infoIcon: {
+  successIcon: {
     fontSize: 28,
     marginBottom: spacing.sm,
   },
-  infoText: {
+  successText: {
     ...typography.h4,
-    color: '#1565C0',
+    color: colors.primary,
     fontWeight: '600',
-    textAlign: 'center',
   },
-  infoSubtext: {
+  successSubtext: {
     ...typography.body2,
-    color: '#1976D2',
+    color: colors.textSecondary,
     marginTop: spacing.xs,
-    textAlign: 'center',
+  },
+  warningCard: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#FFCC80',
+    alignItems: 'center',
+  },
+  warningIcon: {
+    fontSize: 28,
+    marginBottom: spacing.sm,
+  },
+  warningText: {
+    ...typography.h4,
+    color: '#EF6C00',
+    fontWeight: '600',
+  },
+  warningSubtext: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
@@ -264,10 +319,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  continueButtonDisabled: {
+    backgroundColor: colors.border,
+  },
   continueButtonText: {
     ...typography.h3,
     color: colors.white,
     fontWeight: 'bold',
+  },
+  continueButtonTextDisabled: {
+    color: colors.textSecondary,
   },
 });
 

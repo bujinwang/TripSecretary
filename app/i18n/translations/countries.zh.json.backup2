@@ -39,8 +39,8 @@
     },
     "requirements": {
       "headerTitle": "韩国入境检查清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "确认您满足这些要求",
+      "introSubtitle": "前往韩国旅行前，请确保满足所有要求",
       "items": {
         "validPassport": {
           "title": "有效护照",
@@ -64,12 +64,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备就绪！",
+          "subtitle": "现在可以继续填写旅行信息。"
+        },
+        "warning": {
+          "title": "请检查每一项",
+          "subtitle": "确保满足所有要求后再继续。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写旅行信息"
     }
   },
   "japan": {
@@ -188,8 +192,8 @@
     },
     "requirements": {
       "headerTitle": "美国入境检查清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "确认您满足这些要求",
+      "introSubtitle": "前往美国旅行前，请确保满足所有要求",
       "items": {
         "validPassport": {
           "title": "有效护照",
@@ -218,12 +222,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备就绪！",
+          "subtitle": "现在可以继续填写旅行信息。"
+        },
+        "warning": {
+          "title": "请检查每一项",
+          "subtitle": "确保满足所有要求后再继续。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写旅行信息"
     }
   },
   "singapore": {
@@ -265,37 +273,46 @@
     },
     "requirements": {
       "headerTitle": "SG Arrival Card 准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "请确认以下条件已满足",
+      "introSubtitle": "新加坡要求在抵达前3天内完成申报",
       "items": {
         "validPassport": {
           "title": "护照有效期",
           "description": "护照建议至少还有6个月有效期",
           "details": "新加坡建议护照有效期不少于6个月，若即将到期请提前换发新护照。"
         },
-        "returnTicket": {
-          "title": "返程或续程机票",
-          "description": "已确认的离境机票预订",
-          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开新加坡。"
+        "submissionWindow": {
+          "title": "3天内申报窗口",
+          "description": "按照新加坡时间（GMT+8）在抵达前3天内提交",
+          "details": "窗口未打开前提交会被系统拒绝，请在倒计时进入后再完成申报，可设置提醒防止错过。"
         },
-        "accommodation": {
-          "title": "住宿证明",
-          "description": "酒店预订或本地联系人信息",
-          "details": "提供酒店预订确认或新加坡朋友/亲戚的详细联系信息，包括地址和电话。"
+        "travelDetails": {
+          "title": "行程与住宿信息",
+          "description": "航班/船班/巴士号、入境口岸、住宿/联系人、访问目的",
+          "details": "准备包含国际区号的联系电话。商务访客可填写新加坡公司或邀请人的联系方式。"
         },
-        "sufficientFunds": {
-          "title": "充足资金",
-          "description": "现金、信用卡或银行流水",
-          "details": "可能需要证明您有足够资金支付停留期间的费用。携带现金、信用卡或近期银行对账单。"
+        "familyGroups": {
+          "title": "家庭/随行成员安排",
+          "description": "确定是单独提交还是使用家庭申报",
+          "details": "家庭申报最多支持10人，需要逐一输入成员信息。请准备好儿童及随行人员的护照资料。"
+        },
+        "sgArrivalHistory": {
+          "title": "入境记录",
+          "description": "SG Arrival Card 仅限一次入境使用",
+          "details": "再次入境需要重新提交最新行程。旧的申报无法重复使用。"
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备就绪！",
+          "subtitle": "接下来将使用通关包信息协助填写SG Arrival Card。"
+        },
+        "warning": {
+          "title": "请先确认所有事项",
+          "subtitle": "请在满足要求后再继续下一步。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写行程信息"
     }
   },
   "malaysia": {
@@ -337,28 +354,33 @@
     },
     "requirements": {
       "headerTitle": "MDAC准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "请确认以下条件已满足",
+      "introSubtitle": "马来西亚要求在抵达前3天内完成MDAC申报",
       "items": {
         "validPassport": {
           "title": "护照有效期",
           "description": "护照需在停留期间保持有效，建议6个月以上",
           "details": "马来西亚建议护照有效期至少6个月，如即将到期请提前换发。"
         },
-        "returnTicket": {
-          "title": "返程或续程机票",
-          "description": "已确认的离境机票预订",
-          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开马来西亚。"
+        "submissionWindow": {
+          "title": "3天内申报窗口",
+          "description": "MDAC仅接受抵达前3个自然日内的提交",
+          "details": "以马来西亚时间（GMT+8）计算，自然日0点刷新窗口，过早提交会被系统拒绝，请在窗口开启后再申报。"
         },
-        "accommodation": {
-          "title": "住宿证明",
-          "description": "酒店预订或本地联系人信息",
-          "details": "提供酒店预订确认或马来西亚朋友/亲戚的详细联系信息，包括地址和电话。"
+        "contactableEmail": {
+          "title": "可用邮箱",
+          "description": "能够及时接收确认邮件与PIN码",
+          "details": "使用可在海外登录的邮箱，留意来自imigresen.gov.my的邮件，如未收到请查看垃圾箱并记录PIN码。"
         },
-        "sufficientFunds": {
-          "title": "充足资金",
-          "description": "现金、信用卡或银行流水",
-          "details": "建议携带足够现金或出示信用卡/银行对账单，证明有足够资金支付停留期间的费用。"
+        "travelDetails": {
+          "title": "完整的行程信息",
+          "description": "准备好航班号、入境口岸、住宿地址与联系电话",
+          "details": "表单需要填写航空公司、航班号、抵达机场、在马地址、联系电话（含区号）与访问目的，请提前整理好。"
+        },
+        "captchaReady": {
+          "title": "验证码准备",
+          "description": "可以手动输入提交前的字母数字验证码",
+          "details": "MDAC使用字母数字验证码，如看不清可刷新，提交需在几分钟内完成，避免因超时重新填写。"
         }
       },
       "status": {
@@ -368,10 +390,10 @@
         },
         "warning": {
           "title": "请先确认所有事项",
-          "subtitle": "我们支持递进式的完成清单"
+          "subtitle": "确保满足MDAC提交条件后再继续。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写行程信息"
     }
   },
   "taiwan": {
@@ -413,37 +435,46 @@
     },
     "requirements": {
       "headerTitle": "台湾电子入境卡准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "请确认以下事项",
+      "introSubtitle": "邮箱验证码是进入表单的关键步骤",
       "items": {
-        "entryPermit": {
-          "title": "入台证",
-          "description": "已获得有效的入台证",
-          "details": "中国大陆居民需提前申请入台证，单次入境有效期3个月，停留最多15天。确认入台证在有效期内。"
-        },
         "validPassport": {
           "title": "护照有效期",
           "description": "护照需在停留期间保持有效",
           "details": "建议至少保留6个月有效期，避免入境时被拒。"
         },
-        "returnTicket": {
-          "title": "返程或续程机票",
-          "description": "已确认的离境机票预订",
-          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开台湾。"
+        "emailAccess": {
+          "title": "可用邮箱",
+          "description": "能够即时接收验证码邮件",
+          "details": "准备好能快速登录的邮箱，验证码有效时间较短，请及时输入。"
         },
-        "accommodation": {
-          "title": "住宿证明",
-          "description": "酒店预订或接待人联系方式",
-          "details": "提供酒店预订确认或台湾朋友/亲戚的详细联系信息，包括地址和电话。"
+        "submissionWindow": {
+          "title": "提前提交",
+          "description": "行程确定后即可填写，如有变动需重新提交",
+          "details": "台湾允许提前填写，但信息变动时请及时更新以免影响入境。"
+        },
+        "travelDetails": {
+          "title": "行程与住宿信息",
+          "description": "航班、住宿或接待人、联络电话",
+          "details": "包括航空公司、航班号、住宿地址/邮编、联系电话等。"
+        },
+        "otpReady": {
+          "title": "验证码准备",
+          "description": "可即时查看邮件验证码",
+          "details": "验证码通常为6位数字，请在有效时间内输入完成验证。"
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备完成！",
+          "subtitle": "接下来会使用通关包信息协助填写电子入境卡。"
+        },
+        "warning": {
+          "title": "请先确认所有事项",
+          "subtitle": "确保可以收到验证码并备齐资料后再继续。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写行程信息"
     }
   },
   "thailand": {
@@ -485,8 +516,8 @@
     },
     "requirements": {
       "headerTitle": "泰国入境准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "请确认以下条件已满足",
+      "introSubtitle": "确保在前往泰国前满足所有入境要求",
       "items": {
         "validPassport": {
           "title": "护照有效期",
@@ -515,12 +546,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备就绪！",
+          "subtitle": "接下来将收集您的旅行详情。"
+        },
+        "warning": {
+          "title": "请先确认所有事项",
+          "subtitle": "请在满足要求后再继续下一步。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写行程信息"
     }
   },
   "hongkong": {
@@ -562,8 +597,8 @@
     },
     "requirements": {
       "headerTitle": "香港入境准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "introTitle": "请确认以下条件已满足",
+      "introSubtitle": "确保在前往香港前满足所有入境要求",
       "items": {
         "validPassport": {
           "title": "护照有效期",
@@ -592,12 +627,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
+        "success": {
+          "title": "准备就绪！",
+          "subtitle": "接下来将收集您的旅行详情。"
+        },
+        "warning": {
+          "title": "请先确认所有事项",
+          "subtitle": "请在满足要求后再继续下一步。"
         }
       },
-      "startButton": "开始填写"
+      "continueButton": "继续填写行程信息"
     }
   }
 }

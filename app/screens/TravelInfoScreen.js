@@ -47,6 +47,7 @@ const SUPPORTED_72H_DESTINATIONS = new Set(['th', 'my', 'sg']);
 
 const TravelInfoScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
+  console.log('Current language:', language);
   const {
     passport,
     destination,

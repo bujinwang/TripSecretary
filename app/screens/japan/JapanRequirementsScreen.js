@@ -15,27 +15,9 @@ import { useLocale } from '../../i18n/LocaleContext';
 const JapanRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
   const { t } = useLocale();
-  const [requirements, setRequirements] = useState({
-    validVisa: false,
-    validPassport: false,
-    returnTicket: false,
-    sufficientFunds: false,
-    accommodation: false,
-  });
-
-  const allChecked = Object.values(requirements).every(Boolean);
-
-  const toggleRequirement = (key) => {
-    setRequirements(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
 
   const handleContinue = () => {
-    if (allChecked) {
-      navigation.navigate('JapanProcedures', { passport, destination });
-    }
+    navigation.navigate('JapanProcedures', { passport, destination });
   };
 
   const requirementItems = useMemo(() => [
@@ -94,16 +76,13 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
         {/* Requirements List */}
         <View style={styles.requirementsList}>
           {requirementItems.map((item, index) => (
-            <TouchableOpacity
+            <View
               key={item.key}
               style={styles.requirementCard}
-              onPress={() => toggleRequirement(item.key)}
             >
               <View style={styles.requirementHeader}>
-                <View style={styles.checkboxContainer}>
-                  <Text style={styles.checkbox}>
-                    {requirements[item.key] ? '✓' : '○'}
-                  </Text>
+                <View style={styles.bulletContainer}>
+                  <View style={styles.bullet} />
                 </View>
                 <View style={styles.requirementContent}>
                   <Text style={styles.requirementTitle}>{item.title}</Text>
@@ -111,36 +90,31 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
                 </View>
               </View>
               <Text style={styles.requirementDetails}>{item.details}</Text>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
 
         {/* Status Message */}
         <View style={styles.statusSection}>
-          {allChecked ? (
-            <View style={styles.successCard}>
-              <Text style={styles.successIcon}>✅</Text>
-              <Text style={styles.successText}>{t('japan.requirements.status.success.title')}</Text>
-              <Text style={styles.successSubtext}>{t('japan.requirements.status.success.subtitle')}</Text>
-            </View>
-          ) : (
-            <View style={styles.warningCard}>
-              <Text style={styles.warningIcon}>⚠️</Text>
-              <Text style={styles.warningText}>{t('japan.requirements.status.warning.title')}</Text>
-              <Text style={styles.warningSubtext}>{t('japan.requirements.status.warning.subtitle')}</Text>
-            </View>
-          )}
+          <View style={styles.infoCard}>
+            <Text style={styles.infoIcon}>📝</Text>
+            <Text style={styles.infoText}>
+              {t('japan.requirements.status.info.title')}
+            </Text>
+            <Text style={styles.infoSubtext}>
+              {t('japan.requirements.status.info.subtitle')}
+            </Text>
+          </View>
         </View>
 
         {/* Continue Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[styles.continueButton, !allChecked && styles.continueButtonDisabled]}
+            style={styles.continueButton}
             onPress={handleContinue}
-            disabled={!allChecked}
           >
-            <Text style={[styles.continueButtonText, !allChecked && styles.continueButtonTextDisabled]}>
-              {t('japan.requirements.continueButton')}
+            <Text style={styles.continueButtonText}>
+              {t('japan.requirements.startButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -210,19 +184,18 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: spacing.md,
   },
-  checkboxContainer: {
+  bulletContainer: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  checkbox: {
-    fontSize: 18,
-    color: colors.primary,
-    fontWeight: 'bold',
+  bullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
   requirementContent: {
     flex: 1,
@@ -247,50 +220,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginTop: spacing.lg,
   },
-  successCard: {
-    backgroundColor: '#E8F5E8',
-    padding: spacing.lg,
+  infoCard: {
+    backgroundColor: '#E3F2FD',
     borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#90CAF9',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#4CAF50',
   },
-  successIcon: {
-    fontSize: 32,
+  infoIcon: {
+    fontSize: 28,
     marginBottom: spacing.sm,
   },
-  successText: {
-    ...typography.h3,
-    color: '#2E7D32',
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
-  },
-  successSubtext: {
-    ...typography.body1,
-    color: '#2E7D32',
+  infoText: {
+    ...typography.h4,
+    color: '#1565C0',
+    fontWeight: '600',
     textAlign: 'center',
   },
-  warningCard: {
-    backgroundColor: '#FFF3E0',
-    padding: spacing.lg,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FF9800',
-  },
-  warningIcon: {
-    fontSize: 32,
-    marginBottom: spacing.sm,
-  },
-  warningText: {
-    ...typography.h3,
-    color: '#E65100',
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
-  },
-  warningSubtext: {
-    ...typography.body1,
-    color: '#E65100',
+  infoSubtext: {
+    ...typography.body2,
+    color: '#1976D2',
+    marginTop: spacing.xs,
     textAlign: 'center',
   },
   buttonContainer: {
@@ -303,16 +254,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  continueButtonDisabled: {
-    backgroundColor: colors.border,
-  },
   continueButtonText: {
     ...typography.h3,
     color: colors.white,
     fontWeight: 'bold',
-  },
-  continueButtonTextDisabled: {
-    color: colors.textSecondary,
   },
 });
 

@@ -8,16 +8,26 @@ const STORAGE_KEY = '@tripassistant.locale';
 
 const normalizeLanguage = (code) => {
   if (!code) return DEFAULT_LANGUAGE;
-  const lower = code.toLowerCase();
-  if (SUPPORTED_LANGUAGES.includes(lower)) {
-    return lower;
-  }
-  if (lower.startsWith('zh')) return 'zh';
-  if (lower.startsWith('en')) return 'en';
-  if (lower.startsWith('fr')) return 'fr';
-  if (lower.startsWith('de')) return 'de';
-  if (lower.startsWith('es')) return 'es';
-  return DEFAULT_LANGUAGE;
+  
+  // Handle legacy 'zh' mapping - prefer Traditional for generic 'zh'
+  if (code === 'zh') return 'zh-TW';
+  
+  // Handle regional variants - map all Traditional variants to zh-TW
+  const languageMap = {
+    'zh-Hans': 'zh-CN',
+    'zh-Hant': 'zh-TW', 
+    'zh-HK': 'zh-TW',  // Hong Kong uses Traditional Chinese
+    'zh-TW': 'zh-TW',
+    'zh-CN': 'zh-CN',
+  };
+  
+  // Extract base language
+  const baseLanguage = code.split('-')[0];
+  
+  // Return exact match or mapped variant
+  return languageMap[code] || 
+         languageMap[baseLanguage] || 
+         (SUPPORTED_LANGUAGES.includes(code) ? code : DEFAULT_LANGUAGE);
 };
 
 const detectDeviceLanguage = () => {
@@ -130,10 +140,21 @@ export const useTranslation = () => {
   return { t, language };
 };
 
+// Language display names - always show in their native language
+const NATIVE_LANGUAGE_NAMES = {
+  'en': 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
+  'fr': 'Français',
+  'de': 'Deutsch',
+  'es': 'Español',
+  'zh': '繁體中文',
+};
+
 export const getLanguageOptions = (t) =>
   SUPPORTED_LANGUAGES.map((code) => ({
     code,
-    label: t(`languages.${code}`, { defaultValue: translations.en.languages[code] || code }),
+    label: NATIVE_LANGUAGE_NAMES[code] || code,
   }));
 
 export { SUPPORTED_LANGUAGES, translations };

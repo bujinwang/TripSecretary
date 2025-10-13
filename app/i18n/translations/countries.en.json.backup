@@ -38,28 +38,33 @@
     },
     "requirements": {
       "headerTitle": "Malaysia MDAC Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you have everything ready",
+      "introSubtitle": "These items are required to submit the Malaysia Digital Arrival Card",
       "items": {
         "validPassport": {
           "title": "Passport validity",
           "description": "Passport valid at least 6 months with blank pages",
           "details": "Malaysia immigration requires your passport to remain valid >=6 months beyond your entry date. Renew before traveling if needed."
         },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed departure booking",
-          "details": "Provide confirmed flight booking showing you will leave Malaysia within authorized stay period."
+        "submissionWindow": {
+          "title": "Within 3-day window",
+          "description": "MDAC only accepts submissions within 3 calendar days before arrival",
+          "details": "Count calendar days based on Malaysia time (GMT+8). If it is too early the system will reject the request—set a reminder to submit once inside the window."
         },
-        "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or local contact information",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Malaysia, including address and phone number."
+        "contactableEmail": {
+          "title": "Reachable email inbox",
+          "description": "Able to receive the confirmation email and MDAC PIN",
+          "details": "Use an email you can log into overseas. Check spam for messages from imigresen.gov.my and keep the PIN handy for arrival."
         },
-        "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "Cash, credit cards, or bank statements",
-          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
+        "travelDetails": {
+          "title": "Flight & stay details",
+          "description": "Have your flight number, arrival port, accommodation and phone ready",
+          "details": "The form asks for airline, flight number, arrival airport, address in Malaysia, phone number (with country code), and purpose of visit."
+        },
+        "captchaReady": {
+          "title": "Captcha ready",
+          "description": "Able to type the letters/numbers shown before submitting",
+          "details": "MDAC uses an alphanumeric CAPTCHA. If the code is unclear you can refresh it—complete submission within 5 minutes to avoid timeout."
         }
       },
       "status": {
@@ -72,7 +77,7 @@
           "subtitle": "Ensure you meet the MDAC prerequisites before continuing."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to travel information"
     }
   },
   "singapore": {
@@ -114,37 +119,46 @@
     },
     "requirements": {
       "headerTitle": "SG Arrival Card Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you meet these requirements",
+      "introSubtitle": "Singapore only accepts arrivals with declarations completed inside the 3-day window",
       "items": {
         "validPassport": {
           "title": "Passport validity",
           "description": "Passport should be valid 6+ months beyond arrival",
           "details": "Singapore recommends at least 6 months validity. Renew or replace damaged passports before travel."
         },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed departure booking",
-          "details": "Provide confirmed flight booking showing you will leave Singapore within authorized stay period."
+        "submissionWindow": {
+          "title": "Within 3-day submission window",
+          "description": "Form opens 3 days before arrival (Singapore time, GMT+8)",
+          "details": "Submitting earlier than the window will result in an error. Set a reminder to complete the SG Arrival Card once the clock reaches the window."
         },
-        "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or local contact information",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Singapore, including address and phone number."
+        "travelDetails": {
+          "title": "Travel & stay information",
+          "description": "Flight, arrival terminal/border, lodging/contact, purpose of visit",
+          "details": "Prepare your airline/ferry/bus details, stay address, and contact number in international format. Business travelers should list local sponsor info if available."
         },
-        "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "Cash, credit cards, or bank statements",
-          "details": "You may need to demonstrate sufficient funds for your stay. Bring cash, credit cards, or recent bank statements."
+        "familyGroups": {
+          "title": "Group/family plan",
+          "description": "Decide if you will submit individually or through family submission",
+          "details": "Group submission supports up to 10 travelers. Have everyone's passport details ready and confirm that minors are included in a guardian's form."
+        },
+        "sgArrivalHistory": {
+          "title": "Previous submissions",
+          "description": "Remember SG Arrival Cards expire after a single entry",
+          "details": "If you re-enter within a short period, submit a fresh declaration with updated travel details. Old entries cannot be reused."
         }
       },
       "status": {
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
+        "success": {
+          "title": "You are ready!",
+          "subtitle": "Next we will pre-fill your travel details for the SG Arrival Card."
+        },
+        "warning": {
+          "title": "Review each checklist item",
+          "subtitle": "Complete the prerequisites before moving on."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to travel information"
     }
   },
   "hongkong": {
@@ -186,8 +200,8 @@
     },
     "requirements": {
       "headerTitle": "Hong Kong Entry Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you have everything ready",
+      "introSubtitle": "Make sure you meet all requirements before traveling to Hong Kong",
       "items": {
         "validPassport": {
           "title": "Passport validity",
@@ -216,12 +230,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
+        "success": {
+          "title": "You are ready!",
+          "subtitle": "Next we will collect your travel details."
+        },
+        "warning": {
+          "title": "Review each item",
+          "subtitle": "Ensure you meet all requirements before continuing."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to travel information"
     }
   },
   "taiwan": {
@@ -263,45 +281,46 @@
     },
     "requirements": {
       "headerTitle": "Taiwan Online Arrival Card Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you meet these requirements",
+      "introSubtitle": "Required for all travelers entering Taiwan",
       "items": {
-        "entryPermit": {
-          "title": "Entry Permit",
-          "description": "Valid Entry Permit (入台证) obtained",
-          "details": "Mainland Chinese travelers must obtain Entry Permit in advance. Single-entry valid 3 months, stay up to 15 days. Ensure permit is valid."
+        "validPermit": {
+          "title": "Valid Entry Permit",
+          "description": "Have your approved Entry Permit (入台证)",
+          "details": "Mainland Chinese travelers must have a valid Entry Permit. Ensure it covers your entire stay period."
         },
         "validPassport": {
           "title": "Passport validity",
           "description": "Passport valid for at least 6 months",
           "details": "Taiwan requires passport validity of 6 months beyond entry date. Check and renew if needed."
         },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed departure booking",
-          "details": "Provide confirmed flight booking showing you will leave Taiwan within authorized stay period."
+        "emailVerification": {
+          "title": "Email verification",
+          "description": "Access to email for receiving verification code",
+          "details": "The online arrival card requires email verification. Use an email you can access to receive and enter the verification code."
         },
-        "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or host contact information",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Taiwan, including address and phone number."
+        "travelDetails": {
+          "title": "Travel information ready",
+          "description": "Flight details, accommodation, and contact information",
+          "details": "Have your flight number, arrival date/time, Taiwan address, and local contact phone number ready."
+        },
+        "healthHistory": {
+          "title": "14-day travel history",
+          "description": "Know which countries you visited in the past 14 days",
+          "details": "The form asks about your travel history for the 14 days before arriving in Taiwan. Be prepared to list all countries visited."
         }
       },
       "status": {
         "success": {
-          "title": "Great! You can proceed.",
-          "subtitle": "Next we will confirm your travel information."
+          "title": "You are ready!",
+          "subtitle": "Next we will help you complete the online arrival card."
         },
         "warning": {
           "title": "Review each checklist item",
-          "subtitle": "Complete the prerequisites before moving on."
-        },
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
+          "subtitle": "Ensure you meet all requirements before proceeding."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to travel information"
     }
   },
   "thailand": {
@@ -343,8 +362,8 @@
     },
     "requirements": {
       "headerTitle": "Thailand Entry Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you meet these requirements",
+      "introSubtitle": "Visa-free entry requirements for Chinese passport holders",
       "items": {
         "validPassport": {
           "title": "Passport validity",
@@ -373,12 +392,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
+        "success": {
+          "title": "You are ready!",
+          "subtitle": "Next we will collect your travel details."
+        },
+        "warning": {
+          "title": "Review each checklist item",
+          "subtitle": "Ensure you meet all requirements before continuing."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to travel information"
     }
   },
   "japan": {
@@ -420,8 +443,8 @@
     },
     "requirements": {
       "headerTitle": "Japan Visa Application Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
+      "introTitle": "Confirm you have all visa application materials",
+      "introSubtitle": "Ensure all materials are prepared before applying for Japan tourist visa",
       "items": {
         "validVisa": {
           "title": "Valid Visa",
@@ -450,12 +473,16 @@
         }
       },
       "status": {
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
+        "success": {
+          "title": "You are ready!",
+          "subtitle": "Next we will guide you through entry procedures."
+        },
+        "warning": {
+          "title": "Please review each item",
+          "subtitle": "Ensure all requirements are met before continuing."
         }
       },
-      "startButton": "Start filling"
+      "continueButton": "Continue to entry procedures"
     },
     "procedures": {
       "headerTitle": "Entry Procedures",

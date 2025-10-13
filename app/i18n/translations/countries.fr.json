@@ -233,9 +233,18 @@
       },
       "status": {
         "success": {
-          "title": "Vous êtes prêt !",
-          "subtitle": "Ensuite, nous vous guiderons à travers les procédures d'entrée."
+          "title": "Parfait ! Vous pouvez continuer.",
+          "subtitle": "Ensuite nous confirmerons vos informations de voyage."
         },
+        "warning": {
+          "title": "Vérifiez chaque élément de la liste",
+          "subtitle": "Complétez les prérequis avant de continuer."
+        },
+        "info": {
+          "title": "Commencez quand vous voulez",
+          "subtitle": "Nous supportons l'achèvement progressif"
+        }
+      },
         "warning": {
           "title": "Veuillez vérifier chaque élément",
           "subtitle": "Assurez-vous que toutes les conditions sont remplies avant de continuer."

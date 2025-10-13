@@ -1,19 +1,15 @@
-import countryTranslations from './translations/index.js';
-import { convertToTraditional } from './chineseConverter.js';
+import countryTranslations from './translations';
 
-export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es'];
+export const SUPPORTED_LANGUAGES = ['en', 'zh', 'fr', 'de', 'es'];
 
-// Base translations object (will be extended with Traditional Chinese variants)
-const baseTranslations = {
+export const translations = {
   en: {
     languages: {
       en: 'English',
-      'zh-CN': '简体中文',
-      'zh-TW': '繁體中文',
+      zh: '中文',
       fr: 'Français',
       de: 'Deutsch',
       es: 'Español',
-      zh: '中文',
     },
     malaysia: {
       info: {
@@ -277,8 +273,8 @@ const baseTranslations = {
         },
         status: {
           success: {
-            title: 'Great! You can proceed.',
-            subtitle: 'Next we will confirm your travel information.',
+            title: 'You are ready!',
+            subtitle: 'Next we will pre-fill your travel details for the SG Arrival Card.',
           },
           warning: {
             title: 'Review each checklist item',
@@ -438,8 +434,8 @@ const baseTranslations = {
       },
       requirements: {
         headerTitle: 'Hong Kong Entry Checklist',
-        introTitle: 'Entry preparation checklist',
-        introSubtitle: 'Fill in what you have and complete gradually',
+        introTitle: 'Confirm you have everything ready',
+        introSubtitle: 'Make sure you meet all requirements before traveling to Hong Kong',
         items: {
           validPassport: {
             title: 'Passport validity',
@@ -468,12 +464,16 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
-            title: 'Start anytime',
-            subtitle: 'We support progressive completion',
+          success: {
+            title: 'You are ready!',
+            subtitle: 'Next we will collect your travel details.',
+          },
+          warning: {
+            title: 'Review each item',
+            subtitle: 'Ensure you meet all requirements before continuing.',
           },
         },
-        startButton: 'Start filling',
+        continueButton: 'Continue to travel information',
       },
     },
     taiwan: {
@@ -545,12 +545,14 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
+          success: {
             title: 'Great! Let’s proceed.',
             subtitle: 'Next we will verify your travel details and help you fill the form.',
           },
+          warning: {
             title: 'Check each item first',
-            title: 'Start anytime',
+            subtitle: 'Ensure you can complete the email verification and have all information ready.',
+          },
         },
         continueButton: 'Continue to travel information',
       },
@@ -976,8 +978,8 @@ const baseTranslations = {
       },
       requirements: {
         headerTitle: 'Thailand Entry Checklist',
-        introTitle: '以下是入境所需准备事项',
-        introSubtitle: '这些信息可以先填着，慢慢补全',
+        introTitle: 'Entry preparation checklist',
+        introSubtitle: 'Fill in what you have and complete gradually',
         items: {
           validPassport: {
             title: 'Valid passport',
@@ -1323,12 +1325,10 @@ const baseTranslations = {
   zh: {
     languages: {
       en: 'English',
-      'zh-CN': '简体中文',
-      'zh-TW': '繁體中文',
+      zh: '中文',
       fr: 'Français',
       de: 'Deutsch',
       es: 'Español',
-      zh: '中文',
     },
     common: {
       appName: '出境通 BorderBuddy',
@@ -1640,8 +1640,8 @@ const baseTranslations = {
       },
       requirements: {
         headerTitle: 'SG Arrival Card 准备清单',
-        introTitle: '以下是入境所需准备事项',
-        introSubtitle: '这些信息可以先填着，慢慢补全',
+        introTitle: '请确认以下条件已满足',
+        introSubtitle: '新加坡要求在抵达前3天内完成申报',
         items: {
           validPassport: {
             title: '护照有效期',
@@ -1670,12 +1670,14 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
-            title: '随时开始填写',
+          success: {
+            title: '准备就绪！',
             subtitle: '接下来将使用通关包信息协助填写SG Arrival Card。',
           },
+          warning: {
             title: '请先确认所有事项',
-            subtitle: '我们支持递进式的完成清单',
+            subtitle: '请在满足要求后再继续下一步。',
+          },
         },
         continueButton: '继续填写行程信息',
       },
@@ -1860,12 +1862,14 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
+          success: {
             title: '准备完成！',
             subtitle: '接下来会使用通关包信息协助填写电子入境卡。',
           },
+          warning: {
             title: '请先确认所有事项',
-            subtitle: '我们支持递进式的完成清单',
+            subtitle: '确保可以收到验证码并备齐资料后再继续。',
+          },
         },
         continueButton: '继续填写行程信息',
       },
@@ -2020,8 +2024,8 @@ const baseTranslations = {
       },
       requirements: {
         headerTitle: '香港入境准备清单',
-        introTitle: '以下是入境所需准备事项',
-        introSubtitle: '这些信息可以先填着，慢慢补全',
+        introTitle: '请确认以下条件已满足',
+        introSubtitle: '确保在前往香港前满足所有入境要求',
         items: {
           validPassport: {
             title: '护照有效期',
@@ -2050,12 +2054,16 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
-            title: '随时开始填写',
-            subtitle: '我们支持递进式的完成清单',
+          success: {
+            title: '准备就绪！',
+            subtitle: '接下来将收集您的旅行详情。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '请在满足要求后再继续下一步。',
           },
         },
-        startButton: '开始填写',
+        continueButton: '继续填写行程信息',
       },
     },
     malaysia: {
@@ -2133,7 +2141,7 @@ const baseTranslations = {
           },
           warning: {
             title: '请先确认所有事项',
-            subtitle: '我们支持递进式的完成清单',
+            subtitle: '确保满足MDAC提交条件后再继续。',
           },
         },
         continueButton: '继续填写行程信息',
@@ -2635,14 +2643,10 @@ const baseTranslations = {
   fr: {
     languages: {
       en: 'English',
-      'zh-CN': 'Chinois Simplifié',
-      'zh-TW': 'Chinois Traditionnel',
+      zh: '中文',
       fr: 'Français',
       de: 'Deutsch',
       es: 'Español',
-      ja: 'Japonais',
-      ko: 'Coréen',
-      zh: 'Chinois',
     },
     common: {
       appName: 'BorderBuddy',
@@ -2853,14 +2857,10 @@ const baseTranslations = {
   de: {
     languages: {
       en: 'English',
-      'zh-CN': 'Vereinfachtes Chinesisch',
-      'zh-TW': 'Traditionelles Chinesisch',
+      zh: '中文',
       fr: 'Français',
       de: 'Deutsch',
       es: 'Español',
-      ja: 'Japanisch',
-      ko: 'Koreanisch',
-      zh: 'Chinesisch',
     },
     common: {
       appName: 'BorderBuddy',
@@ -3067,14 +3067,10 @@ const baseTranslations = {
   es: {
     languages: {
       en: 'English',
-      'zh-CN': 'Chino Simplificado',
-      'zh-TW': 'Chino Tradicional',
+      zh: '中文',
       fr: 'Français',
       de: 'Deutsch',
       es: 'Español',
-      ja: 'Japonés',
-      ko: 'Coreano',
-      zh: 'Chino',
     },
     common: {
       appName: 'BorderBuddy',
@@ -3280,27 +3276,9 @@ const baseTranslations = {
   },
 };
 
-// Generate Traditional Chinese variants from Simplified Chinese
-let zhTWTranslations = null;
-
-// Create final translations object with lazy getter for Traditional Chinese
-export const translations = {
-  ...baseTranslations,
-  'zh-CN': baseTranslations.zh,
-  get 'zh-TW'() {
-    if (!zhTWTranslations) {
-      zhTWTranslations = {
-        ...convertToTraditional(baseTranslations.zh, 'zh-TW'),
-        ...countryTranslations['zh-TW'],
-      };
-    }
-    return zhTWTranslations;
-  },
-};
-
 // Merge country-specific translations from JSON files
 Object.keys(countryTranslations).forEach((lang) => {
-  if (translations[lang] && lang !== 'zh-TW') {
+  if (translations[lang]) {
     translations[lang] = {
       ...translations[lang],
       ...countryTranslations[lang],

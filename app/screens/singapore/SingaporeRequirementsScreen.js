@@ -14,28 +14,13 @@ import { useLocale } from '../../i18n/LocaleContext';
 
 const SingaporeRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
-  const [requirements, setRequirements] = useState({
-    validPassport: false,
-    submissionWindow: false,
-    travelDetails: false,
-    familyGroups: false,
-    sgArrivalHistory: false,
-  });
   const { t } = useLocale();
-
-  const allChecked = Object.values(requirements).every(Boolean);
-
-  const toggleRequirement = (key) => {
-    setRequirements((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+  
+  // For info screen, we show success status by default
+  const allChecked = true;
 
   const handleContinue = () => {
-    if (allChecked) {
-      navigation.navigate('TravelInfo', { passport, destination });
-    }
+    navigation.navigate('TravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(
@@ -47,28 +32,22 @@ const SingaporeRequirementsScreen = ({ navigation, route }) => {
         details: t('singapore.requirements.items.validPassport.details'),
       },
       {
-        key: 'submissionWindow',
-        title: t('singapore.requirements.items.submissionWindow.title'),
-        description: t('singapore.requirements.items.submissionWindow.description'),
-        details: t('singapore.requirements.items.submissionWindow.details'),
+        key: 'returnTicket',
+        title: t('singapore.requirements.items.returnTicket.title'),
+        description: t('singapore.requirements.items.returnTicket.description'),
+        details: t('singapore.requirements.items.returnTicket.details'),
       },
       {
-        key: 'travelDetails',
-        title: t('singapore.requirements.items.travelDetails.title'),
-        description: t('singapore.requirements.items.travelDetails.description'),
-        details: t('singapore.requirements.items.travelDetails.details'),
+        key: 'accommodation',
+        title: t('singapore.requirements.items.accommodation.title'),
+        description: t('singapore.requirements.items.accommodation.description'),
+        details: t('singapore.requirements.items.accommodation.details'),
       },
       {
-        key: 'familyGroups',
-        title: t('singapore.requirements.items.familyGroups.title'),
-        description: t('singapore.requirements.items.familyGroups.description'),
-        details: t('singapore.requirements.items.familyGroups.details'),
-      },
-      {
-        key: 'sgArrivalHistory',
-        title: t('singapore.requirements.items.sgArrivalHistory.title'),
-        description: t('singapore.requirements.items.sgArrivalHistory.description'),
-        details: t('singapore.requirements.items.sgArrivalHistory.details'),
+        key: 'sufficientFunds',
+        title: t('singapore.requirements.items.sufficientFunds.title'),
+        description: t('singapore.requirements.items.sufficientFunds.description'),
+        details: t('singapore.requirements.items.sufficientFunds.details'),
       },
     ],
     [t]
@@ -94,17 +73,13 @@ const SingaporeRequirementsScreen = ({ navigation, route }) => {
 
         <View style={styles.requirementsList}>
           {requirementItems.map((item) => (
-            <TouchableOpacity
+            <View
               key={item.key}
               style={styles.requirementCard}
-              onPress={() => toggleRequirement(item.key)}
-              activeOpacity={0.85}
             >
               <View style={styles.requirementHeader}>
-                <View style={styles.checkboxContainer}>
-                  <Text style={styles.checkbox}>
-                    {requirements[item.key] ? '✓' : '○'}
-                  </Text>
+                <View style={styles.bulletContainer}>
+                  <View style={styles.bullet} />
                 </View>
                 <View style={styles.requirementContent}>
                   <Text style={styles.requirementTitle}>{item.title}</Text>
@@ -112,7 +87,7 @@ const SingaporeRequirementsScreen = ({ navigation, route }) => {
                 </View>
               </View>
               <Text style={styles.requirementDetails}>{item.details}</Text>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
 
@@ -142,20 +117,11 @@ const SingaporeRequirementsScreen = ({ navigation, route }) => {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[
-              styles.continueButton,
-              !allChecked && styles.continueButtonDisabled,
-            ]}
+            style={styles.continueButton}
             onPress={handleContinue}
-            disabled={!allChecked}
           >
-            <Text
-              style={[
-                styles.continueButtonText,
-                !allChecked && styles.continueButtonTextDisabled,
-              ]}
-            >
-              {t('singapore.requirements.continueButton')}
+            <Text style={styles.continueButtonText}>
+              {t('singapore.requirements.startButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -222,19 +188,18 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: spacing.md,
   },
-  checkboxContainer: {
+  bulletContainer: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E3F2FD',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  checkbox: {
-    fontSize: 18,
-    color: colors.primary,
-    fontWeight: 'bold',
+  bullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
   requirementContent: {
     flex: 1,
@@ -259,49 +224,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginTop: spacing.lg,
   },
-  successCard: {
-    backgroundColor: '#E8F5E9',
+  infoCard: {
+    backgroundColor: '#E3F2FD',
     borderRadius: 12,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#A5D6A7',
+    borderColor: '#90CAF9',
     alignItems: 'center',
   },
-  successIcon: {
+  infoIcon: {
     fontSize: 28,
     marginBottom: spacing.sm,
   },
-  successText: {
+  infoText: {
     ...typography.h4,
-    color: colors.primary,
+    color: '#1565C0',
     fontWeight: '600',
+    textAlign: 'center',
   },
-  successSubtext: {
+  infoSubtext: {
     ...typography.body2,
-    color: colors.textSecondary,
+    color: '#1976D2',
     marginTop: spacing.xs,
-  },
-  warningCard: {
-    backgroundColor: '#FFF3E0',
-    borderRadius: 12,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#FFCC80',
-    alignItems: 'center',
-  },
-  warningIcon: {
-    fontSize: 28,
-    marginBottom: spacing.sm,
-  },
-  warningText: {
-    ...typography.h4,
-    color: '#EF6C00',
-    fontWeight: '600',
-  },
-  warningSubtext: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
@@ -313,16 +258,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  continueButtonDisabled: {
-    backgroundColor: colors.border,
-  },
   continueButtonText: {
     ...typography.h3,
     color: colors.white,
     fontWeight: 'bold',
-  },
-  continueButtonTextDisabled: {
-    color: colors.textSecondary,
   },
 });
 
