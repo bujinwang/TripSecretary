@@ -264,6 +264,30 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
 
+    if (country.id === 'sg') {
+      navigation.navigate('SingaporeInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
+    if (country.id === 'my') {
+      navigation.navigate('MalaysiaInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
+    if (country.id === 'tw') {
+      navigation.navigate('TaiwanInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
     // 检查是否有该目的地的有效历史记录
     const recentRecord = findRecentValidGeneration(
       country.id,
