@@ -24,7 +24,10 @@ const ProfileScreen = ({ navigation }) => {
     name: '张伟',
     nameEn: 'ZHANG WEI',
     passportNo: 'E12345678',
+    nationality: 'CHN : PEOPLE\'S REPUBLIC OF CHINA',
     expiry: '2030-12-31',
+    issueDate: '2020-12-31',
+    issuePlace: 'Shanghai',
   };
 
   // Personal info state
@@ -52,6 +55,7 @@ const ProfileScreen = ({ navigation }) => {
   });
 
   const [showPersonalInfo, setShowPersonalInfo] = useState(true);
+  const [showPassportInfo, setShowPassportInfo] = useState(true);
   const [showFundingProof, setShowFundingProof] = useState(true);
   const [editingContext, setEditingContext] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -438,33 +442,99 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Passport Info */}
-        <View style={styles.passportSection}>
-          <View style={styles.passportCard}>
-            <View style={styles.passportHeader}>
-              <Text style={styles.passportIcon}>📘</Text>
-              <View style={styles.passportInfo}>
-                <Text style={styles.passportLabel}>
+        {/* Passport Info Section */}
+        <View style={styles.personalInfoSection}>
+          <View style={styles.personalInfoCard}>
+            <TouchableOpacity
+              style={styles.sectionToggle}
+              onPress={() => setShowPassportInfo((prev) => !prev)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.personalInfoIcon}>📘</Text>
+              <View style={styles.sectionHeaderText}>
+                <Text style={styles.personalInfoLabel}>
                   {t('profile.passport.title', { defaultValue: 'My Passport' })}
                 </Text>
-                <Text style={styles.passportDetails}>
-                  {t('profile.passport.details', {
+                <Text style={styles.sectionHeaderSubtitle}>
+                  {t('profile.passport.subtitle', {
                     passportNo: passportData.passportNo,
                     expiry: passportData.expiry,
                     defaultValue: `${passportData.passportNo} · Valid until ${passportData.expiry}`,
                   })}
                 </Text>
               </View>
-            </View>
-            <TouchableOpacity
-              style={styles.updatePassportButton}
-              onPress={() => navigation.navigate('ScanPassport')}
-            >
-              <Text style={styles.updatePassportText}>
-                {t('profile.passport.updateButton', { defaultValue: 'Update passport info' })}
+              <Text style={styles.sectionToggleArrow}>
+                {showPassportInfo ? '▲' : '▼'}
               </Text>
-              <Text style={styles.updatePassportArrow}>›</Text>
             </TouchableOpacity>
+
+            {showPassportInfo ? (
+              <View style={styles.infoList}>
+                <View style={styles.infoItem}>
+                  <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.passportNo', { defaultValue: 'Passport Number' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>Passport No.</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.passportNo}</Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.nationality', { defaultValue: 'Nationality' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>Nationality</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.nationality}</Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.expiry', { defaultValue: 'Expiry Date' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>Valid Until</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.expiry}</Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.issueDate', { defaultValue: 'Issue Date' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>Issue Date</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.issueDate}</Text>
+                </View>
+
+                <View style={[styles.infoItem, { borderBottomWidth: 0 }]}>
+                  <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.issuePlace', { defaultValue: 'Issue Place' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>Place of Issue</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.issuePlace}</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.updatePassportButton}
+                  onPress={() => navigation.navigate('ScanPassport')}
+                >
+                  <Text style={styles.updatePassportText}>
+                    {t('profile.passport.updateButton', { defaultValue: 'Update passport info' })}
+                  </Text>
+                  <Text style={styles.updatePassportArrow}>›</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.collapsedHint}>
+                {t('profile.passport.collapsedHint', { defaultValue: 'Tap to expand passport details' })}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -899,41 +969,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Passport Section Styles
-  passportSection: {
-    margin: spacing.md,
-  },
-  passportCard: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  passportHeader: {
-    flexDirection: 'row',
-    marginBottom: spacing.md,
-  },
-  passportIcon: {
-    fontSize: 56,
-    marginRight: spacing.md,
-  },
-  passportInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  passportLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  passportDetails: {
-    ...typography.body1,
-    color: colors.textSecondary,
-  },
+  // Update Passport Button Styles
   updatePassportButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.md,
+    marginTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },

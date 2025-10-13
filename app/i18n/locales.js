@@ -1177,8 +1177,16 @@ export const translations = {
       },
       passport: {
         title: 'My Passport',
-        details: '{{passportNo}} · Valid until {{expiry}}',
+        subtitle: '{{passportNo}} · Valid until {{expiry}}',
+        collapsedHint: 'Tap to expand passport details',
         updateButton: 'Update passport info',
+        fields: {
+          passportNo: 'Passport Number',
+          nationality: 'Nationality',
+          expiry: 'Expiry Date',
+          issueDate: 'Issue Date',
+          issuePlace: 'Issue Place',
+        },
       },
       vip: {
         title: 'Upgrade to Premium',
@@ -2491,8 +2499,16 @@ export const translations = {
       },
       passport: {
         title: '我的护照',
-        details: '{{passportNo}} · 有效期至 {{expiry}}',
+        subtitle: '{{passportNo}} · 有效期至 {{expiry}}',
+        collapsedHint: '点击展开查看护照详情',
         updateButton: '更新护照信息',
+        fields: {
+          passportNo: '护照号码',
+          nationality: '国籍',
+          expiry: '有效期至',
+          issueDate: '签发日期',
+          issuePlace: '签发地',
+        },
       },
       vip: {
         title: '升级高级会员',
@@ -2797,8 +2813,16 @@ export const translations = {
       },
       passport: {
         title: 'Mon passeport',
-        details: '{{passportNo}} · Valide jusqu\'à {{expiry}}',
+        subtitle: '{{passportNo}} · Valide jusqu\'à {{expiry}}',
+        collapsedHint: 'Appuyez pour développer les détails',
         updateButton: 'Mettre à jour',
+        fields: {
+          passportNo: 'Numéro de passeport',
+          nationality: 'Nationalité',
+          expiry: 'Date d\'expiration',
+          issueDate: 'Date de délivrance',
+          issuePlace: 'Lieu de délivrance',
+        },
       },
       vip: {
         title: 'Passer Premium',
@@ -3001,7 +3025,19 @@ export const translations = {
           },
         },
       },
-      passport: { title: 'Mein Pass', details: '{{passportNo}} · Gültig bis {{expiry}}', updateButton: 'Aktualisieren' },
+      passport: { 
+        title: 'Mein Pass', 
+        subtitle: '{{passportNo}} · Gültig bis {{expiry}}', 
+        collapsedHint: 'Tippen Sie, um Details anzuzeigen',
+        updateButton: 'Aktualisieren',
+        fields: {
+          passportNo: 'Passnummer',
+          nationality: 'Nationalität',
+          expiry: 'Ablaufdatum',
+          issueDate: 'Ausstellungsdatum',
+          issuePlace: 'Ausstellungsort',
+        },
+      },
       vip: { title: 'Premium werden', subtitle: 'Unbegrenzte Generierungen, Priorität', upgradeButton: 'Upgraden' },
       sections: { myServices: 'Meine Dienste', settings: 'Einstellungen & Hilfe' },
       menu: {
@@ -3199,7 +3235,19 @@ export const translations = {
           },
         },
       },
-      passport: { title: 'Mi pasaporte', details: '{{passportNo}} · Válido hasta {{expiry}}', updateButton: 'Actualizar' },
+      passport: { 
+        title: 'Mi pasaporte', 
+        subtitle: '{{passportNo}} · Válido hasta {{expiry}}', 
+        collapsedHint: 'Toque para expandir los detalles',
+        updateButton: 'Actualizar',
+        fields: {
+          passportNo: 'Número de pasaporte',
+          nationality: 'Nacionalidad',
+          expiry: 'Fecha de vencimiento',
+          issueDate: 'Fecha de emisión',
+          issuePlace: 'Lugar de emisión',
+        },
+      },
       vip: { title: 'Pasar a Premium', subtitle: 'Generaciones ilimitadas y prioridad', upgradeButton: 'Actualizar' },
       sections: { myServices: 'Mis servicios', settings: 'Ajustes y Ayuda' },
       menu: {
