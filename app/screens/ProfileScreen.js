@@ -35,6 +35,7 @@ const ProfileScreen = ({ navigation }) => {
     provinceCity: 'ANHUI',
     countryRegion: 'CHN : PEOPLE\'S REPUBLIC OF CHINA',
     phone: '+86 12343434343',
+    email: 'traveler@example.com',
   });
 
   const [fundingProof, setFundingProof] = useState({
@@ -100,6 +101,13 @@ const ProfileScreen = ({ navigation }) => {
         subtitle: t('profile.personal.fields.phone.subtitle', { defaultValue: 'Phone' }),
         placeholder: t('profile.personal.fields.phone.placeholder', { defaultValue: '+86 1234567890' }),
         keyboardType: 'phone-pad',
+      },
+      {
+        key: 'email',
+        title: t('profile.personal.fields.email.title', { defaultValue: 'Email Address' }),
+        subtitle: t('profile.personal.fields.email.subtitle', { defaultValue: 'Email' }),
+        placeholder: t('profile.personal.fields.email.placeholder', { defaultValue: 'your@email.com' }),
+        keyboardType: 'email-address',
       },
     ],
     [t, language]

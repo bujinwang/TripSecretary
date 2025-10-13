@@ -1135,6 +1135,11 @@ export const translations = {
             subtitle: 'Phone',
             placeholder: '+86 1234567890',
           },
+          email: {
+            title: 'Email Address',
+            subtitle: 'Email',
+            placeholder: 'your@email.com',
+          },
         },
       },
       funding: {
@@ -2445,6 +2450,11 @@ export const translations = {
             subtitle: 'Phone',
             placeholder: '+86 1234567890',
           },
+          email: {
+            title: '邮箱地址',
+            subtitle: 'Email',
+            placeholder: 'your@email.com',
+          },
         },
       },
       funding: {
@@ -2745,6 +2755,11 @@ export const translations = {
             subtitle: 'Téléphone',
             placeholder: '+33 612345678',
           },
+          email: {
+            title: 'Adresse e-mail',
+            subtitle: 'Email',
+            placeholder: 'votre@email.com',
+          },
         },
       },
       funding: {
@@ -2946,6 +2961,11 @@ export const translations = {
             subtitle: 'Telefon',
             placeholder: '+49 1712345678',
           },
+          email: {
+            title: 'E-Mail-Adresse',
+            subtitle: 'E-Mail',
+            placeholder: 'ihre@email.de',
+          },
         },
       },
       funding: {
@@ -3138,6 +3158,11 @@ export const translations = {
             title: 'Número de teléfono',
             subtitle: 'Teléfono',
             placeholder: '+34 612345678',
+          },
+          email: {
+            title: 'Dirección de correo electrónico',
+            subtitle: 'Correo',
+            placeholder: 'su@email.com',
           },
         },
       },
