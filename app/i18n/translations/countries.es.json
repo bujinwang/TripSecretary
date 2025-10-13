@@ -32,6 +32,15 @@
             "• Recomendado reservar vuelos y hoteles con anticipación, preparar algo de efectivo para comprobante de fondos",
             "• Note la ventana de envío de MDAC, los envíos anticipados serán rechazados por el sistema"
           ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Llenado con un toque: Completa automáticamente tu MDAC sin entrada manual",
+            "• Recordatorio inteligente: Notificación automática dentro de la ventana de 3 días",
+            "• Sin estrés: Nunca te preocupes por cuándo aplicar - nosotros cuidamos el tiempo",
+            "• Preparación progresiva: Prepare documentos con anticipación, el sistema activa recordatorios una vez confirmado su viaje"
+          ]
         }
       },
       "continueButton": "Entendido, continuar a la lista de verificación"
@@ -112,6 +121,15 @@
             "• Artículos prohibidos: drogas, productos de vida silvestre protegida",
             "• Tenga cuidado con medicamentos, alcohol, efectivo; nunca lleve artículos para extraños",
             "• Mantenga la calma durante la inspección aduanera, nunca ofrezca sobornos"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Llenado con un toque: Completa automáticamente tu SG Arrival Card sin entrada manual",
+            "• Recordatorio inteligente: Notificación automática dentro de la ventana de 3 días",
+            "• Sin estrés: Nunca te preocupes por cuándo aplicar - nosotros cuidamos el tiempo",
+            "• Preparación progresiva: Prepare documentos con anticipación, el sistema activa recordatorios una vez confirmado su viaje"
           ]
         }
       },
@@ -276,6 +294,15 @@
             "• Guarde el correo de confirmación de la tarjeta de llegada en línea",
             "• Declare todos los artículos honestamente en la aduana"
           ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Llenado con un toque: Completa automáticamente tu tarjeta de llegada en línea sin entrada manual",
+            "• Recordatorio inteligente: Notificación automática una vez confirmado su viaje",
+            "• Sin estrés: Nunca te preocupes por cuándo aplicar - nosotros cuidamos el tiempo",
+            "• Preparación progresiva: Prepare documentos con anticipación, el sistema activa recordatorios una vez confirmado su viaje"
+          ]
         }
       },
       "continueButton": "Entendido, continuar a la lista de verificación"
@@ -408,32 +435,35 @@
   "japan": {
     "info": {
       "headerTitle": "Información de entrada a Japón",
-      "title": "Información sobre visa turística para Japón",
-      "subtitle": "Para titulares de pasaporte chino",
+      "title": "Guía de entrada a Japón",
+      "subtitle": "Visa requerida para titulares de pasaporte chino",
       "sections": {
         "visa": {
-          "title": "✓ Requisitos de visa",
+          "title": "⚠️ Requisitos de visa",
           "items": [
-            "¡No se requiere visa! Los titulares de pasaporte chino pueden ingresar a Japón sin visa para turismo.",
-            "• Duración de estadía: Hasta 90 días",
-            "• Propósito: Solo turismo y turismo",
-            "• No se puede extender o cambiar de estado"
-          ]
-        },
-        "duration": {
-          "title": "⏰ Duración de estadía",
-          "items": [
-            "• Máximo 90 días por entrada",
-            "• No más de 90 días acumulados en 6 meses",
-            "• Planifique su itinerario razonablemente"
+            "Ciudadanos chinos deben solicitar visa por adelantado para visitar Japón - actualmente sin política de exención de visa",
+            "• Debe proporcionar prueba de capacidad financiera (extractos bancarios, ingresos laborales, etc.)",
+            "• Visa turística requiere vuelo de regreso, itinerario y prueba de alojamiento",
+            "• Desde 2025: Política de visa relajada - visa de grupo extendida a 30 días, mayores de 65 exentos de certificado laboral, visa múltiple de 3 años ya no requiere primera entrada dentro de 3 meses"
           ]
         },
         "important": {
-          "title": "⚠️ Recordatorios importantes",
+          "title": "⚠️ Información de entrada",
           "items": [
-            "• Debe tener un propósito turístico claro",
-            "• No puede trabajar o participar en actividades comerciales en Japón",
-            "• Las violaciones pueden resultar en rechazo de entrada o deportación"
+            "• Los formularios deben llenarse a mano: Llenar en el sitio es propenso a errores, información poco clara puede requerir reescritura",
+            "• Se requieren múltiples formularios: Tarjeta de llegada y declaración aduanera, información compleja fácil de perder",
+            "• Requisito de idioma japonés/inglés: Algunas secciones necesitan direcciones en japonés, barrera de idioma causa errores",
+            "• Proceso de huellas digitales y entrevista: Dificultades de comunicación pueden afectar decisión de entrada",
+            "• Documentación completa necesaria: Pasaporte, boleto de regreso, comprobante de alojamiento, comprobante de fondos todos requeridos"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad: Recordatorio automático para materiales requeridos, no hay preocupaciones sobre elementos faltantes",
+            "• Cero errores: Llenado inteligente de tarjeta de llegada y formularios de declaración, información precisa",
+            "• Cero molestias: Ingrese una vez, genere automáticamente todos los formularios",
+            "• Modo de copia: Contenido de referencia claro para copia rápida en el sitio"
           ]
         }
       },
@@ -547,6 +577,347 @@
         ]
       },
       "startButton": "Comenzar a preparar pack de entrada"
+    }
+  },
+  "korea": {
+    "info": {
+      "headerTitle": "Información de entrada a Corea del Sur",
+      "title": "Guía de entrada a Corea del Sur",
+      "subtitle": "Sin visa por 90 días para titulares de pasaporte chino",
+      "sections": {
+        "visa": {
+          "title": "✓ ¡Buenas noticias! Política de exención K-ETA",
+          "items": [
+            "Ciudadanos chinos disfrutan exención temporal de visa hasta diciembre 2025 - ¡viaje espontáneo!",
+            "• No se necesita solicitud de visa o K-ETA por adelantado",
+            "• Estadía hasta 90 días para turismo",
+            "• Nuevo requisito: Debe enviarse tarjeta de llegada electrónica (se aplica ventana de tiempo estricta)"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Nuevos requisitos de entrada - No deje que la mala planificación arruine su viaje",
+          "items": [
+            "• Tarjeta de llegada electrónica obligatoria: Debe enviar en ventana de tiempo estricta, demasiado temprano o tarde = rechazado",
+            "• El tiempo es el mayor desafío: Perder la ventana significa no entrar, sin opciones de respaldo",
+            "• La precisión es crítica: Cualquier error en pasaporte, vuelo o alojamiento puede causar negación de entrada",
+            "• Proceso de múltiples pasos propenso a errores: Desde preparación de documentos hasta envío final, complejo y detallado",
+            "• Totalmente digital desde dic 2025: Tarjetas de llegada en papel permanentemente discontinuadas"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad: Rastrea automáticamente tu itinerario, te recuerda en el momento perfecto",
+            "• Cero errores: Llenado inteligente asegura que toda la información sea precisa",
+            "• Cero molestias: Ingresa una vez, gestionamos todo el proceso",
+            "• Preparación progresiva: Prepara materiales con anticipación, se activa automáticamente cuando es el momento"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar preparación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de entrada a Corea del Sur",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de viajar a Corea del Sur",
+      "items": {
+        "validPassport": {
+          "title": "Pasaporte válido",
+          "description": "Pasaporte válido por al menos 6 meses",
+          "details": "El pasaporte debe ser válido por más de 6 meses desde la fecha de salida planificada"
+        },
+        "returnTicket": {
+          "title": "Boleto de regreso",
+          "description": "Boleto de regreso o viaje posterior confirmado",
+          "details": "Debe tener un plan de salida claro mostrando que dejará Corea del Sur dentro de la estadía autorizada"
+        },
+        "sufficientFunds": {
+          "title": "Fondos suficientes",
+          "description": "Comprobante de fondos para toda la estadía",
+          "details": "Recomendado llevar suficiente efectivo o mostrar tarjeta de crédito/estados de cuenta bancarios"
+        },
+        "accommodation": {
+          "title": "Comprobante de alojamiento",
+          "description": "Reserva de hotel o contacto de anfitrión en Corea del Sur",
+          "details": "Proporcionar confirmación de reserva de hotel o información de contacto detallada de amigos/familiares en Corea del Sur"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "Ahora puede completar su información de viaje."
+        },
+        "warning": {
+          "title": "Por favor revise cada elemento",
+          "subtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "usa": {
+    "info": {
+      "headerTitle": "Información de entrada a Estados Unidos",
+      "title": "Información sobre visa turística para Estados Unidos",
+      "subtitle": "Para titulares de pasaporte chino",
+      "sections": {
+        "visa": {
+          "title": "✓ Requisitos de visa",
+          "items": [
+            "Visa requerida. Los titulares de pasaporte chino deben solicitar una visa turística B1/B2 con anticipación.",
+            "• Tipo de visa: B1/B2 (Negocios/Turismo)",
+            "• Validez: Generalmente 10 años entradas múltiples",
+            "• Duración por estadía: Hasta 180 días (determinada por oficial CBP en entrada)",
+            "• Registro EVUS requerido para titulares de visa B1/B2 china antes de viajar"
+          ]
+        },
+        "duration": {
+          "title": "⏰ Duración de estadía",
+          "items": [
+            "• Estadía máxima determinada por oficial CBP en entrada (generalmente 180 días)",
+            "• Verificar registro I-94 para período de estadía autorizada exacto",
+            "• Extensiones posibles mediante solicitud USCIS",
+            "• No exceder estadía - consecuencias graves de inmigración"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Debe tener un propósito turístico o comercial claro",
+            "• Registro EVUS requerido cada 2 años o con nuevo pasaporte",
+            "• Completar formulario CBP 6059B de declaración aduanera al llegar",
+            "• Entrevista CBP requerida en puerto de entrada",
+            "• Las violaciones pueden resultar en revocación de visa y prohibiciones de entrada futuras"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Llenado con un toque: Completa automáticamente tu formulario de declaración aduanera sin entrada manual",
+            "• Recordatorio EVUS: Notificación automática para completar el registro EVUS antes del viaje",
+            "• Sin estrés: Nunca te preocupes por cuándo aplicar - nosotros cuidamos el tiempo",
+            "• Preparación progresiva: Prepare documentos con anticipación, el sistema activa recordatorios una vez confirmado su viaje"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar preparación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de entrada a Estados Unidos",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de viajar a Estados Unidos",
+      "items": {
+        "validPassport": {
+          "title": "Pasaporte válido",
+          "description": "Pasaporte válido al menos 6 meses más allá de la estadía prevista",
+          "details": "El pasaporte debe ser válido al menos 6 meses más allá de su salida planificada de Estados Unidos"
+        },
+        "validVisa": {
+          "title": "Visa estadounidense válida + EVUS",
+          "description": "Visa B1/B2 aprobada y registro EVUS actual",
+          "details": "Debe tener sello de visa válido en pasaporte Y estar registrado en EVUS en línea (requerido cada 2 años)"
+        },
+        "returnTicket": {
+          "title": "Boleto de regreso o continuación",
+          "description": "Salida confirmada de Estados Unidos",
+          "details": "Debe mostrar prueba de planes para salir de Estados Unidos - boleto de regreso o viaje hacia otro país"
+        },
+        "sufficientFunds": {
+          "title": "Fondos suficientes",
+          "description": "Comprobante de soporte financiero para toda la estadía",
+          "details": "Estados de cuenta bancarios, tarjetas de crédito, efectivo - mostrar que puede mantenerse durante la visita a Estados Unidos"
+        },
+        "accommodation": {
+          "title": "Detalles de alojamiento",
+          "description": "Reservas de hotel o información de anfitrión en Estados Unidos",
+          "details": "Proporcionar confirmaciones de hotel o información de contacto detallada si se hospeda con amigos/familia"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "Ahora puede completar su información de viaje."
+        },
+        "warning": {
+          "title": "Por favor revise cada elemento",
+          "subtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "singapore": {
+    "info": {
+      "headerTitle": "Información de entrada a Singapur",
+      "title": "Guía de entrada a Singapur",
+      "subtitle": "Sin visa por 30 días para titulares de pasaporte chino",
+      "sections": {
+        "visa": {
+          "title": "✓ ¡Buenas noticias! Política sin visa",
+          "items": [
+            "Desde el 9 de febrero de 2024, pasaporte chino sin visa por 30 días - ¡viaje espontáneo!",
+            "• No se necesita solicitud de visa por adelantado",
+            "• Válido para turismo, visitas familiares, propósitos comerciales",
+            "• Nuevo requisito: Debe enviar SG Arrival Card (aplica límite de tiempo)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Información de entrada",
+          "items": [
+            "• SG Arrival Card tiene límite de tiempo estricto",
+            "• Cálculo de tiempo propenso a errores",
+            "• Código de confirmación fácil de perder",
+            "• Requisito de alta precisión",
+            "• Controles de inmigración estrictos"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Cero molestias",
+            "• Gestión de confirmación"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar"
+    }
+  },
+  "malaysia": {
+    "info": {
+      "headerTitle": "Información de entrada a Malasia",
+      "title": "Guía de entrada a Malasia",
+      "subtitle": "Sin visa por 30 días",
+      "sections": {
+        "visa": {
+          "title": "✓ ¡Buenas noticias! Política sin visa",
+          "items": [
+            "Desde el 1 de diciembre de 2023, sin visa por 30 días",
+            "• No se necesita visa por adelantado",
+            "• MDAC Digital Arrival Card debe enviarse"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Información de entrada",
+          "items": [
+            "• MDAC tiene límite de tiempo estricto",
+            "• Código PIN fácil de perder",
+            "• Requisito de alta precisión"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Gestión de PIN"
+          ]
+        }
+      },
+      "continueButton": "Continuar"
+    }
+  },
+  "taiwan": {
+    "info": {
+      "headerTitle": "Información de entrada a Taiwán",
+      "title": "Guía de entrada a Taiwán",
+      "subtitle": "Permiso de entrada requerido",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de Permiso",
+          "items": [
+            "Debe obtener Permiso de Entrada",
+            "• Solicitud en línea, 5 días hábiles",
+            "• Tarjeta de Llegada en Línea requerida"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Información de entrada",
+          "items": [
+            "• Verificar validez del permiso",
+            "• Verificación de correo requerida",
+            "• Preparación de documentos completa"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Lista de documentos"
+          ]
+        }
+      },
+      "continueButton": "Continuar"
+    }
+  },
+  "thailand": {
+    "info": {
+      "headerTitle": "Información de entrada a Tailandia",
+      "title": "Guía de entrada a Tailandia",
+      "subtitle": "Sin visa por 60 días",
+      "sections": {
+        "visa": {
+          "title": "✓ Política sin visa extendida",
+          "items": [
+            "Desde julio 2024, extendida a 60 días",
+            "• Sin visa por adelantado",
+            "• Extensión de 30 días disponible"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Información de entrada",
+          "items": [
+            "• Prueba de fondos requerida",
+            "• Boleto de regreso obligatorio",
+            "• Información de alojamiento verificable"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Asistente de comunicación"
+          ]
+        }
+      },
+      "continueButton": "Continuar"
+    }
+  },
+  "hongkong": {
+    "info": {
+      "headerTitle": "Información de entrada a Hong Kong",
+      "title": "Guía de entrada a Hong Kong",
+      "subtitle": "Sin visa por 7 días",
+      "sections": {
+        "visa": {
+          "title": "✓ Política sin visa",
+          "items": [
+            "Sin visa por 7 días",
+            "• Para turismo y negocios",
+            "• Extensiones disponibles"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Información de entrada",
+          "items": [
+            "• Estadía corta de 7 días",
+            "• Controles estrictos",
+            "• Documentación completa"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy te lo hace fácil",
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Lista de documentos"
+          ]
+        }
+      },
+      "continueButton": "Continuar"
     }
   }
 }

@@ -38,18 +38,18 @@ const HongKongInfoScreen = ({ navigation, route }) => {
         textStyle: styles.infoText,
       },
       {
-        key: 'entry',
-        title: t('hongkong.info.sections.entry.title'),
-        items: normalizeItems(t('hongkong.info.sections.entry.items', { defaultValue: [] })),
-        cardStyle: styles.infoCard,
-        textStyle: styles.infoText,
-      },
-      {
         key: 'onsite',
         title: t('hongkong.info.sections.onsite.title'),
         items: normalizeItems(t('hongkong.info.sections.onsite.items', { defaultValue: [] })),
         cardStyle: styles.warningCard,
         textStyle: styles.warningText,
+      },
+      {
+        key: 'appFeatures',
+        title: t('hongkong.info.sections.appFeatures.title'),
+        items: normalizeItems(t('hongkong.info.sections.appFeatures.items', { defaultValue: [] })),
+        cardStyle: styles.appFeaturesCard,
+        textStyle: styles.appFeaturesText,
       },
     ],
     [t]
@@ -182,6 +182,20 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.sm,
     lineHeight: 24,
+  },
+  appFeaturesCard: {
+    backgroundColor: '#E3F2FD',
+    padding: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#2196F3',
+  },
+  appFeaturesText: {
+    ...typography.body1,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    lineHeight: 24,
+    fontWeight: '500',
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,

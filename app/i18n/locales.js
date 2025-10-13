@@ -14,35 +14,35 @@ export const translations = {
     malaysia: {
       info: {
         headerTitle: 'Malaysia Entry Information',
-        title: 'Malaysia Visa-Free Entry & MDAC',
-        subtitle: 'Chinese passport holders: visa-free for 30 days since Dec 1, 2023',
+        title: 'Malaysia Entry Guide',
+        subtitle: 'Visa-free for 30 days for Chinese passport holders',
         sections: {
           visa: {
-            title: '✓ Visa-Free Policy',
+            title: '✓ Great News! Visa-Free Policy',
             items: [
-              'Since December 1, 2023, Chinese passport holders can enter Malaysia visa-free for up to 30 days.',
-              '• Applies to tourism, family visits, business, and similar purposes',
-              '• Passport must be valid for at least 6 months',
-              '• All travelers must complete MDAC (Malaysia Digital Arrival Card) before entry - completely free',
-            ],
-          },
-          entry: {
-            title: '🛂 Entry Requirements',
-            items: [
-              '• Passport valid for at least 6 months with blank pages',
-              '• Complete MDAC within 3 days before arrival (3 calendar days before entry)',
-              '• Return flight or onward travel proof',
-              '• Accommodation confirmation (hotel booking) or contact in Malaysia',
-              '• Sufficient travel funds proof',
+              'Since December 1, 2023, Chinese passport visa-free for 30 days - spontaneous travel!',
+              '• No visa application needed in advance',
+              '• Valid for tourism, family visits, business purposes',
+              '• New requirement: MDAC Digital Arrival Card must be submitted (submission time limit applies)',
             ],
           },
           onsite: {
-            title: '⚠️ Important Reminders',
+            title: '⚠️ Entry Information',
             items: [
-              '• Must present MDAC PIN or confirmation email screenshot upon entry',
-              '• Prohibited items: meat, alcohol, tobacco, and other restricted goods',
-              '• Recommended to book flights and hotels in advance, prepare some cash for funds proof',
-              '• Note MDAC submission time window, early submissions will be rejected by the system',
+              '• MDAC has strict time limit: Submit too early = rejected, too late = can\'t make it',
+              '• Time calculation error-prone: Must calculate by Malaysia time, timezone issues cause mistakes',
+              '• PIN code easy to lose: Must show PIN upon entry, can\'t find email or lost screenshot is troublesome',
+              '• CAPTCHA recognition difficult: Alphanumeric code unclear, multiple wrong attempts may get locked',
+              '• High accuracy requirement: Any error in passport, flight, accommodation may affect entry',
+            ],
+          },
+          appFeatures: {
+            title: '✨ BorderBuddy Makes It Easy',
+            items: [
+              '• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time',
+              '• Zero errors: Smart-fill MDAC, accurate information',
+              '• Zero hassle: Enter once, we manage the entire process',
+              '• PIN management: Auto-save PIN and confirmation email, quick display upon entry',
             ],
           },
         },
@@ -206,35 +206,35 @@ export const translations = {
     singapore: {
       info: {
         headerTitle: 'Singapore Entry Information',
-        title: 'Singapore Visa-Free Entry & SG Arrival Card',
-        subtitle: 'Chinese passport holders: visa-free for 30 days since Feb 9, 2024',
+        title: 'Singapore Entry Guide',
+        subtitle: 'Visa-free for 30 days for Chinese passport holders',
         sections: {
           visa: {
-            title: '✓ Visa-Free Policy',
+            title: '✓ Great News! Visa-Free Policy',
             items: [
-              'Since February 9, 2024, Chinese ordinary passport holders can enter Singapore visa-free for up to 30 days.',
-              '• Applies to tourism, family visits, business, and other private matters',
-              '• Work or stays exceeding 30 days require a visa in advance',
-              '• Official passport holders also enjoy visa-free entry',
-            ],
-          },
-          entry: {
-            title: '🛂 Entry Requirements',
-            items: [
-              '• Passport valid for at least 6 months',
-              '• Complete SG Arrival Card within 3 days before arrival',
-              '• Return flight or onward travel proof',
-              '• Sufficient funds for stay (cash, credit cards, etc.)',
-              '• Accommodation confirmation or local contact information',
+              'Since February 9, 2024, Chinese passport visa-free for 30 days - spontaneous travel!',
+              '• No visa application needed in advance',
+              '• Valid for tourism, family visits, business purposes',
+              '• New requirement: SG Arrival Card must be submitted (submission time limit applies)',
             ],
           },
           onsite: {
-            title: '⚠️ Important Reminders',
+            title: '⚠️ Entry Information',
             items: [
-              '• Must complete SG Arrival Card within 3 days before arrival with accurate information',
-              '• Prohibited items: drugs, protected wildlife products',
-              '• Be cautious with medications, alcohol, cash; never carry items for strangers',
-              '• Stay calm during customs inspection, never offer bribes',
+              '• SG Arrival Card has time limit: Submit too early = invalid, too late = can\'t make it',
+              '• Time calculation error-prone: Must calculate by Singapore time, timezone issues cause mistakes',
+              '• Confirmation code easy to lose: Must show upon entry, can\'t find email is troublesome',
+              '• High accuracy requirement: Any error in passport, flight, accommodation may affect entry',
+              '• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection',
+            ],
+          },
+          appFeatures: {
+            title: '✨ BorderBuddy Makes It Easy',
+            items: [
+              '• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time',
+              '• Zero errors: Smart-fill SG Arrival Card, accurate information',
+              '• Zero hassle: Enter once, we manage the entire process',
+              '• Confirmation management: Auto-save confirmation code, quick display upon entry',
             ],
           },
         },
@@ -398,35 +398,35 @@ export const translations = {
     hongkong: {
       info: {
         headerTitle: 'Hong Kong Entry Information',
-        title: 'Hong Kong Visa-Free Entry',
-        subtitle: 'Chinese passport holders: visa-free for up to 7 days',
+        title: 'Hong Kong Entry Guide',
+        subtitle: 'Visa-free for 7 days for Chinese passport holders',
         sections: {
           visa: {
-            title: '✓ Visa-Free Policy',
+            title: '✓ Great News! Visa-Free Policy',
             items: [
-              'Chinese passport holders can enter Hong Kong visa-free for tourism, business, and family visits for up to 7 days.',
-              '• Extension applications should be submitted to Hong Kong Immigration Department if needed',
-              '• No pre-registration is required for visa-free entry',
-              '• Make sure you have valid onward travel arrangements',
-            ],
-          },
-          entry: {
-            title: '🛂 Entry Requirements',
-            items: [
-              '• Valid passport with at least 1 month validity beyond your intended stay',
-              '• Return or onward travel ticket',
-              '• Proof of accommodation (hotel booking or host contact)',
-              '• Sufficient funds for your stay',
-              '• Complete health declaration if required',
+              'Chinese passport visa-free for 7 days - spontaneous travel!',
+              '• No visa application needed in advance',
+              '• Valid for tourism, business, family visits',
+              '• Extensions can be applied through Hong Kong Immigration if needed',
             ],
           },
           onsite: {
-            title: '⚠️ Important Reminders',
+            title: '⚠️ Entry Information',
             items: [
-              '• Have your return ticket and hotel booking confirmation ready for immigration inspection',
-              '• Prohibited items: drugs, weapons, and endangered species products',
-              '• Be prepared to show proof of sufficient funds if asked',
-              '• Comply with all immigration officer instructions',
+              '• Short stay duration: Only 7 days, must leave on time or apply for extension',
+              '• Immigration checks strict: May ask detailed questions about purpose, accommodation, funds',
+              '• Document preparation required: Return ticket, hotel booking, funds proof all needed',
+              '• Health declaration may required: Depending on current health policies',
+              '• E-channels limited: First-time visitors must use manual counters, longer queues',
+            ],
+          },
+          appFeatures: {
+            title: '✨ BorderBuddy Makes It Easy',
+            items: [
+              '• Zero anxiety: Auto-reminds 7-day limit, no worries about overstay',
+              '• Zero errors: Pre-filled travel information, immigration questions prepared',
+              '• Zero hassle: Enter once, all documents organized',
+              '• Document checklist: Comprehensive preparation list, no missing items',
             ],
           },
         },
@@ -479,35 +479,35 @@ export const translations = {
     taiwan: {
       info: {
         headerTitle: 'Taiwan Entry Information',
-        title: 'Taiwan Entry Permit & Online Arrival Card',
-        subtitle: 'Mainland Chinese passport holders require an entry permit',
+        title: 'Taiwan Entry Guide',
+        subtitle: 'Entry permit and Online Arrival Card required',
         sections: {
           visa: {
-            title: '✓ Visa Requirements',
+            title: '✓ Entry Permit Policy',
             items: [
-              'Mainland Chinese passport holders must obtain an Entry Permit (入台证) in advance. Visa-free entry is not available.',
-              '• Single-entry permit valid for 3 months, allows up to 15 days stay',
-              '• Multiple-entry permit valid for 1 year, allows up to 15 days per visit, max 120 days annually',
-              '• Apply online or through travel agencies, processing takes about 5 business days',
-            ],
-          },
-          entry: {
-            title: '🛂 Required Documents',
-            items: [
-              '• Valid passport (recommended 6+ months validity)',
-              '• Entry Permit (print electronic version)',
-              '• Return flight or onward travel proof',
-              '• Accommodation confirmation or contact in Taiwan',
-              '• Complete online arrival card (requires email verification)',
+              'Mainland Chinese must obtain Entry Permit (入台证) - online application, about 5 business days',
+              '• Single-entry valid 3 months, stay up to 15 days',
+              '• Multiple-entry valid 1 year, up to 15 days per visit',
+              '• New requirement: Online Arrival Card must be completed',
             ],
           },
           onsite: {
-            title: '⚠️ Important Reminders',
+            title: '⚠️ Entry Information',
             items: [
-              '• Complete the online arrival card before entry and keep confirmation email',
-              '• Carry your Entry Permit at all times, must present upon entry',
-              '• Cannot engage in activities inconsistent with permit purpose',
-              '• Overstaying or violations will affect future entry applications',
+              '• Entry Permit expiration easy to miss: Valid for 3 months, must enter within period',
+              '• Online Arrival Card complex: Personal info, flight details, accommodation all required',
+              '• Email verification required: Must verify email before filling form, easy to miss',
+              '• Document preparation cumbersome: Entry permit, passport, return ticket, accommodation, funds all required',
+              '• Immigration interview possible: Purpose unclear or documents incomplete may trigger detailed questioning',
+            ],
+          },
+          appFeatures: {
+            title: '✨ BorderBuddy Makes It Easy',
+            items: [
+              '• Zero anxiety: Auto-reminds Entry Permit validity, no worries about expiration',
+              '• Zero errors: Smart-fill Online Arrival Card, accurate information',
+              '• Zero hassle: Enter once, auto-generate all forms',
+              '• Document checklist: Comprehensive preparation list, no missing items',
             ],
           },
         },
@@ -942,34 +942,35 @@ export const translations = {
     thailand: {
       info: {
         headerTitle: 'Thailand Entry Information',
-        title: 'Thailand Visa-Free Travel Information',
-        subtitle: 'For Chinese passport holders (2024 policy)',
+        title: 'Thailand Entry Guide',
+        subtitle: 'Visa-free for 60 days for Chinese passport holders',
         sections: {
           visa: {
-            title: '✓ Visa Policy',
+            title: '✓ Great News! Visa-Free Policy',
             items: [
-              'Since March 1, 2024, China and Thailand have mutual visa exemption. Holders of Chinese ordinary passports can enter Thailand visa-free for short stays.',
-              '• Maximum single stay of 30 days',
-              '• Total stay no more than 90 days within 180 days',
-              '• Applies to tourism, family visits, and short-term business only (no employment)',
-            ],
-          },
-          entry: {
-            title: '🛂 Entry Requirements',
-            items: [
-              '• Passport valid for at least 6 months',
-              '• Return or onward ticket required on arrival',
-              '• Provide accommodation information in Thailand (hotel or other arrangements)',
-              '• Recommended to carry at least 10,000 THB per person or proof of funds',
+              'Since September 15, 2024, Chinese passport visa-free for 60 days - spontaneous travel!',
+              '• No visa application needed in advance',
+              '• Valid for tourism, family visits, medical treatment purposes',
+              '• New option: TDAC Digital Arrival Card available (optional but recommended)',
             ],
           },
           onsite: {
-            title: '⚠️ On-site Tips',
+            title: '⚠️ Entry Information',
             items: [
-              '• Working or long-term study is not allowed during visa-free stay',
-              '• Expect fingerprint collection and routine questioning at immigration',
-              '• Prepare itinerary, hotel confirmation, and related proofs for spot checks',
-              '• No COVID vaccine or PCR proof required, but travel insurance is recommended',
+              '• Paper forms tedious: Traditional arrival card must be handwritten on-site, easy to make mistakes',
+              '• Long queues common: Manual processing slow, especially during peak travel',
+              '• Document preparation complex: Passport, return ticket, accommodation, funds proof all required',
+              '• Language barrier exists: Forms in Thai/English, unclear wording causes confusion',
+              '• Immigration interview possible: Purpose unclear or documents incomplete may trigger detailed questioning',
+            ],
+          },
+          appFeatures: {
+            title: '✨ BorderBuddy Makes It Easy',
+            items: [
+              '• Zero anxiety: TDAC optional submission, skip paper forms and speed up entry',
+              '• Zero errors: Smart-fill digital card if you choose TDAC, accurate information',
+              '• Zero hassle: Enter once, auto-generate all forms',
+              '• Document checklist: Comprehensive preparation list, no missing items',
             ],
           },
         },
@@ -1594,35 +1595,35 @@ export const translations = {
     singapore: {
       info: {
         headerTitle: '新加坡入境信息',
-        title: '新加坡免签入境与 SG Arrival Card',
-        subtitle: '2024年2月9日起中国护照免签30天',
+        title: '新加坡入境指南',
+        subtitle: '中国护照持有者免签30天',
         sections: {
           visa: {
-            title: '✓ 免签政策',
+            title: '✓ 好消息！免签政策',
             items: [
-              '从2024年2月9日起，持中国普通护照可免签入境新加坡，停留不超过30天。',
+              '从2024年2月9日起，中国护照免签30天 - 说走就走！',
+              '• 无需提前申请签证',
               '• 适用于旅游、探亲、商务等私人事务',
-              '• 从事工作或停留超过30天需提前申请相应签证',
-              '• 因公护照持有者同样享受免签待遇',
-            ],
-          },
-          entry: {
-            title: '🛂 入境要求',
-            items: [
-              '• 护照有效期至少6个月以上',
-              '• 入境前3天内必须填写SG Arrival Card电子入境卡',
-              '• 往返机票或后续行程证明',
-              '• 充足的旅行资金证明（现金、信用卡等）',
-              '• 住宿证明或在新联系人信息',
+              '• 新要求：入境前需提交SG Arrival Card（有提交时间限制）',
             ],
           },
           onsite: {
-            title: '⚠️ 重要提醒',
+            title: '⚠️ 入境须知',
             items: [
-              '• 务必在入境前3天内完成SG Arrival Card填写，确保信息准确',
-              '• 禁止携带毒品、受保护动植物制品入境',
-              '• 谨慎携带药品、酒类和现金，避免为陌生人携带行李',
-              '• 保持冷静配合海关检查，切勿行贿',
+              '• SG Arrival Card有严格时间限制：提前提交会被拒绝，过晚提交来不及',
+              '• 时间计算容易出错：需按新加坡时间计算，时差问题容易导致失误',
+              '• 信息准确性要求高：护照、航班、住宿任何错误都可能影响入境',
+              '• 家庭申报更复杂：多人信息容易遗漏或填错',
+              '• 一次性使用：再次入境需重新提交，不能重复使用旧申报',
+            ],
+          },
+          appFeatures: {
+            title: '✨ 出境通帮您轻松搞定',
+            items: [
+              '• 零焦虑：自动追踪行程，在最佳时间提醒您',
+              '• 零失误：智能填写，信息准确无误',
+              '• 零操心：一次输入，自动管理整个流程',
+              '• 家庭便利：支持家庭成员批量申报，省时省心',
             ],
           },
         },
@@ -1786,35 +1787,35 @@ export const translations = {
     taiwan: {
       info: {
         headerTitle: '台湾入境信息',
-        title: '台湾入境签证与电子入境卡',
+        title: '台湾入境指南',
         subtitle: '中国大陆护照需提前办理入台证',
         sections: {
           visa: {
-            title: '✓ 签证要求',
+            title: '✓ 签证政策',
             items: [
-              '中国大陆护照持有者需提前申请入台证，不可免签入境。',
-              '• 单次入境签证有效期3个月，可停留最多15天',
-              '• 多次入境签证有效期1年，每次停留最多15天，全年累计最多120天',
-              '• 需通过网上申请或委托旅行社办理，审核期约5个工作日',
-            ],
-          },
-          entry: {
-            title: '🛂 入境所需材料',
-            items: [
-              '• 有效护照（建议6个月以上有效期）',
-              '• 入台证（电子版打印即可）',
-              '• 往返机票或后续行程证明',
-              '• 住宿证明或在台联系人信息',
-              '• 填写电子入境卡（需邮箱接收验证码）',
+              '中国大陆护照需提前申请入台证，不可免签。',
+              '• 单次入境停留最多15天，多次入境每年累计最多120天',
+              '• 适用于旅游、探亲、商务等目的',
+              '• 新要求：入境需提交电子入境卡（需验证码验证）',
             ],
           },
           onsite: {
-            title: '⚠️ 重要提醒',
+            title: '⚠️ 入境须知',
             items: [
-              '• 入境前务必完成电子入境卡填写并保留确认邮件',
-              '• 入台证需随身携带，入境时需出示',
-              '• 不可在台从事与签证目的不符的活动',
-              '• 超期停留或违规将影响今后入境申请',
+              '• 邮箱验证码环节容易卡顿：验证码有时效限制，邮件延迟可能导致填表中断',
+              '• 信息准确性要求高：护照、航班、住宿信息任何错误都可能影响入境',
+              '• 行程变动需重新提交：信息改变后必须更新，否则与实际不符可能被询问',
+              '• 多个材料需准备齐全：入台证、电子入境卡、往返机票缺一不可',
+              '• 超期停留后果严重：将影响今后入境申请和审批',
+            ],
+          },
+          appFeatures: {
+            title: '✨ 出境通帮您轻松搞定',
+            items: [
+              '• 零焦虑：行程确定后自动提醒填写，不用担心忘记',
+              '• 零失误：智能填写电子入境卡，信息准确无误',
+              '• 零操心：一次输入，自动管理整个流程',
+              '• 验证码助手：快速获取和输入邮箱验证码，流畅完成提交',
             ],
           },
         },
@@ -1978,35 +1979,35 @@ export const translations = {
     hongkong: {
       info: {
         headerTitle: '香港入境信息',
-        title: '香港免签入境',
+        title: '香港入境指南',
         subtitle: '中国护照持有人免签停留7天',
         sections: {
           visa: {
-            title: '✓ 免签政策',
+            title: '✓ 好消息！免签政策',
             items: [
-              '中国护照持有人可免签入境香港，用于旅游、商务、探亲等目的，停留不超过7天。',
-              '• 如需延长停留时间，须向香港入境事务处申请',
-              '• 免签入境无需提前注册或申请',
-              '• 确保持有有效的离境或续程机票',
-            ],
-          },
-          entry: {
-            title: '🛂 入境要求',
-            items: [
-              '• 护照有效期至少超过预定停留期1个月',
-              '• 返程或续程机票',
-              '• 住宿证明（酒店预订或联系人信息）',
-              '• 充足的旅行资金',
-              '• 如有要求需填写健康申报',
+              '中国护照免签入境香港7天 - 说走就走！',
+              '• 无需提前申请签证或注册',
+              '• 适用于旅游、商务、探亲等目的',
+              '• 停留不超过7天',
             ],
           },
           onsite: {
-            title: '⚠️ 重要提醒',
+            title: '⚠️ 入境须知',
             items: [
-              '• 准备好返程机票和酒店预订确认单以备入境检查',
-              '• 禁止携带毒品、武器、濒危物种制品',
-              '• 准备好资金证明以备查问',
-              '• 配合入境官员的所有指示',
+              '• 返程机票必须出示：没有离境证明将无法通过边检',
+              '• 住宿证明需真实有效：酒店预订可能被核实，虚假信息后果严重',
+              '• 资金证明可能被抽查：准备不足可能被拒入境或遣返',
+              '• 健康申报要求复杂：填写错误或遗漏可能导致入境延误',
+              '• 多项材料需准备齐全：护照、机票、住宿、资金证明缺一不可',
+            ],
+          },
+          appFeatures: {
+            title: '✨ 出境通帮您轻松搞定',
+            items: [
+              '• 零焦虑：自动提醒准备所需材料，不用担心遗漏',
+              '• 零失误：智能整理返程机票和住宿证明，信息准确无误',
+              '• 零操心：一次输入，自动生成完整材料清单',
+              '• 健康申报助手：简化健康申报流程，快速完成提交',
             ],
           },
         },
@@ -2059,35 +2060,35 @@ export const translations = {
     malaysia: {
       info: {
         headerTitle: '马来西亚入境信息',
-        title: '马来西亚免签入境与MDAC',
-        subtitle: '2023年12月1日起中国护照免签30天',
+        title: '马来西亚入境指南',
+        subtitle: '中国护照持有者免签30天',
         sections: {
           visa: {
-            title: '✓ 免签政策',
+            title: '✓ 好消息！免签政策',
             items: [
-              '从2023年12月1日起，持中国护照可免签入境马来西亚，停留不超过30天。',
+              '从2023年12月1日起，中国护照免签30天 - 说走就走！',
+              '• 无需提前申请签证',
               '• 适用于旅游、探亲、商务等目的',
-              '• 护照有效期需至少6个月以上',
-              '• 所有旅客入境前必须填写MDAC数字入境卡（完全免费）',
-            ],
-          },
-          entry: {
-            title: '🛂 入境要求',
-            items: [
-              '• 护照有效期至少6个月以上，保留空白页',
-              '• 入境前3天内完成MDAC填写（抵达前3个自然日）',
-              '• 往返机票或后续行程证明',
-              '• 住宿证明（酒店订单）或在马联系人信息',
-              '• 充足的旅行资金证明',
+              '• 新要求：入境需提交MDAC数字入境卡（有提交时间限制）',
             ],
           },
           onsite: {
-            title: '⚠️ 重要提醒',
+            title: '⚠️ 入境须知',
             items: [
-              '• 入境时需出示MDAC PIN码或确认邮件截图',
-              '• 禁止携带肉类、酒精、烟草等违禁物品入境',
-              '• 建议提前预订机票和酒店，并准备一定现金作为资金证明',
-              '• 注意MDAC填写时间窗口，过早提交会被系统拒绝',
+              '• MDAC有严格时间限制：提前提交会被拒绝，过晚提交来不及',
+              '• 时间计算容易出错：需按马来西亚时间计算，时差问题容易导致失误',
+              '• PIN码容易丢失：入境时必须出示PIN码，邮件找不到或截图丢失会很麻烦',
+              '• 验证码识别困难：字母数字验证码不清晰，输错几次可能被锁定',
+              '• 信息准确性要求高：护照、航班、住宿任何错误都可能影响入境',
+            ],
+          },
+          appFeatures: {
+            title: '✨ 出境通帮您轻松搞定',
+            items: [
+              '• 零焦虑：自动追踪行程，在最佳时间提醒您',
+              '• 零失误：智能填写MDAC，信息准确无误',
+              '• 零操心：一次输入，自动管理整个流程',
+              '• PIN码管理：自动保存PIN码和确认邮件，入境时快速出示',
             ],
           },
         },
@@ -2251,34 +2252,35 @@ export const translations = {
     thailand: {
       info: {
         headerTitle: '泰国入境信息',
-        title: '泰国旅游免签信息',
-        subtitle: '针对中国护照持有者（2024年政策）',
+        title: '泰国入境指南',
+        subtitle: '中国护照持有者免签60天',
         sections: {
           visa: {
-            title: '✓ 签证政策',
+            title: '✓ 好消息！免签政策延长',
             items: [
-              '自2024年3月1日起，中泰互免签证。持中国普通护照可免签入境泰国进行短期停留。',
-              '• 单次停留最长30天',
-              '• 180天内累计停留不超过90天',
-              '• 仅限旅游、探亲、短期商务等非工作目的',
-            ],
-          },
-          entry: {
-            title: '🛂 入境条件',
-            items: [
-              '• 护照有效期至少6个月',
-              '• 入境时需出示返程或离境机票',
-              '• 需提供在泰国的住宿信息（酒店或其他安排）',
-              '• 建议携带不少于10,000泰铢/人或等值资金证明',
+              '自2024年3月1日起中泰互免签证，7月15日起延长至60天 - 说走就走！',
+              '• 无需提前申请签证',
+              '• 单次停留最长60天，可在泰国境内申请一次30天延期',
+              '• 适用于旅游、探亲、短期商务等非工作目的',
             ],
           },
           onsite: {
-            title: '⚠️ 现场提示',
+            title: '⚠️ 入境须知',
             items: [
-              '• 入境期间禁止从事任何形式的工作或长期学习',
-              '• 需接受指纹采集及入境口头问询',
-              '• 建议准备行程单、酒店确认邮件等以备抽查',
-              '• 无需提供新冠疫苗或核酸证明，但建议购买旅行保险',
+              '• 资金证明要求严格：移民官可能抽查现金或银行卡余额，准备不足可能被拒入境',
+              '• 返程机票必须出示：没有离境证明将无法通过边检',
+              '• 住宿信息需真实有效：酒店预订可能被电话核实，虚假信息后果严重',
+              '• 指纹采集和问询：语言障碍可能导致沟通困难，影响入境判断',
+              '• 多项材料需准备齐全：护照、机票、住宿、资金证明缺一不可',
+            ],
+          },
+          appFeatures: {
+            title: '✨ 出境通帮您轻松搞定',
+            items: [
+              '• 零焦虑：自动提醒准备所需材料，不用担心遗漏',
+              '• 零失误：智能整理资金和住宿证明，信息准确无误',
+              '• 零操心：一次输入，自动生成完整材料清单',
+              '• 沟通助手：提供常见问题中英文参考，应对边检问询',
             ],
           },
         },
@@ -2291,13 +2293,13 @@ export const translations = {
         items: {
           validPassport: {
             title: '有效护照',
-            description: '护照有效期至少6个月，且有空白签证页',
+            description: '护照有效期至少6个月，且有空白页',
             details: '泰国移民局要求护照在预计离境日期后仍有效至少6个月。',
           },
           onwardTicket: {
             title: '返程或离境机票',
-            description: '需证明将在30天内离开泰国',
-            details: '建议打印电子机票行程单，以便入境检查时出示。',
+            description: '需证明将在60天内离开泰国',
+            details: '建议打印电子机票行程单，以便入境检查时出示。单次可停留60天，可申请延期30天。',
           },
           accommodation: {
             title: '住宿证明',
@@ -2306,7 +2308,7 @@ export const translations = {
           },
           funds: {
             title: '充足资金',
-            description: '建议携带不少于10,000泰铢/人或等值现金及账户证明',
+            description: '建议人均准备不少于10,000泰铢（或家庭20,000泰铢）现金',
             details: '移民官可能抽查现金或银行卡余额证明，请提前准备截图或交易记录，并整理一份中英文或泰文的资金清单，列出随身现金、银行卡及余额以便快速出示。',
           },
           healthCheck: {

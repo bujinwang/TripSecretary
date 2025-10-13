@@ -53,6 +53,12 @@ import {
   // Hong Kong screens
   HongKongInfoScreen,
   HongKongRequirementsScreen,
+  // Korea screens
+  KoreaInfoScreen,
+  KoreaRequirementsScreen,
+  // USA screens
+  USAInfoScreen,
+  USARequirementsScreen,
 } from '../screens';
 
 import { colors } from '../theme';
@@ -361,6 +367,39 @@ const AppNavigator = () => {
             headerShown: false,
           }}
         />
+
+        {/* Korea Screens */}
+        <Stack.Screen
+          name="KoreaInfo"
+          component={KoreaInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KoreaRequirements"
+          component={KoreaRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        {/* USA Screens */}
+        <Stack.Screen
+          name="USAInfo"
+          component={USAInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="USARequirements"
+          component={USARequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen
           name="SGArrivalSelection"
           component={SGArrivalSelectionScreen}

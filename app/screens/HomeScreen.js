@@ -22,10 +22,10 @@ const HOT_COUNTRIES = [
   { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
   { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: true },
   { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: true },
-  { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: false },
+  { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: true },
   { id: 'sg', flag: '🇸🇬', name: 'Singapore', flightTimeKey: 'home.destinations.singapore.flightTime', enabled: true },
   { id: 'my', flag: '🇲🇾', name: 'Malaysia', flightTimeKey: 'home.destinations.malaysia.flightTime', enabled: true },
-  { id: 'us', flag: '🇺🇸', name: 'United States', flightTimeKey: 'home.destinations.usa.flightTime', enabled: false },
+  { id: 'us', flag: '🇺🇸', name: 'United States', flightTimeKey: 'home.destinations.usa.flightTime', enabled: true },
 ];
 
 const UPCOMING_TRIPS_CONFIG = [
@@ -290,6 +290,22 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'hk') {
       navigation.navigate('HongKongInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
+    if (country.id === 'kr') {
+      navigation.navigate('KoreaInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
+    if (country.id === 'us') {
+      navigation.navigate('USAInfo', {
         passport: passportData,
         destination: destinationForNav,
       });

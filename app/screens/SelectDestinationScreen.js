@@ -27,10 +27,10 @@ const SelectDestinationScreen = ({ navigation, route }) => {
     // 暂未启用的目的地
     { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: true },
     { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: true },
-    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
+    { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: true },
     { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: true },
     { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: true },
-    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
+    { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: true },
     { id: 'ca', flag: '🇨🇦', name: '加拿大', flightTime: '14小时飞行', enabled: false },
     { id: 'au', flag: '🇦🇺', name: '澳大利亚', flightTime: '9小时飞行', enabled: false },
     { id: 'nz', flag: '🇳🇿', name: '新西兰', flightTime: '11小时飞行', enabled: false },
@@ -123,6 +123,26 @@ const SelectDestinationScreen = ({ navigation, route }) => {
     if (country.id === 'hk') {
       setTimeout(() => {
         navigation.navigate('HongKongInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'kr') {
+      setTimeout(() => {
+        navigation.navigate('KoreaInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'us') {
+      setTimeout(() => {
+        navigation.navigate('USAInfo', {
           passport,
           destination: country
         });

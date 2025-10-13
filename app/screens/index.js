@@ -24,3 +24,5 @@ export * from './malaysia';
 export * from './singapore';
 export * from './taiwan';
 export * from './hongkong';
+export * from './korea';
+export * from './usa';

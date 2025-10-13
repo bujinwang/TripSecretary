@@ -38,18 +38,18 @@ const SingaporeInfoScreen = ({ navigation, route }) => {
         textStyle: styles.infoText,
       },
       {
-        key: 'entry',
-        title: t('singapore.info.sections.entry.title'),
-        items: normalizeItems(t('singapore.info.sections.entry.items', { defaultValue: [] })),
-        cardStyle: styles.infoCard,
-        textStyle: styles.infoText,
-      },
-      {
         key: 'onsite',
         title: t('singapore.info.sections.onsite.title'),
         items: normalizeItems(t('singapore.info.sections.onsite.items', { defaultValue: [] })),
         cardStyle: styles.warningCard,
         textStyle: styles.warningText,
+      },
+      {
+        key: 'appFeatures',
+        title: t('singapore.info.sections.appFeatures.title'),
+        items: normalizeItems(t('singapore.info.sections.appFeatures.items', { defaultValue: [] })),
+        cardStyle: styles.appFeaturesCard,
+        textStyle: styles.appFeaturesText,
       },
     ],
     [t]
@@ -178,6 +178,19 @@ const styles = StyleSheet.create({
     borderColor: '#1976D2',
   },
   warningText: {
+    ...typography.body1,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    lineHeight: 24,
+  },
+  appFeaturesCard: {
+    backgroundColor: '#F0F9FF',
+    padding: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  appFeaturesText: {
     ...typography.body1,
     color: colors.text,
     marginBottom: spacing.sm,

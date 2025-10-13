@@ -20,6 +20,41 @@ const JapanInfoScreen = ({ navigation, route }) => {
     navigation.navigate('JapanRequirements', { passport, destination });
   };
 
+  const normalizeItems = (value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.length > 0) {
+      return [value];
+    }
+    return [];
+  };
+
+  const infoSections = useMemo(
+    () => [
+      {
+        key: 'visa',
+        title: t('japan.info.sections.visa.title'),
+        items: normalizeItems(t('japan.info.sections.visa.items', { defaultValue: [] })),
+        cardStyle: styles.infoCard,
+        textStyle: styles.infoText,
+      },
+      {
+        key: 'important',
+        title: t('japan.info.sections.important.title'),
+        items: normalizeItems(t('japan.info.sections.important.items', { defaultValue: [] })),
+        cardStyle: styles.warningCard,
+        textStyle: styles.warningText,
+      },
+      {
+        key: 'appFeatures',
+        title: t('japan.info.sections.appFeatures.title'),
+        items: normalizeItems(t('japan.info.sections.appFeatures.items', { defaultValue: [] })),
+        cardStyle: styles.appFeaturesCard,
+        textStyle: styles.appFeaturesText,
+      },
+    ],
+    [t]
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -41,35 +76,18 @@ const JapanInfoScreen = ({ navigation, route }) => {
           <Text style={styles.subtitle}>{t('japan.info.subtitle')}</Text>
         </View>
 
-        {/* Visa Requirements */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.visa.title')}</Text>
-          <View style={styles.infoCard}>
-            {t('japan.info.sections.visa.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.infoText}>{item}</Text>
-            ))}
+        {infoSections.map((section) => (
+          <View key={section.key} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <View style={section.cardStyle}>
+              {section.items.map((item, index) => (
+                <Text key={`${section.key}-${index}`} style={section.textStyle}>
+                  {item}
+                </Text>
+              ))}
+            </View>
           </View>
-        </View>
-
-        {/* Stay Duration */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.duration.title')}</Text>
-          <View style={styles.infoCard}>
-            {t('japan.info.sections.duration.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.infoText}>{item}</Text>
-            ))}
-          </View>
-        </View>
-
-        {/* Important Notes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.important.title')}</Text>
-          <View style={styles.warningCard}>
-            {t('japan.info.sections.important.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.warningText}>{item}</Text>
-            ))}
-          </View>
-        </View>
+        ))}
 
         {/* Continue Button */}
         <View style={styles.buttonContainer}>
@@ -168,6 +186,20 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.sm,
     lineHeight: 24,
+  },
+  appFeaturesCard: {
+    backgroundColor: '#E3F2FD',
+    padding: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#2196F3',
+  },
+  appFeaturesText: {
+    ...typography.body1,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    lineHeight: 24,
+    fontWeight: '500',
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,

@@ -32,6 +32,15 @@
             "• Empfohlen, Flüge und Hotels im Voraus zu buchen, etwas Bargeld für Mittelnachweis vorbereiten",
             "• Beachten Sie das MDAC-Einreichungsfenster, zu frühe Einreichungen werden vom System abgelehnt"
           ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Ein-Klick-Ausfüllen: Füllt Ihre MDAC automatisch ohne manuelle Eingabe aus",
+            "• Intelligente Erinnerung: Automatische Benachrichtigung innerhalb des 3-Tage-Fensters",
+            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
+            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+          ]
         }
       },
       "continueButton": "Verstanden, weiter zur Checkliste"
@@ -112,6 +121,15 @@
             "• Verbotene Artikel: Drogen, geschützte Wildtierprodukte",
             "• Vorsicht bei Medikamenten, Alkohol, Bargeld; niemals Gegenstände für Fremde tragen",
             "• Bleiben Sie ruhig bei der Zollkontrolle, niemals Bestechungsgelder anbieten"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Ein-Klick-Ausfüllen: Füllt Ihre SG Arrival Card automatisch ohne manuelle Eingabe aus",
+            "• Intelligente Erinnerung: Automatische Benachrichtigung innerhalb des 3-Tage-Fensters",
+            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
+            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
           ]
         }
       },
@@ -276,6 +294,15 @@
             "• Bewahren Sie Bestätigungs-E-Mail der Online-Ankunftskarte auf",
             "• Deklarieren Sie alle Artikel wahrheitsgemäß beim Zoll"
           ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Ein-Klick-Ausfüllen: Füllt Ihre Online-Ankunftskarte automatisch ohne manuelle Eingabe aus",
+            "• Intelligente Erinnerung: Automatische Benachrichtigung sobald Ihre Reise bestätigt ist",
+            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
+            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+          ]
         }
       },
       "continueButton": "Verstanden, weiter zur Checkliste"
@@ -408,32 +435,35 @@
   "japan": {
     "info": {
       "headerTitle": "Einreiseinformationen Japan",
-      "title": "Japan Touristenvisum Informationen",
-      "subtitle": "Für chinesische Passinhaber",
+      "title": "Japan Einreiseführer",
+      "subtitle": "Visumfrei für 90 Tage für chinesische Passinhaber",
       "sections": {
         "visa": {
-          "title": "✓ Visumanforderungen",
+          "title": "✓ Gute Nachrichten! Visumfreie Politik",
           "items": [
-            "Kein Visum erforderlich! Chinesische Passinhaber können visumfrei zu touristischen Zwecken nach Japan einreisen.",
-            "• Aufenthaltsdauer: Bis zu 90 Tage",
-            "• Zweck: Nur Tourismus und Besichtigung",
-            "• Kann nicht verlängert oder geändert werden"
-          ]
-        },
-        "duration": {
-          "title": "⏰ Aufenthaltsdauer",
-          "items": [
-            "• Maximal 90 Tage pro Einreise",
-            "• Nicht mehr als 90 Tage kumulativ in 6 Monaten",
-            "• Planen Sie Ihre Reiseroute vernünftig"
+            "Chinesische Passinhaber genießen visumfreie Einreise nach Japan für 90 Tage - spontane Reise!",
+            "• Keine Visumantrag im Voraus erforderlich",
+            "• Aufenthalt bis zu 90 Tage für Tourismus und Besichtigung",
+            "• Neue Anforderung: Muss Ankunftskarte und Zollerklärungsformulare ausfüllen"
           ]
         },
         "important": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Muss klaren touristischen Zweck haben",
-            "• Kann nicht arbeiten oder geschäftliche Aktivitäten in Japan ausüben",
-            "• Verstöße können zu Einreiseverweigerung oder Abschiebung führen"
+            "• Formulare müssen handschriftlich ausgefüllt werden: Vor-Ort-Ausfüllen ist fehleranfällig, unklare Informationen können Neuschreiben erfordern",
+            "• Mehrere Formulare erforderlich: Ankunftskarte und Zollerklärung, komplexe Informationen leicht zu vergessen",
+            "• Japanisch/Englisch Sprachanforderung: Einige Abschnitte benötigen japanische Adressen, Sprachbarriere verursacht Fehler",
+            "• Fingerabdruck- und Interviewprozess: Kommunikationsschwierigkeiten können Einreiseentscheidung beeinflussen",
+            "• Vollständige Dokumentation erforderlich: Reisepass, Rückflugticket, Unterkunftsnachweis, Geldnachweis alle erforderlich"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Null Angst: Automatische Erinnerung für erforderliche Materialien, keine Sorgen über fehlende Artikel",
+            "• Null Fehler: Intelligentes Ausfüllen von Ankunftskarte und Erklärungsformularen, genaue Informationen",
+            "• Null Ärger: Einmal eingeben, automatisch alle Formulare generieren",
+            "• Kopiermodus: Klarer Referenzinhalt für schnelles Kopieren vor Ort"
           ]
         }
       },
@@ -547,6 +577,337 @@
         ]
       },
       "startButton": "Einreisepaket vorbereiten starten"
+    }
+  },
+  "korea": {
+    "info": {
+      "headerTitle": "Südkorea Einreiseinformationen",
+      "title": "Südkorea Einreiseratgeber",
+      "subtitle": "Visumfrei für 90 Tage für chinesische Passinhaber",
+      "sections": {
+        "visa": {
+          "title": "✓ Gute Nachrichten! K-ETA-Befreiungspolitik",
+          "items": [
+            "Chinesische Staatsbürger genießen vorübergehende Visumbefreiung bis Dezember 2025 - spontane Reise!",
+            "• Keine Visum- oder K-ETA-Antrag im Voraus erforderlich",
+            "• Aufenthalt bis zu 90 Tage für Tourismus",
+            "• Neue Anforderung: Elektronische Ankunftskarte muss eingereicht werden (striktes Zeitfenster gilt)"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Neue Einreiseanforderungen - Lassen Sie schlechte Planung Ihre Reise nicht ruinieren",
+          "items": [
+            "• Elektronische Ankunftskarte obligatorisch: Muss in striktem Zeitfenster eingereicht werden, zu früh oder spät = abgelehnt",
+            "• Timing ist größte Herausforderung: Fenster verpassen bedeutet keine Einreise, keine Backup-Optionen",
+            "• Genauigkeit ist kritisch: Jeder Fehler bei Pass, Flug oder Unterkunft kann Einreiseverweigerung verursachen",
+            "• Mehrstufiger Prozess anfällig für Fehler: Von Dokumentenvorbereitung bis Endeinreichung, komplex und detailorientiert",
+            "• Vollständig digital ab Dez 2025: Papier-Ankunftskarten dauerhaft eingestellt"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Null Angst: Verfolgt automatisch Ihre Reiseroute, erinnert Sie zum perfekten Zeitpunkt",
+            "• Null Fehler: Intelligentes Ausfüllen stellt sicher, dass alle Informationen korrekt sind",
+            "• Null Aufwand: Einmal eingeben, wir verwalten den gesamten Prozess",
+            "• Progressive Vorbereitung: Materialien im Voraus vorbereiten, automatisch ausgelöst wenn Zeit ist"
+          ]
+        }
+      },
+      "continueButton": "Verstanden, Vorbereitung fortsetzen"
+    },
+    "requirements": {
+      "headerTitle": "Südkorea Einreise-Checkliste",
+      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
+      "introSubtitle": "Stellen Sie sicher, dass alle Anforderungen vor der Reise nach Südkorea erfüllt sind",
+      "items": {
+        "validPassport": {
+          "title": "Gültiger Pass",
+          "description": "Pass gültig für mindestens 6 Monate",
+          "details": "Pass muss mehr als 6 Monate ab geplantem Abreisedatum gültig sein"
+        },
+        "returnTicket": {
+          "title": "Rückflugticket",
+          "description": "Bestätigtes Rückflug- oder Weiterreiseticket",
+          "details": "Muss klaren Ausreiseplan haben, der zeigt, dass Sie Südkorea innerhalb der genehmigten Aufenthaltsdauer verlassen"
+        },
+        "sufficientFunds": {
+          "title": "Ausreichende Mittel",
+          "description": "Nachweis von Mitteln für den gesamten Aufenthalt",
+          "details": "Empfohlen, ausreichend Bargeld mitzuführen oder Kreditkarte/Kontoauszüge zu zeigen"
+        },
+        "accommodation": {
+          "title": "Unterkunftsnachweis",
+          "description": "Hotelbuchung oder Gastkontakt in Südkorea",
+          "details": "Hotelreservierungsbestätigung oder detaillierte Kontaktinformationen von Freunden/Verwandten in Südkorea bereitstellen"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Sie sind bereit!",
+          "subtitle": "Sie können jetzt Ihre Reiseinformationen vervollständigen."
+        },
+        "warning": {
+          "title": "Bitte überprüfen Sie jeden Punkt",
+          "subtitle": "Stellen Sie sicher, dass alle Anforderungen erfüllt sind, bevor Sie fortfahren."
+        }
+      },
+      "continueButton": "Weiter zu Reiseinformationen"
+    }
+  },
+  "usa": {
+    "info": {
+      "headerTitle": "Vereinigte Staaten Einreiseinformationen",
+      "title": "Vereinigte Staaten Touristenvisum Informationen",
+      "subtitle": "Für chinesische Passinhaber",
+      "sections": {
+        "visa": {
+          "title": "✓ Visumanforderungen",
+          "items": [
+            "Visum erforderlich. Chinesische Passinhaber müssen im Voraus ein B1/B2 Touristenvisum beantragen.",
+            "• Visumstyp: B1/B2 (Geschäft/Tourismus)",
+            "• Gültigkeit: Normalerweise 10 Jahre mehrfache Einreise",
+            "• Aufenthaltsdauer pro Besuch: Bis zu 180 Tage (festgelegt vom CBP-Beamten bei Einreise)",
+            "• EVUS-Registrierung erforderlich für chinesische B1/B2-Visuminhaber vor der Reise"
+          ]
+        },
+        "duration": {
+          "title": "⏰ Aufenthaltsdauer",
+          "items": [
+            "• Maximaler Aufenthalt vom CBP-Beamten bei Einreise festgelegt (normalerweise 180 Tage)",
+            "• I-94-Eintrag für genauen genehmigten Aufenthaltszeitraum prüfen",
+            "• Verlängerungen über USCIS-Antrag möglich",
+            "• Nicht überziehen - schwerwiegende Einwanderungsfolgen"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Wichtige Hinweise",
+          "items": [
+            "• Muss klaren touristischen oder geschäftlichen Zweck haben",
+            "• EVUS-Registrierung alle 2 Jahre oder bei neuem Pass erforderlich",
+            "• CBP Form 6059B Zollerklärung bei Ankunft ausfüllen",
+            "• CBP-Interview am Einreisehafen erforderlich",
+            "• Verstöße können zur Visumsaufhebung und zukünftigen Einreiseverboten führen"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Ein-Klick-Ausfüllen: Füllt Ihr Zollerklärungsformular automatisch ohne manuelle Eingabe aus",
+            "• EVUS-Erinnerung: Automatische Benachrichtigung zur Vervollständigung der EVUS-Registrierung vor der Reise",
+            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
+            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+          ]
+        }
+      },
+      "continueButton": "Verstanden, Vorbereitung fortsetzen"
+    },
+    "requirements": {
+      "headerTitle": "Vereinigte Staaten Einreise-Checkliste",
+      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
+      "introSubtitle": "Stellen Sie sicher, dass alle Anforderungen vor der Reise in die Vereinigten Staaten erfüllt sind",
+      "items": {
+        "validPassport": {
+          "title": "Gültiger Pass",
+          "description": "Pass gültig mindestens 6 Monate über den beabsichtigten Aufenthalt hinaus",
+          "details": "Pass muss mindestens 6 Monate über Ihre geplante Ausreise aus den USA hinaus gültig sein"
+        },
+        "validVisa": {
+          "title": "Gültiges US-Visum + EVUS",
+          "description": "Genehmigtes B1/B2 Visum und aktuelle EVUS-Registrierung",
+          "details": "Muss gültigen Visumstempel im Pass haben UND EVUS online registriert sein (alle 2 Jahre erforderlich)"
+        },
+        "returnTicket": {
+          "title": "Rückflug- oder Weiterreiseticket",
+          "description": "Bestätigte Ausreise aus den Vereinigten Staaten",
+          "details": "Muss Nachweis der Pläne zur Ausreise aus den USA zeigen - Rückflugticket oder Weiterreise in anderes Land"
+        },
+        "sufficientFunds": {
+          "title": "Ausreichende Mittel",
+          "description": "Nachweis der finanziellen Unterstützung für den gesamten Aufenthalt",
+          "details": "Kontoauszüge, Kreditkarten, Bargeld - zeigen dass Sie sich während des US-Besuchs selbst versorgen können"
+        },
+        "accommodation": {
+          "title": "Unterkunftsdetails",
+          "description": "Hotelbuchungen oder Gastgeberinformationen in den Vereinigten Staaten",
+          "details": "Hotelbestätigungen oder detaillierte Kontaktinformationen bereitstellen, falls Sie bei Freunden/Familie übernachten"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Sie sind bereit!",
+          "subtitle": "Sie können jetzt Ihre Reiseinformationen vervollständigen."
+        },
+        "warning": {
+          "title": "Bitte überprüfen Sie jeden Punkt",
+          "subtitle": "Stellen Sie sicher, dass alle Anforderungen erfüllt sind, bevor Sie fortfahren."
+        }
+      },
+      "continueButton": "Weiter zu Reiseinformationen"
+    }
+  },
+  "singapore": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Singapur",
+      "title": "Singapur Einreiseführer",
+      "subtitle": "Visumfrei für 30 Tage",
+      "sections": {
+        "visa": {
+          "title": "✓ Gute Nachrichten! Visumfreie Politik",
+          "items": [
+            "Seit 9. Februar 2024, visumfrei für 30 Tage",
+            "• Keine Visumsantrag im Voraus erforderlich",
+            "• SG Arrival Card muss eingereicht werden"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Strenge Zeitbegrenzung",
+            "• Bestätigungscode leicht zu verlieren",
+            "• Strenge Einwanderungskontrollen"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Null Angst",
+            "• Null Fehler",
+            "• Bestätigungsverwaltung"
+          ]
+        }
+      },
+      "continueButton": "Weiter"
+    }
+  },
+  "malaysia": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Malaysia",
+      "title": "Malaysia Einreiseführer",
+      "subtitle": "Visumfrei für 30 Tage",
+      "sections": {
+        "visa": {
+          "title": "✓ Visumfreie Politik",
+          "items": [
+            "Seit 1. Dezember 2023, visumfrei für 30 Tage",
+            "• MDAC muss eingereicht werden"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Strenge Zeitbegrenzung",
+            "• PIN-Code leicht zu verlieren",
+            "• Hohe Genauigkeit erforderlich"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht einfach",
+          "items": [
+            "• Null Angst",
+            "• PIN-Verwaltung"
+          ]
+        }
+      },
+      "continueButton": "Weiter"
+    }
+  },
+  "taiwan": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Taiwan",
+      "title": "Taiwan Einreiseführer",
+      "subtitle": "Einreisegenehmigung erforderlich",
+      "sections": {
+        "visa": {
+          "title": "✓ Genehmigungspolitik",
+          "items": [
+            "Einreisegenehmigung erforderlich",
+            "• Online-Antrag, 5 Werktage",
+            "• Online-Ankunftskarte erforderlich"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Gültigkeit prüfen",
+            "• E-Mail-Verifizierung erforderlich",
+            "• Vollständige Vorbereitung"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Dokumentenliste"
+          ]
+        }
+      },
+      "continueButton": "Weiter"
+    }
+  },
+  "thailand": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Thailand",
+      "title": "Thailand Einreiseführer",
+      "subtitle": "Visumfrei für 60 Tage",
+      "sections": {
+        "visa": {
+          "title": "✓ Verlängerte visumfreie Politik",
+          "items": [
+            "Seit Juli 2024, verlängert auf 60 Tage",
+            "• 30 Tage Verlängerung verfügbar"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Geldnachweis erforderlich",
+            "• Rückflugticket obligatorisch",
+            "• Unterkunftsinformationen überprüfbar"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Kommunikationsassistent"
+          ]
+        }
+      },
+      "continueButton": "Weiter"
+    }
+  },
+  "hongkong": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Hongkong",
+      "title": "Hongkong Einreiseführer",
+      "subtitle": "Visumfrei für 7 Tage",
+      "sections": {
+        "visa": {
+          "title": "✓ Visumfreie Politik",
+          "items": [
+            "Visumfrei für 7 Tage",
+            "• Für Tourismus und Geschäft",
+            "• Verlängerungen verfügbar"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Kurzer Aufenthalt von 7 Tagen",
+            "• Strenge Kontrollen",
+            "• Vollständige Dokumentation"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Dokumentenliste"
+          ]
+        }
+      },
+      "continueButton": "Weiter"
     }
   }
 }

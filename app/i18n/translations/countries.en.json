@@ -2,35 +2,35 @@
   "malaysia": {
     "info": {
       "headerTitle": "Malaysia Entry Information",
-      "title": "Malaysia Visa-Free Entry & MDAC",
-      "subtitle": "Chinese passport holders: visa-free for 30 days since Dec 1, 2023",
+      "title": "Malaysia Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa-Free Policy",
+          "title": "✓ Great News! Visa-Free Policy",
           "items": [
-            "Since December 1, 2023, Chinese passport holders can enter Malaysia visa-free for up to 30 days.",
-            "• Applies to tourism, family visits, business, and similar purposes",
-            "• Passport must be valid for at least 6 months",
-            "• All travelers must complete MDAC (Malaysia Digital Arrival Card) before entry - completely free"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Entry Requirements",
-          "items": [
-            "• Passport valid for at least 6 months with blank pages",
-            "• Complete MDAC within 3 days before arrival (3 calendar days before entry)",
-            "• Return flight or onward travel proof",
-            "• Accommodation confirmation (hotel booking) or contact in Malaysia",
-            "• Sufficient travel funds proof"
+            "Since December 1, 2023, Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: MDAC Digital Arrival Card must be submitted (submission time limit applies)"
           ]
         },
         "onsite": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Must present MDAC PIN or confirmation email screenshot upon entry",
-            "• Prohibited items: meat, alcohol, tobacco, and other restricted goods",
-            "• Recommended to book flights and hotels in advance, prepare some cash for funds proof",
-            "• Note MDAC submission time window, early submissions will be rejected by the system"
+            "• MDAC has strict time limit: Submit too early = rejected, too late = can't make it",
+            "• Time calculation error-prone: Must calculate by Malaysia time, timezone issues cause mistakes",
+            "• PIN code easy to lose: Must show PIN upon entry, can't find email or lost screenshot is troublesome",
+            "• CAPTCHA recognition difficult: Alphanumeric code unclear, multiple wrong attempts may get locked",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill MDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• PIN management: Auto-save PIN and confirmation email, quick display upon entry"
           ]
         }
       },
@@ -83,35 +83,35 @@
   "singapore": {
     "info": {
       "headerTitle": "Singapore Entry Information",
-      "title": "Singapore Visa-Free Entry & SG Arrival Card",
-      "subtitle": "Chinese passport holders: visa-free for 30 days since Feb 9, 2024",
+      "title": "Singapore Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa-Free Policy",
+          "title": "✓ Great News! Visa-Free Policy",
           "items": [
-            "Since February 9, 2024, Chinese ordinary passport holders can enter Singapore visa-free for up to 30 days.",
-            "• Applies to tourism, family visits, business, and other private matters",
-            "• Work or stays exceeding 30 days require a visa in advance",
-            "• Official passport holders also enjoy visa-free entry"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Entry Requirements",
-          "items": [
-            "• Passport valid for at least 6 months",
-            "• Complete SG Arrival Card within 3 days before arrival",
-            "• Return flight or onward travel proof",
-            "• Sufficient funds for stay (cash, credit cards, etc.)",
-            "• Accommodation confirmation or local contact information"
+            "Since February 9, 2024, Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: SG Arrival Card must be submitted (submission time limit applies)"
           ]
         },
         "onsite": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Must complete SG Arrival Card within 3 days before arrival with accurate information",
-            "• Prohibited items: drugs, protected wildlife products",
-            "• Be cautious with medications, alcohol, cash; never carry items for strangers",
-            "• Stay calm during customs inspection, never offer bribes"
+            "• SG Arrival Card has time limit: Submit too early = invalid, too late = can't make it",
+            "• Time calculation error-prone: Must calculate by Singapore time, timezone issues cause mistakes",
+            "• Confirmation code easy to lose: Must show upon entry, can't find email is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill SG Arrival Card, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• Confirmation management: Auto-save confirmation code, quick display upon entry"
           ]
         }
       },
@@ -164,35 +164,35 @@
   "hongkong": {
     "info": {
       "headerTitle": "Hong Kong Entry Information",
-      "title": "Hong Kong Visa-Free Entry",
-      "subtitle": "Chinese passport holders: visa-free for up to 7 days",
+      "title": "Hong Kong Entry Guide",
+      "subtitle": "Visa-free for 7 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa-Free Policy",
+          "title": "✓ Great News! Visa-Free Policy",
           "items": [
-            "Chinese passport holders can enter Hong Kong visa-free for tourism, business, and family visits for up to 7 days.",
-            "• Extension applications should be submitted to Hong Kong Immigration Department if needed",
-            "• No pre-registration is required for visa-free entry",
-            "• Make sure you have valid onward travel arrangements"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Entry Requirements",
-          "items": [
-            "• Valid passport with at least 1 month validity beyond your intended stay",
-            "• Return or onward travel ticket",
-            "• Proof of accommodation (hotel booking or host contact)",
-            "• Sufficient funds for your stay",
-            "• Complete health declaration if required"
+            "Chinese passport visa-free for 7 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, business, family visits",
+            "• Extensions can be applied through Hong Kong Immigration if needed"
           ]
         },
         "onsite": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Have your return ticket and hotel booking confirmation ready for immigration inspection",
-            "• Prohibited items: drugs, weapons, and endangered species products",
-            "• Be prepared to show proof of sufficient funds if asked",
-            "• Comply with all immigration officer instructions"
+            "• Short stay duration: Only 7 days, must leave on time or apply for extension",
+            "• Immigration checks strict: May ask detailed questions about purpose, accommodation, funds",
+            "• Document preparation required: Return ticket, hotel booking, funds proof all needed",
+            "• Health declaration may required: Depending on current health policies",
+            "• E-channels limited: First-time visitors must use manual counters, longer queues"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-reminds 7-day limit, no worries about overstay",
+            "• Zero errors: Pre-filled travel information, immigration questions prepared",
+            "• Zero hassle: Enter once, all documents organized",
+            "• Document checklist: Comprehensive preparation list, no missing items"
           ]
         }
       },
@@ -245,36 +245,35 @@
   "taiwan": {
     "info": {
       "headerTitle": "Taiwan Entry Information",
-      "title": "Taiwan Entry Permit & Online Arrival Card",
-      "subtitle": "Mainland Chinese passport holders require an entry permit",
+      "title": "Taiwan Entry Guide",
+      "subtitle": "Entry permit required for Chinese passport holders",
       "sections": {
         "visa": {
           "title": "✓ Entry Permit Policy",
           "items": [
-            "Mainland Chinese passport holders must apply for an Entry Permit (入台证) before traveling to Taiwan.",
-            "• Individual tourist permits (自由行) available for select cities",
-            "• Group tour permits available through travel agencies",
-            "• Business and family visit permits require sponsorship",
-            "• Processing time typically 3-7 business days"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Entry Requirements",
-          "items": [
-            "• Valid passport with at least 6 months validity",
-            "• Valid Entry Permit (入台证)",
-            "• Complete Online Arrival Card before arrival",
-            "• Return flight ticket",
-            "• Accommodation confirmation or host contact information"
+            "Chinese passport requires Entry Permit to Taiwan - apply online easily",
+            "• Online application, about 5 business days processing",
+            "• Valid for 3 months multiple entries, each stay up to 15 days",
+            "• Also need to complete online arrival card before entry"
           ]
         },
         "onsite": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Complete the Online Arrival Card within 3 days before arrival",
-            "• Have both your passport and Entry Permit ready for immigration",
-            "• Keep confirmation email of Online Arrival Card",
-            "• Declare all items truthfully at customs"
+            "• Check permit validity: Expired or wrong dates = entry denied",
+            "• Email verification required: Online card needs verification code, inaccessible email = can't complete",
+            "• Complete documents preparation: Permit, return ticket, accommodation, funds proof all needed",
+            "• Immigration questions detailed: May ask travel purpose, itinerary, contact info - prepare in advance",
+            "• Entry permit easily lost: Paper or electronic copy must be carried, lost = big trouble"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Reminds permit validity, auto-checks expiry",
+            "• Zero errors: Smart-fill online arrival card, information accurate",
+            "• Zero hassle: Enter once, we manage permits and cards",
+            "• Document checklist: Comprehensive list, no missing items"
           ]
         }
       },
@@ -327,35 +326,35 @@
   "thailand": {
     "info": {
       "headerTitle": "Thailand Entry Information",
-      "title": "Thailand Visa-Free Travel Information",
-      "subtitle": "For Chinese passport holders (2024 policy)",
+      "title": "Thailand Entry Guide",
+      "subtitle": "Visa-free for 60 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa Policy",
+          "title": "✓ Great News! Extended Visa-Free Policy",
           "items": [
-            "Since March 1, 2024, China and Thailand have mutual visa exemption. Chinese ordinary passport holders can enter Thailand visa-free for short stays.",
-            "• Maximum 30 days per visit",
-            "• Maximum 90 days cumulative stay within 180 days",
-            "• For tourism, family visits, short-term business only (not for work)"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Entry Requirements",
-          "items": [
-            "• Passport valid for at least 6 months",
-            "• Return flight ticket or proof of onward travel",
-            "• Accommodation confirmation (hotel or address in Thailand)",
-            "• Sufficient funds (cash, credit cards - at least 10,000 THB per person or 20,000 THB per family)",
-            "• No TDAC required for visa-free entry (only for visa-on-arrival)"
+            "Since July 2024, visa-free extended to 60 days - spontaneous long trip!",
+            "• No visa application needed in advance",
+            "• Valid for tourism purposes",
+            "• Can apply for additional 30-day extension if needed"
           ]
         },
         "onsite": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Immigration may ask to see proof of funds, return ticket, and accommodation",
-            "• Prohibited items: drugs, weapons, counterfeit goods, endangered species products",
-            "• Respect Thai culture and customs",
-            "• Keep your passport with you at all times"
+            "• Funds proof may be checked: Immigration may ask to show cash, insufficient = denied entry",
+            "• Return ticket required: Must prove departure plans, no ticket = trouble",
+            "• Accommodation information verifiable: May check hotel booking or host contact, unclear = questioned",
+            "• TM.6 card required: Fill incorrectly = delay, prepare in advance",
+            "• Customs regulations strict: E-cigarettes banned, carrying = confiscation or fine"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Reminds 60-day limit and extension options",
+            "• Zero errors: Pre-fill TM.6 card, accurate information",
+            "• Zero hassle: Enter once, track duration automatically",
+            "• Communication assistant: Thai phrases prepared, immigration questions answered smoothly"
           ]
         }
       },
@@ -408,61 +407,64 @@
   "japan": {
     "info": {
       "headerTitle": "Japan Entry Information",
-      "title": "Japan Tourist Visa Information",
-      "subtitle": "For Chinese passport holders",
+      "title": "Japan Entry Guide",
+      "subtitle": "Visa required for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa Requirements",
+          "title": "⚠️ Visa Requirements",
           "items": [
-            "No visa required! Chinese passport holders can enter Japan visa-free for tourism.",
-            "• Stay duration: Up to 90 days",
-            "• Purpose: Tourism and sightseeing only",
-            "• Cannot extend or change status"
-          ]
-        },
-        "duration": {
-          "title": "⏰ Stay Duration",
-          "items": [
-            "• Maximum 90 days per entry",
-            "• No more than 90 days cumulative in 6 months",
-            "• Plan your itinerary reasonably"
+            "Chinese citizens must apply for a visa in advance to visit Japan - no visa-free policy currently",
+            "• Must provide proof of financial capacity (bank statements, employment income, etc.)",
+            "• Tourist visa requires return flight, itinerary, and accommodation proof",
+            "• From 2025: Visa policy relaxed - group visa extended to 30 days, 65+ exempt from employment proof, 3-year multiple-entry visa no longer requires first entry within 3 months"
           ]
         },
         "important": {
-          "title": "⚠️ Important Reminders",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• Must have clear tourism purpose",
-            "• Cannot work or engage in business activities in Japan",
-            "• Violations may result in entry refusal or deportation"
+            "• Complex visa application: Must prepare financial proof, employment certificate, itinerary and other documents",
+            "• Processing time: Visa approval takes several business days, plan your travel with sufficient lead time",
+            "• Forms at entry: Arrival card and customs declaration must be handwritten on-site, error-prone",
+            "• Language barrier: Some forms require Japanese or English, unfamiliar travelers may make mistakes",
+            "• Complete documents required: Valid visa, return ticket, accommodation proof, funds proof all mandatory"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Visa materials checklist with auto-reminders, no worries about missing documents",
+            "• Zero errors: Smart-fill arrival card and declaration forms, accurate information",
+            "• Zero hassle: Enter once, auto-generate all forms and materials",
+            "• Copy mode: Clear Chinese-Japanese-English trilingual reference for quick on-site copying"
           ]
         }
       },
       "continueButton": "Understood, continue preparation"
     },
     "requirements": {
-      "headerTitle": "Japan Entry Checklist",
-      "introTitle": "Confirm you meet these requirements",
-      "introSubtitle": "Ensure all requirements are met before traveling to Japan",
+      "headerTitle": "Japan Visa Application Checklist",
+      "introTitle": "Confirm you have all visa application materials",
+      "introSubtitle": "Ensure all materials are prepared before applying for Japan tourist visa",
       "items": {
         "validPassport": {
           "title": "Valid passport",
-          "description": "Passport valid for at least 6 months",
-          "details": "Passport must be valid for more than 6 months from planned departure date"
+          "description": "Passport valid for at least 6 months with blank visa pages",
+          "details": "Passport must be valid for more than 6 months beyond planned departure date, with at least 2 blank visa pages"
         },
         "returnTicket": {
-          "title": "Return ticket",
-          "description": "Confirmed return or onward journey ticket",
-          "details": "Must have clear departure plan, showing you will leave Japan within 90 days"
+          "title": "Return flight ticket",
+          "description": "Confirmed round-trip flight booking",
+          "details": "Must provide confirmed round-trip flight booking or itinerary showing clear departure and return dates"
         },
         "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "Proof of funds for entire stay",
-          "details": "Recommended to carry at least 100,000 yen or equivalent, or show credit card/bank statements"
+          "title": "Sufficient funds proof",
+          "description": "Bank statements showing financial capacity",
+          "details": "Recent 6-month bank statements or employment certificate showing annual income to prove you can cover trip expenses"
         },
         "accommodation": {
           "title": "Accommodation proof",
-          "description": "Hotel booking or host contact in Japan",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Japan"
+          "description": "Hotel bookings or invitation letter",
+          "details": "Hotel reservation confirmations for entire Japan stay, or invitation letter with guarantor information if staying with friends/family"
         }
       },
       "status": {
