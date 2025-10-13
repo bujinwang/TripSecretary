@@ -119,6 +119,6 @@ Only promote to beta/production after all rows are checked.
 - API bring-up: `PHASE1_API_INTEGRATION_GUIDE.md`
 - TDAC specifics: `TDAC_DUAL_MODE.md`
 - Elderly UX: `ELDERLY_USER_FEATURES.md`
-- Contact: support@tripsecretary.com
+- Contact: support@borderbuddy.com
 
 *Last reviewed: 2025‑01*

@@ -33,6 +33,18 @@ const PURPOSE_OPTIONS = [
   { value: '工作', key: 'work' },
 ];
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+const parseDateOnly = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const parts = value.split('-').map((part) => Number(part));
+  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) return null;
+  const [year, month, day] = parts;
+  return new Date(year, month - 1, day);
+};
+
+const SUPPORTED_72H_DESTINATIONS = new Set(['th', 'my', 'sg']);
+
 const TravelInfoScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const {
@@ -84,8 +96,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
     return value;
   };
 
-  // Default to a date within 72 hours (TDAC requirement)
-  // Add 2 days to current date as default
+  // Default arrival date: 2 days from today for convenience
   const getDefaultArrivalDate = () => {
     if (initialTravelInfo?.arrivalDate) {
       return initialTravelInfo.arrivalDate;
@@ -137,9 +148,12 @@ const TravelInfoScreen = ({ navigation, route }) => {
       case 'hk':
         return [];
       case 'tw':
-        return ['flightNumber', 'hotelAddress', 'contactPhone', 'travelPurpose'];
+        return ['flightNumber', 'arrivalDate', 'hotelName', 'hotelAddress', 'contactPhone', 'stayDuration', 'travelPurpose'];
       case 'th':
         return ['flightNumber', 'arrivalDate', 'hotelName', 'hotelAddress', 'contactPhone', 'stayDuration', 'hasFever'];
+      case 'my':
+      case 'sg':
+        return ['flightNumber', 'arrivalDate', 'hotelName', 'hotelAddress', 'contactPhone', 'stayDuration', 'travelPurpose'];
       case 'us':
         return ['flightNumber', 'hotelAddress', 'travelPurpose', 'cashAmount', 'carryingFood'];
       case 'ca':
@@ -275,29 +289,31 @@ const TravelInfoScreen = ({ navigation, route }) => {
   };
 
   const handleGenerate = () => {
-    // Validate arrival date for Thailand (72-hour rule)
-    if (destination?.id === 'th' && arrivalDate) {
-      const arrivalDateObj = new Date(arrivalDate);
-      const now = new Date();
-      const hoursDiff = (arrivalDateObj - now) / (1000 * 60 * 60);
-      
-      if (hoursDiff > 72) {
-        const daysUntilArrival = Math.ceil(hoursDiff / 24);
-        Alert.alert(
-          t('travelInfo.alerts.dateTooFarTitle'),
-          t('travelInfo.alerts.dateTooFarBody', { days: daysUntilArrival }),
-          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
-        );
-        return;
-      }
-      
-      if (hoursDiff < -24) {
-        Alert.alert(
-          t('travelInfo.alerts.datePastTitle'),
-          t('travelInfo.alerts.datePastBody'),
-          [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
-        );
-        return;
+    // Validate arrival date for destinations with 72-hour submission windows (Thailand, Malaysia)
+    if (SUPPORTED_72H_DESTINATIONS.has(destination?.id) && arrivalDate) {
+      const arrivalDateObj = parseDateOnly(arrivalDate);
+      if (arrivalDateObj) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dayDiff = (arrivalDateObj.getTime() - today.getTime()) / ONE_DAY_MS;
+
+        if (dayDiff < 0) {
+          Alert.alert(
+            t('travelInfo.alerts.datePastTitle'),
+            t('travelInfo.alerts.datePastBody'),
+            [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+          );
+          return;
+        }
+
+        if (dayDiff > 3) {
+          Alert.alert(
+            t('travelInfo.alerts.dateTooFarTitle'),
+            t('travelInfo.alerts.dateTooFarBody', { days: Math.round(dayDiff) }),
+            [{ text: t('travelInfo.alerts.permissionDeniedAction') }]
+          );
+          return;
+        }
       }
     }
     

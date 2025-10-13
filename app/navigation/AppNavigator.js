@@ -1,4 +1,4 @@
-// 出国啰 - App Navigator
+// 出境通 - App Navigator
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -25,11 +25,31 @@ import {
   JapanProceduresScreen,
   InteractiveImmigrationGuide,
   // Thailand screens
+  ThailandInfoScreen,
+  ThailandRequirementsScreen,
   PIKGuideScreen,
   TDACWebViewScreen,
   TDACAPIScreen,
   TDACSelectionScreen,
   TDACHybridScreen,
+  // Malaysia screens
+  MalaysiaInfoScreen,
+  MalaysiaRequirementsScreen,
+  MDACSelectionScreen,
+  MDACGuideScreen,
+  MDACWebViewScreen,
+  // Singapore screens
+  SingaporeInfoScreen,
+  SingaporeRequirementsScreen,
+  SGArrivalSelectionScreen,
+  SGArrivalGuideScreen,
+  SGArrivalWebViewScreen,
+  // Taiwan screens
+  TaiwanInfoScreen,
+  TaiwanRequirementsScreen,
+  TWArrivalSelectionScreen,
+  TWArrivalGuideScreen,
+  TWArrivalWebViewScreen,
 } from '../screens';
 
 import { colors } from '../theme';
@@ -237,6 +257,117 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="SingaporeInfo"
+          component={SingaporeInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SingaporeRequirements"
+          component={SingaporeRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaInfo"
+          component={MalaysiaInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaRequirements"
+          component={MalaysiaRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MDACSelection"
+          component={MDACSelectionScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="MDACGuide"
+          component={MDACGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MDACWebView"
+          component={MDACWebViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="TaiwanInfo"
+          component={TaiwanInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TaiwanRequirements"
+          component={TaiwanRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TWArrivalSelection"
+          component={TWArrivalSelectionScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="TWArrivalGuide"
+          component={TWArrivalGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TWArrivalWebView"
+          component={TWArrivalWebViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="SGArrivalSelection"
+          component={SGArrivalSelectionScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="SGArrivalGuide"
+          component={SGArrivalGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SGArrivalWebView"
+          component={SGArrivalWebViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
           name="AirportArrival"
           component={AirportArrivalScreen}
           options={{
@@ -269,6 +400,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name="JapanProcedures"
           component={JapanProceduresScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ThailandInfo"
+          component={ThailandInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ThailandRequirements"
+          component={ThailandRequirementsScreen}
           options={{
             headerShown: false,
           }}

@@ -215,5 +215,5 @@ class ArrivalCardService {
 ---
 
 **更新日期**: 2025-10-07  
-**维护者**: TripSecretary Team  
+**维护者**: BorderBuddy Team  
 **项目状态**: 🔥 活跃开发中

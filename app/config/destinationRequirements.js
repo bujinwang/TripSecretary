@@ -14,9 +14,9 @@ export const destinationRequirements = {
     digitalSystem: 'TDAC', // 电子系统名称
     digitalUrl: 'https://tdac.immigration.go.th',
     notes: [
-      '需提前72小时在线申请TDAC电子入境卡',
-      '入境时出示护照和TDAC二维码',
-      '2025年5月1日起正式启用'
+      '应用将在航班前72小时内自动提交TDAC电子入境卡，无需手动填写',
+      '完成后会生成TDAC二维码，和护照一起出示即可入境',
+      '记得保持护照与航班信息最新，如有变化请在应用内更新'
     ]
   },
 
@@ -71,15 +71,17 @@ export const destinationRequirements = {
 
   // 台湾
   tw: {
-    needsPaperForm: true,  // 需要填写入境卡
-    needsCopyMode: true,   // 老人需要帮助
-    hasAutoKiosk: false,   // 内地居民不能用自动通关
-    pdfFormat: '入出境登记表',
-    entryMethod: 'paper',  
+    needsPaperForm: false,  // 使用电子入境卡
+    needsCopyMode: false,   // 线上填写，无需手写
+    hasAutoKiosk: false,    // 主要人工柜台，但支持快速通关确认
+    pdfFormat: null,
+    entryMethod: 'digital',
+    digitalSystem: 'Taiwan Online Arrival Card',
+    digitalUrl: 'https://twac.immigration.gov.tw/submit',
     notes: [
-      '需要填写纸质入境卡',
-      '持台胞证或大陆居民往来台湾通行证',
-      '人工柜台办理'
+      '抵达前先填写台湾电子入境卡（Online Arrival Card），支持事先在线提交',
+      '需填写可用邮箱接收验证码并完成OTP验证后才能进入表单',
+      '请准备航班、住宿、联络电话以及14日内旅行史等信息'
     ]
   },
 
@@ -123,22 +125,25 @@ export const destinationRequirements = {
     digitalSystem: 'SG Arrival Card',
     digitalUrl: 'https://eservices.ica.gov.sg/sgarrivalcard',
     notes: [
-      '需提前3天在线提交SG Arrival Card',
-      '入境时扫描护照和指纹',
-      '部分护照可使用自动通关'
+      '抵达前3天内在线提交SG Arrival Card，超过窗口会被拒绝',
+      '入境时需要出示提交确认与护照并完成指纹、面像采集',
+      '同一旅客30天内重复入境可复用已提交信息或重新更新行程'
     ]
   },
 
   // 马来西亚
   my: {
-    needsPaperForm: true,  // 需要入境卡
-    needsCopyMode: true,   // 老人需要帮助
-    hasAutoKiosk: false,   // 外国人不能用
-    pdfFormat: '入境卡',
-    entryMethod: 'paper',
+    needsPaperForm: false,  // 使用数字入境卡MDAC
+    needsCopyMode: false,   // 线上填写，无需手写
+    hasAutoKiosk: false,    // 外国旅客主要走人工柜台
+    pdfFormat: null,
+    entryMethod: 'digital',
+    digitalSystem: 'MDAC',
+    digitalUrl: 'https://imigresen-online.imi.gov.my/mdac/main?registerMain',
     notes: [
-      '需要填写入境卡',
-      '人工柜台办理'
+      '所有外籍旅客需在抵达前3天内提交Malaysia Digital Arrival Card (MDAC)',
+      '提交后会收到确认邮件与PIN码，入境时出示护照和PIN即可完成验证',
+      '如果在近30天内再次入境，可复用上一次的PIN码或重新提交最新行程',
     ]
   },
 

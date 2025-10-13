@@ -111,7 +111,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       
       // 保存到相册
       const asset = await MediaLibrary.createAssetAsync(filename);
-      await MediaLibrary.createAlbumAsync('TripSecretary', asset, false);
+      await MediaLibrary.createAlbumAsync('BorderBuddy', asset, false);
       
       console.log('✅ QR码已保存到相册');
       return true;

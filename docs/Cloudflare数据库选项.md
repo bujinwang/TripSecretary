@@ -486,7 +486,7 @@ export default {
       },
       body: JSON.stringify({
         dataSource: 'Cluster0',
-        database: 'tripsecretary',
+        database: 'borderbuddy',
         collection: 'users',
         filter: { wechat_openid: openid }
       })

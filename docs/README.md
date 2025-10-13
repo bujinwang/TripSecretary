@@ -142,5 +142,5 @@ All project documentation organized by category.
 ---
 
 **Last Updated**: 2025-01  
-**Project**: 出境通 (TripSecretary)
+**Project**: 出境通 (BorderBuddy)
 **Status**: MVP Ready ✅

@@ -1,4 +1,4 @@
-# 🚀 TripSecretary Quick Start Guide
+# 🚀 BorderBuddy Quick Start Guide
 
 ## Current Status: ✅ Fully Functional
 
@@ -16,7 +16,7 @@ The app is now **100% implemented** with:
 ### Frontend (Already Running on Port 8081)
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary
+cd /Users/bujin/Documents/Projects/BorderBuddy
 
 # If you need to restart:
 npm start
@@ -34,7 +34,7 @@ Then:
 ### Backend (Cloudflare Workers)
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary/cloudflare-backend
+cd /Users/bujin/Documents/Projects/BorderBuddy/cloudflare-backend
 
 # Install dependencies (first time only)
 npm install
@@ -118,8 +118,8 @@ database_id = "your-d1-database-id"
 ### Watchman Warnings
 Already fixed! If you see them again:
 ```bash
-watchman watch-del '/Users/bujin/Documents/Projects/TripSecretary'
-watchman watch-project '/Users/bujin/Documents/Projects/TripSecretary'
+watchman watch-del '/Users/bujin/Documents/Projects/BorderBuddy'
+watchman watch-project '/Users/bujin/Documents/Projects/BorderBuddy'
 ```
 
 ### TypeScript Warning

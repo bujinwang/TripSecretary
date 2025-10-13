@@ -2,7 +2,7 @@
 
 ## Overview
 
-Since OpenAI (ChatGPT) is not accessible in mainland China, we need to use Chinese AI providers or create a hybrid approach. This document outlines the best options for the TripSecretary AI Trip Assistant.
+Since OpenAI (ChatGPT) is not accessible in mainland China, we need to use Chinese AI providers or create a hybrid approach. This document outlines the best options for the BorderBuddy AI Trip Assistant.
 
 ## Top Chinese AI Providers
 
@@ -178,7 +178,7 @@ const response = await fetch('https://open.bigmodel.cn/api/paas/v3/model-api/cha
 
 ```
 ┌─────────────────────────────────────┐
-│  TripSecretary AI Service           │
+│  BorderBuddy AI Service           │
 ├─────────────────────────────────────┤
 │                                     │
 │  User Location Detection            │
@@ -284,7 +284,7 @@ class MultiProviderService {
 }
 ```
 
-## Recommended Architecture for TripSecretary
+## Recommended Architecture for BorderBuddy
 
 ### Option A: Tongyi Qianwen Primary (Best for China Market)
 

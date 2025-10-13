@@ -1,4 +1,4 @@
-# TripSecretary (出境通) - Implementation Status
+# BorderBuddy (出境通) - Implementation Status
 
 ## ✅ Completed Implementation
 
@@ -135,7 +135,7 @@ All routes implemented:
 ### Frontend Deployment
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary
+cd /Users/bujin/Documents/Projects/BorderBuddy
 
 # Install dependencies (already done)
 npm install
@@ -151,7 +151,7 @@ eas build --platform android
 ### Backend Deployment
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary/cloudflare-backend
+cd /Users/bujin/Documents/Projects/BorderBuddy/cloudflare-backend
 
 # Install dependencies
 npm install

@@ -9,6 +9,1158 @@ export const translations = {
       de: 'Deutsch',
       es: 'Español',
     },
+    malaysia: {
+      info: {
+        headerTitle: 'Malaysia Entry Information',
+        title: 'Malaysia Visa-Free Entry & MDAC',
+        subtitle: 'Chinese passport holders: visa-free for 30 days since Dec 1, 2023',
+        sections: {
+          visa: {
+            title: '✓ Visa-Free Policy',
+            items: [
+              'Since December 1, 2023, Chinese passport holders can enter Malaysia visa-free for up to 30 days.',
+              '• Applies to tourism, family visits, business, and similar purposes',
+              '• Passport must be valid for at least 6 months',
+              '• All travelers must complete MDAC (Malaysia Digital Arrival Card) before entry - completely free',
+            ],
+          },
+          entry: {
+            title: '🛂 Entry Requirements',
+            items: [
+              '• Passport valid for at least 6 months with blank pages',
+              '• Complete MDAC within 3 days before arrival (3 calendar days before entry)',
+              '• Return flight or onward travel proof',
+              '• Accommodation confirmation (hotel booking) or contact in Malaysia',
+              '• Sufficient travel funds proof',
+            ],
+          },
+          onsite: {
+            title: '⚠️ Important Reminders',
+            items: [
+              '• Must present MDAC PIN or confirmation email screenshot upon entry',
+              '• Prohibited items: meat, alcohol, tobacco, and other restricted goods',
+              '• Recommended to book flights and hotels in advance, prepare some cash for funds proof',
+              '• Note MDAC submission time window, early submissions will be rejected by the system',
+            ],
+          },
+        },
+        continueButton: 'Understood, continue to checklist',
+      },
+      requirements: {
+        headerTitle: 'Malaysia MDAC Checklist',
+        introTitle: 'Confirm you have everything ready',
+        introSubtitle: 'These items are required to submit the Malaysia Digital Arrival Card',
+        items: {
+          validPassport: {
+            title: 'Passport validity',
+            description: 'Passport valid at least 6 months with blank pages',
+            details: 'Malaysia immigration requires your passport to remain valid >=6 months beyond your entry date. Renew before traveling if needed.',
+          },
+          submissionWindow: {
+            title: 'Within 3-day window',
+            description: 'MDAC only accepts submissions within 3 calendar days before arrival',
+            details: 'Count calendar days based on Malaysia time (GMT+8). If it is too early the system will reject the request—set a reminder to submit once inside the window.',
+          },
+          contactableEmail: {
+            title: 'Reachable email inbox',
+            description: 'Able to receive the confirmation email and MDAC PIN',
+            details: 'Use an email you can log into overseas. Check spam for messages from imigresen.gov.my and keep the PIN handy for arrival.',
+          },
+          travelDetails: {
+            title: 'Flight & stay details',
+            description: 'Have your flight number, arrival port, accommodation and phone ready',
+            details: 'The form asks for airline, flight number, arrival airport, address in Malaysia, phone number (with country code), and purpose of visit.',
+          },
+          captchaReady: {
+            title: 'Captcha ready',
+            description: 'Able to type the letters/numbers shown before submitting',
+            details: 'MDAC uses an alphanumeric CAPTCHA. If the code is unclear you can refresh it—complete submission within 5 minutes to avoid timeout.',
+          },
+        },
+        status: {
+          success: {
+            title: 'Great! You can proceed.',
+            subtitle: 'Next we will confirm your travel information.',
+          },
+          warning: {
+            title: 'Please review each item',
+            subtitle: 'Ensure you meet the MDAC prerequisites before continuing.',
+          },
+        },
+        continueButton: 'Continue to travel information',
+      },
+      selection: {
+        headerTitle: 'Malaysia MDAC Assistant',
+        headerSubtitle: 'Choose how you want to complete the digital arrival card',
+        recommendedBadge: 'Recommended',
+        smartFlow: {
+          title: '⚡ Guided assistant',
+          subtitle: 'Step-by-step coach with autofill suggestions',
+          highlights: [
+            { title: 'Completion time', value: '8-12 min' },
+            { title: 'Guided steps', value: '6 steps' },
+            { title: 'Success rate', value: '98%' },
+          ],
+          features: [
+            '• Autofill suggestions pulled from your entry pack',
+            '• Captcha tips and PIN tracking reminders',
+            '• Checklist to verify email confirmation is received',
+          ],
+          cta: 'Start guided submission ->',
+        },
+        webFlow: {
+          title: '🌐 MDAC web form',
+          subtitle: 'Official site inside the app',
+          features: [
+            '• Full MDAC website rendered in-app',
+            '• Copy & paste from your entry pack without switching apps',
+            '• Manual control — you submit each page yourself',
+          ],
+          cta: 'Open embedded MDAC site',
+        },
+        notes: {
+          title: 'Submission reminders',
+          items: [
+            'Submit within 3 days before arriving in Malaysia (Malaysia time).',
+            'Have your confirmation email and MDAC PIN ready for immigration.',
+            'If traveling as a family, submit once per traveler — no group form yet.',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'MDAC Guided Submission',
+        banner: {
+          title: 'Use your entry pack to auto-fill MDAC',
+          subtitle: 'We keep track so you won\'t miss key fields or the PIN email',
+        },
+        stepSectionTitle: 'Follow these steps',
+        steps: [
+          {
+            title: 'Verify traveler information',
+            subtitle: 'Compare with your passport before filling the form',
+            details: [
+              'Confirm English name, passport number, nationality, and expiry match exactly.',
+              'Choose travel document type: Passport, then select "China" as nationality.',
+              'Enter a reachable phone number with country code (e.g. +86 13800138000).',
+            ],
+          },
+          {
+            title: 'Fill travel details',
+            subtitle: 'Use your stored itinerary for accuracy',
+            details: [
+              'Input arrival airport and flight number (e.g. KUL / MH389).',
+              'Select arrival date/time within the 3-day window; double-check the calendar.',
+              'Provide accommodation name and address or the contact of your host.',
+            ],
+          },
+          {
+            title: 'Submit and save confirmation',
+            subtitle: 'CAPTCHA + PIN email are the last steps',
+            details: [
+              'Solve the alphanumeric CAPTCHA exactly as shown; refresh if unreadable.',
+              'After submitting, capture the MDAC PIN shown on screen.',
+              'Check your email (including spam) for the confirmation message and keep it for arrival.',
+            ],
+          },
+        ],
+        quickActions: {
+          title: 'Quick tools',
+          items: [
+            {
+              icon: '📧',
+              title: 'Track your PIN email',
+              description: 'Log which email account you used and confirm the message arrived.',
+            },
+            {
+              icon: '📍',
+              title: 'Copy stay details',
+              description: 'Tap to copy hotel address/phone straight from your entry pack.',
+            },
+            {
+              icon: '🔁',
+              title: 'Resubmit easily',
+              description: 'If plans change, reuse saved info to submit a new MDAC quickly.',
+            },
+          ],
+        },
+        primaryCta: 'Open MDAC web assistant',
+        ctaHint: 'We will load the official site inside the app.',
+      },
+      webview: {
+        headerTitle: 'MDAC Web Assistant',
+        notice: 'Complete the official Malaysia Digital Arrival Card (MDAC) here. All data stays on your device.',
+        loading: 'Loading official MDAC site...',
+        openExternal: 'Open in browser',
+        openFailedTitle: 'Unable to open link',
+        openFailedBody: 'Please copy the URL and open it in your browser instead.',
+      },
+      result: {
+        digitalBadge: 'Submit within 3 days',
+        digitalTitle: 'Malaysia Digital Arrival Card (MDAC)',
+        digitalHighlight: 'We help you submit MDAC using your saved passport and itinerary. Keep the PIN email ready for arrival.',
+        digitalButton: 'Launch MDAC assistant',
+      },
+    },
+    singapore: {
+      info: {
+        headerTitle: 'Singapore Entry Information',
+        title: 'Singapore Visa-Free Entry & SG Arrival Card',
+        subtitle: 'Chinese passport holders: visa-free for 30 days since Feb 9, 2024',
+        sections: {
+          visa: {
+            title: '✓ Visa-Free Policy',
+            items: [
+              'Since February 9, 2024, Chinese ordinary passport holders can enter Singapore visa-free for up to 30 days.',
+              '• Applies to tourism, family visits, business, and other private matters',
+              '• Work or stays exceeding 30 days require a visa in advance',
+              '• Official passport holders also enjoy visa-free entry',
+            ],
+          },
+          entry: {
+            title: '🛂 Entry Requirements',
+            items: [
+              '• Passport valid for at least 6 months',
+              '• Complete SG Arrival Card within 3 days before arrival',
+              '• Return flight or onward travel proof',
+              '• Sufficient funds for stay (cash, credit cards, etc.)',
+              '• Accommodation confirmation or local contact information',
+            ],
+          },
+          onsite: {
+            title: '⚠️ Important Reminders',
+            items: [
+              '• Must complete SG Arrival Card within 3 days before arrival with accurate information',
+              '• Prohibited items: drugs, protected wildlife products',
+              '• Be cautious with medications, alcohol, cash; never carry items for strangers',
+              '• Stay calm during customs inspection, never offer bribes',
+            ],
+          },
+        },
+        continueButton: 'Got it, continue to the checklist',
+      },
+      requirements: {
+        headerTitle: 'SG Arrival Card Checklist',
+        introTitle: 'Confirm you meet these requirements',
+        introSubtitle: 'Singapore only accepts arrivals with declarations completed inside the 3-day window',
+        items: {
+          validPassport: {
+            title: 'Passport validity',
+            description: 'Passport should be valid 6+ months beyond arrival',
+            details: 'Singapore recommends at least 6 months validity. Renew or replace damaged passports before travel.',
+          },
+          submissionWindow: {
+            title: 'Within 3-day submission window',
+            description: 'Form opens 3 days before arrival (Singapore time, GMT+8)',
+            details: 'Submitting earlier than the window will result in an error. Set a reminder to complete the SG Arrival Card once the clock reaches the window.',
+          },
+          travelDetails: {
+            title: 'Travel & stay information',
+            description: 'Flight, arrival terminal/border, lodging/contact, purpose of visit',
+            details: 'Prepare your airline/ferry/bus details, stay address, and contact number in international format. Business travelers should list local sponsor info if available.',
+          },
+          familyGroups: {
+            title: 'Group/family plan',
+            description: 'Decide if you will submit individually or through family submission',
+            details: 'Group submission supports up to 10 travelers. Have everyone’s passport details ready and confirm that minors are included in a guardian’s form.',
+          },
+          sgArrivalHistory: {
+            title: 'Previous submissions',
+            description: 'Remember SG Arrival Cards expire after a single entry',
+            details: 'If you re-enter within a short period, submit a fresh declaration with updated travel details. Old entries cannot be reused.',
+          },
+        },
+        status: {
+          success: {
+            title: 'You are ready!',
+            subtitle: 'Next we will pre-fill your travel details for the SG Arrival Card.',
+          },
+          warning: {
+            title: 'Review each checklist item',
+            subtitle: 'Complete the prerequisites before moving on.',
+          },
+        },
+        continueButton: 'Continue to travel information',
+      },
+      selection: {
+        headerTitle: 'SG Arrival Card Assistant',
+        headerSubtitle: 'Pick the workflow that suits you best',
+        recommendedBadge: 'Recommended',
+        smartFlow: {
+          title: '⚡ Guided assistant',
+          subtitle: 'Use your entry pack to breeze through the form',
+          highlights: [
+            { title: 'Completion time', value: '6-10 min' },
+            { title: 'Group ready', value: 'Up to 10 pax' },
+            { title: 'Success rate', value: '98%' },
+          ],
+          features: [
+            '• Auto-suggests answers for passport, flight, and accommodation',
+            '• Reminds you to add family members and review health declarations',
+            '• Tracks confirmation emails and highlights what to show at immigration',
+          ],
+          cta: 'Start guided assistant ->',
+        },
+        webFlow: {
+          title: '🌐 SG Arrival Card website',
+          subtitle: 'Use the official form within the app',
+          features: [
+            '• Embedded official site with full features',
+            '• Copy & paste from your entry pack without switching apps',
+            '• Ideal if you already know the form and just need quick access',
+          ],
+          cta: 'Open embedded SG Arrival Card',
+        },
+        notes: {
+          title: 'Submission reminders',
+          items: [
+            'One declaration per entry. Transit passengers without immigration clearance do not need to submit.',
+            'Families can submit together but each traveler must be declared separately.',
+            'Keep the confirmation email/SMS handy in case officers request to see it.',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'SG Arrival Card Guided Mode',
+        banner: {
+          title: 'Leverage stored info to auto-fill the declaration',
+          subtitle: 'Step-by-step guidance with reminders for family submissions',
+        },
+        stepSectionTitle: 'Follow these steps',
+        steps: [
+          {
+            title: 'Verify traveler details',
+            subtitle: 'Make sure passport information matches exactly',
+            details: [
+              'Confirm full name (as in passport), passport number, nationality, and expiry date.',
+              'Choose the correct traveler type (e.g. Foreign Visitor, Returning Resident).',
+              'Provide a reachable email and mobile number, both required for status updates.',
+            ],
+          },
+          {
+            title: 'Fill arrival & stay information',
+            subtitle: 'Use your itinerary for accurate answers',
+            details: [
+              'Enter arrival date/time and flight/ferry/bus number within the 3-day window.',
+              'Select arrival checkpoint (e.g. Changi Airport Terminal 3, Tuas Checkpoint).',
+              'Provide accommodation address or local contact information including postal code.',
+            ],
+          },
+          {
+            title: 'Health and declarations',
+            subtitle: 'Complete health/travel history honestly',
+            details: [
+              'Declare recent travel history to high-risk areas when prompted.',
+              'Answer health symptom questions accurately; bring supporting documents if needed.',
+              'Submit and check for the confirmation email/SMS before boarding your flight.',
+            ],
+          },
+        ],
+        quickActions: {
+          title: 'Quick tools',
+          items: [
+            {
+              icon: '🕒',
+              title: '72-hour reminder',
+              description: 'We nudge you when the submission window opens based on your arrival date.',
+            },
+            {
+              icon: '👪',
+              title: 'Family helper',
+              description: 'Duplicate saved info to add additional family members quickly.',
+            },
+            {
+              icon: '📬',
+              title: 'Confirmation tracker',
+              description: 'Log which email/SMS received the approval so you can present it on arrival.',
+            },
+          ],
+        },
+        primaryCta: 'Open SG Arrival Card assistant',
+        ctaHint: 'Loads the official ICA website inside the app.',
+      },
+      webview: {
+        headerTitle: 'SG Arrival Card Web Assistant',
+        notice: 'Complete the official SG Arrival Card here. BorderBuddy only keeps data locally on your device.',
+        loading: 'Loading SG Arrival Card...',
+        openExternal: 'Open in browser',
+        openFailedTitle: 'Unable to open link',
+        openFailedBody: 'Please copy the URL and open it manually in your browser.',
+      },
+      result: {
+        digitalBadge: 'Submit within 3 days',
+        digitalTitle: 'Singapore SG Arrival Card',
+        digitalHighlight: 'Use your entry pack to declare before landing in Singapore. Keep the confirmation email/SMS ready at immigration.',
+        digitalButton: 'Launch SG Arrival assistant',
+      },
+    },
+    taiwan: {
+      info: {
+        headerTitle: 'Taiwan Entry Information',
+        title: 'Taiwan Entry Permit & Online Arrival Card',
+        subtitle: 'Mainland Chinese passport holders require an entry permit',
+        sections: {
+          visa: {
+            title: '✓ Visa Requirements',
+            items: [
+              'Mainland Chinese passport holders must obtain an Entry Permit (入台证) in advance. Visa-free entry is not available.',
+              '• Single-entry permit valid for 3 months, allows up to 15 days stay',
+              '• Multiple-entry permit valid for 1 year, allows up to 15 days per visit, max 120 days annually',
+              '• Apply online or through travel agencies, processing takes about 5 business days',
+            ],
+          },
+          entry: {
+            title: '🛂 Required Documents',
+            items: [
+              '• Valid passport (recommended 6+ months validity)',
+              '• Entry Permit (print electronic version)',
+              '• Return flight or onward travel proof',
+              '• Accommodation confirmation or contact in Taiwan',
+              '• Complete online arrival card (requires email verification)',
+            ],
+          },
+          onsite: {
+            title: '⚠️ Important Reminders',
+            items: [
+              '• Complete the online arrival card before entry and keep confirmation email',
+              '• Carry your Entry Permit at all times, must present upon entry',
+              '• Cannot engage in activities inconsistent with permit purpose',
+              '• Overstaying or violations will affect future entry applications',
+            ],
+          },
+        },
+        continueButton: 'Understood, continue to checklist',
+      },
+      requirements: {
+        headerTitle: 'Taiwan Online Arrival Card Checklist',
+        introTitle: 'Make sure you are ready',
+        introSubtitle: 'You must finish email verification before filling the form',
+        items: {
+          validPassport: {
+            title: 'Passport validity',
+            description: 'Passport valid for your intended stay',
+            details: 'Taiwan recommends at least 6 months validity. Replace damaged or expiring passports prior to travel.',
+          },
+          emailAccess: {
+            title: 'Email inbox access',
+            description: 'Able to receive a one-time verification code (OTP)',
+            details: 'Use an email that you can log into immediately. The OTP expires quickly; keep the inbox open while submitting.',
+          },
+          submissionWindow: {
+            title: 'Submit before arrival',
+            description: 'Complete the form as soon as flights and accommodation are confirmed',
+            details: 'Taiwan allows early submission, but update the card if any information changes (flight, hotel, contact).',
+          },
+          travelDetails: {
+            title: 'Flight & stay details',
+            description: 'Prepare accurate itinerary information',
+            details: 'Have your airline, flight number, seat info (optional), accommodation or host address, and contact number ready.',
+          },
+          otpReady: {
+            title: 'OTP ready',
+            description: 'Phone or email inbox handy to read the verification code',
+            details: 'The system sends a numeric OTP to your email. Enter it within a few minutes to unlock the form.',
+          },
+        },
+        status: {
+          success: {
+            title: 'Great! Let’s proceed.',
+            subtitle: 'Next we will verify your travel details and help you fill the form.',
+          },
+          warning: {
+            title: 'Check each item first',
+            subtitle: 'Ensure you can complete the email verification and have all information ready.',
+          },
+        },
+        continueButton: 'Continue to travel information',
+      },
+      selection: {
+        headerTitle: 'Taiwan Arrival Card Assistant',
+        headerSubtitle: 'Choose between guided mode or direct website access',
+        recommendedBadge: 'Recommended',
+        smartFlow: {
+          title: '⚡ Guided assistant',
+          subtitle: 'Uses your entry pack and tracks OTP progress',
+          highlights: [
+            { title: 'Completion time', value: '7-12 min' },
+            { title: 'OTP steps', value: 'Email + code' },
+            { title: 'Success rate', value: '97%' },
+          ],
+          features: [
+            '• Autofill passport, flight, and hotel details from your entry pack',
+            '• Reminds you to request and enter the verification code in time',
+            '• Checklist to confirm you received the confirmation email',
+          ],
+          cta: 'Start guided assistant ->',
+        },
+        webFlow: {
+          title: '🌐 Taiwan arrival website',
+          subtitle: 'Open the official site inside the app',
+          features: [
+            '• Embedded website with OTP request button',
+            '• Copy/paste from your entry pack without leaving the app',
+            '• Ideal if you already know the process and just need quick access',
+          ],
+          cta: 'Open embedded Taiwan arrival card',
+        },
+        notes: {
+          title: 'Submission reminders',
+          items: [
+            'Request the OTP only when you are ready to complete the form (it expires quickly).',
+            'If you change flights or accommodation, submit an updated arrival card before boarding.',
+            'Keep a screenshot or email confirmation to show immigration if requested.',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'Taiwan Arrival Card Guided Mode',
+        banner: {
+          title: 'Use your entry pack to pass the email verification quickly',
+          subtitle: 'We walk you through requesting the OTP and filling each section',
+        },
+        stepSectionTitle: 'Follow these steps',
+        steps: [
+          {
+            title: 'Request verification email',
+            subtitle: 'Confirm your email inbox is ready',
+            details: [
+              'Enter your email and tap “Send Code” on the official site.',
+              'Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.',
+              'Paste the code within the time limit to unlock the form.',
+            ],
+          },
+          {
+            title: 'Fill traveler & arrival details',
+            subtitle: 'Autofill from your entry pack for speed',
+            details: [
+              'Verify your passport number, nationality, and date of birth.',
+              'Enter arrival flight number, date/time, and port of entry.',
+              'Provide accommodation address/phone or host details in Taiwan.',
+            ],
+          },
+          {
+            title: 'Travel history & confirmation',
+            subtitle: 'Answer the 14-day travel history questions accurately',
+            details: [
+              'Declare countries visited in the last 14 days and health status truthfully.',
+              'Review the summary page carefully before submitting.',
+              'Wait for the confirmation page/email and save a screenshot for arrival.',
+            ],
+          },
+        ],
+        quickActions: {
+          title: 'Quick tools',
+          items: [
+            {
+              icon: '✉️',
+              title: 'OTP checker',
+              description: 'Tick off once the verification email arrives so you don’t miss it.',
+            },
+            {
+              icon: '📄',
+              title: 'Auto-fill clipboard',
+              description: 'Copy passport/flight info with one tap while filling the form.',
+            },
+            {
+              icon: '🔁',
+              title: 'Resubmit helper',
+              description: 'If plans change, reuse saved info to create a new arrival card quickly.',
+            },
+          ],
+        },
+        primaryCta: 'Open Taiwan arrival assistant',
+        ctaHint: 'Loads the official arrival card site inside the app.',
+      },
+      webview: {
+        headerTitle: 'Taiwan Arrival Card Web Assistant',
+        notice: 'Request the verification email, enter the OTP, and complete the form here. All data stays on your device.',
+        loading: 'Loading Taiwan arrival card...',
+        openExternal: 'Open in browser',
+        openFailedTitle: 'Unable to open link',
+        openFailedBody: 'Please copy the URL and open it manually in your browser.',
+      },
+      result: {
+        digitalBadge: 'Finish before landing',
+        digitalTitle: 'Taiwan Online Arrival Card',
+        digitalHighlight: 'We help manage the email verification and form submission. Keep the confirmation email for immigration.',
+        digitalButton: 'Launch Taiwan assistant',
+      },
+    },
+    singapore: {
+      info: {
+        headerTitle: '新加坡入境信息',
+        title: '新加坡免签入境与 SG Arrival Card',
+        subtitle: '2024年2月9日起中国护照免签30天',
+        sections: {
+          visa: {
+            title: '✓ 免签政策',
+            items: [
+              '从2024年2月9日起，持中国普通护照可免签入境新加坡，停留不超过30天。',
+              '• 适用于旅游、探亲、商务等私人事务',
+              '• 从事工作或停留超过30天需提前申请相应签证',
+              '• 因公护照持有者同样享受免签待遇',
+            ],
+          },
+          entry: {
+            title: '🛂 入境要求',
+            items: [
+              '• 护照有效期至少6个月以上',
+              '• 入境前3天内必须填写SG Arrival Card电子入境卡',
+              '• 往返机票或后续行程证明',
+              '• 充足的旅行资金证明（现金、信用卡等）',
+              '• 住宿证明或在新联系人信息',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 务必在入境前3天内完成SG Arrival Card填写，确保信息准确',
+              '• 禁止携带毒品、受保护动植物制品入境',
+              '• 谨慎携带药品、酒类和现金，避免为陌生人携带行李',
+              '• 保持冷静配合海关检查，切勿行贿',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: 'SG Arrival Card 准备清单',
+        introTitle: '请确认以下条件已满足',
+        introSubtitle: '新加坡要求在抵达前3天内完成申报',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照建议至少还有6个月有效期',
+            details: '新加坡建议护照有效期不少于6个月，若即将到期请提前换发新护照。',
+          },
+          submissionWindow: {
+            title: '3天内申报窗口',
+            description: '按照新加坡时间（GMT+8）在抵达前3天内提交',
+            details: '窗口未打开前提交会被系统拒绝，请在倒计时进入后再完成申报，可设置提醒防止错过。',
+          },
+          travelDetails: {
+            title: '行程与住宿信息',
+            description: '航班/船班/巴士号、入境口岸、住宿/联系人、访问目的',
+            details: '准备包含国际区号的联系电话。商务访客可填写新加坡公司或邀请人的联系方式。',
+          },
+          familyGroups: {
+            title: '家庭/随行成员安排',
+            description: '确定是单独提交还是使用家庭申报',
+            details: '家庭申报最多支持10人，需要逐一输入成员信息。请准备好儿童及随行人员的护照资料。',
+          },
+          sgArrivalHistory: {
+            title: '入境记录',
+            description: 'SG Arrival Card 仅限一次入境使用',
+            details: '再次入境需要重新提交最新行程。旧的申报无法重复使用。',
+          },
+        },
+        status: {
+          success: {
+            title: '准备就绪！',
+            subtitle: '接下来将使用通关包信息协助填写SG Arrival Card。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '请在满足要求后再继续下一步。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: 'SG Arrival Card 智能助手',
+        headerSubtitle: '选择最适合你的申报方式',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导模式',
+          subtitle: '利用通关包快速填写',
+          highlights: [
+            { title: '预计耗时', value: '6-10分钟' },
+            { title: '家庭支持', value: '最多10人' },
+            { title: '成功率', value: '98%' },
+          ],
+          features: [
+            '• 自动带出护照、航班与住宿信息',
+            '• 提醒添加家庭成员并核对健康申报',
+            '• 记录确认邮件/短信，入境时快速出示',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 SG Arrival Card 官网',
+          subtitle: '在应用内直接打开官方表单',
+          features: [
+            '• 内嵌官方页面，功能完整',
+            '• 无需切换应用即可复制通关包信息',
+            '• 熟悉流程的旅客可以快速完成提交',
+          ],
+          cta: '打开内嵌SG Arrival Card',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '每次入境都需重新申报，纯过境且不入境的旅客可免提交。',
+            '家庭申报需逐一填写成员信息，确保数据准确。',
+            '请保留确认邮件/短信，以备入境官员查验。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'SG Arrival Card 引导模式',
+        banner: {
+          title: '利用通关包信息自动填表',
+          subtitle: '逐步提醒，适合携家人共同申报',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '核对旅客信息',
+            subtitle: '确保护照资料与表单完全一致',
+            details: [
+              '确认姓名拼写、护照号、国籍、有效期无误。',
+              '选择正确的旅客类型（例如外国访客、居民返回）。',
+              '填写可用的邮箱与手机号，以便接收通知。',
+            ],
+          },
+          {
+            title: '填写抵达与住宿信息',
+            subtitle: '根据行程如实填写',
+            details: [
+              '输入抵达日期时间以及航班/船/巴士号，需在3天窗口内。',
+              '选择抵达口岸（如樟宜机场 T3、兀兰关卡等）。',
+              '提供住宿地址或当地联系人的详细信息，包括邮编。',
+            ],
+          },
+          {
+            title: '健康与旅行申报',
+            subtitle: '如实填写健康状况与旅行史',
+            details: [
+              '如实申报近期是否访问高风险地区。',
+              '准确回答健康症状问题，并保留相关证明。',
+              '提交后请确认已收到邮件或短信通知。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '🕒',
+              title: '72小时提醒',
+              description: '根据抵达日期提醒您何时可以提交。',
+            },
+            {
+              icon: '👪',
+              title: '家庭助手',
+              description: '快速复制信息，方便为家人提交。',
+            },
+            {
+              icon: '📬',
+              title: '确认追踪',
+              description: '记录收到确认邮件/短信的账号，入境时不慌。',
+            },
+          ],
+        },
+        primaryCta: '打开SG Arrival Card助手',
+        ctaHint: '将在应用内加载ICA官方网站。',
+      },
+      webview: {
+        headerTitle: 'SG Arrival Card 网页助手',
+        notice: '在此完成新加坡数字入境卡，所有数据仅保存在本机。',
+        loading: '正在加载SG Arrival Card...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前3天提交',
+        digitalTitle: '新加坡 SG Arrival Card',
+        digitalHighlight: '利用通关包快速完成SG Arrival Card，请保留确认邮件或短信以备入境查验。',
+        digitalButton: '启动SG Arrival助手',
+      },
+    },
+    taiwan: {
+      info: {
+        headerTitle: '台湾入境信息',
+        title: '台湾入境签证与电子入境卡',
+        subtitle: '中国大陆护照需提前办理入台证',
+        sections: {
+          visa: {
+            title: '✓ 签证要求',
+            items: [
+              '中国大陆护照持有者需提前申请入台证，不可免签入境。',
+              '• 单次入境签证有效期3个月，可停留最多15天',
+              '• 多次入境签证有效期1年，每次停留最多15天，全年累计最多120天',
+              '• 需通过网上申请或委托旅行社办理，审核期约5个工作日',
+            ],
+          },
+          entry: {
+            title: '🛂 入境所需材料',
+            items: [
+              '• 有效护照（建议6个月以上有效期）',
+              '• 入台证（电子版打印即可）',
+              '• 往返机票或后续行程证明',
+              '• 住宿证明或在台联系人信息',
+              '• 填写电子入境卡（需邮箱接收验证码）',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 入境前务必完成电子入境卡填写并保留确认邮件',
+              '• 入台证需随身携带，入境时需出示',
+              '• 不可在台从事与签证目的不符的活动',
+              '• 超期停留或违规将影响今后入境申请',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: '台湾电子入境卡准备清单',
+        introTitle: '请确认以下事项',
+        introSubtitle: '邮箱验证码是进入表单的关键步骤',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照需在停留期间保持有效',
+            details: '建议至少保留6个月有效期，避免入境时被拒。',
+          },
+          emailAccess: {
+            title: '可用邮箱',
+            description: '能够即时接收验证码邮件',
+            details: '准备好能快速登录的邮箱，验证码有效时间较短，请及时输入。',
+          },
+          submissionWindow: {
+            title: '提前提交',
+            description: '行程确定后即可填写，如有变动需重新提交',
+            details: '台湾允许提前填写，但信息变动时请及时更新以免影响入境。',
+          },
+          travelDetails: {
+            title: '行程与住宿信息',
+            description: '航班、住宿或接待人、联络电话',
+            details: '包括航空公司、航班号、住宿地址/邮编、联系电话等。',
+          },
+          otpReady: {
+            title: '验证码准备',
+            description: '可即时查看邮件验证码',
+            details: '验证码通常为6位数字，请在有效时间内输入完成验证。',
+          },
+        },
+        status: {
+          success: {
+            title: '准备完成！',
+            subtitle: '接下来会使用通关包信息协助填写电子入境卡。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '确保可以收到验证码并备齐资料后再继续。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: '台湾电子入境卡助手',
+        headerSubtitle: '选择智能引导或直接打开官网',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导模式',
+          subtitle: '结合通关包并提醒验证码步骤',
+          highlights: [
+            { title: '预计耗时', value: '7-12分钟' },
+            { title: '验证码步骤', value: '邮箱OTP' },
+            { title: '成功率', value: '97%' },
+          ],
+          features: [
+            '• 自动带出护照、航班、住宿信息',
+            '• 提醒及时查看邮箱并输入验证码',
+            '• 帮助记录确认邮件，入境时可快速出示',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 官网快速入口',
+          subtitle: '在应用内直接打开台湾移民署网站',
+          features: [
+            '• 完整内嵌验证码与提交流程',
+            '• 支持复制通关包信息快速粘贴',
+            '• 熟悉流程的旅客可迅速完成提交',
+          ],
+          cta: '打开内嵌台湾电子入境卡',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '只有准备好验证码时再点击发送，避免超时。',
+            '若行程变动，请重新提交最新资料。',
+            '保存成功页面或邮件截图，以备海关查验。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: '台湾电子入境卡引导模式',
+        banner: {
+          title: '协助完成邮箱验证与填表',
+          subtitle: '逐步提醒，确保不遗漏任何字段',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '发送并获取验证码',
+            subtitle: '保持邮箱开启，及时查看',
+            details: [
+              '在官网输入邮箱后点击发送验证码。',
+              '在邮箱（含垃圾邮件夹）查收6位数验证码。',
+              '在有效时间内输入验证码解锁表单。',
+            ],
+          },
+          {
+            title: '填写旅客与抵达信息',
+            subtitle: '使用通关包中的资料快速填写',
+            details: [
+              '核对护照号码、国籍、生日等字段。',
+              '填写航班号、抵达时间、入境口岸。',
+              '输入住宿地址或接待人联系方式，包含邮递区号。',
+            ],
+          },
+          {
+            title: '旅行史与确认提交',
+            subtitle: '如实填写14日内旅行史',
+            details: [
+              '选择过去14天曾到访的国家地区。',
+              '确认健康与其他声明问题。',
+              '提交后保留确认页面或邮件，入境时备用。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '✉️',
+              title: '验证码提醒',
+              description: '记录验证码是否收到，避免遗漏。',
+            },
+            {
+              icon: '📎',
+              title: '一键复制资料',
+              description: '随时复制护照/航班等信息粘贴到表单。',
+            },
+            {
+              icon: '🔁',
+              title: '再次提交助手',
+              description: '行程变更时快速重新生成新的入境卡。',
+            },
+          ],
+        },
+        primaryCta: '打开台湾入境助手',
+        ctaHint: '将在应用内加载台湾移民署网站。',
+      },
+      webview: {
+        headerTitle: '台湾电子入境卡网页助手',
+        notice: '在此发送验证码并填写电子入境卡，数据仅存于本机。',
+        loading: '正在加载台湾电子入境卡...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前完成',
+        digitalTitle: '台湾电子入境卡',
+        digitalHighlight: '我们协助完成邮箱验证码与填表步骤，请保留确认邮件以备查验。',
+        digitalButton: '启动台湾助手',
+      },
+    },
+    malaysia: {
+      info: {
+        headerTitle: '马来西亚入境信息',
+        title: '马来西亚免签入境与MDAC',
+        subtitle: '2023年12月1日起中国护照免签30天',
+        sections: {
+          visa: {
+            title: '✓ 免签政策',
+            items: [
+              '从2023年12月1日起，持中国护照可免签入境马来西亚，停留不超过30天。',
+              '• 适用于旅游、探亲、商务等目的',
+              '• 护照有效期需至少6个月以上',
+              '• 所有旅客入境前必须填写MDAC数字入境卡（完全免费）',
+            ],
+          },
+          entry: {
+            title: '🛂 入境要求',
+            items: [
+              '• 护照有效期至少6个月以上，保留空白页',
+              '• 入境前3天内完成MDAC填写（抵达前3个自然日）',
+              '• 往返机票或后续行程证明',
+              '• 住宿证明（酒店订单）或在马联系人信息',
+              '• 充足的旅行资金证明',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 入境时需出示MDAC PIN码或确认邮件截图',
+              '• 禁止携带肉类、酒精、烟草等违禁物品入境',
+              '• 建议提前预订机票和酒店，并准备一定现金作为资金证明',
+              '• 注意MDAC填写时间窗口，过早提交会被系统拒绝',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: 'MDAC准备清单',
+        introTitle: '请确认以下事项已经准备好',
+        introSubtitle: '这些条件是成功提交马来西亚MDAC的前提',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照至少还有6个月有效期并保留空白签证页',
+            details: '马来西亚移民局要求护照在入境日起至少剩余6个月有效期，如不足请先更新护照再出行。',
+          },
+          submissionWindow: {
+            title: '3天内申报窗口',
+            description: 'MDAC仅接受抵达前3个自然日内的提交',
+            details: '以马来西亚时间（GMT+8）计算，自然日0点刷新窗口，过早提交会被系统拒绝，请在窗口开启后再申报。',
+          },
+          contactableEmail: {
+            title: '可用邮箱',
+            description: '能够及时接收确认邮件与PIN码',
+            details: '使用可在海外登录的邮箱，留意来自imigresen.gov.my的邮件，如未收到请查看垃圾箱并记录PIN码。',
+          },
+          travelDetails: {
+            title: '完整的行程信息',
+            description: '准备好航班号、入境口岸、住宿地址与联系电话',
+            details: '表单需要填写航空公司、航班号、抵达机场、在马地址、联系电话（含区号）与访问目的，请提前整理好。',
+          },
+          captchaReady: {
+            title: '验证码准备',
+            description: '可以手动输入提交前的字母数字验证码',
+            details: 'MDAC使用字母数字验证码，如看不清可刷新，提交需在几分钟内完成，避免因超时重新填写。',
+          },
+        },
+        status: {
+          success: {
+            title: '已完成准备！',
+            subtitle: '接下来填写行程信息即可提交MDAC。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '确保满足MDAC提交条件后再继续。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: 'MDAC智能助手',
+        headerSubtitle: '选择合适的申报方式',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导',
+          subtitle: '结合通关包一步步完成',
+          highlights: [
+            { title: '预计耗时', value: '8-12分钟' },
+            { title: '分步流程', value: '6个步骤' },
+            { title: '成功率', value: '98%' },
+          ],
+          features: [
+            '• 自动带出护照与行程信息，减少重复输入',
+            '• 提醒输入验证码并记录PIN码',
+            '• 引导检查确认邮件是否收到',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 MDAC网页',
+          subtitle: '在应用内直接打开官网',
+          features: [
+            '• 原生MDAC网页嵌入，无需切换应用',
+            '• 可直接复制粘贴通关包中的信息',
+            '• 手动控制每一步，由您亲自提交',
+          ],
+          cta: '打开内嵌MDAC网页',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '请在抵达前3天内（马来西亚时间）完成申报。',
+            '入境时请准备好确认邮件或MDAC PIN码。',
+            '多人出行需为每位旅客分别提交MDAC。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'MDAC引导模式',
+        banner: {
+          title: '利用通关包自动填写MDAC',
+          subtitle: '逐项提醒，不漏填关键信息',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '核对旅客信息',
+            subtitle: '填写前先确认护照资料无误',
+            details: [
+              '确认英文姓名、护照号、国籍、有效期与护照一致。',
+              '证件类型选择Passport，国籍选择China / 中国。',
+              '填写可接听的联系电话，包含国家区号（例如+86 13800138000）。',
+            ],
+          },
+          {
+            title: '填写行程详情',
+            subtitle: '使用通关包里的行程数据',
+            details: [
+              '输入抵达机场与航班号（例如KUL / MH389）。',
+              '选择抵达日期并确保在3天窗口内，留意日历选择。',
+              '提供酒店名称与地址，或当地接待人的联系方式。',
+            ],
+          },
+          {
+            title: '提交并保存PIN码',
+            subtitle: '验证码与确认邮件非常重要',
+            details: [
+              '正确输入字母数字验证码，若看不清可先刷新。',
+              '提交成功后记录页面显示的MDAC PIN码。',
+              '检查邮箱（含垃圾箱）确认收到邮件，入境时随身携带。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '📧',
+              title: '记录PIN邮件',
+              description: '标记所使用的邮箱并确认邮件是否到达。',
+            },
+            {
+              icon: '📍',
+              title: '复制住宿信息',
+              description: '点击即可复制酒店地址和电话，便于填写。',
+            },
+            {
+              icon: '🔁',
+              title: '便捷重新提交',
+              description: '行程变动时可复用已保存信息快速再申报。',
+            },
+          ],
+        },
+        primaryCta: '打开MDAC网页助手',
+        ctaHint: '将在应用内加载MDAC官方网站。',
+      },
+      webview: {
+        headerTitle: 'MDAC网页助手',
+        notice: '在此完成马来西亚数字入境卡（MDAC）官方表单，所有数据仅保留在本机。',
+        loading: '正在加载MDAC官网...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前3天提交',
+        digitalTitle: '马来西亚数字入境卡（MDAC）',
+        digitalHighlight: '我们会根据已保存的护照与行程信息协助提交MDAC，请保管好PIN码邮件。',
+        digitalButton: '启动MDAC助手',
+      },
+    },
     common: {
       appName: 'BorderBuddy',
       enterCta: 'Enter For Free',
@@ -155,6 +1307,7 @@ export const translations = {
         hk: 'Hong Kong',
         tw: 'Taiwan',
         kr: 'South Korea',
+        sg: 'Singapore',
         my: 'Malaysia',
         us: 'United States',
       },
@@ -164,6 +1317,7 @@ export const translations = {
         hongKong: { flightTime: '1 hour flight' },
         taiwan: { flightTime: '2 hours flight' },
         korea: { flightTime: '2 hours flight' },
+        singapore: { flightTime: '5 hours flight' },
         malaysia: { flightTime: '4 hours flight' },
         usa: { flightTime: '13 hours flight' },
       },
@@ -174,6 +1328,7 @@ export const translations = {
           th: { title: 'Thailand · Bangkok' },
           us: { title: 'USA · New York' },
           kr: { title: 'South Korea · Seoul' },
+          sg: { title: 'Singapore · Changi' },
           my: { title: 'Malaysia · Kuala Lumpur' },
           tw: { title: 'Taiwan · Taipei' },
           hk: { title: 'Hong Kong' },
@@ -244,7 +1399,7 @@ export const translations = {
       yesNoQuestion: { fever: 'Have you had a fever recently?', usCash: 'Carrying over $10,000 USD?', usFood: 'Bringing food, plants, or animals?', caCurrency: 'Carrying over CAD $10,000?', caDuty: 'Bringing goods subject to duty?', caFirearms: 'Bringing firearms or weapons?', caCommercial: 'Bringing commercial goods?', caFood: 'Bringing food, plants, animals, or related products?' },
       arrivingFrom: { label: 'Arriving from', us: 'United States', other: 'Other Country' },
       hints: { caDuty: 'Including alcohol, tobacco, gifts exceeding exemption', caFood: 'Including meat, dairy, fruits, vegetables, seeds' },
-      scanButtons: { ticket: '📸 Scan Ticket', hotel: '📸 Scan Booking' },
+      scanButtons: { ticket: 'Scan Ticket', hotel: 'Scan Booking' },
       generateButton: 'Generate Entry Pack',
       tips: { title: '💡 Tips', body: '• Have your flight ticket ready\n• Hotel booking confirmation\n• Be honest with customs declarations\n• Keep contact information handy' },
       alerts: {
@@ -277,6 +1432,86 @@ export const translations = {
         cancel: 'Cancel',
       },
     },
+    thailand: {
+      info: {
+        headerTitle: 'Thailand Entry Information',
+        title: 'Thailand Visa-Free Travel Information',
+        subtitle: 'For Chinese passport holders (2024 policy)',
+        sections: {
+          visa: {
+            title: '✓ Visa Policy',
+            items: [
+              'Since March 1, 2024, China and Thailand have mutual visa exemption. Holders of Chinese ordinary passports can enter Thailand visa-free for short stays.',
+              '• Maximum single stay of 30 days',
+              '• Total stay no more than 90 days within 180 days',
+              '• Applies to tourism, family visits, and short-term business only (no employment)',
+            ],
+          },
+          entry: {
+            title: '🛂 Entry Requirements',
+            items: [
+              '• Passport valid for at least 6 months',
+              '• Return or onward ticket required on arrival',
+              '• Provide accommodation information in Thailand (hotel or other arrangements)',
+              '• Recommended to carry at least 10,000 THB per person or proof of funds',
+            ],
+          },
+          onsite: {
+            title: '⚠️ On-site Tips',
+            items: [
+              '• Working or long-term study is not allowed during visa-free stay',
+              '• Expect fingerprint collection and routine questioning at immigration',
+              '• Prepare itinerary, hotel confirmation, and related proofs for spot checks',
+              '• No COVID vaccine or PCR proof required, but travel insurance is recommended',
+            ],
+          },
+        },
+        continueButton: 'I understand, continue to confirm requirements',
+      },
+      requirements: {
+        headerTitle: 'Entry Requirement Checklist',
+        introTitle: 'Please confirm you have prepared the following items',
+        introSubtitle: 'These are the standard checks for Thailand visa-free entry',
+        items: {
+          validPassport: {
+            title: 'Valid passport',
+            description: 'Passport valid for at least 6 months with blank visa pages',
+            details: 'Thai immigration requires your passport to remain valid for at least 6 months beyond your intended departure date.',
+          },
+          onwardTicket: {
+            title: 'Return or onward ticket',
+            description: 'Proof you will leave Thailand within 30 days',
+            details: 'Print an e-ticket itinerary so you can show it during inspection.',
+          },
+          accommodation: {
+            title: 'Proof of accommodation',
+            description: 'Provide hotel or homestay booking or a local contact address',
+            details: 'Use a cancellable hotel booking or a friend\'s address, and ensure the information is accurate.',
+          },
+          funds: {
+            title: 'Sufficient funds',
+            description: 'Carry at least 10,000 THB per person or equivalent cash and account proof',
+            details: 'Officers may check cash or bank balance proofs. Prepare screenshots or statements and list your cash, cards, and balances in Chinese/English/Thai for quick presentation.',
+          },
+          healthCheck: {
+            title: 'Health declaration',
+            description: 'Confirm no fever or acute symptoms and cooperate with screening if needed',
+            details: 'No mandatory vaccines currently, but if you feel unwell seek medical help in advance and bring an English diagnosis letter.',
+          },
+        },
+        status: {
+          success: {
+            title: 'All requirements confirmed!',
+            subtitle: 'You can continue to fill in travel details.',
+          },
+          warning: {
+            title: 'Please check every item first',
+            subtitle: 'Make sure you meet Thailand entry inspection requirements',
+          },
+        },
+        continueButton: 'Continue to travel information',
+      },
+    },
     result: {
       title: '{{flag}} {{country}} Entry Pack Ready',
       subtitle: 'All documents are ready to present at the airport',
@@ -288,6 +1523,7 @@ export const translations = {
           traveler: 'Name',
           passportNo: 'Passport',
           flightNo: 'Flight',
+          departureDate: 'Departure',
           arrivalDate: 'Arrival',
           accommodation: 'Hotel',
         },
@@ -298,6 +1534,12 @@ export const translations = {
           editInfo: 'Edit Information',
         },
         lastUpdated: 'Last updated: {{time}}',
+        subtitleParts: {
+          departure: 'Departure {{date}}',
+          arrival: 'Arrival {{date}}',
+          flight: 'Flight {{flight}}',
+          missing: 'Please complete travel details',
+        },
       },
       historyBanner: {
         badge: 'Pending Trip',
@@ -347,6 +1589,79 @@ export const translations = {
       user: {
         phone: 'Phone: {{phone}}',
       },
+      common: {
+        notFilled: 'Not filled',
+      },
+      personal: {
+        title: 'Personal Information',
+        subtitle: 'Update border details',
+        collapsedHint: 'Tap to expand personal information',
+        fields: {
+          dateOfBirth: {
+            title: 'Date of Birth',
+            subtitle: 'Date of Birth',
+            placeholder: 'YYYY-MM-DD',
+          },
+          gender: {
+            title: 'Gender',
+            subtitle: 'Gender',
+            placeholder: 'MALE / FEMALE',
+          },
+          occupation: {
+            title: 'Occupation',
+            subtitle: 'Occupation',
+            placeholder: 'Occupation',
+          },
+          provinceCity: {
+            title: 'City / Province',
+            subtitle: 'Province / City of Residence',
+            placeholder: 'Province / City',
+          },
+          countryRegion: {
+            title: 'Country / Region',
+            subtitle: 'Country / Region',
+            placeholder: 'Country / Region',
+          },
+          phone: {
+            title: 'Phone Number',
+            subtitle: 'Phone',
+            placeholder: '+86 1234567890',
+          },
+        },
+      },
+      funding: {
+        title: 'Funding Proof Checklist',
+        subtitle: 'Show quickly at immigration',
+        collapsedHint: 'Tap to expand funding checklist',
+        tip: {
+          title: 'Sufficient funds',
+          subtitle: 'Carry at least 10,000 THB per person or equivalent proof',
+          description:
+            'Officers may check cash or bank balances. Prepare screenshots or statements and list your cash, cards, and balances for quick inspection.',
+        },
+        footerNote: 'Information syncs to your entry pack for immigration checks.',
+        actions: {
+          scanProof: 'Scan / Upload Funding Proof',
+        },
+        fields: {
+          cashAmount: {
+            title: 'Cash on hand',
+            placeholder: 'e.g. 10,000 THB cash + 500 USD',
+            sample: '10,000 THB equivalent cash (about ¥2,000)',
+          },
+          bankCards: {
+            title: 'Bank cards & balances',
+            placeholder: 'e.g.\nCMB Visa (****1234) · Balance 20,000 CNY',
+            sample:
+              'CMB Visa (****1234) · Balance 20,000 CNY\nICBC Debit (****8899) · Balance 15,000 CNY',
+          },
+          supportingDocs: {
+            title: 'Supporting documents',
+            placeholder: 'e.g. bank balance screenshots, transaction PDFs, statements',
+            sample: 'Bank app screenshots and recent transaction PDFs saved',
+          },
+        },
+      },
       passport: {
         title: 'My Passport',
         details: '{{passportNo}} · Valid until {{expiry}}',
@@ -364,11 +1679,22 @@ export const translations = {
       menu: {
         documents: { title: 'My Documents', badge: '({{count}})' },
         history: { title: 'Generation History', badge: '({{count}})' },
-        backup: { title: 'Cloud Backup', subtitle: 'Recent: {{time}}' },
+        backup: {
+          title: 'Cloud Backup',
+          subtitle: 'Recent: {{time}}',
+          defaultTime: 'Today',
+        },
+        language: {
+          title: 'Language',
+          subtitle: 'Current: {{language}}',
+        },
         settings: { title: 'Settings' },
         help: { title: 'Help Center' },
         about: { title: 'About Us' },
         notifications: { title: 'Notification Settings' },
+      },
+      editModal: {
+        save: 'Save',
       },
       logout: 'Log out',
       version: 'Version {{version}}',
@@ -633,6 +1959,7 @@ export const translations = {
         hk: '香港',
         tw: '台湾',
         kr: '韩国',
+        sg: '新加坡',
         my: '马来西亚',
         us: '美国',
       },
@@ -642,6 +1969,7 @@ export const translations = {
         hongKong: { flightTime: '1小时飞行' },
         taiwan: { flightTime: '2小时飞行' },
         korea: { flightTime: '2小时飞行' },
+        singapore: { flightTime: '5小时飞行' },
         malaysia: { flightTime: '4小时飞行' },
         usa: { flightTime: '13小时飞行' },
       },
@@ -652,6 +1980,7 @@ export const translations = {
           th: { title: '泰国 · 曼谷' },
           us: { title: '美国 · 纽约' },
           kr: { title: '韩国 · 首尔' },
+          sg: { title: '新加坡 · 樟宜' },
           my: { title: '马来西亚 · 吉隆坡' },
           tw: { title: '台湾 · 台北' },
           hk: { title: '香港' },
@@ -722,7 +2051,7 @@ export const translations = {
       yesNoQuestion: { fever: '近期是否发烧？', usCash: '是否携带超过1万美元现金？', usFood: '是否携带食品、植物或动物？', caCurrency: '是否携带超过1万加元？', caDuty: '是否携带需纳税物品？', caFirearms: '是否携带枪支或武器？', caCommercial: '是否携带商业物品？', caFood: '是否携带食品、植物、动物或相关产品？' },
       arrivingFrom: { label: '来自', us: '美国', other: '其他国家' },
       hints: { caDuty: '包括酒精、烟草、超过免税额的礼品', caFood: '包括肉类、乳制品、水果、蔬菜、种子' },
-      scanButtons: { ticket: '📸 扫描机票', hotel: '📸 扫描预订单' },
+      scanButtons: { ticket: '扫描机票', hotel: '扫描预订单' },
       generateButton: '生成通关包',
       tips: { title: '💡 提示', body: '• 准备好您的机票\n• 酒店预订确认\n• 诚实填写海关申报\n• 保留联系信息' },
       alerts: {
@@ -755,6 +2084,86 @@ export const translations = {
         cancel: '取消',
       },
     },
+    thailand: {
+      info: {
+        headerTitle: '泰国入境信息',
+        title: '泰国旅游免签信息',
+        subtitle: '针对中国护照持有者（2024年政策）',
+        sections: {
+          visa: {
+            title: '✓ 签证政策',
+            items: [
+              '自2024年3月1日起，中泰互免签证。持中国普通护照可免签入境泰国进行短期停留。',
+              '• 单次停留最长30天',
+              '• 180天内累计停留不超过90天',
+              '• 仅限旅游、探亲、短期商务等非工作目的',
+            ],
+          },
+          entry: {
+            title: '🛂 入境条件',
+            items: [
+              '• 护照有效期至少6个月',
+              '• 入境时需出示返程或离境机票',
+              '• 需提供在泰国的住宿信息（酒店或其他安排）',
+              '• 建议携带不少于10,000泰铢/人或等值资金证明',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 现场提示',
+            items: [
+              '• 入境期间禁止从事任何形式的工作或长期学习',
+              '• 需接受指纹采集及入境口头问询',
+              '• 建议准备行程单、酒店确认邮件等以备抽查',
+              '• 无需提供新冠疫苗或核酸证明，但建议购买旅行保险',
+            ],
+          },
+        },
+        continueButton: '我了解，继续确认要求',
+      },
+      requirements: {
+        headerTitle: '入境要求确认',
+        introTitle: '请确认您已准备好以下材料',
+        introSubtitle: '这些是泰国免签入境的常规核验项目',
+        items: {
+          validPassport: {
+            title: '有效护照',
+            description: '护照有效期至少6个月，且有空白签证页',
+            details: '泰国移民局要求护照在预计离境日期后仍有效至少6个月。',
+          },
+          onwardTicket: {
+            title: '返程或离境机票',
+            description: '需证明将在30天内离开泰国',
+            details: '建议打印电子机票行程单，以便入境检查时出示。',
+          },
+          accommodation: {
+            title: '住宿证明',
+            description: '提供酒店/民宿预订或在泰联络地址',
+            details: '可使用可取消的酒店预订单或朋友家的地址，确保信息真实。',
+          },
+          funds: {
+            title: '充足资金',
+            description: '建议携带不少于10,000泰铢/人或等值现金及账户证明',
+            details: '移民官可能抽查现金或银行卡余额证明，请提前准备截图或交易记录，并整理一份中英文或泰文的资金清单，列出随身现金、银行卡及余额以便快速出示。',
+          },
+          healthCheck: {
+            title: '健康申报',
+            description: '确认无发热等急性症状，必要时配合健康问询',
+            details: '目前无强制疫苗证明，但如有发烧或不适请提前就医并携带英文诊断证明。',
+          },
+        },
+        status: {
+          success: {
+            title: '所有要求已确认！',
+            subtitle: '可以继续补充旅行信息',
+          },
+          warning: {
+            title: '请先勾选所有项目',
+            subtitle: '务必确保您满足泰国入境检查要求',
+          },
+        },
+        continueButton: '继续填写旅行信息',
+      },
+    },
     result: {
       title: '{{flag}} {{country}}入境包已准备好',
       subtitle: '所有资料已整理，随时可在机场出示',
@@ -766,6 +2175,7 @@ export const translations = {
           traveler: '姓名',
           passportNo: '护照',
           flightNo: '航班',
+          departureDate: '出发',
           arrivalDate: '到达',
           accommodation: '酒店',
         },
@@ -776,6 +2186,12 @@ export const translations = {
           editInfo: '更改资料',
         },
         lastUpdated: '最后更新：{{time}}',
+        subtitleParts: {
+          departure: '出发 {{date}}',
+          arrival: '到达 {{date}}',
+          flight: '航班 {{flight}}',
+          missing: '请补齐行程信息',
+        },
       },
       historyBanner: {
         badge: '待入境旅程',
@@ -825,6 +2241,78 @@ export const translations = {
       user: {
         phone: '手机: {{phone}}',
       },
+      common: {
+        notFilled: '未填写',
+      },
+      personal: {
+        title: '个人信息',
+        subtitle: '更新通关资料',
+        collapsedHint: '点击展开查看个人信息',
+        fields: {
+          dateOfBirth: {
+            title: '出生日期',
+            subtitle: 'Date of Birth',
+            placeholder: 'YYYY-MM-DD',
+          },
+          gender: {
+            title: '性别',
+            subtitle: 'Gender',
+            placeholder: 'MALE / FEMALE',
+          },
+          occupation: {
+            title: '职业',
+            subtitle: 'Occupation',
+            placeholder: 'Occupation',
+          },
+          provinceCity: {
+            title: '居住城市/州',
+            subtitle: 'Province / City of Residence',
+            placeholder: 'Province / City',
+          },
+          countryRegion: {
+            title: '居住国/地区',
+            subtitle: 'Country / Region',
+            placeholder: 'Country / Region',
+          },
+          phone: {
+            title: '电话号码',
+            subtitle: 'Phone',
+            placeholder: '+86 1234567890',
+          },
+        },
+      },
+      funding: {
+        title: '资金证明清单',
+        subtitle: '入境时快速出示',
+        collapsedHint: '点击展开查看资金证明清单',
+        tip: {
+          title: '充足资金',
+          subtitle: '建议携带不少于10,000泰铢/人或等值现金及账户证明',
+          description:
+            '移民官可能抽查现金或银行卡余额证明，请提前准备截图或交易记录，并整理一份资金清单，列出随身现金、银行卡及余额以便快速出示。',
+        },
+        footerNote: '以上信息会同步到通关包，方便入境检查时向移民官展示。',
+        actions: {
+          scanProof: '扫描 / 上传资金证明',
+        },
+        fields: {
+          cashAmount: {
+            title: '随身现金',
+            placeholder: '例如：10,000 泰铢现金 + 500 美元',
+            sample: '10,000 泰铢等值现金（约 2,000 人民币）',
+          },
+          bankCards: {
+            title: '银行卡及余额',
+            placeholder: '例如：招商银行 Visa (****1234) · 余额 20,000 CNY',
+            sample: '招商银行 Visa (****1234) · 余额 20,000 CNY\n工商银行 储蓄卡 (****8899) · 余额 15,000 CNY',
+          },
+          supportingDocs: {
+            title: '证明文件',
+            placeholder: '例如：银行卡余额截图、交易记录 PDF、银行对账单',
+            sample: '银行 App 余额截图、近 3 日交易记录 PDF 已保存于相册',
+          },
+        },
+      },
       passport: {
         title: '我的护照',
         details: '{{passportNo}} · 有效期至 {{expiry}}',
@@ -842,11 +2330,22 @@ export const translations = {
       menu: {
         documents: { title: '我的证件', badge: '({{count}})' },
         history: { title: '生成历史', badge: '({{count}})' },
-        backup: { title: '云端备份', subtitle: '最近: {{time}}' },
+        backup: {
+          title: '云端备份',
+          subtitle: '最近: {{time}}',
+          defaultTime: '今天',
+        },
+        language: {
+          title: '语言 / Language',
+          subtitle: '当前：{{language}}',
+        },
         settings: { title: '设置' },
         help: { title: '帮助中心' },
         about: { title: '关于我们' },
         notifications: { title: '通知设置' },
+      },
+      editModal: {
+        save: '保存',
       },
       logout: '退出登录',
       version: '版本 {{version}}',
@@ -1022,7 +2521,7 @@ export const translations = {
       yesNoQuestion: { fever: 'Avez-vous eu de la fièvre?', usCash: 'Plus de 10 000 USD?', usFood: 'Nourriture/plantes/animaux?', caCurrency: 'Plus de 10 000 CAD?', caDuty: 'Marchandises taxables?', caFirearms: 'Armes à feu?', caCommercial: 'Marchandises commerciales?', caFood: 'Produits alimentaires?' },
       arrivingFrom: { label: 'En provenance de', us: 'États-Unis', other: 'Autre pays' },
       hints: { caDuty: 'Alcool, tabac, cadeaux', caFood: 'Viande, produits laitiers, fruits' },
-      scanButtons: { ticket: '📸 Scanner billet', hotel: '📸 Scanner réservation' },
+      scanButtons: { ticket: 'Scanner billet', hotel: 'Scanner réservation' },
       generateButton: 'Générer le pack',
       tips: { title: '💡 Conseils', body: '• Préparez votre billet\n• Confirmation d\'hôtel\n• Soyez honnête\n• Gardez vos contacts' },
       alerts: { permissionPhotoTitle: 'Permission requise', permissionPhotoBody: 'Accès caméra/photos nécessaire', permissionDeniedAction: 'OK', ocrSuccessFlight: 'Vol extrait!', ocrSuccessHotel: 'Hôtel extrait!', loginRequiredTitle: 'Connexion requise', loginRequiredBody: 'OCR nécessite connexion', loginButton: 'Connexion', manualEntryButton: 'Saisie manuelle', ocrFailTitle: 'Échec', ocrFailBody: 'Extraction impossible', genericErrorTitle: 'Erreur', galleryError: 'Galerie inaccessible', dateTooFarTitle: 'Date trop loin', dateTooFarBody: 'Dans les 72h ({{days}} jours)', datePastTitle: 'Date invalide', datePastBody: 'Date passée invalide' },
@@ -1031,7 +2530,7 @@ export const translations = {
     result: {
       title: '{{flag}} {{country}} Pack prêt',
       subtitle: 'Tous les documents sont prêts',
-      entryPack: { title: 'Informations de base', subtitle: '{{subtitle}}', share: 'Partager', fields: { traveler: 'Nom', passportNo: 'Passeport', flightNo: 'Vol', arrivalDate: 'Arrivée', accommodation: 'Hôtel' }, notFilled: 'Non rempli', toBeConfirmed: 'À confirmer', actions: { startGuide: 'Démarrer le guide', editInfo: 'Modifier' }, lastUpdated: 'Mis à jour: {{time}}' },
+      entryPack: { title: 'Informations de base', subtitle: '{{subtitle}}', share: 'Partager', fields: { traveler: 'Nom', passportNo: 'Passeport', flightNo: 'Vol', departureDate: 'Départ', arrivalDate: 'Arrivée', accommodation: 'Hôtel' }, notFilled: 'Non rempli', toBeConfirmed: 'À confirmer', actions: { startGuide: 'Démarrer le guide', editInfo: 'Modifier' }, lastUpdated: 'Mis à jour: {{time}}', subtitleParts: { departure: 'Départ {{date}}', arrival: 'Arrivée {{date}}', flight: 'Vol {{flight}}', missing: 'Veuillez compléter les informations de voyage' } },
       historyBanner: { badge: 'Voyage en attente', status: 'Sauvegardé', description: 'Informations sauvegardées, modifiables à tout moment.', primaryCta: { title: 'Commencer le guide', subtitle: 'Étape par étape · Grande police' }, secondaryCta: { shareFamily: 'Partager', editInfo: 'Éditer' }, footer: { title: '🛃 Dernière étape: Douane', note: 'Le mode copie n\'est qu\'une étape.' } },
       digitalInfo: { title: '{{systemName}} en ligne requis', button: 'Postuler', autoFill: '⚡ Auto-remplir' },
       checkSection: { title: 'Vérifier les infos?', viewForm: { title: 'Voir le formulaire', subtitle: '{{count}} champs' }, qaGuide: { title: 'Guide Q&R douane', subtitle: '{{count}} questions' } },
@@ -1042,10 +2541,110 @@ export const translations = {
     profile: {
       header: 'Profil',
       user: { phone: 'Tél: {{phone}}' },
-      passport: { title: 'Mon passeport', details: '{{passportNo}} · Valide jusqu\'à {{expiry}}', updateButton: 'Mettre à jour' },
-      vip: { title: 'Passer Premium', subtitle: 'Générations illimitées', upgradeButton: 'Mettre à niveau' },
+      common: {
+        notFilled: 'Non renseigné',
+      },
+      personal: {
+        title: 'Informations personnelles',
+        subtitle: 'Mettez à jour les données pour le contrôle frontière',
+        collapsedHint: 'Touchez pour afficher les informations personnelles',
+        fields: {
+          dateOfBirth: {
+            title: 'Date de naissance',
+            subtitle: 'Date de naissance',
+            placeholder: 'AAAA-MM-JJ',
+          },
+          gender: {
+            title: 'Genre',
+            subtitle: 'Genre',
+            placeholder: 'HOMME / FEMME',
+          },
+          occupation: {
+            title: 'Profession',
+            subtitle: 'Profession',
+            placeholder: 'Profession',
+          },
+          provinceCity: {
+            title: 'Ville / Province',
+            subtitle: 'Ville ou province de résidence',
+            placeholder: 'Ville / Province',
+          },
+          countryRegion: {
+            title: 'Pays / Région',
+            subtitle: 'Pays / Région',
+            placeholder: 'Pays / Région',
+          },
+          phone: {
+            title: 'Numéro de téléphone',
+            subtitle: 'Téléphone',
+            placeholder: '+33 612345678',
+          },
+        },
+      },
+      funding: {
+        title: 'Check-list justificatifs financiers',
+        subtitle: 'À présenter rapidement à l’immigration',
+        collapsedHint: 'Touchez pour afficher la liste des justificatifs financiers',
+        tip: {
+          title: 'Fonds suffisants',
+          subtitle: 'Emportez au moins 10 000 THB par personne ou un justificatif équivalent',
+          description:
+            'Les agents peuvent vérifier vos espèces ou soldes bancaires. Préparez des captures d’écran ou relevés et listez vos espèces, cartes et soldes pour un contrôle rapide.',
+        },
+        footerNote: 'Ces informations sont synchronisées avec votre pack d’entrée pour les contrôles.',
+        actions: {
+          scanProof: 'Scanner / téléverser un justificatif financier',
+        },
+        fields: {
+          cashAmount: {
+            title: 'Espèces sur vous',
+            placeholder: 'ex. 10 000 THB en espèces + 500 USD',
+            sample: 'Équivalent 10 000 THB en espèces (env. ¥2 000)',
+          },
+          bankCards: {
+            title: 'Cartes bancaires & soldes',
+            placeholder: 'ex.\nCMB Visa (****1234) · Solde 20 000 CNY',
+            sample:
+              'CMB Visa (****1234) · Solde 20 000 CNY\nICBC Débit (****8899) · Solde 15 000 CNY',
+          },
+          supportingDocs: {
+            title: 'Pièces justificatives',
+            placeholder: 'ex. captures d’écran, relevés PDF, attestations bancaires',
+            sample: 'Captures d’écran de l’appli bancaire et relevés récents sauvegardés',
+          },
+        },
+      },
+      passport: {
+        title: 'Mon passeport',
+        details: '{{passportNo}} · Valide jusqu\'à {{expiry}}',
+        updateButton: 'Mettre à jour',
+      },
+      vip: {
+        title: 'Passer Premium',
+        subtitle: 'Générations illimitées, priorité',
+        upgradeButton: 'Mettre à niveau',
+      },
       sections: { myServices: 'Mes services', settings: 'Paramètres & Aide' },
-      menu: { documents: { title: 'Mes documents', badge: '({{count}})' }, history: { title: 'Historique', badge: '({{count}})' }, backup: { title: 'Sauvegarde cloud', subtitle: 'Récent: {{time}}' }, settings: { title: 'Paramètres' }, help: { title: 'Centre d\'aide' }, about: { title: 'À propos' }, notifications: { title: 'Notifications' } },
+      menu: {
+        documents: { title: 'Mes documents', badge: '({{count}})' },
+        history: { title: 'Historique', badge: '({{count}})' },
+        backup: {
+          title: 'Sauvegarde cloud',
+          subtitle: 'Récent : {{time}}',
+          defaultTime: 'Aujourd’hui',
+        },
+        language: {
+          title: 'Langue',
+          subtitle: 'Actuelle : {{language}}',
+        },
+        settings: { title: 'Paramètres' },
+        help: { title: 'Centre d\'aide' },
+        about: { title: 'À propos' },
+        notifications: { title: 'Notifications' },
+      },
+      editModal: {
+        save: 'Enregistrer',
+      },
       logout: 'Déconnexion',
       version: 'Version {{version}}',
     },
@@ -1123,7 +2722,7 @@ export const translations = {
       yesNoQuestion: { fever: 'Fieber gehabt?', usCash: 'Über 10.000 USD?', usFood: 'Lebensmittel/Pflanzen?', caCurrency: 'Über 10.000 CAD?', caDuty: 'Zollpflichtige Waren?', caFirearms: 'Waffen?', caCommercial: 'Handelswaren?', caFood: 'Lebensmittel?' },
       arrivingFrom: { label: 'Ankunft von', us: 'USA', other: 'Anderes Land' },
       hints: { caDuty: 'Alkohol, Tabak, Geschenke', caFood: 'Fleisch, Milchprodukte, Obst' },
-      scanButtons: { ticket: '📸 Ticket scannen', hotel: '📸 Buchung scannen' },
+      scanButtons: { ticket: 'Ticket scannen', hotel: 'Buchung scannen' },
       generateButton: 'Paket generieren',
       tips: { title: '💡 Tipps', body: '• Ticket bereit\n• Hotelbuchung\n• Ehrlich sein\n• Kontakte bereithalten' },
       alerts: { permissionPhotoTitle: 'Berechtigung erforderlich', permissionPhotoBody: 'Kamera-/Fotozugriff nötig', permissionDeniedAction: 'OK', ocrSuccessFlight: 'Flug erkannt!', ocrSuccessHotel: 'Hotel erkannt!', loginRequiredTitle: 'Login erforderlich', loginRequiredBody: 'OCR erfordert Login', loginButton: 'Login', manualEntryButton: 'Manuell eingeben', ocrFailTitle: 'Fehlgeschlagen', ocrFailBody: 'Erkennung fehlgeschlagen', genericErrorTitle: 'Fehler', galleryError: 'Galerie-Fehler', dateTooFarTitle: 'Datum zu weit', dateTooFarBody: 'Innerhalb 72h ({{days}} Tage)', datePastTitle: 'Ungültiges Datum', datePastBody: 'Datum in Vergangenheit' },
@@ -1132,7 +2731,7 @@ export const translations = {
     result: {
       title: '{{flag}} {{country}} Paket bereit',
       subtitle: 'Alle Dokumente bereit',
-      entryPack: { title: 'Grundinformationen', subtitle: '{{subtitle}}', share: 'Teilen', fields: { traveler: 'Name', passportNo: 'Pass', flightNo: 'Flug', arrivalDate: 'Ankunft', accommodation: 'Hotel' }, notFilled: 'Nicht ausgefüllt', toBeConfirmed: 'Zu bestätigen', actions: { startGuide: 'Guide starten', editInfo: 'Bearbeiten' }, lastUpdated: 'Aktualisiert: {{time}}' },
+      entryPack: { title: 'Grundinformationen', subtitle: '{{subtitle}}', share: 'Teilen', fields: { traveler: 'Name', passportNo: 'Pass', flightNo: 'Flug', departureDate: 'Abflug', arrivalDate: 'Ankunft', accommodation: 'Hotel' }, notFilled: 'Nicht ausgefüllt', toBeConfirmed: 'Zu bestätigen', actions: { startGuide: 'Guide starten', editInfo: 'Bearbeiten' }, lastUpdated: 'Aktualisiert: {{time}}', subtitleParts: { departure: 'Abflug {{date}}', arrival: 'Ankunft {{date}}', flight: 'Flug {{flight}}', missing: 'Bitte Reisedaten vervollständigen' } },
       historyBanner: { badge: 'Anstehende Reise', status: 'Gespeichert', description: 'Informationen gespeichert, jederzeit änderbar.', primaryCta: { title: 'Guide starten', subtitle: 'Schritt-für-Schritt · Große Schrift' }, secondaryCta: { shareFamily: 'Teilen', editInfo: 'Ändern' }, footer: { title: '🛃 Letzter Schritt: Zoll', note: 'Kopiermodus ist nur ein Schritt.' } },
       digitalInfo: { title: '{{systemName}} online erforderlich', button: 'Bewerben', autoFill: '⚡ Auto-ausfüllen' },
       checkSection: { title: 'Infos prüfen?', viewForm: { title: 'Formular ansehen', subtitle: '{{count}} Felder' }, qaGuide: { title: 'Zoll-Q&A', subtitle: '{{count}} Fragen' } },
@@ -1143,10 +2742,102 @@ export const translations = {
     profile: {
       header: 'Profil',
       user: { phone: 'Tel: {{phone}}' },
+      common: {
+        notFilled: 'Nicht ausgefüllt',
+      },
+      personal: {
+        title: 'Persönliche Angaben',
+        subtitle: 'Aktualisiere deine Grenzangaben',
+        collapsedHint: 'Zum Anzeigen der persönlichen Angaben tippen',
+        fields: {
+          dateOfBirth: {
+            title: 'Geburtsdatum',
+            subtitle: 'Geburtsdatum',
+            placeholder: 'JJJJ-MM-TT',
+          },
+          gender: {
+            title: 'Geschlecht',
+            subtitle: 'Geschlecht',
+            placeholder: 'MÄNNLICH / WEIBLICH',
+          },
+          occupation: {
+            title: 'Beruf',
+            subtitle: 'Beruf',
+            placeholder: 'Beruf',
+          },
+          provinceCity: {
+            title: 'Wohnort (Stadt/Provinz)',
+            subtitle: 'Wohnsitz (Provinz / Stadt)',
+            placeholder: 'Provinz / Stadt',
+          },
+          countryRegion: {
+            title: 'Wohnsitzland',
+            subtitle: 'Land / Region',
+            placeholder: 'Land / Region',
+          },
+          phone: {
+            title: 'Telefonnummer',
+            subtitle: 'Telefon',
+            placeholder: '+49 1712345678',
+          },
+        },
+      },
+      funding: {
+        title: 'Checkliste Finanznachweis',
+        subtitle: 'Schnell bei der Einreise vorzeigen',
+        collapsedHint: 'Tippen, um die Finanznachweise anzuzeigen',
+        tip: {
+          title: 'Ausreichende Mittel',
+          subtitle: 'Führe mindestens 10.000 THB pro Person oder gleichwertige Nachweise mit',
+          description:
+            'Die Beamten können Bargeld oder Kontostände prüfen. Bereite Screenshots oder Kontoauszüge vor und liste Bargeld, Karten und Guthaben für eine schnelle Kontrolle auf.',
+        },
+        footerNote: 'Diese Angaben werden in deinem Einreisepaket gespeichert und können bei der Kontrolle gezeigt werden.',
+        actions: {
+          scanProof: 'Finanznachweis scannen / hochladen',
+        },
+        fields: {
+          cashAmount: {
+            title: 'Bargeld dabei',
+            placeholder: 'z. B. 10.000 THB Bargeld + 500 USD',
+            sample: '10.000 THB Bargeld (ca. ¥2.000)',
+          },
+          bankCards: {
+            title: 'Bankkarten & Guthaben',
+            placeholder: 'z. B.\nCMB Visa (****1234) · Guthaben 20.000 CNY',
+            sample:
+              'CMB Visa (****1234) · Guthaben 20.000 CNY\nICBC Debit (****8899) · Guthaben 15.000 CNY',
+          },
+          supportingDocs: {
+            title: 'Nachweisunterlagen',
+            placeholder: 'z. B. Screenshots, PDF-Kontoauszüge, Bankbestätigungen',
+            sample: 'Bank-App-Screenshots und aktuelle Transaktionen gespeichert',
+          },
+        },
+      },
       passport: { title: 'Mein Pass', details: '{{passportNo}} · Gültig bis {{expiry}}', updateButton: 'Aktualisieren' },
-      vip: { title: 'Premium werden', subtitle: 'Unbegrenzt', upgradeButton: 'Upgraden' },
+      vip: { title: 'Premium werden', subtitle: 'Unbegrenzte Generierungen, Priorität', upgradeButton: 'Upgraden' },
       sections: { myServices: 'Meine Dienste', settings: 'Einstellungen & Hilfe' },
-      menu: { documents: { title: 'Meine Dokumente', badge: '({{count}})' }, history: { title: 'Verlauf', badge: '({{count}})' }, backup: { title: 'Cloud-Backup', subtitle: 'Kürzlich: {{time}}' }, settings: { title: 'Einstellungen' }, help: { title: 'Hilfe' }, about: { title: 'Über' }, notifications: { title: 'Benachrichtigungen' } },
+      menu: {
+        documents: { title: 'Meine Dokumente', badge: '({{count}})' },
+        history: { title: 'Verlauf', badge: '({{count}})' },
+        backup: {
+          title: 'Cloud-Backup',
+          subtitle: 'Kürzlich: {{time}}',
+          defaultTime: 'Heute',
+        },
+        language: {
+          title: 'Sprache',
+          subtitle: 'Aktuell: {{language}}',
+        },
+        settings: { title: 'Einstellungen' },
+        help: { title: 'Hilfe' },
+        about: { title: 'Über' },
+        notifications: { title: 'Benachrichtigungen' },
+      },
+      editModal: {
+        save: 'Speichern',
+      },
       logout: 'Abmelden',
       version: 'Version {{version}}',
     },
@@ -1224,7 +2915,7 @@ export const translations = {
       yesNoQuestion: { fever: '¿Ha tenido fiebre?', usCash: '¿Más de $10,000 USD?', usFood: '¿Alimentos/plantas/animales?', caCurrency: '¿Más de $10,000 CAD?', caDuty: '¿Bienes gravables?', caFirearms: '¿Armas de fuego?', caCommercial: '¿Bienes comerciales?', caFood: '¿Productos alimenticios?' },
       arrivingFrom: { label: 'Procedencia', us: 'Estados Unidos', other: 'Otro país' },
       hints: { caDuty: 'Alcohol, tabaco, regalos', caFood: 'Carne, lácteos, frutas' },
-      scanButtons: { ticket: '📸 Escanear boleto', hotel: '📸 Escanear reserva' },
+      scanButtons: { ticket: 'Escanear boleto', hotel: 'Escanear reserva' },
       generateButton: 'Generar paquete',
       tips: { title: '💡 Consejos', body: '• Tenga su boleto listo\n• Confirmación de hotel\n• Sea honesto\n• Guarde sus contactos' },
       alerts: { permissionPhotoTitle: 'Permiso requerido', permissionPhotoBody: 'Necesitamos acceso a cámara/fotos', permissionDeniedAction: 'OK', ocrSuccessFlight: '¡Vuelo extraído!', ocrSuccessHotel: '¡Hotel extraído!', loginRequiredTitle: 'Login requerido', loginRequiredBody: 'OCR requiere login', loginButton: 'Iniciar sesión', manualEntryButton: 'Entrada manual', ocrFailTitle: 'Fallo', ocrFailBody: 'No se pudo extraer', genericErrorTitle: 'Error', galleryError: 'Error de galería', dateTooFarTitle: 'Fecha lejana', dateTooFarBody: 'Dentro de 72h ({{days}} días)', datePastTitle: 'Fecha inválida', datePastBody: 'Fecha en el pasado' },
@@ -1233,7 +2924,7 @@ export const translations = {
     result: {
       title: '{{flag}} {{country}} Paquete listo',
       subtitle: 'Todos los documentos listos',
-      entryPack: { title: 'Información básica', subtitle: '{{subtitle}}', share: 'Compartir', fields: { traveler: 'Nombre', passportNo: 'Pasaporte', flightNo: 'Vuelo', arrivalDate: 'Llegada', accommodation: 'Hotel' }, notFilled: 'No rellenado', toBeConfirmed: 'Por confirmar', actions: { startGuide: 'Iniciar guía', editInfo: 'Editar' }, lastUpdated: 'Actualizado: {{time}}' },
+      entryPack: { title: 'Información básica', subtitle: '{{subtitle}}', share: 'Compartir', fields: { traveler: 'Nombre', passportNo: 'Pasaporte', flightNo: 'Vuelo', departureDate: 'Salida', arrivalDate: 'Llegada', accommodation: 'Hotel' }, notFilled: 'No rellenado', toBeConfirmed: 'Por confirmar', actions: { startGuide: 'Iniciar guía', editInfo: 'Editar' }, lastUpdated: 'Actualizado: {{time}}', subtitleParts: { departure: 'Salida {{date}}', arrival: 'Llegada {{date}}', flight: 'Vuelo {{flight}}', missing: 'Completa los datos del viaje' } },
       historyBanner: { badge: 'Viaje pendiente', status: 'Guardado', description: 'Información guardada, modificable en cualquier momento.', primaryCta: { title: 'Iniciar guía', subtitle: 'Paso a paso · Letra grande' }, secondaryCta: { shareFamily: 'Compartir', editInfo: 'Editar' }, footer: { title: '🛃 Último paso: Aduana', note: 'El modo copia es solo un paso.' } },
       digitalInfo: { title: '{{systemName}} en línea requerido', button: 'Aplicar', autoFill: '⚡ Auto-rellenar' },
       checkSection: { title: '¿Verificar información?', viewForm: { title: 'Ver formulario', subtitle: '{{count}} campos' }, qaGuide: { title: 'Guía Q&A aduana', subtitle: '{{count}} preguntas' } },
@@ -1244,10 +2935,102 @@ export const translations = {
     profile: {
       header: 'Perfil',
       user: { phone: 'Tel: {{phone}}' },
+      common: {
+        notFilled: 'No rellenado',
+      },
+      personal: {
+        title: 'Información personal',
+        subtitle: 'Actualiza los datos para el control fronterizo',
+        collapsedHint: 'Toca para ver la información personal',
+        fields: {
+          dateOfBirth: {
+            title: 'Fecha de nacimiento',
+            subtitle: 'Fecha de nacimiento',
+            placeholder: 'AAAA-MM-DD',
+          },
+          gender: {
+            title: 'Género',
+            subtitle: 'Género',
+            placeholder: 'MASCULINO / FEMENINO',
+          },
+          occupation: {
+            title: 'Profesión',
+            subtitle: 'Profesión',
+            placeholder: 'Profesión',
+          },
+          provinceCity: {
+            title: 'Ciudad / provincia de residencia',
+            subtitle: 'Provincia / Ciudad',
+            placeholder: 'Provincia / Ciudad',
+          },
+          countryRegion: {
+            title: 'País / región',
+            subtitle: 'País / región',
+            placeholder: 'País / región',
+          },
+          phone: {
+            title: 'Número de teléfono',
+            subtitle: 'Teléfono',
+            placeholder: '+34 612345678',
+          },
+        },
+      },
+      funding: {
+        title: 'Lista de comprobación de fondos',
+        subtitle: 'Preséntala rápidamente en inmigración',
+        collapsedHint: 'Toca para ver la lista de comprobación de fondos',
+        tip: {
+          title: 'Fondos suficientes',
+          subtitle: 'Lleva al menos 10 000 THB por persona o un comprobante equivalente',
+          description:
+            'Los oficiales pueden revisar tu efectivo o saldo bancario. Prepara capturas o estados y enumera efectivo, tarjetas y saldos para una inspección rápida.',
+        },
+        footerNote: 'Esta información se sincroniza con tu paquete de entrada para mostrarla en el control.',
+        actions: {
+          scanProof: 'Escanear / subir comprobante de fondos',
+        },
+        fields: {
+          cashAmount: {
+            title: 'Efectivo disponible',
+            placeholder: 'ej. 10 000 THB en efectivo + 500 USD',
+            sample: 'Efectivo equivalente a 10 000 THB (aprox ¥2 000)',
+          },
+          bankCards: {
+            title: 'Tarjetas y saldos',
+            placeholder: 'ej.\nCMB Visa (****1234) · Saldo 20 000 CNY',
+            sample:
+              'CMB Visa (****1234) · Saldo 20 000 CNY\nICBC Débito (****8899) · Saldo 15 000 CNY',
+          },
+          supportingDocs: {
+            title: 'Documentos de respaldo',
+            placeholder: 'ej. capturas de saldo, PDF de transacciones, estados bancarios',
+            sample: 'Capturas de apps bancarias y movimientos recientes guardados',
+          },
+        },
+      },
       passport: { title: 'Mi pasaporte', details: '{{passportNo}} · Válido hasta {{expiry}}', updateButton: 'Actualizar' },
-      vip: { title: 'Pasar a Premium', subtitle: 'Generaciones ilimitadas', upgradeButton: 'Actualizar' },
+      vip: { title: 'Pasar a Premium', subtitle: 'Generaciones ilimitadas y prioridad', upgradeButton: 'Actualizar' },
       sections: { myServices: 'Mis servicios', settings: 'Ajustes y Ayuda' },
-      menu: { documents: { title: 'Mis documentos', badge: '({{count}})' }, history: { title: 'Historial', badge: '({{count}})' }, backup: { title: 'Respaldo en nube', subtitle: 'Reciente: {{time}}' }, settings: { title: 'Ajustes' }, help: { title: 'Centro de ayuda' }, about: { title: 'Acerca de' }, notifications: { title: 'Notificaciones' } },
+      menu: {
+        documents: { title: 'Mis documentos', badge: '({{count}})' },
+        history: { title: 'Historial', badge: '({{count}})' },
+        backup: {
+          title: 'Respaldo en nube',
+          subtitle: 'Reciente: {{time}}',
+          defaultTime: 'Hoy',
+        },
+        language: {
+          title: 'Idioma',
+          subtitle: 'Actual: {{language}}',
+        },
+        settings: { title: 'Ajustes' },
+        help: { title: 'Centro de ayuda' },
+        about: { title: 'Acerca de' },
+        notifications: { title: 'Notificaciones' },
+      },
+      editModal: {
+        save: 'Guardar',
+      },
       logout: 'Cerrar sesión',
       version: 'Versión {{version}}',
     },

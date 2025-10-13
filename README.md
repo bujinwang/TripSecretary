@@ -52,7 +52,7 @@ npx expo start
 ## 📂 Project Structure
 
 ```
-TripSecretary/
+BorderBuddy/
 ├── app/                    # React Native app
 │   ├── components/         # Reusable UI components
 │   ├── screens/            # 8 app screens
@@ -186,7 +186,7 @@ expo publish
 
 ## 👥 Team
 
-- **Product Design**: TripSecretary Team
+- **Product Design**: BorderBuddy Team
 - **Tech Stack**: Cloudflare + React Native + Alibaba AI
 - **Target Users**: Chinese travelers aged 50-70
 
@@ -209,4 +209,4 @@ MIT License - See LICENSE file
 
 **出境通** - Making international travel easier for everyone! 🌍✨
 
-For questions: support@tripsecretary.com
+For questions: support@borderbuddy.com

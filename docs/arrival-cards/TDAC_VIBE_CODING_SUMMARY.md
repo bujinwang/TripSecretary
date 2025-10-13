@@ -608,7 +608,7 @@ TDAC_VIBE_CODING_SUMMARY.md       ~4000字
 ### 文档位置
 
 ```
-TripSecretary/
+BorderBuddy/
 ├── TDAC_COMPLETE_API_ANALYSIS.md      # HAR分析和API流程
 ├── TDAC_API_IMPLEMENTATION_GUIDE.md   # 实现指南
 ├── TDAC_VIBE_CODING_SUMMARY.md        # 本文档

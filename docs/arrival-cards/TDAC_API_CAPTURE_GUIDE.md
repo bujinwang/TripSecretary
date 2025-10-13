@@ -148,7 +148,7 @@ import TDACAPIInterceptScreen from '../screens/TDACAPIInterceptScreen';
 ### 步骤3: 使用拦截器
 
 ```bash
-1. 打开 TripSecretary App
+1. 打开 BorderBuddy App
 2. 点击 "🔍 抓取API" 按钮
 3. 在 WebView 中完成 Cloudflare 验证
 4. 手动填写表单并提交

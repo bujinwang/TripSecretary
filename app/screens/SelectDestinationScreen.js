@@ -26,10 +26,10 @@ const SelectDestinationScreen = ({ navigation, route }) => {
 
     // 暂未启用的目的地
     { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
-    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: false },
+    { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: true },
     { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
-    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: false },
-    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: false },
+    { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: true },
+    { id: 'my', flag: '🇲🇾', name: '马来西亚', flightTime: '4小时飞行', enabled: true },
     { id: 'us', flag: '🇺🇸', name: '美国', flightTime: '13小时飞行', enabled: false },
     { id: 'ca', flag: '🇨🇦', name: '加拿大', flightTime: '14小时飞行', enabled: false },
     { id: 'au', flag: '🇦🇺', name: '澳大利亚', flightTime: '9小时飞行', enabled: false },
@@ -76,6 +76,46 @@ const SelectDestinationScreen = ({ navigation, route }) => {
             destination: country
           });
         }
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'th') {
+      setTimeout(() => {
+        navigation.navigate('ThailandInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'my') {
+      setTimeout(() => {
+        navigation.navigate('MalaysiaInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'sg') {
+      setTimeout(() => {
+        navigation.navigate('SingaporeInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'tw') {
+      setTimeout(() => {
+        navigation.navigate('TaiwanInfo', {
+          passport,
+          destination: country
+        });
       }, 300);
       return;
     }

@@ -1,4 +1,4 @@
-// AIAssistantService - High level orchestrator for the TripSecretary AI assistant
+// AIAssistantService - High level orchestrator for the BorderBuddy AI assistant
 import QwenService from './QwenService';
 
 const createId = () =>
@@ -102,7 +102,7 @@ class AIAssistantService {
   }
 
   getSystemPrompt() {
-    return `你是TripSecretary的AI旅行助手。
+    return `你是BorderBuddy的AI旅行助手。
 你的职责是帮助用户规划和预订旅行。
 
 特点：

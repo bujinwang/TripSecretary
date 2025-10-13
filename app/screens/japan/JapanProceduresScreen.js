@@ -85,12 +85,12 @@ const JapanProceduresScreen = ({ navigation, route }) => {
         {/* Title Section */}
         <View style={styles.titleSection}>
           <Text style={styles.title}>日本入境完整流程</Text>
-          <Text style={styles.subtitle}>TripSecretary将帮您准备一切</Text>
+          <Text style={styles.subtitle}>BorderBuddy将帮您准备一切</Text>
         </View>
 
         {/* App Help Instruction */}
         <View style={styles.helpSection}>
-          <Text style={styles.helpTitle}>📝 TripSecretary帮您做什么</Text>
+          <Text style={styles.helpTitle}>📝 BorderBuddy帮您做什么</Text>
           <View style={styles.helpCard}>
             <Text style={styles.helpText}>
               入境卡和海关申报单我帮你填好，你在机场找到表格照抄就行！
@@ -122,7 +122,7 @@ const JapanProceduresScreen = ({ navigation, route }) => {
 
         {/* App Capabilities */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>✨ TripSecretary能为您做什么</Text>
+          <Text style={styles.sectionTitle}>✨ BorderBuddy能为您做什么</Text>
           <View style={styles.featuresGrid}>
             {appFeatures.map((feature, index) => (
               <View key={index} style={styles.featureCard}>

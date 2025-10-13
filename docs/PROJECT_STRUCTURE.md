@@ -12,7 +12,7 @@
 ## 📁 完整文件树
 
 ```
-TripSecretary/
+BorderBuddy/
 │
 ├── 📱 App.js                          # 应用入口
 ├── ⚙️ app.json                        # Expo 配置
@@ -581,5 +581,5 @@ Week 5-6: 优化和发布
 ---
 
 *Last Updated: 2025-01*  
-*Project: TripSecretary (出境通)*
+*Project: BorderBuddy (出境通)*
 *Tech Stack: React Native + Expo + React Navigation*

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# API Testing Script for TripSecretary Backend
+# API Testing Script for BorderBuddy Backend
 # Tests all endpoints with mock data
 
 BASE_URL="${1:-http://localhost:8787}"

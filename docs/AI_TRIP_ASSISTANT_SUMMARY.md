@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The AI Trip Assistant is a conversational AI feature that will transform TripSecretary into a comprehensive travel planning and booking platform. It provides natural language interaction for trip planning, flight/hotel search, itinerary generation, and travel assistance.
+The AI Trip Assistant is a conversational AI feature that will transform BorderBuddy into a comprehensive travel planning and booking platform. It provides natural language interaction for trip planning, flight/hotel search, itinerary generation, and travel assistance.
 
 ## What We've Designed
 

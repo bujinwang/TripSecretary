@@ -135,7 +135,7 @@ npx expo start --ios
 ## 📂 主要文件说明
 
 ```
-TripSecretary/
+BorderBuddy/
 ├── App.js                    ← 应用入口 (从这里开始)
 ├── app/
 │   ├── navigation/

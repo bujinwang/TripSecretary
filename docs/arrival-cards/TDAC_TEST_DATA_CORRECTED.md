@@ -418,7 +418,7 @@ const testPassportVisa = {
 
 ## ✅ 总结
 
-**对于中国游客使用TripSecretary App**：
+**对于中国游客使用BorderBuddy App**：
 
 1. **默认情况**: 免签（Visa No留空）
 2. **特殊情况**: 用户已办理签证（填写签证号）

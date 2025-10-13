@@ -160,7 +160,7 @@ app/screens/ResultScreen.js
 ## 📁 文件结构
 
 ```
-TripSecretary/
+BorderBuddy/
 ├── app/
 │   ├── services/
 │   │   ├── CloudflareTokenExtractor.js  ← Token提取工具 (新)

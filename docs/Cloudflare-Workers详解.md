@@ -1083,7 +1083,7 @@ Cloudflare Workers + D1:
 // React Native使用SQLite
 import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabase('tripsecretary.db');
+const db = SQLite.openDatabase('borderbuddy.db');
 
 // 创建表
 db.transaction(tx => {
@@ -1336,7 +1336,7 @@ AI：
 ### 11.9 文件结构
 
 ```
-/TripSecretary
+/BorderBuddy
 │
 ├── /app                      # React Native前端
 │   ├── /screens              # 页面（JavaScript）

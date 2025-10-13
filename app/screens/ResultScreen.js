@@ -1,4 +1,4 @@
-// 出国啰 - Result Screen
+// 出境通 - Result Screen
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -9,12 +9,13 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
+  Modal,
+  TouchableWithoutFeedback,
+  Clipboard,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
-import Button from '../components/Button';
-import { colors, typography, spacing } from '../theme';
+import { colors, typography, spacing, borderRadius, shadows, touchable } from '../theme';
 import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
 import { mergeTDACData } from '../data/mockTDACData';
@@ -28,6 +29,9 @@ const ResultScreen = ({ navigation, route }) => {
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState(null);
+  const [shareSession, setShareSession] = useState(null);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
 
   const currentPassport = resultData?.passport || routeParams.passport;
   const currentDestination = resultData?.destination || routeParams.destination;
@@ -36,6 +40,10 @@ const ResultScreen = ({ navigation, route }) => {
   const passport = currentPassport;
   const destination = currentDestination;
   const travelInfo = currentTravelInfo;
+  const isThailand = destination?.id === 'th';
+  const isMalaysia = destination?.id === 'my';
+  const isSingapore = destination?.id === 'sg';
+  const isTaiwan = destination?.id === 'tw';
 
   // 获取目的地特定的功能配置
   const features = getAvailableFeatures(destination?.id);
@@ -116,26 +124,55 @@ const ResultScreen = ({ navigation, route }) => {
   }, [passport]);
 
   const flightNumberDisplay = travelInfo?.flightNumber || travelInfo?.flightNo || '待确认';
+  const departureDateDisplay = travelInfo?.departureDate || '待确认';
   const arrivalDateDisplay = travelInfo?.arrivalDate || '待确认';
-  const accommodationDisplay =
-    travelInfo?.hotelName ||
-    travelInfo?.hotelAddress ||
-    travelInfo?.accommodationName ||
-    '待确认';
+  const accommodationDisplay = useMemo(() => {
+    const parts = [];
+    const hotelName = travelInfo?.hotelName || travelInfo?.accommodationName;
+    const hotelAddress = travelInfo?.hotelAddress;
+    const contactPhone = travelInfo?.contactPhone;
+    
+    if (hotelName) parts.push(hotelName);
+    if (hotelAddress) parts.push(hotelAddress);
+    if (contactPhone) parts.push(contactPhone);
+    
+    return parts.join(' | ') || '待确认';
+  }, [travelInfo]);
 
   const entrySubtitle = useMemo(() => {
     const parts = [];
     if (destination?.name) {
       parts.push(destination.name);
     }
+    if (departureDateDisplay !== '待确认') {
+      parts.push(
+        t('result.entryPack.subtitleParts.departure', {
+          date: departureDateDisplay,
+          defaultValue: `Departure ${departureDateDisplay}`,
+        })
+      );
+    }
     if (arrivalDateDisplay !== '待确认') {
-      parts.push(arrivalDateDisplay);
+      parts.push(
+        t('result.entryPack.subtitleParts.arrival', {
+          date: arrivalDateDisplay,
+          defaultValue: `Arrival ${arrivalDateDisplay}`,
+        })
+      );
     }
     if (flightNumberDisplay !== '待确认') {
-      parts.push(`航班 ${flightNumberDisplay}`);
+      parts.push(
+        t('result.entryPack.subtitleParts.flight', {
+          flight: flightNumberDisplay,
+          defaultValue: `Flight ${flightNumberDisplay}`,
+        })
+      );
     }
-    return parts.join(' · ') || '请补齐行程信息';
-  }, [destination?.name, arrivalDateDisplay, flightNumberDisplay]);
+    return (
+      parts.join(' · ') ||
+      t('result.entryPack.subtitleParts.missing', { defaultValue: '请补齐行程信息' })
+    );
+  }, [destination?.name, departureDateDisplay, arrivalDateDisplay, flightNumberDisplay, t]);
 
   const generatedAtSource =
     resultData?.updatedAt ||
@@ -154,13 +191,12 @@ const ResultScreen = ({ navigation, route }) => {
 
   const entryPackItems = useMemo(
     () => [
-      { label: t('result.entryPack.fields.traveler'), value: travelerName },
-      { label: t('result.entryPack.fields.passportNo'), value: passportNumber },
+      { label: t('result.entryPack.fields.departureDate'), value: departureDateDisplay },
       { label: t('result.entryPack.fields.flightNo'), value: flightNumberDisplay },
       { label: t('result.entryPack.fields.arrivalDate'), value: arrivalDateDisplay },
       { label: t('result.entryPack.fields.accommodation'), value: accommodationDisplay, fullWidth: true },
     ],
-    [t, travelerName, passportNumber, flightNumberDisplay, arrivalDateDisplay, accommodationDisplay],
+    [t, departureDateDisplay, flightNumberDisplay, arrivalDateDisplay, accommodationDisplay],
   );
 
   const generatePDF = async () => {
@@ -280,7 +316,7 @@ const ResultScreen = ({ navigation, route }) => {
               </tr>
             </table>
             <div class="footer">
-              <p>Generated by 出境通 TripSecretary</p>
+              <p>Generated by 出境通 BorderBuddy</p>
               <p>生成时间 / Generated: ${new Date().toLocaleString('zh-CN')}</p>
             </div>
           </body>
@@ -314,24 +350,54 @@ const ResultScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleShare = async () => {
-    const uri = await generatePDF();
-    if (!uri) return;
+  const generateShareSession = () => {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const password = String(Math.floor(1000 + Math.random() * 9000));
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    return {
+      link: `https://borderbuddy.app/share/${token}`,
+      password,
+      token,
+      expiresAt: expiresAt.toISOString(),
+    };
+  };
 
-    try {
-      const canShare = await Sharing.isAvailableAsync();
-      if (!canShare) {
-        Alert.alert('错误', '该设备不支持分享功能');
-        return;
-      }
+  const isShareSessionActive = shareSession
+    ? new Date(shareSession.expiresAt).getTime() > Date.now()
+    : false;
 
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: `分享${destination?.name || ''}入境表格`,
-      });
-    } catch (error) {
-      Alert.alert('错误', '分享失败');
+  const handleShare = () => {
+    let session = shareSession;
+    if (!session || !isShareSessionActive) {
+      session = generateShareSession();
+      setShareSession(session);
     }
+    setShareModalVisible(true);
+  };
+
+  const handleCancelShare = () => {
+    Alert.alert(
+      '取消分享',
+      '该操作会立即失效共享链接和密码，亲友将无法继续访问。确定要取消吗？',
+      [
+        { text: '保留', style: 'cancel' },
+        {
+          text: '取消分享',
+          style: 'destructive',
+          onPress: () => {
+            setShareSession(null);
+            setShareModalVisible(false);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleCopy = (value, field) => {
+    Clipboard.setString(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const handlePrint = async () => {
@@ -382,104 +448,63 @@ const ResultScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         )}
 
-        <View style={styles.entryPackCard}>
-          <View style={styles.entryPackHeader}>
-            <Text style={styles.entryPackIcon}>🧳</Text>
-            <View style={styles.entryPackHeaderText}>
-              <Text style={styles.entryPackTitle}>{t('result.entryPack.title')}</Text>
-              <Text style={styles.entryPackSubtitle}>{entrySubtitle}</Text>
-            </View>
-            {canShareInline && (
-              <TouchableOpacity
-                style={styles.entryPackShareButton}
-                onPress={handleShare}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.entryPackShareText}>分享</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.entryPackInfoGrid}>
-            {entryPackItems.map((item, index) => {
-              const isLast = index === entryPackItems.length - 1;
-              return (
-                <View
-                  key={`${item.label}-${index}`}
-                  style={[
-                    styles.entryPackInfoItem,
-                    item.fullWidth && styles.entryPackInfoItemFull,
-                    isLast && styles.entryPackInfoItemLast,
-                  ]}
-                >
-                  <Text style={styles.entryPackInfoLabel}>{item.label}</Text>
-                  <Text
-                    style={styles.entryPackInfoValue}
-                    numberOfLines={item.fullWidth ? 3 : 1}
-                  >
-                    {item.value}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-
-          {!isHistoryItem && (
-            <View style={styles.entryPackActions}>
-              <Button
-                title="启动入境指南"
-                onPress={handleStartArrivalFlow}
-                icon={<Text style={styles.entryPackActionIcon}>🛬</Text>}
-                style={styles.entryPackPrimaryButton}
-              />
-              <TouchableOpacity
-                onPress={handleEditInfo}
-                style={styles.entryPackSecondaryButton}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.entryPackSecondaryText}>更改资料</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <Text style={styles.entryPackTimestamp}>{t('result.entryPack.lastUpdated', { time: formattedGeneratedAt })}</Text>
-        </View>
-
-        {isHistoryItem && (
-          <View style={styles.actionButtonsRow}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleShare}
-              activeOpacity={0.6}
-            >
-              <Text style={styles.actionButtonIcon}>↗</Text>
-              <Text style={styles.actionButtonText}>{t('result.historyBanner.secondaryCta.shareFamily')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleEditInfo}
-              activeOpacity={0.6}
-            >
-              <Text style={styles.actionButtonIcon}>✎</Text>
-              <Text style={styles.actionButtonText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Digital Entry System Info */}
         {features.digitalInfo && (
           <View style={styles.digitalInfoCard}>
-            <Text style={styles.digitalInfoIcon}>📱</Text>
+            <View style={styles.digitalInfoHeader}>
+              <Text style={styles.digitalInfoIcon}>📱</Text>
+              {(isThailand || isMalaysia || isSingapore || isTaiwan) && (
+                <Text style={styles.digitalInfoStepBadge}>
+                  {isThailand
+                    ? '第一件事'
+                    : isMalaysia
+                      ? t('malaysia.result.digitalBadge')
+                      : isSingapore
+                        ? t('singapore.result.digitalBadge')
+                        : t('taiwan.result.digitalBadge')}
+                </Text>
+              )}
+            </View>
             <View style={styles.digitalInfoContent}>
-              <Text style={styles.digitalInfoTitle}>需要在线申请 {features.digitalInfo.systemName}</Text>
+              <Text style={styles.digitalInfoTitle}>
+                {isThailand
+                  ? '自动申请泰国电子入境卡（TDAC）'
+                  : isMalaysia
+                    ? t('malaysia.result.digitalTitle')
+                    : isSingapore
+                      ? t('singapore.result.digitalTitle')
+                      : isTaiwan
+                        ? t('taiwan.result.digitalTitle')
+                        : t('result.digitalInfo.title', { systemName: features.digitalInfo.systemName })}
+              </Text>
+              {isThailand && (
+                <Text style={styles.digitalInfoHighlight}>
+                  应用会根据护照与行程信息自动提交电子入境卡，二维码会同步保存到本入境包。
+                </Text>
+              )}
+              {isMalaysia && (
+                <Text style={styles.digitalInfoHighlight}>
+                  {t('malaysia.result.digitalHighlight')}
+                </Text>
+              )}
+              {isSingapore && (
+                <Text style={styles.digitalInfoHighlight}>
+                  {t('singapore.result.digitalHighlight')}
+                </Text>
+              )}
+              {isTaiwan && (
+                <Text style={styles.digitalInfoHighlight}>
+                  {t('taiwan.result.digitalHighlight')}
+                </Text>
+              )}
               {features.digitalInfo.notes.map((note, index) => (
                 <Text key={index} style={styles.digitalInfoNote}>• {note}</Text>
               ))}
               {features.digitalInfo.url && (
                 <TouchableOpacity 
+                  activeOpacity={0.9}
                   onPress={async () => {
                     // 泰国显示选择界面，其他国家打开网址
-                    if (destination?.id === 'th') {
+                    if (isThailand) {
                       // 映射字段供两个版本使用
                       const tdacTravelInfo = {
                         // Personal Information In Passport
@@ -529,18 +554,163 @@ const ResultScreen = ({ navigation, route }) => {
                       navigation.navigate('TDACHybrid', { 
                         travelerInfo: travelerInfoWithFallbacks
                       });
+                    } else if (isMalaysia) {
+                      navigation.navigate('MDACSelection', {
+                        passport,
+                        destination,
+                        travelInfo,
+                      });
+                    } else if (isSingapore) {
+                      navigation.navigate('SGArrivalSelection', {
+                        passport,
+                        destination,
+                        travelInfo,
+                      });
+                    } else if (isTaiwan) {
+                      navigation.navigate('TWArrivalSelection', {
+                        passport,
+                        destination,
+                        travelInfo,
+                      });
                     } else {
                       Linking.openURL(features.digitalInfo.url);
                     }
                   }}
                   style={styles.digitalInfoButton}
                 >
-                  <Text style={styles.digitalInfoButtonText}>
-                    {destination?.id === 'th' ? '⚡ 自动填写' : '前往申请 ›'}
-                  </Text>
+                  <View style={styles.digitalInfoButtonContent}>
+                    <Text style={styles.digitalInfoButtonIcon}>
+                      {isThailand || isMalaysia || isSingapore || isTaiwan ? '⚡' : '↗'}
+                    </Text>
+                    <Text style={styles.digitalInfoButtonLabel}>
+                      {isThailand
+                        ? '一键自动申报'
+                        : isMalaysia
+                          ? t('malaysia.result.digitalButton')
+                          : isSingapore
+                            ? t('singapore.result.digitalButton')
+                            : isTaiwan
+                              ? t('taiwan.result.digitalButton')
+                              : `${t('result.digitalInfo.button')} ›`}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               )}
             </View>
+          </View>
+        )}
+
+        <View style={styles.entryPackCard}>
+          <View style={styles.entryPackHeader}>
+            <Text style={styles.entryPackIcon}>🧳</Text>
+            <View style={styles.entryPackHeaderText}>
+              <Text style={styles.entryPackTitle}>{t('result.entryPack.title')}</Text>
+              <Text style={styles.entryPackSubtitle}>{entrySubtitle}</Text>
+            </View>
+            {canShareInline && (
+              <View style={styles.shareButtonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.entryPackShareButton,
+                    isShareSessionActive && styles.entryPackShareButtonActive,
+                  ]}
+                  onPress={handleShare}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.entryPackShareText}>
+                    {isShareSessionActive ? '已邀请' : '亲友核实'}
+                  </Text>
+                </TouchableOpacity>
+                {isShareSessionActive && shareSession && (
+                  <Text style={styles.shareStatusText}>
+                    有效至 {new Date(shareSession.expiresAt).toLocaleString()}
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+
+          <View style={styles.entryPackInfoGrid}>
+            {entryPackItems.map((item, index) => {
+              const isLast = index === entryPackItems.length - 1;
+              return (
+                <View
+                  key={`${item.label}-${index}`}
+                  style={[
+                    styles.entryPackInfoItem,
+                    item.fullWidth && styles.entryPackInfoItemFull,
+                    isLast && styles.entryPackInfoItemLast,
+                  ]}
+                >
+                  <Text style={styles.entryPackInfoLabel}>{item.label}</Text>
+                  <Text
+                    style={styles.entryPackInfoValue}
+                    numberOfLines={item.fullWidth ? 3 : 1}
+                  >
+                    {item.value}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {!isHistoryItem && (
+            <View style={styles.entryPackActions}>
+              <TouchableOpacity
+                onPress={handleStartArrivalFlow}
+                style={styles.entryPackPrimaryButton}
+                activeOpacity={0.85}
+              >
+                <View style={styles.entryPackPrimaryContent}>
+                  <View style={styles.entryPackPrimaryIconWrapper}>
+                    <Text style={styles.entryPackPrimaryIcon}>🛬</Text>
+                  </View>
+                  <View style={styles.entryPackPrimaryTextContainer}>
+                    <Text style={styles.entryPackPrimaryTitle}>
+                      {t('result.entryPack.actions.startGuide', { defaultValue: 'Start Arrival Guide' })}
+                    </Text>
+                    <Text style={styles.entryPackPrimarySubtitle}>
+                      {t('result.historyBanner.primaryCta.subtitle', { defaultValue: 'Step-by-step · Large text available' })}
+                    </Text>
+                  </View>
+                  <View style={styles.entryPackPrimaryArrowWrapper}>
+                    <Text style={styles.entryPackPrimaryArrow}>›</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleEditInfo}
+                style={styles.entryPackSecondaryButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.entryPackSecondaryText}>更改资料</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Text style={styles.entryPackTimestamp}>{t('result.entryPack.lastUpdated', { time: formattedGeneratedAt })}</Text>
+        </View>
+
+        {isHistoryItem && (
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleShare}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.actionButtonIcon}>↗</Text>
+              <Text style={styles.actionButtonText}>
+                {isShareSessionActive ? '查看分享信息' : '亲友核实'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleEditInfo}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.actionButtonIcon}>✎</Text>
+              <Text style={styles.actionButtonText}>{t('result.historyBanner.secondaryCta.editInfo')}</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -574,6 +744,83 @@ const ResultScreen = ({ navigation, route }) => {
           </Text>
         </View>
       </ScrollView>
+      <Modal
+        animationType="slide"
+        transparent
+        visible={shareModalVisible}
+        onRequestClose={() => setShareModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShareModalVisible(false)}>
+          <View style={styles.shareModalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.shareModalSheet}>
+                <View style={styles.shareModalHandle} />
+                <Text style={styles.shareModalTitle}>请亲友协助核对资料</Text>
+                <Text style={styles.shareModalSubtitle}>
+                  分享下方链接与密码给信任的亲友，链接有效期24小时。亲友可补充或修改入境所需信息，更新后会同步到本入境包。
+                </Text>
+
+                <View style={styles.shareInfoBlock}>
+                  <Text style={styles.shareInfoLabel}>分享链接</Text>
+                  <View style={styles.shareInfoRow}>
+                    <Text style={styles.shareInfoValue} numberOfLines={1}>
+                      {shareSession?.link}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.shareCopyButton}
+                      onPress={() => handleCopy(shareSession?.link || '', 'link')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.shareCopyText}>复制</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {copiedField === 'link' && <Text style={styles.shareCopiedTag}>已复制</Text>}
+                </View>
+
+                <View style={styles.shareInfoBlock}>
+                  <Text style={styles.shareInfoLabel}>访问密码</Text>
+                  <View style={styles.shareInfoRow}>
+                    <Text style={styles.sharePasswordValue}>{shareSession?.password}</Text>
+                    <TouchableOpacity
+                      style={styles.shareCopyButton}
+                      onPress={() => handleCopy(shareSession?.password || '', 'password')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.shareCopyText}>复制</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {copiedField === 'password' && <Text style={styles.shareCopiedTag}>已复制</Text>}
+                </View>
+
+                <Text style={styles.shareExpiryText}>
+                  有效期至：{shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--'}
+                </Text>
+
+                <View style={styles.shareActionsRow}>
+                  <TouchableOpacity
+                    style={styles.sharePrimaryAction}
+                    onPress={() => setShareModalVisible(false)}
+                    activeOpacity={0.9}
+                  >
+                    <Text style={styles.sharePrimaryText}>完成，去粘贴给亲友</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.shareCancelAction}
+                    onPress={handleCancelShare}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.shareCancelText}>取消此次分享</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.shareSecurityNote}>
+                  安全提示：请仅分享给可信赖的家人或朋友，您可随时取消分享以立即终止访问。
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -614,11 +861,18 @@ const styles = StyleSheet.create({
   },
   entryPackCard: {
     backgroundColor: colors.white,
-    borderRadius: 16,
+    borderRadius: 18,
     marginHorizontal: spacing.lg,
     marginTop: spacing.md,
     marginBottom: spacing.md,
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
   },
   entryPackHeader: {
     flexDirection: 'row',
@@ -644,16 +898,154 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
+  shareButtonContainer: {
+    alignItems: 'flex-end',
+  },
   entryPackShareButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: 999,
+    backgroundColor: '#007AFF',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 14,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 2,
   },
   entryPackShareText: {
-    ...typography.caption,
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: '700',
+  },
+  entryPackShareButtonActive: {
+    backgroundColor: '#0056D2',
+    shadowColor: '#0056D2',
+  },
+  shareStatusText: {
+    marginTop: spacing.xs,
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  shareModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+  },
+  shareModalSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  shareModalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    alignSelf: 'center',
+    marginBottom: spacing.md,
+  },
+  shareModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  shareModalSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  shareInfoBlock: {
+    backgroundColor: 'rgba(0,122,255,0.08)',
+    borderRadius: 16,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+  },
+  shareInfoLabel: {
+    fontSize: 13,
+    color: '#0A84FF',
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  shareInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  shareInfoValue: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.text,
+    marginRight: spacing.sm,
+  },
+  sharePasswordValue: {
+    flex: 1,
+    fontSize: 20,
+    color: colors.text,
+    fontWeight: '700',
+    letterSpacing: 2,
+  },
+  shareCopyButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    backgroundColor: '#007AFF',
+  },
+  shareCopyText: {
     color: colors.white,
     fontWeight: '600',
+    fontSize: 13,
+  },
+  shareCopiedTag: {
+    marginTop: spacing.xs,
+    fontSize: 12,
+    color: '#34C759',
+  },
+  shareExpiryText: {
+    marginTop: spacing.lg,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  shareActionsRow: {
+    marginTop: spacing.lg,
+  },
+  sharePrimaryAction: {
+    backgroundColor: '#007AFF',
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  sharePrimaryText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  shareCancelAction: {
+    marginTop: spacing.sm,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  shareCancelText: {
+    color: '#FF3B30',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  shareSecurityNote: {
+    marginTop: spacing.lg,
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   entryPackInfoGrid: {
     padding: spacing.lg,
@@ -693,17 +1085,61 @@ const styles = StyleSheet.create({
   },
   entryPackPrimaryButton: {
     width: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    minHeight: touchable.minHeight + spacing.sm,
+    justifyContent: 'center',
+    ...shadows.button,
   },
-  entryPackActionIcon: {
-    fontSize: 20,
-    marginRight: spacing.xs,
+  entryPackPrimaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  entryPackPrimaryIconWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  entryPackPrimaryIcon: {
+    fontSize: 26,
+  },
+  entryPackPrimaryTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  entryPackPrimaryTitle: {
+    ...typography.button,
+    fontSize: 18,
+    color: colors.white,
+    textAlign: 'center',
+  },
+  entryPackPrimarySubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+  },
+  entryPackPrimaryArrowWrapper: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  entryPackPrimaryArrow: {
+    fontSize: 22,
+    color: colors.white,
   },
   entryPackSecondaryButton: {
     alignSelf: 'center',
     marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
   },
   entryPackSecondaryText: {
-    color: colors.primary,
+    color: '#007AFF',
     fontWeight: '600',
     fontSize: 15,
   },
@@ -846,46 +1282,89 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   digitalInfoCard: {
-    flexDirection: 'row',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: colors.white,
     padding: spacing.lg,
-    borderRadius: 12,
+    borderRadius: 18,
     marginHorizontal: spacing.md,
     marginBottom: spacing.lg,
-    borderWidth: 2,
-    borderColor: '#2196F3',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(13, 71, 161, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  digitalInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
   digitalInfoIcon: {
-    fontSize: 32,
+    fontSize: 28,
     marginRight: spacing.md,
+  },
+  digitalInfoStepBadge: {
+    backgroundColor: '#0D47A1',
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '700',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
   },
   digitalInfoContent: {
     flex: 1,
   },
   digitalInfoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1976D2',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0D47A1',
     marginBottom: spacing.sm,
+  },
+  digitalInfoHighlight: {
+    fontSize: 14,
+    color: '#0D47A1',
+    backgroundColor: 'rgba(33, 150, 243, 0.12)',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+    lineHeight: 20,
   },
   digitalInfoNote: {
     fontSize: 14,
-    color: colors.text,
+    color: colors.textSecondary,
     marginBottom: spacing.xs,
     lineHeight: 20,
   },
   digitalInfoButton: {
-    backgroundColor: '#2196F3',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
-    marginTop: spacing.sm,
-    alignSelf: 'flex-start',
+    backgroundColor: '#007AFF',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 14,
+    marginTop: spacing.lg,
+    alignSelf: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  digitalInfoButtonText: {
+  digitalInfoButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  digitalInfoButtonIcon: {
+    fontSize: 18,
     color: colors.white,
-    fontSize: 14,
+    marginRight: spacing.sm,
+  },
+  digitalInfoButtonLabel: {
+    color: colors.white,
+    fontSize: 16,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   previewText: {
     ...typography.body1,

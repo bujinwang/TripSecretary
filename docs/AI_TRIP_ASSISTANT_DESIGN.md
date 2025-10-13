@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-An intelligent conversational AI assistant that helps travelers with comprehensive trip planning and booking, integrated into the TripSecretary app. The assistant provides personalized recommendations and handles the complete travel workflow from planning to execution.
+An intelligent conversational AI assistant that helps travelers with comprehensive trip planning and booking, integrated into the BorderBuddy app. The assistant provides personalized recommendations and handles the complete travel workflow from planning to execution.
 
 ## 2. Key Features
 
@@ -374,7 +374,7 @@ Store in Trip Plan
 
 ### 7.1 System Prompt Template
 ```
-You are a helpful travel assistant for TripSecretary app.
+You are a helpful travel assistant for BorderBuddy app.
 Your role is to help users plan and book their trips.
 
 Personality:
@@ -625,4 +625,4 @@ userPreferences: {
 
 **Document Version**: 1.0
 **Last Updated**: 2025-10-11
-**Author**: TripSecretary Development Team
+**Author**: BorderBuddy Development Team

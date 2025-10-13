@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This guide walks you through integrating real APIs into your TripSecretary backend.
+This guide walks you through integrating real APIs into your BorderBuddy backend.
 
 **Current Status**: Backend running with mock data  
 **Goal**: Replace mock implementations with real API calls  
@@ -301,7 +301,7 @@ const API_BASE_URL = __DEV__
 ### 7.2 Test on Real Device
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary
+cd /Users/bujin/Documents/Projects/BorderBuddy
 
 # Start Expo
 npm start

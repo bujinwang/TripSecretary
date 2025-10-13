@@ -356,7 +356,7 @@ curl -X POST \
 
 ## App中使用
 
-### 更新 TripSecretary 测试数据
+### 更新 BorderBuddy 测试数据
 
 在 `app/screens/TDACWebViewScreen.js` 中的测试数据：
 

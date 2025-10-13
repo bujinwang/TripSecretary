@@ -5,7 +5,7 @@
 ### 1. 安装依赖
 
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary
+cd /Users/bujin/Documents/Projects/BorderBuddy
 npm install
 ```
 

@@ -20,3 +20,6 @@ export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 // Country-specific screens
 export * from './japan';
 export * from './thailand';
+export * from './malaysia';
+export * from './singapore';
+export * from './taiwan';

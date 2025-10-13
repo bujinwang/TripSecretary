@@ -90,7 +90,7 @@ ResultScreen → 点击"🤖 自助通关机指南" → PIKGuideScreen
 
 **安装方法**:
 ```bash
-cd /Users/bujin/Documents/Projects/TripSecretary
+cd /Users/bujin/Documents/Projects/BorderBuddy
 npm install
 ```
 
@@ -276,4 +276,4 @@ A: 几乎没有。这些屏幕只是展示静态内容，不涉及复杂计算�
 
 **创建日期**: 2025-01-XX  
 **版本**: 1.0  
-**维护者**: TripSecretary Team
+**维护者**: BorderBuddy Team

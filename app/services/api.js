@@ -1,4 +1,4 @@
-// API Client Service for TripSecretary
+// API Client Service for BorderBuddy
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = __DEV__ 

@@ -14,7 +14,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tripsecretary.chujingtong",
+      "bundleIdentifier": "com.borderbuddy.chujingtong",
       "infoPlist": {
         "NSCameraUsageDescription": "需要使用相机扫描您的护照信息",
         "NSPhotoLibraryUsageDescription": "需要访问相册以选择护照照片",
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#07C160"
       },
-      "package": "com.tripsecretary.chujingtong",
+      "package": "com.borderbuddy.chujingtong",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

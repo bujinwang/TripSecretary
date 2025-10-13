@@ -1,4 +1,4 @@
-// QwenService - Alibaba DashScope integration for the TripSecretary AI assistant
+// QwenService - Alibaba DashScope integration for the BorderBuddy AI assistant
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DEFAULT_MODEL = 'qwen-turbo';

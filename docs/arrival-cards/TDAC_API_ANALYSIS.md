@@ -126,7 +126,7 @@ const requestPayload = {
 const headers = {
   'Content-Type': 'application/json',
   'Accept': 'application/json',
-  'User-Agent': 'TripSecretary/1.0',
+  'User-Agent': 'BorderBuddy/1.0',
   'Origin': 'https://tdac.immigration.go.th',
   'Referer': 'https://tdac.immigration.go.th/arrival-card/',
   // 可能需要的其他headers
@@ -162,7 +162,7 @@ class TDACService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'TripSecretary/1.0',
+          'User-Agent': 'BorderBuddy/1.0',
           'cf-token': this.cloudflareToken, // Cloudflare验证token
         },
         body: JSON.stringify(payload)

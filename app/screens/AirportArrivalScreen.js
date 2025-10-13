@@ -65,7 +65,7 @@ const AirportArrivalScreen = ({ navigation, route }) => {
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>欢迎来到{destination?.name || '目的地'}</Text>
           <Text style={styles.welcomeSubtitle}>
-            TripSecretary将一步步指导您完成入境手续
+            BorderBuddy将一步步指导您完成入境手续
           </Text>
         </View>
 
