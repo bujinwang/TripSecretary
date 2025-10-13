@@ -380,12 +380,16 @@
       },
       "status": {
         "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Sie können jetzt Ihre Reiseinformationen vervollständigen."
+          "title": "Großartig! Sie können fortfahren.",
+          "subtitle": "Als Nächstes bestätigen wir Ihre Reiseinformationen."
         },
         "warning": {
-          "title": "Bitte überprüfen Sie jeden Punkt",
-          "subtitle": "Stellen Sie sicher, dass alle Anforderungen erfüllt sind, bevor Sie fortfahren."
+          "title": "Überprüfen Sie jedes Element",
+          "subtitle": "Vervollständigen Sie die Voraussetzungen, bevor Sie fortfahren."
+        },
+        "info": {
+          "title": "Jederzeit beginnen",
+          "subtitle": "Wir unterstützen schrittweise Vervollständigung"
         }
       },
       "continueButton": "Weiter zu Reiseinformationen"

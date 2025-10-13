@@ -32,6 +32,7 @@ import {
   TDACAPIScreen,
   TDACSelectionScreen,
   TDACHybridScreen,
+  ThailandTravelInfoScreen,
   // Malaysia screens
   MalaysiaInfoScreen,
   MalaysiaRequirementsScreen,
@@ -470,6 +471,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name="ThailandRequirements"
           component={ThailandRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ThailandTravelInfo"
+          component={ThailandTravelInfoScreen}
           options={{
             headerShown: false,
           }}

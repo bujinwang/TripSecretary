@@ -245,11 +245,6 @@
           "subtitle": "Nous supportons l'achèvement progressif"
         }
       },
-        "warning": {
-          "title": "Veuillez vérifier chaque élément",
-          "subtitle": "Assurez-vous que toutes les conditions sont remplies avant de continuer."
-        }
-      },
       "continueButton": "Continuer vers les procédures d'entrée"
     },
     "procedures": {

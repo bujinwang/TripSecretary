@@ -290,6 +290,14 @@
         }
       },
       "status": {
+        "success": {
+          "title": "太好了！您可以继续",
+          "subtitle": "接下来我们将确认您的旅行信息。"
+        },
+        "warning": {
+          "title": "请检查每个清单项目",
+          "subtitle": "在继续之前完成先决条件。"
+        },
         "info": {
           "title": "随时开始填写",
           "subtitle": "我们支持递进式的完成清单"

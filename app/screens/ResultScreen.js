@@ -12,6 +12,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Clipboard,
+  Animated,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
@@ -25,13 +26,17 @@ const ResultScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const routeParams = route.params || {};
   const { generationId, fromHistory = false } = routeParams;
-  
+
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState(null);
   const [shareSession, setShareSession] = useState(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+
+  // Animation values
+  const pulseAnimation = useMemo(() => new Animated.Value(1), []);
+  const fadeAnimation = useMemo(() => new Animated.Value(0), []);
 
   const currentPassport = resultData?.passport || routeParams.passport;
   const currentDestination = resultData?.destination || routeParams.destination;
@@ -55,6 +60,37 @@ const ResultScreen = ({ navigation, route }) => {
       loadGenerationResult();
     }
   }, [generationId]);
+
+  // Animation setup
+  useEffect(() => {
+    // Fade in animation
+    Animated.timing(fadeAnimation, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
+    // Pulse animation for the ring
+    const pulseAnimationLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnimation, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseAnimationLoop.start();
+
+    return () => {
+      pulseAnimationLoop.stop();
+    };
+  }, [pulseAnimation, fadeAnimation]);
 
   const loadGenerationResult = async () => {
     try {
@@ -422,14 +458,44 @@ const ResultScreen = ({ navigation, route }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Success Header - Simplified */}
-        <View style={styles.headerContainer}>
-          <Text style={styles.successIcon}>✅</Text>
-          <Text style={styles.title}>
-            {t('result.title', { flag: destination?.flag || '', country: destination?.name || '' })}
-          </Text>
-          <Text style={styles.subtitle}>{t('result.subtitle')}</Text>
-        </View>
+        {/* Success Header - Enhanced Design */}
+        <Animated.View style={[styles.successCard, { opacity: fadeAnimation }]}>
+          <View style={styles.successGradient}>
+            <View style={styles.successIconContainer}>
+              <View style={styles.successIconBackground}>
+                <Text style={styles.successIcon}>✅</Text>
+              </View>
+              <Animated.View
+                style={[
+                  styles.successPulseRing,
+                  {
+                    transform: [{ scale: pulseAnimation }],
+                  },
+                ]}
+              />
+            </View>
+
+            <View style={styles.successContent}>
+              <View style={styles.successTitleRow}>
+                <Text style={styles.successFlag}>{destination?.flag || '🇨🇳'}</Text>
+                <Text style={styles.successTitle}>
+                  {t('result.title', { flag: '', country: destination?.name || '' })}
+                </Text>
+              </View>
+
+              <Text style={styles.successSubtitle}>{t('result.subtitle')}</Text>
+
+              <View style={styles.successDecorativeElements}>
+                <View style={styles.successDecorativeLine} />
+                <View style={styles.successDecorativeDots}>
+                  <View style={styles.successDot} />
+                  <View style={styles.successDot} />
+                  <View style={styles.successDot} />
+                </View>
+              </View>
+            </View>
+          </View>
+        </Animated.View>
 
         {isHistoryItem && (
           <TouchableOpacity
@@ -836,28 +902,99 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing.xl,
   },
-  headerContainer: {
+  // Enhanced Success Header Styles
+  successCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  successGradient: {
+    background: 'linear-gradient(135deg, #07C160 0%, #06AD56 100%)',
+    borderRadius: 24,
+    padding: spacing.xl,
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.white,
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#07C160',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  successIconContainer: {
+    position: 'relative',
+    marginBottom: spacing.md,
+  },
+  successIconBackground: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   successIcon: {
-    fontSize: 40,
-    marginBottom: spacing.xs,
+    fontSize: 36,
+    color: colors.white,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
+  successPulseRing: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    top: -10,
+    left: -10,
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
+  successContent: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  successTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  successFlag: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.white,
     textAlign: 'center',
+    flex: 1,
+  },
+  successSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    lineHeight: 22,
+  },
+  successDecorativeElements: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  successDecorativeLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: spacing.sm,
+  },
+  successDecorativeDots: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  successDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   entryPackCard: {
     backgroundColor: colors.white,

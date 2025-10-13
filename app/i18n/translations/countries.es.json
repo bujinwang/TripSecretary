@@ -390,12 +390,16 @@
       },
       "status": {
         "success": {
-          "title": "¡Está listo!",
-          "subtitle": "Ahora puede completar su información de viaje."
+          "title": "¡Perfecto! Puede continuar.",
+          "subtitle": "A continuación confirmaremos su información de viaje."
         },
         "warning": {
-          "title": "Por favor revise cada elemento",
-          "subtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de continuar."
+          "title": "Revise cada elemento de la lista",
+          "subtitle": "Complete los requisitos previos antes de continuar."
+        },
+        "info": {
+          "title": "Comience cuando quiera",
+          "subtitle": "Apoyamos la finalización progresiva"
         }
       },
       "continueButton": "Continuar a información de viaje"

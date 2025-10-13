@@ -15,6 +15,7 @@ const Input = ({
   placeholder,
   error,
   errorMessage,
+  helpText,
   secureTextEntry = false,
   keyboardType = 'default',
   multiline = false,
@@ -48,6 +49,9 @@ const Input = ({
       
       {error && errorMessage && (
         <Text style={styles.errorText}>{errorMessage}</Text>
+      )}
+      {helpText && !error && (
+        <Text style={styles.helpText}>{helpText}</Text>
       )}
     </View>
   );
@@ -86,6 +90,11 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.caption,
     color: colors.error,
+    marginTop: spacing.xs,
+  },
+  helpText: {
+    ...typography.caption,
+    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
 });
