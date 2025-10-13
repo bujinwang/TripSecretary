@@ -118,6 +118,11 @@
       "introTitle": "确认您满足这些签证申请要求",
       "introSubtitle": "申请日本旅游签证前，请确保准备好所有材料",
       "items": {
+        "validVisa": {
+          "title": "有效签证",
+          "description": "已获得日本旅游签证",
+          "details": "中国公民赴日本旅游需提前申请签证，确认签证在有效期内且入境次数充足。"
+        },
         "validPassport": {
           "title": "有效护照",
           "description": "护照有效期至少6个月，有空白签证页",

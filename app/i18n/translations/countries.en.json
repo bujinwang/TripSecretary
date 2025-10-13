@@ -446,6 +446,11 @@
       "introTitle": "Confirm you have all visa application materials",
       "introSubtitle": "Ensure all materials are prepared before applying for Japan tourist visa",
       "items": {
+        "validVisa": {
+          "title": "Valid Visa",
+          "description": "Approved Japan tourist visa",
+          "details": "Chinese citizens must apply for a visa in advance. Confirm your visa is valid and has sufficient entries remaining."
+        },
         "validPassport": {
           "title": "Valid passport",
           "description": "Passport valid for at least 6 months with blank visa pages",

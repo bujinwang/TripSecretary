@@ -16,6 +16,7 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
   const { t } = useLocale();
   const [requirements, setRequirements] = useState({
+    validVisa: false,
     validPassport: false,
     returnTicket: false,
     sufficientFunds: false,
@@ -38,6 +39,12 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
   };
 
   const requirementItems = useMemo(() => [
+    {
+      key: 'validVisa',
+      title: t('japan.requirements.items.validVisa.title'),
+      description: t('japan.requirements.items.validVisa.description'),
+      details: t('japan.requirements.items.validVisa.details')
+    },
     {
       key: 'validPassport',
       title: t('japan.requirements.items.validPassport.title'),

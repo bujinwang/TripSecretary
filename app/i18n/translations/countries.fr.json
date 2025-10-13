@@ -2,434 +2,165 @@
   "malaysia": {
     "info": {
       "headerTitle": "Informations d'entrée en Malaisie",
-      "title": "Entrée sans visa en Malaisie et MDAC",
-      "subtitle": "Titulaires de passeport chinois : sans visa pendant 30 jours depuis le 1er décembre 2023",
+      "title": "Guide d'entrée en Malaisie",
+      "subtitle": "Sans visa pendant 30 jours",
       "sections": {
         "visa": {
-          "title": "✓ Politique de visa",
+          "title": "✓ Politique sans visa",
           "items": [
-            "Depuis le 1er décembre 2023, les titulaires de passeport chinois peuvent entrer en Malaisie sans visa pour une durée maximale de 30 jours.",
-            "• Valable pour le tourisme, les visites familiales, les affaires et autres fins similaires",
-            "• Le passeport doit être valide pendant au moins 6 mois",
-            "• Tous les voyageurs doivent remplir le MDAC (carte d'arrivée numérique de Malaisie) avant l'entrée - entièrement gratuit"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Conditions d'entrée",
-          "items": [
-            "• Passeport valide pendant au moins 6 mois avec pages vierges",
-            "• Remplir le MDAC dans les 3 jours avant l'arrivée (3 jours calendaires avant l'entrée)",
-            "• Preuve de billet de retour ou de voyage ultérieur",
-            "• Confirmation d'hébergement (réservation d'hôtel) ou contact en Malaisie",
-            "• Preuve de fonds de voyage suffisants"
+            "Depuis le 1er décembre 2023, sans visa pendant 30 jours",
+            "• MDAC doit être soumis"
           ]
         },
         "onsite": {
-          "title": "⚠️ Rappels importants",
+          "title": "⚠️ Informations d'entrée",
           "items": [
-            "• Doit présenter le code PIN MDAC ou la capture d'écran de l'email de confirmation à l'entrée",
-            "• Articles interdits : viande, alcool, tabac et autres produits restreints",
-            "• Recommandé de réserver vols et hôtels à l'avance, préparer de l'argent pour preuve de fonds",
-            "• Notez la fenêtre de soumission MDAC, les soumissions anticipées seront rejetées par le système"
+            "• Limite de temps stricte",
+            "• Code PIN facile à perdre",
+            "• Haute précision requise"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy simplifie tout",
+          "title": "✨ BorderBuddy vous facilite",
           "items": [
-            "• Remplissage en un clic : Complète automatiquement votre MDAC sans saisie manuelle",
-            "• Rappel intelligent : Notification automatique dans la fenêtre de 3 jours",
-            "• Sans stress : Ne vous inquiétez jamais du moment de postuler - nous gérons le timing",
-            "• Préparation progressive : Préparez les documents à l'avance, le système déclenche des rappels une fois votre voyage confirmé"
+            "• Zéro anxiété",
+            "• Gestion du PIN"
           ]
         }
       },
-      "continueButton": "Compris, continuer vers la checklist"
-    },
-    "requirements": {
-      "headerTitle": "Checklist MDAC Malaisie",
-      "introTitle": "Confirmez que vous avez tout préparé",
-      "introSubtitle": "Ces éléments sont requis pour soumettre la carte d'arrivée numérique de Malaisie",
-      "items": {
-        "validPassport": {
-          "title": "Validité du passeport",
-          "description": "Passeport valide au moins 6 mois avec pages vierges",
-          "details": "L'immigration malaisienne exige que votre passeport reste valide ≥6 mois après votre date d'entrée. Renouvelez avant de voyager si nécessaire."
-        },
-        "submissionWindow": {
-          "title": "Fenêtre de 3 jours",
-          "description": "Le MDAC accepte uniquement les soumissions dans les 3 jours calendaires avant l'arrivée",
-          "details": "Comptez les jours calendaires selon l'heure de Malaisie (GMT+8). Si c'est trop tôt, le système rejettera la demande—programmez un rappel pour soumettre une fois dans la fenêtre."
-        },
-        "contactableEmail": {
-          "title": "Boîte email accessible",
-          "description": "Capable de recevoir l'email de confirmation et le code PIN MDAC",
-          "details": "Utilisez un email auquel vous pouvez vous connecter à l'étranger. Vérifiez les spams pour les messages de imigresen.gov.my et gardez le code PIN à portée de main pour l'arrivée."
-        },
-        "travelDetails": {
-          "title": "Détails de vol et séjour",
-          "description": "Ayez votre numéro de vol, port d'arrivée, hébergement et téléphone prêts",
-          "details": "Le formulaire demande la compagnie aérienne, le numéro de vol, l'aéroport d'arrivée, l'adresse en Malaisie, le numéro de téléphone (avec indicatif pays) et le but de la visite."
-        },
-        "captchaReady": {
-          "title": "Captcha prêt",
-          "description": "Capable de taper les lettres/chiffres affichés avant de soumettre",
-          "details": "Le MDAC utilise un CAPTCHA alphanumérique. Si le code n'est pas clair, vous pouvez l'actualiser—terminez la soumission dans les 5 minutes pour éviter l'expiration."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Parfait ! Vous pouvez continuer.",
-          "subtitle": "Ensuite, nous confirmerons vos informations de voyage."
-        },
-        "warning": {
-          "title": "Veuillez vérifier chaque élément",
-          "subtitle": "Assurez-vous de remplir les prérequis MDAC avant de continuer."
-        }
-      },
-      "continueButton": "Continuer vers les informations de voyage"
+      "continueButton": "Continuer"
     }
   },
   "singapore": {
     "info": {
       "headerTitle": "Informations d'entrée à Singapour",
-      "title": "Entrée sans visa à Singapour et SG Arrival Card",
-      "subtitle": "Titulaires de passeport chinois : sans visa pendant 30 jours depuis le 9 février 2024",
+      "title": "Guide d'entrée à Singapour",
+      "subtitle": "Sans visa pendant 30 jours",
       "sections": {
         "visa": {
-          "title": "✓ Politique de visa",
+          "title": "✓ Bonne nouvelle ! Politique sans visa",
           "items": [
-            "Depuis le 9 février 2024, les titulaires de passeport ordinaire chinois peuvent entrer à Singapour sans visa pour une durée maximale de 30 jours.",
-            "• Valable pour le tourisme, les visites familiales, les affaires et autres affaires privées",
-            "• Le travail ou les séjours dépassant 30 jours nécessitent un visa à l'avance",
-            "• Les titulaires de passeport officiel bénéficient également de l'entrée sans visa"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Conditions d'entrée",
-          "items": [
-            "• Passeport valide pendant au moins 6 mois",
-            "• Remplir la SG Arrival Card dans les 3 jours avant l'arrivée",
-            "• Preuve de billet de retour ou de voyage ultérieur",
-            "• Fonds suffisants pour le séjour (espèces, cartes de crédit, etc.)",
-            "• Confirmation d'hébergement ou informations de contact local"
+            "Depuis le 9 février 2024, sans visa pendant 30 jours",
+            "• Aucune demande de visa nécessaire",
+            "• SG Arrival Card doit être soumise"
           ]
         },
         "onsite": {
-          "title": "⚠️ Rappels importants",
+          "title": "⚠️ Informations d'entrée",
           "items": [
-            "• Doit remplir la SG Arrival Card dans les 3 jours avant l'arrivée avec des informations précises",
-            "• Articles interdits : drogues, produits de la faune protégée",
-            "• Attention aux médicaments, alcool, espèces ; ne jamais transporter d'objets pour des inconnus",
-            "• Restez calme lors de l'inspection douanière, ne jamais offrir de pots-de-vin"
+            "• Limite de temps stricte",
+            "• Code de confirmation facile à perdre",
+            "• Contrôles d'immigration stricts"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy simplifie tout",
+          "title": "✨ BorderBuddy vous facilite la tâche",
           "items": [
-            "• Remplissage en un clic : Complète automatiquement votre SG Arrival Card sans saisie manuelle",
-            "• Rappel intelligent : Notification automatique dans la fenêtre de 3 jours",
-            "• Sans stress : Ne vous inquiétez jamais du moment de postuler - nous gérons le timing",
-            "• Préparation progressive : Préparez les documents à l'avance, le système déclenche des rappels une fois votre voyage confirmé"
+            "• Zéro anxiété",
+            "• Zéro erreur",
+            "• Gestion de confirmation"
           ]
         }
       },
-      "continueButton": "Compris, continuer vers la checklist"
-    },
-    "requirements": {
-      "headerTitle": "Checklist SG Arrival Card",
-      "introTitle": "Confirmez que vous remplissez ces conditions",
-      "introSubtitle": "Singapour accepte uniquement les arrivées avec déclarations complétées dans la fenêtre de 3 jours",
-      "items": {
-        "validPassport": {
-          "title": "Validité du passeport",
-          "description": "Le passeport doit être valide 6+ mois après l'arrivée",
-          "details": "Singapour recommande au moins 6 mois de validité. Renouvelez ou remplacez les passeports endommagés avant le voyage."
-        },
-        "submissionWindow": {
-          "title": "Fenêtre de soumission de 3 jours",
-          "description": "Le formulaire s'ouvre 3 jours avant l'arrivée (heure de Singapour, GMT+8)",
-          "details": "Soumettre plus tôt que la fenêtre entraînera une erreur. Programmez un rappel pour compléter la SG Arrival Card une fois la fenêtre atteinte."
-        },
-        "travelDetails": {
-          "title": "Informations de voyage et séjour",
-          "description": "Vol, terminal/frontière d'arrivée, logement/contact, but de la visite",
-          "details": "Préparez vos détails aériens/ferry/bus, adresse de séjour et numéro de contact au format international. Les voyageurs d'affaires doivent lister les infos du sponsor local si disponibles."
-        },
-        "familyGroups": {
-          "title": "Plan groupe/famille",
-          "description": "Décidez si vous soumettrez individuellement ou via soumission familiale",
-          "details": "La soumission de groupe prend en charge jusqu'à 10 voyageurs. Ayez les détails de passeport de tous prêts et confirmez que les mineurs sont inclus dans le formulaire d'un tuteur."
-        },
-        "sgArrivalHistory": {
-          "title": "Soumissions précédentes",
-          "description": "Rappelez-vous que les SG Arrival Cards expirent après une seule entrée",
-          "details": "Si vous entrez à nouveau dans une courte période, soumettez une nouvelle déclaration avec des détails de voyage mis à jour. Les anciennes entrées ne peuvent pas être réutilisées."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Vous êtes prêt !",
-          "subtitle": "Ensuite, nous préremplirons vos détails de voyage pour la SG Arrival Card."
-        },
-        "warning": {
-          "title": "Vérifiez chaque élément de la checklist",
-          "subtitle": "Complétez les prérequis avant de continuer."
-        }
-      },
-      "continueButton": "Continuer vers les informations de voyage"
+      "continueButton": "Continuer"
     }
   },
   "hongkong": {
     "info": {
       "headerTitle": "Informations d'entrée à Hong Kong",
-      "title": "Entrée sans visa à Hong Kong",
-      "subtitle": "Titulaires de passeport chinois : sans visa jusqu'à 7 jours",
+      "title": "Guide d'entrée à Hong Kong",
+      "subtitle": "Sans visa pendant 7 jours",
       "sections": {
         "visa": {
-          "title": "✓ Politique de visa",
+          "title": "✓ Politique sans visa",
           "items": [
-            "Les titulaires de passeport chinois peuvent entrer à Hong Kong sans visa pour le tourisme, les affaires et les visites familiales jusqu'à 7 jours.",
-            "• Les demandes de prolongation doivent être soumises au Département de l'immigration de Hong Kong si nécessaire",
-            "• Aucune pré-inscription n'est requise pour l'entrée sans visa",
-            "• Assurez-vous d'avoir des arrangements de voyage ultérieurs valides"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Conditions d'entrée",
-          "items": [
-            "• Passeport valide avec au moins 1 mois de validité au-delà de votre séjour prévu",
-            "• Billet de retour ou de voyage ultérieur",
-            "• Preuve d'hébergement (réservation d'hôtel ou contact d'hôte)",
-            "• Fonds suffisants pour votre séjour",
-            "• Remplir la déclaration de santé si nécessaire"
+            "Sans visa pendant 7 jours",
+            "• Pour tourisme et affaires",
+            "• Extensions disponibles"
           ]
         },
         "onsite": {
-          "title": "⚠️ Rappels importants",
+          "title": "⚠️ Informations d'entrée",
           "items": [
-            "• Ayez votre billet de retour et confirmation de réservation d'hôtel prêts pour l'inspection d'immigration",
-            "• Articles interdits : drogues, armes et produits d'espèces menacées",
-            "• Soyez prêt à montrer une preuve de fonds suffisants si demandé",
-            "• Respectez toutes les instructions des agents d'immigration"
+            "• Séjour court de 7 jours",
+            "• Contrôles stricts",
+            "• Documentation complète"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy facilite",
+          "items": [
+            "• Zéro anxiété",
+            "• Liste de documents"
           ]
         }
       },
-      "continueButton": "Compris, continuer vers la checklist"
-    },
-    "requirements": {
-      "headerTitle": "Checklist d'entrée à Hong Kong",
-      "introTitle": "Confirmez que vous avez tout préparé",
-      "introSubtitle": "Assurez-vous de remplir toutes les conditions avant de voyager à Hong Kong",
-      "items": {
-        "validPassport": {
-          "title": "Validité du passeport",
-          "description": "Le passeport doit être valide au moins 1 mois au-delà de votre séjour",
-          "details": "Hong Kong exige que votre passeport soit valide au-delà de votre séjour prévu. Vérifiez la date d'expiration et renouvelez si nécessaire."
-        },
-        "returnTicket": {
-          "title": "Billet de retour ou ultérieur",
-          "description": "Réservation confirmée pour le départ de Hong Kong",
-          "details": "L'immigration peut demander à voir une preuve de votre vol de retour ou voyage ultérieur. Ayez votre e-ticket ou confirmation de réservation prêt."
-        },
-        "accommodation": {
-          "title": "Preuve d'hébergement",
-          "description": "Réservation d'hôtel ou informations de contact d'hôte",
-          "details": "Apportez une confirmation de réservation d'hôtel ou les coordonnées de votre hôte à Hong Kong, y compris l'adresse et le numéro de téléphone."
-        },
-        "sufficientFunds": {
-          "title": "Fonds suffisants",
-          "description": "Espèces, cartes de crédit ou relevés bancaires",
-          "details": "Vous devrez peut-être démontrer que vous avez assez d'argent pour votre séjour. Apportez des espèces, cartes de crédit ou relevés bancaires récents."
-        },
-        "healthDeclaration": {
-          "title": "Déclaration de santé",
-          "description": "À remplir si requis par les réglementations sanitaires actuelles",
-          "details": "Vérifiez si des déclarations de santé ou documents liés au COVID sont nécessaires. Remplissez tous les formulaires requis avant l'arrivée."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Vous êtes prêt !",
-          "subtitle": "Ensuite, nous collecterons vos détails de voyage."
-        },
-        "warning": {
-          "title": "Vérifiez chaque élément",
-          "subtitle": "Assurez-vous de remplir toutes les conditions avant de continuer."
-        }
-      },
-      "continueButton": "Continuer vers les informations de voyage"
+      "continueButton": "Continuer"
     }
   },
   "taiwan": {
     "info": {
       "headerTitle": "Informations d'entrée à Taïwan",
-      "title": "Permis d'entrée à Taïwan et carte d'arrivée en ligne",
-      "subtitle": "Les titulaires de passeport chinois continental nécessitent un permis d'entrée",
+      "title": "Guide d'entrée à Taïwan",
+      "subtitle": "Permis d'entrée requis",
       "sections": {
         "visa": {
-          "title": "✓ Politique de permis d'entrée",
+          "title": "✓ Politique de permis",
           "items": [
-            "Les titulaires de passeport chinois continental doivent demander un permis d'entrée (入台证) avant de voyager à Taïwan.",
-            "• Permis touristique individuel (自由行) disponible pour certaines villes",
-            "• Permis de groupe touristique disponibles via agences de voyage",
-            "• Les permis d'affaires et de visite familiale nécessitent un parrainage",
-            "• Délai de traitement généralement 3-7 jours ouvrables"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Conditions d'entrée",
-          "items": [
-            "• Passeport valide avec au moins 6 mois de validité",
-            "• Permis d'entrée valide (入台证)",
-            "• Remplir la carte d'arrivée en ligne avant l'arrivée",
-            "• Billet d'avion de retour",
-            "• Confirmation d'hébergement ou informations de contact d'hôte"
+            "Permis d'entrée requis",
+            "• Demande en ligne, 5 jours ouvrables",
+            "• Carte d'arrivée en ligne requise"
           ]
         },
         "onsite": {
-          "title": "⚠️ Rappels importants",
+          "title": "⚠️ Informations d'entrée",
           "items": [
-            "• Remplir la carte d'arrivée en ligne dans les 3 jours avant l'arrivée",
-            "• Ayez votre passeport et votre permis d'entrée prêts pour l'immigration",
-            "• Gardez l'email de confirmation de la carte d'arrivée en ligne",
-            "• Déclarez tous les articles honnêtement à la douane"
+            "• Vérifier validité du permis",
+            "• Vérification email requise",
+            "• Préparation complète"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy simplifie tout",
+          "title": "✨ BorderBuddy facilite",
           "items": [
-            "• Remplissage en un clic : Complète automatiquement votre carte d'arrivée en ligne sans saisie manuelle",
-            "• Rappel intelligent : Notification automatique une fois votre voyage confirmé",
-            "• Sans stress : Ne vous inquiétez jamais du moment de postuler - nous gérons le timing",
-            "• Préparation progressive : Préparez les documents à l'avance, le système déclenche des rappels une fois votre voyage confirmé"
+            "• Zéro anxiété",
+            "• Liste de documents"
           ]
         }
       },
-      "continueButton": "Compris, continuer vers la checklist"
-    },
-    "requirements": {
-      "headerTitle": "Checklist carte d'arrivée en ligne Taïwan",
-      "introTitle": "Confirmez que vous remplissez ces conditions",
-      "introSubtitle": "Requis pour tous les voyageurs entrant à Taïwan",
-      "items": {
-        "validPermit": {
-          "title": "Permis d'entrée valide",
-          "description": "Ayez votre permis d'entrée approuvé (入台证)",
-          "details": "Les voyageurs chinois continentaux doivent avoir un permis d'entrée valide. Assurez-vous qu'il couvre toute votre période de séjour."
-        },
-        "validPassport": {
-          "title": "Validité du passeport",
-          "description": "Passeport valide pendant au moins 6 mois",
-          "details": "Taïwan exige une validité de passeport de 6 mois au-delà de la date d'entrée. Vérifiez et renouvelez si nécessaire."
-        },
-        "emailVerification": {
-          "title": "Vérification par email",
-          "description": "Accès à l'email pour recevoir le code de vérification",
-          "details": "La carte d'arrivée en ligne nécessite une vérification par email. Utilisez un email auquel vous pouvez accéder pour recevoir et entrer le code de vérification."
-        },
-        "travelDetails": {
-          "title": "Informations de voyage prêtes",
-          "description": "Détails de vol, hébergement et informations de contact",
-          "details": "Ayez votre numéro de vol, date/heure d'arrivée, adresse à Taïwan et numéro de téléphone de contact local prêts."
-        },
-        "healthHistory": {
-          "title": "Historique de voyage de 14 jours",
-          "description": "Sachez quels pays vous avez visités au cours des 14 derniers jours",
-          "details": "Le formulaire demande votre historique de voyage pour les 14 jours avant d'arriver à Taïwan. Soyez prêt à lister tous les pays visités."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Vous êtes prêt !",
-          "subtitle": "Ensuite, nous vous aiderons à compléter la carte d'arrivée en ligne."
-        },
-        "warning": {
-          "title": "Vérifiez chaque élément de la checklist",
-          "subtitle": "Assurez-vous de remplir toutes les conditions avant de continuer."
-        }
-      },
-      "continueButton": "Continuer vers les informations de voyage"
+      "continueButton": "Continuer"
     }
   },
   "thailand": {
     "info": {
       "headerTitle": "Informations d'entrée en Thaïlande",
-      "title": "Informations de voyage sans visa en Thaïlande",
-      "subtitle": "Pour les titulaires de passeport chinois (politique 2024)",
+      "title": "Guide d'entrée en Thaïlande",
+      "subtitle": "Sans visa pendant 60 jours",
       "sections": {
         "visa": {
-          "title": "✓ Politique de visa",
+          "title": "✓ Politique sans visa prolongée",
           "items": [
-            "Depuis le 1er mars 2024, la Chine et la Thaïlande ont une exemption de visa mutuelle. Les titulaires de passeport ordinaire chinois peuvent entrer en Thaïlande sans visa pour de courts séjours.",
-            "• Maximum 30 jours par visite",
-            "• Maximum 90 jours cumulés dans les 180 jours",
-            "• Pour le tourisme, les visites familiales, les affaires à court terme uniquement (pas pour le travail)"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Conditions d'entrée",
-          "items": [
-            "• Passeport valide pendant au moins 6 mois",
-            "• Billet d'avion de retour ou preuve de voyage ultérieur",
-            "• Confirmation d'hébergement (hôtel ou adresse en Thaïlande)",
-            "• Fonds suffisants (espèces, cartes de crédit - au moins 10 000 THB par personne ou 20 000 THB par famille)",
-            "• Aucun TDAC requis pour l'entrée sans visa (uniquement pour visa à l'arrivée)"
+            "Depuis juillet 2024, prolongée à 60 jours",
+            "• Extension de 30 jours disponible"
           ]
         },
         "onsite": {
-          "title": "⚠️ Rappels importants",
+          "title": "⚠️ Informations d'entrée",
           "items": [
-            "• L'immigration peut demander à voir une preuve de fonds, billet de retour et hébergement",
-            "• Articles interdits : drogues, armes, produits contrefaits, produits d'espèces menacées",
-            "• Respectez la culture et les coutumes thaïlandaises",
-            "• Gardez toujours votre passeport sur vous"
+            "• Preuve de fonds requise",
+            "• Billet de retour obligatoire",
+            "• Informations d'hébergement vérifiables"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy facilite",
+          "items": [
+            "• Zéro anxiété",
+            "• Assistant de communication"
           ]
         }
       },
-      "continueButton": "Compris, continuer vers la checklist"
-    },
-    "requirements": {
-      "headerTitle": "Checklist d'entrée en Thaïlande",
-      "introTitle": "Confirmez que vous remplissez ces conditions",
-      "introSubtitle": "Conditions d'entrée sans visa pour les titulaires de passeport chinois",
-      "items": {
-        "validPassport": {
-          "title": "Validité du passeport",
-          "description": "Passeport valide pendant au moins 6 mois",
-          "details": "La Thaïlande exige une validité de passeport de 6 mois à partir de la date d'entrée. Renouvelez avant le voyage si nécessaire."
-        },
-        "returnTicket": {
-          "title": "Billet de retour ou ultérieur",
-          "description": "Preuve de départ de Thaïlande",
-          "details": "Ayez votre réservation de vol de retour ou preuve de voyage ultérieur prête. L'immigration peut demander à vérifier vos plans de départ."
-        },
-        "accommodation": {
-          "title": "Confirmation d'hébergement",
-          "description": "Réservation d'hôtel ou adresse en Thaïlande",
-          "details": "Apportez une confirmation de réservation d'hôtel ou ayez l'adresse où vous séjournerez, y compris le numéro de téléphone de contact."
-        },
-        "sufficientFunds": {
-          "title": "Fonds suffisants",
-          "description": "10 000 THB par personne ou 20 000 THB par famille",
-          "details": "Une preuve de fonds suffisants peut être demandée. Portez des espèces, montrez des cartes de crédit ou ayez des relevés bancaires disponibles."
-        },
-        "stayDuration": {
-          "title": "Limites de durée de séjour",
-          "description": "Maximum 30 jours par visite, 90 jours par 180 jours",
-          "details": "Assurez-vous que votre séjour prévu ne dépasse pas 30 jours. Si vous avez été en Thaïlande récemment, vérifiez votre séjour cumulé dans les 180 derniers jours."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Vous êtes prêt !",
-          "subtitle": "Ensuite, nous collecterons vos détails de voyage."
-        },
-        "warning": {
-          "title": "Vérifiez chaque élément de la checklist",
-          "subtitle": "Assurez-vous de remplir toutes les conditions avant de continuer."
-        }
-      },
-      "continueButton": "Continuer vers les informations de voyage"
+      "continueButton": "Continuer"
     }
   },
   "japan": {
@@ -474,6 +205,11 @@
       "introTitle": "Confirmez que vous remplissez ces conditions",
       "introSubtitle": "Assurez-vous que toutes les conditions sont remplies avant de voyager au Japon",
       "items": {
+        "validVisa": {
+          "title": "Visa valide",
+          "description": "Visa touristique japonais approuvé",
+          "details": "Les citoyens chinois doivent demander un visa à l'avance. Confirmez que votre visa est valide avec suffisamment d'entrées."
+        },
         "validPassport": {
           "title": "Passeport valide",
           "description": "Passeport valide pendant au moins 6 mois",
@@ -744,170 +480,6 @@
         }
       },
       "continueButton": "Continuer vers les informations de voyage"
-    }
-  },
-  "singapore": {
-    "info": {
-      "headerTitle": "Informations d'entrée à Singapour",
-      "title": "Guide d'entrée à Singapour",
-      "subtitle": "Sans visa pendant 30 jours",
-      "sections": {
-        "visa": {
-          "title": "✓ Bonne nouvelle ! Politique sans visa",
-          "items": [
-            "Depuis le 9 février 2024, sans visa pendant 30 jours",
-            "• Aucune demande de visa nécessaire",
-            "• SG Arrival Card doit être soumise"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Informations d'entrée",
-          "items": [
-            "• Limite de temps stricte",
-            "• Code de confirmation facile à perdre",
-            "• Contrôles d'immigration stricts"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy vous facilite la tâche",
-          "items": [
-            "• Zéro anxiété",
-            "• Zéro erreur",
-            "• Gestion de confirmation"
-          ]
-        }
-      },
-      "continueButton": "Continuer"
-    }
-  },
-  "malaysia": {
-    "info": {
-      "headerTitle": "Informations d'entrée en Malaisie",
-      "title": "Guide d'entrée en Malaisie",
-      "subtitle": "Sans visa pendant 30 jours",
-      "sections": {
-        "visa": {
-          "title": "✓ Politique sans visa",
-          "items": [
-            "Depuis le 1er décembre 2023, sans visa pendant 30 jours",
-            "• MDAC doit être soumis"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Informations d'entrée",
-          "items": [
-            "• Limite de temps stricte",
-            "• Code PIN facile à perdre",
-            "• Haute précision requise"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy vous facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Gestion du PIN"
-          ]
-        }
-      },
-      "continueButton": "Continuer"
-    }
-  },
-  "taiwan": {
-    "info": {
-      "headerTitle": "Informations d'entrée à Taïwan",
-      "title": "Guide d'entrée à Taïwan",
-      "subtitle": "Permis d'entrée requis",
-      "sections": {
-        "visa": {
-          "title": "✓ Politique de permis",
-          "items": [
-            "Permis d'entrée requis",
-            "• Demande en ligne, 5 jours ouvrables",
-            "• Carte d'arrivée en ligne requise"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Informations d'entrée",
-          "items": [
-            "• Vérifier validité du permis",
-            "• Vérification email requise",
-            "• Préparation complète"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Liste de documents"
-          ]
-        }
-      },
-      "continueButton": "Continuer"
-    }
-  },
-  "thailand": {
-    "info": {
-      "headerTitle": "Informations d'entrée en Thaïlande",
-      "title": "Guide d'entrée en Thaïlande",
-      "subtitle": "Sans visa pendant 60 jours",
-      "sections": {
-        "visa": {
-          "title": "✓ Politique sans visa prolongée",
-          "items": [
-            "Depuis juillet 2024, prolongée à 60 jours",
-            "• Extension de 30 jours disponible"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Informations d'entrée",
-          "items": [
-            "• Preuve de fonds requise",
-            "• Billet de retour obligatoire",
-            "• Informations d'hébergement vérifiables"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Assistant de communication"
-          ]
-        }
-      },
-      "continueButton": "Continuer"
-    }
-  },
-  "hongkong": {
-    "info": {
-      "headerTitle": "Informations d'entrée à Hong Kong",
-      "title": "Guide d'entrée à Hong Kong",
-      "subtitle": "Sans visa pendant 7 jours",
-      "sections": {
-        "visa": {
-          "title": "✓ Politique sans visa",
-          "items": [
-            "Sans visa pendant 7 jours",
-            "• Pour tourisme et affaires",
-            "• Extensions disponibles"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Informations d'entrée",
-          "items": [
-            "• Séjour court de 7 jours",
-            "• Contrôles stricts",
-            "• Documentation complète"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Liste de documents"
-          ]
-        }
-      },
-      "continueButton": "Continuer"
     }
   }
 }

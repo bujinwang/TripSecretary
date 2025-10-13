@@ -2,434 +2,165 @@
   "malaysia": {
     "info": {
       "headerTitle": "Einreiseinformationen Malaysia",
-      "title": "Visumfreie Einreise nach Malaysia und MDAC",
-      "subtitle": "Chinesische Passinhaber: visumfrei für 30 Tage seit 1. Dezember 2023",
+      "title": "Malaysia Einreiseführer",
+      "subtitle": "Visumfrei für 30 Tage",
       "sections": {
         "visa": {
-          "title": "✓ Visumpolitik",
+          "title": "✓ Visumfreie Politik",
           "items": [
-            "Seit dem 1. Dezember 2023 können chinesische Passinhaber visumfrei für bis zu 30 Tage nach Malaysia einreisen.",
-            "• Gilt für Tourismus, Familienbesuche, Geschäftsreisen und ähnliche Zwecke",
-            "• Pass muss mindestens 6 Monate gültig sein",
-            "• Alle Reisenden müssen vor der Einreise MDAC (Malaysia Digital Arrival Card) ausfüllen - völlig kostenlos"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Einreisebestimmungen",
-          "items": [
-            "• Pass gültig für mindestens 6 Monate mit leeren Seiten",
-            "• MDAC innerhalb von 3 Tagen vor Ankunft ausfüllen (3 Kalendertage vor Einreise)",
-            "• Nachweis von Rückflugticket oder Weiterreise",
-            "• Unterkunftsbestätigung (Hotelbuchung) oder Kontakt in Malaysia",
-            "• Nachweis ausreichender Reisemittel"
+            "Seit 1. Dezember 2023, visumfrei für 30 Tage",
+            "• MDAC muss eingereicht werden"
           ]
         },
         "onsite": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Muss MDAC-PIN oder Screenshot der Bestätigungs-E-Mail bei Einreise vorlegen",
-            "• Verbotene Artikel: Fleisch, Alkohol, Tabak und andere eingeschränkte Waren",
-            "• Empfohlen, Flüge und Hotels im Voraus zu buchen, etwas Bargeld für Mittelnachweis vorbereiten",
-            "• Beachten Sie das MDAC-Einreichungsfenster, zu frühe Einreichungen werden vom System abgelehnt"
+            "• Strenge Zeitbegrenzung",
+            "• PIN-Code leicht zu verlieren",
+            "• Hohe Genauigkeit erforderlich"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy macht es einfach",
+          "title": "✨ BorderBuddy macht einfach",
           "items": [
-            "• Ein-Klick-Ausfüllen: Füllt Ihre MDAC automatisch ohne manuelle Eingabe aus",
-            "• Intelligente Erinnerung: Automatische Benachrichtigung innerhalb des 3-Tage-Fensters",
-            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
-            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+            "• Null Angst",
+            "• PIN-Verwaltung"
           ]
         }
       },
-      "continueButton": "Verstanden, weiter zur Checkliste"
-    },
-    "requirements": {
-      "headerTitle": "MDAC-Checkliste Malaysia",
-      "introTitle": "Bestätigen Sie, dass Sie alles vorbereitet haben",
-      "introSubtitle": "Diese Punkte sind erforderlich, um die Malaysia Digital Arrival Card einzureichen",
-      "items": {
-        "validPassport": {
-          "title": "Passgültigkeit",
-          "description": "Pass mindestens 6 Monate gültig mit leeren Seiten",
-          "details": "Die malaysische Einwanderungsbehörde verlangt, dass Ihr Pass ≥6 Monate über Ihr Einreisedatum hinaus gültig bleibt. Erneuern Sie vor der Reise, falls erforderlich."
-        },
-        "submissionWindow": {
-          "title": "Innerhalb des 3-Tage-Fensters",
-          "description": "MDAC akzeptiert nur Einreichungen innerhalb von 3 Kalendertagen vor Ankunft",
-          "details": "Zählen Sie Kalendertage basierend auf malaysischer Zeit (GMT+8). Wenn es zu früh ist, wird das System die Anfrage ablehnen—stellen Sie eine Erinnerung ein, um einzureichen, sobald Sie im Fenster sind."
-        },
-        "contactableEmail": {
-          "title": "Erreichbare E-Mail-Adresse",
-          "description": "In der Lage, die Bestätigungs-E-Mail und MDAC-PIN zu empfangen",
-          "details": "Verwenden Sie eine E-Mail, auf die Sie im Ausland zugreifen können. Überprüfen Sie Spam auf Nachrichten von imigresen.gov.my und halten Sie die PIN für die Ankunft bereit."
-        },
-        "travelDetails": {
-          "title": "Flug- und Aufenthaltsdetails",
-          "description": "Halten Sie Ihre Flugnummer, Ankunftshafen, Unterkunft und Telefon bereit",
-          "details": "Das Formular fragt nach Fluggesellschaft, Flugnummer, Ankunftsflughafen, Adresse in Malaysia, Telefonnummer (mit Landesvorwahl) und Zweck des Besuchs."
-        },
-        "captchaReady": {
-          "title": "Captcha bereit",
-          "description": "In der Lage, die angezeigten Buchstaben/Zahlen vor dem Absenden einzugeben",
-          "details": "MDAC verwendet ein alphanumerisches CAPTCHA. Wenn der Code unklar ist, können Sie ihn aktualisieren—schließen Sie die Einreichung innerhalb von 5 Minuten ab, um ein Timeout zu vermeiden."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Großartig! Sie können fortfahren.",
-          "subtitle": "Als Nächstes bestätigen wir Ihre Reiseinformationen."
-        },
-        "warning": {
-          "title": "Bitte überprüfen Sie jeden Punkt",
-          "subtitle": "Stellen Sie sicher, dass Sie die MDAC-Voraussetzungen erfüllen, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Reiseinformationen"
+      "continueButton": "Weiter"
     }
   },
   "singapore": {
     "info": {
       "headerTitle": "Einreiseinformationen Singapur",
-      "title": "Visumfreie Einreise nach Singapur und SG Arrival Card",
-      "subtitle": "Chinesische Passinhaber: visumfrei für 30 Tage seit 9. Februar 2024",
+      "title": "Singapur Einreiseführer",
+      "subtitle": "Visumfrei für 30 Tage",
       "sections": {
         "visa": {
-          "title": "✓ Visumpolitik",
+          "title": "✓ Gute Nachrichten! Visumfreie Politik",
           "items": [
-            "Seit dem 9. Februar 2024 können chinesische gewöhnliche Passinhaber visumfrei für bis zu 30 Tage nach Singapur einreisen.",
-            "• Gilt für Tourismus, Familienbesuche, Geschäftsreisen und andere private Angelegenheiten",
-            "• Arbeit oder Aufenthalte über 30 Tage erfordern im Voraus ein Visum",
-            "• Inhaber offizieller Pässe genießen ebenfalls visumfreie Einreise"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Einreisebestimmungen",
-          "items": [
-            "• Pass gültig für mindestens 6 Monate",
-            "• SG Arrival Card innerhalb von 3 Tagen vor Ankunft ausfüllen",
-            "• Nachweis von Rückflugticket oder Weiterreise",
-            "• Ausreichende Mittel für den Aufenthalt (Bargeld, Kreditkarten usw.)",
-            "• Unterkunftsbestätigung oder lokale Kontaktinformationen"
+            "Seit 9. Februar 2024, visumfrei für 30 Tage",
+            "• Keine Visumsantrag im Voraus erforderlich",
+            "• SG Arrival Card muss eingereicht werden"
           ]
         },
         "onsite": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Muss SG Arrival Card innerhalb von 3 Tagen vor Ankunft mit korrekten Informationen ausfüllen",
-            "• Verbotene Artikel: Drogen, geschützte Wildtierprodukte",
-            "• Vorsicht bei Medikamenten, Alkohol, Bargeld; niemals Gegenstände für Fremde tragen",
-            "• Bleiben Sie ruhig bei der Zollkontrolle, niemals Bestechungsgelder anbieten"
+            "• Strenge Zeitbegrenzung",
+            "• Bestätigungscode leicht zu verlieren",
+            "• Strenge Einwanderungskontrollen"
           ]
         },
         "appFeatures": {
           "title": "✨ BorderBuddy macht es einfach",
           "items": [
-            "• Ein-Klick-Ausfüllen: Füllt Ihre SG Arrival Card automatisch ohne manuelle Eingabe aus",
-            "• Intelligente Erinnerung: Automatische Benachrichtigung innerhalb des 3-Tage-Fensters",
-            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
-            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+            "• Null Angst",
+            "• Null Fehler",
+            "• Bestätigungsverwaltung"
           ]
         }
       },
-      "continueButton": "Verstanden, weiter zur Checkliste"
-    },
-    "requirements": {
-      "headerTitle": "SG Arrival Card Checkliste",
-      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
-      "introSubtitle": "Singapur akzeptiert nur Ankünfte mit innerhalb des 3-Tage-Fensters ausgefüllten Erklärungen",
-      "items": {
-        "validPassport": {
-          "title": "Passgültigkeit",
-          "description": "Pass sollte 6+ Monate über die Ankunft hinaus gültig sein",
-          "details": "Singapur empfiehlt mindestens 6 Monate Gültigkeit. Erneuern oder ersetzen Sie beschädigte Pässe vor der Reise."
-        },
-        "submissionWindow": {
-          "title": "Innerhalb des 3-Tage-Einreichungsfensters",
-          "description": "Formular öffnet 3 Tage vor Ankunft (Singapur-Zeit, GMT+8)",
-          "details": "Eine Einreichung früher als das Fenster führt zu einem Fehler. Stellen Sie eine Erinnerung ein, um die SG Arrival Card auszufüllen, sobald die Uhr das Fenster erreicht."
-        },
-        "travelDetails": {
-          "title": "Reise- und Aufenthaltsinformationen",
-          "description": "Flug, Ankunftsterminal/Grenze, Unterkunft/Kontakt, Zweck des Besuchs",
-          "details": "Bereiten Sie Ihre Fluggesellschaft/Fähre/Bus-Details, Aufenthaltsadresse und Kontaktnummer im internationalen Format vor. Geschäftsreisende sollten lokale Sponsor-Informationen auflisten, falls verfügbar."
-        },
-        "familyGroups": {
-          "title": "Gruppen-/Familienplan",
-          "description": "Entscheiden Sie, ob Sie einzeln oder über Familieneinreichung einreichen",
-          "details": "Gruppeneinreichung unterstützt bis zu 10 Reisende. Halten Sie die Passdetails aller bereit und bestätigen Sie, dass Minderjährige im Formular eines Vormunds enthalten sind."
-        },
-        "sgArrivalHistory": {
-          "title": "Frühere Einreichungen",
-          "description": "Denken Sie daran, dass SG Arrival Cards nach einer einzelnen Einreise ablaufen",
-          "details": "Wenn Sie innerhalb kurzer Zeit erneut einreisen, reichen Sie eine neue Erklärung mit aktualisierten Reisedetails ein. Alte Einträge können nicht wiederverwendet werden."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Als Nächstes füllen wir Ihre Reisedetails für die SG Arrival Card vor."
-        },
-        "warning": {
-          "title": "Überprüfen Sie jeden Checklistenpunkt",
-          "subtitle": "Erfüllen Sie die Voraussetzungen, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Reiseinformationen"
+      "continueButton": "Weiter"
     }
   },
   "hongkong": {
     "info": {
       "headerTitle": "Einreiseinformationen Hongkong",
-      "title": "Visumfreie Einreise nach Hongkong",
-      "subtitle": "Chinesische Passinhaber: visumfrei für bis zu 7 Tage",
+      "title": "Hongkong Einreiseführer",
+      "subtitle": "Visumfrei für 7 Tage",
       "sections": {
         "visa": {
-          "title": "✓ Visumpolitik",
+          "title": "✓ Visumfreie Politik",
           "items": [
-            "Chinesische Passinhaber können visumfrei nach Hongkong für Tourismus, Geschäftsreisen und Familienbesuche für bis zu 7 Tage einreisen.",
-            "• Verlängerungsanträge sollten bei Bedarf beim Hongkonger Einwanderungsamt eingereicht werden",
-            "• Keine Voranmeldung für visumfreie Einreise erforderlich",
-            "• Stellen Sie sicher, dass Sie gültige Weiterreisevereinbarungen haben"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Einreisebestimmungen",
-          "items": [
-            "• Gültiger Pass mit mindestens 1 Monat Gültigkeit über Ihren beabsichtigten Aufenthalt hinaus",
-            "• Rückflug- oder Weiterreiseticket",
-            "• Nachweis der Unterkunft (Hotelbuchung oder Gastkontakt)",
-            "• Ausreichende Mittel für Ihren Aufenthalt",
-            "• Gesundheitserklärung ausfüllen, falls erforderlich"
+            "Visumfrei für 7 Tage",
+            "• Für Tourismus und Geschäft",
+            "• Verlängerungen verfügbar"
           ]
         },
         "onsite": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Halten Sie Ihr Rückflugticket und Hotelbuchungsbestätigung für die Einwanderungskontrolle bereit",
-            "• Verbotene Artikel: Drogen, Waffen und Produkte bedrohter Arten",
-            "• Seien Sie bereit, Nachweis ausreichender Mittel zu zeigen, wenn gefragt",
-            "• Befolgen Sie alle Anweisungen der Einwanderungsbeamten"
+            "• Kurzer Aufenthalt von 7 Tagen",
+            "• Strenge Kontrollen",
+            "• Vollständige Dokumentation"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Dokumentenliste"
           ]
         }
       },
-      "continueButton": "Verstanden, weiter zur Checkliste"
-    },
-    "requirements": {
-      "headerTitle": "Hongkong Einreise-Checkliste",
-      "introTitle": "Bestätigen Sie, dass Sie alles vorbereitet haben",
-      "introSubtitle": "Stellen Sie sicher, dass Sie alle Anforderungen erfüllen, bevor Sie nach Hongkong reisen",
-      "items": {
-        "validPassport": {
-          "title": "Passgültigkeit",
-          "description": "Pass sollte mindestens 1 Monat über Ihren Aufenthalt hinaus gültig sein",
-          "details": "Hongkong verlangt, dass Ihr Pass über Ihren beabsichtigten Aufenthalt hinaus gültig ist. Überprüfen Sie das Ablaufdatum und erneuern Sie bei Bedarf."
-        },
-        "returnTicket": {
-          "title": "Rückflug- oder Weiterreiseticket",
-          "description": "Bestätigte Buchung für Abflug von Hongkong",
-          "details": "Die Einwanderungsbehörde kann Nachweis Ihres Rückflugs oder Ihrer Weiterreise verlangen. Halten Sie Ihr E-Ticket oder Buchungsbestätigung bereit."
-        },
-        "accommodation": {
-          "title": "Unterkunftsnachweis",
-          "description": "Hotelbuchung oder Gastkontaktinformationen",
-          "details": "Bringen Sie Hotelreservierungsbestätigung oder Kontaktdaten Ihres Gastgebers in Hongkong mit, einschließlich Adresse und Telefonnummer."
-        },
-        "sufficientFunds": {
-          "title": "Ausreichende Mittel",
-          "description": "Bargeld, Kreditkarten oder Kontoauszüge",
-          "details": "Sie müssen möglicherweise nachweisen, dass Sie genug Geld für Ihren Aufenthalt haben. Bringen Sie Bargeld, Kreditkarten oder aktuelle Kontoauszüge mit."
-        },
-        "healthDeclaration": {
-          "title": "Gesundheitserklärung",
-          "description": "Auszufüllen, falls von aktuellen Gesundheitsvorschriften gefordert",
-          "details": "Überprüfen Sie, ob Gesundheitserklärungen oder COVID-bezogene Dokumente erforderlich sind. Füllen Sie alle erforderlichen Formulare vor der Ankunft aus."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Als Nächstes erfassen wir Ihre Reisedetails."
-        },
-        "warning": {
-          "title": "Überprüfen Sie jeden Punkt",
-          "subtitle": "Stellen Sie sicher, dass Sie alle Anforderungen erfüllen, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Reiseinformationen"
+      "continueButton": "Weiter"
     }
   },
   "taiwan": {
     "info": {
       "headerTitle": "Einreiseinformationen Taiwan",
-      "title": "Taiwan Einreisegenehmigung & Online-Ankunftskarte",
-      "subtitle": "Festlandchinesische Passinhaber benötigen eine Einreisegenehmigung",
+      "title": "Taiwan Einreiseführer",
+      "subtitle": "Einreisegenehmigung erforderlich",
       "sections": {
         "visa": {
-          "title": "✓ Einreisegenehmigungspolitik",
+          "title": "✓ Genehmigungspolitik",
           "items": [
-            "Festlandchinesische Passinhaber müssen vor der Reise nach Taiwan eine Einreisegenehmigung (入台证) beantragen.",
-            "• Einzeltouristen-Genehmigungen (自由行) verfügbar für ausgewählte Städte",
-            "• Gruppentour-Genehmigungen über Reisebüros verfügbar",
-            "• Geschäfts- und Familienbesuchsgenehmigungen erfordern Sponsoring",
-            "• Bearbeitungszeit typischerweise 3-7 Werktage"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Einreisebestimmungen",
-          "items": [
-            "• Gültiger Pass mit mindestens 6 Monaten Gültigkeit",
-            "• Gültige Einreisegenehmigung (入台证)",
-            "• Online-Ankunftskarte vor Ankunft ausfüllen",
-            "• Rückflugticket",
-            "• Unterkunftsbestätigung oder Gastkontaktinformationen"
+            "Einreisegenehmigung erforderlich",
+            "• Online-Antrag, 5 Werktage",
+            "• Online-Ankunftskarte erforderlich"
           ]
         },
         "onsite": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Online-Ankunftskarte innerhalb von 3 Tagen vor Ankunft ausfüllen",
-            "• Halten Sie sowohl Ihren Pass als auch Ihre Einreisegenehmigung für die Einwanderung bereit",
-            "• Bewahren Sie Bestätigungs-E-Mail der Online-Ankunftskarte auf",
-            "• Deklarieren Sie alle Artikel wahrheitsgemäß beim Zoll"
+            "• Gültigkeit prüfen",
+            "• E-Mail-Verifizierung erforderlich",
+            "• Vollständige Vorbereitung"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy macht es einfach",
+          "title": "✨ BorderBuddy erleichtert",
           "items": [
-            "• Ein-Klick-Ausfüllen: Füllt Ihre Online-Ankunftskarte automatisch ohne manuelle Eingabe aus",
-            "• Intelligente Erinnerung: Automatische Benachrichtigung sobald Ihre Reise bestätigt ist",
-            "• Stressfrei: Keine Sorge mehr, wann Sie sich bewerben müssen - wir kümmern uns um das Timing",
-            "• Progressive Vorbereitung: Bereiten Sie Dokumente im Voraus vor, System löst Erinnerungen aus, sobald Ihre Reise bestätigt ist"
+            "• Null Angst",
+            "• Dokumentenliste"
           ]
         }
       },
-      "continueButton": "Verstanden, weiter zur Checkliste"
-    },
-    "requirements": {
-      "headerTitle": "Taiwan Online-Ankunftskarte Checkliste",
-      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
-      "introSubtitle": "Erforderlich für alle Reisenden, die nach Taiwan einreisen",
-      "items": {
-        "validPermit": {
-          "title": "Gültige Einreisegenehmigung",
-          "description": "Haben Sie Ihre genehmigte Einreisegenehmigung (入台证)",
-          "details": "Festlandchinesische Reisende müssen eine gültige Einreisegenehmigung haben. Stellen Sie sicher, dass sie Ihren gesamten Aufenthaltszeitraum abdeckt."
-        },
-        "validPassport": {
-          "title": "Passgültigkeit",
-          "description": "Pass gültig für mindestens 6 Monate",
-          "details": "Taiwan verlangt eine Passgültigkeit von 6 Monaten über das Einreisedatum hinaus. Überprüfen und erneuern Sie bei Bedarf."
-        },
-        "emailVerification": {
-          "title": "E-Mail-Verifizierung",
-          "description": "Zugriff auf E-Mail zum Empfangen des Verifizierungscodes",
-          "details": "Die Online-Ankunftskarte erfordert E-Mail-Verifizierung. Verwenden Sie eine E-Mail, auf die Sie zugreifen können, um den Verifizierungscode zu empfangen und einzugeben."
-        },
-        "travelDetails": {
-          "title": "Reiseinformationen bereit",
-          "description": "Flugdetails, Unterkunft und Kontaktinformationen",
-          "details": "Halten Sie Ihre Flugnummer, Ankunftsdatum/-zeit, Taiwan-Adresse und lokale Kontakttelefonnummer bereit."
-        },
-        "healthHistory": {
-          "title": "14-Tage-Reisegeschichte",
-          "description": "Wissen Sie, welche Länder Sie in den letzten 14 Tagen besucht haben",
-          "details": "Das Formular fragt nach Ihrer Reisegeschichte für die 14 Tage vor der Ankunft in Taiwan. Seien Sie bereit, alle besuchten Länder aufzulisten."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Als Nächstes helfen wir Ihnen, die Online-Ankunftskarte auszufüllen."
-        },
-        "warning": {
-          "title": "Überprüfen Sie jeden Checklistenpunkt",
-          "subtitle": "Stellen Sie sicher, dass Sie alle Anforderungen erfüllen, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Reiseinformationen"
+      "continueButton": "Weiter"
     }
   },
   "thailand": {
     "info": {
       "headerTitle": "Einreiseinformationen Thailand",
-      "title": "Thailand visumfreie Reiseinformationen",
-      "subtitle": "Für chinesische Passinhaber (2024 Politik)",
+      "title": "Thailand Einreiseführer",
+      "subtitle": "Visumfrei für 60 Tage",
       "sections": {
         "visa": {
-          "title": "✓ Visumpolitik",
+          "title": "✓ Verlängerte visumfreie Politik",
           "items": [
-            "Seit dem 1. März 2024 haben China und Thailand gegenseitige Visumbefreiung. Chinesische gewöhnliche Passinhaber können visumfrei für Kurzaufenthalte nach Thailand einreisen.",
-            "• Maximal 30 Tage pro Besuch",
-            "• Maximal 90 Tage kumulativer Aufenthalt innerhalb von 180 Tagen",
-            "• Nur für Tourismus, Familienbesuche, kurzfristige Geschäftsreisen (nicht für Arbeit)"
-          ]
-        },
-        "entry": {
-          "title": "🛂 Einreisebestimmungen",
-          "items": [
-            "• Pass gültig für mindestens 6 Monate",
-            "• Rückflugticket oder Nachweis der Weiterreise",
-            "• Unterkunftsbestätigung (Hotel oder Adresse in Thailand)",
-            "• Ausreichende Mittel (Bargeld, Kreditkarten - mindestens 10.000 THB pro Person oder 20.000 THB pro Familie)",
-            "• Kein TDAC erforderlich für visumfreie Einreise (nur für Visum bei Ankunft)"
+            "Seit Juli 2024, verlängert auf 60 Tage",
+            "• 30 Tage Verlängerung verfügbar"
           ]
         },
         "onsite": {
-          "title": "⚠️ Wichtige Hinweise",
+          "title": "⚠️ Einreiseinformationen",
           "items": [
-            "• Einwanderung kann Nachweis von Mitteln, Rückflugticket und Unterkunft verlangen",
-            "• Verbotene Artikel: Drogen, Waffen, gefälschte Waren, Produkte bedrohter Arten",
-            "• Respektieren Sie thailändische Kultur und Bräuche",
-            "• Tragen Sie Ihren Pass immer bei sich"
+            "• Geldnachweis erforderlich",
+            "• Rückflugticket obligatorisch",
+            "• Unterkunftsinformationen überprüfbar"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Kommunikationsassistent"
           ]
         }
       },
-      "continueButton": "Verstanden, weiter zur Checkliste"
-    },
-    "requirements": {
-      "headerTitle": "Thailand Einreise-Checkliste",
-      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
-      "introSubtitle": "Visumfreie Einreisebestimmungen für chinesische Passinhaber",
-      "items": {
-        "validPassport": {
-          "title": "Passgültigkeit",
-          "description": "Pass gültig für mindestens 6 Monate",
-          "details": "Thailand verlangt eine Passgültigkeit von 6 Monaten ab Einreisedatum. Erneuern Sie vor der Reise, falls erforderlich."
-        },
-        "returnTicket": {
-          "title": "Rückflug- oder Weiterreiseticket",
-          "description": "Nachweis der Ausreise aus Thailand",
-          "details": "Halten Sie Ihre Rückflugbuchung oder Nachweis der Weiterreise bereit. Die Einwanderung kann Ihre Ausreisepläne überprüfen."
-        },
-        "accommodation": {
-          "title": "Unterkunftsbestätigung",
-          "description": "Hotelbuchung oder Adresse in Thailand",
-          "details": "Bringen Sie Hotelreservierungsbestätigung mit oder haben Sie die Adresse, wo Sie übernachten werden, einschließlich Kontakttelefonnummer."
-        },
-        "sufficientFunds": {
-          "title": "Ausreichende Mittel",
-          "description": "10.000 THB pro Person oder 20.000 THB pro Familie",
-          "details": "Nachweis ausreichender Mittel kann verlangt werden. Tragen Sie Bargeld, zeigen Sie Kreditkarten oder haben Sie Kontoauszüge verfügbar."
-        },
-        "stayDuration": {
-          "title": "Aufenthaltsdauer-Grenzen",
-          "description": "Maximal 30 Tage pro Besuch, 90 Tage pro 180 Tage",
-          "details": "Stellen Sie sicher, dass Ihr geplanter Aufenthalt 30 Tage nicht überschreitet. Wenn Sie kürzlich in Thailand waren, überprüfen Sie Ihren kumulativen Aufenthalt innerhalb der letzten 180 Tage."
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Als Nächstes erfassen wir Ihre Reisedetails."
-        },
-        "warning": {
-          "title": "Überprüfen Sie jeden Checklistenpunkt",
-          "subtitle": "Stellen Sie sicher, dass Sie alle Anforderungen erfüllen, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Reiseinformationen"
+      "continueButton": "Weiter"
     }
   },
   "japan": {
@@ -474,6 +205,11 @@
       "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
       "introSubtitle": "Stellen Sie sicher, dass alle Anforderungen vor der Reise nach Japan erfüllt sind",
       "items": {
+        "validVisa": {
+          "title": "Gültiges Visum",
+          "description": "Genehmigtes Japan-Touristenvisum",
+          "details": "Chinesische Staatsbürger müssen im Voraus ein Visum beantragen. Bestätigen Sie, dass Ihr Visum gültig ist."
+        },
         "validPassport": {
           "title": "Gültiger Pass",
           "description": "Pass gültig für mindestens 6 Monate",
@@ -744,170 +480,6 @@
         }
       },
       "continueButton": "Weiter zu Reiseinformationen"
-    }
-  },
-  "singapore": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Singapur",
-      "title": "Singapur Einreiseführer",
-      "subtitle": "Visumfrei für 30 Tage",
-      "sections": {
-        "visa": {
-          "title": "✓ Gute Nachrichten! Visumfreie Politik",
-          "items": [
-            "Seit 9. Februar 2024, visumfrei für 30 Tage",
-            "• Keine Visumsantrag im Voraus erforderlich",
-            "• SG Arrival Card muss eingereicht werden"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Strenge Zeitbegrenzung",
-            "• Bestätigungscode leicht zu verlieren",
-            "• Strenge Einwanderungskontrollen"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy macht es einfach",
-          "items": [
-            "• Null Angst",
-            "• Null Fehler",
-            "• Bestätigungsverwaltung"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
-    }
-  },
-  "malaysia": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Malaysia",
-      "title": "Malaysia Einreiseführer",
-      "subtitle": "Visumfrei für 30 Tage",
-      "sections": {
-        "visa": {
-          "title": "✓ Visumfreie Politik",
-          "items": [
-            "Seit 1. Dezember 2023, visumfrei für 30 Tage",
-            "• MDAC muss eingereicht werden"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Strenge Zeitbegrenzung",
-            "• PIN-Code leicht zu verlieren",
-            "• Hohe Genauigkeit erforderlich"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy macht einfach",
-          "items": [
-            "• Null Angst",
-            "• PIN-Verwaltung"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
-    }
-  },
-  "taiwan": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Taiwan",
-      "title": "Taiwan Einreiseführer",
-      "subtitle": "Einreisegenehmigung erforderlich",
-      "sections": {
-        "visa": {
-          "title": "✓ Genehmigungspolitik",
-          "items": [
-            "Einreisegenehmigung erforderlich",
-            "• Online-Antrag, 5 Werktage",
-            "• Online-Ankunftskarte erforderlich"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Gültigkeit prüfen",
-            "• E-Mail-Verifizierung erforderlich",
-            "• Vollständige Vorbereitung"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy erleichtert",
-          "items": [
-            "• Null Angst",
-            "• Dokumentenliste"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
-    }
-  },
-  "thailand": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Thailand",
-      "title": "Thailand Einreiseführer",
-      "subtitle": "Visumfrei für 60 Tage",
-      "sections": {
-        "visa": {
-          "title": "✓ Verlängerte visumfreie Politik",
-          "items": [
-            "Seit Juli 2024, verlängert auf 60 Tage",
-            "• 30 Tage Verlängerung verfügbar"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Geldnachweis erforderlich",
-            "• Rückflugticket obligatorisch",
-            "• Unterkunftsinformationen überprüfbar"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy erleichtert",
-          "items": [
-            "• Null Angst",
-            "• Kommunikationsassistent"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
-    }
-  },
-  "hongkong": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Hongkong",
-      "title": "Hongkong Einreiseführer",
-      "subtitle": "Visumfrei für 7 Tage",
-      "sections": {
-        "visa": {
-          "title": "✓ Visumfreie Politik",
-          "items": [
-            "Visumfrei für 7 Tage",
-            "• Für Tourismus und Geschäft",
-            "• Verlängerungen verfügbar"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Kurzer Aufenthalt von 7 Tagen",
-            "• Strenge Kontrollen",
-            "• Vollständige Dokumentation"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy erleichtert",
-          "items": [
-            "• Null Angst",
-            "• Dokumentenliste"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
     }
   }
 }
