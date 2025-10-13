@@ -1,5 +1,5 @@
 // 出境通 - Japan Procedures Screen (日本入境流程)
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,63 +10,27 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
+import { useLocale } from '../../i18n/LocaleContext';
 
 const JapanProceduresScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
+  const { t } = useLocale();
 
   const handleStartPreparation = () => {
     navigation.navigate('TravelInfo', { passport, destination });
   };
 
-  const entrySteps = [
-    {
-      step: 1,
-      title: '抵达机场',
-      description: '到达日本机场入境大厅',
-      details: '准备好护照和已填写的入境卡、海关申报单'
-    },
-    {
-      step: 2,
-      title: '入境检查',
-      description: '前往入境审查柜台',
-      details: '提交护照、入境卡，接受官员审查和指纹采集'
-    },
-    {
-      step: 3,
-      title: '海关申报',
-      description: '前往海关检查区',
-      details: '提交海关申报单，申报携带物品，可能需要开箱检查'
-    },
-    {
-      step: 4,
-      title: '完成入境',
-      description: '领取入境章',
-      details: '在护照上盖入境章，正式进入日本境内'
-    }
-  ];
+  const entrySteps = useMemo(() => {
+    const steps = t('japan.procedures.entrySteps.steps', { defaultValue: [] });
+    return steps.map((step, index) => ({
+      step: index + 1,
+      ...step
+    }));
+  }, [t]);
 
-  const appFeatures = [
-    {
-      icon: '📝',
-      title: '自动填表',
-      description: '帮您把入境卡和申报单填好，您只要抄写就行'
-    },
-    {
-      icon: '📋',
-      title: '信息录入',
-      description: '您输入一次旅行信息，系统自动填到所有表格里'
-    },
-    {
-      icon: '📱',
-      title: '不用联网',
-      description: '填好后不用网络也能看，机场没信号也没关系'
-    },
-    {
-      icon: '💾',
-      title: '记住信息',
-      description: '保存您的资料，下次去日本时直接用，不用重输'
-    }
-  ];
+  const appFeatures = useMemo(() => 
+    t('japan.procedures.features.items', { defaultValue: [] })
+  , [t]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -74,36 +38,36 @@ const JapanProceduresScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <BackButton
           onPress={() => navigation.goBack()}
-          label="返回"
+          label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>入境流程说明</Text>
+        <Text style={styles.headerTitle}>{t('japan.procedures.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.title}>日本入境完整流程</Text>
-          <Text style={styles.subtitle}>BorderBuddy将帮您准备一切</Text>
+          <Text style={styles.title}>{t('japan.procedures.title')}</Text>
+          <Text style={styles.subtitle}>{t('japan.procedures.subtitle')}</Text>
         </View>
 
         {/* App Help Instruction */}
         <View style={styles.helpSection}>
-          <Text style={styles.helpTitle}>📝 BorderBuddy帮您做什么</Text>
+          <Text style={styles.helpTitle}>{t('japan.procedures.helpSection.title')}</Text>
           <View style={styles.helpCard}>
             <Text style={styles.helpText}>
-              入境卡和海关申报单我帮你填好，你在机场找到表格照抄就行！
+              {t('japan.procedures.helpSection.description')}
             </Text>
             <Text style={styles.helpSubtext}>
-              不用担心填错字，跟着我准备好的内容抄写即可
+              {t('japan.procedures.helpSection.subdescription')}
             </Text>
           </View>
         </View>
 
         {/* Entry Steps */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🚶‍♂️ 入境步骤</Text>
+          <Text style={styles.sectionTitle}>{t('japan.procedures.entrySteps.title')}</Text>
           {entrySteps.map((step, index) => (
             <View key={index} style={styles.stepCard}>
               <View style={styles.stepHeader}>
@@ -122,7 +86,7 @@ const JapanProceduresScreen = ({ navigation, route }) => {
 
         {/* App Capabilities */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>✨ BorderBuddy能为您做什么</Text>
+          <Text style={styles.sectionTitle}>{t('japan.procedures.features.title')}</Text>
           <View style={styles.featuresGrid}>
             {appFeatures.map((feature, index) => (
               <View key={index} style={styles.featureCard}>
@@ -136,13 +100,11 @@ const JapanProceduresScreen = ({ navigation, route }) => {
 
         {/* Important Notes */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚠️ 重要提醒</Text>
+          <Text style={styles.sectionTitle}>{t('japan.procedures.importantNotes.title')}</Text>
           <View style={styles.notesCard}>
-            <Text style={styles.noteText}>• 入境卡和海关申报单必须用黑色或蓝色笔填写</Text>
-            <Text style={styles.noteText}>• 字迹要清晰，信息要准确</Text>
-            <Text style={styles.noteText}>• 申报单上的"是/否"问题要如实回答</Text>
-            <Text style={styles.noteText}>• 保持礼貌，配合检查</Text>
-            <Text style={styles.noteText}>• 保留入境卡副联直到离境</Text>
+            {t('japan.procedures.importantNotes.items', { defaultValue: [] }).map((note, index) => (
+              <Text key={index} style={styles.noteText}>{note}</Text>
+            ))}
           </View>
         </View>
 
@@ -152,7 +114,7 @@ const JapanProceduresScreen = ({ navigation, route }) => {
             style={styles.startButton}
             onPress={handleStartPreparation}
           >
-            <Text style={styles.startButtonText}>开始准备入境包</Text>
+            <Text style={styles.startButtonText}>{t('japan.procedures.startButton')}</Text>
           </TouchableOpacity>
         </View>
 

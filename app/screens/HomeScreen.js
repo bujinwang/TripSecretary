@@ -20,7 +20,7 @@ import { useLocale } from '../i18n/LocaleContext';
 const HOT_COUNTRIES = [
   { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
   { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
-  { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: false },
+  { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: true },
   { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: true },
   { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: false },
   { id: 'sg', flag: '🇸🇬', name: 'Singapore', flightTimeKey: 'home.destinations.singapore.flightTime', enabled: true },
@@ -282,6 +282,14 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'tw') {
       navigation.navigate('TaiwanInfo', {
+        passport: passportData,
+        destination: destinationForNav,
+      });
+      return;
+    }
+
+    if (country.id === 'hk') {
+      navigation.navigate('HongKongInfo', {
         passport: passportData,
         destination: destinationForNav,
       });

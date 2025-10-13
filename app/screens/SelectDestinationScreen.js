@@ -25,7 +25,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
     { id: 'th', flag: '🇹🇭', name: '泰国', flightTime: '3小时飞行', enabled: true },
 
     // 暂未启用的目的地
-    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: false },
+    { id: 'hk', flag: '🇭🇰', name: '香港', flightTime: '1小时飞行', enabled: true },
     { id: 'tw', flag: '🇹🇼', name: '台湾', flightTime: '2小时飞行', enabled: true },
     { id: 'kr', flag: '🇰🇷', name: '韩国', flightTime: '2小时飞行', enabled: false },
     { id: 'sg', flag: '🇸🇬', name: '新加坡', flightTime: '5小时飞行', enabled: true },
@@ -113,6 +113,16 @@ const SelectDestinationScreen = ({ navigation, route }) => {
     if (country.id === 'tw') {
       setTimeout(() => {
         navigation.navigate('TaiwanInfo', {
+          passport,
+          destination: country
+        });
+      }, 300);
+      return;
+    }
+
+    if (country.id === 'hk') {
+      setTimeout(() => {
+        navigation.navigate('HongKongInfo', {
           passport,
           destination: country
         });

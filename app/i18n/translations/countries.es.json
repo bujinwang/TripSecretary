@@ -1,0 +1,552 @@
+{
+  "malaysia": {
+    "info": {
+      "headerTitle": "Información de entrada a Malasia",
+      "title": "Entrada sin visa a Malasia y MDAC",
+      "subtitle": "Titulares de pasaporte chino: sin visa por 30 días desde el 1 de diciembre de 2023",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de visa",
+          "items": [
+            "Desde el 1 de diciembre de 2023, los titulares de pasaporte chino pueden ingresar a Malasia sin visa por hasta 30 días.",
+            "• Aplica para turismo, visitas familiares, negocios y propósitos similares",
+            "• El pasaporte debe ser válido por al menos 6 meses",
+            "• Todos los viajeros deben completar MDAC (Tarjeta de Llegada Digital de Malasia) antes de la entrada - completamente gratis"
+          ]
+        },
+        "entry": {
+          "title": "🛂 Requisitos de entrada",
+          "items": [
+            "• Pasaporte válido por al menos 6 meses con páginas en blanco",
+            "• Completar MDAC dentro de 3 días antes de la llegada (3 días calendario antes de la entrada)",
+            "• Comprobante de boleto de regreso o viaje posterior",
+            "• Confirmación de alojamiento (reserva de hotel) o contacto en Malasia",
+            "• Comprobante de fondos de viaje suficientes"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Debe presentar el PIN de MDAC o captura de pantalla del correo de confirmación al ingresar",
+            "• Artículos prohibidos: carne, alcohol, tabaco y otros productos restringidos",
+            "• Recomendado reservar vuelos y hoteles con anticipación, preparar algo de efectivo para comprobante de fondos",
+            "• Note la ventana de envío de MDAC, los envíos anticipados serán rechazados por el sistema"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar a la lista de verificación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación MDAC Malasia",
+      "introTitle": "Confirme que tiene todo preparado",
+      "introSubtitle": "Estos elementos son necesarios para enviar la Tarjeta de Llegada Digital de Malasia",
+      "items": {
+        "validPassport": {
+          "title": "Validez del pasaporte",
+          "description": "Pasaporte válido al menos 6 meses con páginas en blanco",
+          "details": "Inmigración de Malasia requiere que su pasaporte permanezca válido ≥6 meses después de su fecha de entrada. Renueve antes de viajar si es necesario."
+        },
+        "submissionWindow": {
+          "title": "Dentro de la ventana de 3 días",
+          "description": "MDAC solo acepta envíos dentro de 3 días calendario antes de la llegada",
+          "details": "Cuente los días calendario basándose en la hora de Malasia (GMT+8). Si es demasiado temprano, el sistema rechazará la solicitud—configure un recordatorio para enviar una vez dentro de la ventana."
+        },
+        "contactableEmail": {
+          "title": "Bandeja de correo accesible",
+          "description": "Capaz de recibir el correo de confirmación y PIN de MDAC",
+          "details": "Use un correo al que pueda acceder en el extranjero. Revise spam para mensajes de imigresen.gov.my y mantenga el PIN a mano para la llegada."
+        },
+        "travelDetails": {
+          "title": "Detalles de vuelo y estadía",
+          "description": "Tenga su número de vuelo, puerto de llegada, alojamiento y teléfono listos",
+          "details": "El formulario pregunta por aerolínea, número de vuelo, aeropuerto de llegada, dirección en Malasia, número de teléfono (con código de país) y propósito de la visita."
+        },
+        "captchaReady": {
+          "title": "Captcha listo",
+          "description": "Capaz de escribir las letras/números mostrados antes de enviar",
+          "details": "MDAC usa un CAPTCHA alfanumérico. Si el código no es claro, puede actualizarlo—complete el envío dentro de 5 minutos para evitar tiempo de espera."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Genial! Puede proceder.",
+          "subtitle": "A continuación confirmaremos su información de viaje."
+        },
+        "warning": {
+          "title": "Por favor revise cada elemento",
+          "subtitle": "Asegúrese de cumplir con los requisitos previos de MDAC antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "singapore": {
+    "info": {
+      "headerTitle": "Información de entrada a Singapur",
+      "title": "Entrada sin visa a Singapur y SG Arrival Card",
+      "subtitle": "Titulares de pasaporte chino: sin visa por 30 días desde el 9 de febrero de 2024",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de visa",
+          "items": [
+            "Desde el 9 de febrero de 2024, los titulares de pasaporte ordinario chino pueden ingresar a Singapur sin visa por hasta 30 días.",
+            "• Aplica para turismo, visitas familiares, negocios y otros asuntos privados",
+            "• Trabajo o estadías que excedan 30 días requieren visa por adelantado",
+            "• Los titulares de pasaporte oficial también disfrutan de entrada sin visa"
+          ]
+        },
+        "entry": {
+          "title": "🛂 Requisitos de entrada",
+          "items": [
+            "• Pasaporte válido por al menos 6 meses",
+            "• Completar SG Arrival Card dentro de 3 días antes de la llegada",
+            "• Comprobante de boleto de regreso o viaje posterior",
+            "• Fondos suficientes para la estadía (efectivo, tarjetas de crédito, etc.)",
+            "• Confirmación de alojamiento o información de contacto local"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Debe completar SG Arrival Card dentro de 3 días antes de la llegada con información precisa",
+            "• Artículos prohibidos: drogas, productos de vida silvestre protegida",
+            "• Tenga cuidado con medicamentos, alcohol, efectivo; nunca lleve artículos para extraños",
+            "• Mantenga la calma durante la inspección aduanera, nunca ofrezca sobornos"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar a la lista de verificación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación SG Arrival Card",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Singapur solo acepta llegadas con declaraciones completadas dentro de la ventana de 3 días",
+      "items": {
+        "validPassport": {
+          "title": "Validez del pasaporte",
+          "description": "El pasaporte debe ser válido 6+ meses después de la llegada",
+          "details": "Singapur recomienda al menos 6 meses de validez. Renueve o reemplace pasaportes dañados antes del viaje."
+        },
+        "submissionWindow": {
+          "title": "Dentro de la ventana de envío de 3 días",
+          "description": "El formulario se abre 3 días antes de la llegada (hora de Singapur, GMT+8)",
+          "details": "Enviar antes de la ventana resultará en un error. Configure un recordatorio para completar la SG Arrival Card una vez que el reloj alcance la ventana."
+        },
+        "travelDetails": {
+          "title": "Información de viaje y estadía",
+          "description": "Vuelo, terminal/frontera de llegada, alojamiento/contacto, propósito de la visita",
+          "details": "Prepare sus detalles de aerolínea/ferry/autobús, dirección de estadía y número de contacto en formato internacional. Los viajeros de negocios deben listar la información del patrocinador local si está disponible."
+        },
+        "familyGroups": {
+          "title": "Plan de grupo/familia",
+          "description": "Decida si enviará individualmente o a través de envío familiar",
+          "details": "El envío de grupo admite hasta 10 viajeros. Tenga los detalles de pasaporte de todos listos y confirme que los menores están incluidos en el formulario de un tutor."
+        },
+        "sgArrivalHistory": {
+          "title": "Envíos anteriores",
+          "description": "Recuerde que las SG Arrival Cards expiran después de una sola entrada",
+          "details": "Si vuelve a ingresar en un período corto, envíe una nueva declaración con detalles de viaje actualizados. Las entradas antiguas no se pueden reutilizar."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "A continuación precargaremos sus detalles de viaje para la SG Arrival Card."
+        },
+        "warning": {
+          "title": "Revise cada elemento de la lista de verificación",
+          "subtitle": "Complete los requisitos previos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "hongkong": {
+    "info": {
+      "headerTitle": "Información de entrada a Hong Kong",
+      "title": "Entrada sin visa a Hong Kong",
+      "subtitle": "Titulares de pasaporte chino: sin visa hasta 7 días",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de visa",
+          "items": [
+            "Los titulares de pasaporte chino pueden ingresar a Hong Kong sin visa para turismo, negocios y visitas familiares por hasta 7 días.",
+            "• Las solicitudes de extensión deben presentarse al Departamento de Inmigración de Hong Kong si es necesario",
+            "• No se requiere pre-registro para entrada sin visa",
+            "• Asegúrese de tener arreglos de viaje posterior válidos"
+          ]
+        },
+        "entry": {
+          "title": "🛂 Requisitos de entrada",
+          "items": [
+            "• Pasaporte válido con al menos 1 mes de validez más allá de su estadía prevista",
+            "• Boleto de regreso o viaje posterior",
+            "• Comprobante de alojamiento (reserva de hotel o contacto de anfitrión)",
+            "• Fondos suficientes para su estadía",
+            "• Completar declaración de salud si es requerido"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Tenga su boleto de regreso y confirmación de reserva de hotel listos para inspección de inmigración",
+            "• Artículos prohibidos: drogas, armas y productos de especies en peligro de extinción",
+            "• Esté preparado para mostrar comprobante de fondos suficientes si se le pregunta",
+            "• Cumpla con todas las instrucciones de los oficiales de inmigración"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar a la lista de verificación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de entrada a Hong Kong",
+      "introTitle": "Confirme que tiene todo preparado",
+      "introSubtitle": "Asegúrese de cumplir con todos los requisitos antes de viajar a Hong Kong",
+      "items": {
+        "validPassport": {
+          "title": "Validez del pasaporte",
+          "description": "El pasaporte debe ser válido por al menos 1 mes más allá de su estadía",
+          "details": "Hong Kong requiere que su pasaporte sea válido más allá de su estadía prevista. Verifique la fecha de vencimiento y renueve si es necesario."
+        },
+        "returnTicket": {
+          "title": "Boleto de regreso o posterior",
+          "description": "Reserva confirmada para salida de Hong Kong",
+          "details": "Inmigración puede solicitar ver comprobante de su vuelo de regreso o viaje posterior. Tenga su e-ticket o confirmación de reserva listo."
+        },
+        "accommodation": {
+          "title": "Comprobante de alojamiento",
+          "description": "Reserva de hotel o información de contacto de anfitrión",
+          "details": "Traiga confirmación de reserva de hotel o detalles de contacto de su anfitrión en Hong Kong, incluyendo dirección y número de teléfono."
+        },
+        "sufficientFunds": {
+          "title": "Fondos suficientes",
+          "description": "Efectivo, tarjetas de crédito o estados de cuenta bancarios",
+          "details": "Puede necesitar demostrar que tiene suficiente dinero para su estadía. Traiga efectivo, tarjetas de crédito o estados de cuenta bancarios recientes."
+        },
+        "healthDeclaration": {
+          "title": "Declaración de salud",
+          "description": "Completar si es requerido por las regulaciones sanitarias actuales",
+          "details": "Verifique si se necesitan declaraciones de salud o documentos relacionados con COVID. Complete cualquier formulario requerido antes de la llegada."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "A continuación recopilaremos sus detalles de viaje."
+        },
+        "warning": {
+          "title": "Revise cada elemento",
+          "subtitle": "Asegúrese de cumplir con todos los requisitos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "taiwan": {
+    "info": {
+      "headerTitle": "Información de entrada a Taiwán",
+      "title": "Permiso de entrada a Taiwán y tarjeta de llegada en línea",
+      "subtitle": "Los titulares de pasaporte chino continental requieren permiso de entrada",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de permiso de entrada",
+          "items": [
+            "Los titulares de pasaporte chino continental deben solicitar un Permiso de Entrada (入台证) antes de viajar a Taiwán.",
+            "• Permisos turísticos individuales (自由行) disponibles para ciudades seleccionadas",
+            "• Permisos de tour grupal disponibles a través de agencias de viaje",
+            "• Los permisos de negocios y visita familiar requieren patrocinio",
+            "• Tiempo de procesamiento típicamente 3-7 días hábiles"
+          ]
+        },
+        "entry": {
+          "title": "🛂 Requisitos de entrada",
+          "items": [
+            "• Pasaporte válido con al menos 6 meses de validez",
+            "• Permiso de Entrada válido (入台证)",
+            "• Completar tarjeta de llegada en línea antes de la llegada",
+            "• Boleto de vuelo de regreso",
+            "• Confirmación de alojamiento o información de contacto de anfitrión"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Completar la tarjeta de llegada en línea dentro de 3 días antes de la llegada",
+            "• Tenga tanto su pasaporte como su Permiso de Entrada listos para inmigración",
+            "• Guarde el correo de confirmación de la tarjeta de llegada en línea",
+            "• Declare todos los artículos honestamente en la aduana"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar a la lista de verificación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de tarjeta de llegada en línea Taiwán",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Requerido para todos los viajeros que ingresan a Taiwán",
+      "items": {
+        "validPermit": {
+          "title": "Permiso de Entrada válido",
+          "description": "Tenga su Permiso de Entrada aprobado (入台证)",
+          "details": "Los viajeros chinos continentales deben tener un Permiso de Entrada válido. Asegúrese de que cubra todo su período de estadía."
+        },
+        "validPassport": {
+          "title": "Validez del pasaporte",
+          "description": "Pasaporte válido por al menos 6 meses",
+          "details": "Taiwán requiere validez de pasaporte de 6 meses más allá de la fecha de entrada. Verifique y renueve si es necesario."
+        },
+        "emailVerification": {
+          "title": "Verificación por correo",
+          "description": "Acceso a correo para recibir código de verificación",
+          "details": "La tarjeta de llegada en línea requiere verificación por correo. Use un correo al que pueda acceder para recibir e ingresar el código de verificación."
+        },
+        "travelDetails": {
+          "title": "Información de viaje lista",
+          "description": "Detalles de vuelo, alojamiento e información de contacto",
+          "details": "Tenga su número de vuelo, fecha/hora de llegada, dirección en Taiwán y número de teléfono de contacto local listos."
+        },
+        "healthHistory": {
+          "title": "Historial de viaje de 14 días",
+          "description": "Sepa qué países visitó en los últimos 14 días",
+          "details": "El formulario pregunta sobre su historial de viaje para los 14 días antes de llegar a Taiwán. Esté preparado para listar todos los países visitados."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "A continuación le ayudaremos a completar la tarjeta de llegada en línea."
+        },
+        "warning": {
+          "title": "Revise cada elemento de la lista de verificación",
+          "subtitle": "Asegúrese de cumplir con todos los requisitos antes de proceder."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "thailand": {
+    "info": {
+      "headerTitle": "Información de entrada a Tailandia",
+      "title": "Información de viaje sin visa a Tailandia",
+      "subtitle": "Para titulares de pasaporte chino (política 2024)",
+      "sections": {
+        "visa": {
+          "title": "✓ Política de visa",
+          "items": [
+            "Desde el 1 de marzo de 2024, China y Tailandia tienen exención de visa mutua. Los titulares de pasaporte ordinario chino pueden ingresar a Tailandia sin visa para estadías cortas.",
+            "• Máximo 30 días por visita",
+            "• Máximo 90 días de estadía acumulativa dentro de 180 días",
+            "• Solo para turismo, visitas familiares, negocios a corto plazo (no para trabajo)"
+          ]
+        },
+        "entry": {
+          "title": "🛂 Requisitos de entrada",
+          "items": [
+            "• Pasaporte válido por al menos 6 meses",
+            "• Boleto de vuelo de regreso o comprobante de viaje posterior",
+            "• Confirmación de alojamiento (hotel o dirección en Tailandia)",
+            "• Fondos suficientes (efectivo, tarjetas de crédito - al menos 10,000 THB por persona o 20,000 THB por familia)",
+            "• No se requiere TDAC para entrada sin visa (solo para visa a la llegada)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Inmigración puede solicitar ver comprobante de fondos, boleto de regreso y alojamiento",
+            "• Artículos prohibidos: drogas, armas, productos falsificados, productos de especies en peligro de extinción",
+            "• Respete la cultura y costumbres tailandesas",
+            "• Mantenga su pasaporte siempre con usted"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar a la lista de verificación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de entrada a Tailandia",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Requisitos de entrada sin visa para titulares de pasaporte chino",
+      "items": {
+        "validPassport": {
+          "title": "Validez del pasaporte",
+          "description": "Pasaporte válido por al menos 6 meses",
+          "details": "Tailandia requiere validez de pasaporte de 6 meses desde la fecha de entrada. Renueve antes del viaje si es necesario."
+        },
+        "returnTicket": {
+          "title": "Boleto de regreso o posterior",
+          "description": "Comprobante de salida de Tailandia",
+          "details": "Tenga su reserva de vuelo de regreso o comprobante de viaje posterior listo. Inmigración puede solicitar verificar sus planes de salida."
+        },
+        "accommodation": {
+          "title": "Confirmación de alojamiento",
+          "description": "Reserva de hotel o dirección en Tailandia",
+          "details": "Traiga confirmación de reserva de hotel o tenga la dirección donde se hospedará, incluyendo número de teléfono de contacto."
+        },
+        "sufficientFunds": {
+          "title": "Fondos suficientes",
+          "description": "10,000 THB por persona o 20,000 THB por familia",
+          "details": "Se puede solicitar comprobante de fondos suficientes. Lleve efectivo, muestre tarjetas de crédito o tenga estados de cuenta bancarios disponibles."
+        },
+        "stayDuration": {
+          "title": "Límites de duración de estadía",
+          "description": "Máximo 30 días por visita, 90 días por 180 días",
+          "details": "Asegúrese de que su estadía planificada no exceda 30 días. Si ha estado en Tailandia recientemente, verifique su estadía acumulativa dentro de los últimos 180 días."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "A continuación recopilaremos sus detalles de viaje."
+        },
+        "warning": {
+          "title": "Revise cada elemento de la lista de verificación",
+          "subtitle": "Asegúrese de cumplir con todos los requisitos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a información de viaje"
+    }
+  },
+  "japan": {
+    "info": {
+      "headerTitle": "Información de entrada a Japón",
+      "title": "Información sobre visa turística para Japón",
+      "subtitle": "Para titulares de pasaporte chino",
+      "sections": {
+        "visa": {
+          "title": "✓ Requisitos de visa",
+          "items": [
+            "¡No se requiere visa! Los titulares de pasaporte chino pueden ingresar a Japón sin visa para turismo.",
+            "• Duración de estadía: Hasta 90 días",
+            "• Propósito: Solo turismo y turismo",
+            "• No se puede extender o cambiar de estado"
+          ]
+        },
+        "duration": {
+          "title": "⏰ Duración de estadía",
+          "items": [
+            "• Máximo 90 días por entrada",
+            "• No más de 90 días acumulados en 6 meses",
+            "• Planifique su itinerario razonablemente"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Recordatorios importantes",
+          "items": [
+            "• Debe tener un propósito turístico claro",
+            "• No puede trabajar o participar en actividades comerciales en Japón",
+            "• Las violaciones pueden resultar en rechazo de entrada o deportación"
+          ]
+        }
+      },
+      "continueButton": "Entendido, continuar preparación"
+    },
+    "requirements": {
+      "headerTitle": "Lista de verificación de entrada a Japón",
+      "introTitle": "Confirme que cumple con estos requisitos",
+      "introSubtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de viajar a Japón",
+      "items": {
+        "validPassport": {
+          "title": "Pasaporte válido",
+          "description": "Pasaporte válido por al menos 6 meses",
+          "details": "El pasaporte debe ser válido por más de 6 meses desde la fecha de salida planificada"
+        },
+        "returnTicket": {
+          "title": "Boleto de regreso",
+          "description": "Boleto de regreso o viaje posterior confirmado",
+          "details": "Debe tener un plan de salida claro, mostrando que dejará Japón dentro de 90 días"
+        },
+        "sufficientFunds": {
+          "title": "Fondos suficientes",
+          "description": "Comprobante de fondos para toda la estadía",
+          "details": "Recomendado llevar al menos 100,000 yenes o equivalente, o mostrar tarjeta de crédito/estados de cuenta bancarios"
+        },
+        "accommodation": {
+          "title": "Comprobante de alojamiento",
+          "description": "Reserva de hotel o contacto de anfitrión en Japón",
+          "details": "Proporcionar confirmación de reserva de hotel o información de contacto detallada de amigos/familiares en Japón"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "¡Está listo!",
+          "subtitle": "A continuación le guiaremos a través de los procedimientos de entrada."
+        },
+        "warning": {
+          "title": "Por favor revise cada elemento",
+          "subtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de continuar."
+        }
+      },
+      "continueButton": "Continuar a procedimientos de entrada"
+    },
+    "procedures": {
+      "headerTitle": "Procedimientos de entrada",
+      "title": "Proceso completo de entrada a Japón",
+      "subtitle": "BorderBuddy le ayudará a preparar todo",
+      "helpSection": {
+        "title": "📝 Lo que BorderBuddy hace por usted",
+        "description": "¡Rellenaremos la tarjeta de entrada y declaración de aduanas por usted, solo cópiela en el aeropuerto!",
+        "subdescription": "No se preocupe por cometer errores, solo copie lo que hemos preparado"
+      },
+      "entrySteps": {
+        "title": "🚶‍♂️ Pasos de entrada",
+        "steps": [
+          {
+            "title": "Llegada al aeropuerto",
+            "description": "Llegada al hall de inmigración del aeropuerto japonés",
+            "details": "Prepare su pasaporte y tarjeta de entrada y declaración de aduanas rellenadas"
+          },
+          {
+            "title": "Inspección de inmigración",
+            "description": "Ir al mostrador de inmigración",
+            "details": "Presentar pasaporte y tarjeta de entrada, someterse a inspección del oficial y toma de huellas"
+          },
+          {
+            "title": "Declaración de aduanas",
+            "description": "Ir al área de inspección de aduanas",
+            "details": "Presentar declaración de aduanas, declarar artículos llevados, puede requerir inspección de equipaje"
+          },
+          {
+            "title": "Entrada completa",
+            "description": "Recibir sello de entrada",
+            "details": "Obtener sello de entrada en pasaporte, ingresar oficialmente a Japón"
+          }
+        ]
+      },
+      "features": {
+        "title": "✨ Lo que BorderBuddy puede hacer por usted",
+        "items": [
+          {
+            "icon": "📝",
+            "title": "Relleno automático",
+            "description": "Rellenamos tarjeta de entrada y declaración, usted copia"
+          },
+          {
+            "icon": "📋",
+            "title": "Entrada de información",
+            "description": "Ingrese info de viaje una vez, sistema rellena todos formularios automáticamente"
+          },
+          {
+            "icon": "📱",
+            "title": "No necesita internet",
+            "description": "Ver formularios sin conexión, funciona sin señal en aeropuerto"
+          },
+          {
+            "icon": "💾",
+            "title": "Recordar información",
+            "description": "Guardar detalles, usar directamente en próxima visita a Japón"
+          }
+        ]
+      },
+      "importantNotes": {
+        "title": "⚠️ Recordatorios importantes",
+        "items": [
+          "• Tarjeta de entrada y declaración deben rellenarse con bolígrafo negro o azul",
+          "• Escritura debe ser clara, información precisa",
+          "• Responder honestamente preguntas sí/no en declaración",
+          "• Ser cortés y cooperar con inspecciones",
+          "• Conservar talón tarjeta de entrada hasta salida"
+        ]
+      },
+      "startButton": "Comenzar a preparar pack de entrada"
+    }
+  }
+}

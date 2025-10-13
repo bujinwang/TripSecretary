@@ -1,4 +1,4 @@
-// 出境通 - Japan Info Screen (日本入境信息)
+// 出境通 - Hong Kong Info Screen (香港入境信息)
 import React, { useMemo } from 'react';
 import {
   View,
@@ -8,76 +8,90 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
+import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 
-const JapanInfoScreen = ({ navigation, route }) => {
+const HongKongInfoScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
   const { t } = useLocale();
 
   const handleContinue = () => {
-    navigation.navigate('JapanRequirements', { passport, destination });
+    navigation.navigate('HongKongRequirements', { passport, destination });
   };
+
+  const normalizeItems = (value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.length > 0) {
+      return [value];
+    }
+    return [];
+  };
+
+  const infoSections = useMemo(
+    () => [
+      {
+        key: 'visa',
+        title: t('hongkong.info.sections.visa.title'),
+        items: normalizeItems(t('hongkong.info.sections.visa.items', { defaultValue: [] })),
+        cardStyle: styles.infoCard,
+        textStyle: styles.infoText,
+      },
+      {
+        key: 'entry',
+        title: t('hongkong.info.sections.entry.title'),
+        items: normalizeItems(t('hongkong.info.sections.entry.items', { defaultValue: [] })),
+        cardStyle: styles.infoCard,
+        textStyle: styles.infoText,
+      },
+      {
+        key: 'onsite',
+        title: t('hongkong.info.sections.onsite.title'),
+        items: normalizeItems(t('hongkong.info.sections.onsite.items', { defaultValue: [] })),
+        cardStyle: styles.warningCard,
+        textStyle: styles.warningText,
+      },
+    ],
+    [t]
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <BackButton
           onPress={() => navigation.goBack()}
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('japan.info.headerTitle')}</Text>
+        <Text style={styles.headerTitle}>{t('hongkong.info.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.flag}>🇯🇵</Text>
-          <Text style={styles.title}>{t('japan.info.title')}</Text>
-          <Text style={styles.subtitle}>{t('japan.info.subtitle')}</Text>
+          <Text style={styles.flag}>🇭🇰</Text>
+          <Text style={styles.title}>{t('hongkong.info.title')}</Text>
+          <Text style={styles.subtitle}>{t('hongkong.info.subtitle')}</Text>
         </View>
 
-        {/* Visa Requirements */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.visa.title')}</Text>
-          <View style={styles.infoCard}>
-            {t('japan.info.sections.visa.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.infoText}>{item}</Text>
-            ))}
+        {infoSections.map((section) => (
+          <View key={section.key} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <View style={section.cardStyle}>
+              {section.items.map((item, index) => (
+                <Text style={section.textStyle} key={`${section.key}-${index}`}>
+                  {item}
+                </Text>
+              ))}
+            </View>
           </View>
-        </View>
+        ))}
 
-        {/* Stay Duration */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.duration.title')}</Text>
-          <View style={styles.infoCard}>
-            {t('japan.info.sections.duration.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.infoText}>{item}</Text>
-            ))}
-          </View>
-        </View>
-
-        {/* Important Notes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('japan.info.sections.important.title')}</Text>
-          <View style={styles.warningCard}>
-            {t('japan.info.sections.important.items', { defaultValue: [] }).map((item, index) => (
-              <Text key={index} style={styles.warningText}>{item}</Text>
-            ))}
-          </View>
-        </View>
-
-        {/* Continue Button */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleContinue}
-          >
-            <Text style={styles.continueButtonText}>{t('japan.info.continueButton')}</Text>
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue} activeOpacity={0.9}>
+            <Text style={styles.continueButtonText}>
+              {t('hongkong.info.continueButton')}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -157,11 +171,11 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   warningCard: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: '#E8F4FF',
     padding: spacing.lg,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#FF9800',
+    borderColor: '#1976D2',
   },
   warningText: {
     ...typography.body1,
@@ -186,4 +200,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default JapanInfoScreen;
+export default HongKongInfoScreen;

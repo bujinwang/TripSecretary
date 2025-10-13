@@ -1,5 +1,5 @@
-// 出境通 - Japan Requirements Screen (日本入境要求)
-import React, { useState, useMemo } from 'react';
+// 出境通 - Hong Kong Requirements Screen (香港入境要求确认)
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -8,89 +8,97 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
+import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 
-const JapanRequirementsScreen = ({ navigation, route }) => {
+const HongKongRequirementsScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
-  const { t } = useLocale();
   const [requirements, setRequirements] = useState({
     validPassport: false,
     returnTicket: false,
-    sufficientFunds: false,
     accommodation: false,
+    sufficientFunds: false,
+    healthDeclaration: false,
   });
+  const { t } = useLocale();
 
   const allChecked = Object.values(requirements).every(Boolean);
 
   const toggleRequirement = (key) => {
-    setRequirements(prev => ({
+    setRequirements((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
   const handleContinue = () => {
     if (allChecked) {
-      navigation.navigate('JapanProcedures', { passport, destination });
+      navigation.navigate('TravelInfo', { passport, destination });
     }
   };
 
-  const requirementItems = useMemo(() => [
-    {
-      key: 'validPassport',
-      title: t('japan.requirements.items.validPassport.title'),
-      description: t('japan.requirements.items.validPassport.description'),
-      details: t('japan.requirements.items.validPassport.details')
-    },
-    {
-      key: 'returnTicket',
-      title: t('japan.requirements.items.returnTicket.title'),
-      description: t('japan.requirements.items.returnTicket.description'),
-      details: t('japan.requirements.items.returnTicket.details')
-    },
-    {
-      key: 'sufficientFunds',
-      title: t('japan.requirements.items.sufficientFunds.title'),
-      description: t('japan.requirements.items.sufficientFunds.description'),
-      details: t('japan.requirements.items.sufficientFunds.details')
-    },
-    {
-      key: 'accommodation',
-      title: t('japan.requirements.items.accommodation.title'),
-      description: t('japan.requirements.items.accommodation.description'),
-      details: t('japan.requirements.items.accommodation.details')
-    },
-  ], [t]);
+  const requirementItems = useMemo(
+    () => [
+      {
+        key: 'validPassport',
+        title: t('hongkong.requirements.items.validPassport.title'),
+        description: t('hongkong.requirements.items.validPassport.description'),
+        details: t('hongkong.requirements.items.validPassport.details'),
+      },
+      {
+        key: 'returnTicket',
+        title: t('hongkong.requirements.items.returnTicket.title'),
+        description: t('hongkong.requirements.items.returnTicket.description'),
+        details: t('hongkong.requirements.items.returnTicket.details'),
+      },
+      {
+        key: 'accommodation',
+        title: t('hongkong.requirements.items.accommodation.title'),
+        description: t('hongkong.requirements.items.accommodation.description'),
+        details: t('hongkong.requirements.items.accommodation.details'),
+      },
+      {
+        key: 'sufficientFunds',
+        title: t('hongkong.requirements.items.sufficientFunds.title'),
+        description: t('hongkong.requirements.items.sufficientFunds.description'),
+        details: t('hongkong.requirements.items.sufficientFunds.details'),
+      },
+      {
+        key: 'healthDeclaration',
+        title: t('hongkong.requirements.items.healthDeclaration.title'),
+        description: t('hongkong.requirements.items.healthDeclaration.description'),
+        details: t('hongkong.requirements.items.healthDeclaration.details'),
+      },
+    ],
+    [t]
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <BackButton
           onPress={() => navigation.goBack()}
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('japan.requirements.headerTitle')}</Text>
+        <Text style={styles.headerTitle}>{t('hongkong.requirements.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.title}>{t('japan.requirements.introTitle')}</Text>
-          <Text style={styles.subtitle}>{t('japan.requirements.introSubtitle')}</Text>
+          <Text style={styles.title}>{t('hongkong.requirements.introTitle')}</Text>
+          <Text style={styles.subtitle}>{t('hongkong.requirements.introSubtitle')}</Text>
         </View>
 
-        {/* Requirements List */}
         <View style={styles.requirementsList}>
-          {requirementItems.map((item, index) => (
+          {requirementItems.map((item) => (
             <TouchableOpacity
               key={item.key}
               style={styles.requirementCard}
               onPress={() => toggleRequirement(item.key)}
+              activeOpacity={0.85}
             >
               <View style={styles.requirementHeader}>
                 <View style={styles.checkboxContainer}>
@@ -108,32 +116,46 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
           ))}
         </View>
 
-        {/* Status Message */}
         <View style={styles.statusSection}>
           {allChecked ? (
             <View style={styles.successCard}>
               <Text style={styles.successIcon}>✅</Text>
-              <Text style={styles.successText}>{t('japan.requirements.status.success.title')}</Text>
-              <Text style={styles.successSubtext}>{t('japan.requirements.status.success.subtitle')}</Text>
+              <Text style={styles.successText}>
+                {t('hongkong.requirements.status.success.title')}
+              </Text>
+              <Text style={styles.successSubtext}>
+                {t('hongkong.requirements.status.success.subtitle')}
+              </Text>
             </View>
           ) : (
             <View style={styles.warningCard}>
               <Text style={styles.warningIcon}>⚠️</Text>
-              <Text style={styles.warningText}>{t('japan.requirements.status.warning.title')}</Text>
-              <Text style={styles.warningSubtext}>{t('japan.requirements.status.warning.subtitle')}</Text>
+              <Text style={styles.warningText}>
+                {t('hongkong.requirements.status.warning.title')}
+              </Text>
+              <Text style={styles.warningSubtext}>
+                {t('hongkong.requirements.status.warning.subtitle')}
+              </Text>
             </View>
           )}
         </View>
 
-        {/* Continue Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[styles.continueButton, !allChecked && styles.continueButtonDisabled]}
+            style={[
+              styles.continueButton,
+              !allChecked && styles.continueButtonDisabled,
+            ]}
             onPress={handleContinue}
             disabled={!allChecked}
           >
-            <Text style={[styles.continueButtonText, !allChecked && styles.continueButtonTextDisabled]}>
-              {t('japan.requirements.continueButton')}
+            <Text
+              style={[
+                styles.continueButtonText,
+                !allChecked && styles.continueButtonTextDisabled,
+              ]}
+            >
+              {t('hongkong.requirements.continueButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -171,21 +193,18 @@ const styles = StyleSheet.create({
     width: 40,
   },
   titleSection: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
   },
   title: {
-    ...typography.h3,
+    ...typography.h2,
     color: colors.primary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-    fontWeight: 'bold',
+    marginBottom: spacing.sm,
   },
   subtitle: {
     ...typography.body1,
     color: colors.textSecondary,
-    textAlign: 'center',
+    lineHeight: 22,
   },
   requirementsList: {
     paddingHorizontal: spacing.md,
@@ -207,7 +226,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: '#E3F2FD',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -221,10 +240,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   requirementTitle: {
-    ...typography.h3,
+    ...typography.h4,
     color: colors.text,
-    marginBottom: spacing.xs,
     fontWeight: '600',
+    marginBottom: spacing.xs,
   },
   requirementDescription: {
     ...typography.body1,
@@ -232,59 +251,57 @@ const styles = StyleSheet.create({
   },
   requirementDetails: {
     ...typography.body2,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginLeft: 48, // Align with content
+    color: colors.text,
+    marginTop: spacing.sm,
+    lineHeight: 22,
   },
   statusSection: {
     paddingHorizontal: spacing.md,
     marginTop: spacing.lg,
   },
   successCard: {
-    backgroundColor: '#E8F5E8',
-    padding: spacing.lg,
+    backgroundColor: '#E8F5E9',
     borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#4CAF50',
   },
   successIcon: {
-    fontSize: 32,
+    fontSize: 28,
     marginBottom: spacing.sm,
   },
   successText: {
-    ...typography.h3,
-    color: '#2E7D32',
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
+    ...typography.h4,
+    color: colors.primary,
+    fontWeight: '600',
   },
   successSubtext: {
-    ...typography.body1,
-    color: '#2E7D32',
-    textAlign: 'center',
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   warningCard: {
     backgroundColor: '#FFF3E0',
-    padding: spacing.lg,
     borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#FFCC80',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FF9800',
   },
   warningIcon: {
-    fontSize: 32,
+    fontSize: 28,
     marginBottom: spacing.sm,
   },
   warningText: {
-    ...typography.h3,
-    color: '#E65100',
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
+    ...typography.h4,
+    color: '#EF6C00',
+    fontWeight: '600',
   },
   warningSubtext: {
-    ...typography.body1,
-    color: '#E65100',
-    textAlign: 'center',
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
@@ -309,4 +326,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default JapanRequirementsScreen;
+export default HongKongRequirementsScreen;

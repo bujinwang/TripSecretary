@@ -23,3 +23,4 @@ export * from './thailand';
 export * from './malaysia';
 export * from './singapore';
 export * from './taiwan';
+export * from './hongkong';

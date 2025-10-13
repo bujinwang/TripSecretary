@@ -1,3 +1,5 @@
+import countryTranslations from './translations';
+
 export const SUPPORTED_LANGUAGES = ['en', 'zh', 'fr', 'de', 'es'];
 
 export const translations = {
@@ -393,6 +395,87 @@ export const translations = {
         digitalButton: 'Launch SG Arrival assistant',
       },
     },
+    hongkong: {
+      info: {
+        headerTitle: 'Hong Kong Entry Information',
+        title: 'Hong Kong Visa-Free Entry',
+        subtitle: 'Chinese passport holders: visa-free for up to 7 days',
+        sections: {
+          visa: {
+            title: '✓ Visa-Free Policy',
+            items: [
+              'Chinese passport holders can enter Hong Kong visa-free for tourism, business, and family visits for up to 7 days.',
+              '• Extension applications should be submitted to Hong Kong Immigration Department if needed',
+              '• No pre-registration is required for visa-free entry',
+              '• Make sure you have valid onward travel arrangements',
+            ],
+          },
+          entry: {
+            title: '🛂 Entry Requirements',
+            items: [
+              '• Valid passport with at least 1 month validity beyond your intended stay',
+              '• Return or onward travel ticket',
+              '• Proof of accommodation (hotel booking or host contact)',
+              '• Sufficient funds for your stay',
+              '• Complete health declaration if required',
+            ],
+          },
+          onsite: {
+            title: '⚠️ Important Reminders',
+            items: [
+              '• Have your return ticket and hotel booking confirmation ready for immigration inspection',
+              '• Prohibited items: drugs, weapons, and endangered species products',
+              '• Be prepared to show proof of sufficient funds if asked',
+              '• Comply with all immigration officer instructions',
+            ],
+          },
+        },
+        continueButton: 'Understood, continue to checklist',
+      },
+      requirements: {
+        headerTitle: 'Hong Kong Entry Checklist',
+        introTitle: 'Confirm you have everything ready',
+        introSubtitle: 'Make sure you meet all requirements before traveling to Hong Kong',
+        items: {
+          validPassport: {
+            title: 'Passport validity',
+            description: 'Passport should be valid for at least 1 month beyond your stay',
+            details: 'Hong Kong requires your passport to be valid beyond your intended stay. Check expiry date and renew if necessary.',
+          },
+          returnTicket: {
+            title: 'Return or onward ticket',
+            description: 'Confirmed booking for departure from Hong Kong',
+            details: 'Immigration may ask to see proof of your return flight or onward journey. Have your e-ticket or booking confirmation ready.',
+          },
+          accommodation: {
+            title: 'Accommodation proof',
+            description: 'Hotel booking or host contact information',
+            details: 'Bring hotel reservation confirmation or contact details of your host in Hong Kong, including address and phone number.',
+          },
+          sufficientFunds: {
+            title: 'Sufficient funds',
+            description: 'Cash, credit cards, or bank statements',
+            details: 'You may need to demonstrate you have enough money for your stay. Bring cash, credit cards, or recent bank statements.',
+          },
+          healthDeclaration: {
+            title: 'Health declaration',
+            description: 'Complete if required by current health regulations',
+            details: 'Check if health declarations or COVID-related documents are needed. Complete any required forms before arrival.',
+          },
+        },
+        status: {
+          success: {
+            title: 'You are ready!',
+            subtitle: 'Next we will collect your travel details.',
+          },
+          warning: {
+            title: 'Review each item',
+            subtitle: 'Ensure you meet all requirements before continuing.',
+          },
+        },
+        continueButton: 'Continue to travel information',
+      },
+    },
     taiwan: {
       info: {
         headerTitle: 'Taiwan Entry Information',
@@ -583,582 +666,6 @@ export const translations = {
         digitalTitle: 'Taiwan Online Arrival Card',
         digitalHighlight: 'We help manage the email verification and form submission. Keep the confirmation email for immigration.',
         digitalButton: 'Launch Taiwan assistant',
-      },
-    },
-    singapore: {
-      info: {
-        headerTitle: '新加坡入境信息',
-        title: '新加坡免签入境与 SG Arrival Card',
-        subtitle: '2024年2月9日起中国护照免签30天',
-        sections: {
-          visa: {
-            title: '✓ 免签政策',
-            items: [
-              '从2024年2月9日起，持中国普通护照可免签入境新加坡，停留不超过30天。',
-              '• 适用于旅游、探亲、商务等私人事务',
-              '• 从事工作或停留超过30天需提前申请相应签证',
-              '• 因公护照持有者同样享受免签待遇',
-            ],
-          },
-          entry: {
-            title: '🛂 入境要求',
-            items: [
-              '• 护照有效期至少6个月以上',
-              '• 入境前3天内必须填写SG Arrival Card电子入境卡',
-              '• 往返机票或后续行程证明',
-              '• 充足的旅行资金证明（现金、信用卡等）',
-              '• 住宿证明或在新联系人信息',
-            ],
-          },
-          onsite: {
-            title: '⚠️ 重要提醒',
-            items: [
-              '• 务必在入境前3天内完成SG Arrival Card填写，确保信息准确',
-              '• 禁止携带毒品、受保护动植物制品入境',
-              '• 谨慎携带药品、酒类和现金，避免为陌生人携带行李',
-              '• 保持冷静配合海关检查，切勿行贿',
-            ],
-          },
-        },
-        continueButton: '我已了解，继续确认材料',
-      },
-      requirements: {
-        headerTitle: 'SG Arrival Card 准备清单',
-        introTitle: '请确认以下条件已满足',
-        introSubtitle: '新加坡要求在抵达前3天内完成申报',
-        items: {
-          validPassport: {
-            title: '护照有效期',
-            description: '护照建议至少还有6个月有效期',
-            details: '新加坡建议护照有效期不少于6个月，若即将到期请提前换发新护照。',
-          },
-          submissionWindow: {
-            title: '3天内申报窗口',
-            description: '按照新加坡时间（GMT+8）在抵达前3天内提交',
-            details: '窗口未打开前提交会被系统拒绝，请在倒计时进入后再完成申报，可设置提醒防止错过。',
-          },
-          travelDetails: {
-            title: '行程与住宿信息',
-            description: '航班/船班/巴士号、入境口岸、住宿/联系人、访问目的',
-            details: '准备包含国际区号的联系电话。商务访客可填写新加坡公司或邀请人的联系方式。',
-          },
-          familyGroups: {
-            title: '家庭/随行成员安排',
-            description: '确定是单独提交还是使用家庭申报',
-            details: '家庭申报最多支持10人，需要逐一输入成员信息。请准备好儿童及随行人员的护照资料。',
-          },
-          sgArrivalHistory: {
-            title: '入境记录',
-            description: 'SG Arrival Card 仅限一次入境使用',
-            details: '再次入境需要重新提交最新行程。旧的申报无法重复使用。',
-          },
-        },
-        status: {
-          success: {
-            title: '准备就绪！',
-            subtitle: '接下来将使用通关包信息协助填写SG Arrival Card。',
-          },
-          warning: {
-            title: '请先确认所有事项',
-            subtitle: '请在满足要求后再继续下一步。',
-          },
-        },
-        continueButton: '继续填写行程信息',
-      },
-      selection: {
-        headerTitle: 'SG Arrival Card 智能助手',
-        headerSubtitle: '选择最适合你的申报方式',
-        recommendedBadge: '推荐',
-        smartFlow: {
-          title: '⚡ 智能引导模式',
-          subtitle: '利用通关包快速填写',
-          highlights: [
-            { title: '预计耗时', value: '6-10分钟' },
-            { title: '家庭支持', value: '最多10人' },
-            { title: '成功率', value: '98%' },
-          ],
-          features: [
-            '• 自动带出护照、航班与住宿信息',
-            '• 提醒添加家庭成员并核对健康申报',
-            '• 记录确认邮件/短信，入境时快速出示',
-          ],
-          cta: '开始智能引导 ->',
-        },
-        webFlow: {
-          title: '🌐 SG Arrival Card 官网',
-          subtitle: '在应用内直接打开官方表单',
-          features: [
-            '• 内嵌官方页面，功能完整',
-            '• 无需切换应用即可复制通关包信息',
-            '• 熟悉流程的旅客可以快速完成提交',
-          ],
-          cta: '打开内嵌SG Arrival Card',
-        },
-        notes: {
-          title: '温馨提醒',
-          items: [
-            '每次入境都需重新申报，纯过境且不入境的旅客可免提交。',
-            '家庭申报需逐一填写成员信息，确保数据准确。',
-            '请保留确认邮件/短信，以备入境官员查验。',
-          ],
-        },
-      },
-      guide: {
-        headerTitle: 'SG Arrival Card 引导模式',
-        banner: {
-          title: '利用通关包信息自动填表',
-          subtitle: '逐步提醒，适合携家人共同申报',
-        },
-        stepSectionTitle: '操作步骤',
-        steps: [
-          {
-            title: '核对旅客信息',
-            subtitle: '确保护照资料与表单完全一致',
-            details: [
-              '确认姓名拼写、护照号、国籍、有效期无误。',
-              '选择正确的旅客类型（例如外国访客、居民返回）。',
-              '填写可用的邮箱与手机号，以便接收通知。',
-            ],
-          },
-          {
-            title: '填写抵达与住宿信息',
-            subtitle: '根据行程如实填写',
-            details: [
-              '输入抵达日期时间以及航班/船/巴士号，需在3天窗口内。',
-              '选择抵达口岸（如樟宜机场 T3、兀兰关卡等）。',
-              '提供住宿地址或当地联系人的详细信息，包括邮编。',
-            ],
-          },
-          {
-            title: '健康与旅行申报',
-            subtitle: '如实填写健康状况与旅行史',
-            details: [
-              '如实申报近期是否访问高风险地区。',
-              '准确回答健康症状问题，并保留相关证明。',
-              '提交后请确认已收到邮件或短信通知。',
-            ],
-          },
-        ],
-        quickActions: {
-          title: '快捷工具',
-          items: [
-            {
-              icon: '🕒',
-              title: '72小时提醒',
-              description: '根据抵达日期提醒您何时可以提交。',
-            },
-            {
-              icon: '👪',
-              title: '家庭助手',
-              description: '快速复制信息，方便为家人提交。',
-            },
-            {
-              icon: '📬',
-              title: '确认追踪',
-              description: '记录收到确认邮件/短信的账号，入境时不慌。',
-            },
-          ],
-        },
-        primaryCta: '打开SG Arrival Card助手',
-        ctaHint: '将在应用内加载ICA官方网站。',
-      },
-      webview: {
-        headerTitle: 'SG Arrival Card 网页助手',
-        notice: '在此完成新加坡数字入境卡，所有数据仅保存在本机。',
-        loading: '正在加载SG Arrival Card...',
-        openExternal: '使用浏览器打开',
-        openFailedTitle: '无法打开链接',
-        openFailedBody: '请复制网址后在浏览器中打开。',
-      },
-      result: {
-        digitalBadge: '抵达前3天提交',
-        digitalTitle: '新加坡 SG Arrival Card',
-        digitalHighlight: '利用通关包快速完成SG Arrival Card，请保留确认邮件或短信以备入境查验。',
-        digitalButton: '启动SG Arrival助手',
-      },
-    },
-    taiwan: {
-      info: {
-        headerTitle: '台湾入境信息',
-        title: '台湾入境签证与电子入境卡',
-        subtitle: '中国大陆护照需提前办理入台证',
-        sections: {
-          visa: {
-            title: '✓ 签证要求',
-            items: [
-              '中国大陆护照持有者需提前申请入台证，不可免签入境。',
-              '• 单次入境签证有效期3个月，可停留最多15天',
-              '• 多次入境签证有效期1年，每次停留最多15天，全年累计最多120天',
-              '• 需通过网上申请或委托旅行社办理，审核期约5个工作日',
-            ],
-          },
-          entry: {
-            title: '🛂 入境所需材料',
-            items: [
-              '• 有效护照（建议6个月以上有效期）',
-              '• 入台证（电子版打印即可）',
-              '• 往返机票或后续行程证明',
-              '• 住宿证明或在台联系人信息',
-              '• 填写电子入境卡（需邮箱接收验证码）',
-            ],
-          },
-          onsite: {
-            title: '⚠️ 重要提醒',
-            items: [
-              '• 入境前务必完成电子入境卡填写并保留确认邮件',
-              '• 入台证需随身携带，入境时需出示',
-              '• 不可在台从事与签证目的不符的活动',
-              '• 超期停留或违规将影响今后入境申请',
-            ],
-          },
-        },
-        continueButton: '我已了解，继续确认材料',
-      },
-      requirements: {
-        headerTitle: '台湾电子入境卡准备清单',
-        introTitle: '请确认以下事项',
-        introSubtitle: '邮箱验证码是进入表单的关键步骤',
-        items: {
-          validPassport: {
-            title: '护照有效期',
-            description: '护照需在停留期间保持有效',
-            details: '建议至少保留6个月有效期，避免入境时被拒。',
-          },
-          emailAccess: {
-            title: '可用邮箱',
-            description: '能够即时接收验证码邮件',
-            details: '准备好能快速登录的邮箱，验证码有效时间较短，请及时输入。',
-          },
-          submissionWindow: {
-            title: '提前提交',
-            description: '行程确定后即可填写，如有变动需重新提交',
-            details: '台湾允许提前填写，但信息变动时请及时更新以免影响入境。',
-          },
-          travelDetails: {
-            title: '行程与住宿信息',
-            description: '航班、住宿或接待人、联络电话',
-            details: '包括航空公司、航班号、住宿地址/邮编、联系电话等。',
-          },
-          otpReady: {
-            title: '验证码准备',
-            description: '可即时查看邮件验证码',
-            details: '验证码通常为6位数字，请在有效时间内输入完成验证。',
-          },
-        },
-        status: {
-          success: {
-            title: '准备完成！',
-            subtitle: '接下来会使用通关包信息协助填写电子入境卡。',
-          },
-          warning: {
-            title: '请先确认所有事项',
-            subtitle: '确保可以收到验证码并备齐资料后再继续。',
-          },
-        },
-        continueButton: '继续填写行程信息',
-      },
-      selection: {
-        headerTitle: '台湾电子入境卡助手',
-        headerSubtitle: '选择智能引导或直接打开官网',
-        recommendedBadge: '推荐',
-        smartFlow: {
-          title: '⚡ 智能引导模式',
-          subtitle: '结合通关包并提醒验证码步骤',
-          highlights: [
-            { title: '预计耗时', value: '7-12分钟' },
-            { title: '验证码步骤', value: '邮箱OTP' },
-            { title: '成功率', value: '97%' },
-          ],
-          features: [
-            '• 自动带出护照、航班、住宿信息',
-            '• 提醒及时查看邮箱并输入验证码',
-            '• 帮助记录确认邮件，入境时可快速出示',
-          ],
-          cta: '开始智能引导 ->',
-        },
-        webFlow: {
-          title: '🌐 官网快速入口',
-          subtitle: '在应用内直接打开台湾移民署网站',
-          features: [
-            '• 完整内嵌验证码与提交流程',
-            '• 支持复制通关包信息快速粘贴',
-            '• 熟悉流程的旅客可迅速完成提交',
-          ],
-          cta: '打开内嵌台湾电子入境卡',
-        },
-        notes: {
-          title: '温馨提醒',
-          items: [
-            '只有准备好验证码时再点击发送，避免超时。',
-            '若行程变动，请重新提交最新资料。',
-            '保存成功页面或邮件截图，以备海关查验。',
-          ],
-        },
-      },
-      guide: {
-        headerTitle: '台湾电子入境卡引导模式',
-        banner: {
-          title: '协助完成邮箱验证与填表',
-          subtitle: '逐步提醒，确保不遗漏任何字段',
-        },
-        stepSectionTitle: '操作步骤',
-        steps: [
-          {
-            title: '发送并获取验证码',
-            subtitle: '保持邮箱开启，及时查看',
-            details: [
-              '在官网输入邮箱后点击发送验证码。',
-              '在邮箱（含垃圾邮件夹）查收6位数验证码。',
-              '在有效时间内输入验证码解锁表单。',
-            ],
-          },
-          {
-            title: '填写旅客与抵达信息',
-            subtitle: '使用通关包中的资料快速填写',
-            details: [
-              '核对护照号码、国籍、生日等字段。',
-              '填写航班号、抵达时间、入境口岸。',
-              '输入住宿地址或接待人联系方式，包含邮递区号。',
-            ],
-          },
-          {
-            title: '旅行史与确认提交',
-            subtitle: '如实填写14日内旅行史',
-            details: [
-              '选择过去14天曾到访的国家地区。',
-              '确认健康与其他声明问题。',
-              '提交后保留确认页面或邮件，入境时备用。',
-            ],
-          },
-        ],
-        quickActions: {
-          title: '快捷工具',
-          items: [
-            {
-              icon: '✉️',
-              title: '验证码提醒',
-              description: '记录验证码是否收到，避免遗漏。',
-            },
-            {
-              icon: '📎',
-              title: '一键复制资料',
-              description: '随时复制护照/航班等信息粘贴到表单。',
-            },
-            {
-              icon: '🔁',
-              title: '再次提交助手',
-              description: '行程变更时快速重新生成新的入境卡。',
-            },
-          ],
-        },
-        primaryCta: '打开台湾入境助手',
-        ctaHint: '将在应用内加载台湾移民署网站。',
-      },
-      webview: {
-        headerTitle: '台湾电子入境卡网页助手',
-        notice: '在此发送验证码并填写电子入境卡，数据仅存于本机。',
-        loading: '正在加载台湾电子入境卡...',
-        openExternal: '使用浏览器打开',
-        openFailedTitle: '无法打开链接',
-        openFailedBody: '请复制网址后在浏览器中打开。',
-      },
-      result: {
-        digitalBadge: '抵达前完成',
-        digitalTitle: '台湾电子入境卡',
-        digitalHighlight: '我们协助完成邮箱验证码与填表步骤，请保留确认邮件以备查验。',
-        digitalButton: '启动台湾助手',
-      },
-    },
-    malaysia: {
-      info: {
-        headerTitle: '马来西亚入境信息',
-        title: '马来西亚免签入境与MDAC',
-        subtitle: '2023年12月1日起中国护照免签30天',
-        sections: {
-          visa: {
-            title: '✓ 免签政策',
-            items: [
-              '从2023年12月1日起，持中国护照可免签入境马来西亚，停留不超过30天。',
-              '• 适用于旅游、探亲、商务等目的',
-              '• 护照有效期需至少6个月以上',
-              '• 所有旅客入境前必须填写MDAC数字入境卡（完全免费）',
-            ],
-          },
-          entry: {
-            title: '🛂 入境要求',
-            items: [
-              '• 护照有效期至少6个月以上，保留空白页',
-              '• 入境前3天内完成MDAC填写（抵达前3个自然日）',
-              '• 往返机票或后续行程证明',
-              '• 住宿证明（酒店订单）或在马联系人信息',
-              '• 充足的旅行资金证明',
-            ],
-          },
-          onsite: {
-            title: '⚠️ 重要提醒',
-            items: [
-              '• 入境时需出示MDAC PIN码或确认邮件截图',
-              '• 禁止携带肉类、酒精、烟草等违禁物品入境',
-              '• 建议提前预订机票和酒店，并准备一定现金作为资金证明',
-              '• 注意MDAC填写时间窗口，过早提交会被系统拒绝',
-            ],
-          },
-        },
-        continueButton: '我已了解，继续确认材料',
-      },
-      requirements: {
-        headerTitle: 'MDAC准备清单',
-        introTitle: '请确认以下事项已经准备好',
-        introSubtitle: '这些条件是成功提交马来西亚MDAC的前提',
-        items: {
-          validPassport: {
-            title: '护照有效期',
-            description: '护照至少还有6个月有效期并保留空白签证页',
-            details: '马来西亚移民局要求护照在入境日起至少剩余6个月有效期，如不足请先更新护照再出行。',
-          },
-          submissionWindow: {
-            title: '3天内申报窗口',
-            description: 'MDAC仅接受抵达前3个自然日内的提交',
-            details: '以马来西亚时间（GMT+8）计算，自然日0点刷新窗口，过早提交会被系统拒绝，请在窗口开启后再申报。',
-          },
-          contactableEmail: {
-            title: '可用邮箱',
-            description: '能够及时接收确认邮件与PIN码',
-            details: '使用可在海外登录的邮箱，留意来自imigresen.gov.my的邮件，如未收到请查看垃圾箱并记录PIN码。',
-          },
-          travelDetails: {
-            title: '完整的行程信息',
-            description: '准备好航班号、入境口岸、住宿地址与联系电话',
-            details: '表单需要填写航空公司、航班号、抵达机场、在马地址、联系电话（含区号）与访问目的，请提前整理好。',
-          },
-          captchaReady: {
-            title: '验证码准备',
-            description: '可以手动输入提交前的字母数字验证码',
-            details: 'MDAC使用字母数字验证码，如看不清可刷新，提交需在几分钟内完成，避免因超时重新填写。',
-          },
-        },
-        status: {
-          success: {
-            title: '已完成准备！',
-            subtitle: '接下来填写行程信息即可提交MDAC。',
-          },
-          warning: {
-            title: '请先确认所有事项',
-            subtitle: '确保满足MDAC提交条件后再继续。',
-          },
-        },
-        continueButton: '继续填写行程信息',
-      },
-      selection: {
-        headerTitle: 'MDAC智能助手',
-        headerSubtitle: '选择合适的申报方式',
-        recommendedBadge: '推荐',
-        smartFlow: {
-          title: '⚡ 智能引导',
-          subtitle: '结合通关包一步步完成',
-          highlights: [
-            { title: '预计耗时', value: '8-12分钟' },
-            { title: '分步流程', value: '6个步骤' },
-            { title: '成功率', value: '98%' },
-          ],
-          features: [
-            '• 自动带出护照与行程信息，减少重复输入',
-            '• 提醒输入验证码并记录PIN码',
-            '• 引导检查确认邮件是否收到',
-          ],
-          cta: '开始智能引导 ->',
-        },
-        webFlow: {
-          title: '🌐 MDAC网页',
-          subtitle: '在应用内直接打开官网',
-          features: [
-            '• 原生MDAC网页嵌入，无需切换应用',
-            '• 可直接复制粘贴通关包中的信息',
-            '• 手动控制每一步，由您亲自提交',
-          ],
-          cta: '打开内嵌MDAC网页',
-        },
-        notes: {
-          title: '温馨提醒',
-          items: [
-            '请在抵达前3天内（马来西亚时间）完成申报。',
-            '入境时请准备好确认邮件或MDAC PIN码。',
-            '多人出行需为每位旅客分别提交MDAC。',
-          ],
-        },
-      },
-      guide: {
-        headerTitle: 'MDAC引导模式',
-        banner: {
-          title: '利用通关包自动填写MDAC',
-          subtitle: '逐项提醒，不漏填关键信息',
-        },
-        stepSectionTitle: '操作步骤',
-        steps: [
-          {
-            title: '核对旅客信息',
-            subtitle: '填写前先确认护照资料无误',
-            details: [
-              '确认英文姓名、护照号、国籍、有效期与护照一致。',
-              '证件类型选择Passport，国籍选择China / 中国。',
-              '填写可接听的联系电话，包含国家区号（例如+86 13800138000）。',
-            ],
-          },
-          {
-            title: '填写行程详情',
-            subtitle: '使用通关包里的行程数据',
-            details: [
-              '输入抵达机场与航班号（例如KUL / MH389）。',
-              '选择抵达日期并确保在3天窗口内，留意日历选择。',
-              '提供酒店名称与地址，或当地接待人的联系方式。',
-            ],
-          },
-          {
-            title: '提交并保存PIN码',
-            subtitle: '验证码与确认邮件非常重要',
-            details: [
-              '正确输入字母数字验证码，若看不清可先刷新。',
-              '提交成功后记录页面显示的MDAC PIN码。',
-              '检查邮箱（含垃圾箱）确认收到邮件，入境时随身携带。',
-            ],
-          },
-        ],
-        quickActions: {
-          title: '快捷工具',
-          items: [
-            {
-              icon: '📧',
-              title: '记录PIN邮件',
-              description: '标记所使用的邮箱并确认邮件是否到达。',
-            },
-            {
-              icon: '📍',
-              title: '复制住宿信息',
-              description: '点击即可复制酒店地址和电话，便于填写。',
-            },
-            {
-              icon: '🔁',
-              title: '便捷重新提交',
-              description: '行程变动时可复用已保存信息快速再申报。',
-            },
-          ],
-        },
-        primaryCta: '打开MDAC网页助手',
-        ctaHint: '将在应用内加载MDAC官方网站。',
-      },
-      webview: {
-        headerTitle: 'MDAC网页助手',
-        notice: '在此完成马来西亚数字入境卡（MDAC）官方表单，所有数据仅保留在本机。',
-        loading: '正在加载MDAC官网...',
-        openExternal: '使用浏览器打开',
-        openFailedTitle: '无法打开链接',
-        openFailedBody: '请复制网址后在浏览器中打开。',
-      },
-      result: {
-        digitalBadge: '抵达前3天提交',
-        digitalTitle: '马来西亚数字入境卡（MDAC）',
-        digitalHighlight: '我们会根据已保存的护照与行程信息协助提交MDAC，请保管好PIN码邮件。',
-        digitalButton: '启动MDAC助手',
       },
     },
     common: {
@@ -2082,6 +1589,663 @@ export const translations = {
         useExisting: '使用现有通关包',
         regenerate: '生成新通关包',
         cancel: '取消',
+      },
+    },
+    singapore: {
+      info: {
+        headerTitle: '新加坡入境信息',
+        title: '新加坡免签入境与 SG Arrival Card',
+        subtitle: '2024年2月9日起中国护照免签30天',
+        sections: {
+          visa: {
+            title: '✓ 免签政策',
+            items: [
+              '从2024年2月9日起，持中国普通护照可免签入境新加坡，停留不超过30天。',
+              '• 适用于旅游、探亲、商务等私人事务',
+              '• 从事工作或停留超过30天需提前申请相应签证',
+              '• 因公护照持有者同样享受免签待遇',
+            ],
+          },
+          entry: {
+            title: '🛂 入境要求',
+            items: [
+              '• 护照有效期至少6个月以上',
+              '• 入境前3天内必须填写SG Arrival Card电子入境卡',
+              '• 往返机票或后续行程证明',
+              '• 充足的旅行资金证明（现金、信用卡等）',
+              '• 住宿证明或在新联系人信息',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 务必在入境前3天内完成SG Arrival Card填写，确保信息准确',
+              '• 禁止携带毒品、受保护动植物制品入境',
+              '• 谨慎携带药品、酒类和现金，避免为陌生人携带行李',
+              '• 保持冷静配合海关检查，切勿行贿',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: 'SG Arrival Card 准备清单',
+        introTitle: '请确认以下条件已满足',
+        introSubtitle: '新加坡要求在抵达前3天内完成申报',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照建议至少还有6个月有效期',
+            details: '新加坡建议护照有效期不少于6个月，若即将到期请提前换发新护照。',
+          },
+          submissionWindow: {
+            title: '3天内申报窗口',
+            description: '按照新加坡时间（GMT+8）在抵达前3天内提交',
+            details: '窗口未打开前提交会被系统拒绝，请在倒计时进入后再完成申报，可设置提醒防止错过。',
+          },
+          travelDetails: {
+            title: '行程与住宿信息',
+            description: '航班/船班/巴士号、入境口岸、住宿/联系人、访问目的',
+            details: '准备包含国际区号的联系电话。商务访客可填写新加坡公司或邀请人的联系方式。',
+          },
+          familyGroups: {
+            title: '家庭/随行成员安排',
+            description: '确定是单独提交还是使用家庭申报',
+            details: '家庭申报最多支持10人，需要逐一输入成员信息。请准备好儿童及随行人员的护照资料。',
+          },
+          sgArrivalHistory: {
+            title: '入境记录',
+            description: 'SG Arrival Card 仅限一次入境使用',
+            details: '再次入境需要重新提交最新行程。旧的申报无法重复使用。',
+          },
+        },
+        status: {
+          success: {
+            title: '准备就绪！',
+            subtitle: '接下来将使用通关包信息协助填写SG Arrival Card。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '请在满足要求后再继续下一步。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: 'SG Arrival Card 智能助手',
+        headerSubtitle: '选择最适合你的申报方式',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导模式',
+          subtitle: '利用通关包快速填写',
+          highlights: [
+            { title: '预计耗时', value: '6-10分钟' },
+            { title: '家庭支持', value: '最多10人' },
+            { title: '成功率', value: '98%' },
+          ],
+          features: [
+            '• 自动带出护照、航班与住宿信息',
+            '• 提醒添加家庭成员并核对健康申报',
+            '• 记录确认邮件/短信，入境时快速出示',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 SG Arrival Card 官网',
+          subtitle: '在应用内直接打开官方表单',
+          features: [
+            '• 内嵌官方页面，功能完整',
+            '• 无需切换应用即可复制通关包信息',
+            '• 熟悉流程的旅客可以快速完成提交',
+          ],
+          cta: '打开内嵌SG Arrival Card',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '每次入境都需重新申报，纯过境且不入境的旅客可免提交。',
+            '家庭申报需逐一填写成员信息，确保数据准确。',
+            '请保留确认邮件/短信，以备入境官员查验。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'SG Arrival Card 引导模式',
+        banner: {
+          title: '利用通关包信息自动填表',
+          subtitle: '逐步提醒，适合携家人共同申报',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '核对旅客信息',
+            subtitle: '确保护照资料与表单完全一致',
+            details: [
+              '确认姓名拼写、护照号、国籍、有效期无误。',
+              '选择正确的旅客类型（例如外国访客、居民返回）。',
+              '填写可用的邮箱与手机号，以便接收通知。',
+            ],
+          },
+          {
+            title: '填写抵达与住宿信息',
+            subtitle: '根据行程如实填写',
+            details: [
+              '输入抵达日期时间以及航班/船/巴士号，需在3天窗口内。',
+              '选择抵达口岸（如樟宜机场 T3、兀兰关卡等）。',
+              '提供住宿地址或当地联系人的详细信息，包括邮编。',
+            ],
+          },
+          {
+            title: '健康与旅行申报',
+            subtitle: '如实填写健康状况与旅行史',
+            details: [
+              '如实申报近期是否访问高风险地区。',
+              '准确回答健康症状问题，并保留相关证明。',
+              '提交后请确认已收到邮件或短信通知。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '🕒',
+              title: '72小时提醒',
+              description: '根据抵达日期提醒您何时可以提交。',
+            },
+            {
+              icon: '👪',
+              title: '家庭助手',
+              description: '快速复制信息，方便为家人提交。',
+            },
+            {
+              icon: '📬',
+              title: '确认追踪',
+              description: '记录收到确认邮件/短信的账号，入境时不慌。',
+            },
+          ],
+        },
+        primaryCta: '打开SG Arrival Card助手',
+        ctaHint: '将在应用内加载ICA官方网站。',
+      },
+      webview: {
+        headerTitle: 'SG Arrival Card 网页助手',
+        notice: '在此完成新加坡数字入境卡，所有数据仅保存在本机。',
+        loading: '正在加载SG Arrival Card...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前3天提交',
+        digitalTitle: '新加坡 SG Arrival Card',
+        digitalHighlight: '利用通关包快速完成SG Arrival Card，请保留确认邮件或短信以备入境查验。',
+        digitalButton: '启动SG Arrival助手',
+      },
+    },
+    taiwan: {
+      info: {
+        headerTitle: '台湾入境信息',
+        title: '台湾入境签证与电子入境卡',
+        subtitle: '中国大陆护照需提前办理入台证',
+        sections: {
+          visa: {
+            title: '✓ 签证要求',
+            items: [
+              '中国大陆护照持有者需提前申请入台证，不可免签入境。',
+              '• 单次入境签证有效期3个月，可停留最多15天',
+              '• 多次入境签证有效期1年，每次停留最多15天，全年累计最多120天',
+              '• 需通过网上申请或委托旅行社办理，审核期约5个工作日',
+            ],
+          },
+          entry: {
+            title: '🛂 入境所需材料',
+            items: [
+              '• 有效护照（建议6个月以上有效期）',
+              '• 入台证（电子版打印即可）',
+              '• 往返机票或后续行程证明',
+              '• 住宿证明或在台联系人信息',
+              '• 填写电子入境卡（需邮箱接收验证码）',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 入境前务必完成电子入境卡填写并保留确认邮件',
+              '• 入台证需随身携带，入境时需出示',
+              '• 不可在台从事与签证目的不符的活动',
+              '• 超期停留或违规将影响今后入境申请',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: '台湾电子入境卡准备清单',
+        introTitle: '请确认以下事项',
+        introSubtitle: '邮箱验证码是进入表单的关键步骤',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照需在停留期间保持有效',
+            details: '建议至少保留6个月有效期，避免入境时被拒。',
+          },
+          emailAccess: {
+            title: '可用邮箱',
+            description: '能够即时接收验证码邮件',
+            details: '准备好能快速登录的邮箱，验证码有效时间较短，请及时输入。',
+          },
+          submissionWindow: {
+            title: '提前提交',
+            description: '行程确定后即可填写，如有变动需重新提交',
+            details: '台湾允许提前填写，但信息变动时请及时更新以免影响入境。',
+          },
+          travelDetails: {
+            title: '行程与住宿信息',
+            description: '航班、住宿或接待人、联络电话',
+            details: '包括航空公司、航班号、住宿地址/邮编、联系电话等。',
+          },
+          otpReady: {
+            title: '验证码准备',
+            description: '可即时查看邮件验证码',
+            details: '验证码通常为6位数字，请在有效时间内输入完成验证。',
+          },
+        },
+        status: {
+          success: {
+            title: '准备完成！',
+            subtitle: '接下来会使用通关包信息协助填写电子入境卡。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '确保可以收到验证码并备齐资料后再继续。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: '台湾电子入境卡助手',
+        headerSubtitle: '选择智能引导或直接打开官网',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导模式',
+          subtitle: '结合通关包并提醒验证码步骤',
+          highlights: [
+            { title: '预计耗时', value: '7-12分钟' },
+            { title: '验证码步骤', value: '邮箱OTP' },
+            { title: '成功率', value: '97%' },
+          ],
+          features: [
+            '• 自动带出护照、航班、住宿信息',
+            '• 提醒及时查看邮箱并输入验证码',
+            '• 帮助记录确认邮件，入境时可快速出示',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 官网快速入口',
+          subtitle: '在应用内直接打开台湾移民署网站',
+          features: [
+            '• 完整内嵌验证码与提交流程',
+            '• 支持复制通关包信息快速粘贴',
+            '• 熟悉流程的旅客可迅速完成提交',
+          ],
+          cta: '打开内嵌台湾电子入境卡',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '只有准备好验证码时再点击发送，避免超时。',
+            '若行程变动，请重新提交最新资料。',
+            '保存成功页面或邮件截图，以备海关查验。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: '台湾电子入境卡引导模式',
+        banner: {
+          title: '协助完成邮箱验证与填表',
+          subtitle: '逐步提醒，确保不遗漏任何字段',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '发送并获取验证码',
+            subtitle: '保持邮箱开启，及时查看',
+            details: [
+              '在官网输入邮箱后点击发送验证码。',
+              '在邮箱（含垃圾邮件夹）查收6位数验证码。',
+              '在有效时间内输入验证码解锁表单。',
+            ],
+          },
+          {
+            title: '填写旅客与抵达信息',
+            subtitle: '使用通关包中的资料快速填写',
+            details: [
+              '核对护照号码、国籍、生日等字段。',
+              '填写航班号、抵达时间、入境口岸。',
+              '输入住宿地址或接待人联系方式，包含邮递区号。',
+            ],
+          },
+          {
+            title: '旅行史与确认提交',
+            subtitle: '如实填写14日内旅行史',
+            details: [
+              '选择过去14天曾到访的国家地区。',
+              '确认健康与其他声明问题。',
+              '提交后保留确认页面或邮件，入境时备用。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '✉️',
+              title: '验证码提醒',
+              description: '记录验证码是否收到，避免遗漏。',
+            },
+            {
+              icon: '📎',
+              title: '一键复制资料',
+              description: '随时复制护照/航班等信息粘贴到表单。',
+            },
+            {
+              icon: '🔁',
+              title: '再次提交助手',
+              description: '行程变更时快速重新生成新的入境卡。',
+            },
+          ],
+        },
+        primaryCta: '打开台湾入境助手',
+        ctaHint: '将在应用内加载台湾移民署网站。',
+      },
+      webview: {
+        headerTitle: '台湾电子入境卡网页助手',
+        notice: '在此发送验证码并填写电子入境卡，数据仅存于本机。',
+        loading: '正在加载台湾电子入境卡...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前完成',
+        digitalTitle: '台湾电子入境卡',
+        digitalHighlight: '我们协助完成邮箱验证码与填表步骤，请保留确认邮件以备查验。',
+        digitalButton: '启动台湾助手',
+      },
+    },
+    hongkong: {
+      info: {
+        headerTitle: '香港入境信息',
+        title: '香港免签入境',
+        subtitle: '中国护照持有人免签停留7天',
+        sections: {
+          visa: {
+            title: '✓ 免签政策',
+            items: [
+              '中国护照持有人可免签入境香港，用于旅游、商务、探亲等目的，停留不超过7天。',
+              '• 如需延长停留时间，须向香港入境事务处申请',
+              '• 免签入境无需提前注册或申请',
+              '• 确保持有有效的离境或续程机票',
+            ],
+          },
+          entry: {
+            title: '🛂 入境要求',
+            items: [
+              '• 护照有效期至少超过预定停留期1个月',
+              '• 返程或续程机票',
+              '• 住宿证明（酒店预订或联系人信息）',
+              '• 充足的旅行资金',
+              '• 如有要求需填写健康申报',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 准备好返程机票和酒店预订确认单以备入境检查',
+              '• 禁止携带毒品、武器、濒危物种制品',
+              '• 准备好资金证明以备查问',
+              '• 配合入境官员的所有指示',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: '香港入境准备清单',
+        introTitle: '请确认以下条件已满足',
+        introSubtitle: '确保在前往香港前满足所有入境要求',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照有效期至少超过停留期1个月',
+            details: '香港要求护照在预定停留期后仍有效。请检查护照有效期，必要时提前更换。',
+          },
+          returnTicket: {
+            title: '返程或续程机票',
+            description: '已确认的离港机票预订',
+            details: '入境处可能要求查看返程或续程机票证明。请准备好电子机票或预订确认单。',
+          },
+          accommodation: {
+            title: '住宿证明',
+            description: '酒店预订或联系人信息',
+            details: '携带酒店预订确认单，或香港联系人的详细信息，包括地址和电话号码。',
+          },
+          sufficientFunds: {
+            title: '充足资金',
+            description: '现金、信用卡或银行流水',
+            details: '可能需要证明有足够资金支付停留期间的费用。准备现金、信用卡或近期银行对账单。',
+          },
+          healthDeclaration: {
+            title: '健康申报',
+            description: '根据现行健康规定填写（如有要求）',
+            details: '检查是否需要健康申报或新冠相关文件。在抵达前完成所有必需的表格。',
+          },
+        },
+        status: {
+          success: {
+            title: '准备就绪！',
+            subtitle: '接下来将收集您的旅行详情。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '请在满足要求后再继续下一步。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+    },
+    malaysia: {
+      info: {
+        headerTitle: '马来西亚入境信息',
+        title: '马来西亚免签入境与MDAC',
+        subtitle: '2023年12月1日起中国护照免签30天',
+        sections: {
+          visa: {
+            title: '✓ 免签政策',
+            items: [
+              '从2023年12月1日起，持中国护照可免签入境马来西亚，停留不超过30天。',
+              '• 适用于旅游、探亲、商务等目的',
+              '• 护照有效期需至少6个月以上',
+              '• 所有旅客入境前必须填写MDAC数字入境卡（完全免费）',
+            ],
+          },
+          entry: {
+            title: '🛂 入境要求',
+            items: [
+              '• 护照有效期至少6个月以上，保留空白页',
+              '• 入境前3天内完成MDAC填写（抵达前3个自然日）',
+              '• 往返机票或后续行程证明',
+              '• 住宿证明（酒店订单）或在马联系人信息',
+              '• 充足的旅行资金证明',
+            ],
+          },
+          onsite: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 入境时需出示MDAC PIN码或确认邮件截图',
+              '• 禁止携带肉类、酒精、烟草等违禁物品入境',
+              '• 建议提前预订机票和酒店，并准备一定现金作为资金证明',
+              '• 注意MDAC填写时间窗口，过早提交会被系统拒绝',
+            ],
+          },
+        },
+        continueButton: '我已了解，继续确认材料',
+      },
+      requirements: {
+        headerTitle: 'MDAC准备清单',
+        introTitle: '请确认以下事项已经准备好',
+        introSubtitle: '这些条件是成功提交马来西亚MDAC的前提',
+        items: {
+          validPassport: {
+            title: '护照有效期',
+            description: '护照至少还有6个月有效期并保留空白签证页',
+            details: '马来西亚移民局要求护照在入境日起至少剩余6个月有效期，如不足请先更新护照再出行。',
+          },
+          submissionWindow: {
+            title: '3天内申报窗口',
+            description: 'MDAC仅接受抵达前3个自然日内的提交',
+            details: '以马来西亚时间（GMT+8）计算，自然日0点刷新窗口，过早提交会被系统拒绝，请在窗口开启后再申报。',
+          },
+          contactableEmail: {
+            title: '可用邮箱',
+            description: '能够及时接收确认邮件与PIN码',
+            details: '使用可在海外登录的邮箱，留意来自imigresen.gov.my的邮件，如未收到请查看垃圾箱并记录PIN码。',
+          },
+          travelDetails: {
+            title: '完整的行程信息',
+            description: '准备好航班号、入境口岸、住宿地址与联系电话',
+            details: '表单需要填写航空公司、航班号、抵达机场、在马地址、联系电话（含区号）与访问目的，请提前整理好。',
+          },
+          captchaReady: {
+            title: '验证码准备',
+            description: '可以手动输入提交前的字母数字验证码',
+            details: 'MDAC使用字母数字验证码，如看不清可刷新，提交需在几分钟内完成，避免因超时重新填写。',
+          },
+        },
+        status: {
+          success: {
+            title: '已完成准备！',
+            subtitle: '接下来填写行程信息即可提交MDAC。',
+          },
+          warning: {
+            title: '请先确认所有事项',
+            subtitle: '确保满足MDAC提交条件后再继续。',
+          },
+        },
+        continueButton: '继续填写行程信息',
+      },
+      selection: {
+        headerTitle: 'MDAC智能助手',
+        headerSubtitle: '选择合适的申报方式',
+        recommendedBadge: '推荐',
+        smartFlow: {
+          title: '⚡ 智能引导',
+          subtitle: '结合通关包一步步完成',
+          highlights: [
+            { title: '预计耗时', value: '8-12分钟' },
+            { title: '分步流程', value: '6个步骤' },
+            { title: '成功率', value: '98%' },
+          ],
+          features: [
+            '• 自动带出护照与行程信息，减少重复输入',
+            '• 提醒输入验证码并记录PIN码',
+            '• 引导检查确认邮件是否收到',
+          ],
+          cta: '开始智能引导 ->',
+        },
+        webFlow: {
+          title: '🌐 MDAC网页',
+          subtitle: '在应用内直接打开官网',
+          features: [
+            '• 原生MDAC网页嵌入，无需切换应用',
+            '• 可直接复制粘贴通关包中的信息',
+            '• 手动控制每一步，由您亲自提交',
+          ],
+          cta: '打开内嵌MDAC网页',
+        },
+        notes: {
+          title: '温馨提醒',
+          items: [
+            '请在抵达前3天内（马来西亚时间）完成申报。',
+            '入境时请准备好确认邮件或MDAC PIN码。',
+            '多人出行需为每位旅客分别提交MDAC。',
+          ],
+        },
+      },
+      guide: {
+        headerTitle: 'MDAC引导模式',
+        banner: {
+          title: '利用通关包自动填写MDAC',
+          subtitle: '逐项提醒，不漏填关键信息',
+        },
+        stepSectionTitle: '操作步骤',
+        steps: [
+          {
+            title: '核对旅客信息',
+            subtitle: '填写前先确认护照资料无误',
+            details: [
+              '确认英文姓名、护照号、国籍、有效期与护照一致。',
+              '证件类型选择Passport，国籍选择China / 中国。',
+              '填写可接听的联系电话，包含国家区号（例如+86 13800138000）。',
+            ],
+          },
+          {
+            title: '填写行程详情',
+            subtitle: '使用通关包里的行程数据',
+            details: [
+              '输入抵达机场与航班号（例如KUL / MH389）。',
+              '选择抵达日期并确保在3天窗口内，留意日历选择。',
+              '提供酒店名称与地址，或当地接待人的联系方式。',
+            ],
+          },
+          {
+            title: '提交并保存PIN码',
+            subtitle: '验证码与确认邮件非常重要',
+            details: [
+              '正确输入字母数字验证码，若看不清可先刷新。',
+              '提交成功后记录页面显示的MDAC PIN码。',
+              '检查邮箱（含垃圾箱）确认收到邮件，入境时随身携带。',
+            ],
+          },
+        ],
+        quickActions: {
+          title: '快捷工具',
+          items: [
+            {
+              icon: '📧',
+              title: '记录PIN邮件',
+              description: '标记所使用的邮箱并确认邮件是否到达。',
+            },
+            {
+              icon: '📍',
+              title: '复制住宿信息',
+              description: '点击即可复制酒店地址和电话，便于填写。',
+            },
+            {
+              icon: '🔁',
+              title: '便捷重新提交',
+              description: '行程变动时可复用已保存信息快速再申报。',
+            },
+          ],
+        },
+        primaryCta: '打开MDAC网页助手',
+        ctaHint: '将在应用内加载MDAC官方网站。',
+      },
+      webview: {
+        headerTitle: 'MDAC网页助手',
+        notice: '在此完成马来西亚数字入境卡（MDAC）官方表单，所有数据仅保留在本机。',
+        loading: '正在加载MDAC官网...',
+        openExternal: '使用浏览器打开',
+        openFailedTitle: '无法打开链接',
+        openFailedBody: '请复制网址后在浏览器中打开。',
+      },
+      result: {
+        digitalBadge: '抵达前3天提交',
+        digitalTitle: '马来西亚数字入境卡（MDAC）',
+        digitalHighlight: '我们会根据已保存的护照与行程信息协助提交MDAC，请保管好PIN码邮件。',
+        digitalButton: '启动MDAC助手',
       },
     },
     thailand: {
@@ -3044,6 +3208,16 @@ export const translations = {
     },
   },
 };
+
+// Merge country-specific translations from JSON files
+Object.keys(countryTranslations).forEach((lang) => {
+  if (translations[lang]) {
+    translations[lang] = {
+      ...translations[lang],
+      ...countryTranslations[lang],
+    };
+  }
+});
 
 export const getLanguageLabel = (language) =>
   translations?.en?.languages?.[language] || language;

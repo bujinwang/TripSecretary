@@ -50,6 +50,9 @@ import {
   TWArrivalSelectionScreen,
   TWArrivalGuideScreen,
   TWArrivalWebViewScreen,
+  // Hong Kong screens
+  HongKongInfoScreen,
+  HongKongRequirementsScreen,
 } from '../screens';
 
 import { colors } from '../theme';
@@ -342,6 +345,20 @@ const AppNavigator = () => {
           options={{
             headerShown: false,
             presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="HongKongInfo"
+          component={HongKongInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongKongRequirements"
+          component={HongKongRequirementsScreen}
+          options={{
+            headerShown: false,
           }}
         />
         <Stack.Screen
