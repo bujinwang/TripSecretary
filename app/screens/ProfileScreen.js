@@ -62,9 +62,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }),
   });
 
-  const [showPersonalInfo, setShowPersonalInfo] = useState(true);
-  const [showPassportInfo, setShowPassportInfo] = useState(true);
-  const [showFundingProof, setShowFundingProof] = useState(true);
+  const [expandedSection, setExpandedSection] = useState('personal'); // 'personal', 'passport', 'funding', or null
   const [editingContext, setEditingContext] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [draftSavedNotification, setDraftSavedNotification] = useState(null);
@@ -342,6 +340,32 @@ const ProfileScreen = ({ navigation, route }) => {
     ],
     [t, languageLabel]
   );
+
+  // Count filled fields for each section
+  const personalFieldsCount = useMemo(() => {
+    const filled = personalFields.filter(field => {
+      const value = personalInfo[field.key];
+      return value && value.toString().trim() !== '';
+    }).length;
+    return { filled, total: personalFields.length };
+  }, [personalFields, personalInfo]);
+
+  const passportFieldsCount = useMemo(() => {
+    const passportFields = ['name', 'passportNo', 'nationality', 'expiry', 'issueDate', 'issuePlace'];
+    const filled = passportFields.filter(field => {
+      const value = passportData[field];
+      return value && value.toString().trim() !== '';
+    }).length;
+    return { filled, total: passportFields.length };
+  }, [passportData]);
+
+  const fundingFieldsCount = useMemo(() => {
+    const filled = fundingFields.filter(field => {
+      const value = fundingProof[field.key];
+      return value && value.toString().trim() !== '';
+    }).length;
+    return { filled, total: fundingFields.length };
+  }, [fundingFields, fundingProof]);
 
   const handleMenuPress = (itemId) => {
     console.log('Menu pressed:', itemId);
@@ -753,20 +777,30 @@ const ProfileScreen = ({ navigation, route }) => {
           <View style={styles.personalInfoCard}>
             <TouchableOpacity
               style={styles.sectionToggle}
-              onPress={() => setShowPersonalInfo((prev) => !prev)}
+              onPress={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
               accessibilityRole="button"
             >
               <Text style={styles.personalInfoIcon}>👤</Text>
               <View style={styles.sectionHeaderText}>
-                <Text style={styles.personalInfoLabel}>{personalTitle}</Text>
+                <View style={styles.sectionTitleRow}>
+                  <Text style={styles.personalInfoLabel}>{personalTitle}</Text>
+                  <Text style={[
+                    styles.fieldCount,
+                    personalFieldsCount.filled === personalFieldsCount.total 
+                      ? styles.fieldCountComplete 
+                      : styles.fieldCountIncomplete
+                  ]}>
+                    {personalFieldsCount.filled}/{personalFieldsCount.total}
+                  </Text>
+                </View>
                 <Text style={styles.sectionHeaderSubtitle}>{personalSubtitle}</Text>
               </View>
               <Text style={styles.sectionToggleArrow}>
-                {showPersonalInfo ? '▲' : '▼'}
+                {expandedSection === 'personal' ? '▲' : '▼'}
               </Text>
             </TouchableOpacity>
 
-            {showPersonalInfo ? (
+            {expandedSection === 'personal' ? (
               <View style={styles.infoList}>
                 {personalFields.map((field, index) => {
                   const value = personalInfo[field.key];
@@ -821,20 +855,30 @@ const ProfileScreen = ({ navigation, route }) => {
           <View style={styles.fundingCard}>
             <TouchableOpacity
               style={styles.sectionToggle}
-              onPress={() => setShowFundingProof((prev) => !prev)}
+              onPress={() => setExpandedSection(expandedSection === 'funding' ? null : 'funding')}
               accessibilityRole="button"
             >
               <Text style={styles.fundingIcon}>💰</Text>
               <View style={styles.sectionHeaderText}>
-                <Text style={styles.fundingTitle}>{fundingTitle}</Text>
+                <View style={styles.sectionTitleRow}>
+                  <Text style={styles.fundingTitle}>{fundingTitle}</Text>
+                  <Text style={[
+                    styles.fieldCount,
+                    fundingFieldsCount.filled === fundingFieldsCount.total 
+                      ? styles.fieldCountComplete 
+                      : styles.fieldCountIncomplete
+                  ]}>
+                    {fundingFieldsCount.filled}/{fundingFieldsCount.total}
+                  </Text>
+                </View>
                 <Text style={styles.sectionHeaderSubtitle}>{fundingSubtitle}</Text>
               </View>
               <Text style={styles.sectionToggleArrow}>
-                {showFundingProof ? '▲' : '▼'}
+                {expandedSection === 'funding' ? '▲' : '▼'}
               </Text>
             </TouchableOpacity>
 
-            {showFundingProof ? (
+            {expandedSection === 'funding' ? (
               <>
                 <View style={styles.fundingTip}>
                   <View style={styles.fundingTipHeader}>
@@ -907,14 +951,24 @@ const ProfileScreen = ({ navigation, route }) => {
           <View style={styles.personalInfoCard}>
             <TouchableOpacity
               style={styles.sectionToggle}
-              onPress={() => setShowPassportInfo((prev) => !prev)}
+              onPress={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
               accessibilityRole="button"
             >
               <Text style={styles.personalInfoIcon}>📘</Text>
               <View style={styles.sectionHeaderText}>
-                <Text style={styles.personalInfoLabel}>
-                  {t('profile.passport.title', { defaultValue: 'My Passport' })}
-                </Text>
+                <View style={styles.sectionTitleRow}>
+                  <Text style={styles.personalInfoLabel}>
+                    {t('profile.passport.title', { defaultValue: 'My Passport' })}
+                  </Text>
+                  <Text style={[
+                    styles.fieldCount,
+                    passportFieldsCount.filled === passportFieldsCount.total 
+                      ? styles.fieldCountComplete 
+                      : styles.fieldCountIncomplete
+                  ]}>
+                    {passportFieldsCount.filled}/{passportFieldsCount.total}
+                  </Text>
+                </View>
                 <Text style={styles.sectionHeaderSubtitle}>
                   {t('profile.passport.subtitle', {
                     passportNo: passportData.passportNo,
@@ -924,11 +978,11 @@ const ProfileScreen = ({ navigation, route }) => {
                 </Text>
               </View>
               <Text style={styles.sectionToggleArrow}>
-                {showPassportInfo ? '▲' : '▼'}
+                {expandedSection === 'passport' ? '▲' : '▼'}
               </Text>
             </TouchableOpacity>
 
-            {showPassportInfo ? (
+            {expandedSection === 'passport' ? (
               <View style={styles.infoList}>
                 <TouchableOpacity
                   style={styles.infoItem}
@@ -1396,10 +1450,32 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     flex: 1,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   personalInfoLabel: {
     ...typography.body2,
     fontWeight: '600',
     color: colors.text,
+    flex: 1,
+  },
+  fieldCount: {
+    ...typography.caption,
+    fontWeight: '600',
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: borderRadius.small,
+    marginLeft: spacing.xs,
+  },
+  fieldCountComplete: {
+    color: '#155724', // Dark green
+    backgroundColor: '#d4edda', // Light green
+  },
+  fieldCountIncomplete: {
+    color: '#856404', // Dark yellow/orange
+    backgroundColor: '#fff3cd', // Light yellow
   },
   sectionHeaderSubtitle: {
     ...typography.caption,
@@ -1492,6 +1568,7 @@ const styles = StyleSheet.create({
     ...typography.body2,
     fontWeight: '600',
     color: colors.text,
+    flex: 1,
   },
   fundingTip: {
     backgroundColor: colors.primaryLight,

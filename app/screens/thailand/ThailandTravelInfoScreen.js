@@ -19,7 +19,7 @@ import * as ImagePicker from 'expo-image-picker';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-import { NationalitySelector, PassportNameInput } from '../../components';
+import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../components';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
@@ -36,18 +36,33 @@ if (Platform.OS === 'android') {
   }
 }
 
-const CollapsibleSection = ({ title, children, onScan }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-
-  const toggleCollapse = () => {
+const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fieldCount }) => {
+  const handleToggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setIsCollapsed(!isCollapsed);
+    onToggle();
   };
+
+  const isComplete = fieldCount && fieldCount.filled === fieldCount.total;
 
   return (
     <View style={styles.sectionContainer}>
-      <TouchableOpacity style={styles.sectionHeader} onPress={toggleCollapse} activeOpacity={0.8}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          {fieldCount && (
+            <View style={[
+              styles.fieldCountBadge,
+              isComplete ? styles.fieldCountBadgeComplete : styles.fieldCountBadgeIncomplete
+            ]}>
+              <Text style={[
+                styles.fieldCountText,
+                isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
+              ]}>
+                {fieldCount.filled}/{fieldCount.total}
+              </Text>
+            </View>
+          )}
+        </View>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           {onScan && (
             <TouchableOpacity style={styles.scanButton} onPress={onScan}>
@@ -55,10 +70,10 @@ const CollapsibleSection = ({ title, children, onScan }) => {
               <Text style={styles.scanText}>扫描</Text>
             </TouchableOpacity>
           )}
-          <Text style={styles.sectionIcon}>{isCollapsed ? '▼' : '▲'}</Text>
+          <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
         </View>
       </TouchableOpacity>
-      {!isCollapsed && <View style={styles.sectionContent}>{children}</View>}
+      {isExpanded && <View style={styles.sectionContent}>{children}</View>}
     </View>
   );
 };
@@ -91,22 +106,88 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
 
-  // Travel Info State
+  // Travel Info State - Separate date and time fields
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
   const [arrivalDepartureAirport, setArrivalDepartureAirport] = useState('');
-  const [arrivalDepartureDateTime, setArrivalDepartureDateTime] = useState('');
+  const [arrivalDepartureDate, setArrivalDepartureDate] = useState('');
+  const [arrivalDepartureTime, setArrivalDepartureTime] = useState('');
   const [arrivalArrivalAirport, setArrivalArrivalAirport] = useState('');
-  const [arrivalArrivalDateTime, setArrivalArrivalDateTime] = useState('');
+  const [arrivalArrivalDate, setArrivalArrivalDate] = useState('');
+  const [arrivalArrivalTime, setArrivalArrivalTime] = useState('');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
   const [departureDepartureAirport, setDepartureDepartureAirport] = useState('');
-  const [departureDepartureDateTime, setDepartureDepartureDateTime] = useState('');
+  const [departureDepartureDate, setDepartureDepartureDate] = useState('');
+  const [departureDepartureTime, setDepartureDepartureTime] = useState('');
   const [departureArrivalAirport, setDepartureArrivalAirport] = useState('');
-  const [departureArrivalDateTime, setDepartureArrivalDateTime] = useState('');
+  const [departureArrivalDate, setDepartureArrivalDate] = useState('');
+  const [departureArrivalTime, setDepartureArrivalTime] = useState('');
   const [hotelName, setHotelName] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedSection, setExpandedSection] = useState('passport'); // 'passport', 'personal', 'funds', 'travel', or null
+
+  // Count filled fields for each section
+  const getFieldCount = (section) => {
+    let filled = 0;
+    let total = 0;
+
+    switch (section) {
+      case 'passport':
+        const passportFields = [fullName, nationality, passportNo, dob, expiryDate];
+        total = passportFields.length;
+        filled = passportFields.filter(field => field && field.toString().trim() !== '').length;
+        break;
+      
+      case 'personal':
+        const personalFields = [occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, sex];
+        total = personalFields.length;
+        filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
+        break;
+      
+      case 'funds':
+        // For funds, count the number of fund items added
+        total = 1; // At least one fund proof is expected
+        filled = funds.length > 0 ? 1 : 0;
+        break;
+      
+      case 'travel':
+        // Thailand requires both arrival and departure flight info
+        const travelFields = [
+          arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDate, arrivalDepartureTime,
+          arrivalArrivalAirport, arrivalArrivalDate, arrivalArrivalTime,
+          departureFlightNumber, departureDepartureAirport, departureDepartureDate, departureDepartureTime,
+          departureArrivalAirport, departureArrivalDate, departureArrivalTime,
+          hotelName, hotelAddress
+        ];
+        total = travelFields.length;
+        filled = travelFields.filter(field => field && field.toString().trim() !== '').length;
+        break;
+    }
+
+    return { filled, total };
+  };
+
+  // Check if all fields are filled and valid
+  const isFormValid = () => {
+    // Check all sections are complete
+    const passportCount = getFieldCount('passport');
+    const personalCount = getFieldCount('personal');
+    const fundsCount = getFieldCount('funds');
+    const travelCount = getFieldCount('travel');
+
+    const allFieldsFilled = 
+      passportCount.filled === passportCount.total &&
+      personalCount.filled === personalCount.total &&
+      fundsCount.filled === fundsCount.total &&
+      travelCount.filled === travelCount.total;
+
+    // Check no validation errors exist
+    const noErrors = Object.keys(errors).length === 0;
+
+    return allFieldsFilled && noErrors;
+  };
 
   // Load saved data on component mount and when screen gains focus
   useEffect(() => {
@@ -159,14 +240,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           // Travel Info
           setArrivalFlightNumber(parsedData.arrivalFlightNumber || '');
           setArrivalDepartureAirport(parsedData.arrivalDepartureAirport || '');
-          setArrivalDepartureDateTime(parsedData.arrivalDepartureDateTime || '');
+          setArrivalDepartureDate(parsedData.arrivalDepartureDate || '');
+          setArrivalDepartureTime(parsedData.arrivalDepartureTime || '');
           setArrivalArrivalAirport(parsedData.arrivalArrivalAirport || '');
-          setArrivalArrivalDateTime(parsedData.arrivalArrivalDateTime || '');
+          setArrivalArrivalDate(parsedData.arrivalArrivalDate || '');
+          setArrivalArrivalTime(parsedData.arrivalArrivalTime || '');
           setDepartureFlightNumber(parsedData.departureFlightNumber || '');
           setDepartureDepartureAirport(parsedData.departureDepartureAirport || '');
-          setDepartureDepartureDateTime(parsedData.departureDepartureDateTime || '');
+          setDepartureDepartureDate(parsedData.departureDepartureDate || '');
+          setDepartureDepartureTime(parsedData.departureDepartureTime || '');
           setDepartureArrivalAirport(parsedData.departureArrivalAirport || '');
-          setDepartureArrivalDateTime(parsedData.departureArrivalDateTime || '');
+          setDepartureArrivalDate(parsedData.departureArrivalDate || '');
+          setDepartureArrivalTime(parsedData.departureArrivalTime || '');
           setHotelName(parsedData.hotelName || '');
           setHotelAddress(parsedData.hotelAddress || '');
         } else {
@@ -255,14 +340,20 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             if (parsedData.arrivalDepartureAirport && !arrivalDepartureAirport) {
               setArrivalDepartureAirport(parsedData.arrivalDepartureAirport);
             }
-            if (parsedData.arrivalDepartureDateTime && !arrivalDepartureDateTime) {
-              setArrivalDepartureDateTime(parsedData.arrivalDepartureDateTime);
+            if (parsedData.arrivalDepartureDate && !arrivalDepartureDate) {
+              setArrivalDepartureDate(parsedData.arrivalDepartureDate);
+            }
+            if (parsedData.arrivalDepartureTime && !arrivalDepartureTime) {
+              setArrivalDepartureTime(parsedData.arrivalDepartureTime);
             }
             if (parsedData.arrivalArrivalAirport && !arrivalArrivalAirport) {
               setArrivalArrivalAirport(parsedData.arrivalArrivalAirport);
             }
-            if (parsedData.arrivalArrivalDateTime && !arrivalArrivalDateTime) {
-              setArrivalArrivalDateTime(parsedData.arrivalArrivalDateTime);
+            if (parsedData.arrivalArrivalDate && !arrivalArrivalDate) {
+              setArrivalArrivalDate(parsedData.arrivalArrivalDate);
+            }
+            if (parsedData.arrivalArrivalTime && !arrivalArrivalTime) {
+              setArrivalArrivalTime(parsedData.arrivalArrivalTime);
             }
             if (parsedData.departureFlightNumber && !departureFlightNumber) {
               setDepartureFlightNumber(parsedData.departureFlightNumber);
@@ -270,14 +361,20 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             if (parsedData.departureDepartureAirport && !departureDepartureAirport) {
               setDepartureDepartureAirport(parsedData.departureDepartureAirport);
             }
-            if (parsedData.departureDepartureDateTime && !departureDepartureDateTime) {
-              setDepartureDepartureDateTime(parsedData.departureDepartureDateTime);
+            if (parsedData.departureDepartureDate && !departureDepartureDate) {
+              setDepartureDepartureDate(parsedData.departureDepartureDate);
+            }
+            if (parsedData.departureDepartureTime && !departureDepartureTime) {
+              setDepartureDepartureTime(parsedData.departureDepartureTime);
             }
             if (parsedData.departureArrivalAirport && !departureArrivalAirport) {
               setDepartureArrivalAirport(parsedData.departureArrivalAirport);
             }
-            if (parsedData.departureArrivalDateTime && !departureArrivalDateTime) {
-              setDepartureArrivalDateTime(parsedData.departureArrivalDateTime);
+            if (parsedData.departureArrivalDate && !departureArrivalDate) {
+              setDepartureArrivalDate(parsedData.departureArrivalDate);
+            }
+            if (parsedData.departureArrivalTime && !departureArrivalTime) {
+              setDepartureArrivalTime(parsedData.departureArrivalTime);
             }
             if (parsedData.hotelName && !hotelName) {
               setHotelName(parsedData.hotelName);
@@ -295,7 +392,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     });
 
     return unsubscribe;
-  }, [navigation, passport, passportNo, fullName, nationality, dob, expiryDate, sex, occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, funds, arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDateTime, arrivalArrivalAirport, arrivalArrivalDateTime, departureFlightNumber, departureDepartureAirport, departureDepartureDateTime, departureArrivalAirport, departureArrivalDateTime, hotelName, hotelAddress]);
+  }, [navigation, passport, passportNo, fullName, nationality, dob, expiryDate, sex, occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, funds, arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDate, arrivalDepartureTime, arrivalArrivalAirport, arrivalArrivalDate, arrivalArrivalTime, departureFlightNumber, departureDepartureAirport, departureDepartureDate, departureDepartureTime, departureArrivalAirport, departureArrivalDate, departureArrivalTime, hotelName, hotelAddress]);
 
   // Function to save data to secure storage and AsyncStorage
   const saveDataToSecureStorage = async () => {
@@ -355,7 +452,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       }
 
       // Save entry data (only if secure storage is available)
-      if (SecureStorageService.db && (arrivalFlightNumber || arrivalDepartureDateTime || departureDepartureDateTime || funds.length > 0)) {
+      const arrivalDateTime = arrivalDepartureDate && arrivalDepartureTime ? `${arrivalDepartureDate} ${arrivalDepartureTime}` : '';
+      const departureDateTime = departureDepartureDate && departureDepartureTime ? `${departureDepartureDate} ${departureDepartureTime}` : '';
+      
+      if (SecureStorageService.db && (arrivalFlightNumber || arrivalDateTime || departureDateTime || funds.length > 0)) {
         try {
           const entryDataInstance = new EntryData({
             id: entryData?.id || EntryData.generateId(),
@@ -364,8 +464,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             personalInfoId: personalInfoData?.id,
             destination: destination,
             purpose: 'tourism', // Default purpose
-            arrivalDate: arrivalDepartureDateTime,
-            departureDate: departureDepartureDateTime,
+            arrivalDate: arrivalDateTime,
+            departureDate: departureDateTime,
             flightNumber: arrivalFlightNumber,
             accommodation: hotelName,
             fundingProof: funds,
@@ -397,14 +497,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         funds,
         arrivalFlightNumber,
         arrivalDepartureAirport,
-        arrivalDepartureDateTime,
+        arrivalDepartureDate,
+        arrivalDepartureTime,
         arrivalArrivalAirport,
-        arrivalArrivalDateTime,
+        arrivalArrivalDate,
+        arrivalArrivalTime,
         departureFlightNumber,
         departureDepartureAirport,
-        departureDepartureDateTime,
+        departureDepartureDate,
+        departureDepartureTime,
         departureArrivalAirport,
-        departureArrivalDateTime,
+        departureArrivalDate,
+        departureArrivalTime,
         hotelName,
         hotelAddress,
       };
@@ -416,6 +520,21 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       // Don't show alert for save failures to avoid interrupting user experience
     }
   };
+
+  // Auto-save when date/time fields change
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        saveDataToSecureStorage();
+      }, 500); // Debounce to avoid too many saves
+      return () => clearTimeout(timer);
+    }
+  }, [
+    arrivalDepartureDate, arrivalDepartureTime,
+    arrivalArrivalDate, arrivalArrivalTime,
+    departureDepartureDate, departureDepartureTime,
+    departureArrivalDate, departureArrivalTime
+  ]);
 
   // Function to validate and save field data on blur
   const handleFieldBlur = async (fieldName, fieldValue) => {
@@ -524,14 +643,22 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       // Travel Info
       arrivalFlightNumber,
       arrivalDepartureAirport,
-      arrivalDepartureDateTime,
+      arrivalDepartureDate,
+      arrivalDepartureTime,
+      arrivalDepartureDateTime: arrivalDepartureDate && arrivalDepartureTime ? `${arrivalDepartureDate} ${arrivalDepartureTime}` : '',
       arrivalArrivalAirport,
-      arrivalArrivalDateTime,
+      arrivalArrivalDate,
+      arrivalArrivalTime,
+      arrivalArrivalDateTime: arrivalArrivalDate && arrivalArrivalTime ? `${arrivalArrivalDate} ${arrivalArrivalTime}` : '',
       departureFlightNumber,
       departureDepartureAirport,
-      departureDepartureDateTime,
+      departureDepartureDate,
+      departureDepartureTime,
+      departureDepartureDateTime: departureDepartureDate && departureDepartureTime ? `${departureDepartureDate} ${departureDepartureTime}` : '',
       departureArrivalAirport,
-      departureArrivalDateTime,
+      departureArrivalDate,
+      departureArrivalTime,
+      departureArrivalDateTime: departureArrivalDate && departureArrivalTime ? `${departureArrivalDate} ${departureArrivalTime}` : '',
       hotelName,
       hotelAddress,
     };
@@ -674,7 +801,13 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           </Text>
         </View>
 
-        <CollapsibleSection title="护照信息" onScan={handleScanPassport}>
+        <CollapsibleSection 
+          title="护照信息" 
+          onScan={handleScanPassport}
+          isExpanded={expandedSection === 'passport'}
+          onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
+          fieldCount={getFieldCount('passport')}
+        >
            <PassportNameInput
              value={fullName}
              onChangeText={setFullName}
@@ -699,7 +832,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
            <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
          </CollapsibleSection>
 
-        <CollapsibleSection title="个人信息">
+        <CollapsibleSection 
+          title="个人信息"
+          isExpanded={expandedSection === 'personal'}
+          onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
+          fieldCount={getFieldCount('personal')}
+        >
            <Input label="职业" value={occupation} onChangeText={setOccupation} onBlur={() => handleFieldBlur('occupation', occupation)} helpText="请输入您的职业 (请使用英文)" error={!!errors.occupation} errorMessage={errors.occupation} autoCapitalize="words" />
            <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="words" />
            <NationalitySelector
@@ -745,7 +883,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection title="资金证明">
+        <CollapsibleSection 
+          title="资金证明"
+          isExpanded={expandedSection === 'funds'}
+          onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
+          fieldCount={getFieldCount('funds')}
+        >
           <View style={styles.fundActions}>
             <Button title="添加现金" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
             <Button title="添加信用卡照片" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
@@ -786,7 +929,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           ))}
         </CollapsibleSection>
 
-        <CollapsibleSection title="旅行信息">
+        <CollapsibleSection 
+          title="旅行信息"
+          isExpanded={expandedSection === 'travel'}
+          onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
+          fieldCount={getFieldCount('travel')}
+        >
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>来泰国机票</Text>
               <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
@@ -796,9 +944,59 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           </View>
           <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
           <Input label="出发机场" value={arrivalDepartureAirport} onChangeText={setArrivalDepartureAirport} onBlur={() => handleFieldBlur('arrivalDepartureAirport', arrivalDepartureAirport)} helpText="请输入出发机场" error={!!errors.arrivalDepartureAirport} errorMessage={errors.arrivalDepartureAirport} autoCapitalize="words" />
-          <Input label="出发时间" value={arrivalDepartureDateTime} onChangeText={setArrivalDepartureDateTime} onBlur={() => handleFieldBlur('arrivalDepartureDateTime', arrivalDepartureDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalDepartureDateTime} errorMessage={errors.arrivalDepartureDateTime} />
+          <View style={styles.dateTimeRow}>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="出发日期" 
+                value={arrivalDepartureDate} 
+                onChangeText={setArrivalDepartureDate} 
+                mode="date"
+                helpText="选择日期"
+                error={!!errors.arrivalDepartureDate} 
+                errorMessage={errors.arrivalDepartureDate}
+                onBlur={() => handleFieldBlur('arrivalDepartureDate', arrivalDepartureDate)}
+              />
+            </View>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="出发时间" 
+                value={arrivalDepartureTime} 
+                onChangeText={setArrivalDepartureTime} 
+                mode="time"
+                helpText="选择时间"
+                error={!!errors.arrivalDepartureTime} 
+                errorMessage={errors.arrivalDepartureTime}
+                onBlur={() => handleFieldBlur('arrivalDepartureTime', arrivalDepartureTime)}
+              />
+            </View>
+          </View>
           <Input label="抵达机场" value={arrivalArrivalAirport} onChangeText={setArrivalArrivalAirport} onBlur={() => handleFieldBlur('arrivalArrivalAirport', arrivalArrivalAirport)} helpText="请输入抵达机场" error={!!errors.arrivalArrivalAirport} errorMessage={errors.arrivalArrivalAirport} autoCapitalize="words" />
-          <Input label="抵达时间" value={arrivalArrivalDateTime} onChangeText={setArrivalArrivalDateTime} onBlur={() => handleFieldBlur('arrivalArrivalDateTime', arrivalArrivalDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalArrivalDateTime} errorMessage={errors.arrivalArrivalDateTime} />
+          <View style={styles.dateTimeRow}>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="抵达日期" 
+                value={arrivalArrivalDate} 
+                onChangeText={setArrivalArrivalDate} 
+                mode="date"
+                helpText="选择日期"
+                error={!!errors.arrivalArrivalDate} 
+                errorMessage={errors.arrivalArrivalDate}
+                onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
+              />
+            </View>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="抵达时间" 
+                value={arrivalArrivalTime} 
+                onChangeText={setArrivalArrivalTime} 
+                mode="time"
+                helpText="选择时间"
+                error={!!errors.arrivalArrivalTime} 
+                errorMessage={errors.arrivalArrivalTime}
+                onBlur={() => handleFieldBlur('arrivalArrivalTime', arrivalArrivalTime)}
+              />
+            </View>
+          </View>
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>去程机票</Text>
@@ -809,9 +1007,59 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           </View>
           <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
           <Input label="出发机场" value={departureDepartureAirport} onChangeText={setDepartureDepartureAirport} onBlur={() => handleFieldBlur('departureDepartureAirport', departureDepartureAirport)} helpText="请输入出发机场" error={!!errors.departureDepartureAirport} errorMessage={errors.departureDepartureAirport} autoCapitalize="words" />
-          <Input label="出发时间" value={departureDepartureDateTime} onChangeText={setDepartureDepartureDateTime} onBlur={() => handleFieldBlur('departureDepartureDateTime', departureDepartureDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureDepartureDateTime} errorMessage={errors.departureDepartureDateTime} />
+          <View style={styles.dateTimeRow}>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="出发日期" 
+                value={departureDepartureDate} 
+                onChangeText={setDepartureDepartureDate} 
+                mode="date"
+                helpText="选择日期"
+                error={!!errors.departureDepartureDate} 
+                errorMessage={errors.departureDepartureDate}
+                onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}
+              />
+            </View>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="出发时间" 
+                value={departureDepartureTime} 
+                onChangeText={setDepartureDepartureTime} 
+                mode="time"
+                helpText="选择时间"
+                error={!!errors.departureDepartureTime} 
+                errorMessage={errors.departureDepartureTime}
+                onBlur={() => handleFieldBlur('departureDepartureTime', departureDepartureTime)}
+              />
+            </View>
+          </View>
           <Input label="抵达机场" value={departureArrivalAirport} onChangeText={setDepartureArrivalAirport} onBlur={() => handleFieldBlur('departureArrivalAirport', departureArrivalAirport)} helpText="请输入抵达机场" error={!!errors.departureArrivalAirport} errorMessage={errors.departureArrivalAirport} autoCapitalize="words" />
-          <Input label="抵达时间" value={departureArrivalDateTime} onChangeText={setDepartureArrivalDateTime} onBlur={() => handleFieldBlur('departureArrivalDateTime', departureArrivalDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureArrivalDateTime} errorMessage={errors.departureArrivalDateTime} />
+          <View style={styles.dateTimeRow}>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="抵达日期" 
+                value={departureArrivalDate} 
+                onChangeText={setDepartureArrivalDate} 
+                mode="date"
+                helpText="选择日期"
+                error={!!errors.departureArrivalDate} 
+                errorMessage={errors.departureArrivalDate}
+                onBlur={() => handleFieldBlur('departureArrivalDate', departureArrivalDate)}
+              />
+            </View>
+            <View style={styles.dateTimeField}>
+              <DateTimeInput 
+                label="抵达时间" 
+                value={departureArrivalTime} 
+                onChangeText={setDepartureArrivalTime} 
+                mode="time"
+                helpText="选择时间"
+                error={!!errors.departureArrivalTime} 
+                errorMessage={errors.departureArrivalTime}
+                onBlur={() => handleFieldBlur('departureArrivalTime', departureArrivalTime)}
+              />
+            </View>
+          </View>
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>旅馆信息</Text>
@@ -829,6 +1077,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             title="生成入境卡"
             onPress={handleContinue}
             variant="primary"
+            disabled={!isFormValid()}
           />
         </View>
       </ScrollView>
@@ -900,10 +1149,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.lg,
   },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   sectionTitle: {
     ...typography.h3,
     color: colors.text,
     fontWeight: '600',
+  },
+  fieldCountBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: spacing.sm,
+  },
+  fieldCountBadgeComplete: {
+    backgroundColor: '#d4edda', // Light green
+  },
+  fieldCountBadgeIncomplete: {
+    backgroundColor: '#fff3cd', // Light yellow
+  },
+  fieldCountText: {
+    ...typography.caption,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  fieldCountTextComplete: {
+    color: '#155724', // Dark green
+  },
+  fieldCountTextIncomplete: {
+    color: '#856404', // Dark yellow/orange
   },
   sectionIcon: {
     ...typography.h3,
@@ -913,6 +1190,14 @@ const styles = StyleSheet.create({
   sectionContent: {
     padding: spacing.lg,
     paddingTop: 0,
+  },
+  dateTimeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: 0,
+  },
+  dateTimeField: {
+    flex: 1,
   },
   placeholderText: {
     ...typography.body1,
