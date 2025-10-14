@@ -1,4 +1,4 @@
-// 出境通 - USA Info Screen
+// 入境通 - USA Info Screen
 import React, { useMemo } from 'react';
 import {
   View,

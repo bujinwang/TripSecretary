@@ -1,4 +1,4 @@
-// 出境通 - USA Requirements Screen
+// 入境通 - USA Requirements Screen
 import React, { useState, useMemo } from 'react';
 import {
   View,

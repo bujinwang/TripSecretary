@@ -8,7 +8,7 @@ After reorganizing screens into country-specific folders, the React Native metro
 ### Option 1: Quick Fix (Recommended)
 Run the provided script:
 ```bash
-./restart-clean.sh
+./scripts/restart-clean.sh
 ```
 
 Then rebuild your app in Xcode or press 'i' in the Metro terminal.

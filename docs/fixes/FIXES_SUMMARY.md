@@ -18,7 +18,7 @@
 <View style={{ flexWrap: 'wrap' }}>...</View>
 ```
 
-**相关文档**: `TWO_ROW_LANGUAGE_SELECTOR.md`
+**相关文档**: `docs/i18n/TWO_ROW_LANGUAGE_SELECTOR.md`
 
 ---
 
@@ -238,9 +238,9 @@ Maintained code consistency across similar screens
 
 ## 相关文档 / Related Documentation
 
-- `CHINESE_LOCALIZATION.md` - Chinese localization strategy
-- `CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md` - Implementation details
-- `TWO_ROW_LANGUAGE_SELECTOR.md` - Two-row layout implementation
+- `docs/i18n/CHINESE_LOCALIZATION.md` - Chinese localization strategy
+- `docs/consolidated/CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md` - Implementation details
+- `docs/i18n/TWO_ROW_LANGUAGE_SELECTOR.md` - Two-row layout implementation
 - `NATIVE_LANGUAGE_NAMES_FIX.md` - Native names best practices
 - `HOW_TO_SELECT_SIMPLIFIED_CHINESE.md` - User guide
 

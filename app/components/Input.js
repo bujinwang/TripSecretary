@@ -1,4 +1,4 @@
-// 出境通 - Input Component
+// 入境通 - Input Component
 import React, { useState } from 'react';
 import {
   View,
@@ -12,6 +12,7 @@ const Input = ({
   label,
   value,
   onChangeText,
+  onBlur, // New prop for blur handling
   placeholder,
   error,
   errorMessage,
@@ -19,10 +20,41 @@ const Input = ({
   secureTextEntry = false,
   keyboardType = 'default',
   multiline = false,
+  autoCapitalize = 'none', // New prop for capitalization
+  maskType, // New prop for masking
   style,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+
+  const handleTextChange = (text) => {
+    let formattedText = text;
+
+    if (maskType === 'date-ymd') {
+      // Remove all non-digit characters
+      const digits = text.replace(/[^0-9]/g, '');
+
+      // Apply YYYY-MM-DD mask
+      if (digits.length > 4) {
+        formattedText = `${digits.substring(0, 4)}-${digits.substring(4)}`;
+      }
+      if (digits.length > 6) {
+        formattedText = `${digits.substring(0, 4)}-${digits.substring(4, 6)}-${digits.substring(6)}`;
+      }
+
+      // Limit to 10 characters (YYYY-MM-DD)
+      formattedText = formattedText.substring(0, 10);
+    }
+
+    onChangeText(formattedText);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (onBlur) {
+      onBlur();
+    }
+  };
 
   return (
     <View style={[styles.container, style]}>
@@ -36,14 +68,15 @@ const Input = ({
           multiline && styles.inputMultiline,
         ]}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleTextChange}
         placeholder={placeholder}
         placeholderTextColor={colors.textDisabled}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         multiline={multiline}
+        autoCapitalize={autoCapitalize}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onBlur={handleBlur}
         {...rest}
       />
       

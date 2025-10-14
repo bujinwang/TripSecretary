@@ -1,4 +1,4 @@
-// 出境通 - Card Component
+// 入境通 - Card Component
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, spacing, borderRadius, shadows } from '../theme';

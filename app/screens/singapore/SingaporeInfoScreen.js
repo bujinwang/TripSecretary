@@ -1,4 +1,4 @@
-// 出境通 - Singapore Info Screen (新加坡入境信息)
+// 入境通 - Singapore Info Screen (新加坡入境信息)
 import React, { useMemo } from 'react';
 import {
   View,

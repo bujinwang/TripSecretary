@@ -1,4 +1,4 @@
-# BorderBuddy (出境通) - Implementation Status
+# BorderBuddy (入境通) - Implementation Status
 
 ## ✅ Completed Implementation
 

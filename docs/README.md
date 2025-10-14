@@ -1,146 +1,153 @@
-# 📚 Documentation Index
+# TripSecretary Documentation
 
-All project documentation organized by category.
+## 📚 Documentation Structure
 
----
+This documentation is organized into focused directories for easy navigation:
 
-## 🚀 Quick Start
+### 📁 Directory Structure
 
-**New to the project? Start here:**
+```
+docs/
+├── README.md                    # This file - Master documentation index
+├── consolidated/               # Consolidated summary documents
+│   ├── FINAL_SUMMARY_CN.md     # Taiwan/Singapore/Malaysia info pages summary
+│   ├── INFO_PAGES_COMPLETION_SUMMARY.md # Info pages completion details
+│   ├── CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md # Chinese i18n implementation
+│   ├── I18N_IMPLEMENTATION_COMPLETE.md # General i18n implementation
+│   ├── KOREA_USA_IMPLEMENTATION_COMPLETE.md # Korea/USA i18n implementation
+│   ├── TDAC_HYBRID_FIXES_SUMMARY.md # TDAC hybrid fixes summary
+│   └── TDAC_VIBE_CODING_SUMMARY.md # TDAC vibe coding summary
+├── i18n/                      # Internationalization documentation
+│   ├── CHINESE_LOCALIZATION.md # Chinese localization strategy
+│   ├── HOW_TO_SELECT_SIMPLIFIED_CHINESE.md # Simplified Chinese selection guide
+│   ├── I18N_COMPLETION_STATUS.md # i18n completion status
+│   ├── I18N_REFACTORING_SUMMARY.md # i18n refactoring summary
+│   ├── JAPAN_I18N_STATUS.md # Japan i18n status
+│   ├── KOREA_USA_IMPLEMENTATION_COMPLETE.md # Korea/USA implementation (duplicate - see consolidated/)
+│   ├── LANGUAGE_SELECTOR_FIX.md # Language selector fixes
+│   ├── NATIVE_LANGUAGE_NAMES_FIX.md # Native language names fixes
+│   ├── NAVIGATION_FIX_GUIDE.md # Navigation fixes
+│   └── TWO_ROW_LANGUAGE_SELECTOR.md # Two-row language selector
+├── features/                  # Feature-specific documentation
+│   ├── ELDERLY_USER_FEATURES.md # Elderly user features
+│   ├── SETUP_ELDERLY_FEATURES.md # Elderly features setup
+│   └── TDAC_DUAL_MODE.md # TDAC dual mode features
+├── fixes/                     # Bug fixes and summaries
+│   ├── FIX_GUIDE.md # General fix guide
+│   ├── FIXES_SUMMARY.md # Complete fixes summary
+│   ├── VALIDATION_CHECKLIST.md # Validation checklist
+│   └── FINAL_SUMMARY_CN.md # Final summary (duplicate - see consolidated/)
+├── implementation/            # Implementation plans and status
+│   ├── IMPLEMENTATION_PLAN.md # Original implementation plan
+│   └── IMPLEMENTATION_STATUS.md # Current implementation status
+└── arrival-cards/             # Arrival card system documentation
+    ├── README.md # Arrival cards overview
+    ├── ASIA_ARRIVAL_CARDS_COMPARISON.md # Asia arrival cards comparison
+    ├── COMPLETE_ASIA_ARRIVAL_CARDS.md # Complete Asia arrival cards
+    ├── NORTH_AMERICA_ENTRY_SYSTEMS.md # North America entry systems
+    ├── SGAC_vs_TDAC_COMPARISON.md # SGAC vs TDAC comparison
+    ├── TDAC_API_ANALYSIS.md # TDAC API analysis
+    ├── TDAC_API_CAPTURE_GUIDE.md # TDAC API capture guide
+    ├── TDAC_API_FINAL_STATUS.md # TDAC API final status
+    ├── TDAC_API_IMPLEMENTATION_GUIDE.md # TDAC API implementation guide
+    ├── TDAC_HYBRID_IMPLEMENTATION.md # TDAC hybrid implementation
+    ├── TDAC_STATUS.md # TDAC status
+    ├── TDAC_TEST_DATA_CORRECTED.md # TDAC test data corrected
+    ├── TDAC_TEST_DATA.md # TDAC test data
+    ├── TDAC_TIMEOUT_FIX.md # TDAC timeout fix
+    └── DEBUGGING_API_SUBMISSION.md # API debugging guide
+```
 
-1. [**QUICKSTART.md**](QUICKSTART.md) - Get the app running in 5 minutes
-2. [**README_APP.md**](README_APP.md) - Complete app documentation
-3. [**PROJECT_STRUCTURE.md**](PROJECT_STRUCTURE.md) - Detailed file structure
+### 🎯 Quick Start Guides
 
----
+- **[QUICK_START.md](../QUICK_START.md)** - Complete setup and testing guide
+- **[IMPLEMENTATION_STATUS.md](implementation/IMPLEMENTATION_STATUS.md)** - Current project status
+- **[VALIDATION_CHECKLIST.md](fixes/VALIDATION_CHECKLIST.md)** - Testing checklist
 
-## 📱 App Development
+### 🔧 Development Documentation
 
-| Document | Description |
-|----------|-------------|
-| [README_APP.md](README_APP.md) | Complete app guide (features, screens, APIs) |
-| [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Full file tree with explanations |
-| [QUICKSTART.md](QUICKSTART.md) | 5-minute quick start guide |
+- **[IMPLEMENTATION_PLAN.md](implementation/IMPLEMENTATION_PLAN.md)** - Original implementation plan
+- **[FIXES_SUMMARY.md](fixes/FIXES_SUMMARY.md)** - All bug fixes and solutions
+- **[I18N_COMPLETION_STATUS.md](i18n/I18N_COMPLETION_STATUS.md)** - Internationalization status
 
----
+### 🌏 Internationalization (i18n)
 
-## 🎨 Product Design (产品设计)
+- **[CHINESE_LOCALIZATION.md](i18n/CHINESE_LOCALIZATION.md)** - Chinese localization strategy
+- **[TWO_ROW_LANGUAGE_SELECTOR.md](i18n/TWO_ROW_LANGUAGE_SELECTOR.md)** - Language selector implementation
+- **[LANGUAGE_SELECTOR_FIX.md](i18n/LANGUAGE_SELECTOR_FIX.md)** - Language selector fixes
 
-| Document | Description |
-|----------|-------------|
-| [智能出入境助手-产品设计文档.md](智能出入境助手-产品设计文档.md) | Main product design document |
-| [出境通-最终确认.md](出境通-最终确认.md) | Final product confirmation |
-| [UI设计规范.md](UI设计规范.md) | UI design guidelines |
-| [家庭账号与远程协助设计.md](家庭账号与远程协助设计.md) | Family account & remote assistance design (1,131 lines) |
+### 🎫 Arrival Cards System
 
----
+- **[README.md](arrival-cards/README.md)** - Arrival cards overview
+- **[TDAC_API_IMPLEMENTATION_GUIDE.md](arrival-cards/TDAC_API_IMPLEMENTATION_GUIDE.md)** - TDAC API guide
+- **[SGAC_vs_TDAC_COMPARISON.md](arrival-cards/SGAC_vs_TDAC_COMPARISON.md)** - SGAC vs TDAC comparison
 
-## 🛠️ Tech Stack (技术栈)
+### ✨ Features
 
-| Document | Description |
-|----------|-------------|
-| [MVP技术栈最终确认.md](MVP技术栈最终确认.md) | **MVP tech stack confirmation** (Single source of truth) |
-| [技术栈最终确定版.md](技术栈最终确定版.md) | Tech stack final version |
-| [最终技术栈确认.md](最终技术栈确认.md) | Final tech stack confirmation |
+- **[ELDERLY_USER_FEATURES.md](features/ELDERLY_USER_FEATURES.md)** - Elderly user features
+- **[TDAC_DUAL_MODE.md](features/TDAC_DUAL_MODE.md)** - TDAC dual mode features
 
----
+### 🏗️ Architecture & Technical
 
-## ☁️ Backend & Infrastructure
+- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Project structure overview
+- **[MVP技术栈最终确认.md](MVP技术栈最终确认.md)** - Technology stack confirmation
+- **[数据安全与合规方案.md](数据安全与合规方案.md)** - Security and compliance
 
-| Document | Description |
-|----------|-------------|
-| [Cloudflare-Workers详解.md](Cloudflare-Workers详解.md) | Cloudflare Workers detailed guide |
-| [Cloudflare数据库选项.md](Cloudflare数据库选项.md) | Cloudflare database options |
-| [全球网络访问方案.md](全球网络访问方案.md) | Global network access solution |
-| [数据安全与合规方案.md](数据安全与合规方案.md) | Data security & compliance |
+### 📱 UI/UX Design
 
----
+- **[UI设计规范.md](UI设计规范.md)** - UI design specifications
+- **[智能出入境助手-产品设计文档.md](智能出入境助手-产品设计文档.md)** - Product design document
 
-## 🤖 AI & ML
+### 🔗 Integration Guides
 
-| Document | Description |
-|----------|-------------|
-| [本地AI模型方案.md](本地AI模型方案.md) | Local AI model solution |
-| [AI模型跨境调用解决方案.md](AI模型跨境调用解决方案.md) | Cross-border AI model calling |
+- **[微信登录集成方案.md](微信登录集成方案.md)** - WeChat login integration
+- **[微信支付集成方案.md](微信支付集成方案.md)** - WeChat payment integration
+- **[AI模型跨境调用解决方案.md](AI模型跨境调用解决方案.md)** - AI model cross-border solutions
 
----
+### 📊 Project Management
 
-## 🔐 Authentication & Payment
-
-| Document | Description |
-|----------|-------------|
-| [微信登录集成方案.md](微信登录集成方案.md) | WeChat login integration |
-| [登录方案对比分析.md](登录方案对比分析.md) | Login solutions comparison |
-| [微信支付集成方案.md](微信支付集成方案.md) | WeChat Pay integration |
-
----
-
-## 📱 Platform Compatibility
-
-| Document | Description |
-|----------|-------------|
-| [React-Native国产手机兼容性分析.md](React-Native国产手机兼容性分析.md) | React Native compatibility with Chinese phones |
-| [离线模式与访客模式设计.md](离线模式与访客模式设计.md) | Offline & guest mode design |
-
----
-
-## 📋 Project Management
-
-| Document | Description |
-|----------|-------------|
-| [DOCUMENTATION_SYNC_REPORT.md](DOCUMENTATION_SYNC_REPORT.md) | Documentation synchronization report |
-| [文档更新清单.md](文档更新清单.md) | Document update checklist |
-| [项目总结-精简版.md](项目总结-精简版.md) | Project summary (concise) |
-
----
-
-## 📖 How to Navigate
-
-### For Developers:
-1. Start with [QUICKSTART.md](QUICKSTART.md)
-2. Read [README_APP.md](README_APP.md) for full context
-3. Check [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) to understand the codebase
-
-### For Product Managers:
-1. Read [智能出入境助手-产品设计文档.md](智能出入境助手-产品设计文档.md)
-2. Check [家庭账号与远程协助设计.md](家庭账号与远程协助设计.md) for V1.1 features
-3. Review [MVP技术栈最终确认.md](MVP技术栈最终确认.md) for tech decisions
-
-### For Architects:
-1. Review [Cloudflare-Workers详解.md](Cloudflare-Workers详解.md)
-2. Check [数据安全与合规方案.md](数据安全与合规方案.md)
-3. Read [全球网络访问方案.md](全球网络访问方案.md)
+- **[项目总结-精简版.md](项目总结-精简版.md)** - Project summary (concise)
+- **[AI_TRIP_ASSISTANT_SUMMARY.md](AI_TRIP_ASSISTANT_SUMMARY.md)** - AI trip assistant summary
 
 ---
 
-## 📊 Documentation Stats
+## 📋 Recent Updates
 
-- **Total Documents**: 24 files
-- **English Docs**: 3 (Quick start, App guide, Structure)
-- **Chinese Docs**: 21 (Product, Tech, Design)
-- **Total Lines**: ~10,000+ lines
-- **Most Detailed**: 家庭账号与远程协助设计.md (1,131 lines)
-
----
-
-## 🔄 Document Status
-
-| Status | Count | Documents |
-|--------|-------|-----------|
-| ✅ Final | 18 | Most documents |
-| 🔄 Updated | 4 | Synced with Cloudflare stack |
-| 📝 Living | 2 | MVP tech stack, Project structure |
+- **2025-01**: Consolidated duplicate documentation into `consolidated/` folder
+- **2025-01**: Organized docs by category (i18n, features, fixes, implementation, arrival-cards)
+- **2025-01**: Updated all cross-references after reorganization
+- **2025-01**: Removed outdated and redundant documentation
 
 ---
 
-## 💡 Quick Tips
+## 🔍 Finding Documentation
 
-- **Can't find something?** Use `grep` or search in your editor
-- **Need the latest?** Check [MVP技术栈最终确认.md](MVP技术栈最终确认.md)
-- **Want to start coding?** Read [QUICKSTART.md](QUICKSTART.md)
+### By Topic
+- **Setup/Getting Started**: Look in root level or `QUICK_START.md`
+- **Internationalization**: `docs/i18n/` directory
+- **Bug Fixes**: `docs/fixes/` directory
+- **Features**: `docs/features/` directory
+- **Arrival Cards**: `docs/arrival-cards/` directory
+- **Implementation**: `docs/implementation/` directory
+
+### By File Type
+- **Guides**: Files ending in `GUIDE.md`
+- **Summaries**: Files containing `SUMMARY` or `STATUS`
+- **Implementation**: Files containing `IMPLEMENTATION`
+- **Fixes**: Files in `fixes/` directory
 
 ---
 
-**Last Updated**: 2025-01  
-**Project**: 出境通 (BorderBuddy)
-**Status**: MVP Ready ✅
+## 🤝 Contributing to Documentation
+
+When adding new documentation:
+1. Choose the appropriate category directory
+2. Follow existing naming conventions
+3. Update this README if adding new categories
+4. Update cross-references in related documents
+5. Add to the directory structure above
+
+---
+
+**Last Updated**: January 2025
+**Maintained by**: TripSecretary Development Team

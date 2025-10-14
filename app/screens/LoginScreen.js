@@ -1,4 +1,4 @@
-// 出境通 - Login Screen
+// 入境通 - Login Screen
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import Button from '../components/Button';

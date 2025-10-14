@@ -17,7 +17,7 @@
 
 | 文档 | 描述 |
 |------|------|
-| [TDAC_VIBE_CODING_SUMMARY.md](TDAC_VIBE_CODING_SUMMARY.md) | **总结文档** - Vibe Coding完整实现总结 |
+| [TDAC_VIBE_CODING_SUMMARY.md](../consolidated/TDAC_VIBE_CODING_SUMMARY.md) | **总结文档** - Vibe Coding完整实现总结 |
 | [TDAC_API_IMPLEMENTATION_GUIDE.md](TDAC_API_IMPLEMENTATION_GUIDE.md) | **实现指南** - 完整使用和部署指南 |
 | [TDAC_COMPLETE_API_ANALYSIS.md](TDAC_COMPLETE_API_ANALYSIS.md) | 完整9步API流程分析 |
 | [TDAC_API_ANALYSIS.md](TDAC_API_ANALYSIS.md) | API vs WebView方案对比 |
@@ -53,7 +53,7 @@ app/services/TDACAPIService.test.js   - 测试框架 (200行)
 ## 🎯 快速导航
 
 ### 我想了解泰国实现
-→ 阅读 [TDAC_VIBE_CODING_SUMMARY.md](TDAC_VIBE_CODING_SUMMARY.md)
+→ 阅读 [TDAC_VIBE_CODING_SUMMARY.md](../consolidated/TDAC_VIBE_CODING_SUMMARY.md)
 
 ### 我想使用泰国API Service
 → 阅读 [TDAC_API_IMPLEMENTATION_GUIDE.md](TDAC_API_IMPLEMENTATION_GUIDE.md)

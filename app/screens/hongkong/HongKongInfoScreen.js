@@ -1,4 +1,4 @@
-// 出境通 - Hong Kong Info Screen (香港入境信息)
+// 入境通 - Hong Kong Info Screen (香港入境信息)
 import React, { useMemo } from 'react';
 import {
   View,

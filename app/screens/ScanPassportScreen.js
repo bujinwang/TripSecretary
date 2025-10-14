@@ -8,18 +8,25 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../components/Button';
 import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import api from '../services/api';
+import { LocalOCRService } from '../services/ocr';
+import { useLocale } from '../i18n/LocaleContext';
 
-const ScanPassportScreen = ({ navigation }) => {
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+const ScanPassportScreen = ({ navigation, route }) => {
+  const { t } = useLocale();
   const [hasPermission, setHasPermission] = useState(null);
-  const [scanning, setScanning] = useState(false);
-  const [cameraReady, setCameraReady] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [cameraType, setCameraType] = useState(CameraType.back);
+  const [passportData, setPassportData] = useState(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
@@ -29,62 +36,126 @@ const ScanPassportScreen = ({ navigation }) => {
     })();
   }, []);
 
-  const handleCapture = async () => {
-    if (!cameraRef.current || !cameraReady || scanning) return;
-    
-    setScanning(true);
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 1,
-        base64: false,
-        skipProcessing: false,
-      });
-      
-      const result = await api.recognizePassport(photo.uri);
-      
-      navigation.navigate('SelectDestination', {
-        passport: result,
-      });
-    } catch (error) {
-      Alert.alert('识别失败', error.message || '请重试');
-      setScanning(false);
+  const handleTakePicture = async () => {
+    if (cameraRef.current) {
+      try {
+        setProcessing(true);
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.8,
+          base64: false,
+        });
+
+        // Process the image with OCR
+        await processPassportImage(photo.uri);
+      } catch (error) {
+        console.error('Error taking picture:', error);
+        Alert.alert(
+          t('scanPassport.error.title', '扫描错误'),
+          t('scanPassport.error.camera', '拍照失败，请重试')
+        );
+        setProcessing(false);
+      }
     }
   };
 
-  const handleGallery = async () => {
+  const processPassportImage = async (imageUri) => {
+    try {
+      const ocrService = new LocalOCRService();
+      const result = await ocrService.processPassport(imageUri);
+
+      if (!result.success) {
+        Alert.alert(
+          t('scanPassport.error.title', '扫描错误'),
+          result.message || t('scanPassport.error.processing', '处理护照信息时出错，请重试')
+        );
+        return;
+      }
+
+      const extractedData = result.data;
+
+      if (extractedData) {
+        setPassportData(extractedData);
+        setScanned(true);
+
+        // Show success message and navigate back
+        Alert.alert(
+          t('scanPassport.success.title', '扫描成功'),
+          t('scanPassport.success.message', '护照信息已提取'),
+          [
+            {
+              text: t('common.confirm', '确定'),
+              onPress: () => {
+                navigation.navigate('SelectDestination', {
+                  passport: extractedData,
+                });
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          t('scanPassport.error.title', '扫描错误'),
+          t('scanPassport.error.noData', '未能识别护照信息，请重试或手动输入')
+        );
+      }
+    } catch (error) {
+      console.error('Error processing passport:', error);
+      Alert.alert(
+        t('scanPassport.error.title', '扫描错误'),
+        t('scanPassport.error.processing', '处理护照信息时出错，请重试')
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleSelectFromGallery = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('需要权限', '请允许访问相册');
+        Alert.alert(
+          t('scanPassport.permission.title', '需要权限'),
+          t('scanPassport.permission.gallery', '需要相册权限才能选择照片')
+        );
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
         quality: 1,
-        allowsEditing: false,
       });
-      
+
       if (!result.canceled) {
-        setScanning(true);
-        try {
-          const ocrResult = await api.recognizePassport(result.assets[0].uri);
-          navigation.navigate('SelectDestination', { passport: ocrResult });
-        } catch (error) {
-          Alert.alert('识别失败', error.message || '请重试');
-          setScanning(false);
-        }
+        setProcessing(true);
+        await processPassportImage(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('错误', '无法打开相册');
+      console.error('Error selecting from gallery:', error);
+      Alert.alert(
+        t('scanPassport.error.title', '扫描错误'),
+        t('scanPassport.error.gallery', '选择照片失败，请重试')
+      );
+      setProcessing(false);
     }
+  };
+
+  const handleRetake = () => {
+    setScanned(false);
+    setPassportData(null);
   };
 
   if (hasPermission === null) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.permissionText}>
+            {t('scanPassport.permission.checking', '检查相机权限...')}
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -92,22 +163,123 @@ const ScanPassportScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <BackButton
-            onPress={() => navigation.goBack()}
-            label="返回"
-            style={styles.backButton}
-          />
-          <Text style={styles.headerTitle}>扫描证件</Text>
+          <BackButton onPress={() => navigation.goBack()} />
+          <Text style={styles.headerTitle}>
+            {t('scanPassport.title', '扫描护照')}
+          </Text>
           <View style={styles.headerRight} />
         </View>
-        <View style={styles.permissionContainer}>
-          <Text style={styles.permissionText}>
-            需要相机权限来扫描护照
+
+        <View style={styles.centerContent}>
+          <Text style={styles.errorIcon}>🚫</Text>
+          <Text style={styles.errorTitle}>
+            {t('scanPassport.permission.denied', '相机权限被拒绝')}
           </Text>
-          <Button
-            title="授权"
-            onPress={() => Camera.requestCameraPermissionsAsync()}
-          />
+          <Text style={styles.errorMessage}>
+            {t('scanPassport.permission.message', '需要相机权限才能扫描护照')}
+          </Text>
+
+          <View style={styles.buttonContainer}>
+            <Button
+              title={t('scanPassport.permission.settings', '去设置')}
+              onPress={() => {
+                // In a real app, you might open device settings
+                Alert.alert(
+                  t('scanPassport.permission.settings', '去设置'),
+                  t('scanPassport.permission.instructions', '请在设备设置中启用相机权限')
+                );
+              }}
+              variant="primary"
+            />
+            <Button
+              title={t('scanPassport.useGallery', '从相册选择')}
+              onPress={handleSelectFromGallery}
+              variant="secondary"
+              style={styles.secondaryButton}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (scanned && passportData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <BackButton onPress={() => navigation.goBack()} />
+          <Text style={styles.headerTitle}>
+            {t('scanPassport.result.title', '扫描结果')}
+          </Text>
+          <View style={styles.headerRight} />
+        </View>
+
+        <View style={styles.resultContainer}>
+          <Text style={styles.successIcon}>✅</Text>
+          <Text style={styles.resultTitle}>
+            {t('scanPassport.result.success', '护照扫描成功')}
+          </Text>
+
+          <View style={styles.passportData}>
+            {passportData.passportNo && (
+              <View style={styles.dataRow}>
+                <Text style={styles.dataLabel}>
+                  {t('scanPassport.result.passportNo', '护照号')}:
+                </Text>
+                <Text style={styles.dataValue}>{passportData.passportNo}</Text>
+              </View>
+            )}
+            {passportData.name && (
+              <View style={styles.dataRow}>
+                <Text style={styles.dataLabel}>
+                  {t('scanPassport.result.name', '姓名')}:
+                </Text>
+                <Text style={styles.dataValue}>{passportData.name}</Text>
+              </View>
+            )}
+            {passportData.nationality && (
+              <View style={styles.dataRow}>
+                <Text style={styles.dataLabel}>
+                  {t('scanPassport.result.nationality', '国籍')}:
+                </Text>
+                <Text style={styles.dataValue}>{passportData.nationality}</Text>
+              </View>
+            )}
+            {passportData.dob && (
+              <View style={styles.dataRow}>
+                <Text style={styles.dataLabel}>
+                  {t('scanPassport.result.dob', '出生日期')}:
+                </Text>
+                <Text style={styles.dataValue}>{passportData.dob}</Text>
+              </View>
+            )}
+            {passportData.expiry && (
+              <View style={styles.dataRow}>
+                <Text style={styles.dataLabel}>
+                  {t('scanPassport.result.expiry', '有效期')}:
+                </Text>
+                <Text style={styles.dataValue}>{passportData.expiry}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <Button
+              title={t('scanPassport.result.continue', '继续')}
+              onPress={() => {
+                navigation.navigate('SelectDestination', {
+                  passport: passportData,
+                });
+              }}
+              variant="primary"
+            />
+            <Button
+              title={t('scanPassport.result.retake', '重新扫描')}
+              onPress={handleRetake}
+              variant="secondary"
+              style={styles.secondaryButton}
+            />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -115,68 +287,78 @@ const ScanPassportScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <BackButton
-          onPress={() => navigation.goBack()}
-          label="返回"
-          style={styles.backButton}
-        />
-        <Text style={styles.headerTitle}>扫描证件</Text>
-        <View style={styles.headerRight} />
-      </View>
-
-      {/* Camera Preview Area */}
-      <View style={styles.cameraContainer}>
-        <Camera
-          ref={cameraRef}
-          style={styles.cameraPreview}
-          type={Camera.Constants.Type.back}
-          onCameraReady={() => setCameraReady(true)}
+        <BackButton onPress={() => navigation.goBack()} />
+        <Text style={styles.headerTitle}>
+          {t('scanPassport.title', '扫描护照')}
+        </Text>
+        <TouchableOpacity
+          style={styles.galleryButton}
+          onPress={handleSelectFromGallery}
         >
-          <View style={styles.scanFrame}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
-            
-            <Text style={styles.scanText}>对准护照资料页</Text>
-          </View>
-        </Camera>
-      </View>
-
-      {/* Instructions */}
-      <View style={styles.instructionsContainer}>
-        <Text style={styles.instructionsTitle}>
-          将护照对准框内
-        </Text>
-        <Text style={styles.instructionsSubtitle}>
-          自动识别拍照
-        </Text>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <Button
-          title="拍照识别"
-          onPress={handleCapture}
-          loading={scanning}
-          disabled={!cameraReady || scanning}
-          icon={<Text style={styles.buttonIcon}>📸</Text>}
-          style={styles.captureButton}
-        />
-
-        <TouchableOpacity onPress={handleGallery} disabled={scanning}>
-          <Text style={styles.galleryLink}>或从相册选择 →</Text>
+          <Text style={styles.galleryButtonText}>
+            {t('scanPassport.gallery', '相册')}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Tips */}
-      <View style={styles.tipsContainer}>
-        <Text style={styles.tipsTitle}>💡 提示:</Text>
-        <Text style={styles.tipText}>• 光线充足</Text>
-        <Text style={styles.tipText}>• 避免反光</Text>
-        <Text style={styles.tipText}>• 对准护照资料页</Text>
+      <Camera
+        ref={cameraRef}
+        style={styles.camera}
+        type={cameraType}
+        ratio="4:3"
+      >
+        <View style={styles.overlay}>
+          <View style={styles.scanArea}>
+            <View style={styles.scanFrame}>
+              <View style={[styles.corner, styles.topLeft]} />
+              <View style={[styles.corner, styles.topRight]} />
+              <View style={[styles.corner, styles.bottomLeft]} />
+              <View style={[styles.corner, styles.bottomRight]} />
+            </View>
+            <Text style={styles.scanText}>
+              {t('scanPassport.instruction', '将护照置于框内')}
+            </Text>
+          </View>
+
+          {processing && (
+            <View style={styles.processingOverlay}>
+              <ActivityIndicator size="large" color={colors.white} />
+              <Text style={styles.processingText}>
+                {t('scanPassport.processing', '识别中...')}
+              </Text>
+            </View>
+          )}
+        </View>
+      </Camera>
+
+      <View style={styles.controls}>
+        <TouchableOpacity
+          style={styles.captureButton}
+          onPress={handleTakePicture}
+          disabled={processing}
+        >
+          <View style={styles.captureButtonInner}>
+            {processing ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <View style={styles.captureButtonCenter} />
+            )}
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.flipButton}
+          onPress={() => {
+            setCameraType(
+              cameraType === CameraType.back
+                ? CameraType.front
+                : CameraType.back
+            );
+          }}
+        >
+          <Text style={styles.flipButtonText}>🔄</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -186,6 +368,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
   header: {
     flexDirection: 'row',
@@ -197,61 +385,70 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backButton: {
-    marginLeft: -spacing.sm,
-  },
   headerTitle: {
     ...typography.body2,
     fontWeight: '600',
     color: colors.text,
   },
   headerRight: {
-    width: 50,
+    width: 60,
   },
-  cameraContainer: {
+  galleryButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  galleryButtonText: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  camera: {
     flex: 1,
-    backgroundColor: colors.text,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  cameraPreview: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanArea: {
+    width: screenWidth * 0.8,
+    height: screenWidth * 0.8 * 0.75, // 护照比例大约是 1.33:1
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scanFrame: {
-    width: 300,
-    height: 200,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderWidth: 2,
+    borderColor: colors.white,
   },
   corner: {
     position: 'absolute',
-    width: 30,
-    height: 30,
-    borderColor: colors.primary,
+    width: 20,
+    height: 20,
+    borderColor: colors.white,
   },
-  cornerTopLeft: {
+  topLeft: {
     top: 0,
     left: 0,
     borderTopWidth: 3,
     borderLeftWidth: 3,
   },
-  cornerTopRight: {
+  topRight: {
     top: 0,
     right: 0,
     borderTopWidth: 3,
     borderRightWidth: 3,
   },
-  cornerBottomLeft: {
+  bottomLeft: {
     bottom: 0,
     left: 0,
     borderBottomWidth: 3,
     borderLeftWidth: 3,
   },
-  cornerBottomRight: {
+  bottomRight: {
     bottom: 0,
     right: 0,
     borderBottomWidth: 3,
@@ -260,63 +457,142 @@ const styles = StyleSheet.create({
   scanText: {
     ...typography.body1,
     color: colors.white,
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
   },
-  instructionsContainer: {
-    padding: spacing.md,
+  processingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.white,
   },
-  instructionsTitle: {
-    ...typography.body2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  instructionsSubtitle: {
+  processingText: {
     ...typography.body1,
-    color: colors.textSecondary,
+    color: colors.white,
+    marginTop: spacing.md,
   },
-  actionsContainer: {
-    padding: spacing.md,
-    backgroundColor: colors.white,
+  controls: {
+    position: 'absolute',
+    bottom: spacing.xl,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
   captureButton: {
-    width: '100%',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: spacing.md,
   },
-  buttonIcon: {
+  captureButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonCenter: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+  },
+  flipButton: {
+    position: 'absolute',
+    bottom: spacing.xl,
+    right: spacing.lg,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flipButtonText: {
     fontSize: 24,
   },
-  galleryLink: {
-    ...typography.body1,
-    color: colors.secondary,
-  },
-  tipsContainer: {
-    padding: spacing.md,
-    backgroundColor: colors.primaryLight,
-  },
-  tipsTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  tipText: {
+  permissionText: {
     ...typography.body1,
     color: colors.textSecondary,
-    marginBottom: 2,
+    marginTop: spacing.md,
   },
-  permissionContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  permissionText: {
-    ...typography.h3,
-    color: colors.text,
-    textAlign: 'center',
+  errorIcon: {
+    fontSize: 64,
     marginBottom: spacing.lg,
+  },
+  errorTitle: {
+    ...typography.h3,
+    color: colors.error,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  errorMessage: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+    lineHeight: 24,
+  },
+  buttonContainer: {
+    width: '100%',
+    paddingHorizontal: spacing.lg,
+  },
+  secondaryButton: {
+    marginTop: spacing.md,
+  },
+  resultContainer: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  successIcon: {
+    fontSize: 64,
+    marginBottom: spacing.lg,
+  },
+  resultTitle: {
+    ...typography.h3,
+    color: colors.success,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  passportData: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    width: '100%',
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  dataRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  dataLabel: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  dataValue: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '500',
   },
 });
 

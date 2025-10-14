@@ -1,4 +1,4 @@
-// 出境通 - Singapore Requirements Screen (新加坡入境要求确认)
+// 入境通 - Singapore Requirements Screen (新加坡入境要求确认)
 import React, { useMemo, useState } from 'react';
 import {
   View,

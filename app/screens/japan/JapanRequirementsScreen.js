@@ -1,4 +1,4 @@
-// 出境通 - Japan Requirements Screen (日本入境要求)
+// 入境通 - Japan Requirements Screen (日本入境要求)
 import React, { useState, useMemo } from 'react';
 import {
   View,

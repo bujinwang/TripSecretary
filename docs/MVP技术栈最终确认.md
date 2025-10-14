@@ -10,9 +10,9 @@
 
 ### 1. APP名称
 ```
-✅ 出境通 (ChuJinTong)
+✅ 入境通 (ChuJinTong)
    - 英文名: GoAbroad
-   - Slogan: "出境通，扫一扫！"
+   - Slogan: "入境通，扫一扫！"
    - 域名: chujingtong.com
    - 吉祥物: 小飞机 ✈️
 ```

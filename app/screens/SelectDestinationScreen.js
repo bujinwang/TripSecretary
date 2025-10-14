@@ -1,4 +1,4 @@
-// 出境通 - Select Destination Screen
+// 入境通 - Select Destination Screen
 import React, { useState } from 'react';
 import {
   View,
@@ -183,7 +183,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
             <View style={styles.passportRow}>
               <Text style={styles.passportLabel}>姓名: </Text>
               <Text style={styles.passportValue}>
-                {passport?.name || '张伟'}
+                {passport?.name || ''}
               </Text>
             </View>
             <View style={styles.passportRow}>

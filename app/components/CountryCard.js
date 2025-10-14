@@ -1,4 +1,4 @@
-// 出境通 - Country Selection Card Component
+// 入境通 - Country Selection Card Component
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';

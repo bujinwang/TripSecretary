@@ -1,4 +1,4 @@
-// 出境通 - Screens Index
+// 入境通 - Screens Index
 // Central export for all screens
 
 // Core screens

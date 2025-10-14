@@ -1,4 +1,4 @@
-// 出境通 - Japan Procedures Screen (日本入境流程)
+// 入境通 - Japan Procedures Screen (日本入境流程)
 import React, { useMemo } from 'react';
 import {
   View,

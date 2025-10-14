@@ -1,4 +1,4 @@
-// 出境通 - Korea Requirements Screen
+// 入境通 - Korea Requirements Screen
 import React, { useState, useMemo } from 'react';
 import {
   View,

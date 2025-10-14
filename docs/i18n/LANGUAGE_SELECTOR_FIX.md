@@ -99,4 +99,4 @@ You can verify the fix by:
 ---
 
 **Fixed on**: January 2025  
-**Related**: CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md
+**Related**: `docs/consolidated/CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md`

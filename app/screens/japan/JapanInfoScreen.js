@@ -1,4 +1,4 @@
-// 出境通 - Japan Info Screen (日本入境信息)
+// 入境通 - Japan Info Screen (日本入境信息)
 import React, { useMemo } from 'react';
 import {
   View,

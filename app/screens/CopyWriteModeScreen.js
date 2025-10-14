@@ -1,4 +1,4 @@
-// 出境通 - Copy Write Mode Screen (抄写模式)
+// 入境通 - Copy Write Mode Screen (抄写模式)
 import React, { useState, useEffect } from 'react';
 import {
   View,

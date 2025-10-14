@@ -49,7 +49,7 @@ TDACAPIService.submitArrivalCard(travelerData)
 ✅ app/screens/TDACAPIScreen.js (500行)
 ✅ app/services/TDACAPIService.test.js (200行)
 ✅ TDAC_API_IMPLEMENTATION_GUIDE.md (完整文档)
-✅ TDAC_VIBE_CODING_SUMMARY.md (总结)
+✅ TDAC_VIBE_CODING_SUMMARY.md (总结 - 已移至 ../consolidated/)
 ```
 
 ---

@@ -1,4 +1,4 @@
-// 出境通 - Taiwan Info Screen (台湾入境信息)
+// 入境通 - Taiwan Info Screen (台湾入境信息)
 import React, { useMemo } from 'react';
 import {
   View,

@@ -1,4 +1,4 @@
-// 出境通 - Generation History Management
+// 入境通 - Generation History Management
 // 管理生成历史，避免重复生成
 
 /**

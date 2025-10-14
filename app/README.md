@@ -1,6 +1,6 @@
-# 出境通 - React Native UI Prototypes
+# 入境通 - React Native UI Prototypes
 
-这是 **出境通** APP 的 React Native UI 原型代码，基于 `UI设计规范.md` 实现。
+这是 **入境通** APP 的 React Native UI 原型代码，基于 `UI设计规范.md` 实现。
 
 ## 📁 项目结构
 

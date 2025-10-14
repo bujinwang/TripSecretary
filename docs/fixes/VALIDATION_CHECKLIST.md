@@ -117,8 +117,8 @@ Only promote to beta/production after all rows are checked.
 ## Support & References
 - Implementation details: `IMPLEMENTATION_STATUS.md`
 - API bring-up: `PHASE1_API_INTEGRATION_GUIDE.md`
-- TDAC specifics: `TDAC_DUAL_MODE.md`
-- Elderly UX: `ELDERLY_USER_FEATURES.md`
+- TDAC specifics: `docs/features/TDAC_DUAL_MODE.md`
+- Elderly UX: `docs/features/ELDERLY_USER_FEATURES.md`
 - Contact: support@borderbuddy.com
 
 *Last reviewed: 2025‑01*

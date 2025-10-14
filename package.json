@@ -1,7 +1,7 @@
 {
   "name": "chujingtong",
   "version": "1.0.0",
-  "description": "出境通 - 智能出入境助手",
+  "description": "入境通 - 智能出入境助手",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
     "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-ml-kit/text-recognition": "^2.0.0",
     "@react-native-picker/picker": "2.4.10",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/native": "^6.1.9",
@@ -25,8 +26,10 @@
     "expo-keep-awake": "~12.3.0",
     "expo-media-library": "~15.4.1",
     "expo-print": "~12.4.0",
+    "expo-secure-store": "^15.0.7",
     "expo-sharing": "~11.5.0",
     "expo-splash-screen": "~0.20.5",
+    "expo-sqlite": "^16.0.8",
     "expo-status-bar": "~1.6.0",
     "opencc-js": "^1.0.5",
     "prop-types": "^15.8.1",

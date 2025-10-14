@@ -1,4 +1,4 @@
-// 出境通 - Travel Info Screen (补充旅行信息)
+// 入境通 - Travel Info Screen (补充旅行信息)
 import React, { useState } from 'react';
 import {
   View,

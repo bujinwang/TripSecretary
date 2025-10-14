@@ -1,4 +1,4 @@
-// 出境通 - Present to Customs Screen (向海关出示)
+// 入境通 - Present to Customs Screen (向海关出示)
 import React, { useState } from 'react';
 import {
   View,

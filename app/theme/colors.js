@@ -1,4 +1,4 @@
-// 出境通 - Color System
+// 入境通 - Color System
 // Based on UI设计规范.md
 
 export const colors = {

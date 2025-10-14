@@ -223,14 +223,14 @@ Cloudflare 验证无法在纯后台环境内自动完成，因此后续计划采
 
 ### 目标流程
 1. 旅客补全泰国通关包后，后端记录航班到达时间。
-2. 到达前 72 小时开始推送提醒（可按 72h / 48h / 24h 阶段重复），提示 “请现在打开出境通申报 TDAC”。
+2. 到达前 72 小时开始推送提醒（可按 72h / 48h / 24h 阶段重复），提示 “请现在打开入境通申报 TDAC”。
 3. 用户点击推送或在 App 内查看待办，深链直达 ResultScreen 的「第一件事：自动申请 TDAC」卡片。
 4. 旅客点击 `⚡ 一键自动申报`，进入既有 `TDACHybrid` 流程，在 WebView 中自行通过 Cloudflare 验证并提交。
 5. 成功后保存二维码和状态；失败则保持“待申报”并持续提醒。
 
 ### 系统设计要点
 - **后台调度**：通关包生成时写入任务表（包含 `arrivalDate`、航班号等）。若用户修改行程，重新排程并取消旧任务。
-- **消息渠道**：优先 App Push，可兼容短信/微信服务号。通知仅提示“打开出境通”，避免泄露敏感字段。
+- **消息渠道**：优先 App Push，可兼容短信/微信服务号。通知仅提示“打开入境通”，避免泄露敏感字段。
 - **深链与前端**：通知携带参数（如 `?task=tdac-reminder&generationId=...`），App 定位到 TDAC 卡片并高亮显示剩余时间。
 - **状态管理**：任务状态 `scheduled → reminded → completed / expired`；ResultScreen 可让用户手动“重新提醒”或“忽略此次行程”。
 - **安全性**：保持资料加密并允许用户随时取消分享或提醒，立即终止所有未执行任务。
@@ -267,7 +267,7 @@ Cloudflare 验证无法在纯后台环境内自动完成，因此后续计划采
 3. **TDAC_API_IMPLEMENTATION_GUIDE.md** - API service documentation
 4. **TDAC_STATUS.md** (this file) - Current status and what works
 5. **TDAC_COMPLETE_API_ANALYSIS.md** - Full API reverse engineering
-6. **TDAC_VIBE_CODING_SUMMARY.md** - Development history
+6. **TDAC_VIBE_CODING_SUMMARY.md** - Development history (moved to ../consolidated/)
 
 ---
 

@@ -13,6 +13,7 @@ export const destinationRequirements = {
     entryMethod: 'digital', // digital | paper | both
     digitalSystem: 'TDAC', // 电子系统名称
     digitalUrl: 'https://tdac.immigration.go.th',
+    requiresContactInfo: true, // 需要联系方式（泰国TDAC需要电话和邮箱）
     notes: [
       '应用将在航班前72小时内自动提交TDAC电子入境卡，无需手动填写',
       '完成后会生成TDAC二维码，和护照一起出示即可入境',
@@ -26,10 +27,11 @@ export const destinationRequirements = {
     needsCopyMode: true,   // 老人可能需要帮助填写自助机
     hasAutoKiosk: true,    // 有PIK自助通关机
     pdfFormat: 'E311',     // PDF为E311表格格式（备用）
-    entryMethod: 'digital', 
+    entryMethod: 'digital',
     digitalSystem: 'eDeclaration/ArriveCAN',
     kioskName: 'PIK Kiosk',
     kioskSupported: true,  // 中国护照可用
+    requiresContactInfo: false, // 加拿大不需要联系方式
     notes: [
       '所有旅客必须使用PIK自助通关机',
       '可提前用手机申请eDeclaration',
@@ -43,9 +45,10 @@ export const destinationRequirements = {
     needsCopyMode: true,   // 老人需要帮助填写
     hasAutoKiosk: true,    // 有APC自助机
     pdfFormat: 'I-94 + Customs Declaration',
-    entryMethod: 'both',   
+    entryMethod: 'both',
     kioskName: 'APC Kiosk',
     kioskSupported: false, // 中国护照不能用APC
+    requiresContactInfo: true, // 美国需要联系方式（I-94和海关申报表）
     notes: [
       '需要填写I-94入境表和海关申报表',
       '中国护照不能使用APC自助机',

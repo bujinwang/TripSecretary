@@ -1,4 +1,4 @@
-// 出境通 - Typography System
+// 入境通 - Typography System
 // Based on UI设计规范.md
 
 import { Platform } from 'react-native';

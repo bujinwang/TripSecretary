@@ -27,7 +27,7 @@ Successfully implemented **Option 1: Automated Runtime Conversion** for handling
 
 ### 4. Testing & Verification
 - ✅ Created test scripts:
-  - `test-chinese-conversion.js` - Country translations test
+  - `scripts/test-chinese-conversion.js` - Country translations test
   - `test-full-translations.js` - Full system test
   
 - ✅ All tests passing:
@@ -131,8 +131,8 @@ app/screens/taiwan/TaiwanRequirementsScreen.js.bak
 app/screens/usa/USARequirementsScreen.js.bak
 
 # Test files (can keep for future testing):
-test-chinese-conversion.js
-test-full-translations.js
+scripts/test-chinese-conversion.js
+scripts/test-full-translations.js
 ```
 
 ### Future Enhancements (if needed):

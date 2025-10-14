@@ -1,5 +1,5 @@
-// 出境通 - Profile Screen
-import React, { useMemo, useState } from 'react';
+// 入境通 - Profile Screen
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,21 +14,27 @@ import {
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
+import { NationalitySelector, PassportNameInput } from '../components';
+import { destinationRequirements } from '../config/destinationRequirements';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const { t, language } = useTranslation();
 
+  // Get destination from route params (e.g., 'th', 'us', 'ca')
+  const destination = route?.params?.destination;
+
   // Mock passport data (in real app, get from context/storage)
-  const passportData = {
+  const [passportData, setPassportData] = useState({
     type: '中国护照',
-    name: '张伟',
+    name: 'ZHANG WEI',
     nameEn: 'ZHANG WEI',
     passportNo: 'E12345678',
-    nationality: 'CHN : PEOPLE\'S REPUBLIC OF CHINA',
+    nationality: 'CHN', // Store as ISO code only
     expiry: '2030-12-31',
     issueDate: '2020-12-31',
     issuePlace: 'Shanghai',
-  };
+  });
+
 
   // Personal info state
   const [personalInfo, setPersonalInfo] = useState({
@@ -36,7 +42,7 @@ const ProfileScreen = ({ navigation }) => {
     gender: 'MALE',
     occupation: 'BUSINESS MAN',
     provinceCity: 'ANHUI',
-    countryRegion: 'CHN : PEOPLE\'S REPUBLIC OF CHINA',
+    countryRegion: 'CHN', // Default to passport nationality, just ISO code
     phone: '+86 12343434343',
     email: 'traveler@example.com',
   });
@@ -59,19 +65,34 @@ const ProfileScreen = ({ navigation }) => {
   const [showFundingProof, setShowFundingProof] = useState(true);
   const [editingContext, setEditingContext] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [draftSavedNotification, setDraftSavedNotification] = useState(null);
 
   const languageLabel = useMemo(() => {
     const fallback = language ? language.toUpperCase() : 'LANG';
     return t(`languages.${language}`, { defaultValue: fallback });
   }, [t, language]);
 
-  const personalFields = useMemo(
-    () => [
+  // Set default country/region to passport nationality on mount
+  useEffect(() => {
+    if (passportData.nationality && !personalInfo.countryRegion) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        countryRegion: passportData.nationality
+      }));
+    }
+  }, [passportData.nationality]);
+
+  const personalFields = useMemo(() => {
+    const destinationConfig = destination ? destinationRequirements[destination] : {};
+    const requiresContactInfo = destinationConfig.requiresContactInfo !== false; // Default to true if not specified
+
+    const fields = [
       {
         key: 'dateOfBirth',
         title: t('profile.personal.fields.dateOfBirth.title', { defaultValue: 'Date of Birth' }),
         subtitle: t('profile.personal.fields.dateOfBirth.subtitle', { defaultValue: 'Date of Birth' }),
-        placeholder: t('profile.personal.fields.dateOfBirth.placeholder', { defaultValue: 'YYYY-MM-DD' }),
+        placeholder: t('profile.personal.fields.dateOfBirth.placeholder', { defaultValue: 'YYYY-MM-DD (自动格式化)' }),
+        formatHint: '格式: YYYY-MM-DD',
       },
       {
         key: 'gender',
@@ -86,6 +107,13 @@ const ProfileScreen = ({ navigation }) => {
         placeholder: t('profile.personal.fields.occupation.placeholder', { defaultValue: 'Occupation' }),
       },
       {
+        key: 'countryRegion',
+        title: t('profile.personal.fields.countryRegion.title', { defaultValue: 'Country / Region' }),
+        subtitle: t('profile.personal.fields.countryRegion.subtitle', { defaultValue: 'Country / Region' }),
+        placeholder: t('profile.personal.fields.countryRegion.placeholder', { defaultValue: 'Select your country' }),
+        type: 'nationality-selector', // Mark as nationality selector type
+      },
+      {
         key: 'provinceCity',
         title: t('profile.personal.fields.provinceCity.title', { defaultValue: 'City / Province' }),
         subtitle: t('profile.personal.fields.provinceCity.subtitle', {
@@ -93,29 +121,30 @@ const ProfileScreen = ({ navigation }) => {
         }),
         placeholder: t('profile.personal.fields.provinceCity.placeholder', { defaultValue: 'Province / City' }),
       },
-      {
-        key: 'countryRegion',
-        title: t('profile.personal.fields.countryRegion.title', { defaultValue: 'Country / Region' }),
-        subtitle: t('profile.personal.fields.countryRegion.subtitle', { defaultValue: 'Country / Region' }),
-        placeholder: t('profile.personal.fields.countryRegion.placeholder', { defaultValue: 'Country / Region' }),
-      },
-      {
-        key: 'phone',
-        title: t('profile.personal.fields.phone.title', { defaultValue: 'Phone Number' }),
-        subtitle: t('profile.personal.fields.phone.subtitle', { defaultValue: 'Phone' }),
-        placeholder: t('profile.personal.fields.phone.placeholder', { defaultValue: '+86 1234567890' }),
-        keyboardType: 'phone-pad',
-      },
-      {
-        key: 'email',
-        title: t('profile.personal.fields.email.title', { defaultValue: 'Email Address' }),
-        subtitle: t('profile.personal.fields.email.subtitle', { defaultValue: 'Email' }),
-        placeholder: t('profile.personal.fields.email.placeholder', { defaultValue: 'your@email.com' }),
-        keyboardType: 'email-address',
-      },
-    ],
-    [t, language]
-  );
+    ];
+
+    // Only add phone/email if destination requires contact info
+    if (requiresContactInfo) {
+      fields.push(
+        {
+          key: 'phone',
+          title: t('profile.personal.fields.phone.title', { defaultValue: 'Phone Number' }),
+          subtitle: t('profile.personal.fields.phone.subtitle', { defaultValue: 'Phone' }),
+          placeholder: t('profile.personal.fields.phone.placeholder', { defaultValue: '+86 1234567890' }),
+          keyboardType: 'phone-pad',
+        },
+        {
+          key: 'email',
+          title: t('profile.personal.fields.email.title', { defaultValue: 'Email Address' }),
+          subtitle: t('profile.personal.fields.email.subtitle', { defaultValue: 'Email' }),
+          placeholder: t('profile.personal.fields.email.placeholder', { defaultValue: 'your@email.com' }),
+          keyboardType: 'email-address',
+        }
+      );
+    }
+
+    return fields;
+  }, [t, language, destination]);
 
   const fundingFields = useMemo(
     () => [
@@ -227,12 +256,52 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleStartEdit = (type, field) => {
-    const currentValue =
-      type === 'personal'
-        ? personalInfo[field.key]
-        : fundingProof[field.key];
+    console.log('handleStartEdit called with type:', type, 'field:', field.key);
+    let currentValue;
+    if (type === 'personal') {
+      currentValue = personalInfo[field.key];
+    } else if (type === 'funding') {
+      currentValue = fundingProof[field.key];
+    } else if (type === 'passport-nationality') {
+      currentValue = passportData.nationality;
+    } else if (type === 'nationality-selector') {
+      currentValue = personalInfo[field.key]; // For country/region field
+    }
+    console.log('Setting editingContext with type:', type, 'currentValue:', currentValue);
     setEditingContext({ type, ...field });
     setEditValue(currentValue || '');
+  };
+
+  const renderGenderOptions = () => {
+    const options = [
+      { value: 'MALE', label: '男性' },
+      { value: 'FEMALE', label: '女性' },
+      { value: 'UNDEFINED', label: '未定义' }
+    ];
+
+    return (
+      <View style={styles.genderOptions}>
+        {options.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              styles.genderOption,
+              editValue === option.value && styles.genderOptionActive,
+            ]}
+            onPress={() => handleAutoSave(option.value)}
+          >
+            <Text
+              style={[
+                styles.genderOptionText,
+                editValue === option.value && styles.genderOptionTextActive,
+              ]}
+            >
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   const handleCancelEdit = () => {
@@ -240,7 +309,90 @@ const ProfileScreen = ({ navigation }) => {
     setEditValue('');
   };
 
+  const showDraftSavedNotification = (fieldName) => {
+    setDraftSavedNotification(fieldName);
+    setTimeout(() => {
+      setDraftSavedNotification(null);
+    }, 2000);
+  };
+
+  // Date formatting function for automatic YYYY-MM-DD formatting
+  const formatDateInput = (text) => {
+    // Remove all non-digits
+    const digitsOnly = text.replace(/\D/g, '');
+
+    // Limit to 8 digits (YYYYMMDD)
+    const limitedDigits = digitsOnly.slice(0, 8);
+
+    // Add hyphens in YYYY-MM-DD format
+    let formatted = '';
+    if (limitedDigits.length > 0) {
+      formatted += limitedDigits.slice(0, 4); // YYYY
+      if (limitedDigits.length >= 5) {
+        formatted += '-' + limitedDigits.slice(4, 6); // -MM
+      }
+      if (limitedDigits.length >= 7) {
+        formatted += '-' + limitedDigits.slice(6, 8); // -DD
+      }
+    }
+
+    return formatted;
+  };
+
+  const handleAutoSave = (value) => {
+    if (!editingContext) {
+      return;
+    }
+
+    setEditValue(value);
+
+    // Auto-save after user stops typing (debounce)
+    setTimeout(() => {
+      if (editingContext.type === 'personal') {
+        setPersonalInfo((prev) => ({
+          ...prev,
+          [editingContext.key]: value,
+        }));
+      } else if (editingContext.type === 'funding') {
+        setFundingProof((prev) => ({
+          ...prev,
+          [editingContext.key]: value,
+        }));
+      } else if (editingContext.type === 'passport-nationality') {
+        setPassportData((prev) => ({
+          ...prev,
+          [editingContext.key]: value,
+        }));
+      } else if (editingContext.type === 'nationality-selector') {
+        setPersonalInfo((prev) => ({
+          ...prev,
+          [editingContext.key]: value,
+        }));
+      }
+
+      showDraftSavedNotification(editingContext.title);
+    }, 1000); // Auto-save after 1 second of no typing
+  };
+
+  // Handle date input with real-time formatting
+  const handleDateInputChange = (text) => {
+    const formatted = formatDateInput(text);
+    setEditValue(formatted);
+
+    // Also trigger auto-save for the formatted value
+    setTimeout(() => {
+      if (editingContext?.key === 'dateOfBirth') {
+        setPersonalInfo((prev) => ({
+          ...prev,
+          dateOfBirth: formatted,
+        }));
+        showDraftSavedNotification('出生日期');
+      }
+    }, 1000);
+  };
+
   const handleSaveEdit = () => {
+    // For immediate save when user taps save button (if they want to save immediately)
     if (!editingContext) {
       return;
     }
@@ -255,8 +407,19 @@ const ProfileScreen = ({ navigation }) => {
         ...prev,
         [editingContext.key]: editValue,
       }));
+    } else if (editingContext.type === 'passport-nationality') {
+      setPassportData((prev) => ({
+        ...prev,
+        [editingContext.key]: editValue,
+      }));
+    } else if (editingContext.type === 'nationality-selector') {
+      setPersonalInfo((prev) => ({
+        ...prev,
+        [editingContext.key]: editValue,
+      }));
     }
 
+    showDraftSavedNotification(editingContext.title);
     handleCancelEdit();
   };
 
@@ -267,6 +430,19 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Draft Saved Notification */}
+      {draftSavedNotification && (
+        <View style={styles.draftNotification}>
+          <Text style={styles.draftNotificationIcon}>💾</Text>
+          <Text style={styles.draftNotificationText}>
+            {t('profile.draftSaved', {
+              field: draftSavedNotification,
+              defaultValue: `${draftSavedNotification} saved`
+            })}
+          </Text>
+        </View>
+      )}
+
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -325,13 +501,16 @@ const ProfileScreen = ({ navigation }) => {
                     <TouchableOpacity
                       key={field.key}
                       style={[styles.infoRow, !isLast && styles.infoRowDivider]}
-                      onPress={() => handleStartEdit('personal', field)}
+                      onPress={() => handleStartEdit(field.type === 'nationality-selector' ? field.type : 'personal', field)}
                       accessibilityRole="button"
                     >
                       <View style={styles.infoRowText}>
                         <Text style={styles.infoTitle}>{field.title}</Text>
                         {field.subtitle && (
                           <Text style={styles.infoSubtitle}>{field.subtitle}</Text>
+                        )}
+                        {field.formatHint && (
+                          <Text style={styles.infoFormatHint}>{field.formatHint}</Text>
                         )}
                       </View>
                       <View style={styles.infoValueWrap}>
@@ -342,7 +521,13 @@ const ProfileScreen = ({ navigation }) => {
                           ]}
                           numberOfLines={field.multiline ? 2 : 1}
                         >
-                          {value || notFilledLabel}
+                          {field.key === 'gender' ?
+                            (value === 'MALE' ? '男性' :
+                             value === 'FEMALE' ? '女性' :
+                             value === 'UNDEFINED' ? '未定义' : value) || notFilledLabel
+                            : field.key === 'countryRegion' ?
+                            (value ? `${value} : ${t(`nationalities.${value}`, { defaultValue: value })}` : notFilledLabel)
+                            : value || notFilledLabel}
                         </Text>
                         <Text style={styles.rowArrow}>›</Text>
                       </View>
@@ -472,6 +657,14 @@ const ProfileScreen = ({ navigation }) => {
               <View style={styles.infoList}>
                 <View style={styles.infoItem}>
                   <View style={styles.infoHeader}>
+                    <Text style={styles.infoTitle}>姓名</Text>
+                    <Text style={styles.infoSubtitle}>Full Name</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <View style={styles.infoHeader}>
                     <Text style={styles.infoTitle}>
                       {t('profile.passport.fields.passportNo', { defaultValue: 'Passport Number' })}
                     </Text>
@@ -480,15 +673,25 @@ const ProfileScreen = ({ navigation }) => {
                   <Text style={styles.infoValue}>{passportData.passportNo}</Text>
                 </View>
 
-                <View style={styles.infoItem}>
+                <TouchableOpacity
+                  style={styles.infoItem}
+                  onPress={() => handleStartEdit('passport-nationality', { key: 'nationality' })}
+                >
                   <View style={styles.infoHeader}>
                     <Text style={styles.infoTitle}>
                       {t('profile.passport.fields.nationality', { defaultValue: 'Nationality' })}
                     </Text>
                     <Text style={styles.infoSubtitle}>Nationality</Text>
                   </View>
-                  <Text style={styles.infoValue}>{passportData.nationality}</Text>
-                </View>
+                  <View style={styles.infoValueWrap}>
+                    <Text style={styles.infoValue}>
+                      {passportData.nationality ?
+                        `${passportData.nationality} : ${t(`nationalities.${passportData.nationality}`, { defaultValue: passportData.nationality })}` :
+                        notFilledLabel}
+                    </Text>
+                    <Text style={styles.rowArrow}>›</Text>
+                  </View>
+                </TouchableOpacity>
 
                 <View style={styles.infoItem}>
                   <View style={styles.infoHeader}>
@@ -602,6 +805,23 @@ const ProfileScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
 
+        {/* Generate Entry Card Button */}
+        <TouchableOpacity
+          style={styles.generateButton}
+          onPress={() => navigation.navigate('SelectDestination')}
+        >
+          <Text style={styles.generateButtonIcon}>🚀</Text>
+          <View style={styles.generateButtonText}>
+            <Text style={styles.generateButtonTitle}>
+              {t('profile.generate.title', { defaultValue: 'Generate Entry Card' })}
+            </Text>
+            <Text style={styles.generateButtonSubtitle}>
+              {t('profile.generate.subtitle', { defaultValue: 'Create your personalized entry guide' })}
+            </Text>
+          </View>
+          <Text style={styles.generateButtonArrow}>›</Text>
+        </TouchableOpacity>
+
         {/* App Version */}
         <Text style={styles.version}>
           {t('profile.version', { version: '1.0.0', defaultValue: 'Version 1.0.0' })}
@@ -628,35 +848,60 @@ const ProfileScreen = ({ navigation }) => {
                   {editingContext.subtitle}
                 </Text>
               )}
-              <TextInput
-                value={editValue}
-                onChangeText={setEditValue}
-                placeholder={editingContext?.placeholder}
-                style={[
-                  styles.modalInput,
-                  editingContext?.multiline && styles.modalInputMultiline,
-                ]}
-                multiline={!!editingContext?.multiline}
-                numberOfLines={editingContext?.multiline ? 4 : 1}
-                textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
-                keyboardType={editingContext?.keyboardType || 'default'}
-                autoFocus
-              />
+
+              {editingContext?.type === 'passport-nationality' || editingContext?.type === 'nationality-selector' ? (
+                <>
+                  {console.log('Rendering NationalitySelector for type:', editingContext?.type)}
+                  <NationalitySelector
+                    label=""
+                    value={editValue}
+                    onValueChange={handleAutoSave}
+                    style={styles.nationalitySelector}
+                  />
+                </>
+              ) : editingContext?.key === 'gender' ? (
+                <View>
+                  <Text style={styles.modalSubtitle}>请选择性别</Text>
+                  {renderGenderOptions()}
+                </View>
+              ) : editingContext?.key === 'dateOfBirth' ? (
+                <TextInput
+                  value={editValue}
+                  onChangeText={handleDateInputChange}
+                  placeholder={editingContext?.placeholder}
+                  style={[
+                    styles.modalInput,
+                    editingContext?.multiline && styles.modalInputMultiline,
+                  ]}
+                  multiline={!!editingContext?.multiline}
+                  numberOfLines={editingContext?.multiline ? 4 : 1}
+                  textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
+                  keyboardType="numeric"
+                  autoFocus
+                />
+              ) : (
+                <TextInput
+                  value={editValue}
+                  onChangeText={handleAutoSave}
+                  placeholder={editingContext?.placeholder}
+                  style={[
+                    styles.modalInput,
+                    editingContext?.multiline && styles.modalInputMultiline,
+                  ]}
+                  multiline={!!editingContext?.multiline}
+                  numberOfLines={editingContext?.multiline ? 4 : 1}
+                  textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
+                  keyboardType={editingContext?.keyboardType || 'default'}
+                  autoFocus
+                />
+              )}
               <View style={styles.modalActions}>
                 <TouchableOpacity
-                  style={styles.modalSecondaryButton}
+                  style={styles.modalDoneButton}
                   onPress={handleCancelEdit}
                 >
-                  <Text style={styles.modalSecondaryText}>
-                    {t('common.cancel', { defaultValue: 'Cancel' })}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.modalPrimaryButton}
-                  onPress={handleSaveEdit}
-                >
-                  <Text style={styles.modalPrimaryText}>
-                    {t('profile.editModal.save', { defaultValue: 'Save' })}
+                  <Text style={styles.modalDoneText}>
+                    {t('profile.editModal.done', { defaultValue: 'Done' })}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -794,6 +1039,12 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
+  },
+  infoFormatHint: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    marginTop: 1,
+    fontSize: 11,
   },
   infoValueWrap: {
     flexDirection: 'row',
@@ -968,6 +1219,37 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '600',
   },
+  nationalitySelector: {
+    marginHorizontal: 0,
+    marginBottom: 0,
+  },
+  genderOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: spacing.md,
+  },
+  genderOption: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.medium,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  genderOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  genderOptionText: {
+    ...typography.body1,
+    color: colors.text,
+  },
+  genderOptionTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
 
   // Update Passport Button Styles
   updatePassportButton: {
@@ -1111,6 +1393,76 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.md,
     marginBottom: spacing.xxl,
+  },
+
+  // Draft Saved Notification
+  draftNotification: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.success,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    borderRadius: borderRadius.small,
+  },
+  draftNotificationIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  draftNotificationText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
+  },
+
+  // Generate Button
+  generateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    margin: spacing.md,
+    padding: spacing.md,
+    borderRadius: borderRadius.medium,
+    marginTop: spacing.lg,
+  },
+  generateButtonIcon: {
+    fontSize: 28,
+    marginRight: spacing.md,
+  },
+  generateButtonText: {
+    flex: 1,
+  },
+  generateButtonTitle: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  generateButtonSubtitle: {
+    ...typography.caption,
+    color: colors.white,
+    opacity: 0.9,
+  },
+  generateButtonArrow: {
+    ...typography.h2,
+    color: colors.white,
+    marginLeft: spacing.sm,
+  },
+
+  // Modal Done Button
+  modalDoneButton: {
+    flex: 1,
+    borderRadius: borderRadius.small,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  modalDoneText: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '600',
   },
 });
 

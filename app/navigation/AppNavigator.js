@@ -1,4 +1,4 @@
-// 出境通 - App Navigator
+// 入境通 - App Navigator
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';

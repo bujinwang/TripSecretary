@@ -1,6 +1,6 @@
 # BorderBuddy Cloudflare Workers Backend
 
-This is the backend API for the BorderBuddy (出境通) app, built on Cloudflare Workers.
+This is the backend API for the BorderBuddy (入境通) app, built on Cloudflare Workers.
 
 ## Setup
 

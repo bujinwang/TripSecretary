@@ -65,8 +65,8 @@ app/screens/ResultScreen.js     # 添加入口按钮
 package.json                    # 添加依赖
 
 文档：
-ELDERLY_USER_FEATURES.md        # 功能详细文档
-SETUP_ELDERLY_FEATURES.md       # 本文件
+`docs/features/ELDERLY_USER_FEATURES.md`        # 功能详细文档
+`docs/features/SETUP_ELDERLY_FEATURES.md`       # 本文件
 ```
 
 ---
@@ -291,7 +291,7 @@ expo-keep-awake 会影响电池：
 ## 联系支持
 
 如果遇到问题：
-1. 查看 `ELDERLY_USER_FEATURES.md` 详细文档
+1. 查看 `docs/features/ELDERLY_USER_FEATURES.md` 详细文档
 2. 检查控制台错误信息
 3. 使用 `console.log` 调试数据流
 4. 重启 Metro bundler 和应用

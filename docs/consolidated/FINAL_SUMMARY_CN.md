@@ -184,8 +184,8 @@ npx expo start --clear
 我创建了以下文档帮助你：
 
 1. **NAVIGATION_FIX_GUIDE.md** - 详细的问题诊断和修复指南
-2. **TAIWAN_SINGAPORE_MALAYSIA_INFO_TEST.md** - 功能测试指南
-3. **INFO_PAGES_COMPLETION_SUMMARY.md** - 功能完成总结
+2. **TAIWAN_SINGAPORE_MALAYSIA_INFO_TEST.md** - 功能测试指南 (已删除，内容已整合)
+3. **INFO_PAGES_COMPLETION_SUMMARY.md** - 功能完成总结 (已整合到本文件)
 4. **verify-info-pages.sh** - 自动验证脚本
 
 ## 🆘 如果还是不行

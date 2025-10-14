@@ -1,6 +1,6 @@
 
-// 出境通 - Thailand Travel Info Screen (泰国入境信息)
-import React, { useState } from 'react';
+// 入境通 - Thailand Travel Info Screen (泰国入境信息)
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,14 +14,22 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { NationalitySelector, PassportNameInput } from '../../components';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import { getPhoneCode } from '../../data/phoneCodes';
 
+// Import secure data models and services
+import Passport from '../../models/Passport';
+import PersonalInfo from '../../models/PersonalInfo';
+import EntryData from '../../models/EntryData';
+import SecureStorageService from '../../services/security/SecureStorageService';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -59,7 +67,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
   const { t } = useLocale();
 
-  // Passport Info State
+  // Data model instances
+  const [passportData, setPassportData] = useState(null);
+  const [personalInfoData, setPersonalInfoData] = useState(null);
+  const [entryData, setEntryData] = useState(null);
+
+  // UI State (derived from data models)
   const [passportNo, setPassportNo] = useState(passport?.passportNo || '');
   const [fullName, setFullName] = useState(passport?.name || '');
   const [nationality, setNationality] = useState(passport?.nationality || '');
@@ -71,6 +84,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [occupation, setOccupation] = useState('');
   const [cityOfResidence, setCityOfResidence] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
+  const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || '')); // Initialize phone code based on passport nationality or empty
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
@@ -92,6 +106,364 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [hotelAddress, setHotelAddress] = useState('');
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load saved data on component mount and when screen gains focus
+  useEffect(() => {
+    const loadSavedData = async () => {
+      try {
+        setIsLoading(true);
+        const userId = passport?.id || 'default_user';
+        
+        // Temporarily disable secure storage until API migration is complete
+        // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
+        /*
+        try {
+          await SecureStorageService.initialize(userId);
+        } catch (initError) {
+          console.warn('Failed to initialize secure storage, continuing with AsyncStorage only:', initError);
+        }
+        */
+        
+        const storageKey = `thailandTravelInfo_${userId}`;
+        const savedData = await AsyncStorage.getItem(storageKey);
+
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+
+          // Passport Info
+          setPassportNo(parsedData.passportNo || passport?.passportNo || '');
+          setFullName(parsedData.fullName || passport?.name || '');
+          setNationality(parsedData.nationality || passport?.nationality || '');
+          setDob(parsedData.dob || passport?.dob || '');
+          setExpiryDate(parsedData.expiryDate || passport?.expiry || '');
+
+          // Personal Info
+          setSex(parsedData.sex || passport?.sex || '');
+          setOccupation(parsedData.occupation || '');
+          setCityOfResidence(parsedData.cityOfResidence || '');
+          setResidentCountry(parsedData.residentCountry || '');
+          setPhoneCode(parsedData.phoneCode || getPhoneCode(parsedData.nationality || passport?.nationality || ''));
+          setPhoneNumber(parsedData.phoneNumber || '');
+          setEmail(parsedData.email || '');
+
+          // Proof of Funds
+          setFunds(parsedData.funds || []);
+
+          // Travel Info
+          setArrivalFlightNumber(parsedData.arrivalFlightNumber || '');
+          setArrivalDepartureAirport(parsedData.arrivalDepartureAirport || '');
+          setArrivalDepartureDateTime(parsedData.arrivalDepartureDateTime || '');
+          setArrivalArrivalAirport(parsedData.arrivalArrivalAirport || '');
+          setArrivalArrivalDateTime(parsedData.arrivalArrivalDateTime || '');
+          setDepartureFlightNumber(parsedData.departureFlightNumber || '');
+          setDepartureDepartureAirport(parsedData.departureDepartureAirport || '');
+          setDepartureDepartureDateTime(parsedData.departureDepartureDateTime || '');
+          setDepartureArrivalAirport(parsedData.departureArrivalAirport || '');
+          setDepartureArrivalDateTime(parsedData.departureArrivalDateTime || '');
+          setHotelName(parsedData.hotelName || '');
+          setHotelAddress(parsedData.hotelAddress || '');
+        } else {
+          // Fallback to route params if no saved data
+          setPassportNo(passport?.passportNo || '');
+          setFullName(passport?.name || '');
+          setNationality(passport?.nationality || '');
+          setDob(passport?.dob || '');
+          setExpiryDate(passport?.expiry || '');
+          setSex(passport?.sex || '');
+          setPhoneCode(getPhoneCode(passport?.nationality || ''));
+        }
+      } catch (error) {
+        console.error('Failed to load saved data:', error);
+        // Fallback to route params on error
+        setPassportNo(passport?.passportNo || '');
+        setFullName(passport?.name || '');
+        setNationality(passport?.nationality || '');
+        setDob(passport?.dob || '');
+        setExpiryDate(passport?.expiry || '');
+        setSex(passport?.sex || '');
+        setPhoneCode(getPhoneCode(passport?.nationality || ''));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSavedData();
+  }, [passport]);
+
+  // Add focus listener to reload data when returning to screen
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      const reloadData = async () => {
+        try {
+          const userId = passport?.id || 'default_user';
+          const storageKey = `thailandTravelInfo_${userId}`;
+          const savedData = await AsyncStorage.getItem(storageKey);
+
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+
+            // Update if we have saved data (even if field has content, storage data takes precedence)
+            if (parsedData.passportNo) {
+              setPassportNo(parsedData.passportNo);
+            }
+            if (parsedData.fullName) {
+              setFullName(parsedData.fullName);
+            }
+            if (parsedData.nationality && !nationality) {
+              setNationality(parsedData.nationality);
+            }
+            if (parsedData.dob && !dob) {
+              setDob(parsedData.dob);
+            }
+            if (parsedData.expiryDate && !expiryDate) {
+              setExpiryDate(parsedData.expiryDate);
+            }
+            if (parsedData.sex && !sex) {
+              setSex(parsedData.sex);
+            }
+            if (parsedData.occupation && !occupation) {
+              setOccupation(parsedData.occupation);
+            }
+            if (parsedData.cityOfResidence && !cityOfResidence) {
+              setCityOfResidence(parsedData.cityOfResidence);
+            }
+            if (parsedData.residentCountry && !residentCountry) {
+              setResidentCountry(parsedData.residentCountry);
+            }
+            if (parsedData.phoneCode && !phoneCode) {
+              setPhoneCode(parsedData.phoneCode);
+            }
+            if (parsedData.phoneNumber && !phoneNumber) {
+              setPhoneNumber(parsedData.phoneNumber);
+            }
+            if (parsedData.email && !email) {
+              setEmail(parsedData.email);
+            }
+            if (parsedData.funds && funds.length === 0) {
+              setFunds(parsedData.funds);
+            }
+            if (parsedData.arrivalFlightNumber && !arrivalFlightNumber) {
+              setArrivalFlightNumber(parsedData.arrivalFlightNumber);
+            }
+            if (parsedData.arrivalDepartureAirport && !arrivalDepartureAirport) {
+              setArrivalDepartureAirport(parsedData.arrivalDepartureAirport);
+            }
+            if (parsedData.arrivalDepartureDateTime && !arrivalDepartureDateTime) {
+              setArrivalDepartureDateTime(parsedData.arrivalDepartureDateTime);
+            }
+            if (parsedData.arrivalArrivalAirport && !arrivalArrivalAirport) {
+              setArrivalArrivalAirport(parsedData.arrivalArrivalAirport);
+            }
+            if (parsedData.arrivalArrivalDateTime && !arrivalArrivalDateTime) {
+              setArrivalArrivalDateTime(parsedData.arrivalArrivalDateTime);
+            }
+            if (parsedData.departureFlightNumber && !departureFlightNumber) {
+              setDepartureFlightNumber(parsedData.departureFlightNumber);
+            }
+            if (parsedData.departureDepartureAirport && !departureDepartureAirport) {
+              setDepartureDepartureAirport(parsedData.departureDepartureAirport);
+            }
+            if (parsedData.departureDepartureDateTime && !departureDepartureDateTime) {
+              setDepartureDepartureDateTime(parsedData.departureDepartureDateTime);
+            }
+            if (parsedData.departureArrivalAirport && !departureArrivalAirport) {
+              setDepartureArrivalAirport(parsedData.departureArrivalAirport);
+            }
+            if (parsedData.departureArrivalDateTime && !departureArrivalDateTime) {
+              setDepartureArrivalDateTime(parsedData.departureArrivalDateTime);
+            }
+            if (parsedData.hotelName && !hotelName) {
+              setHotelName(parsedData.hotelName);
+            }
+            if (parsedData.hotelAddress && !hotelAddress) {
+              setHotelAddress(parsedData.hotelAddress);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to reload data on focus:', error);
+        }
+      };
+
+      reloadData();
+    });
+
+    return unsubscribe;
+  }, [navigation, passport, passportNo, fullName, nationality, dob, expiryDate, sex, occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, funds, arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDateTime, arrivalArrivalAirport, arrivalArrivalDateTime, departureFlightNumber, departureDepartureAirport, departureDepartureDateTime, departureArrivalAirport, departureArrivalDateTime, hotelName, hotelAddress]);
+
+  // Function to save data to secure storage and AsyncStorage
+  const saveDataToSecureStorage = async () => {
+    try {
+      const userId = passport?.id || 'default_user';
+
+      // Temporarily disable secure storage until API migration is complete
+      // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
+      /*
+      try {
+        if (!SecureStorageService.db) {
+          await SecureStorageService.initialize(userId);
+        }
+      } catch (initError) {
+        console.warn('Secure storage not available, saving to AsyncStorage only:', initError);
+      }
+      */
+
+      // Temporarily disable secure storage until API migration is complete
+      // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
+      /*
+      if (SecureStorageService.db && (passportNo || fullName || nationality || dob || expiryDate)) {
+        try {
+          const passportInstance = new Passport({
+            id: passport?.id || Passport.generateId(),
+            userId,
+            passportNumber: passportNo,
+            fullName,
+            dateOfBirth: dob,
+            nationality,
+            expiryDate,
+            issueDate: passport?.issueDate,
+            issuePlace: passport?.issuePlace,
+            photoUri: passport?.photoUri
+          });
+          await passportInstance.save({ skipValidation: true });
+          setPassportData(passportInstance);
+        } catch (passportError) {
+          console.warn('Failed to save passport to secure storage:', passportError);
+        }
+      }
+
+      if (SecureStorageService.db && (phoneNumber || email || occupation || cityOfResidence || residentCountry)) {
+        try {
+          const personalInfoInstance = new PersonalInfo({
+            id: personalInfoData?.id || PersonalInfo.generateId(),
+            userId,
+            phoneNumber,
+            email,
+            homeAddress: '',
+            occupation,
+            provinceCity: cityOfResidence,
+            countryRegion: residentCountry
+          });
+          await personalInfoInstance.save({ skipValidation: true });
+          setPersonalInfoData(personalInfoInstance);
+        } catch (personalInfoError) {
+          console.warn('Failed to save personal info to secure storage:', personalInfoError);
+        }
+      }
+
+      if (SecureStorageService.db && (arrivalFlightNumber || arrivalDepartureDateTime || departureDepartureDateTime || funds.length > 0)) {
+        try {
+          const entryDataInstance = new EntryData({
+            id: entryData?.id || EntryData.generateId(),
+            userId,
+            passportId: passport?.id,
+            personalInfoId: personalInfoData?.id,
+            destination: destination,
+            purpose: 'tourism',
+            arrivalDate: arrivalDepartureDateTime,
+            departureDate: departureDepartureDateTime,
+            flightNumber: arrivalFlightNumber,
+            accommodation: hotelName,
+            fundingProof: funds,
+            immigrationNotes: '',
+            specialRequirements: ''
+          });
+          await entryDataInstance.save({ skipValidation: true });
+          setEntryData(entryDataInstance);
+        } catch (entryDataError) {
+          console.warn('Failed to save entry data to secure storage:', entryDataError);
+        }
+      }
+      */
+
+      // Also save to AsyncStorage for quick restoration
+      const storageKey = `thailandTravelInfo_${userId}`;
+      const dataToSave = {
+        passportNo,
+        fullName,
+        nationality,
+        dob,
+        expiryDate,
+        sex,
+        occupation,
+        cityOfResidence,
+        residentCountry,
+        phoneCode,
+        phoneNumber,
+        email,
+        funds,
+        arrivalFlightNumber,
+        arrivalDepartureAirport,
+        arrivalDepartureDateTime,
+        arrivalArrivalAirport,
+        arrivalArrivalDateTime,
+        departureFlightNumber,
+        departureDepartureAirport,
+        departureDepartureDateTime,
+        departureArrivalAirport,
+        departureArrivalDateTime,
+        hotelName,
+        hotelAddress,
+      };
+
+      await AsyncStorage.setItem(storageKey, JSON.stringify(dataToSave));
+
+    } catch (error) {
+      console.error('Failed to save data:', error);
+      // Don't show alert for save failures to avoid interrupting user experience
+    }
+  };
+
+  // Function to validate and save field data on blur
+  const handleFieldBlur = async (fieldName, fieldValue) => {
+    try {
+      // Basic validation for the field
+      let isValid = true;
+      let errorMessage = '';
+
+      switch (fieldName) {
+        case 'passportNo':
+          if (fieldValue && !/^[A-Z0-9]{6,12}$/i.test(fieldValue.replace(/\s/g, ''))) {
+            isValid = false;
+            errorMessage = 'Invalid passport number format';
+          }
+          break;
+        case 'dob':
+        case 'expiryDate':
+          if (fieldValue && !/^\d{4}-\d{2}-\d{2}$/.test(fieldValue)) {
+            isValid = false;
+            errorMessage = 'Invalid date format (YYYY-MM-DD)';
+          }
+          break;
+        case 'email':
+          if (fieldValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue)) {
+            isValid = false;
+            errorMessage = 'Invalid email format';
+          }
+          break;
+        case 'phoneNumber':
+          if (fieldValue && !/^[\+]?[\d\s\-\(\)]{7,}$/.test(fieldValue.replace(/[^\d+\s-()]/g, ''))) {
+            isValid = false;
+            errorMessage = 'Invalid phone number format';
+          }
+          break;
+      }
+
+      // Update errors state
+      setErrors(prev => ({
+        ...prev,
+        [fieldName]: isValid ? '' : errorMessage
+      }));
+
+      // Save data if valid
+      if (isValid) {
+        await saveDataToSecureStorage();
+      }
+
+    } catch (error) {
+      console.error('Failed to validate and save field:', error);
+    }
+  };
 
   const addFund = (type) => {
     const newFund = { id: Date.now(), type };
@@ -116,33 +488,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
   const validate = () => {
-    const newErrors = {};
-    if (!passportNo) newErrors.passportNo = '护照号不能为空';
-    if (!fullName) newErrors.fullName = '姓名不能为空';
-    if (!nationality) newErrors.nationality = '国籍不能为空';
-    if (!expiryDate) newErrors.expiryDate = '护照有效期不能为空';
-    if (!dob) newErrors.dob = '出生日期不能为空';
-    if (!sex) newErrors.sex = '性别不能为空';
-    if (!occupation) newErrors.occupation = '职业不能为空';
-    if (!cityOfResidence) newErrors.cityOfResidence = '居住城市不能为空';
-    if (!residentCountry) newErrors.residentCountry = '居住国家不能为空';
-    if (!phoneNumber) newErrors.phoneNumber = '电话号码不能为空';
-    if (!email) newErrors.email = '电子邮箱不能为空';
-    if (!arrivalFlightNumber) newErrors.arrivalFlightNumber = '抵达航班号不能为空';
-    if (!arrivalDepartureAirport) newErrors.arrivalDepartureAirport = '出发机场不能为空';
-    if (!arrivalDepartureDateTime) newErrors.arrivalDepartureDateTime = '出发时间不能为空';
-    if (!arrivalArrivalAirport) newErrors.arrivalArrivalAirport = '抵达机场不能为空';
-    if (!arrivalArrivalDateTime) newErrors.arrivalArrivalDateTime = '抵达时间不能为空';
-    if (!departureFlightNumber) newErrors.departureFlightNumber = '离开航班号不能为空';
-    if (!departureDepartureAirport) newErrors.departureDepartureAirport = '出发机场不能为空';
-    if (!departureDepartureDateTime) newErrors.departureDepartureDateTime = '出发时间不能为空';
-    if (!departureArrivalAirport) newErrors.departureArrivalAirport = '抵达机场不能为空';
-    if (!departureArrivalDateTime) newErrors.departureArrivalDateTime = '抵达时间不能为空';
-    if (!hotelName) newErrors.hotelName = '酒店名称不能为空';
-    if (!hotelAddress) newErrors.hotelAddress = '酒店地址不能为空';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Disable all required checks to support progressive entry info filling
+    setErrors({});
+    return true;
   };
 
   const handleContinue = () => {
@@ -150,6 +498,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       return;
     }
 
+    // Use the secure data models for navigation
     const travelInfo = {
       // Passport Info
       passportNo,
@@ -163,7 +512,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       occupation,
       cityOfResidence,
       residentCountry,
-      phoneNumber,
+      phoneNumber: `${phoneCode} ${phoneNumber}`, // Combine code and number for storage
       email,
 
       // Proof of Funds
@@ -188,6 +537,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       passport,
       destination,
       travelInfo,
+      // Pass secure data references
+      passportData,
+      personalInfoData,
+      entryData,
     });
   };
 
@@ -243,25 +596,30 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   };
 
   const renderGenderOptions = () => {
-    const options = ['Female', 'Male', 'Undefined'];
+    const options = [
+      { value: 'Female', label: '女性' },
+      { value: 'Male', label: '男性' },
+      { value: 'Undefined', label: '未定义' }
+    ];
+
     return (
       <View style={styles.optionsContainer}>
         {options.map((option) => (
           <TouchableOpacity
-            key={option}
+            key={option.value}
             style={[
               styles.optionButton,
-              sex === option && styles.optionButtonActive,
+              sex === option.value && styles.optionButtonActive,
             ]}
-            onPress={() => setSex(option)}
+            onPress={() => setSex(option.value)}
           >
             <Text
               style={[
                 styles.optionText,
-                sex === option && styles.optionTextActive,
+                sex === option.value && styles.optionTextActive,
               ]}
             >
-              {option}
+              {option.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -281,6 +639,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <View style={styles.headerRight} />
       </View>
 
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>正在加载数据...</Text>
+        </View>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
@@ -297,24 +661,75 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         </View>
 
         <CollapsibleSection title="护照信息" onScan={handleScanPassport}>
-          <Input label="护照号" value={passportNo} onChangeText={setPassportNo} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} />
-          <Input label="姓名" value={fullName} onChangeText={setFullName} helpText="请输入您的全名" error={!!errors.fullName} errorMessage={errors.fullName} />
-          <Input label="国籍" value={nationality} onChangeText={setNationality} helpText="请输入您的国籍" error={!!errors.nationality} errorMessage={errors.nationality} />
-          <Input label="出生日期" value={dob} onChangeText={setDob} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} />
-          <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} />
-        </CollapsibleSection>
+           <PassportNameInput
+             value={fullName}
+             onChangeText={setFullName}
+             onBlur={() => handleFieldBlur('fullName', fullName)}
+             helpText="请填写汉语拼音（例如：LI, MAO）- 不要输入中文字符"
+             error={!!errors.fullName}
+             errorMessage={errors.fullName}
+           />
+           <NationalitySelector
+             label="国籍"
+             value={nationality}
+             onValueChange={(code) => {
+               setNationality(code);
+               handleFieldBlur('nationality', code); // Save when nationality changes
+             }}
+             helpText="请选择您的国籍"
+             error={!!errors.nationality}
+             errorMessage={errors.nationality}
+           />
+           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" />
+           <Input label="出生日期" value={dob} onChangeText={setDob} onBlur={() => handleFieldBlur('dob', dob)} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
+           <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
+         </CollapsibleSection>
 
         <CollapsibleSection title="个人信息">
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>性别</Text>
-            {renderGenderOptions()}
-          </View>
-          <Input label="职业" value={occupation} onChangeText={setOccupation} helpText="请输入您的职业" error={!!errors.occupation} errorMessage={errors.occupation} />
-          <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} helpText="请输入您居住的城市" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} />
-          <Input label="居住国家" value={residentCountry} onChangeText={setResidentCountry} helpText="请输入您居住的国家" error={!!errors.residentCountry} errorMessage={errors.residentCountry} />
-          <Input label="电话号码" value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad" helpText="请输入您的电话号码" error={!!errors.phoneNumber} errorMessage={errors.phoneNumber} />
-          <Input label="电子邮箱" value={email} onChangeText={setEmail} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} />
-        </CollapsibleSection>
+           <Input label="职业" value={occupation} onChangeText={setOccupation} onBlur={() => handleFieldBlur('occupation', occupation)} helpText="请输入您的职业 (请使用英文)" error={!!errors.occupation} errorMessage={errors.occupation} autoCapitalize="words" />
+           <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="words" />
+           <NationalitySelector
+             label="居住国家"
+             value={residentCountry}
+             onValueChange={(code) => {
+               setResidentCountry(code);
+               setPhoneCode(getPhoneCode(code));
+               handleFieldBlur('residentCountry', code); // Save when country changes
+             }}
+             helpText="请选择您居住的国家"
+             error={!!errors.residentCountry}
+             errorMessage={errors.residentCountry}
+           />
+           <View style={styles.phoneInputContainer}>
+             <Input
+               label="国家代码"
+               value={phoneCode}
+               onChangeText={setPhoneCode}
+               onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
+               keyboardType="phone-pad"
+               maxLength={5} // e.g., +886
+               error={!!errors.phoneCode}
+               errorMessage={errors.phoneCode}
+               style={styles.phoneCodeInput}
+             />
+             <Input
+               label="电话号码"
+               value={phoneNumber}
+               onChangeText={setPhoneNumber}
+               onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
+               keyboardType="phone-pad"
+               helpText="请输入您的电话号码"
+               error={!!errors.phoneNumber}
+               errorMessage={errors.phoneNumber}
+               style={styles.phoneInput}
+             />
+           </View>
+           <Input label="电子邮箱" value={email} onChangeText={setEmail} onBlur={() => handleFieldBlur('email', email)} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} />
+           <View style={styles.fieldContainer}>
+             <Text style={styles.fieldLabel}>性别</Text>
+             {renderGenderOptions()}
+           </View>
+         </CollapsibleSection>
 
         <CollapsibleSection title="资金证明">
           <View style={styles.fundActions}>
@@ -365,11 +780,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
-          <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} />
-          <Input label="出发机场" value={arrivalDepartureAirport} onChangeText={setArrivalDepartureAirport} helpText="请输入出发机场" error={!!errors.arrivalDepartureAirport} errorMessage={errors.arrivalDepartureAirport} />
-          <Input label="出发时间" value={arrivalDepartureDateTime} onChangeText={setArrivalDepartureDateTime} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalDepartureDateTime} errorMessage={errors.arrivalDepartureDateTime} />
-          <Input label="抵达机场" value={arrivalArrivalAirport} onChangeText={setArrivalArrivalAirport} helpText="请输入抵达机场" error={!!errors.arrivalArrivalAirport} errorMessage={errors.arrivalArrivalAirport} />
-          <Input label="抵达时间" value={arrivalArrivalDateTime} onChangeText={setArrivalArrivalDateTime} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalArrivalDateTime} errorMessage={errors.arrivalArrivalDateTime} />
+          <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
+          <Input label="出发机场" value={arrivalDepartureAirport} onChangeText={setArrivalDepartureAirport} onBlur={() => handleFieldBlur('arrivalDepartureAirport', arrivalDepartureAirport)} helpText="请输入出发机场" error={!!errors.arrivalDepartureAirport} errorMessage={errors.arrivalDepartureAirport} autoCapitalize="words" />
+          <Input label="出发时间" value={arrivalDepartureDateTime} onChangeText={setArrivalDepartureDateTime} onBlur={() => handleFieldBlur('arrivalDepartureDateTime', arrivalDepartureDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalDepartureDateTime} errorMessage={errors.arrivalDepartureDateTime} />
+          <Input label="抵达机场" value={arrivalArrivalAirport} onChangeText={setArrivalArrivalAirport} onBlur={() => handleFieldBlur('arrivalArrivalAirport', arrivalArrivalAirport)} helpText="请输入抵达机场" error={!!errors.arrivalArrivalAirport} errorMessage={errors.arrivalArrivalAirport} autoCapitalize="words" />
+          <Input label="抵达时间" value={arrivalArrivalDateTime} onChangeText={setArrivalArrivalDateTime} onBlur={() => handleFieldBlur('arrivalArrivalDateTime', arrivalArrivalDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.arrivalArrivalDateTime} errorMessage={errors.arrivalArrivalDateTime} />
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>去程机票</Text>
@@ -378,12 +793,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
-          <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} />
-          <Input label="出发机场" value={departureDepartureAirport} onChangeText={setDepartureDepartureAirport} helpText="请输入出发机场" error={!!errors.departureDepartureAirport} errorMessage={errors.departureDepartureAirport} />
-          <Input label="出发时间" value={departureDepartureDateTime} onChangeText={setDepartureDepartureDateTime} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureDepartureDateTime} errorMessage={errors.departureDepartureDateTime} />
-          <Input label="抵达机场" value={departureArrivalAirport} onChangeText={setDepartureArrivalAirport} helpText="请输入抵达机场" error={!!errors.departureArrivalAirport} errorMessage={errors.departureArrivalAirport} />
-          <Input label="抵达时间" value={departureArrivalDateTime} onChangeText={setDepartureArrivalDateTime} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureArrivalDateTime} errorMessage={errors.departureArrivalDateTime} />
-          
+          <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
+          <Input label="出发机场" value={departureDepartureAirport} onChangeText={setDepartureDepartureAirport} onBlur={() => handleFieldBlur('departureDepartureAirport', departureDepartureAirport)} helpText="请输入出发机场" error={!!errors.departureDepartureAirport} errorMessage={errors.departureDepartureAirport} autoCapitalize="words" />
+          <Input label="出发时间" value={departureDepartureDateTime} onChangeText={setDepartureDepartureDateTime} onBlur={() => handleFieldBlur('departureDepartureDateTime', departureDepartureDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureDepartureDateTime} errorMessage={errors.departureDepartureDateTime} />
+          <Input label="抵达机场" value={departureArrivalAirport} onChangeText={setDepartureArrivalAirport} onBlur={() => handleFieldBlur('departureArrivalAirport', departureArrivalAirport)} helpText="请输入抵达机场" error={!!errors.departureArrivalAirport} errorMessage={errors.departureArrivalAirport} autoCapitalize="words" />
+          <Input label="抵达时间" value={departureArrivalDateTime} onChangeText={setDepartureArrivalDateTime} onBlur={() => handleFieldBlur('departureArrivalDateTime', departureArrivalDateTime)} helpText="格式: YYYY-MM-DD HH:MM" error={!!errors.departureArrivalDateTime} errorMessage={errors.departureArrivalDateTime} />
+
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>旅馆信息</Text>
               <TouchableOpacity style={styles.scanButton} onPress={handleScanHotel}>
@@ -391,8 +806,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
-          <Input label="酒店名称" value={hotelName} onChangeText={setHotelName} helpText="请输入您预订的酒店名称" error={!!errors.hotelName} errorMessage={errors.hotelName} />
-          <Input label="酒店地址" value={hotelAddress} onChangeText={setHotelAddress} multiline helpText="请输入您预订的酒店地址" error={!!errors.hotelAddress} errorMessage={errors.hotelAddress} />
+          <Input label="酒店名称" value={hotelName} onChangeText={setHotelName} onBlur={() => handleFieldBlur('hotelName', hotelName)} helpText="请输入您预订的酒店名称" error={!!errors.hotelName} errorMessage={errors.hotelName} autoCapitalize="words" />
+          <Input label="酒店地址" value={hotelAddress} onChangeText={setHotelAddress} onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} multiline helpText="请输入您预订的酒店地址" error={!!errors.hotelAddress} errorMessage={errors.hotelAddress} autoCapitalize="words" />
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
@@ -615,6 +1030,27 @@ const styles = StyleSheet.create({
     color: '#34C759',
     flex: 1,
     lineHeight: 18,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  phoneCodeInput: {
+    width: '30%',
+    marginRight: spacing.sm,
+  },
+  phoneInput: {
+    flex: 1,
+  },
+  loadingContainer: {
+    padding: spacing.md,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  loadingText: {
+    ...typography.body1,
+    color: colors.textSecondary,
   },
 });
 

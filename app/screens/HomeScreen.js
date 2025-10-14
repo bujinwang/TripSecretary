@@ -1,4 +1,4 @@
-// 出境通 - Home Screen
+// 入境通 - Home Screen
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -176,7 +176,7 @@ const HomeScreen = ({ navigation }) => {
   const hasPassport = true;
   const passportData = {
     type: t('home.passport.type'),
-    name: '张伟',
+    name: '',
     nameEn: 'ZHANG WEI',
     passportNo: 'E12345678',
     expiry: '2030-12-31',

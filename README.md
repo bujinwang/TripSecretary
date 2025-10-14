@@ -1,4 +1,4 @@
-# 出境通 (ChuJingTong) - 智能出入境助手 🌏✈️
+# 入境通 (ChuJingTong) - 智能出入境助手 🌏✈️
 
 > An AI-powered travel assistant app for Chinese travelers (50-70 years old), helping them prepare immigration documents with ease.
 
@@ -207,6 +207,6 @@ MIT License - See LICENSE file
 
 ---
 
-**出境通** - Making international travel easier for everyone! 🌍✨
+**入境通** - Making international travel easier for everyone! 🌍✨
 
 For questions: support@borderbuddy.com

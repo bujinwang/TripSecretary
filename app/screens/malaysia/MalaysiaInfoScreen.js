@@ -1,4 +1,4 @@
-// 出境通 - Malaysia Info Screen (马来西亚入境信息)
+// 入境通 - Malaysia Info Screen (马来西亚入境信息)
 import React, { useMemo } from 'react';
 import {
   View,

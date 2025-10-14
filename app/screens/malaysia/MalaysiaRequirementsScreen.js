@@ -1,4 +1,4 @@
-// 出境通 - Malaysia Requirements Screen (马来西亚入境要求确认)
+// 入境通 - Malaysia Requirements Screen (马来西亚入境要求确认)
 import React, { useMemo, useState } from 'react';
 import {
   View,

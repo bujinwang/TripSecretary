@@ -175,6 +175,6 @@ Personal Information:
 ## 🔗 Related Documentation
 
 - `TDAC_TIMEOUT_FIX.md` - Detailed analysis of timeout issue
-- `TDAC_HYBRID_FIXES_SUMMARY.md` - Complete fix summary
+- `TDAC_HYBRID_FIXES_SUMMARY.md` - Complete fix summary (moved to ../consolidated/)
 - `DEBUGGING_API_SUBMISSION.md` - API debugging guide
 - `TDAC_HYBRID_IMPLEMENTATION.md` - Original implementation plan

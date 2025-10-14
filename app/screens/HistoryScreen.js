@@ -1,4 +1,4 @@
-// 出境通 - History Screen
+// 入境通 - History Screen
 import React, { useMemo } from 'react';
 import {
   View,

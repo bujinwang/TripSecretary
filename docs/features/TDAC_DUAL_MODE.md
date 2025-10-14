@@ -175,7 +175,7 @@ BorderBuddy/
 │       └── AppNavigator.js              ← 导航配置 (更新)
 ├── docs/
 │   └── arrival-cards/
-│       ├── TDAC_VIBE_CODING_SUMMARY.md
+│       ├── TDAC_VIBE_CODING_SUMMARY.md (moved to consolidated/)
 │       ├── TDAC_API_IMPLEMENTATION_GUIDE.md
 │       └── ... (11个文档)
 └── TDAC_DUAL_MODE.md                    ← 本文档 (更新)

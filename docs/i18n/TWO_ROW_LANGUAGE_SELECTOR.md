@@ -187,7 +187,7 @@ If we exceed ~12 languages, consider:
 - `HOW_TO_SELECT_SIMPLIFIED_CHINESE.md` - User guide
 - `LANGUAGE_SELECTOR_FIX.md` - Language label fixes
 - `CHINESE_LOCALIZATION.md` - Chinese variant strategy
-- `CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md` - Full implementation details
+- `CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md` - Full implementation details (moved to ../consolidated/)
 
 ---
 
