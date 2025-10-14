@@ -18,7 +18,7 @@ class SecureStorageService {
   constructor() {
     this.db = null;
     this.encryption = EncryptionService;
-    this.DB_NAME = 'tripsecretary_secure.db';
+    this.DB_NAME = 'tripsecretary_secure';
     this.DB_VERSION = '1.0.0';
     this.BACKUP_DIR = FileSystem.documentDirectory + 'backups/';
     this.AUDIT_LOG_KEY = 'secure_storage_audit';
@@ -36,6 +36,12 @@ class SecureStorageService {
         throw new Error('User ID required for secure storage initialization');
       }
 
+      // Skip if already initialized
+      if (this.db) {
+        console.log('Secure storage already initialized');
+        return;
+      }
+
       // TODO: Re-enable encryption before production release
       if (this.ENCRYPTION_ENABLED) {
         // Initialize encryption service
@@ -45,8 +51,11 @@ class SecureStorageService {
         await this.encryption.setupUserKey(userId);
       }
 
-      // Open encrypted SQLite database using the new async API
-      this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
+      // Open SQLite database using expo-sqlite v11 API
+      // v11 uses the synchronous openDatabase method
+      console.log('Opening database:', this.DB_NAME);
+      
+      this.db = SQLite.openDatabase(this.DB_NAME);
 
       // Create tables if they don't exist
       await this.createTables();
@@ -60,6 +69,7 @@ class SecureStorageService {
       console.log('Secure storage initialized successfully');
     } catch (error) {
       console.error('Failed to initialize secure storage:', error);
+      console.error('Error details:', error.message, error.stack);
       throw error;
     }
   }
@@ -68,91 +78,90 @@ class SecureStorageService {
    * Create database tables for secure data storage
    */
   async createTables() {
-    try {
-      // Passport data table
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS passports (
-          id TEXT PRIMARY KEY,
-          encrypted_passport_number TEXT,
-          encrypted_full_name TEXT,
-          encrypted_date_of_birth TEXT,
-          encrypted_nationality TEXT,
-          expiry_date TEXT,
-          issue_date TEXT,
-          issue_place TEXT,
-          photo_uri TEXT,
-          created_at TEXT,
-          updated_at TEXT
-        )
-      `);
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        // Passport data table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS passports (
+            id TEXT PRIMARY KEY,
+            encrypted_passport_number TEXT,
+            encrypted_full_name TEXT,
+            encrypted_date_of_birth TEXT,
+            encrypted_nationality TEXT,
+            expiry_date TEXT,
+            issue_date TEXT,
+            issue_place TEXT,
+            photo_uri TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `);
 
-      // Personal information table
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS personal_info (
-          id TEXT PRIMARY KEY,
-          user_id TEXT,
-          encrypted_phone_number TEXT,
-          encrypted_email TEXT,
-          encrypted_home_address TEXT,
-          occupation TEXT,
-          province_city TEXT,
-          country_region TEXT,
-          created_at TEXT,
-          updated_at TEXT
-        )
-      `);
+        // Personal information table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS personal_info (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            encrypted_phone_number TEXT,
+            encrypted_email TEXT,
+            encrypted_home_address TEXT,
+            occupation TEXT,
+            province_city TEXT,
+            country_region TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `);
 
-      // Funding proof table
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS funding_proof (
-          id TEXT PRIMARY KEY,
-          user_id TEXT,
-          encrypted_cash_amount TEXT,
-          encrypted_bank_cards TEXT,
-          encrypted_supporting_docs TEXT,
-          created_at TEXT,
-          updated_at TEXT
-        )
-      `);
+        // Funding proof table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS funding_proof (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            encrypted_cash_amount TEXT,
+            encrypted_bank_cards TEXT,
+            encrypted_supporting_docs TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `);
 
-      // Travel history table (non-sensitive data)
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS travel_history (
-          id TEXT PRIMARY KEY,
-          user_id TEXT,
-          destination_id TEXT,
-          destination_name TEXT,
-          travel_date TEXT,
-          return_date TEXT,
-          purpose TEXT,
-          created_at TEXT
-        )
-      `);
+        // Travel history table (non-sensitive data)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS travel_history (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            destination_id TEXT,
+            destination_name TEXT,
+            travel_date TEXT,
+            return_date TEXT,
+            purpose TEXT,
+            created_at TEXT
+          )
+        `);
 
-      // Audit log table
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS audit_log (
-          id TEXT PRIMARY KEY,
-          action TEXT,
-          table_name TEXT,
-          record_id TEXT,
-          timestamp TEXT,
-          details TEXT
-        )
-      `);
+        // Audit log table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS audit_log (
+            id TEXT PRIMARY KEY,
+            action TEXT,
+            table_name TEXT,
+            record_id TEXT,
+            timestamp TEXT,
+            details TEXT
+          )
+        `);
 
-      // Settings table (non-sensitive)
-      await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS settings (
-          key TEXT PRIMARY KEY,
-          value TEXT,
-          updated_at TEXT
-        )
-      `);
-    } catch (error) {
-      console.error('Failed to create tables:', error);
-      throw error;
-    }
+        // Settings table (non-sensitive)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT,
+            updated_at TEXT
+          )
+        `);
+      }, reject, resolve);
+    });
   }
 
   /**
@@ -420,35 +429,29 @@ class SecureStorageService {
 
       const now = new Date().toISOString();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO funding_proof (
-              id,
-              user_id,
-              encrypted_cash_amount,
-              encrypted_bank_cards,
-              encrypted_supporting_docs,
-              created_at,
-              updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-              fundingData.id || this.generateId(),
-              fundingData.userId,
-              encryptedData.cash_amount,
-              encryptedData.bank_cards,
-              encryptedData.supporting_docs,
-              fundingData.createdAt || now,
-              now
-            ],
-            (_, result) => {
-              this.logAudit('INSERT', 'funding_proof', fundingData.id);
-              resolve(result);
-            },
-            (_, error) => reject(error)
-          );
-        });
-      });
+      const result = await this.db.runAsync(
+        `INSERT OR REPLACE INTO funding_proof (
+          id,
+          user_id,
+          encrypted_cash_amount,
+          encrypted_bank_cards,
+          encrypted_supporting_docs,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          fundingData.id || this.generateId(),
+          fundingData.userId,
+          encryptedData.cash_amount,
+          encryptedData.bank_cards,
+          encryptedData.supporting_docs,
+          fundingData.createdAt || now,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'funding_proof', fundingData.id);
+      return result;
     } catch (error) {
       console.error('Failed to save funding proof:', error);
       throw error;
@@ -461,53 +464,44 @@ class SecureStorageService {
    * @returns {Object} - Decrypted funding proof data
    */
   async getFundingProof(userId) {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          'SELECT * FROM funding_proof WHERE user_id = ?',
-          [userId],
-          async (_, { rows }) => {
-            if (rows.length === 0) {
-              resolve(null);
-              return;
-            }
+    try {
+      const result = await this.db.getFirstAsync(
+        'SELECT * FROM funding_proof WHERE user_id = ?',
+        [userId]
+      );
 
-            const encrypted = rows._array[0];
+      if (!result) {
+        return null;
+      }
 
-            try {
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    cash_amount: encrypted.encrypted_cash_amount,
-                    bank_cards: encrypted.encrypted_bank_cards,
-                    supporting_docs: encrypted.encrypted_supporting_docs
-                  })
-                : {
-                    cash_amount: encrypted.encrypted_cash_amount,
-                    bank_cards: encrypted.encrypted_bank_cards,
-                    supporting_docs: encrypted.encrypted_supporting_docs
-                  };
+      // TODO: Re-enable encryption before production release
+      const decryptedFields = this.ENCRYPTION_ENABLED
+        ? await this.encryption.decryptFields({
+            cash_amount: result.encrypted_cash_amount,
+            bank_cards: result.encrypted_bank_cards,
+            supporting_docs: result.encrypted_supporting_docs
+          })
+        : {
+            cash_amount: result.encrypted_cash_amount,
+            bank_cards: result.encrypted_bank_cards,
+            supporting_docs: result.encrypted_supporting_docs
+          };
 
-              const fundingProof = {
-                id: encrypted.id,
-                userId: encrypted.user_id,
-                cashAmount: decryptedFields.cash_amount,
-                bankCards: decryptedFields.bank_cards,
-                supportingDocs: decryptedFields.supporting_docs,
-                createdAt: encrypted.created_at,
-                updatedAt: encrypted.updated_at
-              };
+      const fundingProof = {
+        id: result.id,
+        userId: result.user_id,
+        cashAmount: decryptedFields.cash_amount,
+        bankCards: decryptedFields.bank_cards,
+        supportingDocs: decryptedFields.supporting_docs,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
 
-              resolve(fundingProof);
-            } catch (error) {
-              console.error('Failed to decrypt funding proof:', error);
-              reject(error);
-            }
-          },
-          (_, error) => reject(error)
-        );
-      });
-    });
+      return fundingProof;
+    } catch (error) {
+      console.error('Failed to get funding proof:', error);
+      throw error;
+    }
   }
 
   /**
@@ -515,39 +509,38 @@ class SecureStorageService {
    * @param {Object} travelData - Travel history data
    */
   async saveTravelHistory(travelData) {
-    const now = new Date().toISOString();
+    try {
+      const now = new Date().toISOString();
 
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `INSERT INTO travel_history (
-            id,
-            user_id,
-            destination_id,
-            destination_name,
-            travel_date,
-            return_date,
-            purpose,
-            created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            travelData.id || this.generateId(),
-            travelData.userId,
-            travelData.destinationId,
-            travelData.destinationName,
-            travelData.travelDate,
-            travelData.returnDate,
-            travelData.purpose,
-            now
-          ],
-          (_, result) => {
-            this.logAudit('INSERT', 'travel_history', travelData.id);
-            resolve(result);
-          },
-          (_, error) => reject(error)
-        );
-      });
-    });
+      const result = await this.db.runAsync(
+        `INSERT INTO travel_history (
+          id,
+          user_id,
+          destination_id,
+          destination_name,
+          travel_date,
+          return_date,
+          purpose,
+          created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          travelData.id || this.generateId(),
+          travelData.userId,
+          travelData.destinationId,
+          travelData.destinationName,
+          travelData.travelDate,
+          travelData.returnDate,
+          travelData.purpose,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'travel_history', travelData.id);
+      return result;
+    } catch (error) {
+      console.error('Failed to save travel history:', error);
+      throw error;
+    }
   }
 
   /**
@@ -557,18 +550,16 @@ class SecureStorageService {
    * @returns {Array} - Travel history records
    */
   async getTravelHistory(userId, limit = 50) {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          'SELECT * FROM travel_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
-          [userId, limit],
-          (_, { rows }) => {
-            resolve(rows._array);
-          },
-          (_, error) => reject(error)
-        );
-      });
-    });
+    try {
+      const results = await this.db.getAllAsync(
+        'SELECT * FROM travel_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
+        [userId, limit]
+      );
+      return results || [];
+    } catch (error) {
+      console.error('Failed to get travel history:', error);
+      throw error;
+    }
   }
 
   /**
@@ -606,30 +597,13 @@ class SecureStorageService {
    */
   async deleteAllUserData(userId) {
     try {
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          // Delete all user-related data
-          const queries = [
-            'DELETE FROM passports WHERE id = ?',
-            'DELETE FROM personal_info WHERE user_id = ?',
-            'DELETE FROM funding_proof WHERE user_id = ?',
-            'DELETE FROM travel_history WHERE user_id = ?'
-          ];
+      // Delete all user-related data
+      await this.db.runAsync('DELETE FROM passports WHERE id = ?', [userId]);
+      await this.db.runAsync('DELETE FROM personal_info WHERE user_id = ?', [userId]);
+      await this.db.runAsync('DELETE FROM funding_proof WHERE user_id = ?', [userId]);
+      await this.db.runAsync('DELETE FROM travel_history WHERE user_id = ?', [userId]);
 
-          let completed = 0;
-          const total = queries.length;
-
-          queries.forEach(query => {
-            tx.executeSql(query, [userId], () => {
-              completed++;
-              if (completed === total) {
-                this.logAudit('DELETE_ALL', 'all_tables', userId);
-                resolve();
-              }
-            }, (_, error) => reject(error));
-          });
-        });
-      });
+      await this.logAudit('DELETE_ALL', 'all_tables', userId);
     } catch (error) {
       console.error('Failed to delete user data:', error);
       throw error;
@@ -718,23 +692,18 @@ class SecureStorageService {
         details: JSON.stringify(details)
       };
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'INSERT INTO audit_log (id, action, table_name, record_id, timestamp, details) VALUES (?, ?, ?, ?, ?, ?)',
-            [
-              auditEntry.id,
-              auditEntry.action,
-              auditEntry.tableName,
-              auditEntry.recordId,
-              auditEntry.timestamp,
-              auditEntry.details
-            ],
-            (_, result) => resolve(result),
-            (_, error) => reject(error)
-          );
-        });
-      });
+      const result = await this.db.runAsync(
+        'INSERT INTO audit_log (id, action, table_name, record_id, timestamp, details) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          auditEntry.id,
+          auditEntry.action,
+          auditEntry.tableName,
+          auditEntry.recordId,
+          auditEntry.timestamp,
+          auditEntry.details
+        ]
+      );
+      return result;
     } catch (error) {
       console.error('Failed to log audit event:', error);
     }
@@ -754,10 +723,12 @@ class SecureStorageService {
   async close() {
     try {
       if (this.db) {
-        this.db.closeAsync();
+        await this.db.closeAsync();
         this.db = null;
       }
-      await this.encryption.clearKeys();
+      if (this.ENCRYPTION_ENABLED) {
+        await this.encryption.clearKeys();
+      }
     } catch (error) {
       console.error('Failed to close secure storage:', error);
     }

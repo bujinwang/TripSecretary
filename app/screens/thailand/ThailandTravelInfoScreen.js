@@ -74,13 +74,13 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // UI State (derived from data models)
   const [passportNo, setPassportNo] = useState(passport?.passportNo || '');
-  const [fullName, setFullName] = useState(passport?.name || '');
+  const [fullName, setFullName] = useState(passport?.nameEn || passport?.name || '');
   const [nationality, setNationality] = useState(passport?.nationality || '');
   const [dob, setDob] = useState(passport?.dob || '');
   const [expiryDate, setExpiryDate] = useState(passport?.expiry || '');
 
   // Personal Info State
-  const [sex, setSex] = useState(passport?.sex || '');
+  const [sex, setSex] = useState(passport?.sex || 'Male'); // Default to 'Male' if not provided
   const [occupation, setOccupation] = useState('');
   const [cityOfResidence, setCityOfResidence] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
@@ -115,31 +115,37 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         setIsLoading(true);
         const userId = passport?.id || 'default_user';
         
-        // Temporarily disable secure storage until API migration is complete
-        // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
-        /*
-        try {
-          await SecureStorageService.initialize(userId);
-        } catch (initError) {
-          console.warn('Failed to initialize secure storage, continuing with AsyncStorage only:', initError);
-        }
-        */
+        // Debug: Log passport data
+        console.log('=== THAILAND TRAVEL INFO SCREEN LOADING ===');
+        console.log('Passport data from route:', JSON.stringify(passport, null, 2));
+        console.log('passport.sex:', passport?.sex);
+        
+        // Temporarily disable secure storage initialization
+        // TODO: Fix remaining v11 API compatibility issues
+        // try {
+        //   await SecureStorageService.initialize(userId);
+        // } catch (initError) {
+        //   console.log('Secure storage not initialized, using AsyncStorage only');
+        // }
         
         const storageKey = `thailandTravelInfo_${userId}`;
         const savedData = await AsyncStorage.getItem(storageKey);
+        console.log('Loaded saved data:', savedData ? 'Found' : 'Not found');
 
         if (savedData) {
           const parsedData = JSON.parse(savedData);
 
           // Passport Info
           setPassportNo(parsedData.passportNo || passport?.passportNo || '');
-          setFullName(parsedData.fullName || passport?.name || '');
+          setFullName(parsedData.fullName || passport?.nameEn || passport?.name || '');
           setNationality(parsedData.nationality || passport?.nationality || '');
           setDob(parsedData.dob || passport?.dob || '');
           setExpiryDate(parsedData.expiryDate || passport?.expiry || '');
 
           // Personal Info
-          setSex(parsedData.sex || passport?.sex || '');
+          const loadedSex = parsedData.sex || passport?.sex || 'Male'; // Default to 'Male'
+          console.log('Loading sex from saved data:', parsedData.sex, 'or passport:', passport?.sex, '=> final:', loadedSex);
+          setSex(loadedSex);
           setOccupation(parsedData.occupation || '');
           setCityOfResidence(parsedData.cityOfResidence || '');
           setResidentCountry(parsedData.residentCountry || '');
@@ -166,7 +172,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         } else {
           // Fallback to route params if no saved data
           setPassportNo(passport?.passportNo || '');
-          setFullName(passport?.name || '');
+          setFullName(passport?.nameEn || passport?.name || '');
           setNationality(passport?.nationality || '');
           setDob(passport?.dob || '');
           setExpiryDate(passport?.expiry || '');
@@ -177,7 +183,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         console.error('Failed to load saved data:', error);
         // Fallback to route params on error
         setPassportNo(passport?.passportNo || '');
-        setFullName(passport?.name || '');
+        setFullName(passport?.nameEn || passport?.name || '');
         setNationality(passport?.nationality || '');
         setDob(passport?.dob || '');
         setExpiryDate(passport?.expiry || '');
@@ -296,21 +302,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     try {
       const userId = passport?.id || 'default_user';
 
-      // Temporarily disable secure storage until API migration is complete
-      // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
-      /*
-      try {
-        if (!SecureStorageService.db) {
-          await SecureStorageService.initialize(userId);
-        }
-      } catch (initError) {
-        console.warn('Secure storage not available, saving to AsyncStorage only:', initError);
-      }
-      */
+      // Temporarily disable secure storage
+      // TODO: Fix remaining v11 API compatibility issues
+      // try {
+      //   if (!SecureStorageService.db) {
+      //     await SecureStorageService.initialize(userId);
+      //   }
+      // } catch (initError) {
+      //   console.log('Secure storage not available, using AsyncStorage only');
+      // }
 
-      // Temporarily disable secure storage until API migration is complete
-      // TODO: Re-enable after updating SecureStorageService to expo-sqlite v16 API
-      /*
+      // Save passport data (only if secure storage is available)
       if (SecureStorageService.db && (passportNo || fullName || nationality || dob || expiryDate)) {
         try {
           const passportInstance = new Passport({
@@ -332,6 +334,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         }
       }
 
+      // Save personal info (only if secure storage is available)
       if (SecureStorageService.db && (phoneNumber || email || occupation || cityOfResidence || residentCountry)) {
         try {
           const personalInfoInstance = new PersonalInfo({
@@ -339,7 +342,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             userId,
             phoneNumber,
             email,
-            homeAddress: '',
+            homeAddress: '', // Not collected in this screen
             occupation,
             provinceCity: cityOfResidence,
             countryRegion: residentCountry
@@ -351,6 +354,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         }
       }
 
+      // Save entry data (only if secure storage is available)
       if (SecureStorageService.db && (arrivalFlightNumber || arrivalDepartureDateTime || departureDepartureDateTime || funds.length > 0)) {
         try {
           const entryDataInstance = new EntryData({
@@ -359,7 +363,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             passportId: passport?.id,
             personalInfoId: personalInfoData?.id,
             destination: destination,
-            purpose: 'tourism',
+            purpose: 'tourism', // Default purpose
             arrivalDate: arrivalDepartureDateTime,
             departureDate: departureDepartureDateTime,
             flightNumber: arrivalFlightNumber,
@@ -374,7 +378,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           console.warn('Failed to save entry data to secure storage:', entryDataError);
         }
       }
-      */
 
       // Also save to AsyncStorage for quick restoration
       const storageKey = `thailandTravelInfo_${userId}`;
@@ -602,27 +605,38 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       { value: 'Undefined', label: '未定义' }
     ];
 
+    console.log('=== GENDER OPTIONS RENDERING ===');
+    console.log('Current sex value:', sex);
+    console.log('passport.sex:', passport?.sex);
+
     return (
       <View style={styles.optionsContainer}>
-        {options.map((option) => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.optionButton,
-              sex === option.value && styles.optionButtonActive,
-            ]}
-            onPress={() => setSex(option.value)}
-          >
-            <Text
+        {options.map((option) => {
+          const isActive = sex === option.value;
+          console.log(`Option ${option.value}: sex="${sex}", isActive=${isActive}`);
+          return (
+            <TouchableOpacity
+              key={option.value}
               style={[
-                styles.optionText,
-                sex === option.value && styles.optionTextActive,
+                styles.optionButton,
+                isActive && styles.optionButtonActive,
               ]}
+              onPress={() => {
+                console.log('Gender selected:', option.value);
+                setSex(option.value);
+              }}
             >
-              {option.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.optionText,
+                  isActive && styles.optionTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
   };

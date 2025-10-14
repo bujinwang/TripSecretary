@@ -296,7 +296,9 @@ class EncryptionService {
       this.userKey = null;
 
       // Clear field keys
-      this.fieldKeys.clear();
+      if (this.fieldKeys) {
+        this.fieldKeys.clear();
+      }
 
       // Note: In production, you might want to overwrite memory
       // with zeros to prevent key recovery from memory dumps

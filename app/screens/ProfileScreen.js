@@ -11,11 +11,13 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { NationalitySelector, PassportNameInput } from '../components';
 import { destinationRequirements } from '../config/destinationRequirements';
+import SecureStorageService from '../services/security/SecureStorageService';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { t, language } = useTranslation();
@@ -26,8 +28,8 @@ const ProfileScreen = ({ navigation, route }) => {
   // Mock passport data (in real app, get from context/storage)
   const [passportData, setPassportData] = useState({
     type: '中国护照',
-    name: 'ZHANG WEI',
-    nameEn: 'ZHANG WEI',
+    name: 'ZHANG, WEI', // Format: SURNAME, GIVENNAME (comma-separated for PassportNameInput)
+    nameEn: 'ZHANG, WEI',
     passportNo: 'E12345678',
     nationality: 'CHN', // Store as ISO code only
     expiry: '2030-12-31',
@@ -66,6 +68,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [editingContext, setEditingContext] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [draftSavedNotification, setDraftSavedNotification] = useState(null);
+  const [validationError, setValidationError] = useState(null);
 
   const languageLabel = useMemo(() => {
     const fallback = language ? language.toUpperCase() : 'LANG';
@@ -81,6 +84,100 @@ const ProfileScreen = ({ navigation, route }) => {
       }));
     }
   }, [passportData.nationality]);
+
+  // Debug: Log when component mounts and when personalInfo changes
+  useEffect(() => {
+    console.log('ProfileScreen mounted or personalInfo changed:', personalInfo);
+  }, [personalInfo]);
+
+  // Load saved data on mount
+  useEffect(() => {
+    const loadSavedData = async () => {
+      try {
+        console.log('=== LOADING SAVED DATA ===');
+        const savedPersonalInfo = await SecureStorageService.getItem('personalInfo');
+        const savedPassportData = await SecureStorageService.getItem('passportData');
+        
+        console.log('Raw savedPersonalInfo:', savedPersonalInfo);
+        console.log('Raw savedPassportData:', savedPassportData);
+        
+        if (savedPersonalInfo) {
+          const parsed = JSON.parse(savedPersonalInfo);
+          console.log('Parsed personalInfo:', JSON.stringify(parsed, null, 2));
+          console.log('Gender from saved data:', parsed.gender);
+          
+          // Merge with defaults to ensure all fields exist
+          setPersonalInfo(prev => {
+            const merged = {
+              ...prev,
+              ...parsed
+            };
+            console.log('Merged personalInfo:', merged);
+            console.log('Final gender value:', merged.gender);
+            return merged;
+          });
+        } else {
+          console.log('No saved personalInfo found, using defaults');
+        }
+        
+        if (savedPassportData) {
+          const parsed = JSON.parse(savedPassportData);
+          console.log('Loading saved passportData:', parsed);
+          
+          // Migrate old data format: if name is missing but nameEn exists, use nameEn
+          if (!parsed.name && parsed.nameEn) {
+            // Convert "ZHANG WEI" to "ZHANG, WEI" format if no comma exists
+            if (parsed.nameEn && !parsed.nameEn.includes(',')) {
+              const parts = parsed.nameEn.trim().split(/\s+/);
+              if (parts.length >= 2) {
+                // Assume first part is surname, rest is given name
+                parsed.name = `${parts[0]}, ${parts.slice(1).join(' ')}`;
+              } else {
+                parsed.name = parsed.nameEn;
+              }
+            } else {
+              parsed.name = parsed.nameEn;
+            }
+            console.log('Migrated name from nameEn:', parsed.nameEn, 'to:', parsed.name);
+          }
+          
+          setPassportData(parsed);
+        }
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    };
+    
+    loadSavedData();
+  }, []);
+
+  // Save personalInfo whenever it changes
+  useEffect(() => {
+    const savePersonalInfo = async () => {
+      try {
+        await SecureStorageService.setItem('personalInfo', JSON.stringify(personalInfo));
+        console.log('Saved personalInfo to storage');
+      } catch (error) {
+        console.error('Error saving personalInfo:', error);
+      }
+    };
+    
+    savePersonalInfo();
+  }, [personalInfo]);
+
+  // Save passportData whenever it changes
+  useEffect(() => {
+    const savePassportData = async () => {
+      try {
+        await SecureStorageService.setItem('passportData', JSON.stringify(passportData));
+        console.log('Saved passportData to storage');
+      } catch (error) {
+        console.error('Error saving passportData:', error);
+      }
+    };
+    
+    savePassportData();
+  }, [passportData]);
 
   const personalFields = useMemo(() => {
     const destinationConfig = destination ? destinationRequirements[destination] : {};
@@ -234,6 +331,12 @@ const ProfileScreen = ({ navigation, route }) => {
             icon: '🔔',
             title: t('profile.menu.notifications.title', { defaultValue: 'Notification Settings' }),
           },
+          {
+            id: 'clearStorage',
+            icon: '🗑️',
+            title: t('profile.menu.clearStorage.title', { defaultValue: 'Clear Saved Data' }),
+            subtitle: t('profile.menu.clearStorage.subtitle', { defaultValue: 'Reset to defaults (for debugging)' }),
+          },
         ],
       },
     ],
@@ -245,6 +348,13 @@ const ProfileScreen = ({ navigation, route }) => {
     if (itemId === 'language') {
       // Navigate back to login to change language
       navigation.replace('Login');
+    } else if (itemId === 'clearStorage') {
+      handleClearStorage();
+      Alert.alert(
+        'Storage Cleared',
+        'All saved data has been reset to defaults.',
+        [{ text: 'OK' }]
+      );
     }
     // TODO: Navigate to respective screens
   };
@@ -255,8 +365,47 @@ const ProfileScreen = ({ navigation, route }) => {
     navigation.replace('Login');
   };
 
-  const handleStartEdit = (type, field) => {
+  const handleClearStorage = async () => {
+    try {
+      await SecureStorageService.removeItem('personalInfo');
+      await SecureStorageService.removeItem('passportData');
+      console.log('Storage cleared successfully');
+      // Reset to defaults
+      setPersonalInfo({
+        dateOfBirth: '1988-01-22',
+        gender: 'MALE',
+        occupation: 'BUSINESS MAN',
+        provinceCity: 'ANHUI',
+        countryRegion: 'CHN',
+        phone: '+86 12343434343',
+        email: 'traveler@example.com',
+      });
+      setPassportData({
+        type: '中国护照',
+        name: 'ZHANG, WEI',
+        nameEn: 'ZHANG, WEI',
+        passportNo: 'E12345678',
+        nationality: 'CHN',
+        expiry: '2030-12-31',
+        issueDate: '2020-12-31',
+        issuePlace: 'Shanghai',
+      });
+    } catch (error) {
+      console.error('Error clearing storage:', error);
+    }
+  };
+
+  // Expose clear storage function globally for debugging
+  useEffect(() => {
+    global.clearProfileStorage = handleClearStorage;
+    return () => {
+      delete global.clearProfileStorage;
+    };
+  }, []);
+
+  const handleStartEdit = (type, field, fieldIndex = null) => {
     console.log('handleStartEdit called with type:', type, 'field:', field.key);
+    console.log('Current personalInfo:', personalInfo);
     let currentValue;
     if (type === 'personal') {
       currentValue = personalInfo[field.key];
@@ -264,12 +413,67 @@ const ProfileScreen = ({ navigation, route }) => {
       currentValue = fundingProof[field.key];
     } else if (type === 'passport-nationality') {
       currentValue = passportData.nationality;
+    } else if (type === 'passport-name') {
+      currentValue = passportData.name;
     } else if (type === 'nationality-selector') {
       currentValue = personalInfo[field.key]; // For country/region field
     }
-    console.log('Setting editingContext with type:', type, 'currentValue:', currentValue);
-    setEditingContext({ type, ...field });
+    console.log('Setting editingContext with type:', type, 'field.key:', field.key, 'currentValue:', currentValue);
+    setEditingContext({ type, ...field, fieldIndex });
     setEditValue(currentValue || '');
+  };
+
+  const handleNavigateField = (direction) => {
+    if (!editingContext) return;
+
+    // Validate date of birth before navigating away
+    if (editingContext.key === 'dateOfBirth' && editValue.length === 10) {
+      const validation = validateDateOfBirth(editValue);
+      if (!validation.valid) {
+        setValidationError(validation.error);
+        return; // Don't navigate if invalid
+      }
+    }
+
+    // Save current field before navigating
+    handleSaveEdit();
+
+    let fields;
+    let currentIndex = editingContext.fieldIndex;
+
+    if (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') {
+      fields = personalFields;
+    } else if (editingContext.type === 'funding') {
+      fields = fundingFields;
+    } else {
+      return;
+    }
+
+    const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (nextIndex >= 0 && nextIndex < fields.length) {
+      const nextField = fields[nextIndex];
+      const fieldType = nextField.type === 'nationality-selector' ? nextField.type : editingContext.type;
+      handleStartEdit(fieldType, nextField, nextIndex);
+    }
+  };
+
+  const handleGenderSelect = (value) => {
+    console.log('Gender selected:', value);
+    setEditValue(value);
+    setPersonalInfo((prev) => {
+      const updated = {
+        ...prev,
+        gender: value,
+      };
+      console.log('Updated personalInfo:', updated);
+      return updated;
+    });
+    showDraftSavedNotification(editingContext?.title || '性别');
+    // Auto-close modal after a short delay to show the selection
+    setTimeout(() => {
+      handleCancelEdit();
+    }, 500);
   };
 
   const renderGenderOptions = () => {
@@ -279,27 +483,33 @@ const ProfileScreen = ({ navigation, route }) => {
       { value: 'UNDEFINED', label: '未定义' }
     ];
 
+    console.log('renderGenderOptions - editValue:', editValue, 'personalInfo.gender:', personalInfo.gender);
+
     return (
       <View style={styles.genderOptions}>
-        {options.map((option) => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.genderOption,
-              editValue === option.value && styles.genderOptionActive,
-            ]}
-            onPress={() => handleAutoSave(option.value)}
-          >
-            <Text
+        {options.map((option) => {
+          const isActive = editValue === option.value;
+          console.log(`Option ${option.value}: editValue="${editValue}", isActive=${isActive}`);
+          return (
+            <TouchableOpacity
+              key={option.value}
               style={[
-                styles.genderOptionText,
-                editValue === option.value && styles.genderOptionTextActive,
+                styles.genderOption,
+                isActive && styles.genderOptionActive,
               ]}
+              onPress={() => handleGenderSelect(option.value)}
             >
-              {option.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.genderOptionText,
+                  isActive && styles.genderOptionTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
   };
@@ -307,6 +517,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleCancelEdit = () => {
     setEditingContext(null);
     setEditValue('');
+    setValidationError(null);
   };
 
   const showDraftSavedNotification = (fieldName) => {
@@ -314,6 +525,50 @@ const ProfileScreen = ({ navigation, route }) => {
     setTimeout(() => {
       setDraftSavedNotification(null);
     }, 2000);
+  };
+
+  // Validate date of birth
+  const validateDateOfBirth = (dateStr) => {
+    // Check if date is in correct format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return { valid: false, error: '请输入完整日期 (YYYY-MM-DD)' };
+    }
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    
+    // Validate year (reasonable range: 1900 to current year)
+    const currentYear = new Date().getFullYear();
+    if (year < 1900 || year > currentYear) {
+      return { valid: false, error: `年份必须在 1900 到 ${currentYear} 之间` };
+    }
+
+    // Validate month (1-12)
+    if (month < 1 || month > 12) {
+      return { valid: false, error: '月份必须在 01 到 12 之间' };
+    }
+
+    // Validate day based on month and year
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) {
+      return { valid: false, error: `该月份只有 ${daysInMonth} 天` };
+    }
+
+    // Check if date is not in the future
+    const inputDate = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (inputDate > today) {
+      return { valid: false, error: '出生日期不能是未来日期' };
+    }
+
+    // Check if person is not unreasonably old (e.g., over 150 years)
+    const age = currentYear - year;
+    if (age > 150) {
+      return { valid: false, error: '请检查出生年份是否正确' };
+    }
+
+    return { valid: true, error: null };
   };
 
   // Date formatting function for automatic YYYY-MM-DD formatting
@@ -379,14 +634,29 @@ const ProfileScreen = ({ navigation, route }) => {
     const formatted = formatDateInput(text);
     setEditValue(formatted);
 
-    // Also trigger auto-save for the formatted value
+    // Clear previous validation error
+    setValidationError(null);
+
+    // Only validate if we have a complete date (10 characters: YYYY-MM-DD)
+    if (formatted.length === 10) {
+      const validation = validateDateOfBirth(formatted);
+      if (!validation.valid) {
+        setValidationError(validation.error);
+        return; // Don't save invalid date
+      }
+    }
+
+    // Also trigger auto-save for the formatted value (only if valid or incomplete)
     setTimeout(() => {
-      if (editingContext?.key === 'dateOfBirth') {
-        setPersonalInfo((prev) => ({
-          ...prev,
-          dateOfBirth: formatted,
-        }));
-        showDraftSavedNotification('出生日期');
+      if (editingContext?.key === 'dateOfBirth' && formatted.length === 10) {
+        const validation = validateDateOfBirth(formatted);
+        if (validation.valid) {
+          setPersonalInfo((prev) => ({
+            ...prev,
+            dateOfBirth: formatted,
+          }));
+          showDraftSavedNotification('出生日期');
+        }
       }
     }, 1000);
   };
@@ -408,6 +678,11 @@ const ProfileScreen = ({ navigation, route }) => {
         [editingContext.key]: editValue,
       }));
     } else if (editingContext.type === 'passport-nationality') {
+      setPassportData((prev) => ({
+        ...prev,
+        [editingContext.key]: editValue,
+      }));
+    } else if (editingContext.type === 'passport-name') {
       setPassportData((prev) => ({
         ...prev,
         [editingContext.key]: editValue,
@@ -501,7 +776,7 @@ const ProfileScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       key={field.key}
                       style={[styles.infoRow, !isLast && styles.infoRowDivider]}
-                      onPress={() => handleStartEdit(field.type === 'nationality-selector' ? field.type : 'personal', field)}
+                      onPress={() => handleStartEdit(field.type === 'nationality-selector' ? field.type : 'personal', field, index)}
                       accessibilityRole="button"
                     >
                       <View style={styles.infoRowText}>
@@ -585,7 +860,7 @@ const ProfileScreen = ({ navigation, route }) => {
                       <TouchableOpacity
                         key={field.key}
                         style={[styles.infoRow, !isLast && styles.infoRowDivider]}
-                        onPress={() => handleStartEdit('funding', field)}
+                        onPress={() => handleStartEdit('funding', field, index)}
                         accessibilityRole="button"
                       >
                         <View style={styles.infoRowText}>
@@ -655,13 +930,19 @@ const ProfileScreen = ({ navigation, route }) => {
 
             {showPassportInfo ? (
               <View style={styles.infoList}>
-                <View style={styles.infoItem}>
+                <TouchableOpacity
+                  style={styles.infoItem}
+                  onPress={() => handleStartEdit('passport-name', { key: 'name', title: '姓名', subtitle: 'Full Name' })}
+                >
                   <View style={styles.infoHeader}>
                     <Text style={styles.infoTitle}>姓名</Text>
                     <Text style={styles.infoSubtitle}>Full Name</Text>
                   </View>
-                  <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
-                </View>
+                  <View style={styles.infoValueWrap}>
+                    <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
+                    <Text style={styles.rowArrow}>›</Text>
+                  </View>
+                </TouchableOpacity>
 
                 <View style={styles.infoItem}>
                   <View style={styles.infoHeader}>
@@ -840,6 +1121,13 @@ const ProfileScreen = ({ navigation, route }) => {
             style={styles.modalWrapper}
           >
             <View style={styles.modalContent}>
+              {(() => {
+                console.log('=== MODAL RENDERING ===');
+                console.log('editingContext:', editingContext);
+                console.log('editValue:', editValue);
+                console.log('personalInfo.gender:', personalInfo.gender);
+                return null;
+              })()}
               <Text style={styles.modalTitle}>
                 {editingContext?.title || ''}
               </Text>
@@ -849,7 +1137,17 @@ const ProfileScreen = ({ navigation, route }) => {
                 </Text>
               )}
 
-              {editingContext?.type === 'passport-nationality' || editingContext?.type === 'nationality-selector' ? (
+              {editingContext?.type === 'passport-name' ? (
+                <PassportNameInput
+                  label=""
+                  value={editValue}
+                  onChangeText={(text) => {
+                    setEditValue(text);
+                    handleAutoSave(text);
+                  }}
+                  style={styles.passportNameInput}
+                />
+              ) : editingContext?.type === 'passport-nationality' || editingContext?.type === 'nationality-selector' ? (
                 <>
                   {console.log('Rendering NationalitySelector for type:', editingContext?.type)}
                   <NationalitySelector
@@ -862,23 +1160,62 @@ const ProfileScreen = ({ navigation, route }) => {
               ) : editingContext?.key === 'gender' ? (
                 <View>
                   <Text style={styles.modalSubtitle}>请选择性别</Text>
-                  {renderGenderOptions()}
+                  {(() => {
+                    console.log('Rendering gender modal - editValue:', editValue, 'personalInfo.gender:', personalInfo.gender);
+                    return renderGenderOptions();
+                  })()}
                 </View>
               ) : editingContext?.key === 'dateOfBirth' ? (
-                <TextInput
-                  value={editValue}
-                  onChangeText={handleDateInputChange}
-                  placeholder={editingContext?.placeholder}
-                  style={[
-                    styles.modalInput,
-                    editingContext?.multiline && styles.modalInputMultiline,
-                  ]}
-                  multiline={!!editingContext?.multiline}
-                  numberOfLines={editingContext?.multiline ? 4 : 1}
-                  textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
-                  keyboardType="numeric"
-                  autoFocus
-                />
+                <View>
+                  <TextInput
+                    value={editValue}
+                    onChangeText={handleDateInputChange}
+                    placeholder={editingContext?.placeholder}
+                    style={[
+                      styles.modalInput,
+                      editingContext?.multiline && styles.modalInputMultiline,
+                      validationError && styles.modalInputError,
+                    ]}
+                    multiline={!!editingContext?.multiline}
+                    numberOfLines={editingContext?.multiline ? 4 : 1}
+                    textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
+                    keyboardType="numeric"
+                    autoFocus
+                    returnKeyType={(() => {
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                        ? personalFields 
+                        : fundingFields;
+                      return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
+                    })()}
+                    onSubmitEditing={() => {
+                      // Validate before navigating
+                      if (editValue.length === 10) {
+                        const validation = validateDateOfBirth(editValue);
+                        if (!validation.valid) {
+                          setValidationError(validation.error);
+                          return;
+                        }
+                      }
+                      
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                        ? personalFields 
+                        : fundingFields;
+                      if (editingContext.fieldIndex < fields.length - 1) {
+                        handleNavigateField('next');
+                      } else {
+                        handleCancelEdit();
+                      }
+                    }}
+                  />
+                  {validationError && (
+                    <Text style={styles.validationError}>{validationError}</Text>
+                  )}
+                  <Text style={styles.dateHint}>
+                    {t('profile.personal.fields.dateOfBirth.hint', { 
+                      defaultValue: '示例: 1990-05-15 (年-月-日)' 
+                    })}
+                  </Text>
+                </View>
               ) : (
                 <TextInput
                   value={editValue}
@@ -893,9 +1230,76 @@ const ProfileScreen = ({ navigation, route }) => {
                   textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
                   keyboardType={editingContext?.keyboardType || 'default'}
                   autoFocus
+                  returnKeyType={(() => {
+                    if (editingContext?.multiline) return 'default';
+                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                      ? personalFields 
+                      : fundingFields;
+                    return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
+                  })()}
+                  onSubmitEditing={() => {
+                    if (editingContext?.multiline) return;
+                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                      ? personalFields 
+                      : fundingFields;
+                    if (editingContext.fieldIndex < fields.length - 1) {
+                      handleNavigateField('next');
+                    } else {
+                      handleCancelEdit();
+                    }
+                  }}
                 />
               )}
               <View style={styles.modalActions}>
+                {editingContext?.fieldIndex !== null && (
+                  <View style={styles.modalNavigation}>
+                    <TouchableOpacity
+                      style={[
+                        styles.modalNavButton,
+                        editingContext.fieldIndex === 0 && styles.modalNavButtonDisabled
+                      ]}
+                      onPress={() => handleNavigateField('prev')}
+                      disabled={editingContext.fieldIndex === 0}
+                    >
+                      <Text style={[
+                        styles.modalNavButtonText,
+                        editingContext.fieldIndex === 0 && styles.modalNavButtonTextDisabled
+                      ]}>
+                        {t('profile.editModal.previous', { defaultValue: '← Previous' })}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.modalNavButton,
+                        (() => {
+                          const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                            ? personalFields 
+                            : fundingFields;
+                          return editingContext.fieldIndex === fields.length - 1;
+                        })() && styles.modalNavButtonDisabled
+                      ]}
+                      onPress={() => handleNavigateField('next')}
+                      disabled={(() => {
+                        const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                          ? personalFields 
+                          : fundingFields;
+                        return editingContext.fieldIndex === fields.length - 1;
+                      })()}
+                    >
+                      <Text style={[
+                        styles.modalNavButtonText,
+                        (() => {
+                          const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
+                            ? personalFields 
+                            : fundingFields;
+                          return editingContext.fieldIndex === fields.length - 1;
+                        })() && styles.modalNavButtonTextDisabled
+                      ]}>
+                        {t('profile.editModal.next', { defaultValue: 'Next →' })}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <TouchableOpacity
                   style={styles.modalDoneButton}
                   onPress={handleCancelEdit}
@@ -1185,13 +1589,67 @@ const styles = StyleSheet.create({
     minHeight: 44,
     backgroundColor: colors.white,
   },
+  modalInputError: {
+    borderColor: colors.error,
+    borderWidth: 2,
+  },
   modalInputMultiline: {
     minHeight: 120,
     textAlignVertical: 'top',
   },
+  validationError: {
+    ...typography.caption,
+    color: colors.error,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  dateHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
   modalActions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     marginTop: spacing.lg,
+  },
+  modalNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  modalNavButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.small,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.white,
+  },
+  modalNavButtonDisabled: {
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  modalNavButtonText: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalNavButtonTextDisabled: {
+    color: colors.textDisabled,
+  },
+  modalDoneButton: {
+    width: '100%',
+    borderRadius: borderRadius.small,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  modalDoneText: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '600',
   },
   modalSecondaryButton: {
     flex: 1,
@@ -1220,6 +1678,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   nationalitySelector: {
+    marginHorizontal: 0,
+    marginBottom: 0,
+  },
+  passportNameInput: {
     marginHorizontal: 0,
     marginBottom: 0,
   },
@@ -1449,20 +1911,6 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.white,
     marginLeft: spacing.sm,
-  },
-
-  // Modal Done Button
-  modalDoneButton: {
-    flex: 1,
-    borderRadius: borderRadius.small,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-  },
-  modalDoneText: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '600',
   },
 });
 

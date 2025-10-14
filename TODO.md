@@ -1,66 +1,150 @@
-# TODO List - 入境通 (Trip Secretary)
+# 入境通 (Trip Secretary) - TODO List
 
-## Critical - Before Production Release
+## 🔄 Backup and Restore Features
+
+### High Priority
+
+#### Data Backup
+- [ ] **Automatic Backup System**
+  - [ ] Implement scheduled automatic backups (daily/weekly)
+  - [ ] Store backups in device local storage
+  - [ ] Compress backup files to save space
+  - [ ] Include timestamp in backup filename
+  - [ ] Limit number of stored backups (e.g., keep last 5)
+
+- [ ] **Manual Backup**
+  - [ ] Add "Backup Now" button in settings
+  - [ ] Show backup progress indicator
+  - [ ] Display success/failure notification
+  - [ ] Allow user to choose backup location (local/cloud)
+
+- [ ] **Backup Content**
+  - [ ] Passport information
+  - [ ] Personal information
+  - [ ] Travel history
+  - [ ] Entry data (funding proof, travel info)
+  - [ ] User preferences and settings
+  - [ ] App configuration
+
+#### Data Restore
+- [ ] **Restore from Backup**
+  - [ ] List available backups with dates
+  - [ ] Preview backup contents before restore
+  - [ ] Confirm restore action with warning dialog
+  - [ ] Show restore progress
+  - [ ] Validate backup integrity before restore
+
+- [ ] **Restore Options**
+  - [ ] Full restore (replace all data)
+  - [ ] Selective restore (choose specific data types)
+  - [ ] Merge restore (keep existing + add from backup)
+
+#### Cloud Backup (Optional)
+- [ ] **iCloud Integration (iOS)**
+  - [ ] Enable iCloud backup option
+  - [ ] Sync backups to iCloud Drive
+  - [ ] Auto-restore from iCloud on new device
+
+- [ ] **Google Drive Integration (Android)**
+  - [ ] Enable Google Drive backup option
+  - [ ] Sync backups to Google Drive
+  - [ ] Auto-restore from Drive on new device
+
+### Medium Priority
+
+#### Backup Management
+- [ ] **Backup Settings Screen**
+  - [ ] Toggle automatic backup on/off
+  - [ ] Set backup frequency (daily/weekly/monthly)
+  - [ ] Choose backup location
+  - [ ] Set maximum number of backups to keep
+  - [ ] Enable/disable cloud backup
+
+- [ ] **Backup History**
+  - [ ] Display list of all backups
+  - [ ] Show backup size and date
+  - [ ] Allow deletion of old backups
+  - [ ] Export backup file to share
+
+#### Security
+- [ ] **Encrypted Backups**
+  - [ ] Encrypt backup files with user password
+  - [ ] Use AES-256 encryption for backup data
+  - [ ] Secure key storage for backup encryption
+  - [ ] Password protection for restore
+
+- [ ] **Backup Verification**
+  - [ ] Generate checksum for each backup
+  - [ ] Verify backup integrity on restore
+  - [ ] Detect corrupted backups
+  - [ ] Alert user if backup is invalid
+
+### Low Priority
+
+#### Advanced Features
+- [ ] **Incremental Backups**
+  - [ ] Only backup changed data
+  - [ ] Reduce backup size and time
+  - [ ] Maintain backup chain
+
+- [ ] **Cross-Platform Sync**
+  - [ ] Sync data between iOS and Android
+  - [ ] Use common backup format
+  - [ ] Handle platform-specific differences
+
+- [ ] **Backup Analytics**
+  - [ ] Track backup success rate
+  - [ ] Monitor backup storage usage
+  - [ ] Alert when storage is low
+
+#### UI/UX Improvements
+- [ ] **Backup Wizard**
+  - [ ] First-time backup setup guide
+  - [ ] Explain backup importance
+  - [ ] Help user choose backup settings
+
+- [ ] **Restore Wizard**
+  - [ ] Step-by-step restore process
+  - [ ] Preview what will be restored
+  - [ ] Confirm each step
+
+## 📋 Other TODO Items
+
+### Bug Fixes
+- [x] Fix expo-sqlite v16 API compatibility
+- [x] Update SecureStorageService to use async API
+- [ ] Fix name field not loading from saved data
+- [ ] Investigate "Cannot read property 'replace' of undefined" error
+
+### Features
+- [ ] Add passport scanning with OCR
+- [ ] Add flight ticket scanning
+- [ ] Add hotel booking scanning
+- [ ] Multi-language support improvements
+- [ ] Offline mode enhancements
 
 ### Security
-- [ ] **Re-enable encryption in SecureStorageService**
-  - Location: `app/services/security/SecureStorageService.js`
-  - Set `ENCRYPTION_ENABLED = true` in constructor
-  - Test all encryption/decryption flows
-  - Verify EncryptionService initialization works properly
-  - Test with real user data
-  - Files affected:
-    - `app/services/security/SecureStorageService.js` (multiple methods)
-    - `app/services/security/EncryptionService.js`
+- [ ] Re-enable encryption before production release
+- [ ] Implement proper key management
+- [ ] Add biometric authentication
+- [ ] Secure data deletion
 
-- [ ] **Implement biometric authentication (PIN/Fingerprint/Face ID)**
-  - Add app lock screen on launch
-  - Support multiple authentication methods:
-    - PIN code (4-6 digits)
-    - Fingerprint (Touch ID/Android Fingerprint)
-    - Face recognition (Face ID/Android Face Unlock)
-  - Use `expo-local-authentication` for biometric support
-  - Fallback to PIN if biometrics unavailable
-  - Settings to enable/disable and choose auth method
-  - Lock app after X minutes of inactivity
-  - Require auth when returning from background
-  - Store PIN securely using `expo-secure-store`
-  - Implementation steps:
-    1. Create `AuthLockScreen.js` component
-    2. Create `BiometricService.js` for biometric handling
-    3. Add auth state management (Context/Redux)
-    4. Integrate with app navigation
-    5. Add settings UI for auth preferences
-    6. Test on both iOS and Android
-  - Files to create:
-    - `app/screens/auth/AuthLockScreen.js`
-    - `app/services/security/BiometricService.js`
-    - `app/contexts/AuthContext.js`
-    - `app/screens/settings/SecuritySettingsScreen.js`
+### Performance
+- [ ] Optimize database queries
+- [ ] Reduce app startup time
+- [ ] Lazy load heavy components
+- [ ] Cache frequently accessed data
 
-## Development Notes
+### Testing
+- [ ] Add unit tests for models
+- [ ] Add integration tests for storage
+- [ ] Test backup/restore functionality
+- [ ] Test on various devices
 
-### Encryption Temporarily Disabled
-Encryption has been temporarily disabled to simplify debugging during development. All sensitive data (passport numbers, personal info, funding proof) is currently stored in plaintext in the SQLite database.
+---
 
-**Why disabled:**
-- Encryption service initialization was causing errors during progressive form filling
-- Needed to focus on core functionality first
-
-**What needs to be done:**
-1. Fix EncryptionService initialization flow
-2. Ensure encryption keys are properly set up before any save operations
-3. Test progressive form filling with encryption enabled
-4. Verify all decrypt operations work correctly
-5. Test data export/import with encryption
-
-### Search for TODOs
-All encryption-related TODOs are marked with:
-```
-// TODO: Re-enable encryption before production release
-```
-
-Use this command to find all instances:
-```bash
-grep -r "TODO: Re-enable encryption" app/
-```
+## Notes
+- Backup files should be in JSON format for portability
+- Consider GDPR compliance for backup data
+- Ensure backups don't contain sensitive data in plaintext
+- Test restore process thoroughly to prevent data loss
