@@ -290,3 +290,23 @@ const styles = StyleSheet.create({
 });
 
 export default SelectDestinationScreen;
+
+
+function CountryInfoCard({ country, userNationality }) {
+  const contentResolver = new NationalityContentResolver(userNationality, country.id);
+  const requirements = contentResolver.getRequirements();
+  
+  const subtitle = contentResolver.resolveContent(`countries.${country.id}.info.subtitle`);
+  const visaInfo = contentResolver.resolveContent(`countries.${country.id}.info.sections.visa`);
+  
+  return (
+    <Card>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+      <VisaRequirementBadge 
+        required={requirements.visaRequired}
+        type={requirements.visaType}
+        nationality={userNationality}
+      />
+    </Card>
+  );
+}

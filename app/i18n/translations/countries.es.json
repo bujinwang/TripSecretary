@@ -177,34 +177,34 @@
     "info": {
       "headerTitle": "Información de entrada a Japón",
       "title": "Guía de entrada a Japón",
-      "subtitle": "Visa requerida para titulares de pasaporte chino",
+      "subtitle": "Sin visa por 90 días para titulares de pasaporte chino",
       "sections": {
         "visa": {
-          "title": "⚠️ Requisitos de visa",
+          "title": "✓ ¡Buenas noticias! Política sin visa",
           "items": [
-            "Ciudadanos chinos deben solicitar visa por adelantado para visitar Japón - actualmente sin política de exención de visa",
-            "• Debe proporcionar prueba de capacidad financiera (extractos bancarios, ingresos laborales, etc.)",
-            "• Visa turística requiere vuelo de regreso, itinerario y prueba de alojamiento",
-            "• Desde 2025: Política de visa relajada - visa de grupo extendida a 30 días, mayores de 65 exentos de certificado laboral, visa múltiple de 3 años ya no requiere primera entrada dentro de 3 meses"
+            "Los titulares de pasaporte chino están sin visa por 90 días - ¡viaje espontáneo!",
+            "• No se necesita solicitud de visa por adelantado",
+            "• Válido para turismo, negocios, visitas familiares",
+            "• Debe completar tarjeta de llegada y declaración de aduanas al llegar"
           ]
         },
         "important": {
           "title": "⚠️ Información de entrada",
           "items": [
-            "• Los formularios deben llenarse a mano: Llenar en el sitio es propenso a errores, información poco clara puede requerir reescritura",
-            "• Se requieren múltiples formularios: Tarjeta de llegada y declaración aduanera, información compleja fácil de perder",
-            "• Requisito de idioma japonés/inglés: Algunas secciones necesitan direcciones en japonés, barrera de idioma causa errores",
-            "• Proceso de huellas digitales y entrevista: Dificultades de comunicación pueden afectar decisión de entrada",
-            "• Documentación completa necesaria: Pasaporte, boleto de regreso, comprobante de alojamiento, comprobante de fondos todos requeridos"
+            "• Los formularios deben completarse con tinta negra o azul.",
+            "• La escritura debe ser clara y legible.",
+            "• Responda honestamente a todas las preguntas en los formularios de aduanas.",
+            "• Conserve su talón de tarjeta de entrada hasta la salida.",
+            "• Se requiere escaneo biométrico (huellas dactilares/rostro)."
           ]
         },
         "appFeatures": {
           "title": "✨ BorderBuddy te lo hace fácil",
           "items": [
-            "• Cero ansiedad: Recordatorio automático para materiales requeridos, no hay preocupaciones sobre elementos faltantes",
-            "• Cero errores: Llenado inteligente de tarjeta de llegada y formularios de declaración, información precisa",
-            "• Cero molestias: Ingrese una vez, genere automáticamente todos los formularios",
-            "• Modo de copia: Contenido de referencia claro para copia rápida en el sitio"
+            "• Cero ansiedad: Recordatorio automático para completar formularios y paso biométrico.",
+            "• Cero errores: Modo Copia asegura transferencia precisa de datos a formularios en papel.",
+            "• Cero molestias: Guía detallada paso a paso para todo el proceso.",
+            "• Lista de verificación de documentos: Lista completa de preparación para inmigración/aduanas."
           ]
         }
       },
@@ -212,13 +212,13 @@
     },
     "requirements": {
       "headerTitle": "Lista de verificación de entrada a Japón",
-      "introTitle": "Confirme que cumple con estos requisitos",
-      "introSubtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de viajar a Japón",
+      "introTitle": "Lista de preparación de entrada",
+      "introSubtitle": "Complete lo que tenga y complete gradualmente",
       "items": {
         "validVisa": {
           "title": "Visa válida",
           "description": "Visa turística de Japón aprobada",
-          "details": "Los ciudadanos chinos deben solicitar una visa con anticipación. Confirme que su visa sea válida y tenga suficientes entradas."
+          "details": "Los ciudadanos chinos deben solicitar una visa con anticipación. Confirme que su visa sea válida."
         },
         "validPassport": {
           "title": "Pasaporte válido",
@@ -243,14 +243,19 @@
       },
       "status": {
         "success": {
-          "title": "¡Está listo!",
-          "subtitle": "A continuación le guiaremos a través de los procedimientos de entrada."
+          "title": "¡Perfecto! Puede continuar.",
+          "subtitle": "A continuación confirmaremos su información de viaje."
         },
         "warning": {
-          "title": "Por favor revise cada elemento",
-          "subtitle": "Asegúrese de que todos los requisitos estén cumplidos antes de continuar."
+          "title": "Verifique cada elemento",
+          "subtitle": "Complete los requisitos previos antes de continuar."
+        },
+        "info": {
+          "title": "Comience en cualquier momento",
+          "subtitle": "Apoyamos la finalización progresiva"
         }
       },
+      "startButton": "Comenzar a llenar",
       "continueButton": "Continuar a procedimientos de entrada"
     },
     "procedures": {

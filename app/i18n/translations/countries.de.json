@@ -242,6 +242,92 @@
         }
       },
       "continueButton": "Weiter zu Einreiseverfahren"
+    }
+  },
+  "japan": {
+    "info": {
+      "headerTitle": "Einreiseinformationen Japan",
+      "title": "Japan Einreiseführer",
+      "subtitle": "Visumfrei für 90 Tage für chinesische Passinhaber",
+      "sections": {
+        "visa": {
+          "title": "✓ Gute Nachrichten! Visumfreie Politik",
+          "items": [
+            "Chinesische Passinhaber genießen visumfreie Einreise nach Japan für 90 Tage - spontane Reise!",
+            "• Keine Visumantrag im Voraus erforderlich",
+            "• Gültig für Tourismus, Geschäft, Familienbesuche",
+            "• Muss Ankunftskarte und Zollerklärungsformulare bei Ankunft ausfüllen"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Formulare müssen mit schwarzer oder blauer Tinte ausgefüllt werden.",
+            "• Handschrift sollte klar und lesbar sein.",
+            "• Antworten Sie ehrlich auf alle Fragen zu Zollformularen.",
+            "• Bewahren Sie Ihren Einreisekartenabschnitt bis zur Abreise auf.",
+            "• Biometrische Erfassung (Fingerabdrücke/Gesicht) ist erforderlich."
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy macht es einfach",
+          "items": [
+            "• Null Angst: Automatische Erinnerung für Formularabschluss und biometrischen Schritt.",
+            "• Null Fehler: Kopiermodus stellt genauen Datentransfer zu Papierformularen sicher.",
+            "• Null Ärger: Detaillierte Schritt-für-Schritt-Anleitung für den gesamten Prozess.",
+            "• Dokumenten-Checkliste: Vollständige Vorbereitungsliste für Einwanderung/Zoll."
+          ]
+        }
+      },
+      "continueButton": "Verstanden, Vorbereitung fortsetzen"
+    },
+    "requirements": {
+      "headerTitle": "Japan Einreise-Checkliste",
+      "introTitle": "Einreisevorbereitungsliste",
+      "introSubtitle": "Füllen Sie aus, was Sie haben, und vervollständigen Sie schrittweise",
+      "items": {
+        "validVisa": {
+          "title": "Gültiges Visum",
+          "description": "Genehmigtes Japan-Touristenvisum",
+          "details": "Chinesische Staatsbürger müssen im Voraus ein Visum beantragen. Bestätigen Sie, dass Ihr Visum gültig ist."
+        },
+        "validPassport": {
+          "title": "Gültiger Pass",
+          "description": "Pass gültig für mindestens 6 Monate",
+          "details": "Pass muss mehr als 6 Monate ab geplantem Abreisedatum gültig sein"
+        },
+        "returnTicket": {
+          "title": "Rückflugticket",
+          "description": "Bestätigtes Rückflug- oder Weiterreiseticket",
+          "details": "Muss klaren Ausreiseplan haben, der zeigt, dass Sie Japan innerhalb von 90 Tagen verlassen werden"
+        },
+        "sufficientFunds": {
+          "title": "Ausreichende Mittel",
+          "description": "Nachweis von Mitteln für den gesamten Aufenthalt",
+          "details": "Empfohlen, mindestens 100.000 Yen oder Äquivalent zu tragen, oder Kreditkarte/Kontoauszüge zu zeigen"
+        },
+        "accommodation": {
+          "title": "Unterkunftsnachweis",
+          "description": "Hotelbuchung oder Gastkontakt in Japan",
+          "details": "Hotelreservierungsbestätigung oder detaillierte Kontaktinformationen von Freunden/Familie in Japan bereitstellen"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Perfekt! Sie können fortfahren.",
+          "subtitle": "Als Nächstes bestätigen wir Ihre Reiseinformationen."
+        },
+        "warning": {
+          "title": "Überprüfen Sie jedes Element",
+          "subtitle": "Vervollständigen Sie die Voraussetzungen, bevor Sie fortfahren."
+        },
+        "info": {
+          "title": "Jederzeit beginnen",
+          "subtitle": "Wir unterstützen schrittweise Vervollständigung"
+        }
+      },
+      "startButton": "Ausfüllen beginnen",
+      "continueButton": "Weiter zu Einreiseverfahren"
     },
     "procedures": {
       "headerTitle": "Einreiseverfahren",

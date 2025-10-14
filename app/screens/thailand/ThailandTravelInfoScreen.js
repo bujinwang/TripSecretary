@@ -288,6 +288,14 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           <Text style={styles.subtitle}>请提供以下信息以完成入境卡生成</Text>
         </View>
 
+        {/* Privacy Notice */}
+        <View style={styles.privacyBox}>
+          <Text style={styles.privacyIcon}>💾</Text>
+          <Text style={styles.privacyText}>
+            所有信息仅保存在您的手机本地
+          </Text>
+        </View>
+
         <CollapsibleSection title="护照信息" onScan={handleScanPassport}>
           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} />
           <Input label="姓名" value={fullName} onChangeText={setFullName} helpText="请输入您的全名" error={!!errors.fullName} errorMessage={errors.fullName} />
@@ -586,6 +594,27 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
     marginBottom: spacing.md,
+  },
+  privacyBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+    padding: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(52, 199, 89, 0.2)',
+  },
+  privacyIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  privacyText: {
+    fontSize: 13,
+    color: '#34C759',
+    flex: 1,
+    lineHeight: 18,
   },
 });
 

@@ -17,7 +17,7 @@ const ThailandInfoScreen = ({ navigation, route }) => {
   const { t } = useLocale();
 
   const handleContinue = () => {
-    navigation.navigate('ThailandTravelInfo', { passport, destination });
+    navigation.navigate('ThailandRequirements', { passport, destination });
   };
 
   const normalizeItems = (value) => {

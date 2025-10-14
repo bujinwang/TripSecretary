@@ -802,6 +802,14 @@ const ResultScreen = ({ navigation, route }) => {
 
         </View>
 
+        {/* Privacy Notice */}
+        <View style={styles.privacyBox}>
+          <Text style={styles.privacyIcon}>💾</Text>
+          <Text style={styles.privacyText}>
+            所有信息仅保存在您的手机本地
+          </Text>
+        </View>
+
         {/* Additional Info */}
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>💡</Text>
@@ -1623,6 +1631,27 @@ const styles = StyleSheet.create({
   footerText: {
     ...typography.body1,
     color: colors.secondary,
+  },
+  privacyBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+    padding: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(52, 199, 89, 0.2)',
+  },
+  privacyIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  privacyText: {
+    fontSize: 13,
+    color: '#34C759',
+    flex: 1,
+    lineHeight: 18,
   },
   infoBox: {
     flexDirection: 'row',

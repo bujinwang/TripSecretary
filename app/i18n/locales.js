@@ -1014,6 +1014,95 @@ const baseTranslations = {
         startButton: 'Start filling',
       },
     },
+    japan: {
+      procedures: {
+        headerTitle: 'Japan Entry Procedures',
+        title: 'Japan Entry Guide',
+        subtitle: 'Visa-free for 90 days for Chinese passport holders',
+        helpSection: {
+          title: '✨ BorderBuddy Makes It Easy',
+          description: 'We help you prepare all required documents and guide you through each step of the Japan entry process.',
+          subdescription: 'From filling out forms to biometric scanning, we\'ll be with you every step of the way.',
+        },
+        entrySteps: {
+          title: 'Entry Process Steps',
+          steps: [
+            {
+              title: 'Get Forms',
+              description: 'Find entry card and customs declaration in arrival hall',
+              details: 'Locate the "Entry Card" and "Customs Declaration" counters or automated dispensers in the arrival area.',
+            },
+            {
+              title: 'Fill Entry Card',
+              description: 'Complete the black entry card with black or blue pen',
+              details: 'Carefully copy your information from your phone to the form. Use the copy mode for easy reference.',
+            },
+            {
+              title: 'Fill Customs Declaration',
+              description: 'Complete the yellow customs declaration form',
+              details: 'Declare items honestly. Answer questions about prohibited items and commercial goods truthfully.',
+            },
+            {
+              title: 'Immigration Check',
+              description: 'Present passport and completed forms to immigration officer',
+              details: 'Join the "Foreigner" lane. Hand your passport and entry card to the officer and answer simple questions.',
+            },
+            {
+              title: 'Biometric Check',
+              description: 'Complete fingerprint and facial recognition',
+              details: 'Follow the officer\'s instructions for the biometric scanning process.',
+            },
+            {
+              title: 'Customs Inspection',
+              description: 'Collect luggage and proceed to customs inspection',
+              details: 'Present your customs declaration. Use the green channel if nothing to declare, red channel for inspection if needed.',
+            },
+            {
+              title: 'Entry Complete',
+              description: 'Welcome to Japan!',
+              details: 'Your entry pack is available anytime if you need to reference your information.',
+            },
+          ],
+        },
+        features: {
+          title: 'App Features',
+          items: [
+            {
+              icon: '📋',
+              title: 'Form Assistant',
+              description: 'Step-by-step guidance for all required forms',
+            },
+            {
+              icon: '📱',
+              title: 'Copy Mode',
+              description: 'Large font display for easy form copying',
+            },
+            {
+              icon: '🛂',
+              title: 'Process Guide',
+              description: 'Detailed walkthrough of each entry step',
+            },
+            {
+              icon: '❓',
+              title: 'Q&A Support',
+              description: 'Common questions and helpful answers',
+            },
+          ],
+        },
+        importantNotes: {
+          title: 'Important Notes',
+          items: [
+            '• Forms must be completed in black or blue ink',
+            '• Handwriting should be clear and legible',
+            '• Answer all questions truthfully on customs forms',
+            '• Keep your entry card stub until departure',
+            '• Biometric scanning is required for all visitors',
+            '• Have your return ticket and accommodation details ready',
+          ],
+        },
+        startButton: 'Start Preparation',
+      },
+    },
     result: {
       title: '{{flag}} {{country}} Entry Pack Ready',
       subtitle: 'All documents are ready to present at the airport',
@@ -1670,13 +1759,20 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
-            title: '随时开始填写',
-            subtitle: '接下来将使用通关包信息协助填写SG Arrival Card。',
+          success: {
+            title: '太好了！您可以继续',
+            subtitle: '接下来我们将确认您的旅行信息。',
           },
+          warning: {
             title: '请先确认所有事项',
             subtitle: '我们支持递进式的完成清单',
+          },
+          info: {
+            title: '随时开始填写',
+            subtitle: '我们支持递进式的完成清单',
+          },
         },
+        startButton: '开始填写',
         continueButton: '继续填写行程信息',
       },
       selection: {
@@ -1784,6 +1880,162 @@ const baseTranslations = {
         openFailedTitle: '无法打开链接',
         openFailedBody: '请复制网址后在浏览器中打开。',
       },
+      japan: {
+        info: {
+          headerTitle: '日本入境信息',
+          title: '日本入境指南',
+          subtitle: '中国护照持有者免签90天',
+          sections: {
+            visa: {
+              title: '✓ 好消息！免签政策',
+              items: [
+                '中国护照持有者免签日本90天 - 说走就走！',
+                '• 无需提前申请签证',
+                '• 适用于旅游、商务、探亲',
+                '• 抵达时需填写入境卡和海关申报表',
+              ],
+            },
+            important: {
+              title: '⚠️ 入境须知',
+              items: [
+                '• 表格必须用黑色或蓝色笔填写。',
+                '• 字迹要清晰易读。',
+                '• 对海关表格的所有问题要如实回答。',
+                '• 保留入境卡存根至离境。',
+                '• 需要进行生物识别扫描（指纹/面部）。',
+              ],
+            },
+            appFeatures: {
+              title: '✨ 出境通帮您轻松搞定',
+              items: [
+                '• 零焦虑：自动提醒表格填写和生物识别步骤。',
+                '• 零失误：复制模式确保数据准确转移到纸质表格。',
+                '• 零操心：详细的逐步指南涵盖整个流程。',
+                '• 文件清单：移民/海关的完整准备清单。',
+              ],
+            },
+          },
+          continueButton: '明白了，继续准备',
+        },
+        requirements: {
+          headerTitle: '日本入境检查清单',
+          introTitle: '入境准备清单',
+          introSubtitle: '填写您有的内容，逐步完善',
+          items: {
+            validVisa: {
+              title: '有效签证',
+              description: '已批准的日本旅游签证',
+              details: '中国公民需提前申请签证。确认您的签证有效且有足够入境次数。',
+            },
+            validPassport: {
+              title: '有效护照',
+              description: '护照有效期至少6个月',
+              details: '护照必须在计划离境日期后6个月以上有效',
+            },
+            returnTicket: {
+              title: '返程机票',
+              description: '已确认的返程或后续行程机票',
+              details: '必须有明确的离境计划，显示您将在90天内离开日本',
+            },
+            sufficientFunds: {
+              title: '充足资金',
+              description: '整个停留期间的资金证明',
+              details: '建议携带至少10万日元或等值，或出示信用卡/银行对账单',
+            },
+            accommodation: {
+              title: '住宿证明',
+              description: '日本的酒店预订或房东联系方式',
+              details: '提供酒店预订确认或日本朋友/亲戚的详细联系信息',
+            },
+          },
+          status: {
+            success: {
+              title: '太好了！您可以继续。',
+              subtitle: '接下来我们将确认您的旅行信息。',
+            },
+            warning: {
+              title: '检查每个清单项目',
+              subtitle: '在继续之前完成先决条件。',
+            },
+            info: {
+              title: '随时开始填写',
+              subtitle: '我们支持递进式的完成清单',
+            },
+          },
+          startButton: '开始填写',
+        },
+        procedures: {
+          headerTitle: '日本入境流程',
+          title: '日本入境指南',
+          subtitle: '中国护照持有者免签90天',
+          helpSection: {
+            title: '📝 出境通帮您做什么',
+            description: '我们帮您填好入境卡和海关申报表，您只需在机场抄写！',
+            subdescription: '不用担心填错，只需抄写我们准备好的内容',
+          },
+          entrySteps: {
+            title: '🚶‍♂️ 入境步骤',
+            steps: [
+              {
+                title: '抵达机场',
+                description: '抵达日本机场入境大厅',
+                details: '准备好护照和已填写的入境卡及海关申报表',
+              },
+              {
+                title: '入境检查',
+                description: '前往入境检查柜台',
+                details: '提交护照和入境卡，接受官员检查并采集指纹',
+              },
+              {
+                title: '海关申报',
+                description: '前往海关检查区域',
+                details: '提交海关申报表，申报携带物品，可能需要行李检查',
+              },
+              {
+                title: '入境完成',
+                description: '获得入境印章',
+                details: '护照上获得入境印章，正式进入日本',
+              },
+            ],
+          },
+          features: {
+            title: '✨ 出境通能为您做什么',
+            items: [
+              {
+                icon: '📝',
+                title: '自动填写',
+                description: '我们填好入境卡和申报表，您只需抄写',
+              },
+              {
+                icon: '📋',
+                title: '信息录入',
+                description: '一次输入旅行信息，系统自动填写所有表格',
+              },
+              {
+                icon: '📱',
+                title: '无需网络',
+                description: '离线查看表格，机场无信号也能使用',
+              },
+              {
+                icon: '💾',
+                title: '记住信息',
+                description: '保存详细信息，下次访日直接使用',
+              },
+            ],
+          },
+          importantNotes: {
+            title: '⚠️ 重要提醒',
+            items: [
+              '• 入境卡和申报表必须用黑色或蓝色笔填写',
+              '• 字迹要清晰，信息要准确',
+              '• 申报表上的是非题要如实回答',
+              '• 检查时要礼貌配合',
+              '• 入境卡存根要保留到离境',
+            ],
+          },
+          startButton: '开始准备入境资料包',
+        },
+      },
       result: {
         digitalBadge: '抵达前3天提交',
         digitalTitle: '新加坡 SG Arrival Card',
@@ -1860,13 +2112,20 @@ const baseTranslations = {
           },
         },
         status: {
-          info: {
+          success: {
             title: '准备完成！',
             subtitle: '接下来会使用通关包信息协助填写电子入境卡。',
           },
+          warning: {
             title: '请先确认所有事项',
             subtitle: '我们支持递进式的完成清单',
+          },
+          info: {
+            title: '随时开始填写',
+            subtitle: '我们支持递进式的完成清单',
+          },
         },
+        startButton: '开始填写',
         continueButton: '继续填写行程信息',
       },
       selection: {
@@ -2135,7 +2394,12 @@ const baseTranslations = {
             title: '请先确认所有事项',
             subtitle: '我们支持递进式的完成清单',
           },
+          info: {
+            title: '随时开始填写',
+            subtitle: '我们支持递进式的完成清单',
+          },
         },
+        startButton: '开始填写',
         continueButton: '继续填写行程信息',
       },
       selection: {

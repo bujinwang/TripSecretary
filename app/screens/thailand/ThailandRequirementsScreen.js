@@ -17,7 +17,7 @@ const ThailandRequirementsScreen = ({ navigation, route }) => {
   const { t } = useLocale();
 
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    navigation.navigate('ThailandTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(

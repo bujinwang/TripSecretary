@@ -385,68 +385,68 @@
     "info": {
       "headerTitle": "Japan Entry Information",
       "title": "Japan Entry Guide",
-      "subtitle": "Visa required for Chinese passport holders",
+      "subtitle": "Visa-free for 90 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "⚠️ Visa Requirements",
+          "title": "✓ Visa-Free Policy",
           "items": [
-            "Chinese citizens must apply for a visa in advance to visit Japan - no visa-free policy currently",
-            "• Must provide proof of financial capacity (bank statements, employment income, etc.)",
-            "• Tourist visa requires return flight, itinerary, and accommodation proof",
-            "• From 2025: Visa policy relaxed - group visa extended to 30 days, 65+ exempt from employment proof, 3-year multiple-entry visa no longer requires first entry within 3 months"
+            "Chinese passport holders are visa-free for 90 days.",
+            "• No visa application needed in advance.",
+            "• Valid for tourism, business, family visits.",
+            "• Must complete Landing Card and Customs Declaration upon arrival."
           ]
         },
-        "important": {
+        "onsite": {
           "title": "⚠️ Entry Information",
           "items": [
-            "• Complex visa application: Must prepare financial proof, employment certificate, itinerary and other documents",
-            "• Processing time: Visa approval takes several business days, plan your travel with sufficient lead time",
-            "• Forms at entry: Arrival card and customs declaration must be handwritten on-site, error-prone",
-            "• Language barrier: Some forms require Japanese or English, unfamiliar travelers may make mistakes",
-            "• Complete documents required: Valid visa, return ticket, accommodation proof, funds proof all mandatory"
+            "• Forms must be completed in black or blue ink.",
+            "• Handwriting should be clear and legible.",
+            "• Answer all questions truthfully on customs forms.",
+            "• Keep your entry card stub until departure.",
+            "• Biometric scanning (fingerprint/face) is required."
           ]
         },
         "appFeatures": {
           "title": "✨ BorderBuddy Makes It Easy",
           "items": [
-            "• Zero anxiety: Visa materials checklist with auto-reminders, no worries about missing documents",
-            "• Zero errors: Smart-fill arrival card and declaration forms, accurate information",
-            "• Zero hassle: Enter once, auto-generate all forms and materials",
-            "• Copy mode: Clear Chinese-Japanese-English trilingual reference for quick on-site copying"
+            "• Zero anxiety: Auto-reminds about form completion and biometric step.",
+            "• Zero errors: Copy Mode ensures accurate data transfer to paper forms.",
+            "• Zero hassle: Detailed step-by-step guide for the entire process.",
+            "• Document checklist: Comprehensive preparation list for immigration/customs."
           ]
         }
       },
-      "continueButton": "Understood, continue preparation"
+      "continueButton": "Understood, continue to checklist"
     },
     "requirements": {
-      "headerTitle": "Japan Visa Application Checklist",
+      "headerTitle": "Japan Entry Checklist",
       "introTitle": "Entry preparation checklist",
       "introSubtitle": "Fill in what you have and complete gradually",
       "items": {
-        "validVisa": {
-          "title": "Valid Visa",
-          "description": "Approved Japan tourist visa",
-          "details": "Chinese citizens must apply for a visa in advance. Confirm your visa is valid and has sufficient entries remaining."
-        },
         "validPassport": {
-          "title": "Valid passport",
-          "description": "Passport valid for at least 6 months with blank visa pages",
-          "details": "Passport must be valid for more than 6 months beyond planned departure date, with at least 2 blank visa pages"
+          "title": "Passport validity",
+          "description": "Passport valid for your intended stay",
+          "details": "Ensure passport is valid for the duration of your stay. Renew if expiry is near."
         },
         "returnTicket": {
-          "title": "Return flight ticket",
-          "description": "Confirmed round-trip flight booking",
-          "details": "Must provide confirmed round-trip flight booking or itinerary showing clear departure and return dates"
-        },
-        "sufficientFunds": {
-          "title": "Sufficient funds proof",
-          "description": "Bank statements showing financial capacity",
-          "details": "Recent 6-month bank statements or employment certificate showing annual income to prove you can cover trip expenses"
+          "title": "Return or onward ticket",
+          "description": "Confirmed booking for departure from Japan",
+          "details": "Immigration may ask to see proof of your return flight or onward journey."
         },
         "accommodation": {
           "title": "Accommodation proof",
-          "description": "Hotel bookings or invitation letter",
-          "details": "Hotel reservation confirmations for entire Japan stay, or invitation letter with guarantor information if staying with friends/family"
+          "description": "Hotel booking or host contact information",
+          "details": "Bring hotel reservation confirmation or contact details of your host in Japan, including address and phone number."
+        },
+        "sufficientFunds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "You may need to demonstrate you have enough money for your stay."
+        },
+        "customsDeclaration": {
+          "title": "Customs Declaration",
+          "description": "Prepare for customs inspection",
+          "details": "Be ready to declare goods, cash over ¥1,000,000, or prohibited items."
         }
       },
       "status": {
@@ -458,31 +458,31 @@
       "startButton": "Start filling"
     },
     "procedures": {
-      "headerTitle": "Entry Procedures",
-      "title": "Complete Japan Entry Process",
-      "subtitle": "BorderBuddy will help you prepare everything",
+      "headerTitle": "Japan Entry Procedures",
+      "title": "Japan Entry Guide",
+      "subtitle": "Visa-free for 90 days for Chinese passport holders",
       "helpSection": {
-        "title": "📝 What BorderBuddy Does for You",
-        "description": "We'll fill out the entry card and customs declaration for you, you just copy it at the airport!",
-        "subdescription": "Don't worry about making mistakes, just copy what we've prepared for you"
+        "title": "📝 What BorderBuddy does for you",
+        "description": "We fill out the Landing Card and Customs Declaration for you, you just copy at the airport!",
+        "subdescription": "Don't worry about making errors, just copy what we've prepared"
       },
       "entrySteps": {
         "title": "🚶‍♂️ Entry Steps",
         "steps": [
           {
             "title": "Arrive at airport",
-            "description": "Arrive at Japan airport immigration hall",
-            "details": "Prepare your passport and filled entry card and customs declaration"
+            "description": "Arrive at Japanese airport immigration hall",
+            "details": "Prepare your passport and completed Landing Card and Customs Declaration"
           },
           {
-            "title": "Immigration inspection",
+            "title": "Immigration control",
             "description": "Go to immigration counter",
-            "details": "Submit passport and entry card, undergo officer inspection and fingerprint collection"
+            "details": "Submit passport and Landing Card, undergo officer inspection and fingerprint collection"
           },
           {
             "title": "Customs declaration",
             "description": "Go to customs inspection area",
-            "details": "Submit customs declaration, declare items carried, may require baggage inspection"
+            "details": "Submit Customs Declaration, declare carried items, may require baggage inspection"
           },
           {
             "title": "Entry complete",
@@ -492,38 +492,38 @@
         ]
       },
       "features": {
-        "title": "✨ What BorderBuddy Can Do for You",
+        "title": "✨ What BorderBuddy can do for you",
         "items": [
           {
             "icon": "📝",
-            "title": "Auto-fill forms",
-            "description": "We fill out entry card and declaration for you, you just copy"
+            "title": "Auto-fill",
+            "description": "We fill Landing Card and Declaration, you copy"
           },
           {
             "icon": "📋",
             "title": "Information entry",
-            "description": "Enter travel info once, system fills all forms automatically"
+            "description": "Enter travel info once, system auto-fills all forms"
           },
           {
             "icon": "📱",
             "title": "No internet needed",
-            "description": "View filled forms offline, works even without airport signal"
+            "description": "View forms offline, works without airport signal"
           },
           {
             "icon": "💾",
             "title": "Remember information",
-            "description": "Save your details, use directly next time you visit Japan"
+            "description": "Save details, use directly next Japan visit"
           }
         ]
       },
       "importantNotes": {
-        "title": "⚠️ Important Reminders",
+        "title": "⚠️ Important reminders",
         "items": [
-          "• Entry card and customs declaration must be filled with black or blue pen",
-          "• Handwriting must be clear, information must be accurate",
-          "• Answer yes/no questions on declaration truthfully",
+          "• Landing Card and Declaration must be filled with black or blue pen",
+          "• Writing must be clear, information accurate",
+          "• Answer yes/no questions honestly on Declaration",
           "• Be polite and cooperate with inspections",
-          "• Keep entry card stub until departure"
+          "• Keep your Landing Card stub until departure"
         ]
       },
       "startButton": "Start preparing entry pack"

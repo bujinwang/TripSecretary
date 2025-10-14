@@ -246,6 +246,92 @@
         }
       },
       "continueButton": "Continuer vers les procédures d'entrée"
+    }
+  },
+  "japan": {
+    "info": {
+      "headerTitle": "Informations d'entrée au Japon",
+      "title": "Guide d'entrée au Japon",
+      "subtitle": "Sans visa pendant 90 jours pour les titulaires de passeport chinois",
+      "sections": {
+        "visa": {
+          "title": "✓ Bonne nouvelle ! Politique sans visa",
+          "items": [
+            "Les titulaires de passeport chinois sont sans visa pour 90 jours - voyage spontané !",
+            "• Aucune demande de visa nécessaire à l'avance",
+            "• Valide pour le tourisme, les affaires, les visites familiales",
+            "• Doit remplir la carte d'arrivée et la déclaration de douane à l'arrivée"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Informations d'entrée",
+          "items": [
+            "• Les formulaires doivent être remplis à l'encre noire ou bleue.",
+            "• L'écriture doit être claire et lisible.",
+            "• Répondez honnêtement à toutes les questions sur les formulaires de douane.",
+            "• Conservez votre talon de carte d'entrée jusqu'au départ.",
+            "• La numérisation biométrique (empreintes digitales/visage) est requise."
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy vous facilite la tâche",
+          "items": [
+            "• Zéro anxiété : Rappel automatique pour l'achèvement du formulaire et l'étape biométrique.",
+            "• Zéro erreur : Le mode Copie assure un transfert de données précis vers les formulaires papier.",
+            "• Zéro tracas : Guide étape par étape détaillé pour l'ensemble du processus.",
+            "• Liste de contrôle des documents : Liste de préparation complète pour l'immigration/douane."
+          ]
+        }
+      },
+      "continueButton": "Compris, continuer la préparation"
+    },
+    "requirements": {
+      "headerTitle": "Liste de contrôle d'entrée au Japon",
+      "introTitle": "Liste de préparation d'entrée",
+      "introSubtitle": "Remplissez ce que vous avez et complétez progressivement",
+      "items": {
+        "validVisa": {
+          "title": "Visa valide",
+          "description": "Visa touristique japonais approuvé",
+          "details": "Les citoyens chinois doivent demander un visa à l'avance. Confirmez que votre visa est valide et a suffisamment d'entrées."
+        },
+        "validPassport": {
+          "title": "Passeport valide",
+          "description": "Passeport valide pour au moins 6 mois",
+          "details": "Le passeport doit être valide plus de 6 mois à partir de la date de départ prévue"
+        },
+        "returnTicket": {
+          "title": "Billet de retour",
+          "description": "Billet de retour ou de voyage ultérieur confirmé",
+          "details": "Doit avoir un plan de départ clair, montrant que vous quitterez le Japon dans les 90 jours"
+        },
+        "sufficientFunds": {
+          "title": "Fonds suffisants",
+          "description": "Preuve de fonds pour tout le séjour",
+          "details": "Recommandé de porter au moins 100 000 yens ou équivalent, ou montrer carte de crédit/relevés bancaires"
+        },
+        "accommodation": {
+          "title": "Preuve d'hébergement",
+          "description": "Réservation d'hôtel ou contact d'hôte au Japon",
+          "details": "Fournir une confirmation de réservation d'hôtel ou des informations de contact détaillées d'amis/famille au Japon"
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Parfait ! Vous pouvez continuer.",
+          "subtitle": "Ensuite nous confirmerons vos informations de voyage."
+        },
+        "warning": {
+          "title": "Vérifiez chaque élément de la liste",
+          "subtitle": "Complétez les prérequis avant de continuer."
+        },
+        "info": {
+          "title": "Commencez à tout moment",
+          "subtitle": "Nous prenons en charge la complétion progressive"
+        }
+      },
+      "startButton": "Commencer à remplir",
+      "continueButton": "Continuer vers procédures d'entrée"
     },
     "procedures": {
       "headerTitle": "Procédures d'entrée",
