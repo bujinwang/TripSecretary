@@ -5,6 +5,7 @@
 
 export { default as Passport } from './Passport';
 export { default as PersonalInfo } from './PersonalInfo';
+export { default as FundingProof } from './FundingProof';
 export { default as EntryData } from './EntryData';
 
 // Model utilities and helpers
@@ -116,6 +117,18 @@ export const ModelUtils = {
         console.warn('Failed to export personal info:', error);
       }
 
+      // Export funding proof
+      try {
+        const FundingProof = require('./FundingProof').default;
+        const fundingProof = await FundingProof.load(userId);
+        if (fundingProof) {
+          exportData.fundingProof = fundingProof.exportData();
+          exportData.dataTypes.push('fundingProof');
+        }
+      } catch (error) {
+        console.warn('Failed to export funding proof:', error);
+      }
+
       // Export entry data (this would need to be implemented to get all entries)
       // For now, just include the structure
       exportData.entryData = {
@@ -171,17 +184,33 @@ export const ModelUtils = {
         status.sections.personalInfo = { exists: false, error: error.message };
       }
 
+      // Check funding proof
+      try {
+        const FundingProof = require('./FundingProof').default;
+        const fundingProof = await FundingProof.load(userId);
+        const validation = fundingProof ? fundingProof.validate() : { isValid: false };
+
+        status.sections.fundingProof = {
+          exists: !!fundingProof,
+          isValid: validation.isValid,
+          hasCompleteFundingInfo: fundingProof ? fundingProof.hasCompleteFundingInfo() : false,
+          methodCount: fundingProof ? fundingProof.getFundingMethodsSummary().methodCount : 0
+        };
+      } catch (error) {
+        status.sections.fundingProof = { exists: false, error: error.message };
+      }
+
       // Calculate overall completeness
       const sections = Object.values(status.sections);
       const existingSections = sections.filter(s => s.exists && !s.error);
       const validSections = sections.filter(s => s.isValid);
 
       status.overall = {
-        totalSections: 2, // passport + personalInfo
+        totalSections: 3, // passport + personalInfo + fundingProof
         existingSections: existingSections.length,
         validSections: validSections.length,
-        completenessPercentage: Math.round((validSections.length / 2) * 100),
-        isComplete: validSections.length === 2
+        completenessPercentage: Math.round((validSections.length / 3) * 100),
+        isComplete: validSections.length === 3
       };
 
       return status;
@@ -267,6 +296,26 @@ export const ModelUtils = {
         });
       }
 
+      if (!completeness.sections.fundingProof.exists) {
+        report.recommendations.push({
+          type: 'warning',
+          message: 'Funding proof is missing. Please add funding information for immigration purposes.',
+          action: 'add_funding_proof'
+        });
+      } else if (!completeness.sections.fundingProof.isValid) {
+        report.recommendations.push({
+          type: 'error',
+          message: 'Funding proof has validation errors. Please review and correct.',
+          action: 'fix_funding_proof'
+        });
+      } else if (!completeness.sections.fundingProof.hasCompleteFundingInfo) {
+        report.recommendations.push({
+          type: 'info',
+          message: 'Consider adding more funding proof methods for better immigration clearance.',
+          action: 'enhance_funding_proof'
+        });
+      }
+
       return report;
     } catch (error) {
       console.error('Failed to generate data quality report:', error);
@@ -278,6 +327,7 @@ export const ModelUtils = {
 export default {
   Passport,
   PersonalInfo,
+  FundingProof,
   EntryData,
   ModelUtils
 };

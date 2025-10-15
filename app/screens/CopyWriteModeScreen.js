@@ -28,7 +28,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
       try {
         await activateKeepAwakeAsync();
       } catch (error) {
-        console.log('Failed to activate keep awake:', error);
+        // Failed to activate keep awake
       }
     };
     
@@ -39,7 +39,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         try {
           await deactivateKeepAwakeAsync();
         } catch (error) {
-          console.log('Failed to deactivate keep awake:', error);
+          // Failed to deactivate keep awake
         }
       };
       deactivate();

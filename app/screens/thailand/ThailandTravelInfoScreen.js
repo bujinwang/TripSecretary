@@ -14,7 +14,6 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
@@ -29,7 +28,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
 import EntryData from '../../models/EntryData';
-import SecureStorageService from '../../services/security/SecureStorageService';
+import PassportDataService from '../../services/data/PassportDataService';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -87,15 +86,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [personalInfoData, setPersonalInfoData] = useState(null);
   const [entryData, setEntryData] = useState(null);
 
-  // UI State (derived from data models)
-  const [passportNo, setPassportNo] = useState(passport?.passportNo || '');
-  const [fullName, setFullName] = useState(passport?.nameEn || passport?.name || '');
-  const [nationality, setNationality] = useState(passport?.nationality || '');
-  const [dob, setDob] = useState(passport?.dob || '');
-  const [expiryDate, setExpiryDate] = useState(passport?.expiry || '');
+  // UI State (loaded from database, not from route params)
+  const [passportNo, setPassportNo] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [dob, setDob] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
 
-  // Personal Info State
-  const [sex, setSex] = useState(passport?.sex || 'Male'); // Default to 'Male' if not provided
+  // Personal Info State (loaded from database)
+  const [sex, setSex] = useState('');
   const [occupation, setOccupation] = useState('');
   const [cityOfResidence, setCityOfResidence] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
@@ -196,83 +195,125 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         setIsLoading(true);
         const userId = passport?.id || 'default_user';
         
-        // Debug: Log passport data
-        console.log('=== THAILAND TRAVEL INFO SCREEN LOADING ===');
-        console.log('Passport data from route:', JSON.stringify(passport, null, 2));
-        console.log('passport.sex:', passport?.sex);
+        // Initialize PassportDataService and trigger migration if needed
+        try {
+          await PassportDataService.initialize(userId);
+        } catch (initError) {
+          // Initialization failed, continue with route params
+        }
         
-        // Temporarily disable secure storage initialization
-        // TODO: Fix remaining v11 API compatibility issues
-        // try {
-        //   await SecureStorageService.initialize(userId);
-        // } catch (initError) {
-        //   console.log('Secure storage not initialized, using AsyncStorage only');
-        // }
-        
-        const storageKey = `thailandTravelInfo_${userId}`;
-        const savedData = await AsyncStorage.getItem(storageKey);
-        console.log('Loaded saved data:', savedData ? 'Found' : 'Not found');
+        // Load all user data from centralized service
+        const userData = await PassportDataService.getAllUserData(userId);
 
-        if (savedData) {
-          const parsedData = JSON.parse(savedData);
-
-          // Passport Info
-          setPassportNo(parsedData.passportNo || passport?.passportNo || '');
-          setFullName(parsedData.fullName || passport?.nameEn || passport?.name || '');
-          setNationality(parsedData.nationality || passport?.nationality || '');
-          setDob(parsedData.dob || passport?.dob || '');
-          setExpiryDate(parsedData.expiryDate || passport?.expiry || '');
-
-          // Personal Info
-          const loadedSex = parsedData.sex || passport?.sex || 'Male'; // Default to 'Male'
-          console.log('Loading sex from saved data:', parsedData.sex, 'or passport:', passport?.sex, '=> final:', loadedSex);
-          setSex(loadedSex);
-          setOccupation(parsedData.occupation || '');
-          setCityOfResidence(parsedData.cityOfResidence || '');
-          setResidentCountry(parsedData.residentCountry || '');
-          setPhoneCode(parsedData.phoneCode || getPhoneCode(parsedData.nationality || passport?.nationality || ''));
-          setPhoneNumber(parsedData.phoneNumber || '');
-          setEmail(parsedData.email || '');
-
-          // Proof of Funds
-          setFunds(parsedData.funds || []);
-
-          // Travel Info
-          setArrivalFlightNumber(parsedData.arrivalFlightNumber || '');
-          setArrivalDepartureAirport(parsedData.arrivalDepartureAirport || '');
-          setArrivalDepartureDate(parsedData.arrivalDepartureDate || '');
-          setArrivalDepartureTime(parsedData.arrivalDepartureTime || '');
-          setArrivalArrivalAirport(parsedData.arrivalArrivalAirport || '');
-          setArrivalArrivalDate(parsedData.arrivalArrivalDate || '');
-          setArrivalArrivalTime(parsedData.arrivalArrivalTime || '');
-          setDepartureFlightNumber(parsedData.departureFlightNumber || '');
-          setDepartureDepartureAirport(parsedData.departureDepartureAirport || '');
-          setDepartureDepartureDate(parsedData.departureDepartureDate || '');
-          setDepartureDepartureTime(parsedData.departureDepartureTime || '');
-          setDepartureArrivalAirport(parsedData.departureArrivalAirport || '');
-          setDepartureArrivalDate(parsedData.departureArrivalDate || '');
-          setDepartureArrivalTime(parsedData.departureArrivalTime || '');
-          setHotelName(parsedData.hotelName || '');
-          setHotelAddress(parsedData.hotelAddress || '');
+        // Passport Info - prioritize centralized data, fallback to route params
+        const passportInfo = userData?.passport;
+        if (passportInfo) {
+          setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
+          setFullName(passportInfo.fullName || passport?.nameEn || passport?.name || '');
+          setNationality(passportInfo.nationality || passport?.nationality || '');
+          setDob(passportInfo.dateOfBirth || passport?.dob || '');
+          setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
+          
+          // Store passport data model instance
+          setPassportData(passportInfo);
         } else {
-          // Fallback to route params if no saved data
+          // Fallback to route params if no centralized data
           setPassportNo(passport?.passportNo || '');
           setFullName(passport?.nameEn || passport?.name || '');
           setNationality(passport?.nationality || '');
           setDob(passport?.dob || '');
           setExpiryDate(passport?.expiry || '');
-          setSex(passport?.sex || '');
+        }
+
+        // Personal Info - load from centralized data
+        const personalInfo = userData?.personalInfo;
+        if (personalInfo) {
+          // Gender field mapping
+          const loadedSex = passportInfo?.gender || passport?.sex || 'Male';
+          setSex(loadedSex);
+          
+          setOccupation(personalInfo.occupation || '');
+          setCityOfResidence(personalInfo.provinceCity || '');
+          setResidentCountry(personalInfo.countryRegion || '');
+          setPhoneNumber(personalInfo.phoneNumber || '');
+          setEmail(personalInfo.email || '');
+          
+          // Set phone code based on resident country or nationality
+          setPhoneCode(getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
+          
+          // Store personal info data model instance
+          setPersonalInfoData(personalInfo);
+        } else {
+          // Fallback to passport data for gender
+          setSex(passport?.sex || 'Male');
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
+
+        // Funding Proof - load from centralized data
+        const fundingProof = userData?.fundingProof;
+        if (fundingProof) {
+          // Parse funding proof data into funds array format
+          // Note: The funding proof model stores data differently than the UI expects
+          // We'll need to transform it or keep using local state for now
+          // For now, we'll keep funds as empty and let user fill it in
+          setFunds([]);
+        }
+
+        // Travel Info - load from centralized data
+        try {
+          // Use destination.id for consistent lookup (not affected by localization)
+          const destinationId = destination?.id || 'thailand';
+          console.log('Loading travel info for destination:', destinationId);
+          let travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          
+          // Fallback: try loading with localized name if id lookup fails
+          // This handles data saved before the fix
+          if (!travelInfo && destination?.name) {
+            console.log('Trying fallback with destination name:', destination.name);
+            travelInfo = await PassportDataService.getTravelInfo(userId, destination.name);
+          }
+          
+          if (travelInfo) {
+            console.log('=== LOADING SAVED TRAVEL INFO ===');
+            console.log('Travel info data:', JSON.stringify(travelInfo, null, 2));
+            console.log('Hotel name from DB:', travelInfo.hotelName);
+            console.log('Hotel address from DB:', travelInfo.hotelAddress);
+            console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
+            
+            setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+            setArrivalDepartureAirport(travelInfo.arrivalDepartureAirport || '');
+            setArrivalDepartureDate(travelInfo.arrivalDepartureDate || '');
+            setArrivalDepartureTime(travelInfo.arrivalDepartureTime || '');
+            setArrivalArrivalAirport(travelInfo.arrivalArrivalAirport || '');
+            setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
+            setArrivalArrivalTime(travelInfo.arrivalArrivalTime || '');
+            setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+            setDepartureDepartureAirport(travelInfo.departureDepartureAirport || '');
+            setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+            setDepartureDepartureTime(travelInfo.departureDepartureTime || '');
+            setDepartureArrivalAirport(travelInfo.departureArrivalAirport || '');
+            setDepartureArrivalDate(travelInfo.departureArrivalDate || '');
+            setDepartureArrivalTime(travelInfo.departureArrivalTime || '');
+            setHotelName(travelInfo.hotelName || '');
+            setHotelAddress(travelInfo.hotelAddress || '');
+            
+            console.log('Travel info loaded and state updated');
+          } else {
+            console.log('No saved travel info found');
+          }
+        } catch (travelInfoError) {
+          console.log('Failed to load travel info:', travelInfoError);
+          // Continue without travel info
+        }
+        
       } catch (error) {
-        console.error('Failed to load saved data:', error);
         // Fallback to route params on error
         setPassportNo(passport?.passportNo || '');
         setFullName(passport?.nameEn || passport?.name || '');
         setNationality(passport?.nationality || '');
         setDob(passport?.dob || '');
         setExpiryDate(passport?.expiry || '');
-        setSex(passport?.sex || '');
+        setSex(passport?.sex || 'Male');
         setPhoneCode(getPhoneCode(passport?.nationality || ''));
       } finally {
         setIsLoading(false);
@@ -288,103 +329,36 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       const reloadData = async () => {
         try {
           const userId = passport?.id || 'default_user';
-          const storageKey = `thailandTravelInfo_${userId}`;
-          const savedData = await AsyncStorage.getItem(storageKey);
+          
+          // Reload data from PassportDataService
+          const userData = await PassportDataService.getAllUserData(userId);
 
-          if (savedData) {
-            const parsedData = JSON.parse(savedData);
+          if (userData) {
+            // Update passport data if available
+            const passportInfo = userData.passport;
+            if (passportInfo) {
+              setPassportNo(passportInfo.passportNumber || passportNo);
+              setFullName(passportInfo.fullName || fullName);
+              setNationality(passportInfo.nationality || nationality);
+              setDob(passportInfo.dateOfBirth || dob);
+              setExpiryDate(passportInfo.expiryDate || expiryDate);
+              setPassportData(passportInfo);
+            }
 
-            // Update if we have saved data (even if field has content, storage data takes precedence)
-            if (parsedData.passportNo) {
-              setPassportNo(parsedData.passportNo);
-            }
-            if (parsedData.fullName) {
-              setFullName(parsedData.fullName);
-            }
-            if (parsedData.nationality && !nationality) {
-              setNationality(parsedData.nationality);
-            }
-            if (parsedData.dob && !dob) {
-              setDob(parsedData.dob);
-            }
-            if (parsedData.expiryDate && !expiryDate) {
-              setExpiryDate(parsedData.expiryDate);
-            }
-            if (parsedData.sex && !sex) {
-              setSex(parsedData.sex);
-            }
-            if (parsedData.occupation && !occupation) {
-              setOccupation(parsedData.occupation);
-            }
-            if (parsedData.cityOfResidence && !cityOfResidence) {
-              setCityOfResidence(parsedData.cityOfResidence);
-            }
-            if (parsedData.residentCountry && !residentCountry) {
-              setResidentCountry(parsedData.residentCountry);
-            }
-            if (parsedData.phoneCode && !phoneCode) {
-              setPhoneCode(parsedData.phoneCode);
-            }
-            if (parsedData.phoneNumber && !phoneNumber) {
-              setPhoneNumber(parsedData.phoneNumber);
-            }
-            if (parsedData.email && !email) {
-              setEmail(parsedData.email);
-            }
-            if (parsedData.funds && funds.length === 0) {
-              setFunds(parsedData.funds);
-            }
-            if (parsedData.arrivalFlightNumber && !arrivalFlightNumber) {
-              setArrivalFlightNumber(parsedData.arrivalFlightNumber);
-            }
-            if (parsedData.arrivalDepartureAirport && !arrivalDepartureAirport) {
-              setArrivalDepartureAirport(parsedData.arrivalDepartureAirport);
-            }
-            if (parsedData.arrivalDepartureDate && !arrivalDepartureDate) {
-              setArrivalDepartureDate(parsedData.arrivalDepartureDate);
-            }
-            if (parsedData.arrivalDepartureTime && !arrivalDepartureTime) {
-              setArrivalDepartureTime(parsedData.arrivalDepartureTime);
-            }
-            if (parsedData.arrivalArrivalAirport && !arrivalArrivalAirport) {
-              setArrivalArrivalAirport(parsedData.arrivalArrivalAirport);
-            }
-            if (parsedData.arrivalArrivalDate && !arrivalArrivalDate) {
-              setArrivalArrivalDate(parsedData.arrivalArrivalDate);
-            }
-            if (parsedData.arrivalArrivalTime && !arrivalArrivalTime) {
-              setArrivalArrivalTime(parsedData.arrivalArrivalTime);
-            }
-            if (parsedData.departureFlightNumber && !departureFlightNumber) {
-              setDepartureFlightNumber(parsedData.departureFlightNumber);
-            }
-            if (parsedData.departureDepartureAirport && !departureDepartureAirport) {
-              setDepartureDepartureAirport(parsedData.departureDepartureAirport);
-            }
-            if (parsedData.departureDepartureDate && !departureDepartureDate) {
-              setDepartureDepartureDate(parsedData.departureDepartureDate);
-            }
-            if (parsedData.departureDepartureTime && !departureDepartureTime) {
-              setDepartureDepartureTime(parsedData.departureDepartureTime);
-            }
-            if (parsedData.departureArrivalAirport && !departureArrivalAirport) {
-              setDepartureArrivalAirport(parsedData.departureArrivalAirport);
-            }
-            if (parsedData.departureArrivalDate && !departureArrivalDate) {
-              setDepartureArrivalDate(parsedData.departureArrivalDate);
-            }
-            if (parsedData.departureArrivalTime && !departureArrivalTime) {
-              setDepartureArrivalTime(parsedData.departureArrivalTime);
-            }
-            if (parsedData.hotelName && !hotelName) {
-              setHotelName(parsedData.hotelName);
-            }
-            if (parsedData.hotelAddress && !hotelAddress) {
-              setHotelAddress(parsedData.hotelAddress);
+            // Update personal info if available
+            const personalInfo = userData.personalInfo;
+            if (personalInfo) {
+              setSex(passportInfo?.gender || sex);
+              setOccupation(personalInfo.occupation || occupation);
+              setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
+              setResidentCountry(personalInfo.countryRegion || residentCountry);
+              setPhoneNumber(personalInfo.phoneNumber || phoneNumber);
+              setEmail(personalInfo.email || email);
+              setPersonalInfoData(personalInfo);
             }
           }
         } catch (error) {
-          console.error('Failed to reload data on focus:', error);
+          // Failed to reload data on focus
         }
       };
 
@@ -392,132 +366,153 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     });
 
     return unsubscribe;
-  }, [navigation, passport, passportNo, fullName, nationality, dob, expiryDate, sex, occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, funds, arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDate, arrivalDepartureTime, arrivalArrivalAirport, arrivalArrivalDate, arrivalArrivalTime, departureFlightNumber, departureDepartureAirport, departureDepartureDate, departureDepartureTime, departureArrivalAirport, departureArrivalDate, departureArrivalTime, hotelName, hotelAddress]);
+  }, [navigation, passport]);
 
-  // Function to save data to secure storage and AsyncStorage
+  // Function to save data using PassportDataService
   const saveDataToSecureStorage = async () => {
     try {
       const userId = passport?.id || 'default_user';
+      console.log('=== SAVE DATA TO SECURE STORAGE ===');
+      console.log('userId:', userId);
+      console.log('Personal info fields:', { phoneNumber, email, occupation, cityOfResidence, residentCountry });
 
-      // Temporarily disable secure storage
-      // TODO: Fix remaining v11 API compatibility issues
-      // try {
-      //   if (!SecureStorageService.db) {
-      //     await SecureStorageService.initialize(userId);
-      //   }
-      // } catch (initError) {
-      //   console.log('Secure storage not available, using AsyncStorage only');
-      // }
-
-      // Save passport data (only if secure storage is available)
-      if (SecureStorageService.db && (passportNo || fullName || nationality || dob || expiryDate)) {
+      // Save passport data using PassportDataService
+      if (passportNo || fullName || nationality || dob || expiryDate) {
         try {
-          const passportInstance = new Passport({
-            id: passport?.id || Passport.generateId(),
-            userId,
-            passportNumber: passportNo,
-            fullName,
-            dateOfBirth: dob,
-            nationality,
-            expiryDate,
-            issueDate: passport?.issueDate,
-            issuePlace: passport?.issuePlace,
-            photoUri: passport?.photoUri
-          });
-          await passportInstance.save({ skipValidation: true });
-          setPassportData(passportInstance);
+          if (passportData?.id) {
+            // Update existing passport
+            console.log('Updating existing passport:', passportData.id);
+            await PassportDataService.updatePassport(passportData.id, {
+              passportNumber: passportNo,
+              fullName,
+              dateOfBirth: dob,
+              nationality,
+              expiryDate,
+              gender: sex, // Include gender field
+              issueDate: passport?.issueDate,
+              issuePlace: passport?.issuePlace,
+              photoUri: passport?.photoUri
+            });
+            console.log('Passport updated successfully');
+          } else {
+            // Create new passport
+            console.log('Creating new passport');
+            const savedPassport = await PassportDataService.savePassport({
+              id: passport?.id || Passport.generateId(),
+              passportNumber: passportNo,
+              fullName,
+              dateOfBirth: dob,
+              nationality,
+              expiryDate,
+              gender: sex, // Include gender field
+              issueDate: passport?.issueDate,
+              issuePlace: passport?.issuePlace,
+              photoUri: passport?.photoUri
+            }, userId);
+            setPassportData(savedPassport);
+            console.log('Passport created successfully');
+          }
         } catch (passportError) {
-          console.warn('Failed to save passport to secure storage:', passportError);
+          console.error('Failed to save passport:', passportError);
         }
       }
 
-      // Save personal info (only if secure storage is available)
-      if (SecureStorageService.db && (phoneNumber || email || occupation || cityOfResidence || residentCountry)) {
-        try {
-          const personalInfoInstance = new PersonalInfo({
-            id: personalInfoData?.id || PersonalInfo.generateId(),
-            userId,
-            phoneNumber,
-            email,
-            homeAddress: '', // Not collected in this screen
-            occupation,
-            provinceCity: cityOfResidence,
-            countryRegion: residentCountry
-          });
-          await personalInfoInstance.save({ skipValidation: true });
-          setPersonalInfoData(personalInfoInstance);
-        } catch (personalInfoError) {
-          console.warn('Failed to save personal info to secure storage:', personalInfoError);
-        }
-      }
-
-      // Save entry data (only if secure storage is available)
-      const arrivalDateTime = arrivalDepartureDate && arrivalDepartureTime ? `${arrivalDepartureDate} ${arrivalDepartureTime}` : '';
-      const departureDateTime = departureDepartureDate && departureDepartureTime ? `${departureDepartureDate} ${departureDepartureTime}` : '';
+      // Save personal info using PassportDataService
+      // Only include non-empty fields to avoid overwriting existing data with empty values
+      const personalInfoUpdates = {};
+      if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
+      if (email && email.trim()) personalInfoUpdates.email = email;
+      if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
+      if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
+      if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
       
-      if (SecureStorageService.db && (arrivalFlightNumber || arrivalDateTime || departureDateTime || funds.length > 0)) {
+      if (Object.keys(personalInfoUpdates).length > 0) {
         try {
-          const entryDataInstance = new EntryData({
-            id: entryData?.id || EntryData.generateId(),
-            userId,
-            passportId: passport?.id,
-            personalInfoId: personalInfoData?.id,
-            destination: destination,
-            purpose: 'tourism', // Default purpose
-            arrivalDate: arrivalDateTime,
-            departureDate: departureDateTime,
-            flightNumber: arrivalFlightNumber,
-            accommodation: hotelName,
-            fundingProof: funds,
-            immigrationNotes: '',
-            specialRequirements: ''
-          });
-          await entryDataInstance.save({ skipValidation: true });
-          setEntryData(entryDataInstance);
-        } catch (entryDataError) {
-          console.warn('Failed to save entry data to secure storage:', entryDataError);
+          console.log('Saving personal info with upsertPersonalInfo...');
+          console.log('Updates to save:', personalInfoUpdates);
+          // Use upsert to create or update personal info
+          const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+          setPersonalInfoData(savedPersonalInfo);
+          console.log('Personal info saved successfully:', savedPersonalInfo?.id);
+        } catch (personalInfoError) {
+          console.error('Failed to save personal info:', personalInfoError);
+          console.error('Error stack:', personalInfoError.stack);
+        }
+      } else {
+        console.log('No personal info fields to save');
+      }
+
+      // Save funding proof using PassportDataService
+      if (funds.length > 0) {
+        try {
+          // Transform funds array into funding proof format
+          const fundingProofData = {
+            cashAmount: funds.filter(f => f.type === 'cash').map(f => `${f.amount} ${f.details}`).join(', '),
+            bankCards: funds.filter(f => f.type === 'credit_card' || f.type === 'bank_balance').map(f => f.photo || 'Photo attached').join(', '),
+            supportingDocs: 'Funding proof documents attached'
+          };
+
+          if (entryData?.fundingProofId) {
+            // Update existing funding proof
+            await PassportDataService.updateFundingProof(entryData.fundingProofId, fundingProofData);
+          } else {
+            // Create new funding proof
+            await PassportDataService.saveFundingProof(fundingProofData, userId);
+          }
+        } catch (fundingError) {
+          // Failed to save funding proof
         }
       }
 
-      // Also save to AsyncStorage for quick restoration
-      const storageKey = `thailandTravelInfo_${userId}`;
-      const dataToSave = {
-        passportNo,
-        fullName,
-        nationality,
-        dob,
-        expiryDate,
-        sex,
-        occupation,
-        cityOfResidence,
-        residentCountry,
-        phoneCode,
-        phoneNumber,
-        email,
-        funds,
-        arrivalFlightNumber,
-        arrivalDepartureAirport,
-        arrivalDepartureDate,
-        arrivalDepartureTime,
-        arrivalArrivalAirport,
-        arrivalArrivalDate,
-        arrivalArrivalTime,
-        departureFlightNumber,
-        departureDepartureAirport,
-        departureDepartureDate,
-        departureDepartureTime,
-        departureArrivalAirport,
-        departureArrivalDate,
-        departureArrivalTime,
-        hotelName,
-        hotelAddress,
-      };
+      // Save travel info using PassportDataService
+      // Only include non-empty fields to avoid overwriting existing data
+      const travelInfoUpdates = {};
+      if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
+      if (arrivalDepartureAirport && arrivalDepartureAirport.trim()) travelInfoUpdates.arrivalDepartureAirport = arrivalDepartureAirport;
+      if (arrivalDepartureDate && arrivalDepartureDate.trim()) travelInfoUpdates.arrivalDepartureDate = arrivalDepartureDate;
+      if (arrivalDepartureTime && arrivalDepartureTime.trim()) travelInfoUpdates.arrivalDepartureTime = arrivalDepartureTime;
+      if (arrivalArrivalAirport && arrivalArrivalAirport.trim()) travelInfoUpdates.arrivalArrivalAirport = arrivalArrivalAirport;
+      if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
+      if (arrivalArrivalTime && arrivalArrivalTime.trim()) travelInfoUpdates.arrivalArrivalTime = arrivalArrivalTime;
+      if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
+      if (departureDepartureAirport && departureDepartureAirport.trim()) travelInfoUpdates.departureDepartureAirport = departureDepartureAirport;
+      if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
+      if (departureDepartureTime && departureDepartureTime.trim()) travelInfoUpdates.departureDepartureTime = departureDepartureTime;
+      if (departureArrivalAirport && departureArrivalAirport.trim()) travelInfoUpdates.departureArrivalAirport = departureArrivalAirport;
+      if (departureArrivalDate && departureArrivalDate.trim()) travelInfoUpdates.departureArrivalDate = departureArrivalDate;
+      if (departureArrivalTime && departureArrivalTime.trim()) travelInfoUpdates.departureArrivalTime = departureArrivalTime;
+      if (hotelName && hotelName.trim()) travelInfoUpdates.hotelName = hotelName;
+      if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
 
-      await AsyncStorage.setItem(storageKey, JSON.stringify(dataToSave));
+      if (Object.keys(travelInfoUpdates).length > 0) {
+        try {
+          console.log('=== SAVING TRAVEL INFO ===');
+          console.log('Number of fields to save:', Object.keys(travelInfoUpdates).length);
+          console.log('Updates to save:', JSON.stringify(travelInfoUpdates, null, 2));
+          // Save travel info with destination (use id for consistency, not localized name)
+          const destinationId = destination?.id || 'thailand';
+          console.log('Destination ID:', destinationId);
+          travelInfoUpdates.destination = destinationId;
+          const result = await PassportDataService.saveTravelInfo(userId, travelInfoUpdates);
+          console.log('Travel info saved successfully, result:', result);
+        } catch (travelInfoError) {
+          console.error('=== FAILED TO SAVE TRAVEL INFO ===');
+          console.error('Error:', travelInfoError);
+          console.error('Error message:', travelInfoError.message);
+          console.error('Error stack:', travelInfoError.stack);
+        }
+      } else {
+        console.log('No travel info fields to save (all fields empty)');
+        console.log('Current travel info state:', {
+          arrivalFlightNumber,
+          arrivalDepartureAirport,
+          hotelName
+        });
+      }
 
     } catch (error) {
-      console.error('Failed to save data:', error);
       // Don't show alert for save failures to avoid interrupting user experience
+      console.error('Error in saveDataToSecureStorage:', error);
     }
   };
 
@@ -539,6 +534,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Function to validate and save field data on blur
   const handleFieldBlur = async (fieldName, fieldValue) => {
     try {
+      console.log('=== HANDLE FIELD BLUR ===');
+      console.log('Field:', fieldName);
+      console.log('Value:', fieldValue);
+      
       // Basic validation for the field
       let isValid = true;
       let errorMessage = '';
@@ -571,6 +570,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           break;
       }
 
+      console.log('Validation result:', isValid ? 'VALID' : 'INVALID');
+      if (!isValid) {
+        console.log('Error message:', errorMessage);
+      }
+
       // Update errors state
       setErrors(prev => ({
         ...prev,
@@ -579,11 +583,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
       // Save data if valid
       if (isValid) {
+        console.log('Calling saveDataToSecureStorage...');
         await saveDataToSecureStorage();
+        console.log('saveDataToSecureStorage completed');
+      } else {
+        console.log('Skipping save due to validation error');
       }
 
     } catch (error) {
       console.error('Failed to validate and save field:', error);
+      console.error('Error stack:', error.stack);
     }
   };
 
@@ -675,20 +684,19 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   };
 
   const handleScanPassport = () => {
-    console.log('Scan Passport');
     // navigation.navigate('ScanPassport');
   };
 
   const handleScanTickets = () => {
-    console.log('Scan Tickets');
+    // TODO: Implement scan tickets
   };
 
   const handleScanHotel = () => {
-    console.log('Scan Hotel');
+    // TODO: Implement scan hotel
   };
   
   const handleTakePhoto = () => {
-    console.log('Take Photo');
+    // TODO: Implement take photo
   };
 
   const handleChoosePhoto = (id) => {
@@ -732,15 +740,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       { value: 'Undefined', label: '未定义' }
     ];
 
-    console.log('=== GENDER OPTIONS RENDERING ===');
-    console.log('Current sex value:', sex);
-    console.log('passport.sex:', passport?.sex);
-
     return (
       <View style={styles.optionsContainer}>
         {options.map((option) => {
           const isActive = sex === option.value;
-          console.log(`Option ${option.value}: sex="${sex}", isActive=${isActive}`);
           return (
             <TouchableOpacity
               key={option.value}
@@ -748,10 +751,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 styles.optionButton,
                 isActive && styles.optionButtonActive,
               ]}
-              onPress={() => {
-                console.log('Gender selected:', option.value);
-                setSex(option.value);
-              }}
+              onPress={() => setSex(option.value)}
             >
               <Text
                 style={[
@@ -827,7 +827,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
-           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" />
+           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" testID="passport-number-input" />
            <Input label="出生日期" value={dob} onChangeText={setDob} onBlur={() => handleFieldBlur('dob', dob)} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
            <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
          </CollapsibleSection>
@@ -876,7 +876,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                style={styles.phoneInput}
              />
            </View>
-           <Input label="电子邮箱" value={email} onChangeText={setEmail} onBlur={() => handleFieldBlur('email', email)} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} />
+           <Input label="电子邮箱" value={email} onChangeText={setEmail} onBlur={() => handleFieldBlur('email', email)} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} testID="email-input" />
            <View style={styles.fieldContainer}>
              <Text style={styles.fieldLabel}>性别</Text>
              {renderGenderOptions()}
@@ -909,6 +909,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                     value={fund.amount}
                     onChangeText={(text) => updateFund(fund.id, 'amount', text)}
                     keyboardType="numeric"
+                    testID="cash-amount-input"
                   />
                   <Input
                     label="细节"

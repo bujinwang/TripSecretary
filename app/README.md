@@ -267,3 +267,155 @@ export default function App() {
 4. 扩展新的组件和页面
 
 祝开发顺利！🚀
+
+
+---
+
+## 🗄️ 数据架构 (Data Architecture)
+
+### 集中式数据管理
+
+从版本 1.1 开始，应用使用集中式数据管理系统，所有用户数据（护照、个人信息、资金证明）存储在 SQLite 数据库中，作为唯一数据源。
+
+**主要特性:**
+- ✅ 单一数据源 (SQLite)
+- ✅ 自动数据迁移 (从 AsyncStorage)
+- ✅ 内存缓存 (5分钟 TTL)
+- ✅ 批量操作支持
+- ✅ 数据一致性验证
+- ✅ 字段级加密
+
+### PassportDataService
+
+统一数据访问层，提供所有数据操作的接口。
+
+```javascript
+import PassportDataService from './services/data/PassportDataService';
+
+// 初始化服务
+await PassportDataService.initialize('user_123');
+
+// 加载所有用户数据
+const userData = await PassportDataService.getAllUserData('user_123');
+console.log(userData.passport);
+console.log(userData.personalInfo);
+console.log(userData.fundingProof);
+
+// 更新数据
+await PassportDataService.updatePassport('user_123', {
+  expiryDate: '2031-12-31'
+});
+```
+
+### 数据模型
+
+**Passport (护照)**
+```javascript
+{
+  id: "passport_123456789",
+  userId: "user_123",
+  passportNumber: "E12345678",  // 加密
+  fullName: "ZHANG, WEI",       // 加密
+  dateOfBirth: "1988-01-22",    // 加密
+  nationality: "CHN",           // 加密
+  gender: "Male",
+  expiryDate: "2030-12-31",
+  issueDate: "2020-12-31",
+  issuePlace: "Shanghai"
+}
+```
+
+**PersonalInfo (个人信息)**
+```javascript
+{
+  id: "personal_123456789",
+  userId: "user_123",
+  phoneNumber: "+86 13812345678",  // 加密
+  email: "user@example.com",       // 加密
+  homeAddress: "123 Main St",      // 加密
+  occupation: "BUSINESS MAN",
+  provinceCity: "ANHUI",
+  countryRegion: "CHN"
+}
+```
+
+**FundingProof (资金证明)**
+```javascript
+{
+  id: "funding_123456789",
+  userId: "user_123",
+  cashAmount: "10,000 THB",        // 加密
+  bankCards: "CMB Visa (****1234)", // 加密
+  supportingDocs: "Screenshots"    // 加密
+}
+```
+
+### 在屏幕中使用
+
+```javascript
+import React, { useState, useEffect } from 'react';
+import PassportDataService from '../services/data/PassportDataService';
+
+const MyScreen = () => {
+  const [userData, setUserData] = useState({});
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const userId = 'user_123'; // 从认证上下文获取
+    await PassportDataService.initialize(userId);
+    const data = await PassportDataService.getAllUserData(userId);
+    setUserData(data);
+  };
+
+  const handleUpdate = async (field, value) => {
+    await PassportDataService.updatePassport('user_123', {
+      [field]: value
+    });
+  };
+
+  return (
+    // Your UI components
+  );
+};
+```
+
+### 性能优化
+
+- **缓存**: 5分钟 TTL，减少数据库调用
+- **批量加载**: 单次事务加载所有数据
+- **批量更新**: 单次事务更新多个数据类型
+- **数据库索引**: userId 索引实现快速查找
+- **加载时间**: < 100ms (使用缓存时)
+
+### 文档
+
+完整文档请参考:
+- **[数据架构 README](../.kiro/specs/passport-data-centralization/README.md)** - 完整概述
+- **[API 文档](../.kiro/specs/passport-data-centralization/API_DOCUMENTATION.md)** - API 参考
+- **[使用示例](../.kiro/specs/passport-data-centralization/USAGE_EXAMPLES.md)** - 代码示例
+- **[迁移指南](../.kiro/specs/passport-data-centralization/MIGRATION_GUIDE.md)** - 数据迁移
+
+### 安全性
+
+- **加密**: 敏感字段使用 AES-256 加密
+- **访问控制**: 所有操作验证用户 ID
+- **GDPR 合规**: 支持数据导出和删除
+- **审计日志**: 记录所有敏感操作
+
+```javascript
+// 导出用户数据 (GDPR)
+const userData = await PassportDataService.getAllUserData(userId);
+const exportData = {
+  passport: userData.passport?.exportData(),
+  personalInfo: userData.personalInfo?.exportData(),
+  fundingProof: userData.fundingProof?.exportData()
+};
+
+// 删除用户数据 (GDPR)
+await PassportDataService.deleteAllUserData(userId);
+```
+
+---

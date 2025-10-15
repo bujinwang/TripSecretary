@@ -9,7 +9,7 @@ import SecureStorageService from '../services/security/SecureStorageService';
 
 class PersonalInfo {
   constructor(data = {}) {
-    this.id = data.id || this.generateId();
+    this.id = data.id || PersonalInfo.generateId();
     this.userId = data.userId;
     this.phoneNumber = data.phoneNumber; // 🔴 ENCRYPTED
     this.email = data.email; // 🔴 ENCRYPTED
@@ -189,20 +189,43 @@ class PersonalInfo {
   }
 
   /**
-   * Load personal information from secure storage
+    * Load personal information from secure storage
+    * @param {string} userId - User ID
+    * @returns {Promise<PersonalInfo>} - PersonalInfo instance
+    */
+   static async load(userId) {
+     try {
+       console.log('=== PERSONAL INFO LOAD DEBUG ===');
+       console.log('PersonalInfo.load called with userId:', userId);
+       console.log('Type of userId:', typeof userId);
+
+       const data = await SecureStorageService.getPersonalInfo(userId);
+       console.log('SecureStorageService.getPersonalInfo result:', data);
+
+       if (!data) {
+         console.log('No personal info data found in database for userId:', userId);
+         return null;
+       }
+
+       console.log('Personal info data found, creating instance...');
+       const personalInfo = new PersonalInfo(data);
+       console.log('PersonalInfo instance created with id:', personalInfo.id);
+       return personalInfo;
+     } catch (error) {
+       console.error('Failed to load personal info:', error);
+       console.error('Error details:', error.message, error.stack);
+       throw error;
+     }
+   }
+
+  /**
+   * Get personal information by user ID
+   * This is an alias for load() to provide a more explicit API
    * @param {string} userId - User ID
    * @returns {Promise<PersonalInfo>} - PersonalInfo instance
    */
-  static async load(userId) {
-    try {
-      const data = await SecureStorageService.getPersonalInfo(userId);
-      if (!data) return null;
-
-      return new PersonalInfo(data);
-    } catch (error) {
-      console.error('Failed to load personal info:', error);
-      throw error;
-    }
+  static async getByUserId(userId) {
+    return await PersonalInfo.load(userId);
   }
 
   /**
@@ -230,6 +253,62 @@ class PersonalInfo {
       return await this.save(options);
     } catch (error) {
       console.error('Failed to update personal info:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Merge updates without overwriting existing non-empty fields with empty values
+   * This is useful for progressive data filling where we don't want to lose existing data
+   * @param {Object} updates - Fields to merge
+   * @param {Object} options - Update options
+   * @param {boolean} options.skipValidation - Skip validation for progressive filling
+   * @returns {Promise<Object>} - Update result
+   */
+  async mergeUpdates(updates, options = {}) {
+    try {
+      // Filter out empty/null/undefined values from updates
+      const nonEmptyUpdates = {};
+      
+      for (const [key, value] of Object.entries(updates)) {
+        // Skip metadata fields that shouldn't be updated
+        if (key === 'id' || key === 'createdAt') {
+          continue;
+        }
+        
+        // Only include non-empty values
+        // Empty means: null, undefined, empty string, or whitespace-only string
+        if (value !== null && value !== undefined) {
+          if (typeof value === 'string') {
+            // For strings, only include if not empty or whitespace-only
+            if (value.trim().length > 0) {
+              nonEmptyUpdates[key] = value;
+            }
+          } else {
+            // For non-strings, include as-is
+            nonEmptyUpdates[key] = value;
+          }
+        }
+      }
+
+      // Update timestamp
+      this.updatedAt = new Date().toISOString();
+
+      // Merge non-empty updates into current instance
+      Object.assign(this, nonEmptyUpdates);
+
+      // Validate merged data (unless skipped for progressive filling)
+      if (!options.skipValidation) {
+        const validation = this.validate();
+        if (!validation.isValid) {
+          throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+        }
+      }
+
+      // Save merged data
+      return await this.save(options);
+    } catch (error) {
+      console.error('Failed to merge personal info updates:', error);
       throw error;
     }
   }

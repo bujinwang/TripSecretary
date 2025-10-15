@@ -37,6 +37,7 @@ const PassportNameInput = ({
   };
 
   // Parse combined value into surname and given name
+  // Supports both "SURNAME, GIVENNAME" and "SURNAME GIVENNAME" formats
   useEffect(() => {
     // Only update internal state if this is an external value change
     // and we're not in the middle of an internal update or user typing
@@ -44,18 +45,33 @@ const PassportNameInput = ({
       lastValueRef.current = value;
       
       if (value) {
-        const parts = value.split(',').map(part => part.trim());
-        if (parts.length === 2) {
-          setSurname(parts[0]);
-          setGivenName(parts[1]);
-        } else if (parts.length === 1 && parts[0]) {
-          // If single value, check if it looks like a surname or given name
-          // For now, treat single values as surname
-          setSurname(parts[0]);
-          setGivenName('');
+        // Try comma-separated format first (e.g., "ZHANG, WEI")
+        if (value.includes(',')) {
+          const parts = value.split(',').map(part => part.trim());
+          if (parts.length === 2) {
+            setSurname(parts[0]);
+            setGivenName(parts[1]);
+          } else if (parts.length === 1 && parts[0]) {
+            setSurname(parts[0]);
+            setGivenName('');
+          } else {
+            setSurname('');
+            setGivenName('');
+          }
         } else {
-          setSurname('');
-          setGivenName('');
+          // Try space-separated format (e.g., "ZHANG WEI")
+          const spaceParts = value.trim().split(/\s+/);
+          if (spaceParts.length >= 2) {
+            setSurname(spaceParts[0]);
+            setGivenName(spaceParts.slice(1).join(' '));
+          } else if (spaceParts.length === 1 && spaceParts[0]) {
+            // Single word - treat as surname
+            setSurname(spaceParts[0]);
+            setGivenName('');
+          } else {
+            setSurname('');
+            setGivenName('');
+          }
         }
       } else {
         setSurname('');

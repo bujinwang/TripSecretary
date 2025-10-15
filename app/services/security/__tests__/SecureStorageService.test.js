@@ -1,0 +1,195 @@
+/**
+ * Tests for SecureStorageService enhancements
+ * Task 3: Enhance SecureStorageService
+ */
+
+import SecureStorageService from '../SecureStorageService';
+
+describe('SecureStorageService - Task 3 Enhancements', () => {
+  let service;
+  const testUserId = 'test_user_123';
+
+  beforeEach(async () => {
+    service = new SecureStorageService();
+    await service.initialize(testUserId);
+  });
+
+  describe('3.1 Database schema migration methods', () => {
+    test('should have migrations table created', async () => {
+      // The migrations table should be created during initialization
+      const status = await service.getMigrationStatus(testUserId);
+      // Status can be null if no migration has been run yet
+      expect(status === null || typeof status === 'object').toBe(true);
+    });
+
+    test('should support gender field in passports', async () => {
+      const passportData = {
+        id: 'test_passport_1',
+        userId: testUserId,
+        passportNumber: 'E12345678',
+        fullName: 'TEST USER',
+        dateOfBirth: '1990-01-01',
+        nationality: 'USA',
+        gender: 'Male',
+        expiryDate: '2030-12-31',
+        issueDate: '2020-01-01',
+        issuePlace: 'New York'
+      };
+
+      await service.savePassport(passportData);
+      const retrieved = await service.getPassport('test_passport_1');
+      
+      expect(retrieved.gender).toBe('Male');
+    });
+  });
+
+  describe('3.2 User-based passport lookup methods', () => {
+    test('getUserPassport should retrieve passport by userId', async () => {
+      const passportData = {
+        id: 'test_passport_2',
+        userId: testUserId,
+        passportNumber: 'E87654321',
+        fullName: 'ANOTHER USER',
+        dateOfBirth: '1985-05-15',
+        nationality: 'GBR',
+        gender: 'Female',
+        expiryDate: '2028-06-30',
+        issueDate: '2018-06-30',
+        issuePlace: 'London'
+      };
+
+      await service.savePassport(passportData);
+      const retrieved = await service.getUserPassport(testUserId);
+      
+      expect(retrieved).not.toBeNull();
+      expect(retrieved.userId).toBe(testUserId);
+      expect(retrieved.passportNumber).toBe('E87654321');
+    });
+
+    test('listUserPassports should return all passports for user', async () => {
+      const passport1 = {
+        id: 'test_passport_3',
+        userId: testUserId,
+        passportNumber: 'P11111111',
+        fullName: 'USER ONE',
+        dateOfBirth: '1990-01-01',
+        nationality: 'USA',
+        gender: 'Male',
+        expiryDate: '2030-12-31',
+        issueDate: '2020-01-01',
+        issuePlace: 'NYC'
+      };
+
+      const passport2 = {
+        id: 'test_passport_4',
+        userId: testUserId,
+        passportNumber: 'P22222222',
+        fullName: 'USER TWO',
+        dateOfBirth: '1990-01-01',
+        nationality: 'CAN',
+        gender: 'Female',
+        expiryDate: '2029-12-31',
+        issueDate: '2019-01-01',
+        issuePlace: 'Toronto'
+      };
+
+      await service.savePassport(passport1);
+      await service.savePassport(passport2);
+      
+      const passports = await service.listUserPassports(testUserId);
+      
+      expect(passports.length).toBeGreaterThanOrEqual(2);
+      expect(passports.some(p => p.id === 'test_passport_3')).toBe(true);
+      expect(passports.some(p => p.id === 'test_passport_4')).toBe(true);
+    });
+  });
+
+  describe('3.3 Migration tracking methods', () => {
+    test('needsMigration should return true for unmigrated user', async () => {
+      const newUserId = 'unmigrated_user_456';
+      const needsMigration = await service.needsMigration(newUserId);
+      
+      expect(needsMigration).toBe(true);
+    });
+
+    test('markMigrationComplete should mark user as migrated', async () => {
+      const newUserId = 'migrated_user_789';
+      
+      await service.markMigrationComplete(newUserId, 'AsyncStorage');
+      const needsMigration = await service.needsMigration(newUserId);
+      
+      expect(needsMigration).toBe(false);
+    });
+
+    test('getMigrationStatus should return migration details', async () => {
+      const newUserId = 'status_user_101';
+      
+      await service.markMigrationComplete(newUserId, 'TestSource');
+      const status = await service.getMigrationStatus(newUserId);
+      
+      expect(status).not.toBeNull();
+      expect(status.userId).toBe(newUserId);
+      expect(status.source).toBe('TestSource');
+      expect(status.migratedAt).toBeDefined();
+    });
+  });
+
+  describe('3.4 Batch operation support', () => {
+    test('batchSave should save multiple operations atomically', async () => {
+      const operations = [
+        {
+          type: 'passport',
+          data: {
+            id: 'batch_passport_1',
+            userId: testUserId,
+            passportNumber: 'B11111111',
+            fullName: 'BATCH USER',
+            dateOfBirth: '1992-03-15',
+            nationality: 'FRA',
+            gender: 'Male',
+            expiryDate: '2031-03-15',
+            issueDate: '2021-03-15',
+            issuePlace: 'Paris'
+          }
+        },
+        {
+          type: 'personalInfo',
+          data: {
+            id: 'batch_personal_1',
+            userId: testUserId,
+            phoneNumber: '+33123456789',
+            email: 'batch@example.com',
+            homeAddress: '123 Rue de Test',
+            occupation: 'Engineer',
+            provinceCity: 'Paris',
+            countryRegion: 'FRA'
+          }
+        },
+        {
+          type: 'fundingProof',
+          data: {
+            id: 'batch_funding_1',
+            userId: testUserId,
+            cashAmount: '5000 EUR',
+            bankCards: 'Visa ****1234',
+            supportingDocs: 'Bank statement'
+          }
+        }
+      ];
+
+      const results = await service.batchSave(operations);
+      
+      expect(results).toBeDefined();
+      expect(results.length).toBe(3);
+      
+      // Verify all data was saved
+      const passport = await service.getPassport('batch_passport_1');
+      const personalInfo = await service.getPersonalInfo(testUserId);
+      const fundingProof = await service.getFundingProof(testUserId);
+      
+      expect(passport).not.toBeNull();
+      expect(personalInfo).not.toBeNull();
+      expect(fundingProof).not.toBeNull();
+    });
+  });
+});

@@ -19,7 +19,7 @@ import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { DataValidator } from '../utils/validation';
-import SecureStorageService from '../services/security/SecureStorageService';
+import PassportDataService from '../services/data/PassportDataService';
 
 const PassportReviewScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -44,11 +44,25 @@ const PassportReviewScreen = ({ navigation, route }) => {
   }, [editedData]);
 
   const validateCurrentData = () => {
-    const result = DataValidator.validatePassport(editedData);
+    // Filter out empty fields for progressive validation
+    const dataToValidate = {};
+    Object.entries(editedData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        dataToValidate[key] = value;
+      }
+    });
+
+    // Only validate if there's data to validate
+    if (Object.keys(dataToValidate).length === 0) {
+      setValidationErrors({});
+      return true; // Allow saving empty data for progressive filling
+    }
+
+    const result = DataValidator.validatePassport(dataToValidate);
     const errors = {};
 
-    if (!result.isValid) {
-      result.fields.forEach((field, fieldName) => {
+    if (!result.isValid && result.fields) {
+      Object.entries(result.fields).forEach(([fieldName, field]) => {
         if (!field.isValid && field.errors) {
           errors[fieldName] = field.errors[0]; // Show first error
         }
@@ -67,7 +81,13 @@ const PassportReviewScreen = ({ navigation, route }) => {
   };
 
   const handleSave = async () => {
+    console.log('=== PASSPORT SAVE DEBUG ===');
+    console.log('editedData state:', editedData);
+    console.log('dateOfBirth value:', editedData.dateOfBirth);
+    console.log('nationality value:', editedData.nationality);
+
     if (!validateCurrentData()) {
+      console.log('Frontend validation failed');
       Alert.alert(
         'Validation Error',
         'Please correct the errors before saving.',
@@ -81,9 +101,17 @@ const PassportReviewScreen = ({ navigation, route }) => {
       // Get current user ID (in real app, from auth context)
       const userId = 'current_user';
 
+      // Filter out empty fields for progressive filling
+      const filteredData = {};
+      Object.entries(editedData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          filteredData[key] = value;
+        }
+      });
+
       // Save passport data securely
       const passportToSave = {
-        ...editedData,
+        ...filteredData,
         id: `passport_${Date.now()}`,
         userId,
         createdAt: new Date().toISOString(),
@@ -91,7 +119,13 @@ const PassportReviewScreen = ({ navigation, route }) => {
         ocrConfidence: confidence?.overall || 0
       };
 
-      await SecureStorageService.savePassport(passportToSave);
+      console.log('passportToSave object:', passportToSave);
+      console.log('About to call PassportDataService.savePassport with options: { partial: true }');
+
+      // Use partial validation for progressive filling
+      await PassportDataService.savePassport(passportToSave, userId, { partial: true });
+
+      console.log('PassportDataService.savePassport completed successfully');
 
       Alert.alert(
         'Success',
@@ -107,7 +141,10 @@ const PassportReviewScreen = ({ navigation, route }) => {
       );
 
     } catch (error) {
-      console.error('Failed to save passport:', error);
+      console.error('=== PASSPORT SAVE ERROR ===');
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Full error object:', error);
       Alert.alert('Error', 'Failed to save passport information. Please try again.');
     } finally {
       setIsSaving(false);

@@ -89,8 +89,6 @@ const HistoryScreen = ({ navigation }) => {
 
 
   const handleViewItem = (item) => {
-    console.log('History item clicked:', item.destinationLabel);
-
     // Navigate to Result screen with the history item's data
     navigation.navigate('Result', {
       passport: item.passportData,
@@ -125,7 +123,6 @@ const HistoryScreen = ({ navigation }) => {
                 key={item.id}
                 style={styles.historyCard}
                 onPress={() => {
-                  console.log('TouchableOpacity pressed!', item.destinationLabel);
                   handleViewItem(item);
                 }}
                 activeOpacity={0.7}

@@ -5,7 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Modal,
-  FlatList,
+  ScrollView,
   StyleSheet,
   SafeAreaView,
   TextInput,
@@ -28,15 +28,36 @@ const NationalitySelector = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [nationalities, setNationalities] = useState([]);
 
-  // Get all nationalities for selection
-  const nationalities = getDestinationNationalities();
+  // Load nationalities on mount
+  React.useEffect(() => {
+    try {
+      const result = getDestinationNationalities();
+      if (Array.isArray(result) && result.length > 0) {
+        setNationalities(result);
+      } else {
+        console.warn('getDestinationNationalities did not return a valid array:', result);
+        setNationalities([]);
+      }
+    } catch (error) {
+      console.error('Error getting nationalities:', error);
+      setNationalities([]);
+    }
+  }, []);
 
   // Filter nationalities based on search text
-  const filteredNationalities = nationalities.filter(nationality =>
-    nationality.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    nationality.code.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredNationalities = React.useMemo(() => {
+    if (!Array.isArray(nationalities)) return [];
+    
+    return nationalities.filter(nationality => {
+      if (!nationality) return false;
+      const name = nationality.name || '';
+      const code = nationality.code || '';
+      const search = searchText.toLowerCase();
+      return name.toLowerCase().includes(search) || code.toLowerCase().includes(search);
+    });
+  }, [nationalities, searchText]);
 
   // Get current display value
   const getCurrentDisplayValue = () => {
@@ -50,28 +71,32 @@ const NationalitySelector = ({
     setSearchText('');
   };
 
-  const renderNationalityItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.nationalityItem,
-        value === item.code && styles.nationalityItemSelected
-      ]}
-      onPress={() => handleSelectNationality(item)}
-    >
-      <Text style={[
-        styles.nationalityName,
-        value === item.code && styles.nationalityNameSelected
-      ]}>
-        {item.name}
-      </Text>
-      <Text style={[
-        styles.nationalityCode,
-        value === item.code && styles.nationalityCodeSelected
-      ]}>
-        {item.code}
-      </Text>
-    </TouchableOpacity>
-  );
+  const renderNationalityItem = ({ item }) => {
+    if (!item) return null;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.nationalityItem,
+          value === item.code && styles.nationalityItemSelected
+        ]}
+        onPress={() => handleSelectNationality(item)}
+      >
+        <Text style={[
+          styles.nationalityName,
+          value === item.code && styles.nationalityNameSelected
+        ]}>
+          {item.name || ''}
+        </Text>
+        <Text style={[
+          styles.nationalityCode,
+          value === item.code && styles.nationalityCodeSelected
+        ]}>
+          {item.code || ''}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, style]}>
@@ -111,47 +136,86 @@ const NationalitySelector = ({
         <Text style={styles.helpText}>{helpText}</Text>
       )}
 
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <SafeAreaView style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>选择国籍</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            {showSearch && (
-              <View style={styles.searchContainer}>
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="搜索国籍..."
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  autoFocus
-                />
+      {isModalVisible && (
+        <Modal
+          visible={isModalVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <SafeAreaView style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>选择国籍</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setIsModalVisible(false)}
+                >
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
               </View>
-            )}
 
-            <FlatList
-              data={filteredNationalities}
-              renderItem={renderNationalityItem}
-              keyExtractor={(item) => item.code}
-              showsVerticalScrollIndicator={false}
-              style={styles.list}
-              keyboardShouldPersistTaps="handled"
-            />
-          </SafeAreaView>
-        </View>
-      </Modal>
+              {showSearch && (
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="搜索国籍..."
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    autoFocus
+                  />
+                </View>
+              )}
+
+              {nationalities.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>加载中...</Text>
+                </View>
+              ) : filteredNationalities.length > 0 ? (
+                <ScrollView
+                  style={styles.list}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {filteredNationalities.map((item, index) => {
+                    if (!item) return null;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={item.code || `item-${index}`}
+                        style={[
+                          styles.nationalityItem,
+                          value === item.code && styles.nationalityItemSelected
+                        ]}
+                        onPress={() => handleSelectNationality(item)}
+                      >
+                        <Text style={[
+                          styles.nationalityName,
+                          value === item.code && styles.nationalityNameSelected
+                        ]}>
+                          {item.name || ''}
+                        </Text>
+                        <Text style={[
+                          styles.nationalityCode,
+                          value === item.code && styles.nationalityCodeSelected
+                        ]}>
+                          {item.code || ''}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    {searchText ? '没有找到匹配的国籍' : '没有可用的国籍'}
+                  </Text>
+                </View>
+              )}
+            </SafeAreaView>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -296,6 +360,17 @@ const styles = StyleSheet.create({
   },
   nationalityCodeSelected: {
     color: colors.primary,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  emptyText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
 
