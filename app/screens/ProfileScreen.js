@@ -1193,22 +1193,6 @@ const ProfileScreen = ({ navigation, route }) => {
           </Text>
         </TouchableOpacity>
 
-        {/* Generate Entry Card Button */}
-        <TouchableOpacity
-          style={styles.generateButton}
-          onPress={() => navigation.navigate('SelectDestination')}
-        >
-          <Text style={styles.generateButtonIcon}>🚀</Text>
-          <View style={styles.generateButtonText}>
-            <Text style={styles.generateButtonTitle}>
-              {t('profile.generate.title', { defaultValue: 'Generate Entry Card' })}
-            </Text>
-            <Text style={styles.generateButtonSubtitle}>
-              {t('profile.generate.subtitle', { defaultValue: 'Create your personalized entry guide' })}
-            </Text>
-          </View>
-          <Text style={styles.generateButtonArrow}>›</Text>
-        </TouchableOpacity>
 
         {/* App Version */}
         <Text style={styles.version}>
@@ -1998,39 +1982,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Generate Button
-  generateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    margin: spacing.md,
-    padding: spacing.md,
-    borderRadius: borderRadius.medium,
-    marginTop: spacing.lg,
-  },
-  generateButtonIcon: {
-    fontSize: 28,
-    marginRight: spacing.md,
-  },
-  generateButtonText: {
-    flex: 1,
-  },
-  generateButtonTitle: {
-    ...typography.body2,
-    color: colors.white,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  generateButtonSubtitle: {
-    ...typography.caption,
-    color: colors.white,
-    opacity: 0.9,
-  },
-  generateButtonArrow: {
-    ...typography.h2,
-    color: colors.white,
-    marginLeft: spacing.sm,
-  },
   
   // Empty state styles
   emptyState: {
