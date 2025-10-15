@@ -1,9 +1,19 @@
 /**
  * Test file for TDAC API Service
  * Run this to verify the API implementation
+ * 
+ * Note: These are manual tests, not Jest tests
+ * To run: node app/services/TDACAPIService.test.js
  */
 
 import TDACAPIService from './TDACAPIService';
+
+// Skip this file in Jest test runs
+describe.skip('TDAC API Service - Manual Tests', () => {
+  test('placeholder', () => {
+    expect(true).toBe(true);
+  });
+});
 
 // Test data - Chinese tourist with visa exemption
 const testTraveler = {

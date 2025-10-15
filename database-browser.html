@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,7 @@
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .file-input {
@@ -58,51 +59,14 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .query-editor {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .query-editor h3 {
-            margin-bottom: 15px;
-        }
-
-        .query-editor textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .query-editor button {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .query-editor button:hover {
-            background: #0056b3;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .table-container {
             background: white;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -139,7 +103,8 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid #eee;
@@ -219,6 +184,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -231,7 +197,8 @@
             <ol>
                 <li><strong>Run your app:</strong> Open TripSecretary in iOS Simulator to create the database</li>
                 <li><strong>Find database:</strong> The database file is at:<br>
-                    <code>~/Library/Developer/CoreSimulator/Devices/{SIMULATOR_ID}/data/Containers/Data/Application/{APP_ID}/Documents/ExponentExperienceData/@anonymous%2Fchujingtong-.../SQLite/tripsecretary_secure</code></li>
+                    <code>~/Library/Developer/CoreSimulator/Devices/{SIMULATOR_ID}/data/Containers/Data/Application/{APP_ID}/Documents/ExponentExperienceData/@anonymous%2Fchujingtong-.../SQLite/tripsecretary_secure</code>
+                </li>
                 <li><strong>Copy to project:</strong> Copy the database file to your TripSecretary project folder</li>
                 <li><strong>Select file:</strong> Use the file picker below to load the database</li>
             </ol>
@@ -258,16 +225,6 @@
                 <p id="databaseSize"></p>
             </div>
 
-            <div class="query-editor">
-                <h3>✏️ SQL Query Editor</h3>
-                <textarea id="queryInput" placeholder="SELECT * FROM passports WHERE gender = 'MALE';"></textarea>
-                <button id="executeQuery">Execute Query</button>
-            </div>
-
-            <div id="queryResultContainer" style="display: none;">
-                <!-- Query results will be populated here -->
-            </div>
-
             <div id="tablesContainer">
                 <!-- Tables will be populated here -->
             </div>
@@ -286,13 +243,9 @@
         const databaseContentDiv = document.getElementById('databaseContent');
         const emptyStateDiv = document.getElementById('emptyState');
         const tablesContainer = document.getElementById('tablesContainer');
-        const queryInput = document.getElementById('queryInput');
-        const executeQueryBtn = document.getElementById('executeQuery');
-        const queryResultContainer = document.getElementById('queryResultContainer');
 
         // SQL.js library will be loaded from CDN
         let SQL = null;
-        let db = null; // Keep a reference to the database instance
 
         // Load SQL.js library
         async function loadSQLLibrary() {
@@ -325,7 +278,7 @@
                 const uint8Array = new Uint8Array(arrayBuffer);
 
                 // Load database
-                db = new SQL.Database(uint8Array);
+                const db = new SQL.Database(uint8Array);
 
                 // Display database info
                 displayDatabaseInfo(file, arrayBuffer.byteLength);
@@ -343,55 +296,6 @@
                 console.error('Database loading error:', error);
             }
         });
-
-        // Handle custom query execution
-        executeQueryBtn.addEventListener('click', () => {
-            if (!db) {
-                showError('Please load a database file first.');
-                return;
-            }
-
-            const query = queryInput.value.trim();
-            if (!query) {
-                showError('Query cannot be empty.');
-                return;
-            }
-
-            try {
-                const results = db.exec(query);
-                displayQueryResult(results);
-            } catch (error) {
-                displayQueryError(error.message);
-            }
-        });
-
-        function displayQueryResult(results) {
-            queryResultContainer.innerHTML = '';
-            queryResultContainer.style.display = 'block';
-
-            if (results.length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'empty-state';
-                emptyDiv.innerHTML = '<p>Query executed successfully, but returned no results.</p>';
-                queryResultContainer.appendChild(emptyDiv);
-                return;
-            }
-
-            results.forEach((result, index) => {
-                const tableDiv = createTableContainer(`Query Result ${index + 1}`, result);
-                queryResultContainer.appendChild(tableDiv);
-            });
-        }
-
-        function displayQueryError(errorMessage) {
-            queryResultContainer.innerHTML = '';
-            queryResultContainer.style.display = 'block';
-
-            const errorContent = document.createElement('div');
-            errorContent.className = 'error';
-            errorContent.textContent = errorMessage;
-            queryResultContainer.appendChild(errorContent);
-        }
 
         function getTables(db) {
             const tables = [];
@@ -574,4 +478,5 @@
         });
     </script>
 </body>
+
 </html>

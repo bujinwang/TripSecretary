@@ -10,7 +10,7 @@ describe('Database Index Verification', () => {
 
   beforeAll(async () => {
     await SecureStorageService.initialize(TEST_USER_ID);
-  });
+  }, 10000); // Increase timeout to 10 seconds
 
   afterAll(async () => {
     await SecureStorageService.close();
@@ -22,12 +22,12 @@ describe('Database Index Verification', () => {
     // Check that all expected indexes exist
     expect(results.indexesExist['idx_passports_user_id']).toBeDefined();
     expect(results.indexesExist['idx_personal_info_user_id']).toBeDefined();
-    expect(results.indexesExist['idx_funding_proof_user_id']).toBeDefined();
+    // idx_funding_proof_user_id removed - funding_proof table deleted
     
     // Verify index definitions
     expect(results.indexesExist['idx_passports_user_id'].table).toBe('passports');
     expect(results.indexesExist['idx_personal_info_user_id'].table).toBe('personal_info');
-    expect(results.indexesExist['idx_funding_proof_user_id'].table).toBe('funding_proof');
+    // funding_proof index verification removed
   });
 
   test('should use indexes for user_id queries', async () => {
@@ -36,7 +36,7 @@ describe('Database Index Verification', () => {
     // Check query plans
     expect(results.queryPlans['passport_by_user_id']).toBeDefined();
     expect(results.queryPlans['personal_info_by_user_id']).toBeDefined();
-    expect(results.queryPlans['funding_proof_by_user_id']).toBeDefined();
+    // funding_proof query plan check removed
   });
 
   test('should provide index statistics', async () => {

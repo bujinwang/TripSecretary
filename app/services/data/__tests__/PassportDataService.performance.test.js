@@ -6,13 +6,13 @@
 import PassportDataService from '../PassportDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-import FundingProof from '../../../models/FundingProof';
+// FundingProof removed - performance tests updated
 import SecureStorageService from '../../security/SecureStorageService';
 
 // Mock dependencies
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-jest.mock('../../../models/FundingProof');
+// FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 
 describe('PassportDataService - Performance Tests', () => {

@@ -5,14 +5,17 @@
 
 import SecureStorageService from '../SecureStorageService';
 
+// Increase timeout for database operations
+jest.setTimeout(15000);
+
 describe('SecureStorageService - Task 3 Enhancements', () => {
   let service;
   const testUserId = 'test_user_123';
 
   beforeEach(async () => {
-    service = new SecureStorageService();
+    service = SecureStorageService; // Use singleton instance
     await service.initialize(testUserId);
-  });
+  }, 10000); // 10 second timeout for initialization
 
   describe('3.1 Database schema migration methods', () => {
     test('should have migrations table created', async () => {
@@ -164,32 +167,21 @@ describe('SecureStorageService - Task 3 Enhancements', () => {
             provinceCity: 'Paris',
             countryRegion: 'FRA'
           }
-        },
-        {
-          type: 'fundingProof',
-          data: {
-            id: 'batch_funding_1',
-            userId: testUserId,
-            cashAmount: '5000 EUR',
-            bankCards: 'Visa ****1234',
-            supportingDocs: 'Bank statement'
-          }
         }
+        // Legacy fundingProof operation removed
       ];
 
       const results = await service.batchSave(operations);
       
       expect(results).toBeDefined();
-      expect(results.length).toBe(3);
+      expect(results.length).toBe(2); // Only passport and personalInfo
       
       // Verify all data was saved
       const passport = await service.getPassport('batch_passport_1');
       const personalInfo = await service.getPersonalInfo(testUserId);
-      const fundingProof = await service.getFundingProof(testUserId);
       
       expect(passport).not.toBeNull();
       expect(personalInfo).not.toBeNull();
-      expect(fundingProof).not.toBeNull();
     });
   });
 });

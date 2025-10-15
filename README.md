@@ -73,15 +73,15 @@ All documentation is in the [`docs/`](docs/) folder:
 ### English Docs
 - [**App Documentation**](docs/README_APP.md) - Complete guide
 - [**Quick Start**](docs/QUICKSTART.md) - Get running in 5 minutes
-- [**Project Structure**](docs/PROJECT_STRUCTURE.md) - Detailed file tree
+- [**Project Structure**](docs/architecture/PROJECT_STRUCTURE.md) - Detailed file tree
 
 ### Chinese Docs (中文文档)
-- [产品设计文档](docs/智能出入境助手-产品设计文档.md)
-- [最终技术栈确认](docs/MVP技术栈最终确认.md)
+- [产品设计文档](docs/design/智能出入境助手-产品设计文档.md)
+- [最终技术栈确认](docs/architecture/MVP技术栈最终确认.md)
 - [家庭账号与远程协助设计](docs/家庭账号与远程协助设计.md)
-- [Cloudflare Workers详解](docs/Cloudflare-Workers详解.md)
-- [微信登录集成方案](docs/微信登录集成方案.md)
-- [UI设计规范](docs/UI设计规范.md)
+- [Cloudflare Workers详解](docs/architecture/Cloudflare-Workers详解.md)
+- [微信登录集成方案](docs/integrations/微信登录集成方案.md)
+- [UI设计规范](docs/design/UI设计规范.md)
 - And 15+ more in [`docs/`](docs/)
 
 ---
@@ -119,7 +119,7 @@ See [package.json](package.json) for complete list.
 - **Spacing**: 8px grid system
 - **Components**: Button, Card, Input, CountryCard
 
-See [UI Design Guidelines](docs/UI设计规范.md) (Chinese)
+See [UI Design Guidelines](docs/design/UI设计规范.md) (Chinese)
 
 ---
 

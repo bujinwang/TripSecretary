@@ -6,14 +6,14 @@
 import PassportDataService from '../PassportDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-import FundingProof from '../../../models/FundingProof';
+// FundingProof model removed - use FundItem instead
 import SecureStorageService from '../../security/SecureStorageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock dependencies
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-jest.mock('../../../models/FundingProof');
+// FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');
 
@@ -140,39 +140,7 @@ describe('PassportDataService - CRUD Operations', () => {
       });
     });
 
-    describe('saveFundingProof', () => {
-      it('should save new funding proof data', async () => {
-        const fundingData = {
-          cashAmount: '10000 THB',
-          bankCards: 'Visa ****1234',
-          supportingDocs: 'Bank statement'
-        };
-
-        const savedFundingProof = {
-          id: 'funding-1',
-          userId: testUserId,
-          ...fundingData
-        };
-
-        const mockFundingProofInstance = {
-          ...savedFundingProof,
-          save: jest.fn().mockResolvedValue(true)
-        };
-
-        FundingProof.mockImplementation(() => mockFundingProofInstance);
-        FundingProof.load.mockResolvedValue(savedFundingProof);
-
-        const result = await PassportDataService.saveFundingProof(fundingData, testUserId);
-
-        expect(FundingProof).toHaveBeenCalledWith(expect.objectContaining({
-          ...fundingData,
-          userId: testUserId
-        }));
-        expect(mockFundingProofInstance.save).toHaveBeenCalled();
-        expect(result.userId).toEqual(testUserId);
-        expect(result.cashAmount).toEqual(fundingData.cashAmount);
-      });
-    });
+    // saveFundingProof tests removed - use saveFundItem instead
   });
 
   describe('READ Operations', () => {
@@ -242,32 +210,17 @@ describe('PassportDataService - CRUD Operations', () => {
       });
     });
 
-    describe('getFundingProof', () => {
-      it('should load funding proof data', async () => {
-        const mockFundingProof = {
-          id: 'funding-1',
-          userId: testUserId,
-          cashAmount: '10000 THB'
-        };
-
-        FundingProof.load.mockResolvedValue(mockFundingProof);
-
-        const result = await PassportDataService.getFundingProof(testUserId);
-
-        expect(FundingProof.load).toHaveBeenCalledWith(testUserId);
-        expect(result).toEqual(mockFundingProof);
-      });
-    });
+    // getFundingProof tests removed - use getFundItems instead
 
     describe('getAllUserData', () => {
       it('should load all user data types', async () => {
         const mockPassport = { id: 'passport-1', userId: testUserId };
         const mockPersonalInfo = { id: 'personal-1', userId: testUserId };
-        const mockFundingProof = { id: 'funding-1', userId: testUserId };
+        // mockFundingProof removed
 
         Passport.load.mockResolvedValue(mockPassport);
         PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
-        FundingProof.load.mockResolvedValue(mockFundingProof);
+        // FundingProof.load removed
 
         const result = await PassportDataService.getAllUserData(testUserId, {
           useBatchLoad: false
@@ -275,14 +228,14 @@ describe('PassportDataService - CRUD Operations', () => {
 
         expect(result.passport).toEqual(mockPassport);
         expect(result.personalInfo).toEqual(mockPersonalInfo);
-        expect(result.fundingProof).toEqual(mockFundingProof);
+        // fundingProof assertion removed
         expect(result.userId).toBe(testUserId);
       });
 
       it('should handle partial data gracefully', async () => {
         Passport.load.mockResolvedValue({ id: 'passport-1' });
         PersonalInfo.load.mockResolvedValue(null);
-        FundingProof.load.mockResolvedValue(null);
+        // FundingProof.load removed
 
         const result = await PassportDataService.getAllUserData(testUserId, {
           useBatchLoad: false
@@ -290,7 +243,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         expect(result.passport).toBeDefined();
         expect(result.personalInfo).toBeNull();
-        expect(result.fundingProof).toBeNull();
+        // fundingProof assertion removed
       });
     });
   });

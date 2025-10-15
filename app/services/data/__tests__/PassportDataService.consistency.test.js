@@ -6,13 +6,13 @@
 import PassportDataService from '../PassportDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-import FundingProof from '../../../models/FundingProof';
+// FundingProof removed - tests updated to focus on passport and personal info
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock dependencies
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-jest.mock('../../../models/FundingProof');
+// FundingProof mock removed
 jest.mock('@react-native-async-storage/async-storage');
 jest.mock('../../security/SecureStorageService');
 
@@ -51,19 +51,13 @@ describe('PassportDataService - Data Consistency Validation', () => {
         countryRegion: 'CHN'
       };
 
-      const mockFundingProof = {
-        id: 'funding-1',
-        userId: mockUserId,
-        cashAmount: '10000 THB',
-        bankCards: 'Visa ****1234',
-        supportingDocs: 'Bank statement'
-      };
+      // mockFundingProof removed
 
       // Mock getAllUserData
       jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: mockPersonalInfo,
-        fundingProof: mockFundingProof,
+        // fundingProof removed
         userId: mockUserId
       });
 
@@ -72,7 +66,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
       expect(result.isConsistent).toBe(true);
       expect(result.passport.valid).toBe(true);
       expect(result.personalInfo.valid).toBe(true);
-      expect(result.fundingProof.valid).toBe(true);
+      // fundingProof validation removed
       expect(result.crossFieldValidation.valid).toBe(true);
     });
 
@@ -181,28 +175,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
       expect(result.personalInfo.errors).toContain('Invalid email format');
     });
 
-    it('should detect missing funding proof data', async () => {
-      const mockFundingProof = {
-        id: 'funding-1',
-        userId: mockUserId,
-        cashAmount: '',
-        bankCards: '',
-        supportingDocs: ''
-      };
-
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
-        passport: null,
-        personalInfo: null,
-        fundingProof: mockFundingProof,
-        userId: mockUserId
-      });
-
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
-
-      expect(result.isConsistent).toBe(false);
-      expect(result.fundingProof.valid).toBe(false);
-      expect(result.fundingProof.errors).toContain('At least one funding proof field must be provided');
-    });
+    // Test for funding proof removed - use fund_items instead
 
     it('should detect userId inconsistency across data types', async () => {
       const mockPassport = {

@@ -8,14 +8,14 @@ import SecureStorageService from '../../security/SecureStorageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-import FundingProof from '../../../models/FundingProof';
+// FundingProof removed - migration tests updated
 
 // Mock dependencies
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-jest.mock('../../../models/FundingProof');
+// FundingProof mock removed
 
 describe('Migration Scenarios', () => {
   const testUserId = 'test-user-123';
@@ -36,7 +36,7 @@ describe('Migration Scenarios', () => {
       expect(result.migrated).toBe(true);
       expect(result.passport).toBe(false);
       expect(result.personalInfo).toBe(false);
-      expect(result.fundingProof).toBe(false);
+      // fundingProof expectation removed
       expect(SecureStorageService.markMigrationComplete).toHaveBeenCalledWith(testUserId);
     });
   });
@@ -62,12 +62,8 @@ describe('Migration Scenarios', () => {
           occupation: 'Engineer',
           provinceCity: 'Shanghai',
           countryRegion: 'CHN'
-        },
-        fundingProof: {
-          cashAmount: '10000 THB',
-          bankCards: 'CMB Visa (****1234) · Balance 20,000 CNY',
-          supportingDocs: 'Bank app screenshots saved'
         }
+        // fundingProof removed from test data
       };
 
       AsyncStorage.getItem.mockImplementation((key) => {
@@ -77,9 +73,7 @@ describe('Migration Scenarios', () => {
         if (key === '@personal_info' || key === `@personal_info_${testUserId}`) {
           return Promise.resolve(JSON.stringify(completeAsyncData.personalInfo));
         }
-        if (key === '@funding_proof' || key === `@funding_proof_${testUserId}`) {
-          return Promise.resolve(JSON.stringify(completeAsyncData.fundingProof));
-        }
+        // fundingProof AsyncStorage check removed
         return Promise.resolve(null);
       });
 
@@ -88,21 +82,21 @@ describe('Migration Scenarios', () => {
 
       const mockPassport = { save: jest.fn().mockResolvedValue(true) };
       const mockPersonalInfo = { save: jest.fn().mockResolvedValue(true) };
-      const mockFundingProof = { save: jest.fn().mockResolvedValue(true) };
+      // mockFundingProof removed
 
       Passport.mockImplementation(() => mockPassport);
       PersonalInfo.mockImplementation(() => mockPersonalInfo);
-      FundingProof.mockImplementation(() => mockFundingProof);
+      // FundingProof mock implementation removed
 
       const result = await PassportDataService.migrateFromAsyncStorage(testUserId);
 
       expect(result.migrated).toBe(true);
       expect(result.passport).toBe(true);
       expect(result.personalInfo).toBe(true);
-      expect(result.fundingProof).toBe(true);
+      // fundingProof expectation removed
       expect(mockPassport.save).toHaveBeenCalled();
       expect(mockPersonalInfo.save).toHaveBeenCalled();
-      expect(mockFundingProof.save).toHaveBeenCalled();
+      // mockFundingProof.save expectation removed
     });
   });
 
@@ -129,7 +123,7 @@ describe('Migration Scenarios', () => {
       expect(result.migrated).toBe(true);
       expect(result.passport).toBe(true);
       expect(result.personalInfo).toBe(false);
-      expect(result.fundingProof).toBe(false);
+      // fundingProof expectation removed
     });
 
     it('should migrate only personal info when passport is missing', async () => {
@@ -154,7 +148,7 @@ describe('Migration Scenarios', () => {
       expect(result.migrated).toBe(true);
       expect(result.passport).toBe(false);
       expect(result.personalInfo).toBe(true);
-      expect(result.fundingProof).toBe(false);
+      // fundingProof expectation removed
     });
   });
 

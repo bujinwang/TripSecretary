@@ -7,13 +7,13 @@ import PassportDataService from '../PassportDataService';
 import SecureStorageService from '../../security/SecureStorageService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-import FundingProof from '../../../models/FundingProof';
+// FundingProof model removed - use FundItem instead
 
 // Mock dependencies
 jest.mock('../../security/SecureStorageService');
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-jest.mock('../../../models/FundingProof');
+// FundingProof mock removed
 
 describe('PassportDataService - Batch Operations', () => {
   const testUserId = 'test_user_123';
@@ -48,17 +48,13 @@ describe('PassportDataService - Batch Operations', () => {
         email: 'test@example.com'
       };
 
-      const mockFundingProof = {
-        id: 'funding_1',
-        userId: testUserId,
-        cashAmount: '10000 THB'
-      };
+      // mockFundingProof removed
 
       // Mock batchLoad
       SecureStorageService.batchLoad.mockResolvedValue({
         passport: mockPassport,
-        personalInfo: mockPersonalInfo,
-        fundingProof: mockFundingProof
+        personalInfo: mockPersonalInfo
+        // fundingProof removed
       });
 
       const result = await PassportDataService.getAllUserData(testUserId);
@@ -66,13 +62,13 @@ describe('PassportDataService - Batch Operations', () => {
       // Verify batchLoad was called
       expect(SecureStorageService.batchLoad).toHaveBeenCalledWith(
         testUserId,
-        ['passport', 'personalInfo', 'fundingProof']
+        ['passport', 'personalInfo'] // fundingProof removed
       );
 
       // Verify result
       expect(result.passport).toEqual(mockPassport);
       expect(result.personalInfo).toEqual(mockPersonalInfo);
-      expect(result.fundingProof).toEqual(mockFundingProof);
+      // fundingProof assertion removed
       expect(result.userId).toBe(testUserId);
       expect(result.loadDurationMs).toBeGreaterThanOrEqual(0);
     });
@@ -114,8 +110,8 @@ describe('PassportDataService - Batch Operations', () => {
 
       SecureStorageService.batchLoad.mockResolvedValue({
         passport: mockPassport,
-        personalInfo: null,
-        fundingProof: null
+        personalInfo: null
+        // fundingProof removed
       });
 
       await PassportDataService.getAllUserData(testUserId);

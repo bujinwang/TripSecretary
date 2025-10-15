@@ -115,18 +115,7 @@ class SecureStorageService {
           )
         `);
 
-        // Legacy funding proof table (kept for backward compatibility)
-        tx.executeSql(`
-          CREATE TABLE IF NOT EXISTS funding_proof (
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            encrypted_cash_amount TEXT,
-            encrypted_bank_cards TEXT,
-            encrypted_supporting_docs TEXT,
-            created_at TEXT,
-            updated_at TEXT
-          )
-        `);
+        // Legacy funding_proof table removed - replaced by fund_items table
 
         // New individual fund items table
         tx.executeSql(`
@@ -233,10 +222,7 @@ class SecureStorageService {
           ON personal_info(user_id)
         `);
 
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_funding_proof_user_id 
-          ON funding_proof(user_id)
-        `);
+        // Legacy funding_proof index removed
 
         tx.executeSql(`
           CREATE INDEX IF NOT EXISTS idx_travel_info_user_id 
@@ -283,7 +269,7 @@ class SecureStorageService {
 
   /**
    * Add gender and user_id fields to passports table if they don't exist
-   * Also add user_id to personal_info and funding_proof tables
+   * Also add user_id to personal_info table
    */
   async addPassportFields() {
     return new Promise((resolve, reject) => {
@@ -353,31 +339,7 @@ class SecureStorageService {
           }
         );
 
-        // Check and update funding_proof table
-        tx.executeSql(
-          `PRAGMA table_info(funding_proof)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
-            
-            // Add user_id column if it doesn't exist
-            if (!columns.includes('user_id')) {
-              tx.executeSql(
-                `ALTER TABLE funding_proof ADD COLUMN user_id TEXT`,
-                [],
-                () => console.log('Added user_id column to funding_proof table'),
-                (_, error) => {
-                  console.error('Failed to add user_id column to funding_proof:', error);
-                  return false; // Continue transaction
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check funding_proof table schema:', error);
-            return false; // Continue transaction
-          }
-        );
+        // Legacy funding_proof table migration removed
       }, reject, resolve);
     });
   }
@@ -752,133 +714,9 @@ class SecureStorageService {
   }
 
   /**
-   * Save funding proof information securely
-   * @param {Object} fundingData - Funding proof data
+   * LEGACY: saveFundingProof and getFundingProof methods removed
+   * Use saveFundItem/getFundItemsByUserId instead with the fund_items table
    */
-  async saveFundingProof(fundingData) {
-    try {
-      console.log('=== SECURE STORAGE: SAVE FUNDING PROOF ===');
-      console.log('Input fundingData:', JSON.stringify(fundingData, null, 2));
-      console.log('supportingDocs length:', fundingData.supportingDocs?.length);
-      
-      // TODO: Re-enable encryption before production release
-      const encryptedData = this.ENCRYPTION_ENABLED
-        ? await this.encryption.encryptFields({
-            cash_amount: fundingData.cashAmount,
-            bank_cards: fundingData.bankCards,
-            supporting_docs: fundingData.supportingDocs
-          })
-        : {
-            cash_amount: fundingData.cashAmount,
-            bank_cards: fundingData.bankCards,
-            supporting_docs: fundingData.supportingDocs
-          };
-
-      console.log('Encrypted/prepared data:', JSON.stringify(encryptedData, null, 2));
-
-      const now = new Date().toISOString();
-      // Use a consistent ID based on userId to ensure we update the same record
-      const id = fundingData.id || `funding_${fundingData.userId}`;
-      
-      console.log('Saving with ID:', id, 'userId:', fundingData.userId, 'timestamp:', now);
-
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO funding_proof (
-              id,
-              user_id,
-              encrypted_cash_amount,
-              encrypted_bank_cards,
-              encrypted_supporting_docs,
-              created_at,
-              updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              fundingData.userId,
-              encryptedData.cash_amount,
-              encryptedData.bank_cards,
-              encryptedData.supporting_docs,
-              fundingData.createdAt || now,
-              now
-            ],
-            (_, result) => {
-              console.log('✅ Funding proof SQL INSERT successful, rows affected:', result.rowsAffected);
-              this.logAudit('INSERT', 'funding_proof', id).catch(console.error);
-              resolve(result);
-            },
-            (_, error) => {
-              console.error('Failed to save funding proof:', error);
-              reject(error);
-            }
-          );
-        });
-      });
-    } catch (error) {
-      console.error('Failed to save funding proof:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get funding proof information and decrypt sensitive fields (LEGACY)
-   * @param {string} userId - User ID
-   * @returns {Object} - Decrypted funding proof data
-   */
-  async getFundingProof(userId) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM funding_proof WHERE user_id = ? LIMIT 1',
-            [userId],
-            async (_, { rows }) => {
-              if (rows.length === 0) {
-                resolve(null);
-                return;
-              }
-
-              const result = rows._array[0];
-
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    cash_amount: result.encrypted_cash_amount,
-                    bank_cards: result.encrypted_bank_cards,
-                    supporting_docs: result.encrypted_supporting_docs
-                  })
-                : {
-                    cash_amount: result.encrypted_cash_amount,
-                    bank_cards: result.encrypted_bank_cards,
-                    supporting_docs: result.encrypted_supporting_docs
-                  };
-
-              const fundingProof = {
-                id: result.id,
-                userId: result.user_id,
-                cashAmount: decryptedFields.cash_amount,
-                bankCards: decryptedFields.bank_cards,
-                supportingDocs: decryptedFields.supporting_docs,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
-
-              resolve(fundingProof);
-            },
-            (_, error) => {
-              console.error('Failed to get funding proof:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get funding proof:', error);
-        reject(error);
-      }
-    });
-  }
 
   /**
    * Save individual fund item
@@ -1641,20 +1479,9 @@ class SecureStorageService {
                     supporting_docs: op.data.supportingDocs
                   };
               
-              return {
-                type: 'fundingProof',
-                id,
-                sql: `INSERT OR REPLACE INTO funding_proof (
-                  id, user_id, encrypted_cash_amount, encrypted_bank_cards,
-                  encrypted_supporting_docs, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                params: [
-                  id, op.data.userId,
-                  encryptedData.cash_amount, encryptedData.bank_cards,
-                  encryptedData.supporting_docs,
-                  op.data.createdAt || now, now
-                ]
-              };
+              // Legacy fundingProof type removed - use fund_items instead
+              console.warn('fundingProof type is deprecated, use fund_items instead');
+              return null;
             }
             
             default:
@@ -1826,25 +1653,9 @@ class SecureStorageService {
           supporting_docs: fundingData.supportingDocs
         };
 
-    const now = new Date().toISOString();
-    const id = fundingData.id || this.generateId();
-
-    return new Promise((resolve, reject) => {
-      tx.executeSql(
-        `INSERT OR REPLACE INTO funding_proof (
-          id, user_id, encrypted_cash_amount, encrypted_bank_cards,
-          encrypted_supporting_docs, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id, fundingData.userId,
-          encryptedData.cash_amount, encryptedData.bank_cards,
-          encryptedData.supporting_docs,
-          fundingData.createdAt || now, now
-        ],
-        (_, result) => resolve({ type: 'fundingProof', id, result }),
-        (_, error) => reject(error)
-      );
-    });
+    // Legacy funding_proof save operation removed
+    console.warn('saveFundingProofInTransaction is deprecated, use saveFundItem instead');
+    return Promise.resolve({ type: 'fundingProof', id: null, result: null });
   }
 
   /**
@@ -1902,21 +1713,10 @@ class SecureStorageService {
               );
             }
             
-            // Load funding proof if requested
+            // Legacy funding_proof load removed - use fund_items instead
             if (dataTypes.includes('fundingProof')) {
-              queries.push(
-                new Promise((resolveQuery, rejectQuery) => {
-                  tx.executeSql(
-                    'SELECT * FROM funding_proof WHERE user_id = ? LIMIT 1',
-                    [userId],
-                    (_, { rows }) => {
-                      rawData.fundingProof = rows.length > 0 ? rows._array[0] : null;
-                      resolveQuery();
-                    },
-                    (_, error) => rejectQuery(error)
-                  );
-                })
-              );
+              console.warn('fundingProof type is deprecated, use fund_items instead');
+              rawData.fundingProof = null;
             }
             
             // Wait for all queries to complete
@@ -2096,7 +1896,7 @@ class SecureStorageService {
         this.db.transaction(tx => {
           tx.executeSql('DELETE FROM passports WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM personal_info WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM funding_proof WHERE user_id = ?', [userId]);
+          // Legacy funding_proof table removed
           tx.executeSql('DELETE FROM travel_history WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM migrations WHERE user_id = ?', [userId]);
         }, 
@@ -2274,12 +2074,7 @@ class SecureStorageService {
           params: ['test_user_123'],
           expectedIndex: 'idx_personal_info_user_id'
         },
-        {
-          name: 'funding_proof_by_user_id',
-          query: 'SELECT * FROM funding_proof WHERE user_id = ?',
-          params: ['test_user_123'],
-          expectedIndex: 'idx_funding_proof_user_id'
-        }
+        // Legacy funding_proof index test removed
       ];
 
       for (const testQuery of testQueries) {
@@ -2351,7 +2146,7 @@ class SecureStorageService {
       stats.customIndexes = indexes.filter(idx => idx.name.startsWith('idx_'));
 
       // Get table row counts
-      const tables = ['passports', 'personal_info', 'funding_proof', 'travel_history'];
+      const tables = ['passports', 'personal_info', 'travel_history'];
       
       for (const table of tables) {
         try {
@@ -2388,7 +2183,7 @@ class SecureStorageService {
           // Drop all tables
           tx.executeSql('DROP TABLE IF EXISTS passports');
           tx.executeSql('DROP TABLE IF EXISTS personal_info');
-          tx.executeSql('DROP TABLE IF EXISTS funding_proof');
+          // Legacy funding_proof table removed
           tx.executeSql('DROP TABLE IF EXISTS travel_history');
           tx.executeSql('DROP TABLE IF EXISTS audit_log');
           tx.executeSql('DROP TABLE IF EXISTS settings');
