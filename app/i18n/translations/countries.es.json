@@ -500,5 +500,73 @@
       },
       "continueButton": "Continuar a información de viaje"
     }
+  },
+  "fundItem": {
+    "detail": {
+      "title": "Detalles del Artículo de Fondos",
+      "editTitle": "Editar Artículo de Fondos",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar Cambios",
+      "cancel": "Cancelar",
+      "manageAll": "Gestionar Todos los Fondos",
+      "addPhoto": "Agregar Foto",
+      "replacePhoto": "Reemplazar Foto",
+      "viewPhoto": "Toca para ver en tamaño completo",
+      "noPhoto": "Sin foto adjunta",
+      "photo": "Foto",
+      "photoOptions": "Elige una opción",
+      "takePhoto": "Tomar Foto",
+      "chooseFromLibrary": "Elegir de la Biblioteca",
+      "photoHint": "Pellizca para hacer zoom, arrastra para desplazar"
+    },
+    "fields": {
+      "amount": "Cantidad",
+      "currency": "Moneda",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Agregar una descripción (opcional)",
+      "type": "Tipo",
+      "selectCurrency": "Seleccionar Moneda"
+    },
+    "types": {
+      "CASH": "Efectivo",
+      "BANK_CARD": "Tarjeta Bancaria",
+      "CREDIT_CARD": "Tarjeta Bancaria",
+      "DOCUMENT": "Documento de Respaldo",
+      "OTHER": "Otro",
+      "BANK_BALANCE": "Saldo Bancario",
+      "INVESTMENT": "Inversión"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar Artículo de Fondos",
+      "message": "¿Estás seguro de que quieres eliminar este artículo de fondos?",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "validation": {
+      "amountRequired": "La cantidad es obligatoria",
+      "amountInvalid": "La cantidad debe ser un número válido",
+      "amountPositive": "La cantidad debe ser mayor que 0",
+      "currencyRequired": "La moneda es obligatoria",
+      "currencyFormat": "La moneda debe ser un código de 3 letras"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar los detalles del artículo de fondos",
+      "updateFailed": "Error al guardar los cambios. Por favor, inténtalo de nuevo.",
+      "deleteFailed": "Error al eliminar el artículo de fondos. Por favor, inténtalo de nuevo.",
+      "photoFailed": "Error al actualizar la foto. Por favor, inténtalo de nuevo.",
+      "permissionTitle": "Permiso Requerido",
+      "permissionMessage": "Por favor, concede permiso para acceder a tu biblioteca de fotos.",
+      "cameraPermissionMessage": "Por favor, concede permiso para acceder a tu cámara."
+    },
+    "success": {
+      "photoUpdated": "Éxito",
+      "photoUpdatedMessage": "La foto se ha actualizado correctamente."
+    }
+  },
+  "common": {
+    "back": "Atrás",
+    "close": "Cerrar",
+    "cancel": "Cancelar"
   }
 }

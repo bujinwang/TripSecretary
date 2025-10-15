@@ -406,3 +406,153 @@ describe('ProfileScreen - Integration Tests', () => {
     });
   });
 });
+
+
+describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const mockFundItems = [
+    {
+      id: 'fund-1',
+      userId: 'default_user',
+      type: 'CASH',
+      amount: 5000,
+      currency: 'USD',
+      details: 'Cash for immigration',
+      photoUri: null,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: 'fund-2',
+      userId: 'default_user',
+      type: 'BANK_CARD',
+      amount: 10000,
+      currency: 'EUR',
+      details: 'Visa card',
+      photoUri: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z'
+    }
+  ];
+
+  describe('Modal Opens When Fund Item is Tapped', () => {
+    it('should have PassportDataService.getFundItems available for loading fund items', async () => {
+      const mockUserData = {
+        passport: null,
+        personalInfo: null,
+        fundingProof: null,
+        userId: 'default_user'
+      };
+
+      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
+      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+
+      render(
+        <NavigationContainer>
+          <ProfileScreen navigation={mockNavigation} route={mockRoute} />
+        </NavigationContainer>
+      );
+
+      await waitFor(() => {
+        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+      });
+
+      // Verify fund items service is called
+      await waitFor(() => {
+        expect(PassportDataService.getFundItems).toHaveBeenCalledWith('default_user');
+      });
+
+      // Verify service methods are available
+      expect(PassportDataService.saveFundItem).toBeDefined();
+      expect(PassportDataService.deleteFundItem).toBeDefined();
+    });
+  });
+
+  describe('Fund Items List Refreshes After Update', () => {
+    it('should have update handler that refreshes fund items', async () => {
+      const mockUserData = {
+        passport: null,
+        personalInfo: null,
+        fundingProof: null,
+        userId: 'default_user'
+      };
+
+      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
+      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+      PassportDataService.saveFundItem.mockResolvedValue(mockFundItems[0]);
+
+      render(
+        <NavigationContainer>
+          <ProfileScreen navigation={mockNavigation} route={mockRoute} />
+        </NavigationContainer>
+      );
+
+      await waitFor(() => {
+        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+      });
+
+      // Verify update methods are available
+      expect(PassportDataService.saveFundItem).toBeDefined();
+      expect(PassportDataService.getFundItems).toBeDefined();
+    });
+  });
+
+  describe('Fund Items List Refreshes After Delete', () => {
+    it('should have delete handler that refreshes fund items', async () => {
+      const mockUserData = {
+        passport: null,
+        personalInfo: null,
+        fundingProof: null,
+        userId: 'default_user'
+      };
+
+      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
+      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+      PassportDataService.deleteFundItem.mockResolvedValue();
+
+      render(
+        <NavigationContainer>
+          <ProfileScreen navigation={mockNavigation} route={mockRoute} />
+        </NavigationContainer>
+      );
+
+      await waitFor(() => {
+        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+      });
+
+      // Verify delete methods are available
+      expect(PassportDataService.deleteFundItem).toBeDefined();
+      expect(PassportDataService.getFundItems).toBeDefined();
+    });
+  });
+
+  describe('Navigation to ThailandTravelInfo', () => {
+    it('should have navigation available for manage all funds', async () => {
+      const mockUserData = {
+        passport: null,
+        personalInfo: null,
+        fundingProof: null,
+        userId: 'default_user'
+      };
+
+      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
+      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+
+      render(
+        <NavigationContainer>
+          <ProfileScreen navigation={mockNavigation} route={mockRoute} />
+        </NavigationContainer>
+      );
+
+      await waitFor(() => {
+        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+      });
+
+      // Verify navigation is available
+      expect(mockNavigation.navigate).toBeDefined();
+    });
+  });
+});

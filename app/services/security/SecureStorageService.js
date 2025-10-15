@@ -60,6 +60,9 @@ class SecureStorageService {
       // Create tables if they don't exist
       await this.createTables();
 
+      // Clean up legacy funding_proof table if it exists (one-time operation)
+      await this.cleanupLegacyFundingProofTable();
+
       // Run database migrations if needed
       await this.runMigrations();
 
@@ -1896,7 +1899,7 @@ class SecureStorageService {
         this.db.transaction(tx => {
           tx.executeSql('DELETE FROM passports WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM personal_info WHERE user_id = ?', [userId]);
-          // Legacy funding_proof table removed
+          tx.executeSql('DELETE FROM funding_proof WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM travel_history WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM migrations WHERE user_id = ?', [userId]);
         }, 
@@ -2183,7 +2186,7 @@ class SecureStorageService {
           // Drop all tables
           tx.executeSql('DROP TABLE IF EXISTS passports');
           tx.executeSql('DROP TABLE IF EXISTS personal_info');
-          // Legacy funding_proof table removed
+          tx.executeSql('DROP TABLE IF EXISTS funding_proof');
           tx.executeSql('DROP TABLE IF EXISTS travel_history');
           tx.executeSql('DROP TABLE IF EXISTS audit_log');
           tx.executeSql('DROP TABLE IF EXISTS settings');
@@ -2211,8 +2214,35 @@ class SecureStorageService {
   }
 
   /**
-   * Close database connection and clear encryption keys
-   */
+    * Clean up legacy funding_proof table from existing databases
+    * This is a one-time cleanup method for existing installations
+    */
+  async cleanupLegacyFundingProofTable() {
+    return new Promise((resolve, reject) => {
+      console.log('Cleaning up legacy funding_proof table...');
+
+      this.db.transaction(
+        tx => {
+          // Drop the legacy table if it exists
+          tx.executeSql('DROP TABLE IF EXISTS funding_proof', [], () => {
+            console.log('✅ Legacy funding_proof table removed successfully');
+          });
+        },
+        error => {
+          console.error('❌ Failed to cleanup funding_proof table:', error);
+          reject(error);
+        },
+        () => {
+          console.log('✅ Legacy funding_proof cleanup completed');
+          resolve();
+        }
+      );
+    });
+  }
+
+  /**
+    * Close database connection and clear encryption keys
+    */
   async close() {
     try {
       if (this.db) {

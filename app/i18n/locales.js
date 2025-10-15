@@ -1,6 +1,30 @@
 import countryTranslations from './translations/index.js';
 import { convertToTraditional } from './chineseConverter.js';
 
+const isPlainObject = (value) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const deepMergeTranslations = (base = {}, overrides = {}) => {
+  if (!isPlainObject(base)) {
+    return overrides !== undefined ? overrides : base;
+  }
+
+  const result = { ...base };
+
+  Object.keys(overrides || {}).forEach((key) => {
+    const baseValue = result[key];
+    const overrideValue = overrides[key];
+
+    if (isPlainObject(baseValue) && isPlainObject(overrideValue)) {
+      result[key] = deepMergeTranslations(baseValue, overrideValue);
+    } else {
+      result[key] = overrideValue;
+    }
+  });
+
+  return result;
+};
+
 export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es'];
 
 // Base translations object (will be extended with Traditional Chinese variants)
@@ -1272,6 +1296,10 @@ const baseTranslations = {
           viewPhoto: 'Tap to view full size',
           noPhoto: 'No photo attached',
           photo: 'Photo',
+          photoOptions: 'Choose an option',
+          takePhoto: 'Take Photo',
+          chooseFromLibrary: 'Choose from Library',
+          photoHint: 'Pinch to zoom, drag to pan',
         },
         fields: {
           amount: 'Amount',
@@ -1304,6 +1332,31 @@ const baseTranslations = {
           updateFailed: 'Failed to save changes. Please try again.',
           deleteFailed: 'Failed to delete fund item. Please try again.',
           photoFailed: 'Failed to update photo. Please try again.',
+          permissionTitle: 'Permission Required',
+          permissionMessage: 'Please grant permission to access your photo library.',
+          cameraPermissionMessage: 'Please grant permission to access your camera.',
+        },
+        success: {
+          photoUpdated: 'Success',
+          photoUpdatedMessage: 'Photo has been updated successfully.',
+        },
+        accessibility: {
+          amountHint: 'Enter the amount of money for this fund item',
+          currencyHint: 'Opens currency picker to select a currency',
+          descriptionHint: 'Enter an optional description for this fund item',
+          photoPreview: 'Fund item photo preview',
+          photoPreviewHint: 'Double tap to view full size photo',
+          addPhotoHint: 'Opens options to take a photo or choose from library',
+          replacePhotoHint: 'Opens options to take a new photo or choose from library',
+          saveHint: 'Saves your changes and returns to view mode',
+          cancelHint: 'Discards your changes and returns to view mode',
+          editHint: 'Opens edit mode to modify fund item details',
+          deleteHint: 'Deletes this fund item after confirmation',
+          manageAllHint: 'Navigates to the full fund management screen',
+          closeModalHint: 'Closes the fund item detail modal',
+          backHint: 'Returns to the previous screen',
+          closeCurrencyPickerHint: 'Closes the currency picker',
+          selectCurrencyHint: 'Selects this currency',
         },
       },
       passport: {
@@ -2807,6 +2860,10 @@ const baseTranslations = {
           viewPhoto: '点击查看大图',
           noPhoto: '未添加照片',
           photo: '照片',
+          photoOptions: '选择一个选项',
+          takePhoto: '拍照',
+          chooseFromLibrary: '从相册选择',
+          photoHint: '双指缩放，拖动平移',
         },
         fields: {
           amount: '金额',
@@ -2839,6 +2896,31 @@ const baseTranslations = {
           updateFailed: '保存更改失败，请重试',
           deleteFailed: '删除资金项目失败，请重试',
           photoFailed: '更新照片失败，请重试',
+          permissionTitle: '需要权限',
+          permissionMessage: '请授予访问相册的权限',
+          cameraPermissionMessage: '请授予访问相机的权限',
+        },
+        success: {
+          photoUpdated: '成功',
+          photoUpdatedMessage: '照片已成功更新',
+        },
+        accessibility: {
+          amountHint: '输入此资金项目的金额',
+          currencyHint: '打开货币选择器以选择货币',
+          descriptionHint: '输入此资金项目的可选描述',
+          photoPreview: '资金项目照片预览',
+          photoPreviewHint: '双击查看全尺寸照片',
+          addPhotoHint: '打开选项以拍照或从相册选择',
+          replacePhotoHint: '打开选项以拍摄新照片或从相册选择',
+          saveHint: '保存更改并返回查看模式',
+          cancelHint: '放弃更改并返回查看模式',
+          editHint: '打开编辑模式以修改资金项目详情',
+          deleteHint: '确认后删除此资金项目',
+          manageAllHint: '导航到完整的资金管理屏幕',
+          closeModalHint: '关闭资金项目详情弹窗',
+          backHint: '返回上一屏幕',
+          closeCurrencyPickerHint: '关闭货币选择器',
+          selectCurrencyHint: '选择此货币',
         },
       },
       passport: {
@@ -3605,6 +3687,10 @@ const baseTranslations = {
           viewPhoto: 'Toca para ver en tamaño completo',
           noPhoto: 'Sin foto adjunta',
           photo: 'Foto',
+          photoOptions: 'Elige una opción',
+          takePhoto: 'Tomar foto',
+          chooseFromLibrary: 'Elegir de la galería',
+          photoHint: 'Pellizca para hacer zoom, arrastra para mover',
         },
         fields: {
           amount: 'Cantidad',
@@ -3637,6 +3723,31 @@ const baseTranslations = {
           updateFailed: 'Error al guardar los cambios. Por favor, inténtalo de nuevo.',
           deleteFailed: 'Error al eliminar el artículo de fondos. Por favor, inténtalo de nuevo.',
           photoFailed: 'Error al actualizar la foto. Por favor, inténtalo de nuevo.',
+          permissionTitle: 'Permiso requerido',
+          permissionMessage: 'Por favor, concede permiso para acceder a tu galería de fotos.',
+          cameraPermissionMessage: 'Por favor, concede permiso para acceder a tu cámara.',
+        },
+        success: {
+          photoUpdated: 'Éxito',
+          photoUpdatedMessage: 'La foto se ha actualizado correctamente.',
+        },
+        accessibility: {
+          amountHint: 'Ingrese la cantidad de dinero para este artículo de fondos',
+          currencyHint: 'Abre el selector de moneda para seleccionar una moneda',
+          descriptionHint: 'Ingrese una descripción opcional para este artículo de fondos',
+          photoPreview: 'Vista previa de la foto del artículo de fondos',
+          photoPreviewHint: 'Toque dos veces para ver la foto en tamaño completo',
+          addPhotoHint: 'Abre opciones para tomar una foto o elegir de la galería',
+          replacePhotoHint: 'Abre opciones para tomar una nueva foto o elegir de la galería',
+          saveHint: 'Guarda los cambios y vuelve al modo de visualización',
+          cancelHint: 'Descarta los cambios y vuelve al modo de visualización',
+          editHint: 'Abre el modo de edición para modificar los detalles del artículo de fondos',
+          deleteHint: 'Elimina este artículo de fondos después de la confirmación',
+          manageAllHint: 'Navega a la pantalla completa de gestión de fondos',
+          closeModalHint: 'Cierra el modal de detalles del artículo de fondos',
+          backHint: 'Vuelve a la pantalla anterior',
+          closeCurrencyPickerHint: 'Cierra el selector de moneda',
+          selectCurrencyHint: 'Selecciona esta moneda',
         },
       },
       passport: { 
@@ -3697,10 +3808,9 @@ export const translations = {
   'zh-CN': baseTranslations.zh,
   get 'zh-TW'() {
     if (!zhTWTranslations) {
-      zhTWTranslations = {
-        ...convertToTraditional(baseTranslations.zh, 'zh-TW'),
-        ...countryTranslations['zh-TW'],
-      };
+      const traditionalBase = convertToTraditional(baseTranslations.zh, 'zh-TW');
+      const traditionalCountries = countryTranslations['zh-TW'];
+      zhTWTranslations = deepMergeTranslations(traditionalBase, traditionalCountries);
     }
     return zhTWTranslations;
   },
@@ -3708,12 +3818,11 @@ export const translations = {
 
 // Merge country-specific translations from JSON files
 Object.keys(countryTranslations).forEach((lang) => {
-  if (translations[lang] && lang !== 'zh-TW') {
-    translations[lang] = {
-      ...translations[lang],
-      ...countryTranslations[lang],
-    };
+  if (lang === 'zh-TW') {
+    return;
   }
+  const base = translations[lang] || {};
+  translations[lang] = deepMergeTranslations(base, countryTranslations[lang]);
 });
 
 export const getLanguageLabel = (language) =>

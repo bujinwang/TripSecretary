@@ -17,6 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { NationalitySelector, PassportNameInput } from '../components';
+import FundItemDetailModal from '../components/FundItemDetailModal';
 import { destinationRequirements } from '../config/destinationRequirements';
 import PassportDataService from '../services/data/PassportDataService';
 import SecureStorageService from '../services/security/SecureStorageService';
@@ -51,6 +52,10 @@ const ProfileScreen = ({ navigation, route }) => {
 
   // Fund items state - loaded from database
   const [fundItems, setFundItems] = useState([]);
+
+  // Fund item detail modal state
+  const [selectedFundItem, setSelectedFundItem] = useState(null);
+  const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
 
   const [expandedSection, setExpandedSection] = useState('personal'); // 'personal', 'passport', 'funding', or null
   const [editingContext, setEditingContext] = useState(null);
@@ -772,6 +777,52 @@ const ProfileScreen = ({ navigation, route }) => {
     navigation.navigate('ThailandTravelInfo', { destination: 'th' });
   };
 
+  // Fund item detail modal handlers
+  const handleFundItemPress = (fundItem) => {
+    setSelectedFundItem(fundItem);
+    setFundItemModalVisible(true);
+  };
+
+  const handleFundItemUpdate = async (updatedItem) => {
+    try {
+      // Refresh fund items list
+      const userId = 'default_user';
+      const items = await PassportDataService.getFundItems(userId);
+      console.log('Refreshed fund items after update:', items);
+      setFundItems(items || []);
+      setFundItemModalVisible(false);
+      setSelectedFundItem(null);
+    } catch (error) {
+      console.error('Error refreshing fund items after update:', error);
+    }
+  };
+
+  const handleFundItemDelete = async (fundItemId) => {
+    try {
+      // Refresh fund items list
+      const userId = 'default_user';
+      const items = await PassportDataService.getFundItems(userId);
+      console.log('Refreshed fund items after delete:', items);
+      setFundItems(items || []);
+      setFundItemModalVisible(false);
+      setSelectedFundItem(null);
+    } catch (error) {
+      console.error('Error refreshing fund items after delete:', error);
+    }
+  };
+
+  const handleFundItemManageAll = () => {
+    // Close modal and navigate to full fund management
+    setFundItemModalVisible(false);
+    setSelectedFundItem(null);
+    navigation.navigate('ThailandTravelInfo', { destination: 'th' });
+  };
+
+  const handleFundItemModalClose = () => {
+    setFundItemModalVisible(false);
+    setSelectedFundItem(null);
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -964,7 +1015,7 @@ const ProfileScreen = ({ navigation, route }) => {
                         <TouchableOpacity
                           key={item.id}
                           style={[styles.infoRow, !isLast && styles.infoRowDivider]}
-                          onPress={handleManageFundItems}
+                          onPress={() => handleFundItemPress(item)}
                           accessibilityRole="button"
                         >
                           <View style={styles.fundItemContent}>
@@ -1393,6 +1444,16 @@ const ProfileScreen = ({ navigation, route }) => {
           </KeyboardAvoidingView>
         </View>
       </Modal>
+
+      {/* Fund Item Detail Modal */}
+      <FundItemDetailModal
+        visible={fundItemModalVisible}
+        fundItem={selectedFundItem}
+        onClose={handleFundItemModalClose}
+        onUpdate={handleFundItemUpdate}
+        onDelete={handleFundItemDelete}
+        onManageAll={handleFundItemManageAll}
+      />
     </SafeAreaView>
   );
 };

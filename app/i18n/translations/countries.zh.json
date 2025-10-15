@@ -835,5 +835,73 @@
       },
       "startButton": "开始填写"
     }
+  },
+  "fundItem": {
+    "detail": {
+      "title": "资金项目详情",
+      "editTitle": "编辑资金项目",
+      "edit": "编辑",
+      "delete": "删除",
+      "save": "保存更改",
+      "cancel": "取消",
+      "manageAll": "管理所有资金",
+      "addPhoto": "添加照片",
+      "replacePhoto": "更换照片",
+      "viewPhoto": "点击查看完整尺寸",
+      "noPhoto": "未附加照片",
+      "photo": "照片",
+      "photoOptions": "选择一个选项",
+      "takePhoto": "拍照",
+      "chooseFromLibrary": "从相册选择",
+      "photoHint": "捏合缩放，拖动平移"
+    },
+    "fields": {
+      "amount": "金额",
+      "currency": "货币",
+      "description": "描述",
+      "descriptionPlaceholder": "添加描述（可选）",
+      "type": "类型",
+      "selectCurrency": "选择货币"
+    },
+    "types": {
+      "CASH": "现金",
+      "BANK_CARD": "银行卡",
+      "CREDIT_CARD": "银行卡",
+      "DOCUMENT": "支持文件",
+      "OTHER": "其他",
+      "BANK_BALANCE": "银行余额",
+      "INVESTMENT": "投资"
+    },
+    "deleteConfirm": {
+      "title": "删除资金项目",
+      "message": "您确定要删除此资金项目吗？",
+      "confirm": "删除",
+      "cancel": "取消"
+    },
+    "validation": {
+      "amountRequired": "金额为必填项",
+      "amountInvalid": "金额必须是有效数字",
+      "amountPositive": "金额必须大于0",
+      "currencyRequired": "货币为必填项",
+      "currencyFormat": "货币必须是3个字母的代码"
+    },
+    "errors": {
+      "loadFailed": "加载资金项目详情失败",
+      "updateFailed": "保存更改失败。请重试。",
+      "deleteFailed": "删除资金项目失败。请重试。",
+      "photoFailed": "更新照片失败。请重试。",
+      "permissionTitle": "需要权限",
+      "permissionMessage": "请授予访问您的照片库的权限。",
+      "cameraPermissionMessage": "请授予访问您的相机的权限。"
+    },
+    "success": {
+      "photoUpdated": "成功",
+      "photoUpdatedMessage": "照片已成功更新。"
+    }
+  },
+  "common": {
+    "back": "返回",
+    "close": "关闭",
+    "cancel": "取消"
   }
 }

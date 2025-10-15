@@ -528,5 +528,73 @@
       },
       "startButton": "Start preparing entry pack"
     }
+  },
+  "fundItem": {
+    "detail": {
+      "title": "Fund Item Details",
+      "editTitle": "Edit Fund Item",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "manageAll": "Manage All Funds",
+      "addPhoto": "Add Photo",
+      "replacePhoto": "Replace Photo",
+      "viewPhoto": "Tap to view full size",
+      "noPhoto": "No photo attached",
+      "photo": "Photo",
+      "photoOptions": "Choose an option",
+      "takePhoto": "Take Photo",
+      "chooseFromLibrary": "Choose from Library",
+      "photoHint": "Pinch to zoom, drag to pan"
+    },
+    "fields": {
+      "amount": "Amount",
+      "currency": "Currency",
+      "description": "Description",
+      "descriptionPlaceholder": "Add a description (optional)",
+      "type": "Type",
+      "selectCurrency": "Select Currency"
+    },
+    "types": {
+      "CASH": "Cash",
+      "BANK_CARD": "Bank Card",
+      "CREDIT_CARD": "Bank Card",
+      "DOCUMENT": "Supporting Document",
+      "OTHER": "Other",
+      "BANK_BALANCE": "Bank Balance",
+      "INVESTMENT": "Investment"
+    },
+    "deleteConfirm": {
+      "title": "Delete Fund Item",
+      "message": "Are you sure you want to delete this fund item?",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "validation": {
+      "amountRequired": "Amount is required",
+      "amountInvalid": "Amount must be a valid number",
+      "amountPositive": "Amount must be greater than 0",
+      "currencyRequired": "Currency is required",
+      "currencyFormat": "Currency must be a 3-letter code"
+    },
+    "errors": {
+      "loadFailed": "Failed to load fund item details",
+      "updateFailed": "Failed to save changes. Please try again.",
+      "deleteFailed": "Failed to delete fund item. Please try again.",
+      "photoFailed": "Failed to update photo. Please try again.",
+      "permissionTitle": "Permission Required",
+      "permissionMessage": "Please grant permission to access your photo library.",
+      "cameraPermissionMessage": "Please grant permission to access your camera."
+    },
+    "success": {
+      "photoUpdated": "Success",
+      "photoUpdatedMessage": "Photo has been updated successfully."
+    }
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel"
   }
 }

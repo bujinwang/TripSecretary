@@ -14,7 +14,9 @@ import {
   ActivityIndicator,
   PanResponder,
   Dimensions,
+  BackHandler,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import Button from './Button';
@@ -41,268 +43,8 @@ const FundItemDetailModal = ({
   const lastScale = useRef(1);
   const lastTranslateX = useRef(0);
   const lastTranslateY = useRef(0);
-  
-  // Edit mode state
-  const [editedAmount, setEditedAmount] = useState('');
-  const [editedCurrency, setEditedCurrency] = useState('');
-  const [editedDescription, setEditedDescription] = useState('');
-  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
-  
-  // Validation errors
-  const [validationErrors, setValidationErrors] = useState({
-    amount: '',
-    currency: '',
-  });
 
-  // Common currencies
-  const currencies = [
-    { code: 'USD', symbol: '$', name: 'US Dollar' },
-    { code: 'EUR', symbol: '€', name: 'Euro' },
-    { code: 'GBP', symbol: '£', name: 'British Pound' },
-    { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
-    { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-    { code: 'THB', symbol: '฿', name: 'Thai Baht' },
-    { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
-    { code: 'HKD', symbol: 'HK$', name: 'Hong Kong Dollar' },
-    { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
-    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  ];
-
-  // Reset state when modal opens/closes or fundItem changes
-  useEffect(() => {
-    if (visible && fundItem) {
-      setMode('view');
-      setError(null);
-      setValidationErrors({ amount: '', currency: '' });
-      setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
-      setEditedCurrency(fundItem.currency || 'USD');
-      // Handle both 'description' and 'details' fields
-      setEditedDescription(fundItem.description || fundItem.details || '');
-      // Reset photo view transforms
-      photoScale.setValue(1);
-      photoTranslateX.setValue(0);
-      photoTranslateY.setValue(0);
-    }
-  }, [visible, fundItem]);
-
-  // Animate modal entrance/exit
-  useEffect(() => {
-    if (visible) {
-      Animated.spring(slideAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
-
-  if (!fundItem) {
-    return null;
-  }
-
-  // Validation functions
-  const validateAmount = (value) => {
-    if (!value || value.trim() === '') {
-      return t('fundItem.validation.amountRequired', { 
-        defaultValue: 'Amount is required' 
-      });
-    }
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) {
-      return t('fundItem.validation.amountInvalid', { 
-        defaultValue: 'Amount must be a valid number' 
-      });
-    }
-    if (numValue <= 0) {
-      return t('fundItem.validation.amountPositive', { 
-        defaultValue: 'Amount must be greater than 0' 
-      });
-    }
-    return '';
-  };
-
-  const validateCurrency = (value) => {
-    if (!value || value.trim() === '') {
-      return t('fundItem.validation.currencyRequired', { 
-        defaultValue: 'Currency is required' 
-      });
-    }
-    if (value.length !== 3) {
-      return t('fundItem.validation.currencyFormat', { 
-        defaultValue: 'Currency must be a 3-letter code' 
-      });
-    }
-    return '';
-  };
-
-  // Handle edit mode
-  const handleEdit = () => {
-    setMode('edit');
-    setError(null);
-    setValidationErrors({ amount: '', currency: '' });
-  };
-
-  // Handle cancel edit
-  const handleCancelEdit = () => {
-    setMode('view');
-    setError(null);
-    setValidationErrors({ amount: '', currency: '' });
-    // Reset to original values
-    setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
-    setEditedCurrency(fundItem.currency || 'USD');
-    // Handle both 'description' and 'details' fields
-    setEditedDescription(fundItem.description || fundItem.details || '');
-  };
-
-  // Handle save
-  const handleSave = async () => {
-    // Get the item type - handle both 'type' and 'itemType' fields
-    const itemType = fundItem.itemType || fundItem.type;
-    
-    // Validate for CASH and BANK_CARD types
-    if (itemType === 'CASH' || itemType === 'BANK_CARD' || itemType === 'cash' || itemType === 'credit_card') {
-      const amountError = validateAmount(editedAmount);
-      const currencyError = validateCurrency(editedCurrency);
-      
-      if (amountError || currencyError) {
-        setValidationErrors({
-          amount: amountError,
-          currency: currencyError,
-        });
-        return;
-      }
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Import PassportDataService
-      const PassportDataService = require('../services/data/PassportDataService').default;
-      
-      // Prepare updated data - use 'type' field for the model, 'details' instead of 'description'
-      const shouldUpdateAmount = itemType === 'CASH' || itemType === 'BANK_CARD' || 
-                                  itemType === 'cash' || itemType === 'credit_card';
-      
-      const fundData = {
-        id: fundItem.id,
-        type: fundItem.type || fundItem.itemType, // Use the original type field
-        amount: shouldUpdateAmount ? parseFloat(editedAmount) : fundItem.amount,
-        currency: shouldUpdateAmount ? editedCurrency.toUpperCase() : fundItem.currency,
-        details: editedDescription, // Map description to details
-        photoUri: fundItem.photoUri || fundItem.photo,
-      };
-
-      // Get userId from fundItem or use default
-      const userId = fundItem.userId || 'default_user';
-      
-      // Save the updated fund item using PassportDataService
-      const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
-      
-      console.log('Fund item updated successfully:', updatedFundItem.id);
-      
-      // Call onUpdate callback if provided
-      if (onUpdate) {
-        await onUpdate(updatedFundItem);
-      }
-      
-      setMode('view');
-    } catch (err) {
-      console.error('Failed to save fund item:', err);
-      setError(t('fundItem.errors.updateFailed', { 
-        defaultValue: 'Failed to save changes. Please try again.' 
-      }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle delete
-  const handleDelete = () => {
-    // Show confirmation dialog
-    Alert.alert(
-      t('fundItem.deleteConfirm.title', { defaultValue: 'Delete Fund Item' }),
-      t('fundItem.deleteConfirm.message', { 
-        defaultValue: 'Are you sure you want to delete this fund item?' 
-      }),
-      [
-        {
-          text: t('fundItem.deleteConfirm.cancel', { defaultValue: 'Cancel' }),
-          style: 'cancel',
-        },
-        {
-          text: t('fundItem.deleteConfirm.confirm', { defaultValue: 'Delete' }),
-          style: 'destructive',
-          onPress: async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-              // Import PassportDataService
-              const PassportDataService = require('../services/data/PassportDataService').default;
-              
-              // Get userId from fundItem or use default
-              const userId = fundItem.userId || 'default_user';
-              
-              // Delete the fund item using PassportDataService
-              await PassportDataService.deleteFundItem(fundItem.id, userId);
-              
-              console.log('Fund item deleted successfully:', fundItem.id);
-              
-              // Call onDelete callback if provided
-              if (onDelete) {
-                await onDelete(fundItem.id);
-              }
-              
-              // Close the modal
-              onClose();
-            } catch (err) {
-              console.error('Failed to delete fund item:', err);
-              setError(t('fundItem.errors.deleteFailed', { 
-                defaultValue: 'Failed to delete fund item. Please try again.' 
-              }));
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  // Handle currency selection
-  const handleCurrencySelect = (currencyCode) => {
-    setEditedCurrency(currencyCode);
-    setShowCurrencyPicker(false);
-    setValidationErrors({ ...validationErrors, currency: '' });
-  };
-
-  // Handle photo press to open full-screen view
-  const handlePhotoPress = () => {
-    if (fundItem.photoUri) {
-      setMode('photo');
-      // Reset transforms
-      photoScale.setValue(1);
-      photoTranslateX.setValue(0);
-      photoTranslateY.setValue(0);
-    }
-  };
-
-  // Handle close photo view
-  const handleClosePhotoView = () => {
-    setMode('view');
-  };
-
-  // PanResponder for photo zoom and pan
+  // PanResponder for photo zoom and pan (must be registered before any early returns)
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -363,6 +105,688 @@ const FundItemDetailModal = ({
       },
     })
   ).current;
+  
+  // Edit mode state
+  const [editedAmount, setEditedAmount] = useState('');
+  const [editedCurrency, setEditedCurrency] = useState('');
+  const [editedDescription, setEditedDescription] = useState('');
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  
+  // Validation errors
+  const [validationErrors, setValidationErrors] = useState({
+    amount: '',
+    currency: '',
+  });
+
+  // Common currencies
+  const currencies = [
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+    { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+    { code: 'THB', symbol: '฿', name: 'Thai Baht' },
+    { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+    { code: 'HKD', symbol: 'HK$', name: 'Hong Kong Dollar' },
+    { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  ];
+
+  // Reset state when modal opens/closes or fundItem changes
+  useEffect(() => {
+    if (visible && fundItem) {
+      try {
+        console.log('[FundItemDetailModal] Modal opened with fund item:', {
+          fundItemId: fundItem.id,
+          type: fundItem.type || fundItem.itemType,
+          hasPhoto: !!(fundItem.photoUri || fundItem.photo),
+        });
+        
+        setMode('view');
+        setError(null);
+        setValidationErrors({ amount: '', currency: '' });
+        setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
+        setEditedCurrency(fundItem.currency || 'USD');
+        // Handle both 'description' and 'details' fields
+        setEditedDescription(fundItem.description || fundItem.details || '');
+        // Reset photo view transforms
+        photoScale.setValue(1);
+        photoTranslateX.setValue(0);
+        photoTranslateY.setValue(0);
+        
+        console.log('[FundItemDetailModal] Modal state initialized successfully');
+      } catch (err) {
+        console.error('[FundItemDetailModal] Error initializing modal state:', {
+          error: err.message,
+          stack: err.stack,
+          fundItemId: fundItem?.id,
+        });
+        setError(t('fundItem.errors.loadFailed', { 
+          defaultValue: 'Failed to load fund item details' 
+        }));
+      }
+    } else if (!visible) {
+      console.log('[FundItemDetailModal] Modal closed');
+    }
+  }, [visible, fundItem]);
+
+  // Handle Android back button
+  useEffect(() => {
+    if (!visible) return;
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (mode === 'photo') {
+        // Close photo view and return to detail view
+        handleClosePhotoView();
+        return true;
+      } else if (mode === 'edit') {
+        // Cancel edit mode and return to view mode
+        handleCancelEdit();
+        return true;
+      } else if (showCurrencyPicker) {
+        // Close currency picker
+        setShowCurrencyPicker(false);
+        return true;
+      } else {
+        // Close modal
+        onClose();
+        return true;
+      }
+    });
+
+    return () => backHandler.remove();
+  }, [visible, mode, showCurrencyPicker]);
+
+  // Animate modal entrance/exit
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  if (!fundItem) {
+    console.log('[FundItemDetailModal] No fund item provided, modal will not render');
+    return null;
+  }
+
+  const isAmountBasedType = (value) => {
+    if (!value) return false;
+    const normalized = value.toString().toLowerCase();
+    return normalized === 'cash' || normalized === 'bank_card' || normalized === 'credit_card';
+  };
+
+  // Validation functions
+  const validateAmount = (value) => {
+    if (!value || value.trim() === '') {
+      return t('fundItem.validation.amountRequired', { 
+        defaultValue: 'Amount is required' 
+      });
+    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return t('fundItem.validation.amountInvalid', { 
+        defaultValue: 'Amount must be a valid number' 
+      });
+    }
+    if (numValue <= 0) {
+      return t('fundItem.validation.amountPositive', { 
+        defaultValue: 'Amount must be greater than 0' 
+      });
+    }
+    return '';
+  };
+
+  const validateCurrency = (value) => {
+    if (!value || value.trim() === '') {
+      return t('fundItem.validation.currencyRequired', { 
+        defaultValue: 'Currency is required' 
+      });
+    }
+    if (value.length !== 3) {
+      return t('fundItem.validation.currencyFormat', { 
+        defaultValue: 'Currency must be a 3-letter code' 
+      });
+    }
+    return '';
+  };
+
+  // Handle edit mode
+  const handleEdit = () => {
+    try {
+      console.log('[FundItemDetailModal] Switching to edit mode...', {
+        fundItemId: fundItem?.id,
+      });
+      
+      setMode('edit');
+      setError(null);
+      setValidationErrors({ amount: '', currency: '' });
+      
+      console.log('[FundItemDetailModal] Edit mode activated');
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error switching to edit mode:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.editModeFailed', { 
+        defaultValue: 'Failed to enter edit mode. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    try {
+      console.log('[FundItemDetailModal] Cancelling edit mode...', {
+        fundItemId: fundItem?.id,
+      });
+      
+      setMode('view');
+      setError(null);
+      setValidationErrors({ amount: '', currency: '' });
+      // Reset to original values
+      setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
+      setEditedCurrency(fundItem.currency || 'USD');
+      // Handle both 'description' and 'details' fields
+      setEditedDescription(fundItem.description || fundItem.details || '');
+      
+      console.log('[FundItemDetailModal] Edit cancelled, returned to view mode');
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error cancelling edit mode:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      // Still try to return to view mode even if there's an error
+      setMode('view');
+    }
+  };
+
+  // Handle save
+  const handleSave = async () => {
+    console.log('[FundItemDetailModal] Starting save operation...', {
+      fundItemId: fundItem?.id,
+      mode,
+    });
+    
+    // Get the item type - handle both 'type' and 'itemType' fields
+    const itemType = fundItem.itemType || fundItem.type;
+    
+    // Validate for CASH and BANK_CARD types
+    if (itemType === 'CASH' || itemType === 'BANK_CARD' || itemType === 'cash' || itemType === 'credit_card') {
+      console.log('[FundItemDetailModal] Validating amount and currency fields...');
+      
+      const amountError = validateAmount(editedAmount);
+      const currencyError = validateCurrency(editedCurrency);
+      
+      if (amountError || currencyError) {
+        console.warn('[FundItemDetailModal] Validation failed:', {
+          amountError,
+          currencyError,
+        });
+        setValidationErrors({
+          amount: amountError,
+          currency: currencyError,
+        });
+        return;
+      }
+      
+      console.log('[FundItemDetailModal] Validation passed');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Import PassportDataService
+      const PassportDataService = require('../services/data/PassportDataService').default;
+      
+      // Prepare updated data - use 'type' field for the model, 'details' instead of 'description'
+      const shouldUpdateAmount = itemType === 'CASH' || itemType === 'BANK_CARD' || 
+                                  itemType === 'cash' || itemType === 'credit_card';
+      
+      const fundData = {
+        id: fundItem.id,
+        type: fundItem.type || fundItem.itemType, // Use the original type field
+        amount: shouldUpdateAmount ? parseFloat(editedAmount) : fundItem.amount,
+        currency: shouldUpdateAmount ? editedCurrency.toUpperCase() : fundItem.currency,
+        details: editedDescription, // Map description to details
+        photoUri: fundItem.photoUri || fundItem.photo,
+      };
+
+      console.log('[FundItemDetailModal] Prepared fund data for save:', {
+        fundItemId: fundData.id,
+        type: fundData.type,
+        amount: fundData.amount,
+        currency: fundData.currency,
+        hasPhoto: !!fundData.photoUri,
+      });
+
+      // Get userId from fundItem or use default
+      const userId = fundItem.userId || 'default_user';
+      
+      // Save the updated fund item using PassportDataService
+      console.log('[FundItemDetailModal] Calling PassportDataService.saveFundItem...');
+      const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
+      
+      console.log('[FundItemDetailModal] Fund item updated successfully:', {
+        fundItemId: updatedFundItem.id,
+        timestamp: new Date().toISOString(),
+      });
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        console.log('[FundItemDetailModal] Calling onUpdate callback...');
+        await onUpdate(updatedFundItem);
+      }
+      
+      setMode('view');
+      console.log('[FundItemDetailModal] Save operation completed, switched to view mode');
+    } catch (err) {
+      console.error('[FundItemDetailModal] Failed to save fund item:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+        editedData: {
+          amount: editedAmount,
+          currency: editedCurrency,
+          description: editedDescription,
+        },
+      });
+      setError(t('fundItem.errors.updateFailed', { 
+        defaultValue: 'Failed to save changes. Please try again.' 
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = () => {
+    console.log('[FundItemDetailModal] Delete button pressed, showing confirmation dialog...', {
+      fundItemId: fundItem?.id,
+    });
+    
+    // Show confirmation dialog
+    Alert.alert(
+      t('fundItem.deleteConfirm.title', { defaultValue: 'Delete Fund Item' }),
+      t('fundItem.deleteConfirm.message', { 
+        defaultValue: 'Are you sure you want to delete this fund item?' 
+      }),
+      [
+        {
+          text: t('fundItem.deleteConfirm.cancel', { defaultValue: 'Cancel' }),
+          style: 'cancel',
+          onPress: () => {
+            console.log('[FundItemDetailModal] Delete cancelled by user');
+          },
+        },
+        {
+          text: t('fundItem.deleteConfirm.confirm', { defaultValue: 'Delete' }),
+          style: 'destructive',
+          onPress: async () => {
+            console.log('[FundItemDetailModal] Delete confirmed, starting deletion...', {
+              fundItemId: fundItem?.id,
+            });
+            
+            setLoading(true);
+            setError(null);
+
+            try {
+              // Import PassportDataService
+              const PassportDataService = require('../services/data/PassportDataService').default;
+              
+              // Get userId from fundItem or use default
+              const userId = fundItem.userId || 'default_user';
+              
+              console.log('[FundItemDetailModal] Calling PassportDataService.deleteFundItem...', {
+                fundItemId: fundItem.id,
+                userId,
+              });
+              
+              // Delete the fund item using PassportDataService
+              await PassportDataService.deleteFundItem(fundItem.id, userId);
+              
+              console.log('[FundItemDetailModal] Fund item deleted successfully:', {
+                fundItemId: fundItem.id,
+                timestamp: new Date().toISOString(),
+              });
+              
+              // Call onDelete callback if provided
+              if (onDelete) {
+                console.log('[FundItemDetailModal] Calling onDelete callback...');
+                await onDelete(fundItem.id);
+              }
+              
+              // Close the modal
+              console.log('[FundItemDetailModal] Closing modal after successful deletion');
+              onClose();
+            } catch (err) {
+              console.error('[FundItemDetailModal] Failed to delete fund item:', {
+                error: err.message,
+                stack: err.stack,
+                fundItemId: fundItem?.id,
+              });
+              setError(t('fundItem.errors.deleteFailed', { 
+                defaultValue: 'Failed to delete fund item. Please try again.' 
+              }));
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  // Handle currency selection
+  const handleCurrencySelect = (currencyCode) => {
+    try {
+      console.log('[FundItemDetailModal] Currency selected:', {
+        currencyCode,
+        fundItemId: fundItem?.id,
+      });
+      
+      setEditedCurrency(currencyCode);
+      setShowCurrencyPicker(false);
+      setValidationErrors({ ...validationErrors, currency: '' });
+      
+      console.log('[FundItemDetailModal] Currency updated successfully');
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error selecting currency:', {
+        error: err.message,
+        stack: err.stack,
+        currencyCode,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.currencySelectFailed', { 
+        defaultValue: 'Failed to select currency. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle photo press to open full-screen view
+  const handlePhotoPress = () => {
+    try {
+      if (fundItem.photoUri) {
+        console.log('[FundItemDetailModal] Opening full-screen photo view...', {
+          fundItemId: fundItem?.id,
+        });
+        
+        setMode('photo');
+        // Reset transforms
+        photoScale.setValue(1);
+        photoTranslateX.setValue(0);
+        photoTranslateY.setValue(0);
+        
+        console.log('[FundItemDetailModal] Photo view opened');
+      } else {
+        console.warn('[FundItemDetailModal] Attempted to open photo view but no photo exists');
+      }
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error opening photo view:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.photoViewFailed', { 
+        defaultValue: 'Failed to open photo view. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle close photo view
+  const handleClosePhotoView = () => {
+    try {
+      console.log('[FundItemDetailModal] Closing photo view...', {
+        fundItemId: fundItem?.id,
+      });
+      
+      setMode('view');
+      
+      console.log('[FundItemDetailModal] Photo view closed');
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error closing photo view:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      // Still try to return to view mode even if there's an error
+      setMode('view');
+    }
+  };
+
+  // Handle add/replace photo
+  const handleAddPhoto = async () => {
+    try {
+      console.log('[FundItemDetailModal] Requesting photo library permissions...');
+      
+      // Request permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      console.log('[FundItemDetailModal] Photo library permission status:', status);
+      
+      if (status !== 'granted') {
+        console.warn('[FundItemDetailModal] Photo library permission denied');
+        Alert.alert(
+          t('fundItem.errors.permissionTitle', { defaultValue: 'Permission Required' }),
+          t('fundItem.errors.permissionMessage', { 
+            defaultValue: 'Please grant permission to access your photo library.' 
+          })
+        );
+        return;
+      }
+
+      // Show options: Take Photo or Choose from Library
+      console.log('[FundItemDetailModal] Showing photo source options');
+      Alert.alert(
+        t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' }),
+        t('fundItem.detail.photoOptions', { defaultValue: 'Choose an option' }),
+        [
+          {
+            text: t('fundItem.detail.takePhoto', { defaultValue: 'Take Photo' }),
+            onPress: () => handleTakePhoto(),
+          },
+          {
+            text: t('fundItem.detail.chooseFromLibrary', { defaultValue: 'Choose from Library' }),
+            onPress: () => handlePickImage(),
+          },
+          {
+            text: t('common.cancel', { defaultValue: 'Cancel' }),
+            style: 'cancel',
+          },
+        ]
+      );
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error requesting photo permissions:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.photoFailed', { 
+        defaultValue: 'Failed to access photos. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle take photo with camera
+  const handleTakePhoto = async () => {
+    try {
+      console.log('[FundItemDetailModal] Requesting camera permissions...');
+      
+      // Request camera permissions
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      console.log('[FundItemDetailModal] Camera permission status:', status);
+      
+      if (status !== 'granted') {
+        console.warn('[FundItemDetailModal] Camera permission denied');
+        Alert.alert(
+          t('fundItem.errors.permissionTitle', { defaultValue: 'Permission Required' }),
+          t('fundItem.errors.cameraPermissionMessage', { 
+            defaultValue: 'Please grant permission to access your camera.' 
+          })
+        );
+        return;
+      }
+
+      console.log('[FundItemDetailModal] Launching camera...');
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        console.log('[FundItemDetailModal] Photo captured successfully');
+        await handlePhotoSelected(result.assets[0]);
+      } else {
+        console.log('[FundItemDetailModal] Photo capture cancelled by user');
+      }
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error taking photo:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.photoFailed', { 
+        defaultValue: 'Failed to take photo. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle pick image from library
+  const handlePickImage = async () => {
+    try {
+      console.log('[FundItemDetailModal] Launching image library...');
+      
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        console.log('[FundItemDetailModal] Image selected successfully');
+        await handlePhotoSelected(result.assets[0]);
+      } else {
+        console.log('[FundItemDetailModal] Image selection cancelled by user');
+      }
+    } catch (err) {
+      console.error('[FundItemDetailModal] Error picking image:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.photoFailed', { 
+        defaultValue: 'Failed to select photo. Please try again.' 
+      }));
+    }
+  };
+
+  // Handle photo selected (compression and base64 conversion)
+  const handlePhotoSelected = async (asset) => {
+    try {
+      console.log('[FundItemDetailModal] Processing selected photo...', {
+        fundItemId: fundItem?.id,
+        hasBase64: !!asset.base64,
+        hasUri: !!asset.uri,
+      });
+      
+      setLoading(true);
+      setError(null);
+
+      // Convert to base64 data URI
+      let photoUri;
+      if (asset.base64) {
+        // Image picker already provided base64
+        photoUri = `data:image/jpeg;base64,${asset.base64}`;
+        console.log('[FundItemDetailModal] Using base64 photo data');
+      } else if (asset.uri) {
+        // Fallback to URI if base64 not available
+        photoUri = asset.uri;
+        console.log('[FundItemDetailModal] Using photo URI:', asset.uri);
+      } else {
+        throw new Error('No image data available');
+      }
+
+      // Import PassportDataService
+      const PassportDataService = require('../services/data/PassportDataService').default;
+      
+      // Update fund item with new photo
+      const fundData = {
+        id: fundItem.id,
+        type: fundItem.type || fundItem.itemType,
+        amount: fundItem.amount,
+        currency: fundItem.currency,
+        details: fundItem.description || fundItem.details,
+        photoUri: photoUri,
+      };
+
+      // Get userId from fundItem or use default
+      const userId = fundItem.userId || 'default_user';
+      
+      console.log('[FundItemDetailModal] Saving fund item with new photo...', {
+        fundItemId: fundData.id,
+        userId,
+      });
+      
+      // Save the updated fund item
+      const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
+      
+      console.log('[FundItemDetailModal] Fund item photo updated successfully:', {
+        fundItemId: updatedFundItem.id,
+        hasPhoto: !!updatedFundItem.photoUri,
+      });
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        console.log('[FundItemDetailModal] Calling onUpdate callback...');
+        await onUpdate(updatedFundItem);
+      }
+      
+      // Show success message
+      Alert.alert(
+        t('fundItem.success.photoUpdated', { defaultValue: 'Success' }),
+        t('fundItem.success.photoUpdatedMessage', { 
+          defaultValue: 'Photo has been updated successfully.' 
+        })
+      );
+    } catch (err) {
+      console.error('[FundItemDetailModal] Failed to update photo:', {
+        error: err.message,
+        stack: err.stack,
+        fundItemId: fundItem?.id,
+      });
+      setError(t('fundItem.errors.photoFailed', { 
+        defaultValue: 'Failed to update photo. Please try again.' 
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle replace photo
+  const handleReplacePhoto = () => {
+    handleAddPhoto(); // Same flow as add photo
+  };
 
   // Get fund item type display
   const getItemTypeDisplay = () => {
@@ -405,9 +829,26 @@ const FundItemDetailModal = ({
   const itemTypeDisplay = getItemTypeDisplay();
 
   // Format amount display
-  const formatAmount = () => {
-    if (!fundItem.amount) return null;
-    return `${fundItem.amount.toLocaleString()} ${fundItem.currency || ''}`;
+  const formatAmountValue = () => {
+    if (fundItem.amount === null || fundItem.amount === undefined || fundItem.amount === '') {
+      return null;
+    }
+
+    if (typeof fundItem.amount === 'number' && Number.isFinite(fundItem.amount)) {
+      return fundItem.amount.toLocaleString();
+    }
+
+    const parsedAmount = Number(
+      typeof fundItem.amount === 'string'
+        ? fundItem.amount.replace(/,/g, '').trim()
+        : fundItem.amount
+    );
+
+    if (!Number.isNaN(parsedAmount) && Number.isFinite(parsedAmount)) {
+      return parsedAmount.toLocaleString();
+    }
+
+    return `${fundItem.amount}`;
   };
 
   const translateY = slideAnim.interpolate({
@@ -425,8 +866,13 @@ const FundItemDetailModal = ({
           style={styles.currencyPickerBackdrop}
           activeOpacity={1}
           onPress={() => setShowCurrencyPicker(false)}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close', { defaultValue: 'Close' })}
         />
-        <View style={styles.currencyPickerContent}>
+        <View 
+          style={styles.currencyPickerContent}
+          accessibilityViewIsModal={true}
+        >
           <View style={styles.currencyPickerHeader}>
             <Text style={styles.currencyPickerTitle}>
               {t('fundItem.fields.selectCurrency', { defaultValue: 'Select Currency' })}
@@ -434,6 +880,11 @@ const FundItemDetailModal = ({
             <TouchableOpacity
               onPress={() => setShowCurrencyPicker(false)}
               style={styles.currencyPickerClose}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close', { defaultValue: 'Close' })}
+              accessibilityHint={t('fundItem.accessibility.closeCurrencyPickerHint', { 
+                defaultValue: 'Closes the currency picker' 
+              })}
             >
               <Text style={styles.currencyPickerCloseText}>✕</Text>
             </TouchableOpacity>
@@ -447,6 +898,12 @@ const FundItemDetailModal = ({
                   editedCurrency === currency.code && styles.currencyOptionSelected,
                 ]}
                 onPress={() => handleCurrencySelect(currency.code)}
+                accessibilityRole="button"
+                accessibilityLabel={`${currency.name}, ${currency.code}`}
+                accessibilityState={{ selected: editedCurrency === currency.code }}
+                accessibilityHint={t('fundItem.accessibility.selectCurrencyHint', { 
+                  defaultValue: 'Selects this currency' 
+                })}
               >
                 <Text style={styles.currencySymbol}>{currency.symbol}</Text>
                 <View style={styles.currencyInfo}>
@@ -468,8 +925,7 @@ const FundItemDetailModal = ({
   const renderEditMode = () => {
     // Get the item type - handle both 'type' and 'itemType' fields
     const itemType = fundItem.itemType || fundItem.type;
-    const shouldShowAmountFields = itemType === 'CASH' || itemType === 'BANK_CARD' || 
-                                    itemType === 'cash' || itemType === 'credit_card';
+    const shouldShowAmountFields = isAmountBasedType(itemType);
     
     return (
       <ScrollView
@@ -479,9 +935,14 @@ const FundItemDetailModal = ({
       >
         {/* Item Type Display (read-only) */}
         <View style={styles.section}>
-          <View style={styles.itemTypeContainer}>
-            <Text style={styles.itemTypeIcon}>{itemTypeDisplay.icon}</Text>
-            <Text style={styles.itemTypeLabel}>{itemTypeDisplay.label}</Text>
+          <View 
+            style={styles.itemTypeContainer}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${t('fundItem.fields.type', { defaultValue: 'Type' })}: ${itemTypeDisplay.label}`}
+          >
+            <Text style={styles.itemTypeIcon} accessible={false}>{itemTypeDisplay.icon}</Text>
+            <Text style={styles.itemTypeLabel} accessible={false}>{itemTypeDisplay.label}</Text>
           </View>
         </View>
 
@@ -499,6 +960,11 @@ const FundItemDetailModal = ({
               keyboardType="decimal-pad"
               error={!!validationErrors.amount}
               errorMessage={validationErrors.amount}
+              accessibilityLabel={t('fundItem.fields.amount', { defaultValue: 'Amount' })}
+              accessibilityHint={t('fundItem.accessibility.amountHint', { 
+                defaultValue: 'Enter the amount of money for this fund item' 
+              })}
+              returnKeyType="next"
             />
           </View>
         )}
@@ -515,6 +981,12 @@ const FundItemDetailModal = ({
                 validationErrors.currency && styles.currencySelectorError,
               ]}
               onPress={() => setShowCurrencyPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('fundItem.fields.currency', { defaultValue: 'Currency' })}
+              accessibilityHint={t('fundItem.accessibility.currencyHint', { 
+                defaultValue: 'Opens currency picker to select a currency' 
+              })}
+              accessibilityValue={{ text: editedCurrency }}
             >
               <Text style={styles.currencySelectorText}>
                 {editedCurrency || t('fundItem.fields.selectCurrency', { defaultValue: 'Select Currency' })}
@@ -522,7 +994,13 @@ const FundItemDetailModal = ({
               <Text style={styles.currencySelectorArrow}>▼</Text>
             </TouchableOpacity>
             {validationErrors.currency && (
-              <Text style={styles.errorText}>{validationErrors.currency}</Text>
+              <Text 
+                style={styles.errorText}
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+              >
+                {validationErrors.currency}
+              </Text>
             )}
           </View>
         )}
@@ -537,28 +1015,72 @@ const FundItemDetailModal = ({
               defaultValue: 'Add a description (optional)' 
             })}
             multiline
+            accessibilityLabel={t('fundItem.fields.description', { defaultValue: 'Description' })}
+            accessibilityHint={t('fundItem.accessibility.descriptionHint', { 
+              defaultValue: 'Enter an optional description for this fund item' 
+            })}
+            returnKeyType="done"
           />
         </View>
 
-        {/* Photo Display (read-only in edit mode for now) */}
+        {/* Photo Management */}
         <View style={styles.section}>
           <Text style={styles.fieldLabel}>
             {t('fundItem.detail.photo', { defaultValue: 'Photo' })}
           </Text>
           {fundItem.photoUri ? (
             <View style={styles.photoContainer}>
-              <Image
-                source={{ uri: fundItem.photoUri }}
-                style={styles.photoThumbnail}
-                resizeMode="cover"
+              <TouchableOpacity
+                onPress={handlePhotoPress}
+                activeOpacity={0.8}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={t('fundItem.accessibility.photoPreview', { 
+                  defaultValue: 'Fund item photo preview' 
+                })}
+                accessibilityHint={t('fundItem.accessibility.photoPreviewHint', { 
+                  defaultValue: 'Double tap to view full size photo' 
+                })}
+              >
+                <Image
+                  source={{ uri: fundItem.photoUri }}
+                  style={styles.photoThumbnail}
+                  resizeMode="cover"
+                  accessible={false}
+                />
+              </TouchableOpacity>
+              <Button
+                title={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
+                onPress={handleReplacePhoto}
+                variant="secondary"
+                size="small"
+                style={styles.photoButton}
+                disabled={loading}
+                accessibilityLabel={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
+                accessibilityHint={t('fundItem.accessibility.replacePhotoHint', { 
+                  defaultValue: 'Opens options to take a new photo or choose from library' 
+                })}
               />
             </View>
           ) : (
-            <View style={styles.noPhotoContainer}>
-              <Text style={styles.noPhotoIcon}>📷</Text>
-              <Text style={styles.noPhotoText}>
-                {t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })}
-              </Text>
+            <View>
+              <View style={styles.noPhotoContainer}>
+                <Text style={styles.noPhotoIcon}>📷</Text>
+                <Text style={styles.noPhotoText}>
+                  {t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })}
+                </Text>
+              </View>
+              <Button
+                title={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
+                onPress={handleAddPhoto}
+                variant="secondary"
+                size="small"
+                style={styles.photoButton}
+                disabled={loading}
+                accessibilityLabel={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
+                accessibilityHint={t('fundItem.accessibility.addPhotoHint', { 
+                  defaultValue: 'Opens options to take a photo or choose from library' 
+                })}
+              />
             </View>
           )}
         </View>
@@ -566,7 +1088,13 @@ const FundItemDetailModal = ({
         {/* Error Display */}
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text 
+              style={styles.errorText}
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+            >
+              {error}
+            </Text>
           </View>
         )}
 
@@ -577,6 +1105,10 @@ const FundItemDetailModal = ({
             onPress={handleSave}
             loading={loading}
             disabled={loading}
+            accessibilityLabel={t('fundItem.detail.save', { defaultValue: 'Save Changes' })}
+            accessibilityHint={t('fundItem.accessibility.saveHint', { 
+              defaultValue: 'Saves your changes and returns to view mode' 
+            })}
           />
           <View style={{ height: spacing.sm }} />
           <Button
@@ -584,6 +1116,10 @@ const FundItemDetailModal = ({
             onPress={handleCancelEdit}
             variant="secondary"
             disabled={loading}
+            accessibilityLabel={t('fundItem.detail.cancel', { defaultValue: 'Cancel' })}
+            accessibilityHint={t('fundItem.accessibility.cancelHint', { 
+              defaultValue: 'Discards your changes and returns to view mode' 
+            })}
           />
         </View>
       </ScrollView>
@@ -642,8 +1178,15 @@ const FundItemDetailModal = ({
   const renderViewMode = () => {
     // Get the item type - handle both 'type' and 'itemType' fields
     const itemType = fundItem.itemType || fundItem.type;
-    const shouldShowAmount = (itemType === 'CASH' || itemType === 'BANK_CARD' || 
-                              itemType === 'cash' || itemType === 'credit_card') && fundItem.amount;
+    const supportsAmountFields = isAmountBasedType(itemType);
+    const missingValueLabel = t('fundItem.detail.notProvided', { defaultValue: 'Not provided yet' });
+    const formattedAmount = formatAmountValue();
+    const amountValueDisplay = formattedAmount ?? missingValueLabel;
+    const currencyValueDisplay = fundItem.currency
+      ? fundItem.currency.toUpperCase()
+      : missingValueLabel;
+    const descriptionValue = fundItem.description || fundItem.details || missingValueLabel;
+    const hasDescription = Boolean(fundItem.description || fundItem.details);
     
     return (
       <ScrollView
@@ -653,31 +1196,67 @@ const FundItemDetailModal = ({
       >
         {/* Item Type Display */}
         <View style={styles.section}>
-          <View style={styles.itemTypeContainer}>
-            <Text style={styles.itemTypeIcon}>{itemTypeDisplay.icon}</Text>
-            <Text style={styles.itemTypeLabel}>{itemTypeDisplay.label}</Text>
+          <View 
+            style={styles.itemTypeContainer}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${t('fundItem.fields.type', { defaultValue: 'Type' })}: ${itemTypeDisplay.label}`}
+          >
+            <Text style={styles.itemTypeIcon} accessible={false}>{itemTypeDisplay.icon}</Text>
+            <Text style={styles.itemTypeLabel} accessible={false}>{itemTypeDisplay.label}</Text>
           </View>
         </View>
 
-        {/* Amount Display (for CASH and BANK_CARD) */}
-        {shouldShowAmount && (
-          <View style={styles.section}>
-            <Text style={styles.fieldLabel}>
+        {/* Amount Display (for CASH / BANK_CARD / CREDIT_CARD) */}
+        {supportsAmountFields && (
+          <View 
+            style={styles.section}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${t('fundItem.fields.amount', { defaultValue: 'Amount' })}: ${amountValueDisplay}`}
+          >
+            <Text style={styles.fieldLabel} accessible={false}>
               {t('fundItem.fields.amount', { defaultValue: 'Amount' })}
             </Text>
-            <Text style={styles.fieldValue}>{formatAmount()}</Text>
+            <Text style={styles.fieldValue} accessible={false}>{amountValueDisplay}</Text>
+          </View>
+        )}
+
+        {/* Currency Display (for CASH / BANK_CARD / CREDIT_CARD) */}
+        {supportsAmountFields && (
+          <View 
+            style={styles.section}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${t('fundItem.fields.currency', { defaultValue: 'Currency' })}: ${currencyValueDisplay}`}
+          >
+            <Text style={styles.fieldLabel} accessible={false}>
+              {t('fundItem.fields.currency', { defaultValue: 'Currency' })}
+            </Text>
+            <Text style={styles.fieldValue} accessible={false}>{currencyValueDisplay}</Text>
           </View>
         )}
 
         {/* Description Display */}
-        {(fundItem.description || fundItem.details) && (
-          <View style={styles.section}>
-            <Text style={styles.fieldLabel}>
-              {t('fundItem.fields.description', { defaultValue: 'Description' })}
-            </Text>
-            <Text style={styles.fieldValue}>{fundItem.description || fundItem.details}</Text>
-          </View>
-        )}
+        <View 
+          style={styles.section}
+          accessible={true}
+          accessibilityRole="text"
+          accessibilityLabel={`${t('fundItem.fields.description', { defaultValue: 'Description' })}: ${descriptionValue}`}
+        >
+          <Text style={styles.fieldLabel} accessible={false}>
+            {t('fundItem.fields.description', { defaultValue: 'Description' })}
+          </Text>
+          <Text
+            style={[
+              styles.fieldValue,
+              !hasDescription && styles.fieldValuePlaceholder,
+            ]}
+            accessible={false}
+          >
+            {descriptionValue}
+          </Text>
+        </View>
 
         {/* Photo Display */}
         <View style={styles.section}>
@@ -685,28 +1264,62 @@ const FundItemDetailModal = ({
             {t('fundItem.detail.photo', { defaultValue: 'Photo' })}
           </Text>
           {fundItem.photoUri ? (
-            <TouchableOpacity
-              style={styles.photoContainer}
-              onPress={handlePhotoPress}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel={t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}
-            >
-              <Image
-                source={{ uri: fundItem.photoUri }}
-                style={styles.photoThumbnail}
-                resizeMode="cover"
+            <View>
+              <TouchableOpacity
+                style={styles.photoContainer}
+                onPress={handlePhotoPress}
+                activeOpacity={0.8}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={t('fundItem.accessibility.photoPreview', { 
+                  defaultValue: 'Fund item photo preview' 
+                })}
+                accessibilityHint={t('fundItem.accessibility.photoPreviewHint', { 
+                  defaultValue: 'Double tap to view full size photo' 
+                })}
+              >
+                <Image
+                  source={{ uri: fundItem.photoUri }}
+                  style={styles.photoThumbnail}
+                  resizeMode="cover"
+                  accessible={false}
+                />
+                <Text style={styles.photoHint}>
+                  {t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}
+                </Text>
+              </TouchableOpacity>
+              <Button
+                title={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
+                onPress={handleReplacePhoto}
+                variant="secondary"
+                size="small"
+                style={styles.photoButton}
+                disabled={loading}
+                accessibilityLabel={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
+                accessibilityHint={t('fundItem.accessibility.replacePhotoHint', { 
+                  defaultValue: 'Opens options to take a new photo or choose from library' 
+                })}
               />
-              <Text style={styles.photoHint}>
-                {t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}
-              </Text>
-            </TouchableOpacity>
+            </View>
           ) : (
-            <View style={styles.noPhotoContainer}>
-              <Text style={styles.noPhotoIcon}>📷</Text>
-              <Text style={styles.noPhotoText}>
-                {t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })}
-              </Text>
+            <View>
+              <View style={styles.noPhotoContainer}>
+                <Text style={styles.noPhotoIcon}>📷</Text>
+                <Text style={styles.noPhotoText}>
+                  {t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })}
+                </Text>
+              </View>
+              <Button
+                title={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
+                onPress={handleAddPhoto}
+                variant="secondary"
+                size="small"
+                style={styles.photoButton}
+                disabled={loading}
+                accessibilityLabel={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
+                accessibilityHint={t('fundItem.accessibility.addPhotoHint', { 
+                  defaultValue: 'Opens options to take a photo or choose from library' 
+                })}
+              />
             </View>
           )}
         </View>
@@ -714,7 +1327,13 @@ const FundItemDetailModal = ({
         {/* Error Display */}
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text 
+              style={styles.errorText}
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+            >
+              {error}
+            </Text>
           </View>
         )}
 
@@ -727,6 +1346,10 @@ const FundItemDetailModal = ({
                 onPress={handleEdit}
                 variant="secondary"
                 size="medium"
+                accessibilityLabel={t('fundItem.detail.edit', { defaultValue: 'Edit' })}
+                accessibilityHint={t('fundItem.accessibility.editHint', { 
+                  defaultValue: 'Opens edit mode to modify fund item details' 
+                })}
               />
             </View>
             <View style={styles.buttonHalf}>
@@ -737,6 +1360,10 @@ const FundItemDetailModal = ({
                 size="medium"
                 style={styles.deleteButton}
                 textStyle={styles.deleteButtonText}
+                accessibilityLabel={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
+                accessibilityHint={t('fundItem.accessibility.deleteHint', { 
+                  defaultValue: 'Deletes this fund item after confirmation' 
+                })}
               />
             </View>
           </View>
@@ -752,6 +1379,10 @@ const FundItemDetailModal = ({
             }
           }}
           accessibilityRole="button"
+          accessibilityLabel={t('fundItem.detail.manageAll', { defaultValue: 'Manage All Funds' })}
+          accessibilityHint={t('fundItem.accessibility.manageAllHint', { 
+            defaultValue: 'Navigates to the full fund management screen' 
+          })}
         >
           <Text style={styles.manageAllText}>
             {t('fundItem.detail.manageAll', { defaultValue: 'Manage All Funds' })}
@@ -769,12 +1400,18 @@ const FundItemDetailModal = ({
       animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
+      accessibilityViewIsModal={true}
     >
       <View style={styles.modalOverlay}>
         <TouchableOpacity
           style={styles.modalBackdrop}
           activeOpacity={1}
           onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close', { defaultValue: 'Close' })}
+          accessibilityHint={t('fundItem.accessibility.closeModalHint', { 
+            defaultValue: 'Closes the fund item detail modal' 
+          })}
         />
         <Animated.View
           style={[
@@ -783,6 +1420,7 @@ const FundItemDetailModal = ({
               transform: [{ translateY }],
             },
           ]}
+          accessibilityViewIsModal={true}
         >
           {/* Header */}
           <View style={styles.header}>
@@ -790,11 +1428,25 @@ const FundItemDetailModal = ({
               style={styles.backButton}
               onPress={mode === 'edit' ? handleCancelEdit : onClose}
               accessibilityRole="button"
-              accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
+              accessibilityLabel={mode === 'edit' 
+                ? t('fundItem.detail.cancel', { defaultValue: 'Cancel' })
+                : t('common.back', { defaultValue: 'Back' })
+              }
+              accessibilityHint={mode === 'edit'
+                ? t('fundItem.accessibility.cancelHint', { 
+                    defaultValue: 'Discards your changes and returns to view mode' 
+                  })
+                : t('fundItem.accessibility.backHint', { 
+                    defaultValue: 'Returns to the previous screen' 
+                  })
+              }
             >
               <Text style={styles.backButtonText}>←</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>
+            <Text 
+              style={styles.headerTitle}
+              accessibilityRole="header"
+            >
               {mode === 'edit' 
                 ? t('fundItem.detail.editTitle', { defaultValue: 'Edit Fund Item' })
                 : t('fundItem.detail.title', { defaultValue: 'Fund Item Details' })
@@ -805,6 +1457,9 @@ const FundItemDetailModal = ({
               onPress={onClose}
               accessibilityRole="button"
               accessibilityLabel={t('common.close', { defaultValue: 'Close' })}
+              accessibilityHint={t('fundItem.accessibility.closeModalHint', { 
+                defaultValue: 'Closes the fund item detail modal' 
+              })}
             >
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
@@ -905,6 +1560,10 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: colors.text,
   },
+  fieldValuePlaceholder: {
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+  },
   photoContainer: {
     marginTop: spacing.sm,
   },
@@ -919,6 +1578,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+  photoButton: {
+    marginTop: spacing.md,
   },
   noPhotoContainer: {
     alignItems: 'center',
