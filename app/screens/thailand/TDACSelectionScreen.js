@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { colors } from '../../theme';
 import { mergeTDACData } from '../../data/mockTDACData';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
@@ -131,10 +132,10 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: '#1b6ca3',
+    backgroundColor: colors.secondary,
     padding: 24,
     paddingTop: 60,
     alignItems: 'center',
@@ -142,12 +143,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
     opacity: 0.9,
   },
   card: {
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
     marginBottom: 16,
   },
   statsRow: {
@@ -209,11 +210,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   normalStat: {
-    color: '#666',
+    color: colors.textSecondary,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textSecondary,
   },
   features: {
     marginBottom: 20,
@@ -225,23 +226,23 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   buttonContainer: {
-    backgroundColor: '#1b6ca3',
+    backgroundColor: colors.secondary,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: '#1b6ca3',
+    borderColor: colors.secondary,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
   secondaryButtonText: {
-    color: '#1b6ca3',
+    color: colors.secondary,
   },
   comparisonSection: {
     backgroundColor: '#fff',
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   comparisonLabel: {
     flex: 1,
     fontSize: 15,
-    color: '#666',
+    color: colors.textSecondary,
   },
   comparisonApi: {
     flex: 1,
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   comparisonWeb: {
     flex: 1,
     fontSize: 15,
-    color: '#666',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   footer: {

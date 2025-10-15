@@ -917,7 +917,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   successGradient: {
-    background: 'linear-gradient(135deg, #07C160 0%, #06AD56 100%)',
+    backgroundColor: colors.primary,
     borderRadius: 24,
     padding: spacing.xl,
     alignItems: 'center',
@@ -975,6 +975,9 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: 'center',
     flex: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   successSubtitle: {
     fontSize: 16,
@@ -982,6 +985,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.md,
     lineHeight: 22,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1.5,
   },
   successDecorativeElements: {
     flexDirection: 'row',

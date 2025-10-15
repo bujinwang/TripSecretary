@@ -24,6 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { mergeTDACData } from '../../data/mockTDACData';
+import { colors } from '../../theme';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};
@@ -520,7 +521,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.submitButtonText}>🚀 提交入境卡</Text>
             )}
@@ -576,10 +577,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: colors.background
   },
   header: {
-    backgroundColor: '#1b6ca3',
+    backgroundColor: colors.secondary,
     padding: 20,
     paddingTop: 60,
     alignItems: 'center',
@@ -593,19 +594,19 @@ const styles = StyleSheet.create({
     padding: 8
   },
   backButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600'
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#fff',
+    color: colors.white,
     opacity: 0.9
   },
   section: {
@@ -627,7 +628,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
     marginBottom: 12
   },
   label: {
@@ -671,18 +672,18 @@ const styles = StyleSheet.create({
     flex: 3
   },
   mockVerifyButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center'
   },
   mockVerifyButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600'
   },
   submitButton: {
-    backgroundColor: '#1b6ca3',
+    backgroundColor: colors.secondary,
     padding: 16,
     margin: 12,
     borderRadius: 12,
@@ -697,7 +698,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999'
   },
   submitButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold'
   },
@@ -734,7 +735,7 @@ const styles = StyleSheet.create({
   },
   modalHint: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
     marginTop: 12,
     marginBottom: 20,
     textAlign: 'center'
@@ -770,24 +771,24 @@ const styles = StyleSheet.create({
   },
   loadingSubtext: {
     fontSize: 16,
-    color: '#1b6ca3',
+    color: colors.secondary,
     marginTop: 10,
     textAlign: 'center'
   },
   progressText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
     marginTop: 20,
     textAlign: 'center'
   },
   modalButton: {
-    backgroundColor: '#1b6ca3',
+    backgroundColor: colors.secondary,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center'
   },
   modalButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600'
   }

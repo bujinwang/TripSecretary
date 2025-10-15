@@ -1681,13 +1681,13 @@ const styles = StyleSheet.create({
   cloudflareTextCn: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },
   cloudflareTextEn: {
     fontSize: 18,
-    color: '#fff',
+    color: colors.white,
     opacity: 0.95,
     textAlign: 'center',
   },

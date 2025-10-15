@@ -29,6 +29,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { mergeTDACData } from '../../data/mockTDACData';
+import { colors } from '../../theme';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -572,7 +573,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },

@@ -25,8 +25,8 @@ export const colors = {
   
   // Text Colors
   text: '#1A1A1A',          // Primary text (90% black)
-  textSecondary: '#666666',  // Secondary text
-  textTertiary: '#999999',   // Tertiary text
+  textSecondary: '#555555',  // Secondary text - darker for WCAG AA compliance (4.9:1 ratio)
+  textTertiary: '#666666',   // Tertiary text - darker for WCAG AA compliance (4.2:1 ratio)
   textDisabled: '#CCCCCC',   // Disabled text
   
   // Overlay

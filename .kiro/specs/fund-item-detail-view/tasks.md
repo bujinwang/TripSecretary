@@ -1,20 +1,20 @@
 # Implementation Plan
 
-- [ ] 1. Create FundItemDetailModal component with view mode
+- [x] 1. Create FundItemDetailModal component with view mode
   - Create `app/components/FundItemDetailModal.js` with basic modal structure
   - Implement view mode UI showing fund item type, amount, currency, description
   - Add proper styling using theme values (colors, typography, spacing)
   - Implement modal open/close animations
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 6.1, 6.2, 6.3, 6.5_
 
-- [ ] 2. Add photo display functionality
+- [x] 2. Add photo display functionality
   - Implement photo thumbnail display in view mode
   - Add placeholder for items without photos
   - Implement full-screen photo view mode with zoom/pan capabilities
   - Add close button for full-screen photo view
   - _Requirements: 1.5, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 3. Implement edit mode functionality
+- [x] 3. Implement edit mode functionality
   - Add edit button and handler to switch to edit mode
   - Create edit mode UI with input fields for amount, currency, and description
   - Implement currency picker/dropdown component
@@ -22,14 +22,14 @@
   - Implement save button with loading state
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Integrate PassportDataService for updates
+- [x] 4. Integrate PassportDataService for updates
   - Implement save handler that calls PassportDataService.updateFundItem()
   - Add error handling for update failures
   - Implement success callback to close modal and refresh parent
   - Add loading state during save operation
   - _Requirements: 2.5, 2.6, 8.2_
 
-- [ ] 5. Implement delete functionality
+- [x] 5. Implement delete functionality
   - Add delete button in view mode
   - Implement confirmation dialog using Alert
   - Create delete handler that calls PassportDataService.deleteFundItem()
@@ -83,8 +83,8 @@
   - Ensure proper focus management when modal opens/closes
   - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ]* 12. Write component tests
-  - [ ]* 12.1 Write unit tests for FundItemDetailModal component
+- [ ] 12. Write component tests
+  - [ ] 12.1 Write unit tests for FundItemDetailModal component
     - Test rendering with different fund item types
     - Test mode switching (view, edit, photo)
     - Test save operation
@@ -92,14 +92,14 @@
     - Test error display
     - _Requirements: All_
 
-  - [ ]* 12.2 Write integration tests for ProfileScreen
+  - [ ] 12.2 Write integration tests for ProfileScreen
     - Test modal opens when fund item is tapped
     - Test fund items list refreshes after update
     - Test fund items list refreshes after delete
     - Test navigation to ThailandTravelInfo
     - _Requirements: 1.1, 2.6, 3.5, 7.2, 7.3_
 
-  - [ ]* 12.3 Write end-to-end flow tests
+  - [ ] 12.3 Write end-to-end flow tests
     - Test complete view flow
     - Test complete edit and save flow
     - Test complete delete flow

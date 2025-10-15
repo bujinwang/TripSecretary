@@ -370,18 +370,18 @@ const styles = StyleSheet.create({
   cloudflareTextCn: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
   },
   cloudflareTextEn: {
     fontSize: 18,
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginTop: spacing.xs,
   },
   cloudflareHint: {
     fontSize: 12,
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginTop: spacing.sm,
     opacity: 0.9,
