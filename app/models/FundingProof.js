@@ -9,7 +9,8 @@ import SecureStorageService from '../services/security/SecureStorageService';
 
 class FundingProof {
   constructor(data = {}) {
-    this.id = data.id || FundingProof.generateId();
+    // Use consistent ID based on userId to ensure updates work correctly
+    this.id = data.id || (data.userId ? `funding_${data.userId}` : FundingProof.generateId());
     this.userId = data.userId;
     this.cashAmount = data.cashAmount; // 🔴 ENCRYPTED
     this.bankCards = data.bankCards; // 🔴 ENCRYPTED

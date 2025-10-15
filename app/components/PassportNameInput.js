@@ -28,6 +28,7 @@ const PassportNameInput = ({
   const isInternalUpdate = useRef(false);
   const lastValueRef = useRef('');
   const isUserTyping = useRef(false);
+  const hasReceivedValidValue = useRef(false);
 
   // Validation function to check if input contains only valid Pinyin characters
   const validatePinyinInput = (text) => {
@@ -39,12 +40,30 @@ const PassportNameInput = ({
   // Parse combined value into surname and given name
   // Supports both "SURNAME, GIVENNAME" and "SURNAME GIVENNAME" formats
   useEffect(() => {
-    // Only update internal state if this is an external value change
-    // and we're not in the middle of an internal update or user typing
-    if (value !== lastValueRef.current && !isInternalUpdate.current && !isUserTyping.current) {
+    console.log('PassportNameInput useEffect - value:', value, 'lastValueRef:', lastValueRef.current, 'isInternalUpdate:', isInternalUpdate.current);
+    
+    // Skip if this is an internal update (from our own onChange)
+    if (isInternalUpdate.current) {
+      return;
+    }
+    
+    // Only update internal state if the value actually changed
+    if (value !== lastValueRef.current) {
+      // Don't clear existing data if receiving empty value AFTER we've already received valid data
+      // This prevents the fields from clearing during re-renders or remounts
+      if (!value && hasReceivedValidValue.current) {
+        console.log('Ignoring empty value - already have valid data');
+        return;
+      }
+      
+      console.log('Updating internal state with new value:', value);
       lastValueRef.current = value;
+      // Clear the typing flag when receiving external updates
+      isUserTyping.current = false;
       
       if (value) {
+        // Mark that we've received a valid value
+        hasReceivedValidValue.current = true;
         // Try comma-separated format first (e.g., "ZHANG, WEI")
         if (value.includes(',')) {
           const parts = value.split(',').map(part => part.trim());
@@ -82,21 +101,27 @@ const PassportNameInput = ({
 
   // Update combined value when individual parts change
   useEffect(() => {
-    // Skip if we're in the middle of processing an external value change
     if (isInternalUpdate.current) {
       return;
     }
-    
-    // Build the combined value
+
     const combined = [surname.trim(), givenName.trim()].filter(Boolean).join(', ');
-    
-    // Only update parent if the value actually changed
+
+    // Prevent accidental clearing when inputs re-mount without user interaction
+    if (
+      !isUserTyping.current &&
+      (!combined || combined.trim() === '') &&
+      lastValueRef.current &&
+      lastValueRef.current.trim() !== ''
+    ) {
+      return;
+    }
+
     if (combined !== lastValueRef.current) {
       isInternalUpdate.current = true;
       lastValueRef.current = combined;
       onChangeText(combined);
-      
-      // Reset flag after a brief delay to allow parent re-render
+
       setTimeout(() => {
         isInternalUpdate.current = false;
       }, 50);

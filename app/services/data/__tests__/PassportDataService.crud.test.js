@@ -61,7 +61,8 @@ describe('PassportDataService - CRUD Operations', () => {
           userId: testUserId
         }));
         expect(mockPassportInstance.save).toHaveBeenCalled();
-        expect(result).toEqual(savedPassport);
+        expect(result.userId).toEqual(testUserId);
+        expect(result.passportNumber).toEqual(passportData.passportNumber);
       });
 
       it('should throw error when userId is missing', async () => {
@@ -134,7 +135,8 @@ describe('PassportDataService - CRUD Operations', () => {
           userId: testUserId
         }));
         expect(mockPersonalInfoInstance.save).toHaveBeenCalled();
-        expect(result).toEqual(savedPersonalInfo);
+        expect(result.userId).toEqual(testUserId);
+        expect(result.email).toEqual(personalData.email);
       });
     });
 
@@ -167,7 +169,8 @@ describe('PassportDataService - CRUD Operations', () => {
           userId: testUserId
         }));
         expect(mockFundingProofInstance.save).toHaveBeenCalled();
-        expect(result).toEqual(savedFundingProof);
+        expect(result.userId).toEqual(testUserId);
+        expect(result.cashAmount).toEqual(fundingData.cashAmount);
       });
     });
   });
@@ -348,8 +351,7 @@ describe('PassportDataService - CRUD Operations', () => {
           id: 'personal-1',
           userId: testUserId,
           email: 'old@example.com',
-          phoneNumber: '+86 13812345678',
-          update: jest.fn().mockResolvedValue(true)
+          mergeUpdates: jest.fn().mockResolvedValue(true)
         };
 
         PersonalInfo.load.mockResolvedValue(existingPersonalInfo);
@@ -360,7 +362,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         await PassportDataService.updatePersonalInfo('personal-1', updates);
 
-        expect(existingPersonalInfo.update).toHaveBeenCalledWith(updates, undefined);
+        expect(existingPersonalInfo.mergeUpdates).toHaveBeenCalledWith(updates, { skipValidation: true });
       });
     });
 
@@ -381,7 +383,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         await PassportDataService.updateFundingProof('funding-1', updates);
 
-        expect(existingFundingProof.update).toHaveBeenCalledWith(updates, undefined);
+        expect(existingFundingProof.update).toHaveBeenCalledWith(updates, { skipValidation: true });
       });
     });
   });

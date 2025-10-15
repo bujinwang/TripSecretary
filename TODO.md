@@ -113,13 +113,22 @@
 ### Bug Fixes
 - [x] Fix expo-sqlite v16 API compatibility
 - [x] Update SecureStorageService to use async API
-- [ ] Fix name field not loading from saved data
-- [ ] Investigate "Cannot read property 'replace' of undefined" error
+- [x] Fix name field not loading from saved data
+- [x] Fix fund items persistence (now using individual database rows)
+- [x] Fix travel info destination persistence (using destination.id)
+- [ ] Verify photo persistence across app restarts
+- [ ] Test gender field consistency across screens
 
 ### Features
+- [x] Fund items management (add, update, delete)
+- [x] Travel info persistence per destination
+- [x] Collapsible sections with completion badges
+- [x] Auto-save on field blur
+- [x] Data reload on screen focus
 - [ ] Add passport scanning with OCR
 - [ ] Add flight ticket scanning
 - [ ] Add hotel booking scanning
+- [ ] Photo compression/resizing for fund items
 - [ ] Multi-language support improvements
 - [ ] Offline mode enhancements
 

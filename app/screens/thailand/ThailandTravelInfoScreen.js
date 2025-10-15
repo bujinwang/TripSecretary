@@ -15,6 +15,7 @@ import {
   Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -204,12 +205,31 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         
         // Load all user data from centralized service
         const userData = await PassportDataService.getAllUserData(userId);
+        console.log('=== LOADED USER DATA ===');
+        console.log('userData:', userData);
+        console.log('userData.passport:', userData?.passport);
+        console.log('userData.personalInfo:', userData?.personalInfo);
 
         // Passport Info - prioritize centralized data, fallback to route params
         const passportInfo = userData?.passport;
         if (passportInfo) {
+          console.log('Loading passport from database:', passportInfo);
           setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
-          setFullName(passportInfo.fullName || passport?.nameEn || passport?.name || '');
+          setFullName(prev => {
+            if (passportInfo.fullName && passportInfo.fullName.trim()) {
+              return passportInfo.fullName;
+            }
+            if (prev && prev.trim()) {
+              return prev;
+            }
+            if (passport?.nameEn && passport?.nameEn.trim()) {
+              return passport.nameEn;
+            }
+            if (passport?.name && passport?.name.trim()) {
+              return passport.name;
+            }
+            return '';
+          });
           setNationality(passportInfo.nationality || passport?.nationality || '');
           setDob(passportInfo.dateOfBirth || passport?.dob || '');
           setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
@@ -217,9 +237,21 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           // Store passport data model instance
           setPassportData(passportInfo);
         } else {
+          console.log('No passport data in database, using route params');
           // Fallback to route params if no centralized data
           setPassportNo(passport?.passportNo || '');
-          setFullName(passport?.nameEn || passport?.name || '');
+          setFullName(prev => {
+            if (prev && prev.trim()) {
+              return prev;
+            }
+            if (passport?.nameEn && passport?.nameEn.trim()) {
+              return passport.nameEn;
+            }
+            if (passport?.name && passport?.name.trim()) {
+              return passport.name;
+            }
+            return '';
+          });
           setNationality(passport?.nationality || '');
           setDob(passport?.dob || '');
           setExpiryDate(passport?.expiry || '');
@@ -249,13 +281,24 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
 
-        // Funding Proof - load from centralized data
-        const fundingProof = userData?.fundingProof;
-        if (fundingProof) {
-          // Parse funding proof data into funds array format
-          // Note: The funding proof model stores data differently than the UI expects
-          // We'll need to transform it or keep using local state for now
-          // For now, we'll keep funds as empty and let user fill it in
+        // Load fund items from database
+        try {
+          const fundItems = await PassportDataService.getFundItems(userId);
+          console.log('Loaded fund items:', fundItems.length);
+          
+          // Convert FundItem instances to plain objects for state
+          const fundsArray = fundItems.map(item => ({
+            id: item.id,
+            type: item.type,
+            amount: item.amount,
+            currency: item.currency,
+            details: item.details,
+            photo: item.photoUri
+          }));
+          
+          setFunds(fundsArray);
+        } catch (error) {
+          console.error('Failed to load fund items:', error);
           setFunds([]);
         }
 
@@ -309,7 +352,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       } catch (error) {
         // Fallback to route params on error
         setPassportNo(passport?.passportNo || '');
-        setFullName(passport?.nameEn || passport?.name || '');
+        setFullName(prev => {
+          if (prev && prev.trim()) {
+            return prev;
+          }
+          if (passport?.nameEn && passport?.nameEn.trim()) {
+            return passport.nameEn;
+          }
+          if (passport?.name && passport?.name.trim()) {
+            return passport.name;
+          }
+          return '';
+        });
         setNationality(passport?.nationality || '');
         setDob(passport?.dob || '');
         setExpiryDate(passport?.expiry || '');
@@ -337,11 +391,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             // Update passport data if available
             const passportInfo = userData.passport;
             if (passportInfo) {
-              setPassportNo(passportInfo.passportNumber || passportNo);
-              setFullName(passportInfo.fullName || fullName);
-              setNationality(passportInfo.nationality || nationality);
-              setDob(passportInfo.dateOfBirth || dob);
-              setExpiryDate(passportInfo.expiryDate || expiryDate);
+              setPassportNo(prev => passportInfo.passportNumber || prev);
+              setFullName(prev => {
+                if (passportInfo.fullName && passportInfo.fullName.trim()) {
+                  return passportInfo.fullName;
+                }
+                return prev;
+              });
+              setNationality(prev => passportInfo.nationality || prev);
+              setDob(prev => passportInfo.dateOfBirth || prev);
+              setExpiryDate(prev => passportInfo.expiryDate || prev);
               setPassportData(passportInfo);
             }
 
@@ -368,168 +427,19 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     return unsubscribe;
   }, [navigation, passport]);
 
-  // Function to save data using PassportDataService
-  const saveDataToSecureStorage = async () => {
-    try {
-      const userId = passport?.id || 'default_user';
-      console.log('=== SAVE DATA TO SECURE STORAGE ===');
-      console.log('userId:', userId);
-      console.log('Personal info fields:', { phoneNumber, email, occupation, cityOfResidence, residentCountry });
-
-      // Save passport data using PassportDataService
-      if (passportNo || fullName || nationality || dob || expiryDate) {
-        try {
-          if (passportData?.id) {
-            // Update existing passport
-            console.log('Updating existing passport:', passportData.id);
-            await PassportDataService.updatePassport(passportData.id, {
-              passportNumber: passportNo,
-              fullName,
-              dateOfBirth: dob,
-              nationality,
-              expiryDate,
-              gender: sex, // Include gender field
-              issueDate: passport?.issueDate,
-              issuePlace: passport?.issuePlace,
-              photoUri: passport?.photoUri
-            });
-            console.log('Passport updated successfully');
-          } else {
-            // Create new passport
-            console.log('Creating new passport');
-            const savedPassport = await PassportDataService.savePassport({
-              id: passport?.id || Passport.generateId(),
-              passportNumber: passportNo,
-              fullName,
-              dateOfBirth: dob,
-              nationality,
-              expiryDate,
-              gender: sex, // Include gender field
-              issueDate: passport?.issueDate,
-              issuePlace: passport?.issuePlace,
-              photoUri: passport?.photoUri
-            }, userId);
-            setPassportData(savedPassport);
-            console.log('Passport created successfully');
-          }
-        } catch (passportError) {
-          console.error('Failed to save passport:', passportError);
-        }
-      }
-
-      // Save personal info using PassportDataService
-      // Only include non-empty fields to avoid overwriting existing data with empty values
-      const personalInfoUpdates = {};
-      if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-      if (email && email.trim()) personalInfoUpdates.email = email;
-      if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-      if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-      if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
-      
-      if (Object.keys(personalInfoUpdates).length > 0) {
-        try {
-          console.log('Saving personal info with upsertPersonalInfo...');
-          console.log('Updates to save:', personalInfoUpdates);
-          // Use upsert to create or update personal info
-          const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-          setPersonalInfoData(savedPersonalInfo);
-          console.log('Personal info saved successfully:', savedPersonalInfo?.id);
-        } catch (personalInfoError) {
-          console.error('Failed to save personal info:', personalInfoError);
-          console.error('Error stack:', personalInfoError.stack);
-        }
-      } else {
-        console.log('No personal info fields to save');
-      }
-
-      // Save funding proof using PassportDataService
-      if (funds.length > 0) {
-        try {
-          // Transform funds array into funding proof format
-          const fundingProofData = {
-            cashAmount: funds.filter(f => f.type === 'cash').map(f => `${f.amount} ${f.details}`).join(', '),
-            bankCards: funds.filter(f => f.type === 'credit_card' || f.type === 'bank_balance').map(f => f.photo || 'Photo attached').join(', '),
-            supportingDocs: 'Funding proof documents attached'
-          };
-
-          if (entryData?.fundingProofId) {
-            // Update existing funding proof
-            await PassportDataService.updateFundingProof(entryData.fundingProofId, fundingProofData);
-          } else {
-            // Create new funding proof
-            await PassportDataService.saveFundingProof(fundingProofData, userId);
-          }
-        } catch (fundingError) {
-          // Failed to save funding proof
-        }
-      }
-
-      // Save travel info using PassportDataService
-      // Only include non-empty fields to avoid overwriting existing data
-      const travelInfoUpdates = {};
-      if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
-      if (arrivalDepartureAirport && arrivalDepartureAirport.trim()) travelInfoUpdates.arrivalDepartureAirport = arrivalDepartureAirport;
-      if (arrivalDepartureDate && arrivalDepartureDate.trim()) travelInfoUpdates.arrivalDepartureDate = arrivalDepartureDate;
-      if (arrivalDepartureTime && arrivalDepartureTime.trim()) travelInfoUpdates.arrivalDepartureTime = arrivalDepartureTime;
-      if (arrivalArrivalAirport && arrivalArrivalAirport.trim()) travelInfoUpdates.arrivalArrivalAirport = arrivalArrivalAirport;
-      if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
-      if (arrivalArrivalTime && arrivalArrivalTime.trim()) travelInfoUpdates.arrivalArrivalTime = arrivalArrivalTime;
-      if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
-      if (departureDepartureAirport && departureDepartureAirport.trim()) travelInfoUpdates.departureDepartureAirport = departureDepartureAirport;
-      if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
-      if (departureDepartureTime && departureDepartureTime.trim()) travelInfoUpdates.departureDepartureTime = departureDepartureTime;
-      if (departureArrivalAirport && departureArrivalAirport.trim()) travelInfoUpdates.departureArrivalAirport = departureArrivalAirport;
-      if (departureArrivalDate && departureArrivalDate.trim()) travelInfoUpdates.departureArrivalDate = departureArrivalDate;
-      if (departureArrivalTime && departureArrivalTime.trim()) travelInfoUpdates.departureArrivalTime = departureArrivalTime;
-      if (hotelName && hotelName.trim()) travelInfoUpdates.hotelName = hotelName;
-      if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
-
-      if (Object.keys(travelInfoUpdates).length > 0) {
-        try {
-          console.log('=== SAVING TRAVEL INFO ===');
-          console.log('Number of fields to save:', Object.keys(travelInfoUpdates).length);
-          console.log('Updates to save:', JSON.stringify(travelInfoUpdates, null, 2));
-          // Save travel info with destination (use id for consistency, not localized name)
-          const destinationId = destination?.id || 'thailand';
-          console.log('Destination ID:', destinationId);
-          travelInfoUpdates.destination = destinationId;
-          const result = await PassportDataService.saveTravelInfo(userId, travelInfoUpdates);
-          console.log('Travel info saved successfully, result:', result);
-        } catch (travelInfoError) {
-          console.error('=== FAILED TO SAVE TRAVEL INFO ===');
-          console.error('Error:', travelInfoError);
-          console.error('Error message:', travelInfoError.message);
-          console.error('Error stack:', travelInfoError.stack);
-        }
-      } else {
-        console.log('No travel info fields to save (all fields empty)');
-        console.log('Current travel info state:', {
-          arrivalFlightNumber,
-          arrivalDepartureAirport,
-          hotelName
-        });
-      }
-
-    } catch (error) {
-      // Don't show alert for save failures to avoid interrupting user experience
-      console.error('Error in saveDataToSecureStorage:', error);
-    }
-  };
-
-  // Auto-save when date/time fields change
+  // Add blur listener to save data when leaving the screen
   useEffect(() => {
-    if (!isLoading) {
-      const timer = setTimeout(() => {
-        saveDataToSecureStorage();
-      }, 500); // Debounce to avoid too many saves
-      return () => clearTimeout(timer);
-    }
-  }, [
-    arrivalDepartureDate, arrivalDepartureTime,
-    arrivalArrivalDate, arrivalArrivalTime,
-    departureDepartureDate, departureDepartureTime,
-    departureArrivalDate, departureArrivalTime
-  ]);
+    const unsubscribe = navigation.addListener('blur', () => {
+      // Save all data when leaving the screen
+      saveDataToSecureStorage();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+
+
+
 
   // Function to validate and save field data on blur
   const handleFieldBlur = async (fieldName, fieldValue) => {
@@ -583,9 +493,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
       // Save data if valid
       if (isValid) {
-        console.log('Calling saveDataToSecureStorage...');
+        console.log('Validation passed, saving data...');
         await saveDataToSecureStorage();
-        console.log('saveDataToSecureStorage completed');
       } else {
         console.log('Skipping save due to validation error');
       }
@@ -596,25 +505,186 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  const addFund = (type) => {
-    const newFund = { id: Date.now(), type };
-    if (type === 'cash') {
-      newFund.amount = '';
-      newFund.details = '';
-    } else {
-      newFund.photo = null;
+  // Save all data to secure storage
+  const saveDataToSecureStorage = async () => {
+    try {
+      const userId = passport?.id || 'default_user';
+      console.log('=== SAVING DATA TO SECURE STORAGE ===');
+      console.log('userId:', userId);
+
+      // Get existing passport first to ensure we're updating the right one
+      const existingPassport = await PassportDataService.getPassport(userId);
+      console.log('Existing passport:', existingPassport);
+
+      // Save passport data - only include non-empty fields
+      const passportUpdates = {};
+      if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
+      if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
+      if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
+      if (dob && dob.trim()) passportUpdates.dateOfBirth = dob;
+      if (expiryDate && expiryDate.trim()) passportUpdates.expiryDate = expiryDate;
+      if (sex && sex.trim()) passportUpdates.gender = sex;
+
+      if (Object.keys(passportUpdates).length > 0) {
+        console.log('Saving passport updates:', passportUpdates);
+        if (existingPassport && existingPassport.id) {
+          console.log('Updating existing passport with ID:', existingPassport.id);
+          const updated = await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+          console.log('Passport data updated successfully');
+          
+          // Update passportData state to track the correct passport ID
+          setPassportData(updated);
+        } else {
+          console.log('Creating new passport for userId:', userId);
+          const saved = await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+          console.log('Passport data saved successfully');
+          
+          // Update passportData state to track the new passport ID
+          setPassportData(saved);
+        }
+      }
+
+      // Save personal info data - only include non-empty fields
+      const personalInfoUpdates = {};
+      if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
+      if (email && email.trim()) personalInfoUpdates.email = email;
+      if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
+      if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
+      if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
+
+      if (Object.keys(personalInfoUpdates).length > 0) {
+        console.log('Saving personal info updates:', personalInfoUpdates);
+        const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+        console.log('Personal info saved successfully');
+        
+        // Update personalInfoData state
+        setPersonalInfoData(savedPersonalInfo);
+      }
+
+      // Save travel info data - only include non-empty fields
+      const travelInfoUpdates = {};
+      if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
+      if (arrivalDepartureAirport && arrivalDepartureAirport.trim()) travelInfoUpdates.arrivalDepartureAirport = arrivalDepartureAirport;
+      if (arrivalDepartureDate && arrivalDepartureDate.trim()) travelInfoUpdates.arrivalDepartureDate = arrivalDepartureDate;
+      if (arrivalDepartureTime && arrivalDepartureTime.trim()) travelInfoUpdates.arrivalDepartureTime = arrivalDepartureTime;
+      if (arrivalArrivalAirport && arrivalArrivalAirport.trim()) travelInfoUpdates.arrivalArrivalAirport = arrivalArrivalAirport;
+      if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
+      if (arrivalArrivalTime && arrivalArrivalTime.trim()) travelInfoUpdates.arrivalArrivalTime = arrivalArrivalTime;
+      if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
+      if (departureDepartureAirport && departureDepartureAirport.trim()) travelInfoUpdates.departureDepartureAirport = departureDepartureAirport;
+      if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
+      if (departureDepartureTime && departureDepartureTime.trim()) travelInfoUpdates.departureDepartureTime = departureDepartureTime;
+      if (departureArrivalAirport && departureArrivalAirport.trim()) travelInfoUpdates.departureArrivalAirport = departureArrivalAirport;
+      if (departureArrivalDate && departureArrivalDate.trim()) travelInfoUpdates.departureArrivalDate = departureArrivalDate;
+      if (departureArrivalTime && departureArrivalTime.trim()) travelInfoUpdates.departureArrivalTime = departureArrivalTime;
+      if (hotelName && hotelName.trim()) travelInfoUpdates.hotelName = hotelName;
+      if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
+
+      if (Object.keys(travelInfoUpdates).length > 0) {
+        console.log('Saving travel info updates:', travelInfoUpdates);
+        try {
+          // Use destination.id for consistent lookup (not affected by localization)
+          const destinationId = destination?.id || 'thailand';
+          console.log('Calling PassportDataService.updateTravelInfo with:', { userId, destinationId });
+          const savedTravelInfo = await PassportDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
+          console.log('Travel info saved successfully:', savedTravelInfo);
+        } catch (travelInfoError) {
+          console.error('Failed to save travel info:', travelInfoError);
+          console.error('Travel info error stack:', travelInfoError.stack);
+        }
+      }
+
+      console.log('=== DATA SAVED SUCCESSFULLY ===');
+    } catch (error) {
+      console.error('Failed to save data to secure storage:', error);
+      console.error('Error details:', error.message, error.stack);
     }
-    setFunds([...funds, newFund]);
   };
 
-  const removeFund = (id) => {
-    setFunds(funds.filter((fund) => fund.id !== id));
+  const addFund = async (type) => {
+    try {
+      const userId = passport?.id || 'default_user';
+      // Create new fund item in database
+      const fundItem = await PassportDataService.saveFundItem({
+        type,
+        amount: '',
+        currency: 'USD',
+        details: '',
+        photoUri: null,
+      }, userId);
+      
+      console.log('Fund item created:', fundItem.id);
+      
+      // Add to local state
+      const newFund = {
+        id: fundItem.id,
+        type: fundItem.type,
+        amount: fundItem.amount,
+        currency: fundItem.currency,
+        details: fundItem.details,
+        photo: fundItem.photoUri
+      };
+      
+      setFunds([...funds, newFund]);
+    } catch (error) {
+      console.error('Failed to add fund item:', error);
+      Alert.alert('Error', 'Failed to add fund item');
+    }
   };
 
-  const updateFund = (id, key, value) => {
-    setFunds(
-      funds.map((fund) => (fund.id === id ? { ...fund, [key]: value } : fund))
-    );
+  const removeFund = async (id) => {
+    try {
+      const userId = passport?.id || 'default_user';
+      // Delete from database
+      const success = await PassportDataService.deleteFundItem(id, userId);
+      
+      if (success) {
+        console.log('Fund item deleted:', id);
+        
+        // Remove from local state
+        setFunds(funds.filter((fund) => fund.id !== id));
+      } else {
+        console.warn('Fund item not found:', id);
+      }
+    } catch (error) {
+      console.error('Failed to delete fund item:', error);
+      Alert.alert('Error', 'Failed to delete fund item');
+    }
+  };
+
+  const updateFundField = async (id, key, value) => {
+    try {
+      const userId = passport?.id || 'default_user';
+      // Update local state immediately for responsive UI
+      const updatedFunds = funds.map((fund) =>
+        (fund.id === id ? { ...fund, [key]: value } : fund)
+      );
+      setFunds(updatedFunds);
+      
+      // Find the updated fund
+      const updatedFund = updatedFunds.find(f => f.id === id);
+      if (!updatedFund) return;
+      
+      // Save to database
+      // Map 'photo' key to 'photoUri' for the model
+      const fundData = {
+        type: updatedFund.type,
+        amount: updatedFund.amount,
+        currency: updatedFund.currency,
+        details: updatedFund.details,
+        photoUri: updatedFund.photo
+      };
+      
+      await PassportDataService.saveFundItem({
+        id: id,
+        ...fundData
+      }, userId);
+      
+      console.log('Fund item updated:', id, key);
+    } catch (error) {
+      console.error('Failed to update fund item:', error);
+      // Optionally show error to user
+    }
   };
 
 
@@ -628,59 +698,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     if (!validate()) {
       return;
     }
+  };
 
-    // Use the secure data models for navigation
-    const travelInfo = {
-      // Passport Info
-      passportNo,
-      fullName,
-      nationality,
-      dob,
-      expiryDate,
-
-      // Personal Info
-      sex,
-      occupation,
-      cityOfResidence,
-      residentCountry,
-      phoneNumber: `${phoneCode} ${phoneNumber}`, // Combine code and number for storage
-      email,
-
-      // Proof of Funds
-      funds,
-
-      // Travel Info
-      arrivalFlightNumber,
-      arrivalDepartureAirport,
-      arrivalDepartureDate,
-      arrivalDepartureTime,
-      arrivalDepartureDateTime: arrivalDepartureDate && arrivalDepartureTime ? `${arrivalDepartureDate} ${arrivalDepartureTime}` : '',
-      arrivalArrivalAirport,
-      arrivalArrivalDate,
-      arrivalArrivalTime,
-      arrivalArrivalDateTime: arrivalArrivalDate && arrivalArrivalTime ? `${arrivalArrivalDate} ${arrivalArrivalTime}` : '',
-      departureFlightNumber,
-      departureDepartureAirport,
-      departureDepartureDate,
-      departureDepartureTime,
-      departureDepartureDateTime: departureDepartureDate && departureDepartureTime ? `${departureDepartureDate} ${departureDepartureTime}` : '',
-      departureArrivalAirport,
-      departureArrivalDate,
-      departureArrivalTime,
-      departureArrivalDateTime: departureArrivalDate && departureArrivalTime ? `${departureArrivalDate} ${departureArrivalTime}` : '',
-      hotelName,
-      hotelAddress,
-    };
-
-    navigation.navigate('Generating', {
-      passport,
-      destination,
-      travelInfo,
-      // Pass secure data references
-      passportData,
-      personalInfoData,
-      entryData,
-    });
+  const handleGoBack = async () => {
+    // Save all data before going back
+    await saveDataToSecureStorage();
+    navigation.goBack();
   };
 
   const handleScanPassport = () => {
@@ -699,33 +722,74 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     // TODO: Implement take photo
   };
 
+  // Function to copy image to permanent storage
+  const copyImageToPermanentStorage = async (uri) => {
+    try {
+      // Create a permanent directory for fund photos if it doesn't exist
+      const fundsDir = `${FileSystem.documentDirectory}funds/`;
+      const dirInfo = await FileSystem.getInfoAsync(fundsDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(fundsDir, { intermediates: true });
+      }
+
+      // Generate a unique filename
+      const filename = `fund_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      const permanentUri = fundsDir + filename;
+
+      // Copy the image to permanent storage
+      await FileSystem.copyAsync({
+        from: uri,
+        to: permanentUri
+      });
+
+      console.log('Image copied to permanent storage:', permanentUri);
+      return permanentUri;
+    } catch (error) {
+      console.error('Failed to copy image to permanent storage:', error);
+      // Return original URI as fallback
+      return uri;
+    }
+  };
+
   const handleChoosePhoto = (id) => {
     Alert.alert('选择照片', '', [
       {
         text: '拍照',
         onPress: async () => {
-          const { status } = await ImagePicker.requestCameraPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('需要相机权限');
-            return;
-          }
-          const result = await ImagePicker.launchCameraAsync();
-          if (!result.canceled) {
-            updateFund(id, 'photo', result.assets[0].uri);
+          try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('需要相机权限', '请在设置中允许访问相机');
+              return;
+            }
+              const permanentUri = await copyImageToPermanentStorage(result.assets[0].uri);
+              updateFundField(id, 'photo', permanentUri);
+          } catch (error) {
+            console.error('Camera error:', error);
+            Alert.alert('相机错误', '模拟器不支持相机功能，请使用真机测试或选择相册照片');
           }
         },
       },
       {
         text: '从相册选择',
         onPress: async () => {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('需要相册权限');
-            return;
-          }
-          const result = await ImagePicker.launchImageLibraryAsync();
-          if (!result.canceled) {
-            updateFund(id, 'photo', result.assets[0].uri);
+          try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('需要相册权限', '请在设置中允许访问相册');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              allowsEditing: true,
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              const permanentUri = await copyImageToPermanentStorage(result.assets[0].uri);
+              updateFundField(id, 'photo', permanentUri);
+            }
+          } catch (error) {
+            console.error('Photo library error:', error);
+            Alert.alert('选择照片失败', '请重试');
           }
         },
       },
@@ -751,7 +815,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 styles.optionButton,
                 isActive && styles.optionButtonActive,
               ]}
-              onPress={() => setSex(option.value)}
+              onPress={async () => {
+                setSex(option.value);
+                // Save data after gender selection
+                try {
+                  await saveDataToSecureStorage();
+                } catch (error) {
+                  console.error('Failed to save after gender selection:', error);
+                }
+              }}
             >
               <Text
                 style={[
@@ -772,7 +844,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <BackButton
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
           label={t('common.back')}
           style={styles.backButton}
         />
@@ -905,16 +977,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               {fund.type === 'cash' ? (
                 <>
                   <Input
-                    label="金额"
+                    label="Amount"
                     value={fund.amount}
-                    onChangeText={(text) => updateFund(fund.id, 'amount', text)}
+                    onChangeText={(text) => updateFundField(fund.id, 'amount', text)}
                     keyboardType="numeric"
                     testID="cash-amount-input"
                   />
                   <Input
-                    label="细节"
+                    label="Details"
                     value={fund.details}
-                    onChangeText={(text) => updateFund(fund.id, 'details', text)}
+                    onChangeText={(text) => updateFundField(fund.id, 'details', text)}
                   />
                 </>
               ) : (
@@ -922,7 +994,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   <TouchableOpacity style={styles.photoButton} onPress={() => handleChoosePhoto(fund.id)}>
                     <Text style={styles.photoButtonText}>{fund.photo ? '更换照片' : '添加照片'}</Text>
                   </TouchableOpacity>
-                  {fund.photo && <Image source={{ uri: fund.photo }} style={styles.fundImage} />}
+                  {fund.photo && (
+                    <View>
+                      <Text style={styles.photoDebug}>Photo URI: {fund.photo.substring(0, 50)}...</Text>
+                      <Image 
+                        source={{ uri: fund.photo }} 
+                        style={styles.fundImage}
+                        onError={(e) => console.error('Image load error:', e.nativeEvent.error)}
+                        onLoad={() => console.log('Image loaded successfully:', fund.photo)}
+                      />
+                    </View>
+                  )}
                 </View>
               )}
               <Button title="删除" onPress={() => removeFund(fund.id)} variant="danger" />

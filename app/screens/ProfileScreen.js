@@ -18,6 +18,7 @@ import { useTranslation } from '../i18n/LocaleContext';
 import { NationalitySelector, PassportNameInput } from '../components';
 import { destinationRequirements } from '../config/destinationRequirements';
 import PassportDataService from '../services/data/PassportDataService';
+import SecureStorageService from '../services/security/SecureStorageService';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { t, language } = useTranslation();
@@ -334,6 +335,12 @@ const ProfileScreen = ({ navigation, route }) => {
             title: t('profile.menu.clearStorage.title', { defaultValue: 'Clear Saved Data' }),
             subtitle: t('profile.menu.clearStorage.subtitle', { defaultValue: 'Reset to defaults (for debugging)' }),
           },
+          {
+            id: 'inspectDB',
+            icon: '🔍',
+            title: 'Inspect Database',
+            subtitle: 'View database contents in console',
+          },
         ],
       },
     ],
@@ -377,6 +384,8 @@ const ProfileScreen = ({ navigation, route }) => {
         'All saved data has been reset to defaults.',
         [{ text: 'OK' }]
       );
+    } else if (itemId === 'inspectDB') {
+      inspectDatabase();
     }
     // TODO: Navigate to respective screens
   };
@@ -694,6 +703,23 @@ const ProfileScreen = ({ navigation, route }) => {
               nationality: value,
             }, { skipValidation: true });
           }
+        } else if (editingContext.type === 'passport-name') {
+          setPassportData((prev) => ({
+            ...prev,
+            name: value,
+            nameEn: value,
+          }));
+
+          const passport = await PassportDataService.getPassport(userId);
+          if (passport && passport.id) {
+            await PassportDataService.updatePassport(
+              passport.id,
+              {
+                fullName: value,
+              },
+              { skipValidation: true }
+            );
+          }
         } else if (editingContext.type === 'nationality-selector') {
           setPersonalInfo((prev) => ({
             ...prev,
@@ -860,6 +886,50 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const handleScanFundingProof = () => {
     // TODO: Navigate to scanner / uploader screen
+  };
+
+  // Database inspection function for debugging
+  const inspectDatabase = async () => {
+    try {
+      console.log('🔍 INSPECTING DATABASE CONTENTS...');
+
+      // Get all tables
+      const tables = await SecureStorageService.db.getAllAsync(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+      );
+      console.log('📋 Available tables:', tables.map(t => t.name));
+
+      // Inspect passports table
+      const passports = await SecureStorageService.db.getAllAsync('SELECT * FROM passports');
+      console.log('🛂 Passports table:', passports);
+
+      // Inspect personal_info table
+      const personalInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM personal_info');
+      console.log('👤 Personal info table:', personalInfo);
+
+      // Inspect funding_proof table
+      const fundingProof = await SecureStorageService.db.getAllAsync('SELECT * FROM funding_proof');
+      console.log('💰 Funding proof table:', fundingProof);
+
+      // Inspect travel_info table
+      const travelInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM travel_info');
+      console.log('✈️ Travel info table:', travelInfo);
+
+      // Get database file path for external access
+      console.log('💾 Database file should be accessible at:');
+      console.log('iOS: ~/Library/Developer/CoreSimulator/Devices/{SIMULATOR_ID}/data/Containers/Data/Application/{APP_ID}/Documents/ExponentExperienceData/@anonymous%2Fchujingtong-.../SQLite/tripsecretary_secure');
+
+      Alert.alert(
+        'Database Inspection Complete',
+        'Check console logs for detailed database contents. Database file path has been logged.',
+        [{ text: 'OK' }]
+      );
+
+      return { tables, passports, personalInfo, fundingProof, travelInfo };
+    } catch (error) {
+      console.error('❌ Database inspection failed:', error);
+      Alert.alert('Error', `Database inspection failed: ${error.message}`);
+    }
   };
 
   return (

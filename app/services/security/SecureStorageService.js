@@ -115,7 +115,7 @@ class SecureStorageService {
           )
         `);
 
-        // Funding proof table
+        // Legacy funding proof table (kept for backward compatibility)
         tx.executeSql(`
           CREATE TABLE IF NOT EXISTS funding_proof (
             id TEXT PRIMARY KEY,
@@ -126,6 +126,28 @@ class SecureStorageService {
             created_at TEXT,
             updated_at TEXT
           )
+        `);
+
+        // New individual fund items table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS fund_items (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            type TEXT NOT NULL,
+            amount TEXT,
+            currency TEXT,
+            details TEXT,
+            photo_uri TEXT,
+            created_at TEXT,
+            updated_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // Index for faster queries by user
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_fund_items_user_id 
+          ON fund_items(user_id)
         `);
 
         // Travel info table (trip-specific draft data)
@@ -735,6 +757,10 @@ class SecureStorageService {
    */
   async saveFundingProof(fundingData) {
     try {
+      console.log('=== SECURE STORAGE: SAVE FUNDING PROOF ===');
+      console.log('Input fundingData:', JSON.stringify(fundingData, null, 2));
+      console.log('supportingDocs length:', fundingData.supportingDocs?.length);
+      
       // TODO: Re-enable encryption before production release
       const encryptedData = this.ENCRYPTION_ENABLED
         ? await this.encryption.encryptFields({
@@ -748,8 +774,13 @@ class SecureStorageService {
             supporting_docs: fundingData.supportingDocs
           };
 
+      console.log('Encrypted/prepared data:', JSON.stringify(encryptedData, null, 2));
+
       const now = new Date().toISOString();
-      const id = fundingData.id || this.generateId();
+      // Use a consistent ID based on userId to ensure we update the same record
+      const id = fundingData.id || `funding_${fundingData.userId}`;
+      
+      console.log('Saving with ID:', id, 'userId:', fundingData.userId, 'timestamp:', now);
 
       return new Promise((resolve, reject) => {
         this.db.transaction(tx => {
@@ -773,6 +804,7 @@ class SecureStorageService {
               now
             ],
             (_, result) => {
+              console.log('✅ Funding proof SQL INSERT successful, rows affected:', result.rowsAffected);
               this.logAudit('INSERT', 'funding_proof', id).catch(console.error);
               resolve(result);
             },
@@ -790,7 +822,7 @@ class SecureStorageService {
   }
 
   /**
-   * Get funding proof information and decrypt sensitive fields
+   * Get funding proof information and decrypt sensitive fields (LEGACY)
    * @param {string} userId - User ID
    * @returns {Object} - Decrypted funding proof data
    */
@@ -846,6 +878,179 @@ class SecureStorageService {
         reject(error);
       }
     });
+  }
+
+  /**
+   * Save individual fund item
+   * @param {FundItem} fundItem - Fund item instance
+   * @returns {Promise<Object>} - Saved fund item data
+   */
+  async saveFundItem(fundItem) {
+    try {
+      console.log('=== SECURE STORAGE: SAVE FUND ITEM ===');
+      console.log('Input fund item:', {
+        id: fundItem.id,
+        userId: fundItem.userId,
+        type: fundItem.type,
+        hasPhoto: !!fundItem.photoUri,
+        photoLength: fundItem.photoUri?.length
+      });
+
+      const now = new Date().toISOString();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            `INSERT OR REPLACE INTO fund_items 
+             (id, user_id, type, amount, currency, details, photo_uri, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              fundItem.id,
+              fundItem.userId,
+              fundItem.type,
+              fundItem.amount,
+              fundItem.currency,
+              fundItem.details,
+              fundItem.photoUri,
+              fundItem.createdAt,
+              now
+            ],
+            (_, result) => {
+              console.log('✅ Fund item SQL INSERT successful, rows affected:', result.rowsAffected);
+              this.logAudit('INSERT', 'fund_items', fundItem.id).catch(console.error);
+              resolve({ ...fundItem.toJSON(), updatedAt: now });
+            },
+            (_, error) => {
+              console.error('❌ Fund item SQL INSERT failed:', error);
+              reject(error);
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('SecureStorageService.saveFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get fund item by ID
+   * @param {string} id - Fund item ID
+   * @returns {Promise<Object|null>} - Fund item data or null
+   */
+  async getFundItem(id) {
+    try {
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM fund_items WHERE id = ? LIMIT 1',
+            [id],
+            (_, { rows }) => {
+              if (rows.length > 0) {
+                const item = rows._array[0];
+                resolve({
+                  id: item.id,
+                  userId: item.user_id,
+                  type: item.type,
+                  amount: item.amount,
+                  currency: item.currency,
+                  details: item.details,
+                  photoUri: item.photo_uri,
+                  createdAt: item.created_at,
+                  updatedAt: item.updated_at
+                });
+              } else {
+                resolve(null);
+              }
+            },
+            (_, error) => {
+              console.error('getFundItem query failed:', error);
+              reject(error);
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('SecureStorageService.getFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all fund items for a user
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} - Array of fund items
+   */
+  async getFundItemsByUserId(userId) {
+    try {
+      console.log('=== SECURE STORAGE: GET FUND ITEMS BY USER ID ===');
+      console.log('Querying fund items for userId:', userId);
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM fund_items WHERE user_id = ? ORDER BY created_at DESC',
+            [userId],
+            (_, { rows }) => {
+              console.log('Fund items query result:', rows.length, 'rows');
+              const items = rows._array.map(item => ({
+                id: item.id,
+                userId: item.user_id,
+                type: item.type,
+                amount: item.amount,
+                currency: item.currency,
+                details: item.details,
+                photoUri: item.photo_uri,
+                createdAt: item.created_at,
+                updatedAt: item.updated_at
+              }));
+              console.log('Mapped fund items:', items.length);
+              resolve(items);
+            },
+            (_, error) => {
+              console.error('getFundItemsByUserId query failed:', error);
+              reject(error);
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('SecureStorageService.getFundItemsByUserId failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete fund item by ID
+   * @param {string} id - Fund item ID
+   * @returns {Promise<boolean>} - Success status
+   */
+  async deleteFundItem(id) {
+    try {
+      console.log('=== SECURE STORAGE: DELETE FUND ITEM ===');
+      console.log('Deleting fund item:', id);
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'DELETE FROM fund_items WHERE id = ?',
+            [id],
+            (_, result) => {
+              console.log('✅ Fund item deleted, rows affected:', result.rowsAffected);
+              this.logAudit('DELETE', 'fund_items', id).catch(console.error);
+              resolve(result.rowsAffected > 0);
+            },
+            (_, error) => {
+              console.error('❌ Delete fund item failed:', error);
+              reject(error);
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('SecureStorageService.deleteFundItem failed:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1060,7 +1265,7 @@ class SecureStorageService {
       try {
         this.db.transaction(tx => {
           tx.executeSql(
-            'SELECT * FROM passports WHERE user_id = ? LIMIT 1',
+            'SELECT * FROM passports WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
             [userId],
             async (_, { rows }) => {
               if (rows.length === 0) {
@@ -1112,6 +1317,68 @@ class SecureStorageService {
         });
       } catch (error) {
         console.error('Failed to get user passport:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Clean up duplicate passports for a user, keeping only the most recent one
+   * @param {string} userId - User ID
+   * @returns {Promise<number>} - Number of duplicate passports deleted
+   */
+  async cleanupDuplicatePassports(userId) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.db.transaction(tx => {
+          // First, get all passports for this user
+          tx.executeSql(
+            'SELECT id, updated_at FROM passports WHERE user_id = ? ORDER BY updated_at DESC',
+            [userId],
+            (_, { rows }) => {
+              if (rows.length <= 1) {
+                // No duplicates
+                resolve(0);
+                return;
+              }
+
+              // Keep the first one (most recent), delete the rest
+              const passportsToDelete = rows._array.slice(1);
+              const idsToDelete = passportsToDelete.map(p => p.id);
+              
+              if (idsToDelete.length === 0) {
+                resolve(0);
+                return;
+              }
+
+              console.log(`Cleaning up ${idsToDelete.length} duplicate passport(s) for user ${userId}`);
+              console.log('Keeping most recent passport, deleting:', idsToDelete);
+
+              // Delete duplicates
+              const placeholders = idsToDelete.map(() => '?').join(',');
+              tx.executeSql(
+                `DELETE FROM passports WHERE id IN (${placeholders})`,
+                idsToDelete,
+                () => {
+                  console.log(`Successfully deleted ${idsToDelete.length} duplicate passport(s)`);
+                  resolve(idsToDelete.length);
+                },
+                (_, error) => {
+                  console.error('Failed to delete duplicate passports:', error);
+                  reject(error);
+                  return false;
+                }
+              );
+            },
+            (_, error) => {
+              console.error('Failed to query passports for cleanup:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to cleanup duplicate passports:', error);
         reject(error);
       }
     });

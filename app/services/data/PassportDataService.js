@@ -218,6 +218,17 @@ class PassportDataService {
          // Continue initialization even if migration check fails
        }
 
+       // Clean up duplicate passports (keep only the most recent one)
+       try {
+         const deletedCount = await SecureStorageService.cleanupDuplicatePassports(userId);
+         if (deletedCount > 0) {
+           console.log(`Cleaned up ${deletedCount} duplicate passport(s) for user ${userId}`);
+         }
+       } catch (cleanupError) {
+         console.warn('Could not cleanup duplicate passports:', cleanupError.message);
+         // Continue initialization even if cleanup fails
+       }
+
        this.initialized = true;
        console.log('PassportDataService initialized successfully');
      } catch (error) {
@@ -689,8 +700,30 @@ class PassportDataService {
         throw new Error(`Passport not found: ${passportId}`);
       }
 
-      // Apply updates
-      Object.assign(passport, updates);
+      // Filter out empty values to avoid overwriting existing data
+      const nonEmptyUpdates = {};
+      for (const [key, value] of Object.entries(updates)) {
+        // Skip metadata fields
+        if (key === 'id' || key === 'userId' || key === 'createdAt') {
+          continue;
+        }
+        
+        // Only include non-empty values
+        if (value !== null && value !== undefined) {
+          if (typeof value === 'string') {
+            // For strings, only include if not empty or whitespace-only
+            if (value.trim().length > 0) {
+              nonEmptyUpdates[key] = value;
+            }
+          } else {
+            // For non-strings, include as-is
+            nonEmptyUpdates[key] = value;
+          }
+        }
+      }
+
+      // Apply non-empty updates only
+      Object.assign(passport, nonEmptyUpdates);
       passport.updatedAt = new Date().toISOString();
 
       // Save updated passport with options
@@ -943,15 +976,26 @@ class PassportDataService {
    */
   static async saveFundingProof(fundingData, userId) {
     try {
+      console.log('=== PASSPORT DATA SERVICE: SAVE FUNDING PROOF ===');
+      console.log('Input fundingData:', JSON.stringify(fundingData, null, 2));
+      console.log('userId:', userId);
+      
       // Create funding proof instance
+      // Don't pass old ID - let the model generate consistent ID based on userId
+      const { id, ...fundingDataWithoutId } = fundingData;
       const fundingProof = new FundingProof({
-        ...fundingData,
+        ...fundingDataWithoutId,
         userId
       });
 
+      console.log('FundingProof instance created, about to save...');
+      console.log('Instance supportingDocs:', fundingProof.supportingDocs?.substring(0, 100));
+
       // Save to database
       // Default to skipValidation: true to support incremental/progressive filling
-      await fundingProof.save({ skipValidation: true });
+      const saveResult = await fundingProof.save({ skipValidation: true });
+      
+      console.log('FundingProof.save() completed, result:', saveResult);
 
       // Invalidate cache
       this.invalidateCache('fundingProof', userId);
@@ -960,7 +1004,7 @@ class PassportDataService {
       this.cache.fundingProof.set(userId, fundingProof);
       this.updateCacheTimestamp(`fundingProof_${userId}`);
 
-      console.log(`Funding proof saved for user ${userId}`);
+      console.log(`✅ Funding proof saved for user ${userId}`);
       return fundingProof;
     } catch (error) {
       console.error('Failed to save funding proof:', error);
@@ -969,7 +1013,7 @@ class PassportDataService {
   }
 
   /**
-   * Update funding proof data
+   * Update funding proof data (LEGACY)
    * Updates specific fields of existing funding proof
    * 
    * @param {string} fundingProofId - Funding proof ID (or userId for lookup)
@@ -1002,6 +1046,117 @@ class PassportDataService {
       return fundingProof;
     } catch (error) {
       console.error('Failed to update funding proof:', error);
+      throw error;
+    }
+  }
+
+  // ============================================================================
+  // FUND ITEM OPERATIONS (NEW)
+  // ============================================================================
+
+  /**
+   * Save individual fund item
+   * @param {Object} fundData - Fund item data
+   * @param {string} userId - User ID
+   * @returns {Promise<FundItem>} - Saved fund item instance
+   */
+  static async saveFundItem(fundData, userId) {
+    try {
+      console.log('=== PASSPORT DATA SERVICE: SAVE FUND ITEM ===');
+      console.log('Input fundData:', JSON.stringify(fundData, null, 2));
+      console.log('userId:', userId);
+
+      const FundItem = require('../../models/FundItem').default;
+
+      // Create fund item instance
+      const fundItem = new FundItem({
+        ...fundData,
+        userId
+      });
+
+      console.log('FundItem instance created, about to save...');
+
+      // Save to database
+      const saveResult = await fundItem.save({ skipValidation: true });
+      console.log('FundItem.save() completed, result:', saveResult);
+
+      // Invalidate cache for fund items
+      this.invalidateCache('fundItems', userId);
+
+      console.log(`✅ Fund item saved for user ${userId}`);
+      return fundItem;
+    } catch (error) {
+      console.error('PassportDataService.saveFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all fund items for a user
+   * @param {string} userId - User ID
+   * @returns {Promise<Array<FundItem>>} - Array of fund items
+   */
+  static async getFundItems(userId) {
+    try {
+      console.log('=== PASSPORT DATA SERVICE: GET FUND ITEMS ===');
+      console.log('Loading fund items for userId:', userId);
+
+      // Check cache first
+      const cacheKey = `fundItems_${userId}`;
+      if (this.cache.fundItems && this.cache.fundItems.has(userId)) {
+        const cached = this.cache.fundItems.get(userId);
+        if (this.isCacheValid(cacheKey)) {
+          console.log('Returning cached fund items');
+          return cached;
+        }
+      }
+
+      const FundItem = require('../../models/FundItem').default;
+      const fundItems = await FundItem.loadByUserId(userId);
+
+      // Update cache
+      if (!this.cache.fundItems) {
+        this.cache.fundItems = new Map();
+      }
+      this.cache.fundItems.set(userId, fundItems);
+      this.updateCacheTimestamp(cacheKey);
+
+      console.log(`✅ Loaded ${fundItems.length} fund items for user ${userId}`);
+      return fundItems;
+    } catch (error) {
+      console.error('PassportDataService.getFundItems failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete fund item
+   * @param {string} fundItemId - Fund item ID
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>} - Success status
+   */
+  static async deleteFundItem(fundItemId, userId) {
+    try {
+      console.log('=== PASSPORT DATA SERVICE: DELETE FUND ITEM ===');
+      console.log('Deleting fund item:', fundItemId, 'for user:', userId);
+
+      const FundItem = require('../../models/FundItem').default;
+      const fundItem = await FundItem.load(fundItemId);
+
+      if (!fundItem) {
+        console.log('Fund item not found:', fundItemId);
+        return false;
+      }
+
+      const result = await fundItem.delete();
+
+      // Invalidate cache
+      this.invalidateCache('fundItems', userId);
+
+      console.log(`✅ Fund item deleted: ${fundItemId}`);
+      return result;
+    } catch (error) {
+      console.error('PassportDataService.deleteFundItem failed:', error);
       throw error;
     }
   }
