@@ -11,7 +11,6 @@
  * @module app/services/data/PassportDataService
  * @requires app/models/Passport
  * @requires app/models/PersonalInfo
- * @requires app/models/FundingProof
  * @requires app/services/security/SecureStorageService
  * @requires @react-native-async-storage/async-storage
  * 
@@ -46,7 +45,6 @@
 
 import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
-// FundingProof import removed - model deleted
 import SecureStorageService from '../security/SecureStorageService';
 
 // AsyncStorage import with error handling
@@ -102,7 +100,7 @@ try {
  * 
  * // Get all user data efficiently
  * const allData = await PassportDataService.getAllUserData(userId);
- * console.log(allData.passport, allData.personalInfo, allData.fundingProof);
+ * console.log(allData.passport, allData.personalInfo);
  * 
  * @static
  */
@@ -122,13 +120,11 @@ class PassportDataService {
    * @static
    * @property {Map<string, Passport>} passport - Maps userId to Passport instances
    * @property {Map<string, PersonalInfo>} personalInfo - Maps userId to PersonalInfo instances
-   * @property {Map<string, FundingProof>} fundingProof - Maps userId to FundingProof instances
    * @property {Map<string, number>} lastUpdate - Maps cacheKey to timestamp for TTL tracking
    */
   static cache = {
     passport: new Map(),      // userId -> Passport instance
     personalInfo: new Map(),  // userId -> PersonalInfo instance
-    // Legacy fundingProof cache removed
     lastUpdate: new Map()     // cacheKey -> timestamp
   };
 
@@ -257,7 +253,7 @@ class PassportDataService {
    * 
    * @description
    * This method:
-   * - Clears all Map-based caches (passport, personalInfo, fundingProof)
+   * - Clears all Map-based caches (passport, personalInfo)
    * - Clears all cache timestamps
    * - Logs final cache statistics before clearing
    * - Does NOT reset cache statistics (use resetCacheStats() for that)
@@ -265,7 +261,6 @@ class PassportDataService {
   static clearCache() {
     this.cache.passport.clear();
     this.cache.personalInfo.clear();
-    // Legacy fundingProof cache removed
     this.cache.lastUpdate.clear();
     this.logCacheStats();
   }
@@ -444,12 +439,10 @@ class PassportDataService {
       // Remove user's data from cache
       this.cache.passport.delete(userId);
       this.cache.personalInfo.delete(userId);
-      // Legacy fundingProof cache removed
       
       // Remove cache timestamps
       this.cache.lastUpdate.delete(`passport_${userId}`);
       this.cache.lastUpdate.delete(`personalInfo_${userId}`);
-      // Legacy fundingProof timestamp removed
     } catch (error) {
       console.error('Failed to refresh cache:', error);
       throw error;
@@ -532,7 +525,7 @@ class PassportDataService {
    * 
    * @example
    * // Invalidate all data types for a user
-   * ['passport', 'personalInfo', 'fundingProof'].forEach(type => {
+   * ['passport', 'personalInfo'].forEach(type => {
    *   PassportDataService.invalidateCache(type, userId);
    * });
    * 
@@ -929,49 +922,8 @@ class PassportDataService {
   // FUNDING PROOF OPERATIONS
   // ============================================================================
 
-  /**
-   * DEPRECATED: Get funding proof for a user
-   * Use getFundItems() instead
-   * 
-   * @deprecated Use getFundItems(userId) instead
-   * @param {string} userId - User ID
-   * @returns {Promise<null>} - Always returns null
-   */
-  static async getFundingProof(userId) {
-    console.warn('getFundingProof is deprecated. Use getFundItems() instead.');
-    return null;
-  }
-
-  /**
-   * DEPRECATED: Save funding proof for a user
-   * Use saveFundItem() instead
-   * 
-   * @deprecated Use saveFundItem(fundItemData, userId) instead
-   * @param {Object} fundingData - Funding proof data to save
-   * @param {string} userId - User ID
-   * @returns {Promise<null>} - Always returns null
-   */
-  static async saveFundingProof(fundingData, userId) {
-    console.warn('saveFundingProof is deprecated. Use saveFundItem() instead.');
-    return null;
-  }
-
-  /**
-   * DEPRECATED: Update funding proof data
-   * Use saveFundItem() to update individual fund items instead
-   * 
-   * @deprecated Use saveFundItem() instead
-   * @param {string} fundingProofId - Funding proof ID (or userId for lookup)
-   * @param {Object} updates - Fields to update
-   * @returns {Promise<null>} - Always returns null
-   */
-  static async updateFundingProof(fundingProofId, updates) {
-    console.warn('updateFundingProof is deprecated. Use saveFundItem() instead.');
-    return null;
-  }
-
   // ============================================================================
-  // FUND ITEM OPERATIONS (NEW)
+  // FUND ITEM OPERATIONS
   // ============================================================================
 
   /**
@@ -1271,7 +1223,6 @@ class PassportDataService {
       return {
         passport,
         personalInfo,
-        // Legacy fundingProof removed - use getFundItems() instead
         userId,
         loadedAt: new Date().toISOString(),
         loadDurationMs: duration
@@ -1282,7 +1233,6 @@ class PassportDataService {
       return {
         passport: null,
         personalInfo: null,
-        // Legacy fundingProof removed
         userId,
         loadedAt: new Date().toISOString(),
         loadDurationMs: 0
@@ -1321,15 +1271,12 @@ class PassportDataService {
         });
       }
 
-      // Legacy fundingProof operation removed
-
       // Execute batch save with transaction
       const batchResults = await SecureStorageService.batchSave(operations);
 
       // Invalidate all caches for this user
       this.invalidateCache('passport', userId);
       this.invalidateCache('personalInfo', userId);
-      // Legacy fundingProof cache removed
 
       // Reload data into cache
       const results = {};
@@ -1341,8 +1288,6 @@ class PassportDataService {
       if (userData.personalInfo) {
         results.personalInfo = await this.getPersonalInfo(userId);
       }
-      
-      // Legacy fundingProof removed
 
       const duration = Date.now() - startTime;
       console.log(`Batch save completed in ${duration}ms`);
@@ -1362,7 +1307,6 @@ class PassportDataService {
    * @param {Object} updates - Object containing updates for each data type
    * @param {Object} updates.passport - Passport updates
    * @param {Object} updates.personalInfo - Personal info updates
-   * @param {Object} updates.fundingProof - Funding proof updates
    * @returns {Promise<Object>} - Updated data
    */
   static async batchUpdate(userId, updates) {
@@ -1400,8 +1344,6 @@ class PassportDataService {
         });
       }
 
-      // Legacy fundingProof update removed
-
       if (operations.length === 0) {
         console.log('No updates to perform');
         return currentData;
@@ -1413,7 +1355,6 @@ class PassportDataService {
       // Invalidate all caches for this user
       this.invalidateCache('passport', userId);
       this.invalidateCache('personalInfo', userId);
-      // Legacy fundingProof cache removed
 
       // Reload updated data
       const updatedData = await this.getAllUserData(userId, { useBatchLoad: true });
@@ -1438,7 +1379,7 @@ class PassportDataService {
   static async hasUserData(userId) {
     try {
       const userData = await this.getAllUserData(userId);
-      return !!(userData.passport || userData.personalInfo || userData.fundingProof);
+      return !!(userData.passport || userData.personalInfo);
     } catch (error) {
       console.error('Failed to check user data:', error);
       return false;
@@ -1459,7 +1400,6 @@ class PassportDataService {
       // Clear from cache
       this.invalidateCache('passport', userId);
       this.invalidateCache('personalInfo', userId);
-      // Legacy fundingProof cache removed
 
       // Delete from database
       // Note: This requires delete methods in SecureStorageService
@@ -1513,7 +1453,6 @@ class PassportDataService {
          success: false,
          passport: null,
          personalInfo: null,
-         fundingProof: null,
          errors: []
        };
 
@@ -1540,9 +1479,6 @@ class PassportDataService {
          console.error('Failed to migrate personal info:', error);
          migrationResult.errors.push(`PersonalInfo: ${error.message}`);
        }
-
-       // Legacy funding proof migration removed - use fund_items instead
-       migrationResult.fundingProof = null;
 
        // Mark migration as complete (only if we have some data or no errors)
        if (migrationResult.passport || migrationResult.personalInfo || migrationResult.errors.length === 0) {
@@ -1688,18 +1624,7 @@ class PassportDataService {
      }
    }
 
-  /**
-    * DEPRECATED: Migrate funding proof from AsyncStorage
-    * Legacy funding_proof table has been removed
-    *
-    * @deprecated Legacy method - funding_proof table removed
-    * @param {string} userId - User ID
-    * @returns {Promise<null>} - Always returns null
-    */
-   static async migrateFundingProofFromAsyncStorage(userId) {
-     console.warn('migrateFundingProofFromAsyncStorage is deprecated. Legacy funding_proof table removed.');
-     return null;
-   }
+
 
   // ============================================================================
   // DATA TRANSFORMATION HELPERS
@@ -1752,20 +1677,7 @@ class PassportDataService {
     };
   }
 
-  /**
-   * DEPRECATED: Transform funding proof data from old format to new format
-   * Legacy funding_proof table has been removed
-   * 
-   * @deprecated Legacy method - funding_proof table removed
-   * @param {Object} oldData - Old funding proof data from AsyncStorage
-   * @param {string} userId - User ID
-   * @returns {Object} - Empty object
-   */
-  static transformFundingProofData(oldData, userId) {
-    console.warn('transformFundingProofData is deprecated. Legacy funding_proof table removed.');
-    return {
-    };
-  }
+
 
   // ============================================================================
   // DATA CONSISTENCY VALIDATION
@@ -1788,7 +1700,6 @@ class PassportDataService {
         validatedAt: new Date().toISOString(),
         passport: { valid: true, errors: [] },
         personalInfo: { valid: true, errors: [] },
-        fundingProof: { valid: true, errors: [] },
         crossFieldValidation: { valid: true, errors: [] }
       };
 
@@ -1809,15 +1720,6 @@ class PassportDataService {
         const personalInfoValidation = this.validatePersonalInfoData(userData.personalInfo);
         validationResult.personalInfo = personalInfoValidation;
         if (!personalInfoValidation.valid) {
-          validationResult.isConsistent = false;
-        }
-      }
-
-      // Validate funding proof data
-      if (userData.fundingProof) {
-        const fundingProofValidation = this.validateFundingProofData(userData.fundingProof);
-        validationResult.fundingProof = fundingProofValidation;
-        if (!fundingProofValidation.valid) {
           validationResult.isConsistent = false;
         }
       }
@@ -1960,34 +1862,7 @@ class PassportDataService {
     return result;
   }
 
-  /**
-   * Validate funding proof data consistency
-   * 
-   * @param {FundingProof} fundingProof - FundingProof instance
-   * @returns {Object} - Validation result
-   */
-  static validateFundingProofData(fundingProof) {
-    const result = { valid: true, errors: [] };
 
-    // Check userId
-    if (!fundingProof.userId) {
-      result.valid = false;
-      result.errors.push('Missing userId');
-    }
-
-    // At least one funding proof field should be provided
-    const hasAnyFunding = 
-      (fundingProof.cashAmount && fundingProof.cashAmount.trim() !== '') ||
-      (fundingProof.bankCards && fundingProof.bankCards.trim() !== '') ||
-      (fundingProof.supportingDocs && fundingProof.supportingDocs.trim() !== '');
-
-    if (!hasAnyFunding) {
-      result.valid = false;
-      result.errors.push('At least one funding proof field must be provided');
-    }
-
-    return result;
-  }
 
   /**
    * Validate cross-field consistency
@@ -2003,7 +1878,6 @@ class PassportDataService {
     const userIds = new Set();
     if (userData.passport?.userId) userIds.add(userData.passport.userId);
     if (userData.personalInfo?.userId) userIds.add(userData.personalInfo.userId);
-    if (userData.fundingProof?.userId) userIds.add(userData.fundingProof.userId);
 
     if (userIds.size > 1) {
       result.valid = false;

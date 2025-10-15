@@ -81,7 +81,7 @@ docs/
 
 ### 🎯 Quick Start Guides
 
-- **[QUICK_START.md](../QUICK_START.md)** - Complete setup and testing guide
+- **[QUICKSTART.md](../QUICKSTART.md)** - Complete setup and testing guide
 - **[IMPLEMENTATION_STATUS.md](implementation/IMPLEMENTATION_STATUS.md)** - Current project status
 - **[VALIDATION_CHECKLIST.md](fixes/VALIDATION_CHECKLIST.md)** - Testing checklist
 
@@ -156,7 +156,7 @@ docs/
 ## 🔍 Finding Documentation
 
 ### By Topic
-- **Setup/Getting Started**: Look in root level or `QUICK_START.md`
+- **Setup/Getting Started**: Look in root level or `QUICKSTART.md`
 - **AI & Machine Learning**: `docs/ai/` directory
 - **Architecture & Tech Stack**: `docs/architecture/` directory
 - **Internationalization**: `docs/i18n/` directory

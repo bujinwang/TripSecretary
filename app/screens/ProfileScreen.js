@@ -1,5 +1,5 @@
 // 入境通 - Profile Screen
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { NationalitySelector, PassportNameInput } from '../components';
@@ -48,11 +49,8 @@ const ProfileScreen = ({ navigation, route }) => {
     email: '',
   });
 
-  const [fundingProof, setFundingProof] = useState({
-    cashAmount: '',
-    bankCards: '',
-    supportingDocs: '',
-  });
+  // Fund items state - loaded from database
+  const [fundItems, setFundItems] = useState([]);
 
   const [expandedSection, setExpandedSection] = useState('personal'); // 'personal', 'passport', 'funding', or null
   const [editingContext, setEditingContext] = useState(null);
@@ -154,16 +152,14 @@ const ProfileScreen = ({ navigation, route }) => {
           setPersonalInfo(mappedPersonalInfo);
         }
         
-        // Load funding proof
-        if (userData.fundingProof) {
-          
-          const mappedFundingProof = {
-            cashAmount: userData.fundingProof.cashAmount || '',
-            bankCards: userData.fundingProof.bankCards || '',
-            supportingDocs: userData.fundingProof.supportingDocs || '',
-          };
-          
-          setFundingProof(mappedFundingProof);
+        // Load fund items
+        try {
+          const items = await PassportDataService.getFundItems(userId);
+          console.log('Loaded fund items:', items);
+          setFundItems(items || []);
+        } catch (fundItemsError) {
+          console.error('Error loading fund items:', fundItemsError);
+          setFundItems([]);
         }
         
       } catch (error) {
@@ -173,6 +169,24 @@ const ProfileScreen = ({ navigation, route }) => {
     
     loadSavedData();
   }, []);
+
+  // Reload fund items when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadFundItems = async () => {
+        try {
+          const userId = 'default_user';
+          const items = await PassportDataService.getFundItems(userId);
+          console.log('Reloaded fund items on focus:', items);
+          setFundItems(items || []);
+        } catch (error) {
+          console.error('Error reloading fund items:', error);
+        }
+      };
+      
+      loadFundItems();
+    }, [])
+  );
 
   // Note: Data saving is now handled through PassportDataService in individual update handlers
   // instead of useEffect hooks to avoid unnecessary saves on every render
@@ -240,35 +254,6 @@ const ProfileScreen = ({ navigation, route }) => {
 
     return fields;
   }, [t, language, destination]);
-
-  const fundingFields = useMemo(
-    () => [
-      {
-        key: 'cashAmount',
-        title: t('profile.funding.fields.cashAmount.title', { defaultValue: 'Cash on hand' }),
-        placeholder: t('profile.funding.fields.cashAmount.placeholder', {
-          defaultValue: 'e.g. 10,000 THB cash + 500 USD',
-        }),
-      },
-      {
-        key: 'bankCards',
-        title: t('profile.funding.fields.bankCards.title', { defaultValue: 'Bank cards & balances' }),
-        placeholder: t('profile.funding.fields.bankCards.placeholder', {
-          defaultValue: 'e.g.\nCMB Visa (****1234) · Balance 20,000 CNY',
-        }),
-        multiline: true,
-      },
-      {
-        key: 'supportingDocs',
-        title: t('profile.funding.fields.supportingDocs.title', { defaultValue: 'Supporting documents' }),
-        placeholder: t('profile.funding.fields.supportingDocs.placeholder', {
-          defaultValue: 'e.g. bank balance screenshots, transaction PDFs, statements',
-        }),
-        multiline: true,
-      },
-    ],
-    [t, language]
-  );
 
   const personalTitle = t('profile.personal.title', { defaultValue: 'Personal Information' });
   const personalSubtitle = t('profile.personal.subtitle', { defaultValue: 'Update border details' });
@@ -366,12 +351,11 @@ const ProfileScreen = ({ navigation, route }) => {
   }, [passportData]);
 
   const fundingFieldsCount = useMemo(() => {
-    const filled = fundingFields.filter(field => {
-      const value = fundingProof[field.key];
-      return value && value.toString().trim() !== '';
-    }).length;
-    return { filled, total: fundingFields.length };
-  }, [fundingFields, fundingProof]);
+    // Count fund items instead of legacy funding proof fields
+    const filled = fundItems.length;
+    const total = 3; // Expected minimum fund items (cash, bank card, supporting doc)
+    return { filled, total };
+  }, [fundItems]);
 
   const handleMenuPress = (itemId) => {
     if (itemId === 'language') {
@@ -427,11 +411,7 @@ const ProfileScreen = ({ navigation, route }) => {
         nationality: 'CHN',
         expiry: '2030-12-31',
       });
-      setFundingProof({
-        cashAmount: '',
-        bankCards: '',
-        supportingDocs: '',
-      });
+      setFundItems([]);
       
       console.log('Database and storage cleared successfully');
     } catch (error) {
@@ -451,8 +431,6 @@ const ProfileScreen = ({ navigation, route }) => {
     let currentValue;
     if (type === 'personal') {
       currentValue = personalInfo[field.key];
-    } else if (type === 'funding') {
-      currentValue = fundingProof[field.key];
     } else if (type === 'passport-nationality') {
       currentValue = passportData.nationality;
     } else if (type === 'passport-name') {
@@ -484,8 +462,6 @@ const ProfileScreen = ({ navigation, route }) => {
 
     if (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') {
       fields = personalFields;
-    } else if (editingContext.type === 'funding') {
-      fields = fundingFields;
     } else {
       return;
     }
@@ -679,18 +655,6 @@ const ProfileScreen = ({ navigation, route }) => {
               await PassportDataService.updatePassport(passportData.id, updates, { skipValidation: true });
             }
           }
-        } else if (editingContext.type === 'funding') {
-          setFundingProof((prev) => ({
-            ...prev,
-            [editingContext.key]: value,
-          }));
-          
-          const fundingData = await PassportDataService.getFundingProof(userId);
-          if (fundingData && fundingData.id) {
-            await PassportDataService.updateFundingProof(fundingData.id, {
-              [editingContext.key]: value,
-            });
-          }
         } else if (editingContext.type === 'passport-nationality') {
           setPassportData((prev) => ({
             ...prev,
@@ -820,20 +784,6 @@ const ProfileScreen = ({ navigation, route }) => {
             await PassportDataService.updatePassport(passportData.id, updates, { skipValidation: true });
           }
         }
-      } else if (editingContext.type === 'funding') {
-        const updatedFundingProof = {
-          ...fundingProof,
-          [editingContext.key]: editValue,
-        };
-        setFundingProof(updatedFundingProof);
-        
-        // Save to PassportDataService
-        const fundingData = await PassportDataService.getFundingProof(userId);
-        if (fundingData && fundingData.id) {
-          await PassportDataService.updateFundingProof(fundingData.id, {
-            [editingContext.key]: editValue,
-          });
-        }
       } else if (editingContext.type === 'passport-nationality') {
         const updatedPassportData = {
           ...passportData,
@@ -884,8 +834,9 @@ const ProfileScreen = ({ navigation, route }) => {
     handleCancelEdit();
   };
 
-  const handleScanFundingProof = () => {
-    // TODO: Navigate to scanner / uploader screen
+  const handleManageFundItems = () => {
+    // Navigate to Thailand travel info screen where fund items can be managed
+    navigation.navigate('ThailandTravelInfo', { destination: 'th' });
   };
 
   // Database inspection function for debugging
@@ -907,9 +858,9 @@ const ProfileScreen = ({ navigation, route }) => {
       const personalInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM personal_info');
       console.log('👤 Personal info table:', personalInfo);
 
-      // Inspect funding_proof table
-      const fundingProof = await SecureStorageService.db.getAllAsync('SELECT * FROM funding_proof');
-      console.log('💰 Funding proof table:', fundingProof);
+      // Inspect fund_items table
+      const fundItems = await SecureStorageService.db.getAllAsync('SELECT * FROM fund_items');
+      console.log('💰 Fund items table:', fundItems);
 
       // Inspect travel_info table
       const travelInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM travel_info');
@@ -925,7 +876,7 @@ const ProfileScreen = ({ navigation, route }) => {
         [{ text: 'OK' }]
       );
 
-      return { tables, passports, personalInfo, fundingProof, travelInfo };
+      return { tables, passports, personalInfo, fundItems, travelInfo };
     } catch (error) {
       console.error('❌ Database inspection failed:', error);
       Alert.alert('Error', `Database inspection failed: ${error.message}`);
@@ -1103,42 +1054,64 @@ const ProfileScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.infoList}>
-                  {fundingFields.map((field, index) => {
-                    const value = fundingProof[field.key];
-                    const isLast = index === fundingFields.length - 1;
+                  {fundItems.length > 0 ? (
+                    fundItems.map((item, index) => {
+                      const isLast = index === fundItems.length - 1;
+                      
+                      // Format the display based on item type
+                      let displayText = '';
+                      if (item.itemType === 'CASH') {
+                        displayText = `${item.amount} ${item.currency}`;
+                      } else if (item.itemType === 'BANK_CARD') {
+                        displayText = `${item.description || 'Bank Card'} - ${item.amount} ${item.currency}`;
+                      } else if (item.itemType === 'DOCUMENT') {
+                        displayText = item.description || 'Supporting Document';
+                      } else {
+                        displayText = `${item.amount || ''} ${item.currency || ''} ${item.description || ''}`.trim();
+                      }
 
-                    return (
-                      <TouchableOpacity
-                        key={field.key}
-                        style={[styles.infoRow, !isLast && styles.infoRowDivider]}
-                        onPress={() => handleStartEdit('funding', field, index)}
-                        accessibilityRole="button"
-                        testID={`${field.key}-field`}
-                      >
-                        <View style={styles.infoRowText}>
-                          <Text style={styles.infoTitle}>{field.title}</Text>
-                        </View>
-                        <View style={styles.infoValueWrap}>
-                          <Text
-                            style={[
-                              styles.infoValue,
-                              !value && styles.infoPlaceholder,
-                            ]}
-                            numberOfLines={field.multiline ? 3 : 1}
-                            testID={field.key === 'cashAmount' ? 'cash-amount-input' : `${field.key}-input`}
-                          >
-                            {value || notFilledLabel}
-                          </Text>
+                      return (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={[styles.infoRow, !isLast && styles.infoRowDivider]}
+                          onPress={handleManageFundItems}
+                          accessibilityRole="button"
+                        >
+                          <View style={styles.fundItemContent}>
+                            <Text style={styles.fundItemIcon}>
+                              {item.itemType === 'CASH' ? '💵' : 
+                               item.itemType === 'BANK_CARD' ? '💳' : 
+                               item.itemType === 'DOCUMENT' ? '📄' : 
+                               '💰'}
+                            </Text>
+                            <View style={styles.fundItemDetails}>
+                              <Text style={styles.fundItemType}>
+                                {item.itemType === 'CASH' ? '现金' : 
+                                 item.itemType === 'BANK_CARD' ? '银行卡' : 
+                                 item.itemType === 'DOCUMENT' ? '证明文件' : 
+                                 '资金'}
+                              </Text>
+                              <Text style={styles.fundItemValue} numberOfLines={2}>
+                                {displayText}
+                              </Text>
+                            </View>
+                          </View>
                           <Text style={styles.rowArrow}>›</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
+                        </TouchableOpacity>
+                      );
+                    })
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyStateText}>
+                        {t('profile.funding.empty', { defaultValue: '暂无资金证明，请添加' })}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 <TouchableOpacity
                   style={styles.actionRow}
-                  onPress={handleScanFundingProof}
+                  onPress={handleManageFundItems}
                   accessibilityRole="button"
                 >
                   <Text style={styles.actionRowText}>{scanProofText}</Text>
@@ -2167,6 +2140,18 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.white,
     marginLeft: spacing.sm,
+  },
+  
+  // Empty state styles
+  emptyState: {
+    padding: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
 
