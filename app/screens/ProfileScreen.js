@@ -314,18 +314,6 @@ const ProfileScreen = ({ navigation, route }) => {
             icon: '🔔',
             title: t('profile.menu.notifications.title', { defaultValue: 'Notification Settings' }),
           },
-          {
-            id: 'clearStorage',
-            icon: '🗑️',
-            title: t('profile.menu.clearStorage.title', { defaultValue: 'Clear Saved Data' }),
-            subtitle: t('profile.menu.clearStorage.subtitle', { defaultValue: 'Reset to defaults (for debugging)' }),
-          },
-          {
-            id: 'inspectDB',
-            icon: '🔍',
-            title: 'Inspect Database',
-            subtitle: 'View database contents in console',
-          },
         ],
       },
     ],
@@ -361,15 +349,6 @@ const ProfileScreen = ({ navigation, route }) => {
     if (itemId === 'language') {
       // Navigate back to login to change language
       navigation.replace('Login');
-    } else if (itemId === 'clearStorage') {
-      handleClearStorage();
-      Alert.alert(
-        'Storage Cleared',
-        'All saved data has been reset to defaults.',
-        [{ text: 'OK' }]
-      );
-    } else if (itemId === 'inspectDB') {
-      inspectDatabase();
     }
     // TODO: Navigate to respective screens
   };
@@ -379,53 +358,7 @@ const ProfileScreen = ({ navigation, route }) => {
     navigation.replace('Login');
   };
 
-  const handleClearStorage = async () => {
-    try {
-      // Import SecureStorageService
-      const SecureStorageService = require('../services/security/SecureStorageService').default;
-      
-      // Reset database (drop and recreate tables)
-      await SecureStorageService.resetDatabase();
-      
-      // Reinitialize with fresh schema
-      await SecureStorageService.initialize('default_user');
-      
-      // Clear cache in PassportDataService
-      PassportDataService.clearCache();
-      
-      // Reset to defaults
-      setPersonalInfo({
-        dateOfBirth: '1988-01-22',
-        gender: 'MALE',
-        occupation: 'BUSINESS MAN',
-        provinceCity: 'ANHUI',
-        countryRegion: 'CHN',
-        phone: '+86 12343434343',
-        email: 'traveler@example.com',
-      });
-      setPassportData({
-        type: '中国护照',
-        name: 'ZHANG, WEI',
-        nameEn: 'ZHANG, WEI',
-        passportNo: 'E12345678',
-        nationality: 'CHN',
-        expiry: '2030-12-31',
-      });
-      setFundItems([]);
-      
-      console.log('Database and storage cleared successfully');
-    } catch (error) {
-      console.error('Error clearing storage:', error);
-    }
-  };
 
-  // Expose clear storage function globally for debugging
-  useEffect(() => {
-    global.clearProfileStorage = handleClearStorage;
-    return () => {
-      delete global.clearProfileStorage;
-    };
-  }, []);
 
   const handleStartEdit = (type, field, fieldIndex = null) => {
     let currentValue;
@@ -839,49 +772,6 @@ const ProfileScreen = ({ navigation, route }) => {
     navigation.navigate('ThailandTravelInfo', { destination: 'th' });
   };
 
-  // Database inspection function for debugging
-  const inspectDatabase = async () => {
-    try {
-      console.log('🔍 INSPECTING DATABASE CONTENTS...');
-
-      // Get all tables
-      const tables = await SecureStorageService.db.getAllAsync(
-        "SELECT name FROM sqlite_master WHERE type='table'"
-      );
-      console.log('📋 Available tables:', tables.map(t => t.name));
-
-      // Inspect passports table
-      const passports = await SecureStorageService.db.getAllAsync('SELECT * FROM passports');
-      console.log('🛂 Passports table:', passports);
-
-      // Inspect personal_info table
-      const personalInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM personal_info');
-      console.log('👤 Personal info table:', personalInfo);
-
-      // Inspect fund_items table
-      const fundItems = await SecureStorageService.db.getAllAsync('SELECT * FROM fund_items');
-      console.log('💰 Fund items table:', fundItems);
-
-      // Inspect travel_info table
-      const travelInfo = await SecureStorageService.db.getAllAsync('SELECT * FROM travel_info');
-      console.log('✈️ Travel info table:', travelInfo);
-
-      // Get database file path for external access
-      console.log('💾 Database file should be accessible at:');
-      console.log('iOS: ~/Library/Developer/CoreSimulator/Devices/{SIMULATOR_ID}/data/Containers/Data/Application/{APP_ID}/Documents/ExponentExperienceData/@anonymous%2Fchujingtong-.../SQLite/tripsecretary_secure');
-
-      Alert.alert(
-        'Database Inspection Complete',
-        'Check console logs for detailed database contents. Database file path has been logged.',
-        [{ text: 'OK' }]
-      );
-
-      return { tables, passports, personalInfo, fundItems, travelInfo };
-    } catch (error) {
-      console.error('❌ Database inspection failed:', error);
-      Alert.alert('Error', `Database inspection failed: ${error.message}`);
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -2152,6 +2042,30 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  
+  // Fund item styles
+  fundItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  fundItemIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  fundItemDetails: {
+    flex: 1,
+  },
+  fundItemType: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.xs / 2,
+  },
+  fundItemValue: {
+    ...typography.body1,
+    color: colors.textSecondary,
   },
 });
 
