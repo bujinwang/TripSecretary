@@ -64,6 +64,18 @@ describe('FundItemDetailModal - Unit Tests', () => {
     updatedAt: '2024-01-01T00:00:00Z'
   };
 
+  const mockBankBalanceItem = {
+    id: 'fund-4',
+    userId: 'default_user',
+    type: 'BANK_BALANCE',
+    amount: '',
+    currency: '',
+    details: '',
+    photoUri: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     Alert.alert.mockClear();
@@ -122,6 +134,22 @@ describe('FundItemDetailModal - Unit Tests', () => {
       expect(getByText('Bank statement')).toBeTruthy();
       // Amount should not be displayed for document type
       expect(queryByText(/USD|EUR|THB/)).toBeNull();
+    });
+
+    it('should render bank balance item with placeholders when amount/currency missing', () => {
+      const { getByText } = render(
+        <FundItemDetailModal
+          visible={true}
+          fundItem={mockBankBalanceItem}
+          onClose={mockOnClose}
+          onUpdate={mockOnUpdate}
+          onDelete={mockOnDelete}
+          onManageAll={mockOnManageAll}
+        />
+      );
+
+      expect(getByText('Bank Balance')).toBeTruthy();
+      expect(getByText('Not provided yet')).toBeTruthy();
     });
 
     it('should display photo thumbnail when photoUri exists', () => {

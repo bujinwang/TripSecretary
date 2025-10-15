@@ -779,7 +779,15 @@ const ProfileScreen = ({ navigation, route }) => {
 
   // Fund item detail modal handlers
   const handleFundItemPress = (fundItem) => {
-    setSelectedFundItem(fundItem);
+    // Convert FundItem instance to plain object to ensure all properties are accessible
+    const fundItemData = fundItem.toJSON ? fundItem.toJSON() : fundItem;
+    console.log('[ProfileScreen] Opening fund item detail:', {
+      id: fundItemData.id,
+      type: fundItemData.type,
+      hasPhotoUri: !!fundItemData.photoUri,
+      photoUri: fundItemData.photoUri?.substring(0, 100),
+    });
+    setSelectedFundItem(fundItemData);
     setFundItemModalVisible(true);
   };
 
@@ -998,17 +1006,71 @@ const ProfileScreen = ({ navigation, route }) => {
                   {fundItems.length > 0 ? (
                     fundItems.map((item, index) => {
                       const isLast = index === fundItems.length - 1;
-                      
-                      // Format the display based on item type
-                      let displayText = '';
-                      if (item.itemType === 'CASH') {
-                        displayText = `${item.amount} ${item.currency}`;
-                      } else if (item.itemType === 'BANK_CARD') {
-                        displayText = `${item.description || 'Bank Card'} - ${item.amount} ${item.currency}`;
-                      } else if (item.itemType === 'DOCUMENT') {
-                        displayText = item.description || 'Supporting Document';
+
+                      const typeKey = (item.itemType || item.type || 'OTHER').toUpperCase();
+                      const typeMeta = {
+                        CASH: { icon: '💵' },
+                        BANK_CARD: { icon: '💳' },
+                        CREDIT_CARD: { icon: '💳' },
+                        DOCUMENT: { icon: '📄' },
+                        BANK_BALANCE: { icon: '🏦' },
+                        INVESTMENT: { icon: '📈' },
+                      };
+                      const defaultIcon = '💰';
+                      const typeIcon = (typeMeta[typeKey] || {}).icon || defaultIcon;
+
+                      const defaultTypeLabels = {
+                        CASH: 'Cash',
+                        BANK_CARD: 'Bank Card',
+                        CREDIT_CARD: 'Bank Card',
+                        DOCUMENT: 'Supporting Document',
+                        BANK_BALANCE: 'Bank Balance',
+                        INVESTMENT: 'Investment',
+                        OTHER: 'Funding',
+                      };
+                      const typeLabel = t(`fundItem.types.${typeKey}`, {
+                        defaultValue: defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER,
+                      });
+
+                      const notProvidedLabel = t('fundItem.detail.notProvided', {
+                        defaultValue: 'Not provided yet',
+                      });
+
+                      const descriptionValue = item.description || item.details || '';
+                      const currencyValue = item.currency ? item.currency.toUpperCase() : '';
+
+                      const normalizeAmount = (value) => {
+                        if (value === null || value === undefined || value === '') return '';
+                        if (typeof value === 'number' && Number.isFinite(value)) {
+                          return value.toLocaleString();
+                        }
+                        if (typeof value === 'string') {
+                          const trimmed = value.trim();
+                          if (!trimmed) return '';
+                          const parsed = Number(trimmed.replace(/,/g, ''));
+                          return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
+                        }
+                        return `${value}`;
+                      };
+
+                      const amountValue = normalizeAmount(item.amount);
+
+                      const isAmountType = ['CASH', 'BANK_CARD', 'CREDIT_CARD', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey);
+                      let displayText;
+
+                      if (typeKey === 'DOCUMENT') {
+                        displayText = descriptionValue || notProvidedLabel;
+                      } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
+                        const cardLabel = descriptionValue || notProvidedLabel;
+                        const amountLabel = amountValue || notProvidedLabel;
+                        const currencyLabel = currencyValue || notProvidedLabel;
+                        displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
+                      } else if (isAmountType) {
+                        const amountLabel = amountValue || notProvidedLabel;
+                        const currencyLabel = currencyValue || notProvidedLabel;
+                        displayText = `${amountLabel} ${currencyLabel}`.trim();
                       } else {
-                        displayText = `${item.amount || ''} ${item.currency || ''} ${item.description || ''}`.trim();
+                        displayText = descriptionValue || amountValue || currencyValue || notProvidedLabel;
                       }
 
                       return (
@@ -1020,17 +1082,11 @@ const ProfileScreen = ({ navigation, route }) => {
                         >
                           <View style={styles.fundItemContent}>
                             <Text style={styles.fundItemIcon}>
-                              {item.itemType === 'CASH' ? '💵' : 
-                               item.itemType === 'BANK_CARD' ? '💳' : 
-                               item.itemType === 'DOCUMENT' ? '📄' : 
-                               '💰'}
+                              {typeIcon}
                             </Text>
                             <View style={styles.fundItemDetails}>
                               <Text style={styles.fundItemType}>
-                                {item.itemType === 'CASH' ? '现金' : 
-                                 item.itemType === 'BANK_CARD' ? '银行卡' : 
-                                 item.itemType === 'DOCUMENT' ? '证明文件' : 
-                                 '资金'}
+                                {typeLabel}
                               </Text>
                               <Text style={styles.fundItemValue} numberOfLines={2}>
                                 {displayText}

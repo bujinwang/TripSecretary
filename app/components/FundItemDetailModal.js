@@ -141,6 +141,9 @@ const FundItemDetailModal = ({
           fundItemId: fundItem.id,
           type: fundItem.type || fundItem.itemType,
           hasPhoto: !!(fundItem.photoUri || fundItem.photo),
+          photoUri: fundItem.photoUri,
+          photo: fundItem.photo,
+          allKeys: Object.keys(fundItem),
         });
         
         setMode('view');
@@ -224,7 +227,11 @@ const FundItemDetailModal = ({
   const isAmountBasedType = (value) => {
     if (!value) return false;
     const normalized = value.toString().toLowerCase();
-    return normalized === 'cash' || normalized === 'bank_card' || normalized === 'credit_card';
+    return normalized === 'cash' ||
+      normalized === 'bank_card' ||
+      normalized === 'credit_card' ||
+      normalized === 'bank_balance' ||
+      normalized === 'investment';
   };
 
   // Validation functions
@@ -1176,6 +1183,8 @@ const FundItemDetailModal = ({
 
   // Render view mode
   const renderViewMode = () => {
+    console.log('[FundItemDetailModal] Rendering view mode...');
+    
     // Get the item type - handle both 'type' and 'itemType' fields
     const itemType = fundItem.itemType || fundItem.type;
     const supportsAmountFields = isAmountBasedType(itemType);
@@ -1188,12 +1197,26 @@ const FundItemDetailModal = ({
     const descriptionValue = fundItem.description || fundItem.details || missingValueLabel;
     const hasDescription = Boolean(fundItem.description || fundItem.details);
     
+    console.log('[FundItemDetailModal] View mode data:', {
+      itemType,
+      supportsAmountFields,
+      hasPhotoUri: !!fundItem.photoUri,
+      photoUriLength: fundItem.photoUri?.length,
+    });
+    
     return (
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Debug: Test if view renders */}
+        <View style={{ padding: 20, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
+          <Text style={{ fontSize: 16, color: '#000' }}>DEBUG: View Mode Rendering</Text>
+          <Text style={{ fontSize: 14, color: '#666' }}>Type: {itemType}</Text>
+          <Text style={{ fontSize: 14, color: '#666' }}>Has Photo: {fundItem.photoUri ? 'Yes' : 'No'}</Text>
+        </View>
+        
         {/* Item Type Display */}
         <View style={styles.section}>
           <View 
@@ -1282,6 +1305,12 @@ const FundItemDetailModal = ({
                   style={styles.photoThumbnail}
                   resizeMode="cover"
                   accessible={false}
+                  onError={(error) => {
+                    console.error('[FundItemDetailModal] Image load error:', error.nativeEvent);
+                  }}
+                  onLoad={() => {
+                    console.log('[FundItemDetailModal] Image loaded successfully');
+                  }}
                 />
                 <Text style={styles.photoHint}>
                   {t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}
@@ -1490,6 +1519,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
     maxHeight: '90%',
+    minHeight: '50%',
     ...shadows.card,
   },
   header: {

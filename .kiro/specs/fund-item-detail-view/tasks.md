@@ -83,7 +83,7 @@
   - Ensure proper focus management when modal opens/closes
   - _Requirements: 6.1, 6.2, 6.3_
 
-- [-] 12. Write component tests
+- [x] 12. Write component tests
   - [x] 12.1 Write unit tests for FundItemDetailModal component
     - Test rendering with different fund item types
     - Test mode switching (view, edit, photo)
