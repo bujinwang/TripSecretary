@@ -1253,6 +1253,10 @@ const baseTranslations = {
         title: 'Funding Proof Checklist',
         subtitle: 'Show quickly at immigration',
         collapsedHint: 'Tap to expand funding checklist',
+        addButton: 'Add Fund Item',
+        selectType: 'Select Fund Item Type',
+        selectTypeMessage: 'Choose the type of fund item to add',
+        empty: 'No fund items yet. Tap below to add your first item.',
         tip: {
           title: 'Sufficient funds',
           subtitle: 'Carry at least 10,000 THB per person or equivalent proof',
@@ -1283,6 +1287,10 @@ const baseTranslations = {
         },
       },
       fundItem: {
+        create: {
+          title: 'Add Fund Item',
+          success: 'Fund item added successfully',
+        },
         detail: {
           title: 'Fund Item Details',
           editTitle: 'Edit Fund Item',
@@ -2818,6 +2826,10 @@ const baseTranslations = {
         title: '资金证明清单',
         subtitle: '入境时快速出示',
         collapsedHint: '点击展开查看资金证明清单',
+        addButton: '添加资金项目',
+        selectType: '选择资金项目类型',
+        selectTypeMessage: '选择要添加的资金项目类型',
+        empty: '暂无资金项目，点击下方按钮添加第一个项目',
         tip: {
           title: '充足资金',
           subtitle: '建议携带不少于10,000泰铢/人或等值现金及账户证明',
@@ -2847,6 +2859,10 @@ const baseTranslations = {
         },
       },
       fundItem: {
+        create: {
+          title: '添加资金项目',
+          success: '资金项目添加成功',
+        },
         detail: {
           title: '资金项目详情',
           editTitle: '编辑资金项目',
@@ -3644,6 +3660,10 @@ const baseTranslations = {
         title: 'Lista de comprobación de fondos',
         subtitle: 'Preséntala rápidamente en inmigración',
         collapsedHint: 'Toca para ver la lista de comprobación de fondos',
+        addButton: 'Agregar artículo de fondos',
+        selectType: 'Seleccionar tipo de artículo de fondos',
+        selectTypeMessage: 'Elige el tipo de artículo de fondos a agregar',
+        empty: 'Aún no hay artículos de fondos. Toca abajo para agregar tu primer artículo.',
         tip: {
           title: 'Fondos suficientes',
           subtitle: 'Lleva al menos 10 000 THB por persona o un comprobante equivalente',
@@ -3674,6 +3694,10 @@ const baseTranslations = {
         },
       },
       fundItem: {
+        create: {
+          title: 'Agregar artículo de fondos',
+          success: 'Artículo de fondos agregado exitosamente',
+        },
         detail: {
           title: 'Detalles del artículo de fondos',
           editTitle: 'Editar artículo de fondos',

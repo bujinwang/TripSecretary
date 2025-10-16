@@ -56,6 +56,10 @@ const ProfileScreen = ({ navigation, route }) => {
   // Fund item detail modal state
   const [selectedFundItem, setSelectedFundItem] = useState(null);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
+  
+  // Fund item creation state
+  const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
+  const [newFundItemType, setNewFundItemType] = useState(null);
 
   const [expandedSection, setExpandedSection] = useState('personal'); // 'personal', 'passport', 'funding', or null
   const [editingContext, setEditingContext] = useState(null);
@@ -278,7 +282,6 @@ const ProfileScreen = ({ navigation, route }) => {
     defaultValue:
       'Officers may check your cash or bank balance. Prepare screenshots or statements and list your cash, cards, and balances for quick inspection.',
   });
-  const scanProofText = t('profile.funding.actions.scanProof', { defaultValue: 'Scan / Upload Funding Proof' });
   const fundingFooterNote = t('profile.funding.footerNote', {
     defaultValue: 'Information syncs to your entry pack for immigration checks.',
   });
@@ -772,10 +775,7 @@ const ProfileScreen = ({ navigation, route }) => {
     handleCancelEdit();
   };
 
-  const handleManageFundItems = () => {
-    // Navigate to Thailand travel info screen where fund items can be managed
-    navigation.navigate('ThailandTravelInfo', { destination: 'th' });
-  };
+
 
   // Fund item detail modal handlers
   const handleFundItemPress = (fundItem) => {
@@ -819,16 +819,67 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleFundItemManageAll = () => {
-    // Close modal and navigate to full fund management
-    setFundItemModalVisible(false);
-    setSelectedFundItem(null);
-    navigation.navigate('ThailandTravelInfo', { destination: 'th' });
-  };
+
 
   const handleFundItemModalClose = () => {
     setFundItemModalVisible(false);
     setSelectedFundItem(null);
+    setIsCreatingFundItem(false);
+    setNewFundItemType(null);
+  };
+
+  // Handle add fund item button press
+  const handleAddFundItem = () => {
+    showFundItemTypeSelector();
+  };
+
+  // Show fund item type selector alert
+  const showFundItemTypeSelector = () => {
+    Alert.alert(
+      t('profile.funding.selectType', { defaultValue: 'Select Fund Item Type' }),
+      t('profile.funding.selectTypeMessage', { defaultValue: 'Choose the type of fund item to add' }),
+      [
+        { 
+          text: t('fundItem.types.CASH', { defaultValue: 'Cash' }), 
+          onPress: () => handleCreateFundItem('CASH') 
+        },
+        { 
+          text: t('fundItem.types.BANK_CARD', { defaultValue: 'Bank Card' }), 
+          onPress: () => handleCreateFundItem('BANK_CARD') 
+        },
+        { 
+          text: t('fundItem.types.DOCUMENT', { defaultValue: 'Supporting Document' }), 
+          onPress: () => handleCreateFundItem('DOCUMENT') 
+        },
+        { 
+          text: t('common.cancel', { defaultValue: 'Cancel' }), 
+          style: 'cancel' 
+        }
+      ]
+    );
+  };
+
+  // Handle create fund item with selected type
+  const handleCreateFundItem = (type) => {
+    setNewFundItemType(type);
+    setIsCreatingFundItem(true);
+    setFundItemModalVisible(true);
+  };
+
+  // Handle fund item created
+  const handleFundItemCreate = async (newItem) => {
+    try {
+      // Refresh fund items list
+      const userId = 'default_user';
+      const items = await PassportDataService.getFundItems(userId);
+      console.log('Refreshed fund items after create:', items);
+      setFundItems(items || []);
+      setFundItemModalVisible(false);
+      setIsCreatingFundItem(false);
+      setNewFundItemType(null);
+    } catch (error) {
+      console.error('Error refreshing fund items after create:', error);
+    }
   };
 
 
@@ -1002,9 +1053,16 @@ const ProfileScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
 
-                <View style={styles.infoList}>
-                  {fundItems.length > 0 ? (
-                    fundItems.map((item, index) => {
+                {/* Fund Items List or Empty State */}
+                {fundItems.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyStateText}>
+                      {t('profile.funding.empty', { defaultValue: 'No fund items yet. Tap below to add your first item.' })}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.infoList}>
+                    {fundItems.map((item, index) => {
                       const isLast = index === fundItems.length - 1;
 
                       const typeKey = (item.itemType || item.type || 'OTHER').toUpperCase();
@@ -1096,24 +1154,24 @@ const ProfileScreen = ({ navigation, route }) => {
                           <Text style={styles.rowArrow}>›</Text>
                         </TouchableOpacity>
                       );
-                    })
-                  ) : (
-                    <View style={styles.emptyState}>
-                      <Text style={styles.emptyStateText}>
-                        {t('profile.funding.empty', { defaultValue: '暂无资金证明，请添加' })}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                    })}
+                  </View>
+                )}
 
+                {/* Add Fund Item Button */}
                 <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={handleManageFundItems}
+                  style={styles.addFundItemButton}
+                  onPress={handleAddFundItem}
                   accessibilityRole="button"
+                  accessibilityLabel={t('profile.funding.addButton', { defaultValue: 'Add Fund Item' })}
                 >
-                  <Text style={styles.actionRowText}>{scanProofText}</Text>
-                  <Text style={styles.rowArrow}>›</Text>
+                  <Text style={styles.addFundItemIcon}>➕</Text>
+                  <Text style={styles.addFundItemText}>
+                    {t('profile.funding.addButton', { defaultValue: 'Add Fund Item' })}
+                  </Text>
                 </TouchableOpacity>
+
+
 
                 <Text style={styles.fundingFooterNote}>
                   {fundingFooterNote}
@@ -1504,11 +1562,13 @@ const ProfileScreen = ({ navigation, route }) => {
       {/* Fund Item Detail Modal */}
       <FundItemDetailModal
         visible={fundItemModalVisible}
-        fundItem={selectedFundItem}
+        fundItem={isCreatingFundItem ? null : selectedFundItem}
+        isCreateMode={isCreatingFundItem}
+        createItemType={newFundItemType}
         onClose={handleFundItemModalClose}
         onUpdate={handleFundItemUpdate}
+        onCreate={handleFundItemCreate}
         onDelete={handleFundItemDelete}
-        onManageAll={handleFundItemManageAll}
       />
     </SafeAreaView>
   );
@@ -2102,14 +2162,17 @@ const styles = StyleSheet.create({
   
   // Empty state styles
   emptyState: {
-    padding: spacing.lg,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: spacing.md,
   },
   emptyStateText: {
     ...typography.body1,
     color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
   
   // Fund item styles
@@ -2134,6 +2197,29 @@ const styles = StyleSheet.create({
   fundItemValue: {
     ...typography.body1,
     color: colors.textSecondary,
+  },
+  
+  // Add Fund Item Button styles
+  addFundItemButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.primaryLight,
+    borderRadius: borderRadius.small,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  addFundItemIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+  },
+  addFundItemText: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });
 

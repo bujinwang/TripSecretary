@@ -608,7 +608,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       const fundItem = await PassportDataService.saveFundItem({
         type,
         amount: '',
-        currency: 'USD',
+        currency: 'THB',
         details: '',
         photoUri: null,
       }, userId);

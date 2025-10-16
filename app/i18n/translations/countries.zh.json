@@ -836,6 +836,14 @@
       "startButton": "开始填写"
     }
   },
+  "profile": {
+    "funding": {
+      "addButton": "添加资金项目",
+      "selectType": "选择资金项目类型",
+      "selectTypeMessage": "选择要添加的资金项目类型",
+      "empty": "还没有资金项目。点击下方添加您的第一个项目。"
+    }
+  },
   "fundItem": {
     "detail": {
       "title": "资金项目详情",
@@ -855,6 +863,10 @@
       "takePhoto": "拍照",
       "chooseFromLibrary": "从相册选择",
       "photoHint": "捏合缩放，拖动平移"
+    },
+    "create": {
+      "title": "添加资金项目",
+      "success": "资金项目添加成功"
     },
     "fields": {
       "amount": "金额",

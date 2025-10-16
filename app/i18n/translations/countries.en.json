@@ -529,6 +529,14 @@
       "startButton": "Start preparing entry pack"
     }
   },
+  "profile": {
+    "funding": {
+      "addButton": "Add Fund Item",
+      "selectType": "Select Fund Item Type",
+      "selectTypeMessage": "Choose the type of fund item to add",
+      "empty": "No fund items yet. Tap below to add your first item."
+    }
+  },
   "fundItem": {
     "detail": {
       "title": "Fund Item Details",
@@ -548,6 +556,10 @@
       "takePhoto": "Take Photo",
       "chooseFromLibrary": "Choose from Library",
       "photoHint": "Pinch to zoom, drag to pan"
+    },
+    "create": {
+      "title": "Add Fund Item",
+      "success": "Fund item added successfully"
     },
     "fields": {
       "amount": "Amount",

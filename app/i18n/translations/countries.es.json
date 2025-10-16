@@ -501,6 +501,14 @@
       "continueButton": "Continuar a información de viaje"
     }
   },
+  "profile": {
+    "funding": {
+      "addButton": "Agregar Artículo de Fondos",
+      "selectType": "Seleccionar Tipo de Artículo de Fondos",
+      "selectTypeMessage": "Elija el tipo de artículo de fondos a agregar",
+      "empty": "Aún no hay artículos de fondos. Toque abajo para agregar su primer artículo."
+    }
+  },
   "fundItem": {
     "detail": {
       "title": "Detalles del Artículo de Fondos",
@@ -520,6 +528,10 @@
       "takePhoto": "Tomar Foto",
       "chooseFromLibrary": "Elegir de la Biblioteca",
       "photoHint": "Pellizca para hacer zoom, arrastra para desplazar"
+    },
+    "create": {
+      "title": "Agregar Artículo de Fondos",
+      "success": "Artículo de fondos agregado exitosamente"
     },
     "fields": {
       "amount": "Cantidad",
