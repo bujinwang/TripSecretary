@@ -19,7 +19,7 @@ class SecureStorageService {
     this.db = null;
     this.encryption = EncryptionService;
     this.DB_NAME = 'tripsecretary_secure';
-    this.DB_VERSION = '1.0.0';
+    this.DB_VERSION = '1.2.0';
     this.BACKUP_DIR = FileSystem.documentDirectory + 'backups/';
     this.AUDIT_LOG_KEY = 'secure_storage_audit';
     // TODO: Re-enable encryption before production release
@@ -148,6 +148,9 @@ class SecureStorageService {
             id TEXT PRIMARY KEY,
             user_id TEXT,
             destination TEXT,
+            travel_purpose TEXT,
+            boarding_country TEXT,
+            visa_number TEXT,
             arrival_flight_number TEXT,
             arrival_departure_airport TEXT,
             arrival_departure_date TEXT,
@@ -162,6 +165,11 @@ class SecureStorageService {
             departure_arrival_airport TEXT,
             departure_arrival_date TEXT,
             departure_arrival_time TEXT,
+            accommodation_type TEXT,
+            province TEXT,
+            district TEXT,
+            sub_district TEXT,
+            postal_code TEXT,
             hotel_name TEXT,
             hotel_address TEXT,
             status TEXT,
@@ -169,6 +177,44 @@ class SecureStorageService {
             updated_at TEXT
           )
         `);
+        
+        // Add missing columns to existing travel_info table (migration)
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN travel_purpose TEXT
+        `, [], () => {}, (_, error) => {
+          // Column might already exist, ignore error
+          return false;
+        });
+        
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN accommodation_type TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN province TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN district TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN sub_district TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN postal_code TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
 
         // Travel history table (non-sensitive data)
         tx.executeSql(`
@@ -256,6 +302,10 @@ class SecureStorageService {
       
       // Migration 1: Add gender and user_id to all tables
       await this.addPassportFields();
+      // Migration 2: Ensure travel_info has boarding_country column
+      await this.addTravelInfoBoardingCountryColumn();
+      // Migration 3: Ensure travel_info has visa_number column
+      await this.addTravelInfoVisaNumberColumn();
       
       // Update version if needed
       if (!currentVersion || currentVersion !== this.DB_VERSION) {
@@ -343,6 +393,72 @@ class SecureStorageService {
         );
 
         // Legacy funding_proof table migration removed
+      }, reject, resolve);
+    });
+  }
+
+  /**
+   * Ensure travel_info table includes boarding_country column
+   */
+  async addTravelInfoBoardingCountryColumn() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(travel_info)`,
+          [],
+          (_, { rows }) => {
+            const columns = rows._array.map(col => col.name);
+
+            if (!columns.includes('boarding_country')) {
+              tx.executeSql(
+                `ALTER TABLE travel_info ADD COLUMN boarding_country TEXT`,
+                [],
+                () => console.log('Added boarding_country column to travel_info table'),
+                (_, error) => {
+                  console.error('Failed to add boarding_country column to travel_info table:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to check travel_info table schema:', error);
+            return false;
+          }
+        );
+      }, reject, resolve);
+    });
+  }
+
+  /**
+   * Ensure travel_info table includes visa_number column
+   */
+  async addTravelInfoVisaNumberColumn() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(travel_info)`,
+          [],
+          (_, { rows }) => {
+            const columns = rows._array.map(col => col.name);
+
+            if (!columns.includes('visa_number')) {
+              tx.executeSql(
+                `ALTER TABLE travel_info ADD COLUMN visa_number TEXT`,
+                [],
+                () => console.log('Added visa_number column to travel_info table'),
+                (_, error) => {
+                  console.error('Failed to add visa_number column to travel_info table:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to check travel_info table schema:', error);
+            return false;
+          }
+        );
       }, reject, resolve);
     });
   }
@@ -909,19 +1025,24 @@ class SecureStorageService {
           tx.executeSql(
             `INSERT OR REPLACE INTO travel_info (
               id, user_id, destination,
+              travel_purpose, boarding_country, visa_number,
               arrival_flight_number, arrival_departure_airport,
               arrival_departure_date, arrival_departure_time,
               arrival_arrival_airport, arrival_arrival_date, arrival_arrival_time,
               departure_flight_number, departure_departure_airport,
               departure_departure_date, departure_departure_time,
               departure_arrival_airport, departure_arrival_date, departure_arrival_time,
+              accommodation_type, province, district, sub_district, postal_code,
               hotel_name, hotel_address, status,
               created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               travelData.userId,
               travelData.destination,
+              travelData.travelPurpose,
+              travelData.boardingCountry,
+              travelData.visaNumber,
               travelData.arrivalFlightNumber,
               travelData.arrivalDepartureAirport,
               travelData.arrivalDepartureDate,
@@ -936,6 +1057,11 @@ class SecureStorageService {
               travelData.departureArrivalAirport,
               travelData.departureArrivalDate,
               travelData.departureArrivalTime,
+              travelData.accommodationType,
+              travelData.province,
+              travelData.district,
+              travelData.subDistrict,
+              travelData.postalCode,
               travelData.hotelName,
               travelData.hotelAddress,
               travelData.status || 'draft',
@@ -991,6 +1117,9 @@ class SecureStorageService {
                 id: result.id,
                 userId: result.user_id,
                 destination: result.destination,
+                travelPurpose: result.travel_purpose,
+                boardingCountry: result.boarding_country,
+                visaNumber: result.visa_number,
                 arrivalFlightNumber: result.arrival_flight_number,
                 arrivalDepartureAirport: result.arrival_departure_airport,
                 arrivalDepartureDate: result.arrival_departure_date,
@@ -1005,6 +1134,11 @@ class SecureStorageService {
                 departureArrivalAirport: result.departure_arrival_airport,
                 departureArrivalDate: result.departure_arrival_date,
                 departureArrivalTime: result.departure_arrival_time,
+                accommodationType: result.accommodation_type,
+                province: result.province,
+                district: result.district,
+                subDistrict: result.sub_district,
+                postalCode: result.postal_code,
                 hotelName: result.hotel_name,
                 hotelAddress: result.hotel_address,
                 status: result.status,

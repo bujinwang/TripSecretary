@@ -14,7 +14,16 @@ class TravelInfo {
     this.userId = data.userId;
     this.destination = data.destination; // e.g., 'Thailand', 'Japan'
     
-    // Arrival Flight Information
+    // Travel Purpose
+    this.travelPurpose = data.travelPurpose || 'HOLIDAY'; // HOLIDAY, MEETING, SPORTS, BUSINESS, etc.
+    
+    // Visa Information (optional)
+    this.visaNumber = data.visaNumber || '';
+    
+    // Boarding Country
+    this.boardingCountry = data.boardingCountry || ''; // Country/region where boarding the flight
+    
+    // Arrival Flight Information (来泰国机票)
     this.arrivalFlightNumber = data.arrivalFlightNumber || '';
     this.arrivalDepartureAirport = data.arrivalDepartureAirport || '';
     this.arrivalDepartureDate = data.arrivalDepartureDate || '';
@@ -23,7 +32,7 @@ class TravelInfo {
     this.arrivalArrivalDate = data.arrivalArrivalDate || '';
     this.arrivalArrivalTime = data.arrivalArrivalTime || '';
     
-    // Departure Flight Information
+    // Departure Flight Information (离开泰国机票)
     this.departureFlightNumber = data.departureFlightNumber || '';
     this.departureDepartureAirport = data.departureDepartureAirport || '';
     this.departureDepartureDate = data.departureDepartureDate || '';
@@ -33,8 +42,13 @@ class TravelInfo {
     this.departureArrivalTime = data.departureArrivalTime || '';
     
     // Accommodation Information
-    this.hotelName = data.hotelName || '';
-    this.hotelAddress = data.hotelAddress || '';
+    this.accommodationType = data.accommodationType || 'HOTEL'; // HOTEL, YOUTH_HOSTEL, GUEST_HOUSE, FRIEND_HOUSE, APARTMENT, or custom
+    this.province = data.province || ''; // Province (required for all types)
+    this.district = data.district || ''; // District (required for non-hotel types)
+    this.subDistrict = data.subDistrict || ''; // Sub-district (required for non-hotel types)
+    this.postalCode = data.postalCode || ''; // Postal code (required for non-hotel types)
+    this.hotelName = data.hotelName || ''; // Hotel name (for hotel types)
+    this.hotelAddress = data.hotelAddress || ''; // Detailed address
     
     // Metadata
     this.createdAt = data.createdAt || new Date().toISOString();
@@ -66,6 +80,9 @@ class TravelInfo {
     }
     if (this.departureFlightNumber && !this.isValidFlightNumber(this.departureFlightNumber)) {
       errors.push('Invalid departure flight number format');
+    }
+    if (this.visaNumber && !this.isValidVisaNumber(this.visaNumber)) {
+      errors.push('Invalid visa number format');
     }
 
     // Validate dates if provided
@@ -134,6 +151,17 @@ class TravelInfo {
     // Basic flight number validation: airline code (2-3 letters) + number (1-4 digits)
     const flightRegex = /^[A-Z]{2,3}\d{1,4}$/i;
     return flightRegex.test(flightNumber.replace(/\s/g, ''));
+  }
+
+  /**
+   * Validate visa number format
+   * Allows alphanumeric strings (5-15 chars) without spaces
+   * @param {string} visaNumber - Visa number
+   * @returns {boolean} - Is valid format
+   */
+  isValidVisaNumber(visaNumber) {
+    const visaRegex = /^[A-Za-z0-9]{5,15}$/;
+    return visaRegex.test(visaNumber);
   }
 
   /**
@@ -218,6 +246,9 @@ class TravelInfo {
         id: this.id,
         userId: this.userId,
         destination: this.destination,
+        travelPurpose: this.travelPurpose,
+        boardingCountry: this.boardingCountry,
+        visaNumber: this.visaNumber,
         arrivalFlightNumber: this.arrivalFlightNumber,
         arrivalDepartureAirport: this.arrivalDepartureAirport,
         arrivalDepartureDate: this.arrivalDepartureDate,
@@ -232,6 +263,11 @@ class TravelInfo {
         departureArrivalAirport: this.departureArrivalAirport,
         departureArrivalDate: this.departureArrivalDate,
         departureArrivalTime: this.departureArrivalTime,
+        accommodationType: this.accommodationType,
+        province: this.province,
+        district: this.district,
+        subDistrict: this.subDistrict,
+        postalCode: this.postalCode,
         hotelName: this.hotelName,
         hotelAddress: this.hotelAddress,
         status: this.status,
@@ -373,6 +409,8 @@ class TravelInfo {
       id: this.id,
       userId: this.userId,
       destination: this.destination,
+      boardingCountry: this.boardingCountry,
+      visaNumber: this.visaNumber,
       arrivalFlight: {
         flightNumber: this.arrivalFlightNumber,
         departureAirport: this.arrivalDepartureAirport,

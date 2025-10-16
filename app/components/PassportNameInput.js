@@ -1,5 +1,5 @@
 // 入境通 - Passport Name Input Component
-// Two separate fields for surname and given name
+// Three separate fields for surname, middle name (optional), and given name
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -22,23 +22,25 @@ const PassportNameInput = ({
   ...rest
 }) => {
   const [surname, setSurname] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [givenName, setGivenName] = useState('');
   const [surnameError, setSurnameError] = useState('');
+  const [middleNameError, setMiddleNameError] = useState('');
   const [givenNameError, setGivenNameError] = useState('');
   const isInternalUpdate = useRef(false);
   const lastValueRef = useRef('');
   const isUserTyping = useRef(false);
   const hasReceivedValidValue = useRef(false);
 
-  // Validation function to check if input contains only valid Pinyin characters
-  const validatePinyinInput = (text) => {
-    // Allow only English letters, spaces, hyphens, apostrophes, and periods
-    const pinyinRegex = /^[A-Za-z\s\-'.]*$/;
-    return pinyinRegex.test(text);
+  // Validation function to check if input contains only A-Z letters
+  const validateLettersOnly = (text) => {
+    // Allow only A-Z letters (uppercase and lowercase)
+    const lettersOnlyRegex = /^[A-Za-z]*$/;
+    return lettersOnlyRegex.test(text);
   };
 
-  // Parse combined value into surname and given name
-  // Supports both "SURNAME, GIVENNAME" and "SURNAME GIVENNAME" formats
+  // Parse combined value into surname, middle name, and given name
+  // Supports formats: "SURNAME, MIDDLENAME, GIVENNAME" or "SURNAME MIDDLENAME GIVENNAME"
   useEffect(() => {
     console.log('PassportNameInput useEffect - value:', value, 'lastValueRef:', lastValueRef.current, 'isInternalUpdate:', isInternalUpdate.current);
     
@@ -64,36 +66,51 @@ const PassportNameInput = ({
       if (value) {
         // Mark that we've received a valid value
         hasReceivedValidValue.current = true;
-        // Try comma-separated format first (e.g., "ZHANG, WEI")
+        // Try comma-separated format first (e.g., "ZHANG, M, WEI")
         if (value.includes(',')) {
           const parts = value.split(',').map(part => part.trim());
-          if (parts.length === 2) {
+          if (parts.length === 3) {
             setSurname(parts[0]);
+            setMiddleName(parts[1]);
+            setGivenName(parts[2]);
+          } else if (parts.length === 2) {
+            setSurname(parts[0]);
+            setMiddleName('');
             setGivenName(parts[1]);
           } else if (parts.length === 1 && parts[0]) {
             setSurname(parts[0]);
+            setMiddleName('');
             setGivenName('');
           } else {
             setSurname('');
+            setMiddleName('');
             setGivenName('');
           }
         } else {
-          // Try space-separated format (e.g., "ZHANG WEI")
+          // Try space-separated format (e.g., "ZHANG M WEI")
           const spaceParts = value.trim().split(/\s+/);
-          if (spaceParts.length >= 2) {
+          if (spaceParts.length >= 3) {
             setSurname(spaceParts[0]);
-            setGivenName(spaceParts.slice(1).join(' '));
+            setMiddleName(spaceParts[1]);
+            setGivenName(spaceParts.slice(2).join(' '));
+          } else if (spaceParts.length === 2) {
+            setSurname(spaceParts[0]);
+            setMiddleName('');
+            setGivenName(spaceParts[1]);
           } else if (spaceParts.length === 1 && spaceParts[0]) {
             // Single word - treat as surname
             setSurname(spaceParts[0]);
+            setMiddleName('');
             setGivenName('');
           } else {
             setSurname('');
+            setMiddleName('');
             setGivenName('');
           }
         }
       } else {
         setSurname('');
+        setMiddleName('');
         setGivenName('');
       }
     }
@@ -105,7 +122,8 @@ const PassportNameInput = ({
       return;
     }
 
-    const combined = [surname.trim(), givenName.trim()].filter(Boolean).join(', ');
+    const parts = [surname.trim(), middleName.trim(), givenName.trim()].filter(Boolean);
+    const combined = parts.join(', ');
 
     // Prevent accidental clearing when inputs re-mount without user interaction
     if (
@@ -126,7 +144,7 @@ const PassportNameInput = ({
         isInternalUpdate.current = false;
       }, 50);
     }
-  }, [surname, givenName, onChangeText]);
+  }, [surname, middleName, givenName, onChangeText]);
 
   return (
     <View style={[styles.container, style]}>
@@ -144,12 +162,12 @@ const PassportNameInput = ({
             value={surname}
             onChangeText={(text) => {
               isUserTyping.current = true;
-              // Validate input - only allow Pinyin characters
-              if (validatePinyinInput(text)) {
+              // Validate input - only allow A-Z letters
+              if (validateLettersOnly(text)) {
                 setSurname(text.toUpperCase());
                 setSurnameError('');
               } else if (text.length > 0) {
-                setSurnameError('请输入汉语拼音（仅限英文字符）');
+                setSurnameError('仅限A-Z字母');
               } else {
                 setSurname(text);
                 setSurnameError('');
@@ -159,7 +177,44 @@ const PassportNameInput = ({
                 isUserTyping.current = false;
               }, 100);
             }}
-            placeholder="请输入姓氏"
+            placeholder="LI"
+            placeholderTextColor={colors.textDisabled}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            autoComplete="off"
+            spellCheck={false}
+            keyboardType="ascii-capable"
+            {...rest}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>中间名（可选）</Text>
+          <TextInput
+            style={[
+              styles.input,
+              error && styles.inputError,
+              middleNameError && styles.inputError,
+            ]}
+            value={middleName}
+            onChangeText={(text) => {
+              isUserTyping.current = true;
+              // Validate input - only allow A-Z letters
+              if (validateLettersOnly(text)) {
+                setMiddleName(text.toUpperCase());
+                setMiddleNameError('');
+              } else if (text.length > 0) {
+                setMiddleNameError('仅限A-Z字母');
+              } else {
+                setMiddleName(text);
+                setMiddleNameError('');
+              }
+              // Clear typing flag after a short delay
+              setTimeout(() => {
+                isUserTyping.current = false;
+              }, 100);
+            }}
+            placeholder="可选"
             placeholderTextColor={colors.textDisabled}
             autoCapitalize="characters"
             autoCorrect={false}
@@ -181,12 +236,12 @@ const PassportNameInput = ({
             value={givenName}
             onChangeText={(text) => {
               isUserTyping.current = true;
-              // Validate input - only allow Pinyin characters
-              if (validatePinyinInput(text)) {
+              // Validate input - only allow A-Z letters
+              if (validateLettersOnly(text)) {
                 setGivenName(text.toUpperCase());
                 setGivenNameError('');
               } else if (text.length > 0) {
-                setGivenNameError('请输入汉语拼音（仅限英文字符）');
+                setGivenNameError('仅限A-Z字母');
               } else {
                 setGivenName(text);
                 setGivenNameError('');
@@ -196,7 +251,7 @@ const PassportNameInput = ({
                 isUserTyping.current = false;
               }, 100);
             }}
-            placeholder="请输入名字"
+            placeholder="MAOA"
             placeholderTextColor={colors.textDisabled}
             autoCapitalize="characters"
             autoCorrect={false}
@@ -214,12 +269,15 @@ const PassportNameInput = ({
        {surnameError && (
          <Text style={styles.errorText}>{surnameError}</Text>
        )}
+       {middleNameError && (
+         <Text style={styles.errorText}>{middleNameError}</Text>
+       )}
        {givenNameError && (
          <Text style={styles.errorText}>{givenNameError}</Text>
        )}
        {!helpText && (
          <Text style={styles.helpText}>
-           请填写汉语拼音姓名（例如：LI, MAO）- 不要输入中文字符
+           请填写汉语拼音姓名（例如：LI, MAOA 或 LI, MARIE, MAOA）- 仅限A-Z字母
          </Text>
        )}
     </View>
@@ -238,6 +296,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: spacing.sm,
   },
   inputContainer: {
     flex: 1,

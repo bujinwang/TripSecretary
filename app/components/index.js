@@ -10,3 +10,4 @@ export { default as NationalitySelector } from './NationalitySelector';
 export { default as PassportNameInput } from './PassportNameInput';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as FundItemDetailModal } from './FundItemDetailModal';
+export { default as ProvinceSelector } from './ProvinceSelector';

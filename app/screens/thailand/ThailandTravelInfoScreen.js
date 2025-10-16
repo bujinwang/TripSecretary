@@ -19,7 +19,7 @@ import * as FileSystem from 'expo-file-system';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../components';
+import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
@@ -89,6 +89,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // UI State (loaded from database, not from route params)
   const [passportNo, setPassportNo] = useState('');
+  const [visaNumber, setVisaNumber] = useState('');
   const [fullName, setFullName] = useState('');
   const [nationality, setNationality] = useState('');
   const [dob, setDob] = useState('');
@@ -106,27 +107,25 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
 
-  // Travel Info State - Separate date and time fields
+  // Travel Info State
+  const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
+  const [customTravelPurpose, setCustomTravelPurpose] = useState('');
+  const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalDepartureAirport, setArrivalDepartureAirport] = useState('');
-  const [arrivalDepartureDate, setArrivalDepartureDate] = useState('');
-  const [arrivalDepartureTime, setArrivalDepartureTime] = useState('');
-  const [arrivalArrivalAirport, setArrivalArrivalAirport] = useState('');
   const [arrivalArrivalDate, setArrivalArrivalDate] = useState('');
-  const [arrivalArrivalTime, setArrivalArrivalTime] = useState('');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
-  const [departureDepartureAirport, setDepartureDepartureAirport] = useState('');
   const [departureDepartureDate, setDepartureDepartureDate] = useState('');
-  const [departureDepartureTime, setDepartureDepartureTime] = useState('');
-  const [departureArrivalAirport, setDepartureArrivalAirport] = useState('');
-  const [departureArrivalDate, setDepartureArrivalDate] = useState('');
-  const [departureArrivalTime, setDepartureArrivalTime] = useState('');
-  const [hotelName, setHotelName] = useState('');
+  const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
+  const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
+  const [province, setProvince] = useState(''); // 省
+  const [district, setDistrict] = useState(''); // 区（地区）
+  const [subDistrict, setSubDistrict] = useState(''); // 乡（子地区）
+  const [postalCode, setPostalCode] = useState(''); // 邮政编码
   const [hotelAddress, setHotelAddress] = useState('');
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedSection, setExpandedSection] = useState('passport'); // 'passport', 'personal', 'funds', 'travel', or null
+  const [expandedSection, setExpandedSection] = useState(null); // 'passport', 'personal', 'funds', 'travel', or null
 
   // Count filled fields for each section
   const getFieldCount = (section) => {
@@ -154,15 +153,34 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       
       case 'travel':
         // Thailand requires both arrival and departure flight info
+        // For travel purpose, if "OTHER" is selected, check if custom purpose is filled
+        const purposeFilled = travelPurpose === 'OTHER' 
+          ? (customTravelPurpose && customTravelPurpose.trim() !== '')
+          : (travelPurpose && travelPurpose.trim() !== '');
+        
+        // For accommodation type, if "OTHER" is selected, check if custom type is filled
+        const accommodationTypeFilled = accommodationType === 'OTHER'
+          ? (customAccommodationType && customAccommodationType.trim() !== '')
+          : (accommodationType && accommodationType.trim() !== '');
+        
+        // Different fields based on accommodation type
+        const isHotelType = accommodationType === 'HOTEL';
+        const accommodationFields = isHotelType
+          ? [accommodationTypeFilled, province, hotelAddress]
+          : [accommodationTypeFilled, province, district, subDistrict, postalCode, hotelAddress];
+        
         const travelFields = [
-          arrivalFlightNumber, arrivalDepartureAirport, arrivalDepartureDate, arrivalDepartureTime,
-          arrivalArrivalAirport, arrivalArrivalDate, arrivalArrivalTime,
-          departureFlightNumber, departureDepartureAirport, departureDepartureDate, departureDepartureTime,
-          departureArrivalAirport, departureArrivalDate, departureArrivalTime,
-          hotelName, hotelAddress
+          purposeFilled,
+          boardingCountry,
+          arrivalFlightNumber, arrivalArrivalDate,
+          departureFlightNumber, departureDepartureDate,
+          ...accommodationFields
         ];
         total = travelFields.length;
-        filled = travelFields.filter(field => field && field.toString().trim() !== '').length;
+        filled = travelFields.filter(field => {
+          if (typeof field === 'boolean') return field;
+          return field && field.toString().trim() !== '';
+        }).length;
         break;
     }
 
@@ -323,21 +341,38 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             console.log('Hotel address from DB:', travelInfo.hotelAddress);
             console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
             
+            // Check if travel purpose is a predefined option
+            const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
+            const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
+            if (predefinedPurposes.includes(loadedPurpose)) {
+              setTravelPurpose(loadedPurpose);
+              setCustomTravelPurpose('');
+            } else {
+              // Custom purpose - set to OTHER and store custom value
+              setTravelPurpose('OTHER');
+              setCustomTravelPurpose(loadedPurpose);
+            }
+            setBoardingCountry(travelInfo.boardingCountry || '');
+            setVisaNumber(travelInfo.visaNumber || '');
             setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-            setArrivalDepartureAirport(travelInfo.arrivalDepartureAirport || '');
-            setArrivalDepartureDate(travelInfo.arrivalDepartureDate || '');
-            setArrivalDepartureTime(travelInfo.arrivalDepartureTime || '');
-            setArrivalArrivalAirport(travelInfo.arrivalArrivalAirport || '');
             setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-            setArrivalArrivalTime(travelInfo.arrivalArrivalTime || '');
             setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-            setDepartureDepartureAirport(travelInfo.departureDepartureAirport || '');
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-            setDepartureDepartureTime(travelInfo.departureDepartureTime || '');
-            setDepartureArrivalAirport(travelInfo.departureArrivalAirport || '');
-            setDepartureArrivalDate(travelInfo.departureArrivalDate || '');
-            setDepartureArrivalTime(travelInfo.departureArrivalTime || '');
-            setHotelName(travelInfo.hotelName || '');
+            // Load accommodation type
+            const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
+            const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
+            if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
+              setAccommodationType(loadedAccommodationType);
+              setCustomAccommodationType('');
+            } else {
+              // Custom accommodation type - set to OTHER and store custom value
+              setAccommodationType('OTHER');
+              setCustomAccommodationType(loadedAccommodationType);
+            }
+            setProvince(travelInfo.province || '');
+            setDistrict(travelInfo.district || '');
+            setSubDistrict(travelInfo.subDistrict || '');
+            setPostalCode(travelInfo.postalCode || '');
             setHotelAddress(travelInfo.hotelAddress || '');
             
             console.log('Travel info loaded and state updated');
@@ -459,6 +494,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             errorMessage = 'Invalid passport number format';
           }
           break;
+        case 'visaNumber':
+          if (fieldValue && !/^[A-Za-z0-9]{5,15}$/.test(fieldValue)) {
+            isValid = false;
+            errorMessage = 'Visa number must be 5-15 letters or numbers';
+          }
+          break;
         case 'dob':
         case 'expiryDate':
           if (fieldValue && !/^\d{4}-\d{2}-\d{2}$/.test(fieldValue)) {
@@ -563,21 +604,26 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
       // Save travel info data - only include non-empty fields
       const travelInfoUpdates = {};
+      // If "OTHER" is selected, use custom purpose; otherwise use selected purpose
+      const finalTravelPurpose = travelPurpose === 'OTHER' && customTravelPurpose.trim() 
+        ? customTravelPurpose.trim() 
+        : travelPurpose;
+      if (finalTravelPurpose && finalTravelPurpose.trim()) travelInfoUpdates.travelPurpose = finalTravelPurpose;
+      if (boardingCountry && boardingCountry.trim()) travelInfoUpdates.boardingCountry = boardingCountry;
+      if (visaNumber && visaNumber.trim()) travelInfoUpdates.visaNumber = visaNumber.trim();
       if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
-      if (arrivalDepartureAirport && arrivalDepartureAirport.trim()) travelInfoUpdates.arrivalDepartureAirport = arrivalDepartureAirport;
-      if (arrivalDepartureDate && arrivalDepartureDate.trim()) travelInfoUpdates.arrivalDepartureDate = arrivalDepartureDate;
-      if (arrivalDepartureTime && arrivalDepartureTime.trim()) travelInfoUpdates.arrivalDepartureTime = arrivalDepartureTime;
-      if (arrivalArrivalAirport && arrivalArrivalAirport.trim()) travelInfoUpdates.arrivalArrivalAirport = arrivalArrivalAirport;
       if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
-      if (arrivalArrivalTime && arrivalArrivalTime.trim()) travelInfoUpdates.arrivalArrivalTime = arrivalArrivalTime;
       if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
-      if (departureDepartureAirport && departureDepartureAirport.trim()) travelInfoUpdates.departureDepartureAirport = departureDepartureAirport;
       if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
-      if (departureDepartureTime && departureDepartureTime.trim()) travelInfoUpdates.departureDepartureTime = departureDepartureTime;
-      if (departureArrivalAirport && departureArrivalAirport.trim()) travelInfoUpdates.departureArrivalAirport = departureArrivalAirport;
-      if (departureArrivalDate && departureArrivalDate.trim()) travelInfoUpdates.departureArrivalDate = departureArrivalDate;
-      if (departureArrivalTime && departureArrivalTime.trim()) travelInfoUpdates.departureArrivalTime = departureArrivalTime;
-      if (hotelName && hotelName.trim()) travelInfoUpdates.hotelName = hotelName;
+      // Save accommodation type - if "OTHER" is selected, use custom type
+      const finalAccommodationType = accommodationType === 'OTHER' && customAccommodationType.trim()
+        ? customAccommodationType.trim()
+        : accommodationType;
+      if (finalAccommodationType && finalAccommodationType.trim()) travelInfoUpdates.accommodationType = finalAccommodationType;
+      if (province && province.trim()) travelInfoUpdates.province = province;
+      if (district && district.trim()) travelInfoUpdates.district = district;
+      if (subDistrict && subDistrict.trim()) travelInfoUpdates.subDistrict = subDistrict;
+      if (postalCode && postalCode.trim()) travelInfoUpdates.postalCode = postalCode;
       if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
 
       if (Object.keys(travelInfoUpdates).length > 0) {
@@ -912,6 +958,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
              errorMessage={errors.nationality}
            />
            <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" testID="passport-number-input" />
+           <Input label="签证号（如有）" value={visaNumber} onChangeText={(text) => setVisaNumber(text.toUpperCase())} onBlur={() => handleFieldBlur('visaNumber', visaNumber)} helpText="如有签证，请填写签证号码（仅限字母或数字）" error={!!errors.visaNumber} errorMessage={errors.visaNumber} autoCapitalize="characters" autoCorrect={false} autoComplete="off" spellCheck={false} keyboardType="ascii-capable" />
            <Input label="出生日期" value={dob} onChangeText={setDob} onBlur={() => handleFieldBlur('dob', dob)} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
            <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
          </CollapsibleSection>
@@ -1030,141 +1077,261 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>旅行目的</Text>
+            <View style={styles.optionsContainer}>
+              {[
+                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️' },
+                { value: 'MEETING', label: '会议', icon: '👔' },
+                { value: 'SPORTS', label: '体育活动', icon: '⚽' },
+                { value: 'BUSINESS', label: '商务', icon: '💼' },
+                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁' },
+                { value: 'CONVENTION', label: '会展', icon: '🎪' },
+                { value: 'EDUCATION', label: '教育', icon: '📚' },
+                { value: 'EMPLOYMENT', label: '就业', icon: '💻' },
+                { value: 'EXHIBITION', label: '展览', icon: '🎨' },
+                { value: 'MEDICAL', label: '医疗', icon: '🏥' },
+                { value: 'OTHER', label: '其他', icon: '✏️' },
+              ].map((option) => {
+                const isActive = travelPurpose === option.value;
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.optionButton,
+                      isActive && styles.optionButtonActive,
+                    ]}
+                    onPress={async () => {
+                      setTravelPurpose(option.value);
+                      if (option.value !== 'OTHER') {
+                        setCustomTravelPurpose('');
+                      }
+                      try {
+                        await saveDataToSecureStorage();
+                      } catch (error) {
+                        console.error('Failed to save after purpose selection:', error);
+                      }
+                    }}
+                  >
+                    <Text style={styles.optionIcon}>{option.icon}</Text>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isActive && styles.optionTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {travelPurpose === 'OTHER' && (
+              <Input
+                label="请输入旅行目的"
+                value={customTravelPurpose}
+                onChangeText={setCustomTravelPurpose}
+                onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
+                placeholder="请输入您的旅行目的"
+                helpText="请用英文填写"
+                autoCapitalize="words"
+              />
+            )}
+          </View>
+
           <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>来泰国机票</Text>
+              <Text style={styles.subSectionTitle}>来程机票（入境泰国）</Text>
               <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
                   <Text style={styles.scanIcon}>📸</Text>
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
+          <NationalitySelector
+            label="登机国家或地区"
+            value={boardingCountry}
+            onValueChange={(code) => {
+              setBoardingCountry(code);
+              handleFieldBlur('boardingCountry', code);
+            }}
+            helpText="请选择您登机的国家或地区"
+            error={!!errors.boardingCountry}
+            errorMessage={errors.boardingCountry}
+          />
           <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
-          <Input label="出发机场" value={arrivalDepartureAirport} onChangeText={setArrivalDepartureAirport} onBlur={() => handleFieldBlur('arrivalDepartureAirport', arrivalDepartureAirport)} helpText="请输入出发机场" error={!!errors.arrivalDepartureAirport} errorMessage={errors.arrivalDepartureAirport} autoCapitalize="words" />
-          <View style={styles.dateTimeRow}>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="出发日期" 
-                value={arrivalDepartureDate} 
-                onChangeText={setArrivalDepartureDate} 
-                mode="date"
-                helpText="选择日期"
-                error={!!errors.arrivalDepartureDate} 
-                errorMessage={errors.arrivalDepartureDate}
-                onBlur={() => handleFieldBlur('arrivalDepartureDate', arrivalDepartureDate)}
-              />
-            </View>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="出发时间" 
-                value={arrivalDepartureTime} 
-                onChangeText={setArrivalDepartureTime} 
-                mode="time"
-                helpText="选择时间"
-                error={!!errors.arrivalDepartureTime} 
-                errorMessage={errors.arrivalDepartureTime}
-                onBlur={() => handleFieldBlur('arrivalDepartureTime', arrivalDepartureTime)}
-              />
-            </View>
-          </View>
-          <Input label="抵达机场" value={arrivalArrivalAirport} onChangeText={setArrivalArrivalAirport} onBlur={() => handleFieldBlur('arrivalArrivalAirport', arrivalArrivalAirport)} helpText="请输入抵达机场" error={!!errors.arrivalArrivalAirport} errorMessage={errors.arrivalArrivalAirport} autoCapitalize="words" />
-          <View style={styles.dateTimeRow}>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="抵达日期" 
-                value={arrivalArrivalDate} 
-                onChangeText={setArrivalArrivalDate} 
-                mode="date"
-                helpText="选择日期"
-                error={!!errors.arrivalArrivalDate} 
-                errorMessage={errors.arrivalArrivalDate}
-                onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
-              />
-            </View>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="抵达时间" 
-                value={arrivalArrivalTime} 
-                onChangeText={setArrivalArrivalTime} 
-                mode="time"
-                helpText="选择时间"
-                error={!!errors.arrivalArrivalTime} 
-                errorMessage={errors.arrivalArrivalTime}
-                onBlur={() => handleFieldBlur('arrivalArrivalTime', arrivalArrivalTime)}
-              />
-            </View>
-          </View>
+          <DateTimeInput 
+            label="抵达日期" 
+            value={arrivalArrivalDate} 
+            onChangeText={setArrivalArrivalDate} 
+            mode="date"
+            helpText="选择日期"
+            error={!!errors.arrivalArrivalDate} 
+            errorMessage={errors.arrivalArrivalDate}
+            onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
+          />
 
           <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>去程机票</Text>
+              <Text style={styles.subSectionTitle}>去程机票（离开泰国）</Text>
               <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
                   <Text style={styles.scanIcon}>📸</Text>
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
           <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
-          <Input label="出发机场" value={departureDepartureAirport} onChangeText={setDepartureDepartureAirport} onBlur={() => handleFieldBlur('departureDepartureAirport', departureDepartureAirport)} helpText="请输入出发机场" error={!!errors.departureDepartureAirport} errorMessage={errors.departureDepartureAirport} autoCapitalize="words" />
-          <View style={styles.dateTimeRow}>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="出发日期" 
-                value={departureDepartureDate} 
-                onChangeText={setDepartureDepartureDate} 
-                mode="date"
-                helpText="选择日期"
-                error={!!errors.departureDepartureDate} 
-                errorMessage={errors.departureDepartureDate}
-                onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}
-              />
-            </View>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="出发时间" 
-                value={departureDepartureTime} 
-                onChangeText={setDepartureDepartureTime} 
-                mode="time"
-                helpText="选择时间"
-                error={!!errors.departureDepartureTime} 
-                errorMessage={errors.departureDepartureTime}
-                onBlur={() => handleFieldBlur('departureDepartureTime', departureDepartureTime)}
-              />
-            </View>
-          </View>
-          <Input label="抵达机场" value={departureArrivalAirport} onChangeText={setDepartureArrivalAirport} onBlur={() => handleFieldBlur('departureArrivalAirport', departureArrivalAirport)} helpText="请输入抵达机场" error={!!errors.departureArrivalAirport} errorMessage={errors.departureArrivalAirport} autoCapitalize="words" />
-          <View style={styles.dateTimeRow}>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="抵达日期" 
-                value={departureArrivalDate} 
-                onChangeText={setDepartureArrivalDate} 
-                mode="date"
-                helpText="选择日期"
-                error={!!errors.departureArrivalDate} 
-                errorMessage={errors.departureArrivalDate}
-                onBlur={() => handleFieldBlur('departureArrivalDate', departureArrivalDate)}
-              />
-            </View>
-            <View style={styles.dateTimeField}>
-              <DateTimeInput 
-                label="抵达时间" 
-                value={departureArrivalTime} 
-                onChangeText={setDepartureArrivalTime} 
-                mode="time"
-                helpText="选择时间"
-                error={!!errors.departureArrivalTime} 
-                errorMessage={errors.departureArrivalTime}
-                onBlur={() => handleFieldBlur('departureArrivalTime', departureArrivalTime)}
-              />
-            </View>
-          </View>
+          <DateTimeInput 
+            label="出发日期" 
+            value={departureDepartureDate} 
+            onChangeText={setDepartureDepartureDate} 
+            mode="date"
+            helpText="选择日期"
+            error={!!errors.departureDepartureDate} 
+            errorMessage={errors.departureDepartureDate}
+            onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}
+          />
 
           <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>旅馆信息</Text>
+              <Text style={styles.subSectionTitle}>住宿信息</Text>
               <TouchableOpacity style={styles.scanButton} onPress={handleScanHotel}>
                   <Text style={styles.scanIcon}>📸</Text>
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
-          <Input label="酒店名称" value={hotelName} onChangeText={setHotelName} onBlur={() => handleFieldBlur('hotelName', hotelName)} helpText="请输入您预订的酒店名称" error={!!errors.hotelName} errorMessage={errors.hotelName} autoCapitalize="words" />
-          <Input label="酒店地址" value={hotelAddress} onChangeText={setHotelAddress} onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} multiline helpText="请输入您预订的酒店地址" error={!!errors.hotelAddress} errorMessage={errors.hotelAddress} autoCapitalize="words" />
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>住宿类型</Text>
+            <View style={styles.optionsContainer}>
+              {[
+                { value: 'HOTEL', label: '酒店', icon: '🏨' },
+                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠' },
+                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡' },
+                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥' },
+                { value: 'APARTMENT', label: '公寓', icon: '🏢' },
+                { value: 'OTHER', label: '其他', icon: '✏️' },
+              ].map((option) => {
+                const isActive = accommodationType === option.value;
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.optionButton,
+                      isActive && styles.optionButtonActive,
+                    ]}
+                    onPress={async () => {
+                      setAccommodationType(option.value);
+                      if (option.value !== 'OTHER') {
+                        setCustomAccommodationType('');
+                      }
+                      try {
+                        await saveDataToSecureStorage();
+                      } catch (error) {
+                        console.error('Failed to save after accommodation type selection:', error);
+                      }
+                    }}
+                  >
+                    <Text style={styles.optionIcon}>{option.icon}</Text>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isActive && styles.optionTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {accommodationType === 'OTHER' && (
+              <Input
+                label="请输入住宿类型"
+                value={customAccommodationType}
+                onChangeText={setCustomAccommodationType}
+                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
+                placeholder="请输入您的住宿类型"
+                helpText="请用英文填写"
+                autoCapitalize="words"
+              />
+            )}
+          </View>
+          {accommodationType === 'HOTEL' ? (
+            <>
+              <ProvinceSelector
+                label="省"
+                value={province}
+                onValueChange={(code) => {
+                  setProvince(code);
+                  handleFieldBlur('province', code);
+                }}
+                helpText="请选择泰国的省份"
+                error={!!errors.province}
+                errorMessage={errors.province}
+              />
+              <Input 
+                label="地址" 
+                value={hotelAddress} 
+                onChangeText={setHotelAddress} 
+                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
+                multiline 
+                helpText="请输入详细地址" 
+                error={!!errors.hotelAddress} 
+                errorMessage={errors.hotelAddress} 
+                autoCapitalize="words" 
+              />
+            </>
+          ) : (
+            <>
+              <ProvinceSelector
+                label="省"
+                value={province}
+                onValueChange={(code) => {
+                  setProvince(code);
+                  handleFieldBlur('province', code);
+                }}
+                helpText="请选择泰国的省份"
+                error={!!errors.province}
+                errorMessage={errors.province}
+              />
+              <Input 
+                label="区（地区）" 
+                value={district} 
+                onChangeText={setDistrict} 
+                onBlur={() => handleFieldBlur('district', district)} 
+                helpText="请输入区或地区" 
+                error={!!errors.district} 
+                errorMessage={errors.district} 
+                autoCapitalize="words" 
+              />
+              <Input 
+                label="乡（子地区）" 
+                value={subDistrict} 
+                onChangeText={setSubDistrict} 
+                onBlur={() => handleFieldBlur('subDistrict', subDistrict)} 
+                helpText="请输入乡或子地区" 
+                error={!!errors.subDistrict} 
+                errorMessage={errors.subDistrict} 
+                autoCapitalize="words" 
+              />
+              <Input 
+                label="邮政编码" 
+                value={postalCode} 
+                onChangeText={setPostalCode} 
+                onBlur={() => handleFieldBlur('postalCode', postalCode)} 
+                helpText="请输入邮政编码" 
+                error={!!errors.postalCode} 
+                errorMessage={errors.postalCode} 
+                keyboardType="numeric" 
+              />
+              <Input 
+                label="详细地址" 
+                value={hotelAddress} 
+                onChangeText={setHotelAddress} 
+                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
+                multiline 
+                helpText="请输入详细地址（例如：ABC COMPLEX (BUILDING A, SOUTH ZONE), 120 MOO 3, CHAENG WATTANA ROAD）" 
+                error={!!errors.hotelAddress} 
+                errorMessage={errors.hotelAddress} 
+                autoCapitalize="words" 
+              />
+            </>
+          )}
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
@@ -1347,8 +1514,10 @@ const styles = StyleSheet.create({
     marginHorizontal: -spacing.xs,
   },
   optionButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -1360,12 +1529,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
   },
   optionText: {
-    ...typography.body1,
+    ...typography.body2,
     color: colors.text,
+    fontSize: 12,
   },
   optionTextActive: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  optionIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
   },
   fundActions: {
     flexDirection: 'column',

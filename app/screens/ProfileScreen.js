@@ -61,7 +61,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState(null);
 
-  const [expandedSection, setExpandedSection] = useState('personal'); // 'personal', 'passport', 'funding', or null
+  const [expandedSection, setExpandedSection] = useState(null); // 'personal', 'passport', 'funding', or null
   const [editingContext, setEditingContext] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [draftSavedNotification, setDraftSavedNotification] = useState(null);
