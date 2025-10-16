@@ -45,6 +45,7 @@ const FundItemDetailModal = ({
   const lastScale = useRef(1);
   const lastTranslateX = useRef(0);
   const lastTranslateY = useRef(0);
+  const initialDistance = useRef(null);
 
   // PanResponder for photo zoom and pan (must be registered before any early returns)
   const panResponder = useRef(
@@ -68,10 +69,10 @@ const FundItemDetailModal = ({
             Math.pow(touch2.pageY - touch1.pageY, 2)
           );
           
-          if (!panResponder.current.initialDistance) {
-            panResponder.current.initialDistance = distance;
+          if (!initialDistance.current) {
+            initialDistance.current = distance;
           } else {
-            const scale = (distance / panResponder.current.initialDistance) * lastScale.current;
+            const scale = (distance / initialDistance.current) * lastScale.current;
             const clampedScale = Math.max(1, Math.min(scale, 4)); // Limit zoom between 1x and 4x
             photoScale.setValue(clampedScale);
           }
@@ -82,7 +83,7 @@ const FundItemDetailModal = ({
         }
       },
       onPanResponderRelease: () => {
-        panResponder.current.initialDistance = null;
+        initialDistance.current = null;
         
         // Reset zoom if scale is close to 1
         if (photoScale._value < 1.1) {
@@ -1182,16 +1183,11 @@ const FundItemDetailModal = ({
                 variant="secondary"
                 size="small"
                 style={styles.photoButton}
-                disabled={loading || isCreateMode}
+                disabled={loading}
                 accessibilityLabel={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
-                accessibilityHint={isCreateMode 
-                  ? t('fundItem.accessibility.addPhotoCreateHint', { 
-                      defaultValue: 'Photo can be added after creating the fund item' 
-                    })
-                  : t('fundItem.accessibility.addPhotoHint', { 
-                      defaultValue: 'Opens options to take a photo or choose from library' 
-                    })
-                }
+                accessibilityHint={t('fundItem.accessibility.addPhotoHint', { 
+                  defaultValue: 'Opens options to take a photo or choose from library' 
+                })}
               />
             </View>
           )}

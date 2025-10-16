@@ -752,31 +752,40 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   };
 
   const handleChoosePhoto = (id) => {
-    Alert.alert('选择照片', '', [
+    Alert.alert(t('thailand.travelInfo.photo.choose', { defaultValue: '选择照片' }), '', [
       {
-        text: '拍照',
+        text: t('thailand.travelInfo.photo.takePhoto', { defaultValue: '拍照' }),
         onPress: async () => {
           try {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
-              Alert.alert('需要相机权限', '请在设置中允许访问相机');
+              Alert.alert(
+                t('thailand.travelInfo.photo.cameraPermission', { defaultValue: '需要相机权限' }), 
+                t('thailand.travelInfo.photo.cameraPermissionMessage', { defaultValue: '请在设置中允许访问相机' })
+              );
               return;
             }
               const permanentUri = await copyImageToPermanentStorage(result.assets[0].uri);
               updateFundField(id, 'photo', permanentUri);
           } catch (error) {
             console.error('Camera error:', error);
-            Alert.alert('相机错误', '模拟器不支持相机功能，请使用真机测试或选择相册照片');
+            Alert.alert(
+              t('thailand.travelInfo.photo.cameraError', { defaultValue: '相机错误' }), 
+              t('thailand.travelInfo.photo.cameraErrorMessage', { defaultValue: '模拟器不支持相机功能，请使用真机测试或选择相册照片' })
+            );
           }
         },
       },
       {
-        text: '从相册选择',
+        text: t('thailand.travelInfo.photo.fromLibrary', { defaultValue: '从相册选择' }),
         onPress: async () => {
           try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-              Alert.alert('需要相册权限', '请在设置中允许访问相册');
+              Alert.alert(
+                t('thailand.travelInfo.photo.libraryPermission', { defaultValue: '需要相册权限' }), 
+                t('thailand.travelInfo.photo.libraryPermissionMessage', { defaultValue: '请在设置中允许访问相册' })
+              );
               return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -789,19 +798,22 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             }
           } catch (error) {
             console.error('Photo library error:', error);
-            Alert.alert('选择照片失败', '请重试');
+            Alert.alert(
+              t('thailand.travelInfo.photo.chooseFailed', { defaultValue: '选择照片失败' }), 
+              t('thailand.travelInfo.photo.chooseFailedMessage', { defaultValue: '请重试' })
+            );
           }
         },
       },
-      { text: '取消', style: 'cancel' },
+      { text: t('thailand.travelInfo.photo.cancel', { defaultValue: '取消' }), style: 'cancel' },
     ]);
   };
 
   const renderGenderOptions = () => {
     const options = [
-      { value: 'Female', label: '女性' },
-      { value: 'Male', label: '男性' },
-      { value: 'Undefined', label: '未定义' }
+      { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
+      { value: 'Male', label: t('thailand.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
+      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
     ];
 
     return (
@@ -848,33 +860,33 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>泰国入境信息</Text>
+        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>正在加载数据...</Text>
+          <Text style={styles.loadingText}>{t('thailand.travelInfo.loading', { defaultValue: '正在加载数据...' })}</Text>
         </View>
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
-          <Text style={styles.title}>填写泰国入境信息</Text>
-          <Text style={styles.subtitle}>请提供以下信息以完成入境卡生成</Text>
+          <Text style={styles.title}>{t('thailand.travelInfo.title', { defaultValue: '填写泰国入境信息' })}</Text>
+          <Text style={styles.subtitle}>{t('thailand.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
         </View>
 
         {/* Privacy Notice */}
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
-            所有信息仅保存在您的手机本地
+            {t('thailand.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
           </Text>
         </View>
 
         <CollapsibleSection 
-          title="护照信息" 
+          title={t('thailand.travelInfo.sections.passport', { defaultValue: '护照信息' })} 
           onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
@@ -905,7 +917,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
          </CollapsibleSection>
 
         <CollapsibleSection 
-          title="个人信息"
+          title={t('thailand.travelInfo.sections.personal', { defaultValue: '个人信息' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}

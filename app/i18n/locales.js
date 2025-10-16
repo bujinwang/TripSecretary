@@ -2829,6 +2829,136 @@ const baseTranslations = {
         },
         startButton: '开始填写',
       },
+      travelInfo: {
+        headerTitle: '泰国入境信息',
+        title: '填写泰国入境信息',
+        subtitle: '请提供以下信息以完成入境卡生成',
+        privacyNotice: '所有信息仅保存在您的手机本地',
+        loading: '正在加载数据...',
+        sections: {
+          passport: '护照信息',
+          personal: '个人信息',
+          travel: '行程信息',
+          accommodation: '住宿信息',
+          emergency: '紧急联系人',
+        },
+        scan: '扫描',
+        fields: {
+          fullName: {
+            label: '姓名',
+            help: '请填写汉语拼音（例如：LI, MAO）- 不要输入中文字符',
+          },
+          nationality: {
+            label: '国籍',
+            help: '请选择您的国籍',
+          },
+          passportNo: {
+            label: '护照号',
+            help: '请输入您的护照号码',
+          },
+          dob: {
+            label: '出生日期',
+            help: '格式: YYYY-MM-DD',
+          },
+          expiryDate: {
+            label: '护照有效期',
+            help: '格式: YYYY-MM-DD',
+          },
+          sex: {
+            label: '性别',
+            options: {
+              female: '女性',
+              male: '男性',
+              undefined: '未定义',
+            },
+          },
+          occupation: {
+            label: '职业',
+            help: '请输入您的职业 (请使用英文)',
+          },
+          cityOfResidence: {
+            label: '居住城市',
+            help: '请输入您居住的城市 (请使用英文)',
+          },
+          residentCountry: {
+            label: '居住国家',
+            help: '请选择您居住的国家',
+          },
+          phoneCode: {
+            label: '国家代码',
+          },
+          phoneNumber: {
+            label: '电话号码',
+            help: '请输入您的电话号码',
+          },
+          email: {
+            label: '电子邮箱',
+            help: '请输入您的电子邮箱地址',
+          },
+          arrivalDate: {
+            label: '抵达日期',
+            help: '格式: YYYY-MM-DD',
+          },
+          flightNumber: {
+            label: '航班号',
+            help: '请输入您的航班号',
+          },
+          departureCity: {
+            label: '出发城市',
+            help: '请输入您的出发城市 (请使用英文)',
+          },
+          purposeOfVisit: {
+            label: '访问目的',
+            help: '请选择您的访问目的',
+            options: {
+              tourism: '旅游',
+              business: '商务',
+              family: '探亲',
+              medical: '医疗',
+              other: '其他',
+            },
+          },
+          hotelName: {
+            label: '酒店名称',
+            help: '请输入您的酒店名称 (请使用英文)',
+          },
+          hotelAddress: {
+            label: '酒店地址',
+            help: '请输入您的酒店地址 (请使用英文)',
+          },
+          hotelPhone: {
+            label: '酒店电话',
+            help: '请输入您的酒店电话号码',
+          },
+          emergencyName: {
+            label: '紧急联系人姓名',
+            help: '请输入紧急联系人姓名 (请使用英文)',
+          },
+          emergencyPhone: {
+            label: '紧急联系人电话',
+            help: '请输入紧急联系人电话号码',
+          },
+          emergencyRelationship: {
+            label: '关系',
+            help: '请输入关系 (请使用英文)',
+          },
+        },
+        photo: {
+          choose: '选择照片',
+          takePhoto: '拍照',
+          fromLibrary: '从相册选择',
+          cancel: '取消',
+          cameraPermission: '需要相机权限',
+          cameraPermissionMessage: '请在设置中允许访问相机',
+          cameraError: '相机错误',
+          cameraErrorMessage: '模拟器不支持相机功能，请使用真机测试或选择相册照片',
+          libraryPermission: '需要相册权限',
+          libraryPermissionMessage: '请在设置中允许访问相册',
+          chooseFailed: '选择照片失败',
+          chooseFailedMessage: '请重试',
+        },
+        continueButton: '继续',
+      },
     },
     result: {
       title: '{{flag}} {{country}}入境包已准备好',
