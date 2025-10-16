@@ -1037,6 +1037,136 @@ const baseTranslations = {
         },
         startButton: 'Start filling',
       },
+      travelInfo: {
+        headerTitle: 'Thailand Entry Information',
+        title: 'Fill in Thailand Entry Information',
+        subtitle: 'Please provide the following information to complete the entry card generation',
+        privacyNotice: 'All information is saved locally on your device only',
+        loading: 'Loading data...',
+        sections: {
+          passport: 'Passport Information',
+          personal: 'Personal Information',
+          travel: 'Travel Information',
+          accommodation: 'Accommodation Information',
+          emergency: 'Emergency Contact',
+        },
+        scan: 'Scan',
+        fields: {
+          fullName: {
+            label: 'Full Name',
+            help: 'Please enter in Pinyin (e.g., LI, MAO) - Do not enter Chinese characters',
+          },
+          nationality: {
+            label: 'Nationality',
+            help: 'Please select your nationality',
+          },
+          passportNo: {
+            label: 'Passport Number',
+            help: 'Please enter your passport number',
+          },
+          dob: {
+            label: 'Date of Birth',
+            help: 'Format: YYYY-MM-DD',
+          },
+          expiryDate: {
+            label: 'Passport Expiry Date',
+            help: 'Format: YYYY-MM-DD',
+          },
+          sex: {
+            label: 'Gender',
+            options: {
+              female: 'Female',
+              male: 'Male',
+              undefined: 'Undefined',
+            },
+          },
+          occupation: {
+            label: 'Occupation',
+            help: 'Please enter your occupation (in English)',
+          },
+          cityOfResidence: {
+            label: 'City of Residence',
+            help: 'Please enter your city of residence (in English)',
+          },
+          residentCountry: {
+            label: 'Country of Residence',
+            help: 'Please select your country of residence',
+          },
+          phoneCode: {
+            label: 'Country Code',
+          },
+          phoneNumber: {
+            label: 'Phone Number',
+            help: 'Please enter your phone number',
+          },
+          email: {
+            label: 'Email',
+            help: 'Please enter your email address',
+          },
+          arrivalDate: {
+            label: 'Arrival Date',
+            help: 'Format: YYYY-MM-DD',
+          },
+          flightNumber: {
+            label: 'Flight Number',
+            help: 'Please enter your flight number',
+          },
+          departureCity: {
+            label: 'Departure City',
+            help: 'Please enter your departure city (in English)',
+          },
+          purposeOfVisit: {
+            label: 'Purpose of Visit',
+            help: 'Please select your purpose of visit',
+            options: {
+              tourism: 'Tourism',
+              business: 'Business',
+              family: 'Family Visit',
+              medical: 'Medical Treatment',
+              other: 'Other',
+            },
+          },
+          hotelName: {
+            label: 'Hotel Name',
+            help: 'Please enter your hotel name (in English)',
+          },
+          hotelAddress: {
+            label: 'Hotel Address',
+            help: 'Please enter your hotel address (in English)',
+          },
+          hotelPhone: {
+            label: 'Hotel Phone',
+            help: 'Please enter your hotel phone number',
+          },
+          emergencyName: {
+            label: 'Emergency Contact Name',
+            help: 'Please enter emergency contact name (in English)',
+          },
+          emergencyPhone: {
+            label: 'Emergency Contact Phone',
+            help: 'Please enter emergency contact phone number',
+          },
+          emergencyRelationship: {
+            label: 'Relationship',
+            help: 'Please enter relationship (in English)',
+          },
+        },
+        photo: {
+          choose: 'Choose Photo',
+          takePhoto: 'Take Photo',
+          fromLibrary: 'Choose from Library',
+          cancel: 'Cancel',
+          cameraPermission: 'Camera Permission Required',
+          cameraPermissionMessage: 'Please allow camera access in settings',
+          cameraError: 'Camera Error',
+          cameraErrorMessage: 'Camera not supported in simulator, please use a real device or choose from library',
+          libraryPermission: 'Photo Library Permission Required',
+          libraryPermissionMessage: 'Please allow photo library access in settings',
+          chooseFailed: 'Failed to Choose Photo',
+          chooseFailedMessage: 'Please try again',
+        },
+        continueButton: 'Continue',
+      },
     },
     japan: {
       procedures: {

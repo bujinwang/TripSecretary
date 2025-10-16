@@ -1321,13 +1321,6 @@ const FundItemDetailModal = ({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Debug: Test if view renders */}
-        <View style={{ padding: 20, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
-          <Text style={{ fontSize: 16, color: '#000' }}>DEBUG: View Mode Rendering</Text>
-          <Text style={{ fontSize: 14, color: '#666' }}>Type: {itemType}</Text>
-          <Text style={{ fontSize: 14, color: '#666' }}>Has Photo: {fundItem.photoUri ? 'Yes' : 'No'}</Text>
-        </View>
-        
         {/* Item Type Display */}
         <View style={styles.section}>
           <View 
@@ -1341,42 +1334,51 @@ const FundItemDetailModal = ({
           </View>
         </View>
 
-        {/* Amount Display (for CASH / BANK_CARD / CREDIT_CARD) */}
+        {/* Amount Display (for CASH / BANK_CARD / CREDIT_CARD) - Tappable */}
         {supportsAmountFields && (
-          <View 
-            style={styles.section}
+          <TouchableOpacity 
+            style={styles.tappableSection}
+            onPress={handleEdit}
+            activeOpacity={0.7}
             accessible={true}
-            accessibilityRole="text"
+            accessibilityRole="button"
             accessibilityLabel={`${t('fundItem.fields.amount', { defaultValue: 'Amount' })}: ${amountValueDisplay}`}
+            accessibilityHint={t('fundItem.accessibility.tapToEdit', { defaultValue: 'Tap to edit' })}
           >
             <Text style={styles.fieldLabel} accessible={false}>
               {t('fundItem.fields.amount', { defaultValue: 'Amount' })}
             </Text>
             <Text style={styles.fieldValue} accessible={false}>{amountValueDisplay}</Text>
-          </View>
+          </TouchableOpacity>
         )}
 
-        {/* Currency Display (for CASH / BANK_CARD / CREDIT_CARD) */}
+        {/* Currency Display (for CASH / BANK_CARD / CREDIT_CARD) - Tappable */}
         {supportsAmountFields && (
-          <View 
-            style={styles.section}
+          <TouchableOpacity 
+            style={styles.tappableSection}
+            onPress={handleEdit}
+            activeOpacity={0.7}
             accessible={true}
-            accessibilityRole="text"
+            accessibilityRole="button"
             accessibilityLabel={`${t('fundItem.fields.currency', { defaultValue: 'Currency' })}: ${currencyValueDisplay}`}
+            accessibilityHint={t('fundItem.accessibility.tapToEdit', { defaultValue: 'Tap to edit' })}
           >
             <Text style={styles.fieldLabel} accessible={false}>
               {t('fundItem.fields.currency', { defaultValue: 'Currency' })}
             </Text>
             <Text style={styles.fieldValue} accessible={false}>{currencyValueDisplay}</Text>
-          </View>
+          </TouchableOpacity>
         )}
 
-        {/* Description Display */}
-        <View 
-          style={styles.section}
+        {/* Description Display - Tappable */}
+        <TouchableOpacity 
+          style={styles.tappableSection}
+          onPress={handleEdit}
+          activeOpacity={0.7}
           accessible={true}
-          accessibilityRole="text"
+          accessibilityRole="button"
           accessibilityLabel={`${t('fundItem.fields.description', { defaultValue: 'Description' })}: ${descriptionValue}`}
+          accessibilityHint={t('fundItem.accessibility.tapToEdit', { defaultValue: 'Tap to edit' })}
         >
           <Text style={styles.fieldLabel} accessible={false}>
             {t('fundItem.fields.description', { defaultValue: 'Description' })}
@@ -1390,7 +1392,7 @@ const FundItemDetailModal = ({
           >
             {descriptionValue}
           </Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Photo Display */}
         <View style={styles.section}>
@@ -1477,37 +1479,21 @@ const FundItemDetailModal = ({
           </View>
         )}
 
-        {/* Action Buttons - hide in create mode */}
+        {/* Delete Button - hide in create mode */}
         {!isCreateMode && (
           <View style={styles.actionButtons}>
-            <View style={styles.buttonRow}>
-              <View style={styles.buttonHalf}>
-                <Button
-                  title={t('fundItem.detail.edit', { defaultValue: 'Edit' })}
-                  onPress={handleEdit}
-                  variant="secondary"
-                  size="medium"
-                  accessibilityLabel={t('fundItem.detail.edit', { defaultValue: 'Edit' })}
-                  accessibilityHint={t('fundItem.accessibility.editHint', { 
-                    defaultValue: 'Opens edit mode to modify fund item details' 
-                  })}
-                />
-              </View>
-              <View style={styles.buttonHalf}>
-                <Button
-                  title={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
-                  onPress={handleDelete}
-                  variant="secondary"
-                  size="medium"
-                  style={styles.deleteButton}
-                  textStyle={styles.deleteButtonText}
-                  accessibilityLabel={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
-                  accessibilityHint={t('fundItem.accessibility.deleteHint', { 
-                    defaultValue: 'Deletes this fund item after confirmation' 
-                  })}
-                />
-              </View>
-            </View>
+            <Button
+              title={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
+              onPress={handleDelete}
+              variant="secondary"
+              size="medium"
+              style={styles.deleteButton}
+              textStyle={styles.deleteButtonText}
+              accessibilityLabel={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
+              accessibilityHint={t('fundItem.accessibility.deleteHint', { 
+                defaultValue: 'Deletes this fund item after confirmation' 
+              })}
+            />
           </View>
         )}
 
@@ -1661,6 +1647,14 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: spacing.lg,
+  },
+  tappableSection: {
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   itemTypeContainer: {
     flexDirection: 'row',
