@@ -42,6 +42,7 @@ class TravelInfo {
     this.departureArrivalTime = data.departureArrivalTime || '';
     
     // Accommodation Information
+    this.isTransitPassenger = data.isTransitPassenger || false; // Transit passenger flag
     this.accommodationType = data.accommodationType || 'HOTEL'; // HOTEL, YOUTH_HOSTEL, GUEST_HOUSE, FRIEND_HOUSE, APARTMENT, or custom
     this.province = data.province || ''; // Province (required for all types)
     this.district = data.district || ''; // District (required for non-hotel types)
@@ -49,6 +50,8 @@ class TravelInfo {
     this.postalCode = data.postalCode || ''; // Postal code (required for non-hotel types)
     this.hotelName = data.hotelName || ''; // Hotel name (for hotel types)
     this.hotelAddress = data.hotelAddress || ''; // Detailed address
+    this.accommodationPhone = data.accommodationPhone || ''; // Accommodation phone (for Japan)
+    this.lengthOfStay = data.lengthOfStay || ''; // Length of stay in days
     
     // Metadata
     this.createdAt = data.createdAt || new Date().toISOString();
@@ -263,6 +266,7 @@ class TravelInfo {
         departureArrivalAirport: this.departureArrivalAirport,
         departureArrivalDate: this.departureArrivalDate,
         departureArrivalTime: this.departureArrivalTime,
+        isTransitPassenger: this.isTransitPassenger,
         accommodationType: this.accommodationType,
         province: this.province,
         district: this.district,
@@ -270,6 +274,8 @@ class TravelInfo {
         postalCode: this.postalCode,
         hotelName: this.hotelName,
         hotelAddress: this.hotelAddress,
+        accommodationPhone: this.accommodationPhone,
+        lengthOfStay: this.lengthOfStay,
         status: this.status,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt

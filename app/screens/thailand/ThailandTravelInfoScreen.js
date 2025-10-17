@@ -115,6 +115,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [arrivalArrivalDate, setArrivalArrivalDate] = useState('');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
   const [departureDepartureDate, setDepartureDepartureDate] = useState('');
+  const [isTransitPassenger, setIsTransitPassenger] = useState(false);
   const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
   const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
   const [province, setProvince] = useState(''); // 省
@@ -158,24 +159,29 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           ? (customTravelPurpose && customTravelPurpose.trim() !== '')
           : (travelPurpose && travelPurpose.trim() !== '');
         
-        // For accommodation type, if "OTHER" is selected, check if custom type is filled
-        const accommodationTypeFilled = accommodationType === 'OTHER'
-          ? (customAccommodationType && customAccommodationType.trim() !== '')
-          : (accommodationType && accommodationType.trim() !== '');
-        
-        // Different fields based on accommodation type
-        const isHotelType = accommodationType === 'HOTEL';
-        const accommodationFields = isHotelType
-          ? [accommodationTypeFilled, province, hotelAddress]
-          : [accommodationTypeFilled, province, district, subDistrict, postalCode, hotelAddress];
-        
         const travelFields = [
           purposeFilled,
           boardingCountry,
           arrivalFlightNumber, arrivalArrivalDate,
-          departureFlightNumber, departureDepartureDate,
-          ...accommodationFields
+          departureFlightNumber, departureDepartureDate
         ];
+        
+        // Only include accommodation fields if not a transit passenger
+        if (!isTransitPassenger) {
+          // For accommodation type, if "OTHER" is selected, check if custom type is filled
+          const accommodationTypeFilled = accommodationType === 'OTHER'
+            ? (customAccommodationType && customAccommodationType.trim() !== '')
+            : (accommodationType && accommodationType.trim() !== '');
+          
+          // Different fields based on accommodation type
+          const isHotelType = accommodationType === 'HOTEL';
+          const accommodationFields = isHotelType
+            ? [accommodationTypeFilled, province, hotelAddress]
+            : [accommodationTypeFilled, province, district, subDistrict, postalCode, hotelAddress];
+          
+          travelFields.push(...accommodationFields);
+        }
+        
         total = travelFields.length;
         filled = travelFields.filter(field => {
           if (typeof field === 'boolean') return field;
@@ -358,6 +364,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
             setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+            setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
             const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
             const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
@@ -615,16 +622,19 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
       if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
       if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
+      travelInfoUpdates.isTransitPassenger = isTransitPassenger;
       // Save accommodation type - if "OTHER" is selected, use custom type
-      const finalAccommodationType = accommodationType === 'OTHER' && customAccommodationType.trim()
-        ? customAccommodationType.trim()
-        : accommodationType;
-      if (finalAccommodationType && finalAccommodationType.trim()) travelInfoUpdates.accommodationType = finalAccommodationType;
-      if (province && province.trim()) travelInfoUpdates.province = province;
-      if (district && district.trim()) travelInfoUpdates.district = district;
-      if (subDistrict && subDistrict.trim()) travelInfoUpdates.subDistrict = subDistrict;
-      if (postalCode && postalCode.trim()) travelInfoUpdates.postalCode = postalCode;
-      if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
+      if (!isTransitPassenger) {
+        const finalAccommodationType = accommodationType === 'OTHER' && customAccommodationType.trim()
+          ? customAccommodationType.trim()
+          : accommodationType;
+        if (finalAccommodationType && finalAccommodationType.trim()) travelInfoUpdates.accommodationType = finalAccommodationType;
+        if (province && province.trim()) travelInfoUpdates.province = province;
+        if (district && district.trim()) travelInfoUpdates.district = district;
+        if (subDistrict && subDistrict.trim()) travelInfoUpdates.subDistrict = subDistrict;
+        if (postalCode && postalCode.trim()) travelInfoUpdates.postalCode = postalCode;
+        if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
+      }
 
       if (Object.keys(travelInfoUpdates).length > 0) {
         console.log('Saving travel info updates:', travelInfoUpdates);
@@ -1213,6 +1223,35 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
+
+          {/* Transit Passenger Checkbox */}
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={async () => {
+              const newValue = !isTransitPassenger;
+              setIsTransitPassenger(newValue);
+              if (newValue) {
+                setAccommodationType('HOTEL');
+                setCustomAccommodationType('');
+                setProvince('');
+                setDistrict('');
+                setSubDistrict('');
+                setPostalCode('');
+                setHotelAddress('');
+              }
+              await saveDataToSecureStorage();
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, isTransitPassenger && styles.checkboxChecked]}>
+              {isTransitPassenger && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>
+              我是过境旅客，不在泰国停留
+            </Text>
+          </TouchableOpacity>
+
+          {!isTransitPassenger && (
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>住宿类型</Text>
             <View style={styles.optionsContainer}>
@@ -1269,86 +1308,90 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               />
             )}
           </View>
-          {accommodationType === 'HOTEL' ? (
-            <>
-              <ProvinceSelector
-                label="省"
-                value={province}
-                onValueChange={(code) => {
-                  setProvince(code);
-                  handleFieldBlur('province', code);
-                }}
-                helpText="请选择泰国的省份"
-                error={!!errors.province}
-                errorMessage={errors.province}
-              />
-              <Input 
-                label="地址" 
-                value={hotelAddress} 
-                onChangeText={setHotelAddress} 
-                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                multiline 
-                helpText="请输入详细地址" 
-                error={!!errors.hotelAddress} 
-                errorMessage={errors.hotelAddress} 
-                autoCapitalize="words" 
-              />
-            </>
-          ) : (
-            <>
-              <ProvinceSelector
-                label="省"
-                value={province}
-                onValueChange={(code) => {
-                  setProvince(code);
-                  handleFieldBlur('province', code);
-                }}
-                helpText="请选择泰国的省份"
-                error={!!errors.province}
-                errorMessage={errors.province}
-              />
-              <Input 
-                label="区（地区）" 
-                value={district} 
-                onChangeText={setDistrict} 
-                onBlur={() => handleFieldBlur('district', district)} 
-                helpText="请输入区或地区" 
-                error={!!errors.district} 
-                errorMessage={errors.district} 
-                autoCapitalize="words" 
-              />
-              <Input 
-                label="乡（子地区）" 
-                value={subDistrict} 
-                onChangeText={setSubDistrict} 
-                onBlur={() => handleFieldBlur('subDistrict', subDistrict)} 
-                helpText="请输入乡或子地区" 
-                error={!!errors.subDistrict} 
-                errorMessage={errors.subDistrict} 
-                autoCapitalize="words" 
-              />
-              <Input 
-                label="邮政编码" 
-                value={postalCode} 
-                onChangeText={setPostalCode} 
-                onBlur={() => handleFieldBlur('postalCode', postalCode)} 
-                helpText="请输入邮政编码" 
-                error={!!errors.postalCode} 
-                errorMessage={errors.postalCode} 
-                keyboardType="numeric" 
-              />
-              <Input 
-                label="详细地址" 
-                value={hotelAddress} 
-                onChangeText={setHotelAddress} 
-                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                multiline 
-                helpText="请输入详细地址（例如：ABC COMPLEX (BUILDING A, SOUTH ZONE), 120 MOO 3, CHAENG WATTANA ROAD）" 
-                error={!!errors.hotelAddress} 
-                errorMessage={errors.hotelAddress} 
-                autoCapitalize="words" 
-              />
-            </>
+          )}
+          
+          {!isTransitPassenger && (
+            accommodationType === 'HOTEL' ? (
+              <>
+                <ProvinceSelector
+                  label="省"
+                  value={province}
+                  onValueChange={(code) => {
+                    setProvince(code);
+                    handleFieldBlur('province', code);
+                  }}
+                  helpText="请选择泰国的省份"
+                  error={!!errors.province}
+                  errorMessage={errors.province}
+                />
+                <Input 
+                  label="地址" 
+                  value={hotelAddress} 
+                  onChangeText={setHotelAddress} 
+                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
+                  multiline 
+                  helpText="请输入详细地址" 
+                  error={!!errors.hotelAddress} 
+                  errorMessage={errors.hotelAddress} 
+                  autoCapitalize="words" 
+                />
+              </>
+            ) : (
+              <>
+                <ProvinceSelector
+                  label="省"
+                  value={province}
+                  onValueChange={(code) => {
+                    setProvince(code);
+                    handleFieldBlur('province', code);
+                  }}
+                  helpText="请选择泰国的省份"
+                  error={!!errors.province}
+                  errorMessage={errors.province}
+                />
+                <Input 
+                  label="区（地区）" 
+                  value={district} 
+                  onChangeText={setDistrict} 
+                  onBlur={() => handleFieldBlur('district', district)} 
+                  helpText="请输入区或地区" 
+                  error={!!errors.district} 
+                  errorMessage={errors.district} 
+                  autoCapitalize="words" 
+                />
+                <Input 
+                  label="乡（子地区）" 
+                  value={subDistrict} 
+                  onChangeText={setSubDistrict} 
+                  onBlur={() => handleFieldBlur('subDistrict', subDistrict)} 
+                  helpText="请输入乡或子地区" 
+                  error={!!errors.subDistrict} 
+                  errorMessage={errors.subDistrict} 
+                  autoCapitalize="words" 
+                />
+                <Input 
+                  label="邮政编码" 
+                  value={postalCode} 
+                  onChangeText={setPostalCode} 
+                  onBlur={() => handleFieldBlur('postalCode', postalCode)} 
+                  helpText="请输入邮政编码" 
+                  error={!!errors.postalCode} 
+                  errorMessage={errors.postalCode} 
+                  keyboardType="numeric" 
+                />
+                <Input 
+                  label="详细地址" 
+                  value={hotelAddress} 
+                  onChangeText={setHotelAddress} 
+                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
+                  multiline 
+                  helpText="请输入详细地址（例如：ABC COMPLEX (BUILDING A, SOUTH ZONE), 120 MOO 3, CHAENG WATTANA ROAD）" 
+                  error={!!errors.hotelAddress} 
+                  errorMessage={errors.hotelAddress} 
+                  autoCapitalize="words" 
+                />
+              </>
+            )
           )}
         </CollapsibleSection>
 
@@ -1595,6 +1638,37 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
     marginBottom: spacing.md,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    marginRight: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  checkmark: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    ...typography.body1,
+    color: colors.text,
+    flex: 1,
   },
   privacyBox: {
     flexDirection: 'row',

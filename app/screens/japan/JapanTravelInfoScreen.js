@@ -79,6 +79,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
   const [arrivalDate, setArrivalDate] = useState(getDefaultArrivalDate());
+  const [isTransitPassenger, setIsTransitPassenger] = useState(false);
   const [accommodationAddress, setAccommodationAddress] = useState('');
   const [accommodationPhone, setAccommodationPhone] = useState('');
   const [lengthOfStay, setLengthOfStay] = useState('');
@@ -127,10 +128,12 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           purposeFilled,
           arrivalFlightNumber,
           arrivalDate,
-          accommodationAddress,
-          accommodationPhone,
           lengthOfStay
         ];
+        // Only include accommodation fields if not a transit passenger
+        if (!isTransitPassenger) {
+          travelFields.push(accommodationAddress, accommodationPhone);
+        }
         total = travelFields.length;
         filled = travelFields.filter(field => {
           if (typeof field === 'boolean') return field;
@@ -345,6 +348,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
           // Map arrivalArrivalDate back to arrivalDate
           setArrivalDate(travelInfo.arrivalArrivalDate || getDefaultArrivalDate());
+          setIsTransitPassenger(travelInfo.isTransitPassenger || false);
           // Map hotelAddress back to accommodationAddress
           setAccommodationAddress(travelInfo.hotelAddress || '');
           // Use accommodationPhone column
@@ -451,10 +455,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
       // Map arrivalDate to arrivalArrivalDate (database field name)
       if (arrivalDate && arrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalDate;
+      travelInfoUpdates.isTransitPassenger = isTransitPassenger;
       // Map accommodationAddress to hotelAddress (database field name)
-      if (accommodationAddress && accommodationAddress.trim()) travelInfoUpdates.hotelAddress = accommodationAddress;
+      if (!isTransitPassenger && accommodationAddress && accommodationAddress.trim()) travelInfoUpdates.hotelAddress = accommodationAddress;
       // Use new accommodationPhone column
-      if (accommodationPhone && accommodationPhone.trim()) travelInfoUpdates.accommodationPhone = accommodationPhone;
+      if (!isTransitPassenger && accommodationPhone && accommodationPhone.trim()) travelInfoUpdates.accommodationPhone = accommodationPhone;
       // Use new lengthOfStay column
       if (lengthOfStay && lengthOfStay.trim()) travelInfoUpdates.lengthOfStay = lengthOfStay;
 
@@ -1066,31 +1071,57 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               helpText={t('japan.travelInfo.fields.arrivalDateHelp')}
             />
 
-            {/* Accommodation Address (multiline) */}
-            <Input
-              label={t('japan.travelInfo.fields.accommodationAddress')}
-              value={accommodationAddress}
-              onChangeText={setAccommodationAddress}
-              onBlur={() => handleFieldBlur('accommodationAddress', accommodationAddress)}
-              placeholder={t('japan.travelInfo.fields.accommodationAddressPlaceholder')}
-              multiline
-              numberOfLines={3}
-              error={errors.accommodationAddress}
-              errorMessage={errors.accommodationAddress}
-              helpText={t('japan.travelInfo.fields.accommodationAddressHelp')}
-            />
+            {/* Transit Passenger Checkbox */}
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={async () => {
+                const newValue = !isTransitPassenger;
+                setIsTransitPassenger(newValue);
+                if (newValue) {
+                  setAccommodationAddress('');
+                  setAccommodationPhone('');
+                }
+                await saveDataToSecureStorage();
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, isTransitPassenger && styles.checkboxChecked]}>
+                {isTransitPassenger && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checkboxLabel}>
+                {t('japan.travelInfo.fields.transitPassenger', { defaultValue: '我是过境旅客，不在日本停留' })}
+              </Text>
+            </TouchableOpacity>
 
-            {/* Accommodation Phone */}
-            <Input
-              label={t('japan.travelInfo.fields.accommodationPhone')}
-              value={accommodationPhone}
-              onChangeText={setAccommodationPhone}
-              onBlur={() => handleFieldBlur('accommodationPhone', accommodationPhone)}
-              placeholder={t('japan.travelInfo.fields.accommodationPhonePlaceholder')}
-              keyboardType="phone-pad"
-              error={errors.accommodationPhone}
-              errorMessage={errors.accommodationPhone}
-            />
+            {!isTransitPassenger && (
+              <>
+                {/* Accommodation Address (multiline) */}
+                <Input
+                  label={t('japan.travelInfo.fields.accommodationAddress')}
+                  value={accommodationAddress}
+                  onChangeText={setAccommodationAddress}
+                  onBlur={() => handleFieldBlur('accommodationAddress', accommodationAddress)}
+                  placeholder={t('japan.travelInfo.fields.accommodationAddressPlaceholder')}
+                  multiline
+                  numberOfLines={3}
+                  error={errors.accommodationAddress}
+                  errorMessage={errors.accommodationAddress}
+                  helpText={t('japan.travelInfo.fields.accommodationAddressHelp')}
+                />
+
+                {/* Accommodation Phone */}
+                <Input
+                  label={t('japan.travelInfo.fields.accommodationPhone')}
+                  value={accommodationPhone}
+                  onChangeText={setAccommodationPhone}
+                  onBlur={() => handleFieldBlur('accommodationPhone', accommodationPhone)}
+                  placeholder={t('japan.travelInfo.fields.accommodationPhonePlaceholder')}
+                  keyboardType="phone-pad"
+                  error={errors.accommodationPhone}
+                  errorMessage={errors.accommodationPhone}
+                />
+              </>
+            )}
 
             {/* Length of Stay */}
             <Input
@@ -1389,6 +1420,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginHorizontal: -spacing.xs,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    marginRight: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  checkmark: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    ...typography.body1,
+    color: colors.text,
+    flex: 1,
   },
   optionButton: {
     flexDirection: 'row',
