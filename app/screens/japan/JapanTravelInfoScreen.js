@@ -619,7 +619,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('japan.travelInfo.headerTitle')}{fullName ? ` - ${fullName}` : ''}</Text>
+        <Text style={styles.headerTitle}>{t('japan.travelInfo.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 

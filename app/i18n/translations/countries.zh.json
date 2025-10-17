@@ -535,6 +535,13 @@
     }
   },
   "malaysia": {
+    "travelInfo": {
+      "sections": {
+        "passport": "护照信息",
+        "personal": "个人信息",
+        "travel": "旅行信息"
+      }
+    },
     "info": {
       "headerTitle": "马来西亚入境信息",
       "title": "马来西亚入境指南",
@@ -683,6 +690,14 @@
     }
   },
   "thailand": {
+    "travelInfo": {
+      "sections": {
+        "passport": "护照信息",
+        "personal": "个人信息",
+        "funds": "资金证明",
+        "travel": "旅行信息"
+      }
+    },
     "info": {
       "headerTitle": "泰国入境信息",
       "title": "泰国入境指南",

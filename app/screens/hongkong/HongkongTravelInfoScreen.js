@@ -342,7 +342,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('hongkong.travelInfo.headerTitle', { defaultValue: '香港入境信息' })}{fullName ? ` - ${fullName}` : ''}</Text>
+        <Text style={styles.headerTitle}>{t('hongkong.travelInfo.headerTitle', { defaultValue: '香港入境信息' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -392,8 +392,26 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
              errorMessage={errors.nationality}
            />
            <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" />
-           <Input label="出生日期" value={dob} onChangeText={setDob} onBlur={() => handleFieldBlur('dob', dob)} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} keyboardType="numeric" maxLength={10} />
-           <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} />
+           <DateTimeInput
+             label="出生日期"
+             value={dob}
+             onChangeText={setDob}
+             mode="date"
+             helpText="选择出生日期"
+             error={!!errors.dob}
+             errorMessage={errors.dob}
+             onBlur={() => handleFieldBlur('dob', dob)}
+           />
+           <DateTimeInput
+             label="护照有效期"
+             value={expiryDate}
+             onChangeText={setExpiryDate}
+             mode="date"
+             helpText="选择护照有效期"
+             error={!!errors.expiryDate}
+             errorMessage={errors.expiryDate}
+             onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
+           />
          </CollapsibleSection>
 
         <CollapsibleSection 

@@ -53,90 +53,31 @@ const SelectDestinationScreen = ({ navigation, route }) => {
 
     setSelectedCountry(country);
 
-    // Special handling for Japan
-    if (country.id === 'jp') {
-      // Mock history data - in real app, this would come from AsyncStorage or API
-      const historyList = [
-        // Add mock history if needed for testing
-      ];
+    // Map country ID to screen name
+    const screenMap = {
+      'jp': 'JapanInfo',
+      'th': 'ThailandInfo',
+      'hk': 'HongKongInfo',
+      'tw': 'TaiwanInfo',
+      'kr': 'KoreaInfo',
+      'sg': 'SingaporeInfo',
+      'my': 'MalaysiaInfo',
+      'us': 'USAInfo',
+    };
 
-      const recentJapanEntry = findRecentValidGeneration('jp', passport?.passportNo, historyList);
-
-      setTimeout(() => {
-        if (!recentJapanEntry) {
-          // First time user - show info screen
-          navigation.navigate('JapanInfo', {
-            passport,
-            destination: country
-          });
-        } else {
-          // Returning user - show requirements screen
-          navigation.navigate('JapanRequirements', {
-            passport,
-            destination: country
-          });
-        }
-      }, 300);
-      return;
-    }
-
-    if (country.id === 'th') {
-      setTimeout(() => {
-        navigation.navigate('ThailandInfo', {
-          passport,
-          destination: country
-        });
-      }, 300);
-      return;
-    }
-
-    if (country.id === 'hk') {
-      setTimeout(() => {
-        navigation.navigate('HongKongInfo', {
-          passport,
-          destination: country
-        });
-      }, 300);
-      return;
-    }
-
-    if (country.id === 'tw') {
-      setTimeout(() => {
-        navigation.navigate('TaiwanInfo', {
-          passport,
-          destination: country
-        });
-      }, 300);
-      return;
-    }
-
-    if (country.id === 'my') {
-      setTimeout(() => {
-        navigation.navigate('MalaysiaInfo', {
-          passport,
-          destination: country
-        });
-      }, 300);
-      return;
-    }
-
-    if (country.id === 'sg') {
-      setTimeout(() => {
-        navigation.navigate('SingaporeInfo', {
-          passport,
-          destination: country
-        });
-      }, 300);
-      return;
-    }
-
-    // Default navigation for other countries
-    setTimeout(() => {
+    const screenName = screenMap[country.id];
+    if (screenName) {
+      navigation.navigate(screenName, {
+        passport,
+        destination: country
+      });
+    } else {
+      // Default navigation for other countries
       navigation.navigate('TravelInfo', {
         passport,
         destination: country
       });
-    }, 300);
+    }
   };
 
   return (

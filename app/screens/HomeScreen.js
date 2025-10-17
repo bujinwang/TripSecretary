@@ -109,13 +109,24 @@ const HomeScreen = ({ navigation }) => {
     });
   }, [t, language]);
 
-  // Get passport name for greeting (use given name, not surname)
-  const passportName = passportData?.fullName 
-    ? (passportData.fullName.includes(',') 
-        ? passportData.fullName.split(',')[1].trim() // Get given name from "SURNAME, GIVENNAME" format
-        : passportData.fullName.split(' ').slice(1).join(' ').trim() || passportData.fullName.trim()) // Get given name from "SURNAME GIVENNAME" format
-    : '';
+  // Get passport name for greeting (use surname with honorific)
+  const getSurnameWithHonorific = () => {
+    if (!passportData?.getSurname) return '';
+    const surname = passportData.getSurname();
+    if (!surname) return '';
+    
+    // Add honorific based on language
+    if (language === 'zh') {
+      return `${surname}先生`;
+    } else if (language === 'en') {
+      return `Mr. ${surname}`;
+    } else if (language === 'es') {
+      return `Sr. ${surname}`;
+    }
+    return surname;
+  };
   
+  const passportName = getSurnameWithHonorific();
   const hasPassport = !!passportData;
 
   const headerTitle = t('home.header.title');
@@ -134,7 +145,16 @@ const HomeScreen = ({ navigation }) => {
     try {
       // Load primary passport for the current user
       const userId = 'user_001'; // TODO: Get from auth context
+      
+      // Ensure secure storage is initialized before accessing data
+      await PassportDataService.initialize(userId);
+
       const passport = await PassportDataService.getPrimaryPassport(userId);
+      
+      console.log('=== HomeScreen Passport Debug ===');
+      console.log('Loaded passport:', passport);
+      console.log('Passport fullName:', passport?.fullName);
+      console.log('Passport getGivenName():', passport?.getGivenName ? passport.getGivenName() : 'N/A');
       
       if (passport) {
         setPassportData(passport);
@@ -172,12 +192,6 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
 
-    if (!hasPassport) {
-      // 没有护照，先扫描
-      navigation.navigate('ScanPassport');
-      return;
-    }
-
     const countryName = t(`home.destinationNames.${country.id}`, {
       defaultValue: country.name || country.id,
     });
@@ -187,143 +201,36 @@ const HomeScreen = ({ navigation }) => {
     };
 
     // Convert passport data to legacy format for navigation
-    const passportForNav = {
-      type: t('home.passport.type'),
-      name: passportData.fullName || '',
-      nameEn: passportData.fullName || '',
-      passportNo: passportData.passportNumber || '',
-      expiry: passportData.expiryDate || '',
+    const passportForNav = hasPassport
+      ? {
+          type: t('home.passport.type'),
+          name: passportData.fullName || '',
+          nameEn: passportData.fullName || '',
+          passportNo: passportData.passportNumber || '',
+          expiry: passportData.expiryDate || '',
+        }
+      : null;
+
+    // Map country ID to screen name
+    const screenMap = {
+      'jp': 'JapanInfo',
+      'th': 'ThailandInfo',
+      'hk': 'HongKongInfo',
+      'tw': 'TaiwanInfo',
+      'kr': 'KoreaInfo',
+      'sg': 'SingaporeInfo',
+      'my': 'MalaysiaInfo',
+      'us': 'USAInfo',
     };
 
-    // Special handling for Japan
-    if (country.id === 'jp') {
-      navigation.navigate('JapanInfo', {
+    const screenName = screenMap[country.id];
+    if (screenName) {
+      navigation.navigate(screenName, {
         passport: passportForNav,
         destination: destinationForNav,
       });
-      return;
-    }
-
-    if (country.id === 'th') {
-      navigation.navigate('ThailandInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'sg') {
-      navigation.navigate('SingaporeInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'my') {
-      navigation.navigate('MalaysiaInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'tw') {
-      navigation.navigate('TaiwanInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'hk') {
-      navigation.navigate('HongKongInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'kr') {
-      navigation.navigate('KoreaInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    if (country.id === 'us') {
-      navigation.navigate('USAInfo', {
-        passport: passportForNav,
-        destination: destinationForNav,
-      });
-      return;
-    }
-
-    // 检查是否有该目的地的有效历史记录
-    const recentRecord = findRecentValidGeneration(
-      country.id,
-      passportForNav.passportNo,
-      historyList
-    );
-
-    if (recentRecord) {
-      // 有有效的历史记录，询问用户
-      const { validity } = recentRecord;
-
-      let message = t('home.alerts.historyFoundBody.pre', {
-        country: countryName,
-      });
-      message += '\n\n';
-      message += `${t('home.alerts.historyFoundBody.flight')}: ${
-        recentRecord.travelInfo?.flightNumber || t('home.common.unknown')
-      }\n`;
-      message += `${t('home.alerts.historyFoundBody.date')}: ${
-        formatDate(recentRecord.travelInfo?.arrivalDate) || t('home.common.unknown')
-      }\n`;
-      message += `${t('home.alerts.historyFoundBody.hotel')}: ${
-        recentRecord.travelInfo?.hotelName || t('home.common.unknown')
-      }\n\n`;
-
-      if (validity.warning) {
-        message += `⚠️ ${validity.warning}\n\n`;
-      }
-
-      message += t('home.alerts.historyFoundBody.question');
-
-      Alert.alert(
-        t('home.alerts.historyFoundTitle'),
-        message,
-        [
-          {
-            text: t('common.view'),
-            onPress: () => {
-              // 直接查看历史记录
-                  navigation.navigate('Result', {
-                    passport: passportForNav,
-                    destination: destinationForNav,
-                    travelInfo: recentRecord.travelInfo,
-                    generationId: recentRecord.id,
-                    fromHistory: true,
-                  });
-                },
-          },
-          {
-            text: t('home.alerts.historyFoundBody.regenerate'),
-            onPress: () => {
-              // 重新生成
-              navigation.navigate('TravelInfo', {
-                destination: destinationForNav,
-                passport: passportForNav,
-              });
-            },
-            style: 'cancel',
-          },
-        ],
-        { cancelable: true }
-      );
     } else {
-      // 没有历史记录，直接跳转到补充旅行信息
+      // Default navigation for other countries
       navigation.navigate('TravelInfo', {
         destination: destinationForNav,
         passport: passportForNav,
@@ -333,13 +240,15 @@ const HomeScreen = ({ navigation }) => {
 
   const handleViewAllCountries = () => {
     // 查看所有国家
-    const passportForNav = passportData ? {
-      type: t('home.passport.type'),
-      name: passportData.fullName || '',
-      nameEn: passportData.fullName || '',
-      passportNo: passportData.passportNumber || '',
-      expiry: passportData.expiryDate || '',
-    } : null;
+    const passportForNav = hasPassport
+      ? {
+          type: t('home.passport.type'),
+          name: passportData.fullName || '',
+          nameEn: passportData.fullName || '',
+          passportNo: passportData.passportNumber || '',
+          expiry: passportData.expiryDate || '',
+        }
+      : null;
     
     navigation.navigate('SelectDestination', { 
       passport: passportForNav

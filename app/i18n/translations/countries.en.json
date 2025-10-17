@@ -1,5 +1,12 @@
 {
   "malaysia": {
+    "travelInfo": {
+      "sections": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "travel": "Travel Information"
+      }
+    },
     "info": {
       "headerTitle": "Malaysia Entry Information",
       "title": "Malaysia Entry Guide",
@@ -305,6 +312,14 @@
     }
   },
   "thailand": {
+    "travelInfo": {
+      "sections": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Information"
+      }
+    },
     "info": {
       "headerTitle": "Thailand Entry Information",
       "title": "Thailand Entry Guide",

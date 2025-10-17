@@ -906,7 +906,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}{fullName ? ` - ${fullName}` : ''}</Text>
+        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -959,8 +959,26 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
            />
            <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" testID="passport-number-input" />
            <Input label="签证号（如有）" value={visaNumber} onChangeText={(text) => setVisaNumber(text.toUpperCase())} onBlur={() => handleFieldBlur('visaNumber', visaNumber)} helpText="如有签证，请填写签证号码（仅限字母或数字）" error={!!errors.visaNumber} errorMessage={errors.visaNumber} autoCapitalize="characters" autoCorrect={false} autoComplete="off" spellCheck={false} keyboardType="ascii-capable" />
-           <Input label="出生日期" value={dob} onChangeText={setDob} onBlur={() => handleFieldBlur('dob', dob)} helpText="格式: YYYY-MM-DD" error={!!errors.dob} errorMessage={errors.dob} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
-           <Input label="护照有效期" value={expiryDate} onChangeText={setExpiryDate} onBlur={() => handleFieldBlur('expiryDate', expiryDate)} helpText="格式: YYYY-MM-DD" error={!!errors.expiryDate} errorMessage={errors.expiryDate} keyboardType="numeric" maxLength={10} maskType="date-ymd" />
+           <DateTimeInput
+             label="出生日期"
+             value={dob}
+             onChangeText={setDob}
+             mode="date"
+             helpText="选择出生日期"
+             error={!!errors.dob}
+             errorMessage={errors.dob}
+             onBlur={() => handleFieldBlur('dob', dob)}
+           />
+           <DateTimeInput
+             label="护照有效期"
+             value={expiryDate}
+             onChangeText={setExpiryDate}
+             mode="date"
+             helpText="选择护照有效期"
+             error={!!errors.expiryDate}
+             errorMessage={errors.expiryDate}
+             onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
+           />
          </CollapsibleSection>
 
         <CollapsibleSection 
@@ -1015,7 +1033,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
          </CollapsibleSection>
 
         <CollapsibleSection 
-          title="资金证明"
+          title={t('thailand.travelInfo.sections.funds', { defaultValue: 'Proof of Funds' })}
           isExpanded={expandedSection === 'funds'}
           onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
@@ -1072,7 +1090,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         </CollapsibleSection>
 
         <CollapsibleSection 
-          title="旅行信息"
+          title={t('thailand.travelInfo.sections.travel', { defaultValue: 'Travel Information' })}
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
@@ -1163,7 +1181,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             value={arrivalArrivalDate} 
             onChangeText={setArrivalArrivalDate} 
             mode="date"
-            helpText="选择日期"
+            helpText="格式: YYYY-MM-DD"
             error={!!errors.arrivalArrivalDate} 
             errorMessage={errors.arrivalArrivalDate}
             onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
@@ -1182,7 +1200,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             value={departureDepartureDate} 
             onChangeText={setDepartureDepartureDate} 
             mode="date"
-            helpText="选择日期"
+            helpText="格式: YYYY-MM-DD"
             error={!!errors.departureDepartureDate} 
             errorMessage={errors.departureDepartureDate}
             onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}

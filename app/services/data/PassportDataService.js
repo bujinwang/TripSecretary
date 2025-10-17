@@ -634,6 +634,22 @@ class PassportDataService {
   }
 
   /**
+   * Convenience helper for retrieving the user's primary passport
+   * Alias for getPassport(userId) kept for backwards compatibility
+   *
+   * @param {string} userId - User ID
+   * @returns {Promise<Passport|null>} - Primary passport instance or null
+   */
+  static async getPrimaryPassport(userId) {
+    try {
+      return await this.getPassport(userId);
+    } catch (error) {
+      console.error('Failed to get primary passport:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Save passport data for a user
    * Creates a new passport record
    * 
