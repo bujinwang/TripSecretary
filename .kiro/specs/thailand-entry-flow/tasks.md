@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Create core validation and utility services
+- [x] 1. Create core validation and utility services
 - [ ] 1.1 Implement ThailandDataValidator service
   - Create validation logic for passport, personal info, travel info, and fund data
   - Implement field counting and completion status calculation
@@ -135,7 +135,7 @@
   - _Requirements: 6.1, 6.5_
 
 - [ ] 9. Performance optimization and caching
-- [ ] 9.1 Implement data caching for validation results
+- [-] 9.1 Implement data caching for validation results
   - Add caching layer for validation results to improve performance
   - Implement cache invalidation when data changes
   - Create memory management for large datasets

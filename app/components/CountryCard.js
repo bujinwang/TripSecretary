@@ -19,12 +19,16 @@ const CountryCard = ({
         disabled && styles.cardDisabled,
       ]}
       onPress={disabled ? undefined : onPress}
+      disabled={disabled}
       activeOpacity={disabled ? 1 : 0.7}
     >
       <Text style={[styles.flag, disabled && styles.flagDisabled]}>{flag}</Text>
       <Text style={[styles.name, disabled && styles.nameDisabled]}>{name}</Text>
-      <Text style={[styles.flightTime, disabled && styles.flightTimeDisabled]}>{flightTime}</Text>
-      {disabled && <Text style={styles.comingSoon}>敬请期待</Text>}
+      {disabled ? (
+        <Text style={styles.comingSoon}>敬请期待</Text>
+      ) : (
+        <Text style={styles.flightTime}>{flightTime}</Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -70,9 +74,6 @@ const styles = StyleSheet.create({
   flightTime: {
     ...typography.caption,
     color: colors.textSecondary,
-  },
-  flightTimeDisabled: {
-    color: colors.textTertiary,
   },
   comingSoon: {
     ...typography.caption,

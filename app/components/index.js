@@ -11,3 +11,5 @@ export { default as PassportNameInput } from './PassportNameInput';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as FundItemDetailModal } from './FundItemDetailModal';
 export { default as ProvinceSelector } from './ProvinceSelector';
+export { default as CollapsibleSection } from './CollapsibleSection';
+export { default as AccommodationTypeSelector } from './AccommodationTypeSelector';

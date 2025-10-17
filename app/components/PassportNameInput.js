@@ -14,6 +14,7 @@ const PassportNameInput = ({
   label,
   value,
   onChangeText,
+  onBlur,
   placeholder = "请输入您的全名",
   error,
   errorMessage,
@@ -146,6 +147,15 @@ const PassportNameInput = ({
     }
   }, [surname, middleName, givenName, onChangeText]);
 
+  // Handle blur event
+  const handleBlur = () => {
+    if (onBlur) {
+      const parts = [surname.trim(), middleName.trim(), givenName.trim()].filter(Boolean);
+      const combined = parts.join(', ');
+      onBlur(combined);
+    }
+  };
+
   return (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -177,6 +187,7 @@ const PassportNameInput = ({
                 isUserTyping.current = false;
               }, 100);
             }}
+            onBlur={handleBlur}
             placeholder="LI"
             placeholderTextColor={colors.textDisabled}
             autoCapitalize="characters"
@@ -214,6 +225,7 @@ const PassportNameInput = ({
                 isUserTyping.current = false;
               }, 100);
             }}
+            onBlur={handleBlur}
             placeholder="可选"
             placeholderTextColor={colors.textDisabled}
             autoCapitalize="characters"
@@ -251,6 +263,7 @@ const PassportNameInput = ({
                 isUserTyping.current = false;
               }, 100);
             }}
+            onBlur={handleBlur}
             placeholder="MAOA"
             placeholderTextColor={colors.textDisabled}
             autoCapitalize="characters"

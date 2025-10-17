@@ -161,15 +161,15 @@ const ProfileScreen = ({ navigation, route }) => {
           setPersonalInfo(mappedPersonalInfo);
         }
         
-        // Load fund items
-        try {
-          const items = await PassportDataService.getFundItems(userId);
-          console.log('Loaded fund items:', items);
-          setFundItems(items || []);
-        } catch (fundItemsError) {
-          console.error('Error loading fund items:', fundItemsError);
-          setFundItems([]);
-        }
+        // Load fund items (force refresh to ensure fresh data)
+         try {
+           const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+           console.log('Loaded fund items:', items);
+           setFundItems(items || []);
+         } catch (fundItemsError) {
+           console.error('Error loading fund items:', fundItemsError);
+           setFundItems([]);
+         }
         
       } catch (error) {
         console.error('Error loading saved data:', error);
@@ -185,14 +185,16 @@ const ProfileScreen = ({ navigation, route }) => {
       const loadFundItems = async () => {
         try {
           const userId = 'default_user';
-          const items = await PassportDataService.getFundItems(userId);
+          // Invalidate cache first to ensure fresh data when screen comes into focus
+          PassportDataService.invalidateCache('fundItems', userId);
+          const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
           console.log('Reloaded fund items on focus:', items);
           setFundItems(items || []);
         } catch (error) {
           console.error('Error reloading fund items:', error);
         }
       };
-      
+
       loadFundItems();
     }, [])
   );
@@ -793,9 +795,12 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const handleFundItemUpdate = async (updatedItem) => {
     try {
-      // Refresh fund items list
+      // Invalidate cache first to ensure fresh data
       const userId = 'default_user';
-      const items = await PassportDataService.getFundItems(userId);
+      PassportDataService.invalidateCache('fundItems', userId);
+
+      // Refresh fund items list
+      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after update:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);
@@ -807,9 +812,12 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const handleFundItemDelete = async (fundItemId) => {
     try {
-      // Refresh fund items list
+      // Invalidate cache first to ensure fresh data
       const userId = 'default_user';
-      const items = await PassportDataService.getFundItems(userId);
+      PassportDataService.invalidateCache('fundItems', userId);
+
+      // Refresh fund items list
+      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after delete:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);
@@ -869,9 +877,12 @@ const ProfileScreen = ({ navigation, route }) => {
   // Handle fund item created
   const handleFundItemCreate = async (newItem) => {
     try {
-      // Refresh fund items list
+      // Invalidate cache first to ensure fresh data
       const userId = 'default_user';
-      const items = await PassportDataService.getFundItems(userId);
+      PassportDataService.invalidateCache('fundItems', userId);
+
+      // Refresh fund items list
+      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after create:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);

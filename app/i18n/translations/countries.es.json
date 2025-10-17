@@ -177,15 +177,15 @@
     "info": {
       "headerTitle": "Información de entrada a Japón",
       "title": "Guía de entrada a Japón",
-      "subtitle": "Sin visa por 90 días para titulares de pasaporte chino",
+      "subtitle": "Se requiere visa previa para titulares de pasaporte chino",
       "sections": {
         "visa": {
-          "title": "✓ ¡Buenas noticias! Política sin visa",
+          "title": "⚠️ Requisito de visa",
           "items": [
-            "Los titulares de pasaporte chino están sin visa por 90 días - ¡viaje espontáneo!",
-            "• No se necesita solicitud de visa por adelantado",
-            "• Válido para turismo, negocios, visitas familiares",
-            "• Debe completar tarjeta de llegada y declaración de aduanas al llegar"
+            "Los titulares de pasaporte chino deben obtener una visa antes de viajar a Japón; no existe exención de visado.",
+            "• La opción más común es la visa de corta estadía (turismo/negocios/familia) válida hasta 90 días.",
+            "• La solicitud se presenta ante la embajada/consulado de Japón o centros de solicitud acreditados antes del viaje.",
+            "• Prepare pasaporte, itinerario y comprobantes financieros; reserve al menos una semana para el trámite."
           ]
         },
         "important": {

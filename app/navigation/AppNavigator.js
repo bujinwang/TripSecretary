@@ -23,6 +23,7 @@ import {
   JapanInfoScreen,
   JapanRequirementsScreen,
   JapanProceduresScreen,
+  JapanTravelInfoScreen,
   InteractiveImmigrationGuide,
   // Thailand screens
   ThailandInfoScreen,
@@ -457,6 +458,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name="JapanProcedures"
           component={JapanProceduresScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanTravelInfo"
+          component={JapanTravelInfoScreen}
           options={{
             headerShown: false,
           }}

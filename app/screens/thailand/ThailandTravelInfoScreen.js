@@ -1374,19 +1374,19 @@ const styles = StyleSheet.create({
     width: 40,
   },
   scrollContainer: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.lg,
   },
   titleSection: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
   },
   flag: {
-    fontSize: 64,
-    marginBottom: spacing.md,
+    fontSize: 40,
+    marginBottom: spacing.sm,
   },
   title: {
-    ...typography.h2,
+    ...typography.h3,
     color: colors.primary,
     marginBottom: spacing.xs,
     textAlign: 'center',
@@ -1399,7 +1399,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     backgroundColor: colors.white,
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -1409,7 +1409,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.lg,
+    padding: spacing.md,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
@@ -1450,7 +1450,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.md,
   },
   sectionContent: {
-    padding: spacing.lg,
+    padding: spacing.md,
     paddingTop: 0,
   },
   dateTimeRow: {
@@ -1468,7 +1468,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   scanButton: {
     flexDirection: 'row',
@@ -1501,7 +1501,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   fieldContainer: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   fieldLabel: {
     ...typography.body1,
@@ -1543,14 +1543,14 @@ const styles = StyleSheet.create({
   },
   fundActions: {
     flexDirection: 'column',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   fundButton: {
     marginVertical: spacing.xs,
   },
   fundItem: {
-    marginBottom: spacing.md,
-    padding: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
@@ -1581,23 +1581,23 @@ const styles = StyleSheet.create({
   privacyBox: {
     flexDirection: 'row',
     backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    padding: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
+    padding: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 6,
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: 'rgba(52, 199, 89, 0.2)',
   },
   privacyIcon: {
-    fontSize: 16,
+    fontSize: 14,
     marginRight: spacing.xs,
   },
   privacyText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#34C759',
     flex: 1,
-    lineHeight: 18,
+    lineHeight: 16,
   },
   phoneInputContainer: {
     flexDirection: 'row',

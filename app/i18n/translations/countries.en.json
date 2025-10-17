@@ -385,15 +385,15 @@
     "info": {
       "headerTitle": "Japan Entry Information",
       "title": "Japan Entry Guide",
-      "subtitle": "Visa-free for 90 days for Chinese passport holders",
+      "subtitle": "Visa required in advance for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ Visa-Free Policy",
+          "title": "⚠️ Visa Requirement",
           "items": [
-            "Chinese passport holders are visa-free for 90 days.",
-            "• No visa application needed in advance.",
-            "• Valid for tourism, business, family visits.",
-            "• Must complete Landing Card and Customs Declaration upon arrival."
+            "Chinese passport holders must obtain a visa before traveling to Japan; there is no visa waiver.",
+            "• Most travelers use the short-term stay visa (tourism/business/family) for visits up to 90 days.",
+            "• Apply via the Japanese Embassy/Consulate or accredited Japan Visa Application Centre before departure.",
+            "• Prepare passport, itinerary, and financial proof; allow at least one week for processing."
           ]
         },
         "onsite": {

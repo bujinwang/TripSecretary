@@ -508,40 +508,57 @@ class PassportDataService {
   }
 
   /**
-   * Invalidate cache for a specific data type and user
-   * 
-   * Removes a specific cache entry and its timestamp, forcing the next access
-   * to reload from the database. Called automatically after data updates.
-   * 
-   * @static
-   * @param {('passport'|'personalInfo'|'fundingProof')} dataType - Type of data to invalidate
-   * @param {string} userId - User ID whose cache should be invalidated
-   * @returns {void}
-   * 
-   * @example
-   * // Invalidate passport cache after update
-   * await passport.save();
-   * PassportDataService.invalidateCache('passport', userId);
-   * 
-   * @example
-   * // Invalidate all data types for a user
-   * ['passport', 'personalInfo'].forEach(type => {
-   *   PassportDataService.invalidateCache(type, userId);
-   * });
-   * 
-   * @description
-   * This method:
-   * - Removes the data from the appropriate cache Map
-   * - Removes the timestamp for the cache entry
-   * - Increments the invalidations counter in cache statistics
-   * - Does NOT delete data from database
+    * Invalidate cache for a specific data type and user
+    *
+    * Removes a specific cache entry and its timestamp, forcing the next access
+    * to reload from the database. Called automatically after data updates.
+    *
+    * @static
+    * @param {('passport'|'personalInfo'|'fundingProof'|'fundItems')} dataType - Type of data to invalidate
+    * @param {string} userId - User ID whose cache should be invalidated
+    * @returns {void}
+    *
+    * @example
+    * // Invalidate passport cache after update
+    * await passport.save();
+    * PassportDataService.invalidateCache('passport', userId);
+    *
+    * @example
+    * // Invalidate fund items cache after update
+    * await fundItem.save();
+    * PassportDataService.invalidateCache('fundItems', userId);
+    *
+    * @example
+    * // Invalidate all data types for a user
+    * ['passport', 'personalInfo', 'fundItems'].forEach(type => {
+    *   PassportDataService.invalidateCache(type, userId);
+    * });
+    *
+    * @description
+    * This method:
+    * - Removes the data from the appropriate cache Map
+    * - Removes the timestamp for the cache entry
+    * - Increments the invalidations counter in cache statistics
+    * - Does NOT delete data from database
+    * - Handles both predefined cache segments and dynamically created ones (like fundItems)
    */
-  static invalidateCache(dataType, userId) {
-    const cacheKey = `${dataType}_${userId}`;
-    this.cache[dataType].delete(userId);
-    this.cache.lastUpdate.delete(cacheKey);
-    this.cacheStats.invalidations++;
-  }
+   static invalidateCache(dataType, userId) {
+     const cacheKey = `${dataType}_${userId}`;
+     let cacheSegment = this.cache[dataType];
+
+     // Lazily initialize caches that were not predefined (e.g., fundItems)
+     if (!cacheSegment && dataType !== 'lastUpdate') {
+       cacheSegment = new Map();
+       this.cache[dataType] = cacheSegment;
+     }
+
+     if (cacheSegment && typeof cacheSegment.delete === 'function') {
+       cacheSegment.delete(userId);
+     }
+
+     this.cache.lastUpdate.delete(cacheKey);
+     this.cacheStats.invalidations++;
+   }
 
   /**
    * Record a cache hit for statistics
@@ -601,7 +618,7 @@ class PassportDataService {
 
       // Cache miss - load from database
       this.recordCacheMiss('passport', userId);
-      const passport = await Passport.load(userId);
+      const passport = await Passport.load(userId, { byUserId: true });
 
       // Update cache
       if (passport) {
@@ -927,111 +944,128 @@ class PassportDataService {
   // ============================================================================
 
   /**
-   * Save individual fund item
-   * @param {Object} fundData - Fund item data
-   * @param {string} userId - User ID
-   * @returns {Promise<FundItem>} - Saved fund item instance
-   */
-  static async saveFundItem(fundData, userId) {
-    try {
-      console.log('=== PASSPORT DATA SERVICE: SAVE FUND ITEM ===');
-      console.log('Input fundData:', JSON.stringify(fundData, null, 2));
-      console.log('userId:', userId);
+    * Save individual fund item
+    * @param {Object} fundData - Fund item data
+    * @param {string} userId - User ID
+    * @returns {Promise<FundItem>} - Saved fund item instance
+    */
+   static async saveFundItem(fundData, userId) {
+     try {
+       console.log('=== PASSPORT DATA SERVICE: SAVE FUND ITEM ===');
+       console.log('Input fundData:', JSON.stringify(fundData, null, 2));
+       console.log('userId:', userId);
 
-      const FundItem = require('../../models/FundItem').default;
+       const FundItem = require('../../models/FundItem').default;
 
-      // Create fund item instance
-      const fundItem = new FundItem({
-        ...fundData,
-        userId
-      });
+       // Create fund item instance
+       const fundItem = new FundItem({
+         ...fundData,
+         userId
+       });
 
-      console.log('FundItem instance created, about to save...');
+       console.log('FundItem instance created, about to save...');
 
-      // Save to database
-      const saveResult = await fundItem.save({ skipValidation: true });
-      console.log('FundItem.save() completed, result:', saveResult);
+       // Save to database
+       const saveResult = await fundItem.save({ skipValidation: true });
+       console.log('FundItem.save() completed, result:', saveResult);
 
-      // Invalidate cache for fund items
-      this.invalidateCache('fundItems', userId);
+       // Invalidate and clear cache for fund items to force refresh
+       this.invalidateCache('fundItems', userId);
 
-      console.log(`✅ Fund item saved for user ${userId}`);
-      return fundItem;
-    } catch (error) {
-      console.error('PassportDataService.saveFundItem failed:', error);
-      throw error;
-    }
-  }
+       // Also clear the cache entry to ensure fresh data on next load
+       if (this.cache.fundItems) {
+         this.cache.fundItems.delete(userId);
+       }
 
-  /**
-   * Get all fund items for a user
-   * @param {string} userId - User ID
-   * @returns {Promise<Array<FundItem>>} - Array of fund items
-   */
-  static async getFundItems(userId) {
-    try {
-      console.log('=== PASSPORT DATA SERVICE: GET FUND ITEMS ===');
-      console.log('Loading fund items for userId:', userId);
-
-      // Check cache first
-      const cacheKey = `fundItems_${userId}`;
-      if (this.cache.fundItems && this.cache.fundItems.has(userId)) {
-        const cached = this.cache.fundItems.get(userId);
-        if (this.isCacheValid(cacheKey)) {
-          console.log('Returning cached fund items');
-          return cached;
-        }
-      }
-
-      const FundItem = require('../../models/FundItem').default;
-      const fundItems = await FundItem.loadByUserId(userId);
-
-      // Update cache
-      if (!this.cache.fundItems) {
-        this.cache.fundItems = new Map();
-      }
-      this.cache.fundItems.set(userId, fundItems);
-      this.updateCacheTimestamp(cacheKey);
-
-      console.log(`✅ Loaded ${fundItems.length} fund items for user ${userId}`);
-      return fundItems;
-    } catch (error) {
-      console.error('PassportDataService.getFundItems failed:', error);
-      throw error;
-    }
-  }
+       console.log(`✅ Fund item saved for user ${userId}`);
+       return fundItem;
+     } catch (error) {
+       console.error('PassportDataService.saveFundItem failed:', error);
+       throw error;
+     }
+   }
 
   /**
-   * Delete fund item
-   * @param {string} fundItemId - Fund item ID
-   * @param {string} userId - User ID
-   * @returns {Promise<boolean>} - Success status
-   */
-  static async deleteFundItem(fundItemId, userId) {
-    try {
-      console.log('=== PASSPORT DATA SERVICE: DELETE FUND ITEM ===');
-      console.log('Deleting fund item:', fundItemId, 'for user:', userId);
+    * Get all fund items for a user
+    * @param {string} userId - User ID
+    * @param {Object} options - Options for loading
+    * @param {boolean} options.forceRefresh - Force refresh from database (default: false)
+    * @returns {Promise<Array<FundItem>>} - Array of fund items
+    */
+   static async getFundItems(userId, options = {}) {
+     try {
+       console.log('=== PASSPORT DATA SERVICE: GET FUND ITEMS ===');
+       console.log('Loading fund items for userId:', userId);
 
-      const FundItem = require('../../models/FundItem').default;
-      const fundItem = await FundItem.load(fundItemId);
+       const { forceRefresh = false } = options;
+       const cacheKey = `fundItems_${userId}`;
 
-      if (!fundItem) {
-        console.log('Fund item not found:', fundItemId);
-        return false;
-      }
+       // Check cache first (unless force refresh is requested)
+       if (!forceRefresh && this.cache.fundItems && this.cache.fundItems.has(userId)) {
+         const cached = this.cache.fundItems.get(userId);
+         if (this.isCacheValid(cacheKey)) {
+           console.log('Returning cached fund items');
+           this.recordCacheHit('fundItems', userId);
+           return cached;
+         }
+       }
 
-      const result = await fundItem.delete();
+       // Cache miss or force refresh - load from database
+       this.recordCacheMiss('fundItems', userId);
+       const FundItem = require('../../models/FundItem').default;
+       const fundItems = await FundItem.loadByUserId(userId);
 
-      // Invalidate cache
-      this.invalidateCache('fundItems', userId);
+       // Update cache
+       if (!this.cache.fundItems) {
+         this.cache.fundItems = new Map();
+       }
+       this.cache.fundItems.set(userId, fundItems);
+       this.updateCacheTimestamp(cacheKey);
 
-      console.log(`✅ Fund item deleted: ${fundItemId}`);
-      return result;
-    } catch (error) {
-      console.error('PassportDataService.deleteFundItem failed:', error);
-      throw error;
-    }
-  }
+       console.log(`✅ Loaded ${fundItems.length} fund items for user ${userId} from database`);
+       return fundItems;
+     } catch (error) {
+       console.error('PassportDataService.getFundItems failed:', error);
+       throw error;
+     }
+   }
+
+  /**
+    * Delete fund item
+    * @param {string} fundItemId - Fund item ID
+    * @param {string} userId - User ID
+    * @returns {Promise<boolean>} - Success status
+    */
+   static async deleteFundItem(fundItemId, userId) {
+     try {
+       console.log('=== PASSPORT DATA SERVICE: DELETE FUND ITEM ===');
+       console.log('Deleting fund item:', fundItemId, 'for user:', userId);
+
+       const FundItem = require('../../models/FundItem').default;
+       const fundItem = await FundItem.load(fundItemId);
+
+       if (!fundItem) {
+         console.log('Fund item not found:', fundItemId);
+         return false;
+       }
+
+       const result = await fundItem.delete();
+
+       // Invalidate and clear cache for fund items to force refresh
+       this.invalidateCache('fundItems', userId);
+
+       // Also clear the cache entry to ensure fresh data on next load
+       if (this.cache.fundItems) {
+         this.cache.fundItems.delete(userId);
+       }
+
+       console.log(`✅ Fund item deleted: ${fundItemId}`);
+       return result;
+     } catch (error) {
+       console.error('PassportDataService.deleteFundItem failed:', error);
+       throw error;
+     }
+   }
 
   // ============================================================================
   // TRAVEL INFO OPERATIONS

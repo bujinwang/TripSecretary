@@ -17,7 +17,7 @@ const JapanRequirementsScreen = ({ navigation, route }) => {
   const { t } = useLocale();
 
   const handleContinue = () => {
-    navigation.navigate('JapanProcedures', { passport, destination });
+    navigation.navigate('JapanTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(() => [

@@ -25,7 +25,7 @@ import { useTranslation } from '../i18n/LocaleContext';
 const ResultScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const routeParams = route.params || {};
-  const { generationId, fromHistory = false } = routeParams;
+  const { generationId, fromHistory = false, userId, context } = routeParams;
 
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,7 @@ const ResultScreen = ({ navigation, route }) => {
   const [shareSession, setShareSession] = useState(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
+  const [japanTravelerData, setJapanTravelerData] = useState(null);
 
   // Animation values
   const pulseAnimation = useMemo(() => new Animated.Value(1), []);
@@ -49,6 +50,8 @@ const ResultScreen = ({ navigation, route }) => {
   const isMalaysia = destination?.id === 'my';
   const isSingapore = destination?.id === 'sg';
   const isTaiwan = destination?.id === 'tw';
+  const isJapan = destination?.id === 'jp' || destination?.id === 'japan';
+  const isJapanManualGuide = isJapan && context === 'manual_entry_guide';
 
   // 获取目的地特定的功能配置
   const features = getAvailableFeatures(destination?.id);
@@ -60,6 +63,13 @@ const ResultScreen = ({ navigation, route }) => {
       loadGenerationResult();
     }
   }, [generationId]);
+
+  // Load Japan traveler data when in manual entry guide context
+  useEffect(() => {
+    if (isJapanManualGuide && userId) {
+      loadJapanTravelerData();
+    }
+  }, [isJapanManualGuide, userId]);
 
   // Animation setup
   useEffect(() => {
@@ -103,6 +113,26 @@ const ResultScreen = ({ navigation, route }) => {
       console.log('无法加载历史记录，使用传入的数据:', error.message);
       // 如果 API 调用失败（例如后端未运行），使用传入的参数
       // 这样即使没有后端，应用也能正常工作
+    }
+  };
+
+  const loadJapanTravelerData = async () => {
+    try {
+      console.log('Loading Japan traveler data for userId:', userId);
+      const JapanTravelerContextBuilder = require('../services/japan/JapanTravelerContextBuilder').default;
+      
+      const result = await JapanTravelerContextBuilder.buildContext(userId);
+      
+      if (result.success) {
+        console.log('Japan traveler data loaded successfully');
+        setJapanTravelerData(result.payload);
+      } else {
+        console.log('Failed to load Japan traveler data:', result.errors);
+        Alert.alert('提示', '部分信息加载失败，请检查您的入境信息是否完整');
+      }
+    } catch (error) {
+      console.error('Error loading Japan traveler data:', error);
+      Alert.alert('错误', '无法加载日本入境信息');
     }
   };
 
@@ -451,6 +481,196 @@ const ResultScreen = ({ navigation, route }) => {
     navigation.navigate('Home');
   };
 
+  const handleNavigateToInteractiveGuide = () => {
+    navigation.navigate('ImmigrationGuide', {
+      passport,
+      destination,
+      travelInfo,
+      japanTravelerData
+    });
+  };
+
+  const renderJapanManualGuide = () => {
+    if (!isJapanManualGuide || !japanTravelerData) {
+      return null;
+    }
+
+    return (
+      <View style={styles.japanManualGuideCard}>
+        <View style={styles.japanManualGuideHeader}>
+          <Text style={styles.japanManualGuideIcon}>📋</Text>
+          <View style={styles.japanManualGuideHeaderText}>
+            <Text style={styles.japanManualGuideTitle}>日本入境卡填写指南</Text>
+            <Text style={styles.japanManualGuideSubtitle}>请参考以下信息手动填写纸质入境卡</Text>
+          </View>
+        </View>
+
+        {/* Passport Information Section */}
+        <View style={styles.japanInfoSection}>
+          <Text style={styles.japanSectionTitle}>护照信息 Passport Information</Text>
+          <View style={styles.japanInfoGrid}>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>姓名 Full Name</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.fullName}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>姓 Family Name</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.familyName}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>名 Given Name</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.givenName}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>护照号 Passport No.</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.passportNo}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>国籍 Nationality</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.nationality}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>出生日期 Date of Birth</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.dateOfBirth}</Text>
+            </View>
+            {japanTravelerData.gender && (
+              <View style={styles.japanInfoRow}>
+                <Text style={styles.japanInfoLabel}>性别 Gender</Text>
+                <Text style={styles.japanInfoValue}>{japanTravelerData.gender}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Personal Information Section */}
+        <View style={styles.japanInfoSection}>
+          <Text style={styles.japanSectionTitle}>个人信息 Personal Information</Text>
+          <View style={styles.japanInfoGrid}>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>职业 Occupation</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.occupation}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>居住城市 City of Residence</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.cityOfResidence}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>居住国家 Country of Residence</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.residentCountry}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>联系电话 Phone</Text>
+              <Text style={styles.japanInfoValue}>+{japanTravelerData.phoneCode} {japanTravelerData.phoneNumber}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>电子邮箱 Email</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.email}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Travel Information Section */}
+        <View style={styles.japanInfoSection}>
+          <Text style={styles.japanSectionTitle}>旅行信息 Travel Information</Text>
+          <View style={styles.japanInfoGrid}>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>旅行目的 Purpose of Visit</Text>
+              <Text style={styles.japanInfoValue}>
+                {japanTravelerData.travelPurpose === 'Other' && japanTravelerData.customTravelPurpose
+                  ? japanTravelerData.customTravelPurpose
+                  : japanTravelerData.travelPurpose}
+              </Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>航班号 Flight Number</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.arrivalFlightNumber}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>到达日期 Arrival Date</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.arrivalDate}</Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>停留天数 Length of Stay</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.lengthOfStay} 天</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Accommodation Information Section */}
+        <View style={styles.japanInfoSection}>
+          <Text style={styles.japanSectionTitle}>住宿信息 Accommodation</Text>
+          <View style={styles.japanInfoGrid}>
+            <View style={[styles.japanInfoRow, styles.japanInfoRowFull]}>
+              <Text style={styles.japanInfoLabel}>住宿地址 Address</Text>
+              <Text style={[styles.japanInfoValue, styles.japanInfoValueMultiline]}>
+                {japanTravelerData.accommodationAddress}
+              </Text>
+            </View>
+            <View style={styles.japanInfoRow}>
+              <Text style={styles.japanInfoLabel}>住宿电话 Phone</Text>
+              <Text style={styles.japanInfoValue}>{japanTravelerData.accommodationPhone}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Fund Items Section */}
+        {japanTravelerData.fundItems && japanTravelerData.fundItems.length > 0 && (
+          <View style={styles.japanInfoSection}>
+            <Text style={styles.japanSectionTitle}>资金证明 Funds</Text>
+            <View style={styles.japanInfoGrid}>
+              {japanTravelerData.fundItems.map((item, index) => (
+                <View key={index} style={styles.japanInfoRow}>
+                  <Text style={styles.japanInfoLabel}>
+                    {item.type === 'cash' ? '现金 Cash' : 
+                     item.type === 'credit_card' ? '信用卡 Credit Card' : 
+                     '银行余额 Bank Balance'}
+                  </Text>
+                  <Text style={styles.japanInfoValue}>
+                    {item.currency} {item.amount}
+                  </Text>
+                </View>
+              ))}
+              {japanTravelerData.totalFunds && Object.keys(japanTravelerData.totalFunds).length > 0 && (
+                <View style={[styles.japanInfoRow, styles.japanTotalRow]}>
+                  <Text style={styles.japanInfoLabel}>总计 Total</Text>
+                  <Text style={styles.japanInfoValue}>
+                    {Object.entries(japanTravelerData.totalFunds)
+                      .map(([currency, amount]) => `${currency} ${amount}`)
+                      .join(' + ')}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Interactive Guide Button */}
+        <TouchableOpacity
+          style={styles.japanInteractiveGuideButton}
+          onPress={handleNavigateToInteractiveGuide}
+          activeOpacity={0.85}
+        >
+          <View style={styles.japanInteractiveGuideContent}>
+            <Text style={styles.japanInteractiveGuideIcon}>🛬</Text>
+            <View style={styles.japanInteractiveGuideTextContainer}>
+              <Text style={styles.japanInteractiveGuideTitle}>查看互动入境指南</Text>
+              <Text style={styles.japanInteractiveGuideSubtitle}>分步骤指导 · 大字体模式</Text>
+            </View>
+            <Text style={styles.japanInteractiveGuideArrow}>›</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Help Text */}
+        <View style={styles.japanHelpBox}>
+          <Text style={styles.japanHelpIcon}>💡</Text>
+          <Text style={styles.japanHelpText}>
+            请在飞机上或到达机场后，参考以上信息填写纸质入境卡。建议截图保存以便随时查看。
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -497,7 +717,10 @@ const ResultScreen = ({ navigation, route }) => {
           </View>
         </Animated.View>
 
-        {isHistoryItem && (
+        {/* Japan Manual Entry Guide */}
+        {renderJapanManualGuide()}
+
+        {isHistoryItem && !isJapanManualGuide && (
           <TouchableOpacity
             style={styles.historyPrimaryCta}
             onPress={handleStartArrivalFlow}
@@ -514,7 +737,7 @@ const ResultScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         )}
 
-        {features.digitalInfo && (
+        {features.digitalInfo && !isJapanManualGuide && (
           <View style={styles.digitalInfoCard}>
             <View style={styles.digitalInfoHeader}>
               <Text style={styles.digitalInfoIcon}>📱</Text>
@@ -650,7 +873,7 @@ const ResultScreen = ({ navigation, route }) => {
                     </Text>
                     <Text style={styles.digitalInfoButtonLabel}>
                       {isThailand
-                        ? '一键自动申报'
+                        ? '申请泰国电子入境卡'
                         : isMalaysia
                           ? t('malaysia.result.digitalButton')
                           : isSingapore
@@ -666,6 +889,7 @@ const ResultScreen = ({ navigation, route }) => {
           </View>
         )}
 
+        {!isJapanManualGuide && (
         <View style={styles.entryPackCard}>
           <View style={styles.entryPackHeader}>
             <Text style={styles.entryPackIcon}>🧳</Text>
@@ -756,8 +980,9 @@ const ResultScreen = ({ navigation, route }) => {
 
           <Text style={styles.entryPackTimestamp}>{t('result.entryPack.lastUpdated', { time: formattedGeneratedAt })}</Text>
         </View>
+        )}
 
-        {isHistoryItem && (
+        {isHistoryItem && !isJapanManualGuide && (
           <View style={styles.actionButtonsRow}>
             <TouchableOpacity
               style={styles.actionButton}
@@ -1676,6 +1901,160 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     flex: 1,
+  },
+  // Japan Manual Guide Styles
+  japanManualGuideCard: {
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
+  },
+  japanManualGuideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.lg,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E3F2FD',
+    backgroundColor: '#F5F9FF',
+  },
+  japanManualGuideIcon: {
+    fontSize: 32,
+    marginRight: spacing.md,
+  },
+  japanManualGuideHeaderText: {
+    flex: 1,
+  },
+  japanManualGuideTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1565C0',
+  },
+  japanManualGuideSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  japanInfoSection: {
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  japanSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1565C0',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E3F2FD',
+  },
+  japanInfoGrid: {
+    gap: spacing.sm,
+  },
+  japanInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: spacing.xs,
+  },
+  japanInfoRowFull: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  japanInfoLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    flex: 1,
+    lineHeight: 20,
+  },
+  japanInfoValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+    flex: 1,
+    textAlign: 'right',
+    lineHeight: 20,
+  },
+  japanInfoValueMultiline: {
+    textAlign: 'left',
+    marginTop: spacing.xs,
+  },
+  japanTotalRow: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  japanInteractiveGuideButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  japanInteractiveGuideContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  japanInteractiveGuideIcon: {
+    fontSize: 28,
+    marginRight: spacing.md,
+  },
+  japanInteractiveGuideTextContainer: {
+    flex: 1,
+  },
+  japanInteractiveGuideTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  japanInteractiveGuideSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
+  },
+  japanInteractiveGuideArrow: {
+    fontSize: 24,
+    color: colors.white,
+    fontWeight: '400',
+    marginLeft: spacing.md,
+  },
+  japanHelpBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    padding: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(33, 150, 243, 0.2)',
+  },
+  japanHelpIcon: {
+    fontSize: 16,
+    marginRight: spacing.sm,
+  },
+  japanHelpText: {
+    fontSize: 13,
+    color: '#1565C0',
+    flex: 1,
+    lineHeight: 18,
   },
 });
 

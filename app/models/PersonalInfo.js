@@ -17,6 +17,8 @@ class PersonalInfo {
     this.occupation = data.occupation; // 🟢 PLAINTEXT (not sensitive)
     this.provinceCity = data.provinceCity; // 🟢 PLAINTEXT (not sensitive)
     this.countryRegion = data.countryRegion; // 🟢 PLAINTEXT (not sensitive)
+    this.phoneCode = data.phoneCode; // 🟢 PLAINTEXT (not sensitive)
+    this.gender = data.gender; // 🟢 PLAINTEXT (not sensitive)
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = data.updatedAt || new Date().toISOString();
   }
@@ -177,6 +179,8 @@ class PersonalInfo {
         occupation: this.occupation,
         provinceCity: this.provinceCity,
         countryRegion: this.countryRegion,
+        phoneCode: this.phoneCode,
+        gender: this.gender,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
       });
@@ -344,6 +348,8 @@ class PersonalInfo {
       occupation: this.occupation,
       provinceCity: this.provinceCity,
       countryRegion: this.countryRegion,
+      phoneCode: this.phoneCode,
+      gender: this.gender,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       metadata: {
@@ -368,7 +374,9 @@ class PersonalInfo {
       homeAddress: inputData.homeAddress,
       occupation: inputData.occupation,
       provinceCity: inputData.provinceCity,
-      countryRegion: inputData.countryRegion
+      countryRegion: inputData.countryRegion,
+      phoneCode: inputData.phoneCode,
+      gender: inputData.gender
     });
   }
 

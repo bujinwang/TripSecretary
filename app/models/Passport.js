@@ -10,7 +10,7 @@ import { getNationalityDisplayName, getNationalityCode } from '../data/nationali
 
 class Passport {
   constructor(data = {}) {
-    this.id = data.id || this.generateId();
+    this.id = data.id || Passport.generateId();
     this.userId = data.userId;
     this.passportNumber = data.passportNumber; // 🔴 ENCRYPTED
     this.fullName = data.fullName; // 🔴 ENCRYPTED

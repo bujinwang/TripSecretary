@@ -52,7 +52,7 @@ const Input = ({
   const handleBlur = () => {
     setIsFocused(false);
     if (onBlur) {
-      onBlur();
+      onBlur(value);
     }
   };
 

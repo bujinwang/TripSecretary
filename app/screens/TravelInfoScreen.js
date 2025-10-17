@@ -97,13 +97,13 @@ const TravelInfoScreen = ({ navigation, route }) => {
     return value;
   };
 
-  // Default arrival date: 2 days from today for convenience
+  // Default arrival date: tomorrow's date (to ensure it's always in the future for validation)
   const getDefaultArrivalDate = () => {
     if (initialTravelInfo?.arrivalDate) {
       return initialTravelInfo.arrivalDate;
     }
     const date = new Date();
-    date.setDate(date.getDate() + 2); // 2 days from now
+    date.setDate(date.getDate() + 1); // Tomorrow's date to ensure it's always in the future
     const defaultDate = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     console.log('📅 Default arrival date:', defaultDate);
     return defaultDate;

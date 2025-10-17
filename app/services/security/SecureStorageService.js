@@ -113,6 +113,8 @@ class SecureStorageService {
             occupation TEXT,
             province_city TEXT,
             country_region TEXT,
+            phone_code TEXT,
+            gender TEXT,
             created_at TEXT,
             updated_at TEXT
           )
@@ -198,6 +200,20 @@ class SecureStorageService {
           return false;
         });
         
+        // Add accommodation_phone column for Japan entry
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN accommodation_phone TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
+        // Add length_of_stay column for Japan entry
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+        
         tx.executeSql(`
           ALTER TABLE travel_info ADD COLUMN district TEXT
         `, [], () => {}, (_, error) => {
@@ -212,6 +228,20 @@ class SecureStorageService {
         
         tx.executeSql(`
           ALTER TABLE travel_info ADD COLUMN postal_code TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+
+        // Backfill missing personal_info columns for legacy databases
+        tx.executeSql(`
+          ALTER TABLE personal_info ADD COLUMN phone_code TEXT
+        `, [], () => {}, (_, error) => {
+          // Column might already exist; ignore the error so startup continues
+          return false;
+        });
+
+        tx.executeSql(`
+          ALTER TABLE personal_info ADD COLUMN gender TEXT
         `, [], () => {}, (_, error) => {
           return false;
         });
@@ -306,6 +336,8 @@ class SecureStorageService {
       await this.addTravelInfoBoardingCountryColumn();
       // Migration 3: Ensure travel_info has visa_number column
       await this.addTravelInfoVisaNumberColumn();
+      // Migration 4: Ensure personal_info has phone_code column
+      await this.addPersonalInfoPhoneCodeColumn();
       
       // Update version if needed
       if (!currentVersion || currentVersion !== this.DB_VERSION) {
@@ -456,6 +488,51 @@ class SecureStorageService {
           },
           (_, error) => {
             console.error('Failed to check travel_info table schema:', error);
+            return false;
+          }
+        );
+      }, reject, resolve);
+    });
+  }
+
+  /**
+   * Ensure personal_info table includes new optional columns
+   */
+  async addPersonalInfoPhoneCodeColumn() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(personal_info)`,
+          [],
+          (_, { rows }) => {
+            const columns = rows._array.map(col => col.name);
+
+            if (!columns.includes('phone_code')) {
+              tx.executeSql(
+                `ALTER TABLE personal_info ADD COLUMN phone_code TEXT`,
+                [],
+                () => console.log('Added phone_code column to personal_info table'),
+                (_, error) => {
+                  console.error('Failed to add phone_code column to personal_info table:', error);
+                  return false;
+                }
+              );
+            }
+
+            if (!columns.includes('gender')) {
+              tx.executeSql(
+                `ALTER TABLE personal_info ADD COLUMN gender TEXT`,
+                [],
+                () => console.log('Added gender column to personal_info table'),
+                (_, error) => {
+                  console.error('Failed to add gender column to personal_info table:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to check personal_info table schema:', error);
             return false;
           }
         );
@@ -655,9 +732,11 @@ class SecureStorageService {
               occupation,
               province_city,
               country_region,
+              phone_code,
+              gender,
               created_at,
               updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               personalData.userId,
@@ -667,6 +746,8 @@ class SecureStorageService {
               personalData.occupation,
               personalData.provinceCity,
               personalData.countryRegion,
+              personalData.phoneCode,
+              personalData.gender,
               personalData.createdAt || now,
               now
             ],
@@ -741,6 +822,8 @@ class SecureStorageService {
                 occupation: result.occupation,
                 provinceCity: result.province_city,
                 countryRegion: result.country_region,
+                phoneCode: result.phone_code,
+                gender: result.gender,
                 createdAt: result.created_at,
                 updatedAt: result.updated_at
               };
@@ -812,6 +895,8 @@ class SecureStorageService {
                 occupation: result.occupation,
                 provinceCity: result.province_city,
                 countryRegion: result.country_region,
+                phoneCode: result.phone_code,
+                gender: result.gender,
                 createdAt: result.created_at,
                 updatedAt: result.updated_at
               };
@@ -1033,9 +1118,9 @@ class SecureStorageService {
               departure_departure_date, departure_departure_time,
               departure_arrival_airport, departure_arrival_date, departure_arrival_time,
               accommodation_type, province, district, sub_district, postal_code,
-              hotel_name, hotel_address, status,
+              hotel_name, hotel_address, accommodation_phone, length_of_stay, status,
               created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               travelData.userId,
@@ -1064,6 +1149,8 @@ class SecureStorageService {
               travelData.postalCode,
               travelData.hotelName,
               travelData.hotelAddress,
+              travelData.accommodationPhone,
+              travelData.lengthOfStay,
               travelData.status || 'draft',
               travelData.createdAt || now,
               now
@@ -1141,6 +1228,8 @@ class SecureStorageService {
                 postalCode: result.postal_code,
                 hotelName: result.hotel_name,
                 hotelAddress: result.hotel_address,
+                accommodationPhone: result.accommodation_phone,
+                lengthOfStay: result.length_of_stay,
                 status: result.status,
                 createdAt: result.created_at,
                 updatedAt: result.updated_at
@@ -1584,20 +1673,21 @@ class SecureStorageService {
                     email: op.data.email,
                     home_address: op.data.homeAddress
                   };
-              
+
               return {
                 type: 'personalInfo',
                 id,
                 sql: `INSERT OR REPLACE INTO personal_info (
                   id, user_id, encrypted_phone_number, encrypted_email,
                   encrypted_home_address, occupation, province_city,
-                  country_region, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  country_region, phone_code, gender, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 params: [
                   id, op.data.userId,
                   encryptedData.phone_number, encryptedData.email,
                   encryptedData.home_address, op.data.occupation,
                   op.data.provinceCity, op.data.countryRegion,
+                  op.data.phoneCode, op.data.gender,
                   op.data.createdAt || now, now
                 ]
               };
@@ -1939,6 +2029,8 @@ class SecureStorageService {
               occupation: result.occupation,
               provinceCity: result.province_city,
               countryRegion: result.country_region,
+              phoneCode: result.phone_code,
+              gender: result.gender,
               createdAt: result.created_at,
               updatedAt: result.updated_at
             };
