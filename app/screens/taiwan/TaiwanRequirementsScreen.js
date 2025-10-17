@@ -17,7 +17,7 @@ const TaiwanRequirementsScreen = ({ navigation, route }) => {
   const { t } = useLocale();
 
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    navigation.navigate('TaiwanTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(

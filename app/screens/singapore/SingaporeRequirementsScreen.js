@@ -20,7 +20,7 @@ const SingaporeRequirementsScreen = ({ navigation, route }) => {
   const allChecked = true;
 
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    navigation.navigate('SingaporeTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(

@@ -20,7 +20,7 @@ const MalaysiaRequirementsScreen = ({ navigation, route }) => {
   const allChecked = true;
 
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    navigation.navigate('MalaysiaTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(

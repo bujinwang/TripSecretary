@@ -906,7 +906,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}</Text>
+        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}{fullName ? ` - ${fullName}` : ''}</Text>
         <View style={styles.headerRight} />
       </View>
 

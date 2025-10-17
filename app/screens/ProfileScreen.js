@@ -929,12 +929,9 @@ const ProfileScreen = ({ navigation, route }) => {
             <Text style={styles.avatarText}>👤</Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>张伟</Text>
+            <Text style={styles.userName}>{passportData.name || '张伟'}</Text>
             <Text style={styles.userPhone}>
-              {t('profile.user.phone', {
-                phone: '138****1234',
-                defaultValue: 'Phone: 138****1234',
-              })}
+              {personalInfo.phone ? t('profile.user.phone', { phone: personalInfo.phone }) : t('profile.user.phone', { phone: '138****1234' })}
             </Text>
           </View>
         </View>

@@ -38,7 +38,13 @@ if (Platform.OS === 'android') {
 
 const JapanTravelInfoScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
-  const { t } = useLocale();
+  const { t, language } = useLocale();
+  
+  // Debug: Log current language
+  console.log('=== JapanTravelInfoScreen Language Debug ===');
+  console.log('Current language:', language);
+  console.log('Sample translation test:', t('japan.travelInfo.headerTitle'));
+  console.log('Back button translation:', t('common.back'));
 
   // UI State - will be populated from PassportDataService
   const [passportNo, setPassportNo] = useState('');
@@ -613,7 +619,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('japan.travelInfo.headerTitle')}</Text>
+        <Text style={styles.headerTitle}>{t('japan.travelInfo.headerTitle')}{fullName ? ` - ${fullName}` : ''}</Text>
         <View style={styles.headerRight} />
       </View>
 

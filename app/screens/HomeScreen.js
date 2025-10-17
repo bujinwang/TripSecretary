@@ -16,6 +16,7 @@ import { colors, typography, spacing, borderRadius } from '../theme';
 import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
+import PassportDataService from '../services/data/PassportDataService';
 
 const HOT_COUNTRIES = [
   { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
@@ -60,6 +61,7 @@ const UPCOMING_TRIPS_CONFIG = [
 const HomeScreen = ({ navigation }) => {
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [passportData, setPassportData] = useState(null);
 
   const { t, language } = useLocale();
 
@@ -107,26 +109,40 @@ const HomeScreen = ({ navigation }) => {
     });
   }, [t, language]);
 
-  // Mock: 用户已有护照
-  const hasPassport = true;
-  const passportData = {
-    type: t('home.passport.type'),
-    name: '',
-    nameEn: 'ZHANG WEI',
-    passportNo: 'E12345678',
-    expiry: '2030-12-31',
-  };
+  // Get passport name for greeting (use given name, not surname)
+  const passportName = passportData?.fullName 
+    ? (passportData.fullName.includes(',') 
+        ? passportData.fullName.split(',')[1].trim() // Get given name from "SURNAME, GIVENNAME" format
+        : passportData.fullName.split(' ').slice(1).join(' ').trim() || passportData.fullName.trim()) // Get given name from "SURNAME GIVENNAME" format
+    : '';
+  
+  const hasPassport = !!passportData;
 
   const headerTitle = t('home.header.title');
-  const greetingText = t('home.greeting', { name: passportData.name });
+  const greetingText = t('home.greeting', { name: passportName });
   const welcomeMessage = t('home.welcomeText');
   const pendingSectionTitle = t('home.sections.pending');
   const exploreSectionTitle = t('home.sections.whereToGo');
 
-  // 加载历史记录
+  // 加载护照和历史记录
   useEffect(() => {
+    loadPassportData();
     loadHistory();
   }, []);
+
+  const loadPassportData = async () => {
+    try {
+      // Load primary passport for the current user
+      const userId = 'user_001'; // TODO: Get from auth context
+      const passport = await PassportDataService.getPrimaryPassport(userId);
+      
+      if (passport) {
+        setPassportData(passport);
+      }
+    } catch (error) {
+      console.log('Failed to load passport data:', error.message);
+    }
+  };
 
   const loadHistory = async () => {
     try {
@@ -170,30 +186,27 @@ const HomeScreen = ({ navigation }) => {
       name: countryName,
     };
 
+    // Convert passport data to legacy format for navigation
+    const passportForNav = {
+      type: t('home.passport.type'),
+      name: passportData.fullName || '',
+      nameEn: passportData.fullName || '',
+      passportNo: passportData.passportNumber || '',
+      expiry: passportData.expiryDate || '',
+    };
+
     // Special handling for Japan
     if (country.id === 'jp') {
-      // Check if user has previous Japan entries
-      const recentJapanEntry = findRecentValidGeneration('jp', passportData.passportNo, historyList);
-
-      if (!recentJapanEntry) {
-        // First time user - show info screen
-        navigation.navigate('JapanInfo', {
-          passport: passportData,
-          destination: destinationForNav,
-        });
-      } else {
-        // Returning user - show requirements screen
-        navigation.navigate('JapanRequirements', {
-          passport: passportData,
-          destination: destinationForNav,
-        });
-      }
+      navigation.navigate('JapanInfo', {
+        passport: passportForNav,
+        destination: destinationForNav,
+      });
       return;
     }
 
     if (country.id === 'th') {
       navigation.navigate('ThailandInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -201,7 +214,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'sg') {
       navigation.navigate('SingaporeInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -209,7 +222,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'my') {
       navigation.navigate('MalaysiaInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -217,7 +230,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'tw') {
       navigation.navigate('TaiwanInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -225,7 +238,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'hk') {
       navigation.navigate('HongKongInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -233,7 +246,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'kr') {
       navigation.navigate('KoreaInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -241,7 +254,7 @@ const HomeScreen = ({ navigation }) => {
 
     if (country.id === 'us') {
       navigation.navigate('USAInfo', {
-        passport: passportData,
+        passport: passportForNav,
         destination: destinationForNav,
       });
       return;
@@ -250,7 +263,7 @@ const HomeScreen = ({ navigation }) => {
     // 检查是否有该目的地的有效历史记录
     const recentRecord = findRecentValidGeneration(
       country.id,
-      passportData.passportNo,
+      passportForNav.passportNo,
       historyList
     );
 
@@ -287,7 +300,7 @@ const HomeScreen = ({ navigation }) => {
             onPress: () => {
               // 直接查看历史记录
                   navigation.navigate('Result', {
-                    passport: passportData,
+                    passport: passportForNav,
                     destination: destinationForNav,
                     travelInfo: recentRecord.travelInfo,
                     generationId: recentRecord.id,
@@ -301,7 +314,7 @@ const HomeScreen = ({ navigation }) => {
               // 重新生成
               navigation.navigate('TravelInfo', {
                 destination: destinationForNav,
-                passport: passportData,
+                passport: passportForNav,
               });
             },
             style: 'cancel',
@@ -313,15 +326,23 @@ const HomeScreen = ({ navigation }) => {
       // 没有历史记录，直接跳转到补充旅行信息
       navigation.navigate('TravelInfo', {
         destination: destinationForNav,
-        passport: passportData,
+        passport: passportForNav,
       });
     }
   };
 
   const handleViewAllCountries = () => {
     // 查看所有国家
+    const passportForNav = passportData ? {
+      type: t('home.passport.type'),
+      name: passportData.fullName || '',
+      nameEn: passportData.fullName || '',
+      passportNo: passportData.passportNumber || '',
+      expiry: passportData.expiryDate || '',
+    } : null;
+    
     navigation.navigate('SelectDestination', { 
-      passport: hasPassport ? passportData : null 
+      passport: passportForNav
     });
   };
 

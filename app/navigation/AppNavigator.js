@@ -40,21 +40,25 @@ import {
   MDACSelectionScreen,
   MDACGuideScreen,
   MDACWebViewScreen,
+  MalaysiaTravelInfoScreen,
   // Singapore screens
   SingaporeInfoScreen,
   SingaporeRequirementsScreen,
   SGArrivalSelectionScreen,
   SGArrivalGuideScreen,
   SGArrivalWebViewScreen,
+  SingaporeTravelInfoScreen,
   // Taiwan screens
   TaiwanInfoScreen,
   TaiwanRequirementsScreen,
   TWArrivalSelectionScreen,
   TWArrivalGuideScreen,
   TWArrivalWebViewScreen,
+  TaiwanTravelInfoScreen,
   // Hong Kong screens
   HongKongInfoScreen,
   HongKongRequirementsScreen,
+  HongkongTravelInfoScreen,
   // Korea screens
   KoreaInfoScreen,
   KoreaRequirementsScreen,
@@ -486,6 +490,34 @@ const AppNavigator = () => {
         <Stack.Screen
           name="ThailandTravelInfo"
           component={ThailandTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongkongTravelInfo"
+          component={HongkongTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TaiwanTravelInfo"
+          component={TaiwanTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaTravelInfo"
+          component={MalaysiaTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SingaporeTravelInfo"
+          component={SingaporeTravelInfoScreen}
           options={{
             headerShown: false,
           }}
