@@ -1,5 +1,5 @@
 // 入境通 - Home Screen
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import PassportDataService from '../services/data/PassportDataService';
 import EntryPackService from '../services/entryPack/EntryPackService';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
+import PerformanceMonitor from '../utils/PerformanceMonitor';
 
 const HOT_COUNTRIES = [
   { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
@@ -183,7 +184,9 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const loadMultiDestinationData = async () => {
+  const loadMultiDestinationData = useCallback(async () => {
+    const operationId = PerformanceMonitor.startTiming('loadMultiDestinationData');
+
     try {
       const userId = 'user_001'; // TODO: Get from auth context
       await PassportDataService.initialize(userId);
@@ -213,14 +216,21 @@ const HomeScreen = ({ navigation }) => {
         ...homeScreenData,
         submittedEntryPacks: activeSubmittedPacks
       });
+
+      PerformanceMonitor.endTiming(operationId, {
+        submittedPacks: activeSubmittedPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length,
+        overallCompletion: homeScreenData.summary.overallCompletionPercent
+      });
       
     } catch (error) {
       console.log('Failed to load multi-destination data:', error.message);
+      PerformanceMonitor.endTiming(operationId, { error: error.message });
       setActiveEntryPacks([]);
       setInProgressDestinations([]);
       setMultiDestinationData(null);
     }
-  };
+  }, []);
 
   const getMockHistory = () => {
     // 返回空数组，不使用mock数据
@@ -420,7 +430,7 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const renderEntryPackCards = () => {
+  const renderEntryPackCards = useCallback(() => {
     if (!activeEntryPacks.length) {
       return null;
     }
@@ -465,9 +475,9 @@ const HomeScreen = ({ navigation }) => {
         </Card>
       );
     });
-  };
+  }, [activeEntryPacks, t, navigation]);
 
-  const renderInProgressDestinationCards = () => {
+  const renderInProgressDestinationCards = useCallback(() => {
     if (!inProgressDestinations.length) {
       return null;
     }
@@ -545,7 +555,7 @@ const HomeScreen = ({ navigation }) => {
         </Card>
       );
     });
-  };
+  }, [inProgressDestinations, t, navigation, passportData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -577,14 +587,6 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{pendingSectionTitle}</Text>
-              <TouchableOpacity
-                style={styles.viewHistoryButton}
-                onPress={() => navigation.navigate('EntryPackHistory')}
-              >
-                <Text style={styles.viewHistoryText}>
-                  {t('home.viewHistory', { defaultValue: '查看历史' })}
-                </Text>
-              </TouchableOpacity>
             </View>
             
             {/* Multi-destination Progress Summary */}
@@ -647,39 +649,6 @@ const HomeScreen = ({ navigation }) => {
           </View>
         )}
 
-        {/* History Section - Always show */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('home.sections.history', { defaultValue: '历史记录' })}
-            </Text>
-            <TouchableOpacity
-              style={styles.viewHistoryButton}
-              onPress={() => navigation.navigate('EntryPackHistory')}
-            >
-              <Text style={styles.viewHistoryText}>
-                {t('home.viewAllHistory', { defaultValue: '查看全部' })}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            style={styles.historyPreviewCard}
-            onPress={() => navigation.navigate('EntryPackHistory')}
-          >
-            <View style={styles.historyPreviewContent}>
-              <Text style={styles.historyPreviewIcon}>📋</Text>
-              <View style={styles.historyPreviewInfo}>
-                <Text style={styles.historyPreviewTitle}>
-                  {t('home.historyPreview.title', { defaultValue: '查看您的旅行历史' })}
-                </Text>
-                <Text style={styles.historyPreviewSubtitle}>
-                  {t('home.historyPreview.subtitle', { defaultValue: '已完成的入境包和旅程记录' })}
-                </Text>
-              </View>
-              <Text style={styles.historyArrow}>›</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
 
         {/* Where to Go */}
         <View style={styles.section}>
@@ -854,53 +823,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '600',
   },
-  viewHistoryButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  viewHistoryText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  historyPreviewCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  historyPreviewContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  historyPreviewIcon: {
-    fontSize: 32,
-    marginRight: spacing.md,
-  },
-  historyPreviewInfo: {
-    flex: 1,
-  },
-  historyPreviewTitle: {
-    ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  historyPreviewSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  viewAllText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '500',
-  },
 
   // Countries Grid
   countriesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     marginHorizontal: -spacing.xs,
   },
 
