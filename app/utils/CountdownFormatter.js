@@ -126,8 +126,48 @@ class CountdownFormatter {
       parts.push(this.formatTimeUnit('minutes', 0, locale, shortFormat));
     }
 
+    // Enhanced formatting for Chinese users - more natural language
+    if (locale.startsWith('zh')) {
+      return this.formatChineseTime(parts, components, options);
+    }
+
     // Join parts based on locale
     return this.joinTimeParts(parts, locale);
+  }
+
+  /**
+   * Format time display specifically for Chinese users with more natural language
+   * @param {string[]} parts - Array of formatted time parts
+   * @param {Object} components - Time components
+   * @param {Object} options - Formatting options
+   * @returns {string} - Chinese-optimized time display
+   */
+  static formatChineseTime(parts, components, options = {}) {
+    const { days, hours, minutes } = components;
+
+    // For times over 24 hours, use "X天X小时X分钟" format
+    if (days > 0) {
+      const dayPart = days > 0 ? `${days}天` : '';
+      const hourPart = hours > 0 ? `${hours}小时` : '';
+      const minutePart = minutes > 0 ? `${minutes}分钟` : '';
+
+      return [dayPart, hourPart, minutePart].filter(Boolean).join(' ');
+    }
+
+    // For times under 24 hours, use more conversational format
+    if (hours > 0) {
+      if (minutes === 0) {
+        return `${hours}小时`;
+      }
+      return `${hours}小时 ${minutes}分钟`;
+    }
+
+    // For times under 1 hour
+    if (minutes > 0) {
+      return `${minutes}分钟`;
+    }
+
+    return '0分钟';
   }
 
   /**

@@ -16,27 +16,27 @@ const CompletionSummaryCard = ({
   const getStatusInfo = () => {
     if (completionPercent === 100) {
       return {
-        text: 'Ready',
+        text: 'Ready for Thailand! 🌴',
         textKey: 'thailand.entryFlow.status.ready',
-        defaultText: '准备就绪',
+        defaultText: '泰国准备就绪！🌴',
         color: colors.success,
         backgroundColor: '#E8F9F0', // Light green
       };
     } else if (completionPercent >= 50) {
       return {
-        text: 'Mostly Complete',
+        text: 'Great Progress! 💪',
         textKey: 'thailand.entryFlow.status.mostlyComplete',
-        defaultText: '基本完成',
+        defaultText: '进展不错！💪',
         color: colors.warning,
         backgroundColor: '#FFF7E6', // Light orange
       };
     } else {
       return {
-        text: 'Needs Improvement',
+        text: 'Let\'s Get Started! 🌺',
         textKey: 'thailand.entryFlow.status.needsImprovement',
-        defaultText: '需要完善',
-        color: colors.error,
-        backgroundColor: '#FFF2F2', // Light red
+        defaultText: '让我们开始吧！🌺',
+        color: colors.primary,
+        backgroundColor: '#F0F8FF', // Light blue
       };
     }
   };
@@ -51,7 +51,7 @@ const CompletionSummaryCard = ({
           {completionPercent}%
         </Text>
         <Text style={styles.percentageLabel}>
-          完成
+          准备进度
         </Text>
       </View>
 
@@ -77,9 +77,9 @@ const CompletionSummaryCard = ({
             />
           </View>
           <Text style={styles.progressText}>
-            {completionPercent < 100 
-              ? `还需完成 ${100 - completionPercent}%` 
-              : '全部完成'
+            {completionPercent < 100
+              ? `继续加油！还差 ${100 - completionPercent}% 就能去泰国了 🌺`
+              : '太棒了！泰国之旅准备就绪！🌴'
             }
           </Text>
         </View>

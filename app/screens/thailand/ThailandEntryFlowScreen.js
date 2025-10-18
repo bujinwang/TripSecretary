@@ -52,10 +52,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
 
     if (language?.startsWith('zh')) {
-      return language === 'zh-TW' ? '資訊類別' : '信息类别';
+      return language === 'zh-TW' ? '泰国准备项目 🌴' : '泰国准备项目 🌴';
     }
 
-    return 'Information Categories';
+    return 'Thailand Preparation Items 🌴';
   }, [t, language]);
 
   // Load data on component mount and when screen gains focus
@@ -367,13 +367,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     // Check if entry pack is superseded
     if (showSupersededStatus || entryPackStatus === 'superseded') {
       return {
-        title: t('progressiveEntryFlow.entryFlow.resubmitTDAC', { defaultValue: '重新提交入境卡' }),
+        title: '更新我的泰国准备信息 🌺',
         action: 'resubmit_tdac',
         disabled: false,
         variant: 'primary',
-        subtitle: t('progressiveEntryFlow.superseded.resubmitHint', { 
-          defaultValue: '信息已更新，需要重新提交' 
-        })
+        subtitle: '你的信息有更新，让我们重新准备最新的入境卡'
       };
     }
 
@@ -389,20 +387,18 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
     if (!isComplete) {
       return {
-        title: t('progressiveEntryFlow.entryFlow.continueEditing', { defaultValue: '继续完善信息' }),
+        title: '继续准备我的泰国之旅 💪',
         action: 'continue_improving',
         disabled: false,
         variant: 'secondary'
       };
     } else if (isComplete && !arrivalDate) {
       return {
-        title: t('progressiveEntryFlow.entryFlow.continueEditing', { defaultValue: '请设置抵达日期' }),
+        title: '告诉我你什么时候到泰国 ✈️',
         action: 'continue_improving',
         disabled: false,
         variant: 'secondary',
-        subtitle: t('progressiveEntryFlow.countdown.noDate', { 
-          defaultValue: '需要设置抵达日期才能提交' 
-        })
+        subtitle: '设置抵达日期，我们就能帮你找到最佳提交时间'
       };
     } else if (isComplete && !canSubmitNow) {
       return {
@@ -416,7 +412,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       };
     } else {
       return {
-        title: t('progressiveEntryFlow.entryFlow.submitTDAC', { defaultValue: '提交泰国入境卡' }),
+        title: '准备好入境泰国了！🌴',
         action: 'submit_tdac',
         disabled: false,
         variant: 'primary'
@@ -433,7 +429,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           style={styles.backButton}
         />
         <Text style={styles.headerTitle}>
-          {t('thailand.entryFlow.title', { defaultValue: 'Thailand Entry Preparation Status' })}
+          我的泰国之旅 🌺
         </Text>
         <View style={styles.headerRight} />
       </View>
@@ -453,10 +449,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
           <Text style={styles.title}>
-            {t('thailand.entryFlow.preparationTitle', { defaultValue: '泰国入境准备状态' })}
+            我的泰国之旅准备好了吗？🌺
           </Text>
           <Text style={styles.subtitle}>
-            {t('thailand.entryFlow.preparationSubtitle', { defaultValue: '查看您的入境信息完成情况' })}
+            看看你准备得怎么样，一起迎接泰国冒险！
           </Text>
         </View>
 
@@ -505,29 +501,27 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
               <View style={styles.noDataContainer}>
                 <Text style={styles.noDataIcon}>📝</Text>
                 <Text style={styles.noDataTitle}>
-                  {t('thailand.entryFlow.noData.title', { defaultValue: '开始填写泰国入境信息' })}
+                  准备开始泰国之旅吧！🌴
                 </Text>
                 <Text style={styles.noDataDescription}>
-                  {t('thailand.entryFlow.noData.description', { 
-                    defaultValue: '您还没有填写任何入境信息。点击下方按钮开始填写，我们将引导您完成整个过程。' 
-                  })}
+                  你还没有填写泰国入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境泰国！
                 </Text>
                 
                 {/* Example/Tutorial hints */}
                 <View style={styles.noDataHints}>
                   <Text style={styles.noDataHintsTitle}>
-                    {t('thailand.entryFlow.noData.hintsTitle', { defaultValue: '您需要准备：' })}
+                    泰国入境需要准备这些信息 🌺
                   </Text>
                   <View style={styles.noDataHintsList}>
-                    <Text style={styles.noDataHint}>• 护照信息</Text>
-                    <Text style={styles.noDataHint}>• 个人联系方式</Text>
-                    <Text style={styles.noDataHint}>• 资金证明（现金或银行卡）</Text>
-                    <Text style={styles.noDataHint}>• 航班和住宿信息</Text>
+                    <Text style={styles.noDataHint}>• 📘 护照信息 - 让泰国认识你</Text>
+                    <Text style={styles.noDataHint}>• 📞 联系方式 - 泰国怎么找到你</Text>
+                    <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
+                    <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
                   </View>
                 </View>
 
                 <Button
-                  title={t('thailand.entryFlow.noData.startButton', { defaultValue: '开始填写' })}
+                  title="开始我的泰国准备之旅！🇹🇭"
                   onPress={handleEditInformation}
                   variant="primary"
                   style={styles.noDataButton}
@@ -539,7 +533,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                 {/* Status Cards Section */}
                 <View style={styles.statusSection}>
               <Text style={styles.sectionTitle}>
-                {t('thailand.entryFlow.completionStatus', { defaultValue: '完成状态' })}
+                我的泰国准备进度 🌴
               </Text>
               
               {/* Completion Summary Card */}
@@ -565,7 +559,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             {/* Countdown Section */}
             <View style={styles.countdownSection}>
               <Text style={styles.sectionTitle}>
-                {t('thailand.entryFlow.submissionWindow', { defaultValue: '提交窗口' })}
+                最佳提交时间 ⏰
               </Text>
               
               {/* Submission Countdown */}
@@ -580,7 +574,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             {/* Action Buttons Section */}
             <View style={styles.actionSection}>
               <Text style={styles.sectionTitle}>
-                {t('thailand.entryFlow.actions', { defaultValue: '操作' })}
+                接下来做什么？🌟
               </Text>
               
               {/* Action Buttons */}
@@ -619,7 +613,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     >
                       <Text style={styles.secondaryActionIcon}>👁️</Text>
                       <Text style={styles.secondaryActionText}>
-                        {t('thailand.entryFlow.preview', { defaultValue: '预览入境卡' })}
+                        看看我的入境卡长啥样 👁️
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -632,7 +626,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                   >
                     <Text style={styles.secondaryActionIcon}>📤</Text>
                     <Text style={styles.secondaryActionText}>
-                      {t('thailand.entryFlow.share', { defaultValue: '找亲友帮忙填写' })}
+                      和朋友一起准备 📤
                     </Text>
                   </TouchableOpacity>
                 </View>

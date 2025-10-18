@@ -35,6 +35,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   const [copiedField, setCopiedField] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCloudflareReminder, setShowCloudflareReminder] = useState(false);
+  const [showVisualMask, setShowVisualMask] = useState(false);
   const [qrCodeData, setQrCodeData] = useState(null); // 存储QR码数据
   const [showQrCode, setShowQrCode] = useState(false); // 显示QR码模态框
   const webViewRef = useRef(null);
@@ -164,16 +165,20 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     }
   };
 
-  // 检测Cloudflare验证框
+  // 检测Cloudflare验证框 - 增强版，支持视觉遮罩
   const checkCloudflareChallenge = () => {
     const jsCode = `
       (function() {
         try {
-          // 检测Cloudflare验证框
+          // 增强检测Cloudflare验证框
           const hasCloudflare = document.body.innerHTML.includes('Verify you are human') ||
                                document.body.innerHTML.includes('cloudflare') ||
-                               document.querySelector('iframe[src*="challenges.cloudflare.com"]');
-          
+                               document.body.innerHTML.includes('Just a moment') ||
+                               document.body.innerHTML.includes('Checking your browser') ||
+                               document.querySelector('iframe[src*="challenges.cloudflare.com"]') ||
+                               document.querySelector('iframe[src*="hcaptcha.com"]') ||
+                               document.querySelector('.cf-browser-verification');
+
           // 检测是否验证成功（多种方式）
           const hasSuccess = document.body.innerHTML.includes('Success!') ||
                             document.querySelector('.success') ||
@@ -183,240 +188,89 @@ const TDACWebViewScreen = ({ navigation, route }) => {
                             // 检测绿色勾号图标
                             document.querySelector('svg circle[fill*="green"]') ||
                             // 检测Cloudflare验证框消失
-                            (!document.body.innerHTML.includes('Verify you are human') && 
+                            (!document.body.innerHTML.includes('Verify you are human') &&
                              window.hadCloudflare === true);
-          
+
+          // 检测是否在Arrival Card选择页面
+          const hasArrivalCard = document.body.innerHTML.includes('Arrival Card') &&
+                                (document.body.innerHTML.includes('Provide your Thailand') ||
+                                 document.body.innerHTML.includes('Digital Arrival Card'));
+
           // 标记曾经有过Cloudflare验证框
           if (hasCloudflare) {
             window.hadCloudflare = true;
           }
-          
-          // 验证成功时立即隐藏提示框
+
+          // 验证成功时立即隐藏提示框和遮罩
           if (hasSuccess) {
-            console.log('🎉 检测到验证成功！隐藏提示框');
+            console.log('🎉 检测到验证成功！隐藏提示框和遮罩');
             window.ReactNativeWebView?.postMessage(JSON.stringify({
               type: 'cloudflare_detected',
-              show: false
+              show: false,
+              mask: false
             }));
           }
-          
-          // 如果验证成功，尝试自动点击"Arrival Card"按钮
-          if (hasSuccess && !window.arrivalCardClicked) {
-            console.log('✅ Cloudflare验证成功，尝试自动点击Arrival Card');
-            
-            // 等待1.5秒让页面完全稳定，然后查找并点击按钮
+
+          // 如果在Arrival Card页面但没有Cloudflare，说明验证成功
+          if (hasArrivalCard && !hasCloudflare && window.hadCloudflare) {
+            console.log('✅ 到达Arrival Card页面，验证成功');
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'cloudflare_detected',
+              show: false,
+              mask: false
+            }));
+          }
+
+          // 如果验证成功且在Arrival Card页面，尝试自动点击
+          if (hasSuccess && !window.arrivalCardClicked && hasArrivalCard) {
+            console.log('✅ Cloudflare验证成功且在Arrival Card页面，尝试自动点击');
+
             setTimeout(() => {
               // 多种方式查找"Arrival Card"按钮
               let arrivalCardBtn = null;
-              
-              // 方式1: 查找所有可点击元素，包括div、mat-card等
+
+              // 方式1: 查找所有可点击元素
               const allElements = document.querySelectorAll('button, a, div, span, mat-card, [class*="card"], [class*="Card"]');
-              console.log('🔍 查找按钮，共找到', allElements.length, '个候选元素');
-              
+
               for (let el of allElements) {
                 const text = (el.textContent || el.innerText || '').trim();
-                // 匹配"Arrival Card"相关文本
-                if (text.match(/arrival\s*card/i) || 
-                    text.includes('Arrival Card') || 
+                if (text.match(/arrival\s*card/i) ||
+                    text.includes('Arrival Card') ||
                     text.includes('arrival card')) {
-                  // 确保元素是可见且可点击的
                   const rect = el.getBoundingClientRect();
                   const isVisible = rect.width > 0 && rect.height > 0;
-                  console.log('🎯 找到候选元素:', el.tagName, el.className, '可见:', isVisible, '文本:', text.substring(0, 50));
-                  
                   if (isVisible) {
                     arrivalCardBtn = el;
-                    console.log('✅ 找到Arrival Card元素:', el.tagName, el.className);
                     break;
                   }
                 }
               }
-              
-              // 方式2: 尝试查找包含"Provide your Thailand"的元素（可能是卡片容器）
-              if (!arrivalCardBtn) {
-                console.log('🔍 尝试通过描述文本查找...');
-                for (let el of allElements) {
-                  const text = (el.textContent || el.innerText || '').trim();
-                  if (text.includes('Provide your Thailand') || 
-                      text.includes('Digital Arrival Card')) {
-                    const rect = el.getBoundingClientRect();
-                    if (rect.width > 0 && rect.height > 0) {
-                      arrivalCardBtn = el;
-                      console.log('✅ 通过描述文本找到元素:', el.tagName, el.className);
-                      break;
-                    }
-                  }
-                }
-              }
-              
+
               if (arrivalCardBtn) {
-                console.log('准备点击元素:', arrivalCardBtn.outerHTML.substring(0, 200));
-                
-                // 先滚动到元素位置，确保可见
-                try {
-                  arrivalCardBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch(e) {
-                  console.log('滚动失败', e);
-                }
-                
-                // 等待500ms让滚动完成
+                arrivalCardBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => {
-                  // 检查元素类型和内部结构
-                  console.log('元素标签:', arrivalCardBtn.tagName);
-                  console.log('元素类名:', arrivalCardBtn.className);
-                  console.log('是否有onclick:', arrivalCardBtn.onclick);
-                  console.log('是否有子链接:', arrivalCardBtn.querySelector('a'));
-                  
-                  // 尝试多种点击方式
-                  let clickSuccess = false;
-                  
-                  try {
-                    // 方式1: 查找内部的链接或按钮
-                    const innerBtn = arrivalCardBtn.querySelector('button') || 
-                                    arrivalCardBtn.querySelector('a') ||
-                                    arrivalCardBtn.querySelector('[role="button"]');
-                    if (innerBtn) {
-                      console.log('🎯 找到内部按钮:', innerBtn.tagName, innerBtn.href || innerBtn.onclick);
-                      innerBtn.click();
-                      clickSuccess = true;
-                      console.log('✅ 方式1: 点击内部按钮 已执行');
-                    }
-                  } catch(e) {
-                    console.log('方式1失败', e);
-                  }
-                  
-                  try {
-                    // 方式2: 直接跳转链接
-                    const link = arrivalCardBtn.querySelector('a') || 
-                                (arrivalCardBtn.tagName === 'A' ? arrivalCardBtn : null);
-                    if (link && link.href) {
-                      console.log('🚀 方式2: 直接跳转 href:', link.href);
-                      window.location.href = link.href;
-                      clickSuccess = true;
-                    }
-                  } catch(e) {
-                    console.log('方式2失败', e);
-                  }
-                  
-                  // 如果上面的方式都没成功，尝试模拟完整的鼠标点击序列
-                  if (!clickSuccess) {
-                    try {
-                      // 方式3: 完整的鼠标事件序列
-                      const rect = arrivalCardBtn.getBoundingClientRect();
-                      const x = rect.left + rect.width / 2;
-                      const y = rect.top + rect.height / 2;
-                      
-                      const mousedownEvent = new MouseEvent('mousedown', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        clientX: x,
-                        clientY: y
-                      });
-                      const mouseupEvent = new MouseEvent('mouseup', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        clientX: x,
-                        clientY: y
-                      });
-                      const clickEvent = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        clientX: x,
-                        clientY: y
-                      });
-                      
-                      arrivalCardBtn.dispatchEvent(mousedownEvent);
-                      arrivalCardBtn.dispatchEvent(mouseupEvent);
-                      arrivalCardBtn.dispatchEvent(clickEvent);
-                      console.log('✅ 方式3: 完整鼠标序列 已执行');
-                    } catch(e) {
-                      console.log('方式3失败', e);
-                    }
-                    
-                    try {
-                      // 方式4: 触发触摸事件（移动端）
-                      const rect = arrivalCardBtn.getBoundingClientRect();
-                      const x = rect.left + rect.width / 2;
-                      const y = rect.top + rect.height / 2;
-                      
-                      const touch = {
-                        identifier: Date.now(),
-                        target: arrivalCardBtn,
-                        clientX: x,
-                        clientY: y,
-                        screenX: x,
-                        screenY: y,
-                        pageX: x,
-                        pageY: y
-                      };
-                      
-                      const touchStart = new TouchEvent('touchstart', {
-                        bubbles: true,
-                        cancelable: true,
-                        touches: [touch],
-                        targetTouches: [touch],
-                        changedTouches: [touch]
-                      });
-                      const touchEnd = new TouchEvent('touchend', {
-                        bubbles: true,
-                        cancelable: true,
-                        touches: [],
-                        targetTouches: [],
-                        changedTouches: [touch]
-                      });
-                      
-                      arrivalCardBtn.dispatchEvent(touchStart);
-                      setTimeout(() => {
-                        arrivalCardBtn.dispatchEvent(touchEnd);
-                        arrivalCardBtn.click(); // 最后尝试标准click
-                      }, 50);
-                      
-                      console.log('✅ 方式4: 触摸事件序列 已执行');
-                    } catch(e) {
-                      console.log('方式4失败', e);
-                    }
-                  }
-                  
+                  arrivalCardBtn.click();
                   window.arrivalCardClicked = true;
-                  console.log('✅ 已尝试所有点击方式');
-                  
-                  // 标记需要自动填充
                   window.needAutoFill = true;
-                  
+
                   window.ReactNativeWebView?.postMessage(JSON.stringify({
                     type: 'arrival_card_clicked'
                   }));
                 }, 500);
-              } else {
-                console.log('⚠️ 未找到 Arrival Card 按钮');
-                console.log('页面URL:', window.location.href);
-                console.log('页面标题:', document.title);
-                
-                // 列出所有包含"card"的元素
-                const cardElements = document.querySelectorAll('[class*="card"], [class*="Card"]');
-                console.log('找到', cardElements.length, '个包含card的元素:');
-                cardElements.forEach((el, i) => {
-                  if (i < 5) { // 只显示前5个
-                    const text = (el.textContent || '').trim().substring(0, 50);
-                    console.log(i + 1, el.tagName, el.className, text);
-                  }
-                });
               }
             }, 1500);
           }
-          
+
           // 只在验证未成功时发送提示框显示状态
-          if (!hasSuccess) {
+          if (!hasSuccess && !hasArrivalCard) {
             window.ReactNativeWebView?.postMessage(JSON.stringify({
               type: 'cloudflare_detected',
-              show: !!hasCloudflare
+              show: !!hasCloudflare,
+              mask: !!hasCloudflare // 启用遮罩
             }));
           }
-          
-          console.log('Cloudflare检测:', hasCloudflare ? '发现' : '未发现', '验证成功:', hasSuccess);
+
+          console.log('Cloudflare检测:', hasCloudflare ? '发现' : '未发现', '验证成功:', hasSuccess, 'Arrival Card页面:', hasArrivalCard);
         } catch(e) {
           console.error('Cloudflare检测错误:', e);
         }
@@ -1084,6 +938,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
             const data = JSON.parse(event.nativeEvent.data);
             if (data.type === 'cloudflare_detected') {
               setShowCloudflareReminder(data.show);
+              setShowVisualMask(data.mask || false);
             } else if (data.type === 'arrival_card_clicked') {
               console.log('✅ 已自动点击Arrival Card按钮');
             } else if (data.type === 'trigger_auto_fill') {
@@ -1104,10 +959,34 @@ const TDACWebViewScreen = ({ navigation, route }) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView error: ', nativeEvent);
           setIsLoading(false);
+
+          // Show user-friendly error message
+          setTimeout(() => {
+            Alert.alert(
+              '🌐 网络连接问题',
+              '无法加载泰国入境卡网站，请检查网络连接后重试。',
+              [
+                { text: '重试', onPress: () => webViewRef.current?.reload() },
+                { text: '返回', onPress: () => navigation.goBack() }
+              ]
+            );
+          }, 1000);
         }}
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView HTTP error: ', nativeEvent);
+
+          // Show specific HTTP error handling
+          if (nativeEvent.statusCode >= 500) {
+            Alert.alert(
+              '🛠️ 服务器维护中',
+              '泰国入境卡系统正在维护，请稍后重试。',
+              [
+                { text: '稍后重试', onPress: () => setTimeout(() => webViewRef.current?.reload(), 30000) },
+                { text: '使用备用方案', onPress: () => navigation.navigate('TDACSelection') }
+              ]
+            );
+          }
         }}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
@@ -1116,43 +995,113 @@ const TDACWebViewScreen = ({ navigation, route }) => {
         )}
       />
 
-      {/* Loading Overlay */}
+      {/* Enhanced Loading Overlay */}
       {isLoading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>正在加载TDAC网站...</Text>
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingSpinnerContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <View style={styles.loadingPulse} />
+            </View>
+            <Text style={styles.loadingTitle}>正在加载泰国入境卡</Text>
+            <Text style={styles.loadingSubtitle}>Thailand Digital Arrival Card</Text>
+            <View style={styles.loadingProgress}>
+              <View style={styles.loadingProgressBar}>
+                <View style={styles.loadingProgressFill} />
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Enhanced Visual Masking System */}
+      {showVisualMask && (
+        <View style={styles.visualMaskContainer}>
+          {/* Full screen backdrop */}
+          <View style={styles.maskBackdrop} />
+
+          {/* Clean verification window */}
+          <View style={styles.verificationWindow}>
+            <View style={styles.windowHeader}>
+              <Text style={styles.windowIcon}>🔒</Text>
+              <Text style={styles.windowTitle}>安全验证</Text>
+              <Text style={styles.windowSubtitle}>Security Verification</Text>
+            </View>
+
+            {/* Verification content area - transparent center */}
+            <View style={styles.verificationContent}>
+              <Text style={styles.verificationPrompt}>请在下方完成验证</Text>
+              <Text style={styles.verificationPromptEn}>Please complete verification below</Text>
+            </View>
+
+            <View style={styles.windowFooter}>
+              <Text style={styles.footerText}>验证完成后将自动继续</Text>
+            </View>
+          </View>
+
+          {/* Focus arrow pointing to verification area */}
+          <View style={styles.focusArrow}>
+            <Text style={styles.focusArrowIcon}>👇</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Background Blur when Cloudflare is active (fallback) */}
+      {showCloudflareReminder && !showVisualMask && (
+        <View style={styles.backgroundBlur}>
+          <View style={styles.blurOverlay} />
         </View>
       )}
 
       {/* Cloudflare验证提醒 */}
       {showCloudflareReminder && (
         <View style={styles.cloudflareReminder}>
-          <Text style={styles.cloudflareTextCn}>请点击下方的验证框</Text>
-          <Text style={styles.cloudflareTextEn}>Please check the box below</Text>
-          <Text style={styles.cloudflareIcon}>👇</Text>
+          <View style={styles.cloudflareContent}>
+            <View style={styles.cloudflareIconContainer}>
+              <Text style={styles.cloudflareIcon}>🔒</Text>
+            </View>
+            <Text style={styles.cloudflareTitle}>安全验证</Text>
+            <Text style={styles.cloudflareTextCn}>请在下方网页中点击</Text>
+            <Text style={styles.cloudflareTextEn}>"我不是机器人" ✓</Text>
+            <Text style={styles.cloudflareSubtext}>验证完成后将自动提交</Text>
+            <View style={styles.cloudflareArrow}>
+              <Text style={styles.cloudflareArrowIcon}>👇</Text>
+            </View>
+          </View>
         </View>
       )}
 
-      {/* Floating Buttons */}
+      {/* Enhanced Floating Buttons */}
       <View style={styles.floatingButtonsContainer}>
         {/* 自动填充按钮 */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.floatingButtonPrimary}
           onPress={autoFillAll}
           activeOpacity={0.8}
         >
-          <Text style={styles.floatingButtonIcon}>⚡</Text>
-          <Text style={styles.floatingButtonText}>自动填充</Text>
+          <View style={styles.floatingButtonContent}>
+            <Text style={styles.floatingButtonIcon}>⚡</Text>
+            <View style={styles.floatingButtonTextContainer}>
+              <Text style={styles.floatingButtonTitle}>自动填充</Text>
+              <Text style={styles.floatingButtonSubtitle}>Auto Fill</Text>
+            </View>
+          </View>
+          <View style={styles.floatingButtonGlow} />
         </TouchableOpacity>
-        
+
         {/* 复制助手按钮（备用） */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.floatingButtonSecondary}
           onPress={() => setShowHelper(true)}
           activeOpacity={0.8}
         >
-          <Text style={styles.floatingButtonIcon}>📋</Text>
-          <Text style={styles.floatingButtonText}>复制助手</Text>
+          <View style={styles.floatingButtonContent}>
+            <Text style={styles.floatingButtonIcon}>📋</Text>
+            <View style={styles.floatingButtonTextContainer}>
+              <Text style={styles.floatingButtonTitle}>复制助手</Text>
+              <Text style={styles.floatingButtonSubtitle}>Copy Helper</Text>
+            </View>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -1352,53 +1301,130 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    zIndex: 30,
   },
-  loadingText: {
+  loadingContainer: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    minWidth: 280,
+  },
+  loadingSpinnerContainer: {
+    position: 'relative',
+    marginBottom: spacing.md,
+  },
+  loadingPulse: {
+    position: 'absolute',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 50,
+    backgroundColor: colors.primary,
+    opacity: 0.2,
+  },
+  loadingTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  loadingSubtitle: {
     fontSize: 16,
-    color: colors.text,
-    marginTop: spacing.md,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  loadingProgress: {
+    width: '100%',
+  },
+  loadingProgressBar: {
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  loadingProgressFill: {
+    height: '100%',
+    width: '60%', // Animated progress
+    backgroundColor: colors.primary,
+    borderRadius: 2,
   },
   floatingButtonsContainer: {
     position: 'absolute',
     right: spacing.md,
     bottom: spacing.xl,
     gap: spacing.sm,
+    zIndex: 25,
   },
   floatingButtonPrimary: {
     backgroundColor: '#FF9800',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+    borderRadius: 16,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    overflow: 'hidden',
+    minWidth: 140,
   },
   floatingButtonSecondary: {
     backgroundColor: colors.primary,
+    borderRadius: 16,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    overflow: 'hidden',
+    minWidth: 140,
+  },
+  floatingButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+  },
+  floatingButtonTextContainer: {
+    flex: 1,
+    marginLeft: spacing.sm,
   },
   floatingButtonIcon: {
     fontSize: 24,
-    marginRight: spacing.sm,
   },
-  floatingButtonText: {
+  floatingButtonTitle: {
     color: colors.white,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
+    lineHeight: 16,
+  },
+  floatingButtonSubtitle: {
+    color: colors.white,
+    fontSize: 10,
+    opacity: 0.9,
+    lineHeight: 12,
+  },
+  floatingButtonGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
   modalContainer: {
     flex: 1,
@@ -1696,42 +1722,179 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  // Cloudflare提醒样式
+  // Enhanced Visual Masking System
+  visualMaskContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  maskBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    zIndex: 1,
+  },
+  verificationWindow: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: spacing.xl,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 25,
+    elevation: 20,
+    borderWidth: 3,
+    borderColor: '#4CAF50',
+    zIndex: 2,
+    minWidth: 320,
+    maxWidth: '80%',
+    marginBottom: 100, // Space for arrow
+  },
+  windowHeader: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  windowIcon: {
+    fontSize: 48,
+    marginBottom: spacing.sm,
+  },
+  windowTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  windowSubtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  verificationContent: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  verificationPrompt: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  verificationPromptEn: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  windowFooter: {
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  focusArrow: {
+    position: 'absolute',
+    bottom: 100,
+    zIndex: 3,
+  },
+  focusArrowIcon: {
+    fontSize: 36,
+    color: '#4CAF50',
+  },
+
+  // Background blur overlay (fallback)
+  backgroundBlur: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+  },
+  blurOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+
+  // Enhanced Cloudflare提醒样式
   cloudflareReminder: {
     position: 'absolute',
-    top: '50%', // 刚好在验证框上方
+    top: '45%', // 调整位置，给箭头留空间
     left: '50%',
-    transform: [{ translateX: -150 }, { translateY: -75 }],
+    transform: [{ translateX: -150 }],
     width: 300,
-    backgroundColor: '#FF6B6B',
+    zIndex: 20,
+    elevation: 20,
+  },
+  cloudflareContent: {
+    backgroundColor: '#4CAF50',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
     borderRadius: 20,
     alignItems: 'center',
-    shadowColor: '#FF6B6B',
+    shadowColor: '#4CAF50',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.6,
     shadowRadius: 20,
     elevation: 15,
     borderWidth: 3,
     borderColor: '#fff',
   },
+  cloudflareIconContainer: {
+    marginBottom: spacing.sm,
+  },
   cloudflareIcon: {
-    fontSize: 50,
-    marginTop: spacing.sm, // 箭头在底部，向下指
+    fontSize: 40,
+  },
+  cloudflareTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.white,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   cloudflareTextCn: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.white,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },
   cloudflareTextEn: {
-    fontSize: 18,
+    fontSize: 16,
     color: colors.white,
     opacity: 0.95,
+    marginBottom: spacing.xs,
     textAlign: 'center',
+  },
+  cloudflareSubtext: {
+    fontSize: 14,
+    color: colors.white,
+    opacity: 0.9,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  cloudflareArrow: {
+    position: 'absolute',
+    bottom: -20,
+    left: '50%',
+    transform: [{ translateX: -15 }],
+  },
+  cloudflareArrowIcon: {
+    fontSize: 30,
+    color: '#4CAF50',
   },
 });
 

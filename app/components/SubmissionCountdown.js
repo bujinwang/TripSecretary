@@ -65,12 +65,12 @@ const SubmissionCountdown = ({
         <View style={styles.noDateContainer}>
           {showIcon && <Text style={styles.icon}>📅</Text>}
           <Text style={styles.noDateText}>
-            {locale === 'zh' ? '未设置抵达日期' : 'No arrival date set'}
+            还没告诉我泰国旅行日期呢 📅
           </Text>
           <Text style={styles.noDateSubtext}>
-            {locale === 'zh' 
-              ? '请在旅行信息中设置您的抵达日期' 
-              : 'Please set your arrival date in travel information'
+            {locale === 'zh'
+              ? '快去旅行信息中告诉我你什么时候到泰国吧！✈️'
+              : 'Please tell me when you\'re arriving in Thailand! ✈️'
             }
           </Text>
         </View>
@@ -138,7 +138,7 @@ const SubmissionCountdown = ({
       {windowInfo.showCountdown && timeRemaining && (
         <View style={styles.countdownContainer}>
           <Text style={[styles.countdownLabel, { color: colorScheme.text }]}>
-            {locale === 'zh' ? '剩余时间' : 'Time Remaining'}
+            {locale === 'zh' ? '倒计时' : 'Countdown'}
           </Text>
           <Text style={[styles.countdownTime, { color: colorScheme.accent }]}>
             {timeRemaining.display}

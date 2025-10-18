@@ -79,11 +79,11 @@ const CategoryStatusItem = ({
       {showMissingFields && status !== 'complete' && missingFields.length > 0 && (
         <View style={styles.missingFieldsContainer}>
           <Text style={styles.missingFieldsLabel}>
-            缺少字段:
+            还差这些信息 🌟
           </Text>
           <Text style={styles.missingFieldsText}>
             {missingFields.slice(0, 3).join(', ')}
-            {missingFields.length > 3 && ` 等${missingFields.length - 3}个字段`}
+            {missingFields.length > 3 && ` 等${missingFields.length - 3}个信息`}
           </Text>
         </View>
       )}

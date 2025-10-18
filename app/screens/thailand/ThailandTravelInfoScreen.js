@@ -106,7 +106,7 @@ const InputWithValidation = ({
   );
 };
 
-const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fieldCount }) => {
+const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onToggle, fieldCount }) => {
   const handleToggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onToggle();
@@ -118,7 +118,10 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
     <View style={styles.sectionContainer}>
       <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
         <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>{title}</Text>
+          <View>
+            <Text style={styles.sectionTitle}>{title}</Text>
+            {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+          </View>
           {fieldCount && (
             <View style={[
               styles.fieldCountBadge,
@@ -128,7 +131,7 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
                 styles.fieldCountText,
                 isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
               ]}>
-                {fieldCount.filled}/{fieldCount.total}
+                {isComplete ? '✓' : `${fieldCount.filled}/${fieldCount.total}`}
               </Text>
             </View>
           )}
@@ -238,10 +241,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         break;
       
     case 'funds':
-      // For funds, count the number of fund items added
+      // For funds, show actual count with minimum requirement of 1
       const fundItemCount = funds.length;
-      total = Math.max(1, fundItemCount); // Show real count while keeping minimum expectation of 1
-      filled = fundItemCount;
+      if (fundItemCount === 0) {
+        // No funds added yet - show requirement
+        total = 1;
+        filled = 0;
+      } else {
+        // Show actual count of fund items
+        total = fundItemCount;
+        filled = fundItemCount; // All added items are considered complete
+      }
       break;
       
       case 'travel':
@@ -356,23 +366,57 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     return allFieldsFilled && noErrors;
   };
 
-  // Get smart button label based on completion
-  const getSmartButtonLabel = () => {
+  // Get smart button configuration based on journey progress
+  const getSmartButtonConfig = () => {
     if (totalCompletionPercent >= 100) {
-      return t('thailand.travelInfo.submitEntry');
+      return {
+        label: '开始泰国之旅！🌴',
+        variant: 'primary',
+        style: styles.primaryButton,
+        icon: '🚀',
+        action: 'submit'
+      };
+    } else if (totalCompletionPercent >= 80) {
+      return {
+        label: '继续填写，即将完成！✨',
+        variant: 'secondary',
+        style: styles.secondaryButton,
+        icon: '🌺',
+        action: 'edit'
+      };
+    } else if (totalCompletionPercent >= 40) {
+      return {
+        label: '继续我的泰国准备之旅 💪',
+        variant: 'secondary',
+        style: styles.secondaryButton,
+        icon: '🏖️',
+        action: 'edit'
+      };
     } else {
-      return t('thailand.travelInfo.viewStatus');
+      return {
+        label: '开始准备泰国之旅吧！🇹🇭',
+        variant: 'outline',
+        style: styles.outlineButton,
+        icon: '🌸',
+        action: 'start'
+      };
     }
   };
 
-  // Get progress indicator text
+  // Get progress indicator text - traveler-friendly messaging
   const getProgressText = () => {
     if (totalCompletionPercent >= 100) {
-      return t('thailand.travelInfo.readyToSubmit');
+      return '准备好迎接泰国之旅了！🌴';
+    } else if (totalCompletionPercent >= 80) {
+      return '快完成了！泰国在向你招手 ✨';
+    } else if (totalCompletionPercent >= 60) {
+      return '进展不错！继续加油 💪';
+    } else if (totalCompletionPercent >= 40) {
+      return '已经完成一半了！🏖️';
+    } else if (totalCompletionPercent >= 20) {
+      return '好的开始！泰国欢迎你 🌺';
     } else {
-      return t('thailand.travelInfo.completionProgress', {
-        percent: totalCompletionPercent
-      });
+      return '让我们开始准备泰国之旅吧！🇹🇭';
     }
   };
 
@@ -1966,8 +2010,8 @@ const normalizeFundItem = useCallback((item) => ({
       >
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
-          <Text style={styles.title}>{t('thailand.travelInfo.title', { defaultValue: '填写泰国入境信息' })}</Text>
-          <Text style={styles.subtitle}>{t('thailand.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
+          <Text style={styles.title}>欢迎来到泰国！🌺</Text>
+          <Text style={styles.subtitle}>让我们准备好你的泰国冒险之旅</Text>
           
           {/* Enhanced Save Status Indicator */}
           {saveStatus && (
@@ -2018,8 +2062,9 @@ const normalizeFundItem = useCallback((item) => ({
           </Text>
         </View>
 
-        <CollapsibleSection 
-          title={t('thailand.travelInfo.sections.passport', { defaultValue: '护照信息' })} 
+        <CollapsibleSection
+          title="👤 关于我自己"
+          subtitle="让我们认识一下你"
           onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
@@ -2112,8 +2157,9 @@ const normalizeFundItem = useCallback((item) => ({
            />
          </CollapsibleSection>
 
-        <CollapsibleSection 
-          title={t('thailand.travelInfo.sections.personal', { defaultValue: '个人信息' })}
+        <CollapsibleSection
+          title="📞 联系方式"
+          subtitle="泰国怎么找到你"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
@@ -2190,8 +2236,9 @@ const normalizeFundItem = useCallback((item) => ({
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection 
-          title={t('thailand.travelInfo.sections.funds', { defaultValue: 'Proof of Funds' })}
+        <CollapsibleSection
+          title="💰 资金证明"
+          subtitle="告诉泰国你有足够的旅行资金"
           isExpanded={expandedSection === 'funds'}
           onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
@@ -2302,8 +2349,9 @@ const normalizeFundItem = useCallback((item) => ({
           )}
         </CollapsibleSection>
 
-        <CollapsibleSection 
-          title={t('thailand.travelInfo.sections.travel', { defaultValue: 'Travel Information' })}
+        <CollapsibleSection
+          title="✈️ 旅行计划"
+          subtitle="你的泰国冒险之旅"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
@@ -2661,36 +2709,69 @@ const normalizeFundItem = useCallback((item) => ({
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
-          {/* Progress Indicator */}
+          {/* Enhanced Progress Indicator */}
           <View style={styles.progressContainer}>
             <View style={styles.progressBarContainer}>
-              <View 
-                style={[
-                  styles.progressBar, 
-                  { 
-                    width: `${totalCompletionPercent}%`,
-                    backgroundColor: getProgressColor()
-                  }
-                ]} 
-              />
+              <View style={styles.progressBarEnhanced}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${totalCompletionPercent}%`,
+                      backgroundColor: getProgressColor()
+                    }
+                  ]}
+                />
+                {/* Completion Badge */}
+                {totalCompletionPercent >= 100 && (
+                  <View style={styles.completionBadge}>
+                    <Text style={styles.completionBadgeText}>泰国准备就绪！🌴</Text>
+                  </View>
+                )}
+              </View>
             </View>
             <Text style={[styles.progressText, { color: getProgressColor() }]}>
               {getProgressText()}
             </Text>
           </View>
 
-          {/* Smart Button with Dynamic Label */}
-          <Button
-            title={getSmartButtonLabel()}
-            onPress={handleContinue}
-            variant="primary"
-            disabled={false}
-          />
+          {/* Smart Button with Dynamic Configuration */}
+          {(() => {
+            const buttonConfig = getSmartButtonConfig();
+            return (
+              <Button
+                title={`${buttonConfig.icon} ${buttonConfig.label}`}
+                onPress={handleContinue}
+                variant={buttonConfig.variant}
+                disabled={false}
+                style={buttonConfig.style}
+              />
+            );
+          })()}
           
-          {/* Completion Status Hint */}
+          {/* Encouraging Progress Messages */}
           {totalCompletionPercent < 100 && (
-            <Text style={styles.completionHint}>
-              {t('thailand.travelInfo.completionHint')}
+            <Text style={styles.encouragingHint}>
+              {totalCompletionPercent < 30
+                ? '🌟 第一步，从介绍自己开始吧！'
+                : totalCompletionPercent < 60
+                ? '🎉 太棒了！继续保持这个节奏'
+                : '🚀 快要完成了，你的泰国之旅近在咫尺！'
+              }
+            </Text>
+          )}
+
+          {/* Travel-Focused Next Steps */}
+          {totalCompletionPercent < 100 && (
+            <Text style={styles.nextStepHint}>
+              {totalCompletionPercent < 25
+                ? '💡 从护照信息开始，告诉泰国你是谁'
+                : totalCompletionPercent < 50
+                ? '📞 添加联系方式，这样泰国就能找到你了'
+                : totalCompletionPercent < 75
+                ? '💰 展示你的资金证明，泰国想确保你玩得开心'
+                : '✈️ 最后一步，分享你的旅行计划吧！'
+              }
             </Text>
           )}
         </View>
@@ -2767,6 +2848,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    // Enhanced visual feedback
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -2811,6 +2898,13 @@ const styles = StyleSheet.create({
     ...typography.h3,
     color: colors.textSecondary,
     marginLeft: spacing.md,
+  },
+  sectionSubtitle: {
+    ...typography.caption,
+    color: colors.primary,
+    fontSize: 12,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   sectionContent: {
     padding: spacing.md,
@@ -2861,6 +2955,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
     fontStyle: 'italic',
+  },
+  encouragingHint: {
+    ...typography.body2,
+    color: colors.primary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontWeight: '600',
+    fontSize: 14,
   },
   scanButton: {
     flexDirection: 'row',
@@ -3181,6 +3283,65 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'right',
     marginTop: spacing.xs,
+  },
+  // New button styles for state-based buttons
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  nextStepHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontStyle: 'italic',
+    fontSize: 12,
+    paddingHorizontal: spacing.md,
+  },
+  // Enhanced visual feedback styles
+  sectionContainerActive: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressBarEnhanced: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 5,
+    transition: 'width 0.5s ease-in-out',
+  },
+  completionBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.success,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  completionBadgeText: {
+    ...typography.caption,
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 10,
   },
 });
 

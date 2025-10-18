@@ -1,7 +1,7 @@
 /**
- * TDAC Selection Screen
- * 让用户选择使用WebView自动化版本 或 完全API版本
- */
+  * TDAC Selection Screen - Redesigned for User Experience
+  * 让用户选择最适合的入境卡提交方式，聚焦于用户体验而非技术细节
+  */
 
 import React from 'react';
 import {
@@ -496,109 +496,156 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>泰国入境卡提交方式</Text>
-        <Text style={styles.headerSubtitle}>请选择提交方式</Text>
+      {/* 情感化头部 */}
+      <View style={styles.heroSection}>
+        <Text style={styles.heroEmoji}>🌟</Text>
+        <Text style={styles.heroTitle}>快速入境，无忧通关</Text>
+        <Text style={styles.heroSubtitle}>
+          选择最适合您的泰国入境卡提交方式，{'\n'}让通关更简单、更安心
+        </Text>
       </View>
 
-      {/* Hybrid版本 - 推荐 */}
-      <TouchableOpacity 
-        style={[styles.card, styles.recommendedCard]}
-        onPress={() => navigation.navigate('TDACHybrid', { travelerInfo })}
-      >
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>🔥 推荐</Text>
-        </View>
-        
-        <Text style={styles.cardTitle}>⚡ 混合极速版本</Text>
-        <Text style={styles.cardSubtitle}>隐藏WebView + 直接API - 最优方案</Text>
-        
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>5-8秒</Text>
-            <Text style={styles.statLabel}>提交时间</Text>
+      {/* 快速通道选项 */}
+      <View style={styles.optionSection}>
+        <TouchableOpacity
+          style={[styles.optionCard, styles.recommendedCard]}
+          onPress={() => navigation.navigate('TDACHybrid', { travelerInfo })}
+          activeOpacity={0.8}
+        >
+          {/* 推荐徽章 */}
+          <View style={styles.recommendationBadge}>
+            <Text style={styles.recommendationIcon}>📱</Text>
+            <Text style={styles.recommendationText}>推荐选择</Text>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>95%+</Text>
-            <Text style={styles.statLabel}>成功率</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>3倍</Text>
-            <Text style={styles.statLabel}>速度提升</Text>
-          </View>
-        </View>
 
-        <View style={styles.features}>
-          <Text style={styles.feature}>⚡ 极速提交（5-8秒）</Text>
-          <Text style={styles.feature}>✅ 自动获取Cloudflare Token</Text>
-          <Text style={styles.feature}>✅ 直接API调用</Text>
-          <Text style={styles.feature}>✅ 无需可见WebView</Text>
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <Text style={styles.buttonText}>立即使用 →</Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* WebView版本 - 备用 */}
-      <TouchableOpacity 
-        style={styles.card}
-        onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
-      >
-        <Text style={styles.cardTitle}>🌐 WebView自动化版本</Text>
-        <Text style={styles.cardSubtitle}>网页自动填表方案 - 稳定备用</Text>
-        
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, styles.normalStat]}>24秒</Text>
-            <Text style={styles.statLabel}>提交时间</Text>
+          {/* 标题区域 */}
+          <View style={styles.cardHeader}>
+            <Text style={styles.optionIcon}>⚡</Text>
+            <View style={styles.titleSection}>
+              <Text style={styles.optionTitle}>闪电提交</Text>
+              <Text style={styles.optionSubtitle}>快速通道 · 智能验证</Text>
+            </View>
           </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, styles.normalStat]}>85%</Text>
-            <Text style={styles.statLabel}>成功率</Text>
-          </View>
-        </View>
 
-        <View style={styles.features}>
-          <Text style={styles.feature}>✅ 完整自动化流程</Text>
-          <Text style={styles.feature}>✅ Cloudflare自动检测</Text>
-          <Text style={styles.feature}>⚠️ 速度较慢（24秒）</Text>
-          <Text style={styles.feature}>⚠️ 依赖网页结构</Text>
-        </View>
+          {/* 核心优势 */}
+          <View style={styles.benefitsSection}>
+            <View style={styles.benefitItem}>
+              <Text style={styles.benefitIcon}>⏱️</Text>
+              <View>
+                <Text style={styles.benefitValue}>5-8秒</Text>
+                <Text style={styles.benefitLabel}>闪电完成</Text>
+              </View>
+            </View>
 
-        <View style={[styles.buttonContainer, styles.secondaryButton]}>
-          <Text style={[styles.buttonText, styles.secondaryButtonText]}>使用备用方案</Text>
-        </View>
-      </TouchableOpacity>
+            <View style={styles.benefitItem}>
+              <Text style={styles.benefitIcon}>🎯</Text>
+              <View>
+                <Text style={styles.benefitValue}>95%+</Text>
+                <Text style={styles.benefitLabel}>超高成功率</Text>
+              </View>
+            </View>
 
-      {/* 对比说明 */}
-      <View style={styles.comparisonSection}>
-        <Text style={styles.comparisonTitle}>📊 性能对比</Text>
-        
-        <View style={styles.comparisonTable}>
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>速度</Text>
-            <Text style={styles.comparisonApi}>5-8秒 ⚡</Text>
-            <Text style={styles.comparisonWeb}>24秒</Text>
+            <View style={styles.benefitItem}>
+              <Text style={styles.benefitIcon}>🚀</Text>
+              <View>
+                <Text style={styles.benefitValue}>快3倍</Text>
+                <Text style={styles.benefitLabel}>比传统方式</Text>
+              </View>
+            </View>
           </View>
-          
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>可靠性</Text>
-            <Text style={styles.comparisonApi}>95%+ ✅</Text>
-            <Text style={styles.comparisonWeb}>85%</Text>
+
+          {/* 用户利益 */}
+          <View style={styles.userBenefits}>
+            <Text style={styles.benefitsTitle}>✨ 让您更省心</Text>
+            <Text style={styles.benefitPoint}>• 节省宝贵时间，避免排队焦虑</Text>
+            <Text style={styles.benefitPoint}>• 快速获得确认，安心等待登机</Text>
+            <Text style={styles.benefitPoint}>• 专业团队保障，全程技术支持</Text>
           </View>
-          
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>技术方案</Text>
-            <Text style={styles.comparisonApi}>混合 ✅</Text>
-            <Text style={styles.comparisonWeb}>纯WebView</Text>
+
+          {/* 行动按钮 */}
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('TDACHybrid', { travelerInfo })}
+          >
+            <Text style={styles.actionButtonText}>立即体验闪电提交 →</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+
+      {/* 稳定通道选项 */}
+      <View style={styles.optionSection}>
+        <TouchableOpacity
+          style={[styles.optionCard, styles.stableCard]}
+          onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
+          activeOpacity={0.8}
+        >
+          {/* 标题区域 */}
+          <View style={styles.cardHeader}>
+            <Text style={[styles.optionIcon, styles.stableIcon]}>🛡️</Text>
+            <View style={styles.titleSection}>
+              <Text style={[styles.optionTitle, styles.stableTitle]}>稳妥提交</Text>
+              <Text style={[styles.optionSubtitle, styles.stableSubtitle]}>稳定通道 · 清晰可见</Text>
+            </View>
+          </View>
+
+          {/* 核心指标 */}
+          <View style={styles.benefitsSection}>
+            <View style={styles.benefitItem}>
+              <Text style={styles.benefitIcon}>⏱️</Text>
+              <View>
+                <Text style={[styles.benefitValue, styles.stableValue]}>24秒</Text>
+                <Text style={styles.benefitLabel}>稳定完成</Text>
+              </View>
+            </View>
+
+            <View style={styles.benefitItem}>
+              <Text style={styles.benefitIcon}>🎯</Text>
+              <View>
+                <Text style={[styles.benefitValue, styles.stableValue]}>85%</Text>
+                <Text style={styles.benefitLabel}>可靠成功率</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* 用户利益 */}
+          <View style={styles.userBenefits}>
+            <Text style={styles.benefitsTitle}>✨ 适合这些旅客</Text>
+            <Text style={styles.benefitPoint}>• 喜欢眼见为实，过程清晰可见</Text>
+            <Text style={styles.benefitPoint}>• 初次使用，更喜欢稳妥的方式</Text>
+            <Text style={styles.benefitPoint}>• 不赶时间，可以慢慢确认</Text>
+          </View>
+
+          {/* 行动按钮 */}
+          <TouchableOpacity
+            style={[styles.actionButton, styles.stableButton]}
+            onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
+          >
+            <Text style={[styles.actionButtonText, styles.stableButtonText]}>选择稳妥方案</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+
+      {/* 智能推荐提示 */}
+      <View style={styles.smartTipSection}>
+        <View style={styles.tipCard}>
+          <Text style={styles.tipIcon}>💡</Text>
+          <View style={styles.tipContent}>
+            <Text style={styles.tipTitle}>智能推荐</Text>
+            <Text style={styles.tipText}>
+              基于您的旅行习惯，我们推荐闪电提交方案。{'\n'}
+              如果您更喜欢眼见为实的过程，可以随时切换到稳妥方案。
+            </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.footer}>
+      {/* 底部鼓励信息 */}
+      <View style={styles.footerSection}>
+        <Text style={styles.footerEmoji}>🌺</Text>
+        <Text style={styles.footerTitle}>祝您泰国之旅愉快！</Text>
         <Text style={styles.footerText}>
-          💡 推荐使用混合极速版本：自动获取Token + 直接API提交 = 最佳体验
+          无论选择哪种方式，我们都会全力协助您{'\n'}
+          顺利完成入境卡提交，安心享受泰国假期
         </Text>
       </View>
     </ScrollView>
@@ -610,173 +657,243 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    backgroundColor: colors.secondary,
+
+  // 情感化头部区域
+  heroSection: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: 24,
     paddingTop: 60,
     alignItems: 'center',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  headerTitle: {
-    fontSize: 24,
+  heroEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  heroTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.white,
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
-  headerSubtitle: {
+  heroSubtitle: {
     fontSize: 16,
     color: colors.white,
     opacity: 0.9,
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  card: {
-    backgroundColor: '#fff',
+
+  // 选项卡样式
+  optionSection: {
     margin: 16,
     marginTop: 24,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
+  optionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  // 推荐选项样式
   recommendedCard: {
     borderWidth: 3,
     borderColor: '#4CAF50',
+    backgroundColor: '#fafcfa',
   },
-  badge: {
+
+  // 推荐徽章
+  recommendationBadge: {
     position: 'absolute',
     top: -12,
     right: 20,
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  badgeText: {
+  recommendationIcon: {
+    color: colors.white,
+    fontSize: 14,
+    marginRight: 4,
+  },
+  recommendationText: {
     color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  statsRow: {
+
+  // 卡片头部
+  cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-    paddingVertical: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-  },
-  stat: {
     alignItems: 'center',
+    marginBottom: 20,
   },
-  statValue: {
+  optionIcon: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  stableIcon: {
+    opacity: 0.8,
+  },
+  titleSection: {
+    flex: 1,
+  },
+  optionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: colors.text,
     marginBottom: 4,
   },
-  normalStat: {
+  stableTitle: {
+    color: colors.text,
+  },
+  optionSubtitle: {
+    fontSize: 14,
     color: colors.textSecondary,
   },
-  statLabel: {
+  stableSubtitle: {
+    opacity: 0.8,
+  },
+
+  // 优势展示区域
+  benefitsSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 24,
+    paddingVertical: 20,
+    backgroundColor: 'rgba(76, 175, 80, 0.05)',
+    borderRadius: 16,
+  },
+  benefitItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  benefitIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  benefitValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 2,
+  },
+  stableValue: {
+    color: colors.textSecondary,
+  },
+  benefitLabel: {
     fontSize: 12,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
-  features: {
-    marginBottom: 20,
+
+  // 用户利益区域
+  userBenefits: {
+    marginBottom: 24,
   },
-  feature: {
-    fontSize: 15,
-    color: '#333',
+  benefitsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  benefitPoint: {
+    fontSize: 14,
+    color: colors.textSecondary,
     marginBottom: 8,
-    lineHeight: 22,
+    lineHeight: 20,
   },
-  buttonContainer: {
-    backgroundColor: colors.secondary,
+
+  // 行动按钮
+  actionButton: {
+    backgroundColor: '#4CAF50',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
   },
-  secondaryButton: {
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.secondary,
-  },
-  buttonText: {
+  actionButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
-  secondaryButtonText: {
-    color: colors.secondary,
+
+  // 稳定选项按钮样式
+  stableButton: {
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
   },
-  comparisonSection: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  comparisonTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-  },
-  comparisonTable: {
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  comparisonRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  comparisonLabel: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.textSecondary,
-  },
-  comparisonApi: {
-    flex: 1,
-    fontSize: 15,
+  stableButtonText: {
     color: '#4CAF50',
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
-  comparisonWeb: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  footer: {
-    backgroundColor: '#fff3cd',
+
+  // 智能推荐提示
+  smartTipSection: {
     margin: 16,
-    padding: 16,
-    borderRadius: 12,
+    marginTop: 8,
+  },
+  tipCard: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: '#2196F3',
+  },
+  tipIcon: {
+    fontSize: 24,
+    marginRight: 12,
+    marginTop: 2,
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1976D2',
+    marginBottom: 6,
+  },
+  tipText: {
+    fontSize: 14,
+    color: '#424242',
+    lineHeight: 20,
+  },
+
+  // 底部鼓励区域
+  footerSection: {
+    margin: 16,
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  footerEmoji: {
+    fontSize: 36,
+    marginBottom: 12,
+  },
+  footerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: 8,
+    textAlign: 'center',
   },
   footerText: {
     fontSize: 14,
-    color: '#856404',
-    lineHeight: 20,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
 
