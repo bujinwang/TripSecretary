@@ -10,6 +10,8 @@ import {
   Share,
   Platform,
 } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 // QR code is displayed as an image from URI
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -65,8 +67,32 @@ const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
 
   const handleSaveToAlbum = async () => {
     try {
-      // TODO: Implement save to album functionality
-      Alert.alert('功能开发中', '保存到相册功能即将推出');
+      if (!qrUri) {
+        Alert.alert('提示', 'QR码不可用');
+        return;
+      }
+
+      // Request media library permissions
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('权限不足', '需要相册权限才能保存QR码');
+        return;
+      }
+
+      // Download QR code image to cache first
+      const fileName = `tdac_qr_${arrCardNo || Date.now()}.png`;
+      const localUri = `${FileSystem.cacheDirectory}${fileName}`;
+      
+      const downloadResult = await FileSystem.downloadAsync(qrUri, localUri);
+      
+      if (downloadResult.status === 200) {
+        // Save to media library
+        const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
+        await MediaLibrary.createAlbumAsync('入境卡', asset, false);
+        Alert.alert('成功', 'QR码已保存到相册');
+      } else {
+        throw new Error('下载QR码失败');
+      }
     } catch (error) {
       console.error('Error saving to album:', error);
       Alert.alert('错误', '保存失败，请稍后重试');
@@ -91,14 +117,69 @@ const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
     }
   };
 
-  const handleViewPDF = () => {
+  const handleViewPDF = async () => {
     if (!pdfPath) {
       Alert.alert('提示', 'PDF文件不可用');
       return;
     }
 
-    // TODO: Implement PDF viewing functionality
-    Alert.alert('功能开发中', 'PDF查看功能即将推出');
+    try {
+      // Check if file exists
+      const fileInfo = await FileSystem.getInfoAsync(pdfPath);
+      if (!fileInfo.exists) {
+        Alert.alert('错误', 'PDF文件不存在，可能已被删除');
+        return;
+      }
+
+      // Show PDF options
+      Alert.alert(
+        'PDF操作',
+        '请选择要执行的操作',
+        [
+          {
+            text: '取消',
+            style: 'cancel',
+          },
+          {
+            text: '分享PDF',
+            onPress: async () => {
+              try {
+                await Share.share({
+                  url: Platform.OS === 'ios' ? pdfPath : `file://${pdfPath}`,
+                  title: '泰国入境卡PDF',
+                  message: `入境卡号: ${arrCardNo}`,
+                });
+              } catch (shareErr) {
+                console.error('Error sharing PDF:', shareErr);
+                Alert.alert('错误', '分享PDF失败');
+              }
+            },
+          },
+          {
+            text: '保存到相册',
+            onPress: async () => {
+              try {
+                const { status } = await MediaLibrary.requestPermissionsAsync();
+                if (status !== 'granted') {
+                  Alert.alert('权限不足', '需要相册权限才能保存PDF');
+                  return;
+                }
+
+                const asset = await MediaLibrary.createAssetAsync(pdfPath);
+                await MediaLibrary.createAlbumAsync('入境卡', asset, false);
+                Alert.alert('成功', 'PDF已保存到相册');
+              } catch (saveErr) {
+                console.error('Error saving PDF to album:', saveErr);
+                Alert.alert('错误', '保存PDF到相册失败');
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error handling PDF:', error);
+      Alert.alert('错误', 'PDF操作失败');
+    }
   };
 
   return (

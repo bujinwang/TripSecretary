@@ -31,6 +31,8 @@ import * as FileSystem from 'expo-file-system';
 import { mergeTDACData } from '../../data/mockTDACData';
 import { colors } from '../../theme';
 import EntryPackService from '../../services/entryPack/EntryPackService';
+import TDACValidationService from '../../services/validation/TDACValidationService';
+import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -210,13 +212,78 @@ const TDACHybridScreen = ({ navigation, route }) => {
       setStage('error');
       setProgress('提交失败');
       
+      // Enhanced error handling with user-friendly messages and recovery options
+      const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
+        operation: 'tdac_hybrid_submission',
+        submissionMethod: 'hybrid',
+        travelerData: {
+          passportNo: travelerInfo.passportNo,
+          arrivalDate: travelerInfo.arrivalDate,
+          nationality: travelerInfo.nationality
+        },
+        userAgent: 'TDACHybridScreen'
+      }, 0);
+
+      console.log('📋 Error handling result:', errorResult);
+
+      // Create user-friendly error dialog
+      const errorDialog = TDACErrorHandler.createErrorDialog(errorResult);
+      
+      const buttons = [];
+      
+      if (errorResult.shouldRetry) {
+        buttons.push({
+          text: `重试 (${Math.ceil(errorResult.retryDelay / 1000)}秒后)`,
+          onPress: () => {
+            setTimeout(() => {
+              navigation.replace('TDACHybrid', { travelerInfo });
+            }, errorResult.retryDelay);
+          }
+        });
+      } else {
+        buttons.push({
+          text: '重试',
+          onPress: () => navigation.replace('TDACHybrid', { travelerInfo })
+        });
+      }
+
+      if (errorResult.recoverable) {
+        buttons.push({
+          text: '使用WebView版本',
+          onPress: () => {
+            navigation.replace('TDACWebView', { travelerInfo });
+          }
+        });
+      }
+
+      buttons.push({
+        text: '返回',
+        onPress: () => navigation.goBack()
+      });
+
+      if (errorResult.category === 'system' || !errorResult.recoverable) {
+        buttons.push({
+          text: '联系支持',
+          onPress: async () => {
+            const errorLog = await TDACErrorHandler.exportErrorLog();
+            console.log('Error log exported for support:', errorResult.errorId);
+            Alert.alert(
+              '支持信息',
+              `错误ID: ${errorResult.errorId}\n\n请将此错误ID提供给客服以获得帮助。`,
+              [{ text: '好的' }]
+            );
+          }
+        });
+      }
+
       Alert.alert(
-        '❌ 提交失败',
-        error.message,
-        [
-          { text: '重试', onPress: () => navigation.replace('TDACHybrid', { travelerInfo }) },
-          { text: '返回', onPress: () => navigation.goBack() }
-        ]
+        `${errorDialog.icon} ${errorDialog.title}`,
+        `${errorResult.userMessage}\n\n错误ID: ${errorResult.errorId}${
+          errorResult.suggestions.length > 0 
+            ? '\n\n建议:\n• ' + errorResult.suggestions.slice(0, 3).join('\n• ')
+            : ''
+        }`,
+        buttons
       );
     }
   };

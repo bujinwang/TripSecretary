@@ -34,3 +34,4 @@ android/
 # TDAC debugging docs (may contain sensitive data)
 docs/arrival-cards/DEBUGGING_*.md
 docs/arrival-cards/TDAC_COMPLETE_*.md
+# BMAD (local only)

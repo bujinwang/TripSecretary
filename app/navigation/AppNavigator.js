@@ -455,6 +455,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ThailandInteractiveImmigrationGuide"
+          component={require('../screens/thailand/ThailandInteractiveImmigrationGuide').default}
+          options={{
+            headerShown: false,
+            gestureEnabled: false, // Prevent accidental back during immigration
+          }}
+        />
+        <Stack.Screen
           name="JapanInfo"
           component={JapanInfoScreen}
           options={{
@@ -600,21 +608,6 @@ const AppNavigator = React.forwardRef((props, ref) => {
           />
         )}
         
-        {/* Development Mode Only */}
-        {__DEV__ && (
-          <Stack.Screen
-            name="NotificationTest"
-            component={NotificationTestScreen}
-            options={{
-              headerShown: true,
-              title: 'Notification Testing',
-              headerTintColor: colors.text,
-              headerStyle: {
-                backgroundColor: colors.white,
-              },
-            }}
-          />
-        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -669,7 +669,9 @@ const HomeScreen = ({ navigation }) => {
 
         {/* Where to Go */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{exploreSectionTitle}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{exploreSectionTitle}</Text>
+          </View>
           <View style={styles.countriesGrid}>
             {localizedHotCountries.map((country) => (
               <CountryCard

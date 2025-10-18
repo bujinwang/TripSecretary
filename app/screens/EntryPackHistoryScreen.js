@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import EntryPackService from '../services/entryPack/EntryPackService';
 import SnapshotService from '../services/snapshot/SnapshotService';
 import LegacyDataMigrationService from '../services/data/LegacyDataMigrationService';
 import DateFormatter from '../utils/DateFormatter';
+import PerformanceMonitor from '../utils/PerformanceMonitor';
+import LazyLoadingHelper from '../utils/LazyLoadingHelper';
 
 const EntryPackHistoryScreen = ({ navigation }) => {
   const [historyItems, setHistoryItems] = useState([]);
@@ -38,6 +40,11 @@ const EntryPackHistoryScreen = ({ navigation }) => {
   ];
 
   const loadHistoryData = useCallback(async () => {
+    const operationId = PerformanceMonitor.startTiming('loadHistoryData', {
+      selectedFilter,
+      searchQuery: searchQuery.length
+    });
+
     try {
       setLoading(true);
       
@@ -56,8 +63,14 @@ const EntryPackHistoryScreen = ({ navigation }) => {
 
       setHistoryItems(mixedHistory);
       applyFiltersAndSearch(mixedHistory, selectedFilter, searchQuery);
+
+      PerformanceMonitor.endTiming(operationId, {
+        itemsLoaded: mixedHistory.length,
+        migrationPending: stats.migrationPending
+      });
     } catch (error) {
       console.error('Failed to load history data:', error);
+      PerformanceMonitor.endTiming(operationId, { error: error.message });
       Alert.alert('错误', '加载历史记录失败，请重试');
     } finally {
       setLoading(false);
@@ -349,7 +362,7 @@ const EntryPackHistoryScreen = ({ navigation }) => {
     }, [loadHistoryData])
   );
 
-  const renderHistoryItem = ({ item }) => (
+  const renderHistoryItem = useCallback(({ item, index }) => (
     <TouchableOpacity
       style={[
         styles.historyItem,
@@ -413,7 +426,7 @@ const EntryPackHistoryScreen = ({ navigation }) => {
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
       </View>
     </TouchableOpacity>
-  );
+  ), []);
 
   const renderSectionHeader = (title) => (
     <View style={styles.sectionHeader}>
@@ -421,29 +434,95 @@ const EntryPackHistoryScreen = ({ navigation }) => {
     </View>
   );
 
-  const renderGroupedList = () => {
+  // Memoize optimized FlatList props
+  const optimizedListProps = useMemo(() => {
+    return LazyLoadingHelper.getOptimizedFlatListProps({
+      itemHeight: 120, // Estimated height of history item
+      windowSize: 10,
+      initialNumToRender: 8,
+      maxToRenderPerBatch: 5,
+      updateCellsBatchingPeriod: 50,
+      removeClippedSubviews: true
+    });
+  }, []);
+
+  // Flatten grouped data for virtualized list
+  const flattenedData = useMemo(() => {
+    const operationId = PerformanceMonitor.startTiming('flattenGroupedData', {
+      filteredItemsCount: filteredItems.length
+    });
+
     const groups = groupItemsByTime(filteredItems);
     const groupOrder = ['今天', '昨天', '本周', '本月', '更早'];
-    
+    const flattened = [];
+
+    groupOrder.forEach(groupTitle => {
+      if (groups[groupTitle]?.length > 0) {
+        // Add section header
+        flattened.push({
+          type: 'header',
+          id: `header_${groupTitle}`,
+          title: groupTitle
+        });
+        
+        // Add items
+        groups[groupTitle].forEach(item => {
+          flattened.push({
+            type: 'item',
+            ...item
+          });
+        });
+      }
+    });
+
+    PerformanceMonitor.endTiming(operationId, {
+      flattenedCount: flattened.length,
+      groupCount: groupOrder.filter(g => groups[g]?.length > 0).length
+    });
+
+    return flattened;
+  }, [filteredItems]);
+
+  const renderFlattenedItem = useCallback(({ item, index }) => {
+    if (item.type === 'header') {
+      return renderSectionHeader(item.title);
+    }
+    return renderHistoryItem({ item, index });
+  }, []);
+
+  const getItemLayout = useCallback((data, index) => {
+    const item = data[index];
+    const height = item?.type === 'header' ? 40 : 120;
+    return {
+      length: height,
+      offset: data.slice(0, index).reduce((sum, item) => 
+        sum + (item.type === 'header' ? 40 : 120), 0),
+      index
+    };
+  }, []);
+
+  const renderGroupedList = () => {
     return (
       <FlatList
-        data={groupOrder.filter(group => groups[group]?.length > 0)}
-        keyExtractor={(item) => item}
-        renderItem={({ item: groupTitle }) => (
-          <View key={groupTitle}>
-            {renderSectionHeader(groupTitle)}
-            {groups[groupTitle].map((item, index) => (
-              <View key={item.id}>
-                {renderHistoryItem({ item })}
-              </View>
-            ))}
-          </View>
-        )}
+        data={flattenedData}
+        renderItem={renderFlattenedItem}
+        getItemLayout={getItemLayout}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        {...optimizedListProps}
+        onViewableItemsChanged={({ viewableItems }) => {
+          // Record memory usage periodically
+          if (viewableItems.length > 0) {
+            PerformanceMonitor.recordMemoryUsage('historyListScroll', {
+              visibleItems: viewableItems.length,
+              totalItems: flattenedData.length
+            });
+          }
+        }}
       />
     );
   };

@@ -6,6 +6,7 @@ import AppNavigator from './app/navigation/AppNavigator';
 import { LocaleProvider } from './app/i18n/LocaleContext';
 import { NotificationService } from './app/services/notification';
 import BackgroundJobService from './app/services/background/BackgroundJobService';
+import DataSyncService from './app/services/DataSyncService';
 
 export default function App() {
   const navigationRef = useRef();
@@ -25,6 +26,9 @@ export default function App() {
         // Start background job service for automatic archival
         await BackgroundJobService.start();
         console.log('Background job service started');
+
+        // Check for data updates
+        await DataSyncService.checkForUpdates();
       } catch (error) {
         console.error('Failed to initialize services:', error);
       }

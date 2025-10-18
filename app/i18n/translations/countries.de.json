@@ -5,7 +5,8 @@
       "cancelled": "Storniert",
       "expired": "Abgelaufen",
       "inProgress": "In Bearbeitung",
-      "needsResubmission": "Erneute Einreichung Erforderlich"
+      "needsResubmission": "Erneute Einreichung Erforderlich",
+      "superseded": "Erneute Einreichung Erforderlich"
     },
     "snapshot": {
       "readOnlyBanner": "Dies ist ein historischer Schnappschuss und kann nicht geändert werden",
@@ -161,28 +162,9 @@
       "message": "Ihre Einreiseinformationen wurden aktualisiert, und Sie müssen die Einreisekarte erneut einreichen, um die Genauigkeit der Informationen zu gewährleisten."
     },
     "immigrationOfficer": {
-      "title": "Beamten Zeigen",
-      "exitButton": "Präsentationsmodus Verlassen",
-      "languageToggle": "Sprache Wechseln",
-      "sections": {
-        "qrCode": "QR-Code",
-        "passport": "Reisepass-Informationen",
-        "travel": "Reiseinformationen",
-        "funds": "Geldnachweis",
-        "contact": "Kontaktinformationen"
-      },
-      "quickActions": {
-        "showQR": "QR-Code Zeigen",
-        "showPassport": "Reisepass Zeigen",
-        "showFunds": "Geldmittel Zeigen",
-        "showHotel": "Hotel Zeigen",
-        "showTicket": "Ticket Zeigen"
-      },
-      "offlineMode": "Offline-Modus - Verwende zwischengespeicherte Daten",
-      "disclaimer": "Dies ist ein vom Reisenden vorbereitetes Dokument. Bitte mit offiziellen Systemen überprüfen.",
       "authentication": {
-        "title": "Authentifizierung",
-        "message": "Authentifizierung erforderlich, um Dokumente Einwanderungsbeamten zu zeigen",
+        "title": "Authentifizierung Erforderlich",
+        "message": "Zum Schutz Ihrer Privatsphäre ist eine Authentifizierung erforderlich, um den Präsentationsmodus zu betreten",
         "authenticate": "Authentifizieren",
         "cancel": "Abbrechen"
       },
@@ -191,22 +173,26 @@
         "exitMessage": "Sind Sie sicher, dass Sie den Präsentationsmodus verlassen möchten?",
         "exit": "Verlassen",
         "cancel": "Abbrechen",
-        "showMoreInfo": "Mehr Informationen Zeigen",
-        "showLessInfo": "Weniger Informationen Zeigen",
-        "exitHint": "Nach unten wischen zum Verlassen",
+        "saveQRCode": "QR-Code Speichern",
+        "saveQRMessage": "QR-Code im Fotoalbum speichern?",
+        "save": "Speichern",
+        "saved": "Gespeichert",
+        "qrCodeSaved": "QR-Code im Fotoalbum gespeichert",
         "tdacQRCode": "TDAC QR-Code",
+        "qrCodePlaceholder": "QR-Code",
+        "qrCodeSubtext": "Erscheint nach TDAC-Einreichung",
         "submitted": "Eingereicht",
         "passportInformation": "Reisepass-Informationen",
-        "travelInformation": "Reiseinformationen",
         "fullName": "Vollständiger Name",
         "passportNumber": "Reisepassnummer",
         "nationality": "Staatsangehörigkeit",
         "dateOfBirth": "Geburtsdatum",
         "gender": "Geschlecht",
         "passportExpiry": "Reisepass-Ablauf",
+        "travelInformation": "Reiseinformationen",
         "flightDetails": "Flugdetails",
         "arrivalFlight": "Ankunftsflug",
-        "arrivalDateTime": "Ankunftsdatum und -zeit",
+        "arrivalDateTime": "Ankunftsdatum & -zeit",
         "departureDate": "Abreisedatum",
         "accommodation": "Unterkunft",
         "hotelName": "Hotelname",
@@ -215,96 +201,75 @@
         "visitPurpose": "Besuchszweck",
         "purpose": "Zweck",
         "durationOfStay": "Aufenthaltsdauer",
-        "qrCodePlaceholder": "QR-Code",
-        "qrCodeSubtext": "Erscheint nach TDAC-Einreichung",
-        "saveQRCode": "QR-Code Speichern",
-        "saveQRMessage": "QR-Code im Fotoalbum speichern?",
-        "save": "Speichern",
-        "saved": "Gespeichert",
-        "qrCodeSaved": "QR-Code im Fotoalbum gespeichert"
+        "fundsInformation": "Geldmittel-Informationen",
+        "totalFunds": "Gesamte Geldmittel",
+        "totalAmount": "Gesamtbetrag",
+        "fundItems": "Geldmittel-Artikel",
+        "contactInformation": "Kontaktinformationen",
+        "contactDetails": "Kontaktdetails",
+        "phoneInThailand": "Telefon in Thailand",
+        "email": "E-Mail",
+        "thaiAddress": "Thai-Adresse"
       },
-      "help": {
-        "title": "Gestenhilfe",
-        "pinchZoom": "Kneifen zum Zoomen des QR-Codes (50% - 200%)",
-        "doubleTap": "Doppeltippen zum Umschalten der Informationsanzeige",
-        "longPress": "Langen Druck auf QR-Code zum Speichern im Album",
-        "swipeDown": "Von oben nach unten wischen zum Verlassen",
-        "gotIt": "Verstanden"
-      },
-      "languageModes": {
-        "bilingual": "Zweisprachig",
-        "thai": "Nur Thai",
-        "english": "Nur Englisch"
-      }
+      "title": "Dem Beamten Zeigen"
     }
   },
   "thailand": {
-    "entryFlow": {
-      "title": "Thailand-Einreise Vorbereitungsstatus",
-      "preparationTitle": "Thailand-Einreise Vorbereitungsstatus",
-      "preparationSubtitle": "Überprüfen Sie den Vervollständigungsstatus Ihrer Einreiseinformationen",
-      "loading": "Lade Vorbereitungsstatus...",
-      "completionStatus": "Vervollständigungsstatus",
-      "categories": "Informationskategorien",
-      "submissionWindow": "Einreichungsfenster",
-      "actions": "Aktionen",
-      "continueImproving": "Informationen Weiter Verbessern",
-      "completeAllFields": "Informationen müssen vervollständigt werden",
-      "setArrivalDate": "Bitte Ankunftsdatum Festlegen",
-      "arrivalDateRequired": "Ankunftsdatum für Einreichung erforderlich",
-      "waitForWindow": "Auf Einreichungsfenster Warten",
-      "windowNotOpen": "Einreichungsfenster noch nicht geöffnet",
-      "submitTDAC": "Thailand-Einreisekarte Einreichen",
-      "readyToSubmit": "Alle Informationen vollständig, bereit zur Einreichung",
-      "editInfo": "Informationen Bearbeiten",
-      "preview": "Einreisekarte Vorschau",
-      "share": "Freund bitten, für Sie auszufüllen",
-      "noData": {
-        "title": "Thailand-Einreiseinformationen Ausfüllen Beginnen",
-        "description": "Sie haben noch keine Einreiseinformationen ausgefüllt. Klicken Sie auf die Schaltfläche unten, um zu beginnen, und wir führen Sie durch den gesamten Prozess.",
-        "hintsTitle": "Sie müssen vorbereiten:",
-        "startButton": "Ausfüllen Beginnen"
+    "info": {
+      "headerTitle": "Einreiseinformationen Thailand",
+      "title": "Thailand Einreiseführer",
+      "subtitle": "Visumfrei für 60 Tage",
+      "sections": {
+        "visa": {
+          "title": "✓ Verlängerte visumfreie Politik",
+          "items": [
+            "Seit Juli 2024, verlängert auf 60 Tage",
+            "• 30 Tage Verlängerung verfügbar"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Einreiseinformationen",
+          "items": [
+            "• Geldnachweis erforderlich",
+            "• Rückflugticket obligatorisch",
+            "• Unterkunftsinformationen überprüfbar"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy erleichtert",
+          "items": [
+            "• Null Angst",
+            "• Kommunikationsassistent"
+          ]
+        }
       },
-      "categories": {
-        "passport": "Reisepass-Informationen",
-        "personal": "Persönliche Informationen",
-        "funds": "Geldnachweis",
-        "travel": "Reiseinformationen"
+      "continueButton": "Weiter"
+    },
+    "entryFlow": {
+      "categoriesTitle": "Informationskategorien",
+      "title": "Thailand Einreise-Vorbereitungsstatus",
+      "preparationTitle": "Thailand Einreise-Vorbereitungsstatus",
+      "loading": "Lade Vorbereitungsstatus...",
+      "noData": {
+        "title": "Thailand Einreiseinformationen Ausfüllen Beginnen",
+        "startButton": "Ausfüllen Beginnen"
       }
-    }
-  },
-  "thailand": {
-    "entryFlow": {
-      "title": "Thailand-Einreise Vorbereitungsstatus",
-      "preparationTitle": "Thailand-Einreise Vorbereitungsstatus",
-      "preparationSubtitle": "Überprüfen Sie den Vervollständigungsstatus Ihrer Einreiseinformationen",
-      "loading": "Lade Vorbereitungsstatus...",
-      "completionStatus": "Vervollständigungsstatus",
-      "categories": "Informationskategorien",
-      "submissionWindow": "Einreichungsfenster",
-      "actions": "Aktionen",
-      "continueImproving": "Informationen Weiter Verbessern",
-      "completeAllFields": "Informationen müssen vervollständigt werden",
-      "setArrivalDate": "Bitte Ankunftsdatum Festlegen",
-      "arrivalDateRequired": "Ankunftsdatum für Einreichung erforderlich",
-      "waitForWindow": "Auf Einreichungsfenster Warten",
-      "windowNotOpen": "Einreichungsfenster noch nicht geöffnet",
-      "submitTDAC": "Thailand-Einreisekarte Einreichen",
-      "readyToSubmit": "Alle Informationen vollständig, bereit zur Einreichung",
-      "editInfo": "Informationen Bearbeiten",
-      "preview": "Einreisekarte Vorschau",
-      "share": "Freund bitten, für Sie auszufüllen",
-      "noData": {
-        "title": "Thailand-Einreiseinformationen Ausfüllen Beginnen",
-        "description": "Sie haben noch keine Einreiseinformationen ausgefüllt. Klicken Sie auf die Schaltfläche unten, um zu beginnen, und wir führen Sie durch den gesamten Prozess.",
-        "hintsTitle": "Sie müssen vorbereiten:",
-        "startButton": "Ausfüllen Beginnen"
-      },
-      "categories": {
-        "passport": "Reisepass-Informationen",
-        "personal": "Persönliche Informationen",
-        "funds": "Geldnachweis",
-        "travel": "Reiseinformationen"
+    },
+    "travelInfo": {
+      "scan": {
+        "ticketTitle": "Ticket Scannen",
+        "ticketMessage": "Bitte wählen Sie die Ticket-Bildquelle",
+        "hotelTitle": "Hotelbuchung Scannen",
+        "hotelMessage": "Bitte wählen Sie die Bildquelle für die Hotelbuchungsbestätigung",
+        "takePhoto": "Foto Aufnehmen",
+        "fromLibrary": "Aus der Bibliothek",
+        "permissionTitle": "Berechtigung Erforderlich",
+        "cameraPermissionMessage": "Kameraberechtigung erforderlich, um Fotos für das Scannen von Dokumenten aufzunehmen",
+        "libraryPermissionMessage": "Fotobibliotheksberechtigung erforderlich, um Fotos auszuwählen",
+        "scanFailed": "Scan Fehlgeschlagen",
+        "scanFailedMessage": "Dokumentenscan fehlgeschlagen, bitte versuchen Sie es erneut",
+        "processing": "Verarbeitung...",
+        "processingMessage": "Dokumentinhalt wird erkannt, bitte warten"
       }
     }
   },
@@ -438,119 +403,6 @@
         }
       },
       "continueButton": "Weiter"
-    }
-  },
-  "thailand": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Thailand",
-      "title": "Thailand Einreiseführer",
-      "subtitle": "Visumfrei für 60 Tage",
-      "sections": {
-        "visa": {
-          "title": "✓ Verlängerte visumfreie Politik",
-          "items": [
-            "Seit Juli 2024, verlängert auf 60 Tage",
-            "• 30 Tage Verlängerung verfügbar"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Geldnachweis erforderlich",
-            "• Rückflugticket obligatorisch",
-            "• Unterkunftsinformationen überprüfbar"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy erleichtert",
-          "items": [
-            "• Null Angst",
-            "• Kommunikationsassistent"
-          ]
-        }
-      },
-      "continueButton": "Weiter"
-    }
-  },
-  "japan": {
-    "info": {
-      "headerTitle": "Einreiseinformationen Japan",
-      "title": "Japan Einreiseführer",
-      "subtitle": "Visumfrei für 90 Tage für chinesische Passinhaber",
-      "sections": {
-        "visa": {
-          "title": "✓ Gute Nachrichten! Visumfreie Politik",
-          "items": [
-            "Chinesische Passinhaber genießen visumfreie Einreise nach Japan für 90 Tage - spontane Reise!",
-            "• Keine Visumantrag im Voraus erforderlich",
-            "• Aufenthalt bis zu 90 Tage für Tourismus und Besichtigung",
-            "• Neue Anforderung: Muss Ankunftskarte und Zollerklärungsformulare ausfüllen"
-          ]
-        },
-        "important": {
-          "title": "⚠️ Einreiseinformationen",
-          "items": [
-            "• Formulare müssen handschriftlich ausgefüllt werden: Vor-Ort-Ausfüllen ist fehleranfällig, unklare Informationen können Neuschreiben erfordern",
-            "• Mehrere Formulare erforderlich: Ankunftskarte und Zollerklärung, komplexe Informationen leicht zu vergessen",
-            "• Japanisch/Englisch Sprachanforderung: Einige Abschnitte benötigen japanische Adressen, Sprachbarriere verursacht Fehler",
-            "• Fingerabdruck- und Interviewprozess: Kommunikationsschwierigkeiten können Einreiseentscheidung beeinflussen",
-            "• Vollständige Dokumentation erforderlich: Reisepass, Rückflugticket, Unterkunftsnachweis, Geldnachweis alle erforderlich"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy macht es einfach",
-          "items": [
-            "• Null Angst: Automatische Erinnerung für erforderliche Materialien, keine Sorgen über fehlende Artikel",
-            "• Null Fehler: Intelligentes Ausfüllen von Ankunftskarte und Erklärungsformularen, genaue Informationen",
-            "• Null Ärger: Einmal eingeben, automatisch alle Formulare generieren",
-            "• Kopiermodus: Klarer Referenzinhalt für schnelles Kopieren vor Ort"
-          ]
-        }
-      },
-      "continueButton": "Verstanden, Vorbereitung fortsetzen"
-    },
-    "requirements": {
-      "headerTitle": "Japan Einreise-Checkliste",
-      "introTitle": "Bestätigen Sie, dass Sie diese Anforderungen erfüllen",
-      "introSubtitle": "Stellen Sie sicher, dass alle Anforderungen vor der Reise nach Japan erfüllt sind",
-      "items": {
-        "validVisa": {
-          "title": "Gültiges Visum",
-          "description": "Genehmigtes Japan-Touristenvisum",
-          "details": "Chinesische Staatsbürger müssen im Voraus ein Visum beantragen. Bestätigen Sie, dass Ihr Visum gültig ist."
-        },
-        "validPassport": {
-          "title": "Gültiger Pass",
-          "description": "Pass gültig für mindestens 6 Monate",
-          "details": "Pass muss mehr als 6 Monate ab geplantem Abreisedatum gültig sein"
-        },
-        "returnTicket": {
-          "title": "Rückflugticket",
-          "description": "Bestätigtes Rückflug- oder Weiterreiseticket",
-          "details": "Muss klaren Ausreiseplan haben, der zeigt, dass Sie Japan innerhalb von 90 Tagen verlassen werden"
-        },
-        "sufficientFunds": {
-          "title": "Ausreichende Mittel",
-          "description": "Nachweis von Mitteln für den gesamten Aufenthalt",
-          "details": "Empfohlen, mindestens 100.000 Yen oder Äquivalent zu tragen oder Kreditkarte/Kontoauszüge zu zeigen"
-        },
-        "accommodation": {
-          "title": "Unterkunftsnachweis",
-          "description": "Hotelbuchung oder Gastkontakt in Japan",
-          "details": "Hotelreservierungsbestätigung oder detaillierte Kontaktinformationen von Freunden/Verwandten in Japan bereitstellen"
-        }
-      },
-      "status": {
-        "success": {
-          "title": "Sie sind bereit!",
-          "subtitle": "Als Nächstes führen wir Sie durch die Einreiseverfahren."
-        },
-        "warning": {
-          "title": "Bitte überprüfen Sie jeden Punkt",
-          "subtitle": "Stellen Sie sicher, dass alle Anforderungen erfüllt sind, bevor Sie fortfahren."
-        }
-      },
-      "continueButton": "Weiter zu Einreiseverfahren"
     }
   },
   "japan": {
@@ -880,5 +732,9 @@
       },
       "continueButton": "Weiter zu Reiseinformationen"
     }
+  },
+  "common": {
+    "error": "Fehler",
+    "locale": "de"
   }
 }

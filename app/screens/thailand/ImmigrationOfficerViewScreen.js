@@ -13,6 +13,7 @@ import {
   Alert,
   PanResponder,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { 
   PinchGestureHandler, 
@@ -63,10 +64,13 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
   const threeFingerTapRef = useRef(null);
 
   // Entry pack data from route params
-  const entryPack = route.params?.entryPack;
-  const passportData = route.params?.passportData;
-  const travelData = route.params?.travelData;
-  const fundData = route.params?.fundData;
+  const entryPackId = route.params?.entryPackId;
+  const fromImmigrationGuide = route.params?.fromImmigrationGuide;
+  const [entryPack, setEntryPack] = useState(route.params?.entryPack);
+  const [passportData, setPassportData] = useState(route.params?.passportData);
+  const [travelData, setTravelData] = useState(route.params?.travelData);
+  const [fundData, setFundData] = useState(route.params?.fundData);
+  const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
     const setupPresentationMode = async () => {
@@ -82,6 +86,31 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         
         setIsAuthenticated(true);
         setAuthenticationRequired(false);
+
+        // Load data if called from immigration guide with just entryPackId
+        if (fromImmigrationGuide && entryPackId && !entryPack) {
+          setDataLoading(true);
+          try {
+            const EntryPackService = require('../../services/entryPack/EntryPackService').EntryPackService;
+            const PassportDataService = require('../../services/data/PassportDataService').default;
+            
+            const loadedEntryPack = await EntryPackService.load(entryPackId);
+            const loadedPassportData = await PassportDataService.getPassportInfo();
+            const loadedTravelData = await PassportDataService.getTravelInfo();
+            const loadedFundData = await PassportDataService.getFundItems();
+            
+            setEntryPack(loadedEntryPack);
+            setPassportData(loadedPassportData);
+            setTravelData(loadedTravelData);
+            setFundData(loadedFundData);
+          } catch (error) {
+            console.error('Error loading data for immigration officer view:', error);
+            setAuthError('Failed to load entry pack data');
+            return;
+          } finally {
+            setDataLoading(false);
+          }
+        }
         
         // Store original orientation
         const currentOrientation = await ScreenOrientation.getOrientationAsync();
@@ -223,6 +252,11 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     const currentIndex = languages.indexOf(language);
     const nextIndex = (currentIndex + 1) % languages.length;
     setLanguage(languages[nextIndex]);
+    
+    // Provide haptic feedback for language switching
+    if (Platform.OS === 'ios') {
+      // Could add haptic feedback here if react-native-haptic-feedback is available
+    }
   };
 
   const toggleBrightness = async () => {
@@ -304,6 +338,33 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     }
   };
 
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      
+      if (language === 'thai') {
+        // Thai Buddhist calendar (add 543 years)
+        const buddhistYear = date.getFullYear() + 543;
+        const thaiMonths = [
+          'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+          'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        ];
+        return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${buddhistYear}`;
+      } else {
+        // Western calendar
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   const renderQRSection = () => (
     <View style={styles.qrSection}>
       <Text style={styles.sectionTitle}>
@@ -381,7 +442,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
       <Text style={styles.submissionDate}>
         {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.submitted') : 
          language === 'thai' ? 'ส่งเมื่อ' : 
-         `ส่งเมื่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.submitted')}`}: {entryPack?.submittedAt || new Date().toLocaleDateString()}
+         `ส่งเมื่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.submitted')}`}: {formatDateForDisplay(entryPack?.submittedAt)}
       </Text>
     </View>
   );
@@ -445,7 +506,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
            `วันเกิด / ${t('progressiveEntryFlow.immigrationOfficer.presentation.dateOfBirth')}`}:
         </Text>
         <Text style={styles.infoValue}>
-          {passportData?.dateOfBirth || 'N/A'}
+          {formatDateForDisplay(passportData?.dateOfBirth)}
         </Text>
       </View>
 
@@ -467,8 +528,122 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
            `วันหมดอายุหนังสือเดินทาง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.passportExpiry')}`}:
         </Text>
         <Text style={styles.infoValue}>
-          {passportData?.expiryDate || 'N/A'}
+          {formatDateForDisplay(passportData?.expiryDate)}
         </Text>
+      </View>
+    </View>
+  );
+
+  const renderFundsSection = () => (
+    <View style={styles.infoSection}>
+      <Text style={styles.sectionTitle}>
+        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.fundsInformation') : 
+         language === 'thai' ? 'ข้อมูลเงินทุน' : 
+         `ข้อมูลเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundsInformation')}`}
+      </Text>
+      
+      {/* Total Funds Summary */}
+      <View style={styles.infoGroup}>
+        <Text style={styles.groupTitle}>
+          💰 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds') : 
+               language === 'thai' ? 'เงินทุนรวม' : 
+               `เงินทุนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds')}`}
+        </Text>
+        
+        {fundData && fundData.length > 0 ? (
+          <>
+            {/* Calculate and display total by currency */}
+            {(() => {
+              const totals = {};
+              fundData.forEach(fund => {
+                const currency = fund.currency || 'THB';
+                const amount = parseFloat(fund.amount) || 0;
+                totals[currency] = (totals[currency] || 0) + amount;
+              });
+              
+              return Object.entries(totals).map(([currency, total]) => (
+                <View key={currency} style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>
+                    {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount') : 
+                     language === 'thai' ? 'จำนวนรวม' : 
+                     `จำนวนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')}`} ({currency}):
+                  </Text>
+                  <Text style={[styles.infoValue, styles.fundAmount]}>
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: currency,
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(total)}
+                  </Text>
+                </View>
+              ));
+            })()}
+            
+            {/* Individual Fund Items */}
+            <View style={styles.fundItemsContainer}>
+              <Text style={styles.fundItemsTitle}>
+                {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems') : 
+                 language === 'thai' ? 'รายการเงินทุน' : 
+                 `รายการเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems')}`}:
+              </Text>
+              
+              {fundData.map((fund, index) => (
+                <View key={index} style={styles.fundItem}>
+                  <View style={styles.fundItemHeader}>
+                    <Text style={styles.fundItemType}>
+                      {fund.type || 'Cash'}
+                    </Text>
+                    <Text style={styles.fundItemAmount}>
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: fund.currency || 'THB',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                      }).format(parseFloat(fund.amount) || 0)}
+                    </Text>
+                  </View>
+                  
+                  {fund.photoUri && (
+                    <TouchableOpacity 
+                      style={styles.fundPhotoContainer}
+                      onPress={() => {
+                        // Could implement photo enlargement modal here
+                        Alert.alert(
+                          language === 'english' ? 'Fund Proof Photo' : 
+                          language === 'thai' ? 'รูปหลักฐานเงินทุน' : 
+                          'รูปหลักฐานเงินทุน / Fund Proof Photo',
+                          language === 'english' ? 'Tap to view larger image' : 
+                          language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' : 
+                          'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
+                        );
+                      }}
+                    >
+                      <Image 
+                        source={{ uri: fund.photoUri }}
+                        style={styles.fundPhoto}
+                        resizeMode="cover"
+                      />
+                      <Text style={styles.fundPhotoHint}>
+                        {language === 'english' ? 'Tap to enlarge' : 
+                         language === 'thai' ? 'แตะเพื่อขยาย' : 
+                         'แตะเพื่อขยาย'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+            </View>
+          </>
+        ) : (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoValue}>
+              {language === 'english' ? 'No fund information available' : 
+               language === 'thai' ? 'ไม่มีข้อมูลเงินทุน' : 
+               'ไม่มีข้อมูลเงินทุน / No fund information available'}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -507,7 +682,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
              `วันและเวลาที่มาถึง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.arrivalDate || 'N/A'}
+            {formatDateForDisplay(travelData?.arrivalDate)}
           </Text>
         </View>
 
@@ -519,7 +694,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
                `วันที่เดินทางกลับ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate')}`}:
             </Text>
             <Text style={styles.infoValue}>
-              {travelData.departureDate}
+              {formatDateForDisplay(travelData.departureDate)}
             </Text>
           </View>
         )}
@@ -602,6 +777,57 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     </View>
   );
 
+  const renderContactSection = () => (
+    <View style={styles.infoSection}>
+      <Text style={styles.sectionTitle}>
+        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.contactInformation') : 
+         language === 'thai' ? 'ข้อมูลติดต่อ' : 
+         `ข้อมูลติดต่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.contactInformation')}`}
+      </Text>
+      
+      <View style={styles.infoGroup}>
+        <Text style={styles.groupTitle}>
+          📞 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.contactDetails') : 
+               language === 'thai' ? 'รายละเอียดการติดต่อ' : 
+               `รายละเอียดการติดต่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.contactDetails')}`}
+        </Text>
+        
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phoneInThailand') : 
+             language === 'thai' ? 'โทรศัพท์ในประเทศไทย' : 
+             `โทรศัพท์ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phoneInThailand')}`}:
+          </Text>
+          <Text style={[styles.infoValue, styles.phoneNumber]}>
+            {passportData?.phoneNumber || travelData?.phoneNumber || 'N/A'}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.email') : 
+             language === 'thai' ? 'อีเมล' : 
+             `อีเมล / ${t('progressiveEntryFlow.immigrationOfficer.presentation.email')}`}:
+          </Text>
+          <Text style={styles.infoValue}>
+            {passportData?.email || 'N/A'}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.thaiAddress') : 
+             language === 'thai' ? 'ที่อยู่ในประเทศไทย' : 
+             `ที่อยู่ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.thaiAddress')}`}:
+          </Text>
+          <Text style={styles.infoValue}>
+            {travelData?.accommodationAddress || travelData?.address || 'N/A'}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
   // Handle authentication required
   if (authenticationRequired && !isAuthenticated) {
     return (
@@ -645,6 +871,19 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     );
   }
 
+  // Handle data loading
+  if (dataLoading) {
+    return (
+      <SafeAreaView style={styles.authContainer}>
+        <View style={styles.authContent}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.authTitle}>加载中...</Text>
+          <Text style={styles.authMessage}>正在准备展示数据</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <TapGestureHandler
       ref={threeFingerTapRef}
@@ -665,8 +904,12 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
             onPress={toggleLanguage}
           >
             <Text style={styles.languageToggleText}>
-              {language === 'bilingual' ? 'TH/EN' : 
-               language === 'thai' ? 'TH' : 'EN'}
+              {language === 'bilingual' ? 'ไทย/EN' : 
+               language === 'thai' ? 'ไทย' : 'EN'}
+            </Text>
+            <Text style={styles.languageSubtext}>
+              {language === 'bilingual' ? 'Bilingual' : 
+               language === 'thai' ? 'Thai Only' : 'English Only'}
             </Text>
           </TouchableOpacity>
 
@@ -699,7 +942,9 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         {showMoreInfo && (
           <>
             {renderPassportSection()}
+            {renderFundsSection()}
             {renderTravelSection()}
+            {renderContactSection()}
           </>
         )}
       </ScrollView>
@@ -726,6 +971,12 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
           {language === 'english' ? 'Swipe down to exit' : 
            language === 'thai' ? 'เลื่อนลงเพื่อออก' : 
            'เลื่อนลงเพื่อออก / Swipe down to exit'}
+        </Text>
+        
+        <Text style={styles.disclaimer}>
+          {language === 'english' ? 'This is a traveler-prepared document. Please verify with official systems.' : 
+           language === 'thai' ? 'นี่คือเอกสารที่นักเดินทางเตรียมไว้ กรุณาตรวจสอบกับระบบทางการ' : 
+           'นี่คือเอกสารที่นักเดินทางเตรียมไว้ / This is a traveler-prepared document'}
         </Text>
       </View>
 
@@ -812,15 +1063,27 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   languageToggle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    minWidth: 80,
+    alignItems: 'center',
   },
   languageToggleText: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  languageSubtext: {
+    color: colors.white,
+    fontSize: 10,
+    opacity: 0.8,
+    textAlign: 'center',
+    marginTop: 2,
   },
   brightnessToggle: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -1130,6 +1393,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: spacing.md,
+  },
+  // Funds section styles
+  fundAmount: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  fundItemsContainer: {
+    marginTop: spacing.md,
+  },
+  fundItemsTitle: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+    opacity: 0.9,
+  },
+  fundItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.sm,
+  },
+  fundItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  fundItemType: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+    opacity: 0.8,
+  },
+  fundItemAmount: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+  },
+  fundPhotoContainer: {
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  fundPhoto: {
+    width: 120,
+    height: 80,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  fundPhotoHint: {
+    color: colors.white,
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: spacing.xs,
+  },
+  phoneNumber: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+    letterSpacing: 1,
+    fontSize: 18,
+  },
+  disclaimer: {
+    color: colors.white,
+    fontSize: 10,
+    opacity: 0.5,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
   },
 });
 

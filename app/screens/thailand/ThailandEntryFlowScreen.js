@@ -1,5 +1,5 @@
 // 入境通 - Thailand Entry Flow Screen (泰国入境准备状态)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -24,7 +24,7 @@ import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import PassportDataService from '../../services/data/PassportDataService';
 
 const ThailandEntryFlowScreen = ({ navigation, route }) => {
-  const { t } = useLocale();
+  const { t, language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
@@ -39,6 +39,24 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [resubmissionWarning, setResubmissionWarning] = useState(null);
   const [entryPackStatus, setEntryPackStatus] = useState(null);
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
+
+  const categoriesSectionTitle = useMemo(() => {
+    const translation = t('thailand.entryFlow.categories');
+    if (typeof translation === 'string') {
+      return translation;
+    }
+
+    const fallback = t('thailand.entryFlow.categoriesTitle', { defaultValue: '' });
+    if (fallback) {
+      return fallback;
+    }
+
+    if (language?.startsWith('zh')) {
+      return language === 'zh-TW' ? '資訊類別' : '信息类别';
+    }
+
+    return 'Information Categories';
+  }, [t, language]);
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
@@ -534,7 +552,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
               {/* Category Status List */}
               <View style={styles.categoriesContainer}>
                 <Text style={styles.categoriesTitle}>
-                  {t('thailand.entryFlow.categories', { defaultValue: '信息类别' })}
+                  {categoriesSectionTitle}
                 </Text>
                 <CategoryStatusList 
                   categories={categories}

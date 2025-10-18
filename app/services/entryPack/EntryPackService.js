@@ -914,6 +914,30 @@ class EntryPackService {
   }
 
   /**
+   * Mark entry pack as immigration completed (from immigration guide)
+   * @param {string} entryPackId - Entry pack ID
+   * @param {Object} options - Completion options
+   * @returns {Promise<EntryPack>} - Updated entry pack
+   */
+  async markImmigrationCompleted(entryPackId, options = {}) {
+    try {
+      return await this.transitionState(entryPackId, 'completed', {
+        reason: 'Immigration process completed via interactive guide',
+        metadata: {
+          completedBy: 'immigration_guide',
+          completionLocation: options.location || 'airport_immigration',
+          completionMethod: 'interactive_guide',
+          completedAt: new Date().toISOString(),
+          ...options.metadata
+        }
+      });
+    } catch (error) {
+      console.error('Failed to mark immigration as completed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Resubmit entry pack (transition from superseded back to submitted)
    * @param {string} entryPackId - Entry pack ID
    * @param {Object} tdacSubmission - New TDAC submission data

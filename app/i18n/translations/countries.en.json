@@ -3,9 +3,10 @@
     "status": {
       "completed": "Completed",
       "cancelled": "Cancelled",
-      "expired": "Expired", 
+      "expired": "Expired",
       "inProgress": "In Progress",
-      "needsResubmission": "Needs Resubmission"
+      "needsResubmission": "Needs Resubmission",
+      "superseded": "Needs Resubmission"
     },
     "snapshot": {
       "readOnlyBanner": "This is a historical snapshot and cannot be modified",
@@ -25,7 +26,7 @@
       },
       "timeGroups": {
         "today": "Today",
-        "yesterday": "Yesterday", 
+        "yesterday": "Yesterday",
         "thisWeek": "This Week",
         "thisMonth": "This Month",
         "earlier": "Earlier"
@@ -47,61 +48,6 @@
       "arrivedToday": "Arriving Today",
       "arrivesTomorrow": "Arriving Tomorrow",
       "arrivesInDays": "Arriving in {{days}} days"
-    },
-    "notifications": {
-      "autoArchived": {
-        "title": "{{destination}} Entry Pack Archived",
-        "body": "Your {{destination}} entry pack has been automatically archived to history"
-      },
-      "reminderTitle": "Complete Entry Information",
-      "reminderBody": "Your {{destination}} trip has incomplete information",
-      "submissionWindow": "You can now submit your Thailand entry card",
-      "urgentReminder": "{{hours}} hours remaining until deadline",
-      "entryPackExpiryWarning": {
-        "title": "Entry Pack Will Expire Soon",
-        "body": "Your {{destination}} entry pack will expire in {{timeRemaining}}"
-      },
-      "entryPackExpired": {
-        "title": "Entry Pack Has Expired",
-        "body": "Your {{destination}} entry pack has expired and should be archived"
-      },
-      "actions": {
-        "view": "View",
-        "archive": "Archive",
-        "submit": "Submit",
-        "later": "Later",
-        "ignore": "Ignore",
-        "resubmit": "Resubmit",
-        "resubmitImmediately": "Resubmit Immediately",
-        "continue": "Continue",
-        "cleanup": "Cleanup",
-        "settings": "Settings",
-        "viewHistory": "View History",
-        "dismiss": "Dismiss",
-        "viewBackup": "View Backup",
-        "guide": "Immigration Guide",
-        "itinerary": "Itinerary"
-      }
-    },
-    "notifications": {
-      "autoArchived": {
-        "title": "{{destination}} Entry Pack Archived",
-        "body": "Your {{destination}} entry pack has been automatically archived to history"
-      },
-      "reminderTitle": "Complete Entry Information",
-      "reminderBody": "Your {{destination}} trip has incomplete information",
-      "submissionWindow": "You can now submit your Thailand entry card",
-      "urgentReminder": "{{hours}} hours remaining until deadline"
-    },
-    "multiDestination": {
-      "summary": "Multi-Destination Progress",
-      "stats": "{{submitted}} Submitted • {{inProgress}} In Progress • {{overall}}% Overall"
-    },
-    "inProgress": {
-      "title": "{{destination}} - In Progress",
-      "ready": "Ready to Submit",
-      "incomplete": "In Progress",
-      "completionPercent": "{{percent}}% Complete"
     },
     "notifications": {
       "autoArchived": "Your {{destination}} entry pack has been automatically archived",
@@ -155,41 +101,6 @@
       },
       "storageWarning": {
         "title": "Storage Space Low",
-        "body": "History records are taking up significant space. Consider cleaning up old records to free space."
-      },
-      "backupCompleted": {
-        "title": "Backup Completed",
-        "body": "Your data has been successfully backed up. {{itemCount}} entry packs included."
-      },
-      "actions": {
-        "submit": "Submit",
-        "later": "Later",
-        "ignore": "Ignore",
-        "view": "View",
-        "resubmit": "Resubmit",
-        "resubmitImmediately": "Resubmit Immediately",
-        "continue": "Continue",
-        "guide": "View Guide",
-        "archive": "Archive",
-        "cleanup": "Cleanup",
-        "settings": "Settings",
-        "viewHistory": "View History",
-        "viewBackup": "View Backup",
-        "dismiss": "Dismiss",
-        "itinerary": "View Itinerary"
-      },
-      "feedback": {
-        "submitTitle": "Submitting Entry Card",
-        "submitMessage": "You've entered the submission flow from a notification. Please complete your entry card submission.",
-        "resubmitTitle": "Resubmitting Entry Card",
-        "resubmitMessage": "Your data has changed. Please resubmit your entry card to ensure accurate information.",
-        "continueTitle": "Continue Filling Information",
-        "continueMessage": "Please complete the remaining entry information fields.",
-        "viewTitle": "Viewing Entry Pack Details",
-        "viewMessage": "Displaying your entry pack details as requested."
-      },
-      "storageWarning": {
-        "title": "Storage Space Low",
         "body": "History records are using significant space ({{usedSpace}}MB). Consider cleaning old records."
       },
       "backupCompleted": {
@@ -212,7 +123,27 @@
         "cleanup": "Clean Now",
         "settings": "View Settings",
         "viewBackup": "View Backup"
+      },
+      "feedback": {
+        "submitTitle": "Submitting Entry Card",
+        "submitMessage": "You've entered the submission flow from a notification. Please complete your entry card submission.",
+        "resubmitTitle": "Resubmitting Entry Card",
+        "resubmitMessage": "Your data has changed. Please resubmit your entry card to ensure accurate information.",
+        "continueTitle": "Continue Filling Information",
+        "continueMessage": "Please complete the remaining entry information fields.",
+        "viewTitle": "Viewing Entry Pack Details",
+        "viewMessage": "Displaying your entry pack details as requested."
       }
+    },
+    "multiDestination": {
+      "summary": "Multi-Destination Progress",
+      "stats": "{{submitted}} Submitted • {{inProgress}} In Progress • {{overall}}% Overall"
+    },
+    "inProgress": {
+      "title": "{{destination}} - In Progress",
+      "ready": "Ready to Submit",
+      "incomplete": "In Progress",
+      "completionPercent": "{{percent}}% Complete"
     },
     "entryFlow": {
       "viewStatus": "View Preparation Status",
@@ -237,7 +168,7 @@
       "passport": "Passport Information",
       "personal": "Personal Information",
       "funds": "Fund Proof",
-      "travel": "Travel Information", 
+      "travel": "Travel Information",
       "fieldsComplete": "{{filled}}/{{total}} fields complete"
     },
     "dataChange": {
@@ -263,28 +194,9 @@
       "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
     },
     "immigrationOfficer": {
-      "title": "Show to Officer",
-      "exitButton": "Exit Presentation Mode",
-      "languageToggle": "Language Toggle",
-      "sections": {
-        "qrCode": "QR Code",
-        "passport": "Passport Information",
-        "travel": "Travel Information",
-        "funds": "Fund Proof",
-        "contact": "Contact Information"
-      },
-      "quickActions": {
-        "showQR": "Show QR Code",
-        "showPassport": "Show Passport",
-        "showFunds": "Show Funds",
-        "showHotel": "Show Hotel",
-        "showTicket": "Show Ticket"
-      },
-      "offlineMode": "Offline Mode - Using cached data",
-      "disclaimer": "This is a traveler-prepared document. Please verify with official systems.",
       "authentication": {
-        "title": "Authentication",
-        "message": "Authentication required to show documents to immigration officers",
+        "title": "Authentication Required",
+        "message": "To protect your privacy, authentication is required to enter presentation mode",
         "authenticate": "Authenticate",
         "cancel": "Cancel"
       },
@@ -293,19 +205,23 @@
         "exitMessage": "Are you sure you want to exit presentation mode?",
         "exit": "Exit",
         "cancel": "Cancel",
-        "showMoreInfo": "Show More Info",
-        "showLessInfo": "Show Less Info",
-        "exitHint": "Swipe down to exit",
+        "saveQRCode": "Save QR Code",
+        "saveQRMessage": "Save QR code to photo album?",
+        "save": "Save",
+        "saved": "Saved",
+        "qrCodeSaved": "QR code saved to photo album",
         "tdacQRCode": "TDAC QR Code",
+        "qrCodePlaceholder": "QR Code",
+        "qrCodeSubtext": "Will appear after TDAC submission",
         "submitted": "Submitted",
         "passportInformation": "Passport Information",
-        "travelInformation": "Travel Information",
         "fullName": "Full Name",
         "passportNumber": "Passport Number",
         "nationality": "Nationality",
         "dateOfBirth": "Date of Birth",
         "gender": "Gender",
         "passportExpiry": "Passport Expiry",
+        "travelInformation": "Travel Information",
         "flightDetails": "Flight Details",
         "arrivalFlight": "Arrival Flight",
         "arrivalDateTime": "Arrival Date & Time",
@@ -317,26 +233,15 @@
         "visitPurpose": "Visit Purpose",
         "purpose": "Purpose",
         "durationOfStay": "Duration of Stay",
-        "qrCodePlaceholder": "QR Code",
-        "qrCodeSubtext": "Will appear after TDAC submission",
-        "saveQRCode": "Save QR Code",
-        "saveQRMessage": "Save QR code to photo album?",
-        "save": "Save",
-        "saved": "Saved",
-        "qrCodeSaved": "QR code saved to photo album"
-      },
-      "help": {
-        "title": "Gesture Help",
-        "pinchZoom": "Pinch to zoom QR code (50% - 200%)",
-        "doubleTap": "Double tap to toggle information display",
-        "longPress": "Long press QR code to save to album",
-        "swipeDown": "Swipe down from top to exit",
-        "gotIt": "Got it"
-      },
-      "languageModes": {
-        "bilingual": "Bilingual",
-        "thai": "Thai Only",
-        "english": "English Only"
+        "fundsInformation": "Funds Information",
+        "totalFunds": "Total Funds",
+        "totalAmount": "Total Amount",
+        "fundItems": "Fund Items",
+        "contactInformation": "Contact Information",
+        "contactDetails": "Contact Details",
+        "phoneInThailand": "Phone in Thailand",
+        "email": "Email",
+        "thaiAddress": "Thai Address"
       }
     }
   },
@@ -347,7 +252,12 @@
       "preparationSubtitle": "Check your entry information completion status",
       "loading": "Loading preparation status...",
       "completionStatus": "Completion Status",
-      "categories": "Information Categories",
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Fund Proof",
+        "travel": "Travel Information"
+      },
       "submissionWindow": "Submission Window",
       "actions": "Actions",
       "continueImproving": "Continue Improving Information",
@@ -367,11 +277,23 @@
         "hintsTitle": "You need to prepare:",
         "startButton": "Start Filling"
       },
-      "categories": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Fund Proof",
-        "travel": "Travel Information"
+      "categoriesTitle": "Information Categories"
+    },
+    "travelInfo": {
+      "scan": {
+        "ticketTitle": "Scan Ticket",
+        "ticketMessage": "Please select ticket image source",
+        "hotelTitle": "Scan Hotel Booking",
+        "hotelMessage": "Please select hotel booking confirmation image source",
+        "takePhoto": "Take Photo",
+        "fromLibrary": "From Library",
+        "permissionTitle": "Permission Required",
+        "cameraPermissionMessage": "Camera permission required to take photos for document scanning",
+        "libraryPermissionMessage": "Photo library permission required to select photos",
+        "scanFailed": "Scan Failed",
+        "scanFailedMessage": "Document scanning failed, please try again",
+        "processing": "Processing...",
+        "processingMessage": "Recognizing document content, please wait"
       }
     }
   },
@@ -687,96 +609,6 @@
       "startButton": "Start filling"
     }
   },
-  "thailand": {
-    "travelInfo": {
-      "submitEntry": "Prepare Entry Pack",
-      "viewStatus": "View Preparation Status",
-      "readyToSubmit": "Ready to submit",
-      "completionProgress": "{{percent}}% complete",
-      "completionHint": "Complete all information to submit the entry card.",
-      "sections": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Proof of Funds",
-        "travel": "Travel Information"
-      }
-    },
-    "info": {
-      "headerTitle": "Thailand Entry Information",
-      "title": "Thailand Entry Guide",
-      "subtitle": "Visa-free for 60 days for Chinese passport holders",
-      "sections": {
-        "visa": {
-          "title": "✓ Great News! Extended Visa-Free Policy",
-          "items": [
-            "Since July 2024, visa-free extended to 60 days - spontaneous long trip!",
-            "• No visa application needed in advance",
-            "• Valid for tourism purposes",
-            "• Can apply for additional 30-day extension if needed"
-          ]
-        },
-        "onsite": {
-          "title": "⚠️ Entry Information",
-          "items": [
-            "• Funds proof may be checked: Immigration may ask to show cash, insufficient = denied entry",
-            "• Return ticket required: Must prove departure plans, no ticket = trouble",
-            "• Accommodation information verifiable: May check hotel booking or host contact, unclear = questioned",
-            "• TM.6 card required: Fill incorrectly = delay, prepare in advance",
-            "• Customs regulations strict: E-cigarettes banned, carrying = confiscation or fine"
-          ]
-        },
-        "appFeatures": {
-          "title": "✨ BorderBuddy Makes It Easy",
-          "items": [
-            "• Zero anxiety: Reminds 60-day limit and extension options",
-            "• Zero errors: Pre-fill TM.6 card, accurate information",
-            "• Zero hassle: Enter once, track duration automatically",
-            "• Communication assistant: Thai phrases prepared, immigration questions answered smoothly"
-          ]
-        }
-      },
-      "continueButton": "Understood, continue to checklist"
-    },
-    "requirements": {
-      "headerTitle": "Thailand Entry Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
-      "items": {
-        "validPassport": {
-          "title": "Passport validity",
-          "description": "Passport valid for at least 6 months",
-          "details": "Thailand requires passport validity of 6 months from entry date. Renew before travel if needed."
-        },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Proof of departure from Thailand",
-          "details": "Have your return flight booking or onward travel proof ready. Immigration may ask to verify your departure plans."
-        },
-        "accommodation": {
-          "title": "Accommodation confirmation",
-          "description": "Hotel booking or address in Thailand",
-          "details": "Bring hotel reservation confirmation or have the address where you'll be staying, including contact phone number."
-        },
-        "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "10,000 THB per person or 20,000 THB per family",
-          "details": "Proof of sufficient funds may be requested. Carry cash, show credit cards, or have bank statements available."
-        },
-        "stayDuration": {
-          "title": "Stay duration limits",
-          "description": "Maximum 30 days per visit, 90 days per 180 days",
-          "details": "Ensure your planned stay doesn't exceed 30 days. If you've been in Thailand recently, check your cumulative stay within the past 180 days."
-        }
-      },
-      "status": {
-        "info": {
-          "title": "Start anytime",
-          "subtitle": "We support progressive completion"
-        }
-      },
-      "startButton": "Start filling"
-    }
-  },
   "japan": {
     "info": {
       "headerTitle": "Japan Entry Information",
@@ -925,41 +757,6 @@
       "startButton": "Start preparing entry pack"
     }
   },
-  "thailand": {
-    "entryFlow": {
-      "title": "Thailand Entry Preparation Status",
-      "preparationTitle": "Thailand Entry Preparation Status",
-      "preparationSubtitle": "Check your entry information completion status",
-      "loading": "Loading preparation status...",
-      "completionStatus": "Completion Status",
-      "categories": "Information Categories",
-      "submissionWindow": "Submission Window",
-      "actions": "Actions",
-      "continueImproving": "Continue Improving Information",
-      "completeAllFields": "Need to complete information",
-      "setArrivalDate": "Please Set Arrival Date",
-      "arrivalDateRequired": "Arrival date required for submission",
-      "waitForWindow": "Wait for Submission Window",
-      "windowNotOpen": "Submission window not yet open",
-      "submitTDAC": "Submit Thailand Entry Card",
-      "readyToSubmit": "All information complete, ready to submit",
-      "editInfo": "Edit Information",
-      "preview": "Preview Entry Card",
-      "share": "Ask a friend to help fill in",
-      "noData": {
-        "title": "Start Filling Thailand Entry Information",
-        "description": "You haven't filled any entry information yet. Click the button below to start, and we'll guide you through the entire process.",
-        "hintsTitle": "You need to prepare:",
-        "startButton": "Start Filling"
-      },
-      "categories": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Fund Proof",
-        "travel": "Travel Information"
-      }
-    }
-  },
   "profile": {
     "funding": {
       "addButton": "Add Fund Item",
@@ -1041,7 +838,9 @@
     "back": "Back",
     "close": "Close",
     "cancel": "Cancel",
-    "reset": "Reset"
+    "reset": "Reset",
+    "error": "Error",
+    "locale": "en"
   },
   "notificationSettings": {
     "loading": "Loading settings...",
