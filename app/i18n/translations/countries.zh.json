@@ -1,5 +1,445 @@
 {
   "_comment": "Chinese translations are maintained in locales.js for now. This file exists for structural consistency.",
+  "progressiveEntryFlow": {
+    "status": {
+      "completed": "已完成",
+      "cancelled": "已取消", 
+      "expired": "已过期",
+      "inProgress": "进行中",
+      "needsResubmission": "需要重新提交"
+    },
+    "snapshot": {
+      "readOnlyBanner": "这是历史记录的快照，无法修改",
+      "viewTitle": "历史记录 - 只读",
+      "legacyBadge": "这是旧版本的历史记录",
+      "incompleteNotice": "此入境包未完成提交",
+      "completenessIndicator": "护照 {{passport}}, 个人信息 {{personal}}, 资金 {{funds}}, 旅行信息 {{travel}}"
+    },
+    "history": {
+      "title": "历史记录",
+      "filterOptions": {
+        "all": "全部",
+        "completed": "已完成",
+        "cancelled": "已取消",
+        "expired": "已过期",
+        "legacy": "旧版本记录"
+      },
+      "timeGroups": {
+        "today": "今天",
+        "yesterday": "昨天",
+        "thisWeek": "本周",
+        "thisMonth": "本月",
+        "earlier": "更早"
+      },
+      "resultCount": "显示 {{count}} 个结果",
+      "deleteConfirm": "删除后无法恢复，确定删除吗？",
+      "storageUsage": "历史记录占用: {{size}} MB",
+      "migrationBanner": "发现 {{count}} 个旧版本记录可以迁移到新格式",
+      "batchMigrate": "全部迁移",
+      "migrateItem": "迁移到新格式",
+      "migrationSuccess": "记录已成功迁移到新格式",
+      "migrationFailed": "迁移失败: {{error}}",
+      "batchMigrationConfirm": "发现 {{count}} 个可迁移的旧版本记录。是否要将它们全部迁移到新格式？",
+      "batchMigrationResult": "成功迁移 {{success}} 个记录，失败 {{failed}} 个记录。"
+    },
+    "entryPack": {
+      "title": "{{destination}} 入境包 - 已提交",
+      "submitted": "已提交",
+      "arrivedToday": "今日抵达",
+      "arrivesTomorrow": "明日抵达", 
+      "arrivesInDays": "{{days}}天后抵达"
+    },
+    "notifications": {
+      "autoArchived": {
+        "title": "{{destination}} 入境包已归档",
+        "body": "您的 {{destination}} 入境包已自动归档到历史记录"
+      },
+      "reminderTitle": "完成入境信息",
+      "reminderBody": "您的 {{destination}} 旅程还有未完成的信息",
+      "submissionWindow": "可以提交泰国入境卡了",
+      "urgentReminder": "距离截止还有 {{hours}} 小时",
+      "entryPackExpiryWarning": {
+        "title": "入境包即将过期",
+        "body": "您的 {{destination}} 入境包将在 {{timeRemaining}} 后过期"
+      },
+      "entryPackExpired": {
+        "title": "入境包已过期",
+        "body": "您的 {{destination}} 入境包已过期，建议归档"
+      },
+      "actions": {
+        "view": "查看",
+        "archive": "归档",
+        "submit": "提交",
+        "later": "稍后",
+        "ignore": "忽略",
+        "resubmit": "重新提交",
+        "resubmitImmediately": "立即重新提交",
+        "continue": "继续填写",
+        "cleanup": "清理",
+        "settings": "设置",
+        "viewHistory": "查看历史",
+        "dismiss": "关闭",
+        "viewBackup": "查看备份",
+        "guide": "入境指引",
+        "itinerary": "行程安排"
+      }
+    },
+    "multiDestination": {
+      "summary": "多目的地进度",
+      "stats": "{{submitted}} 已提交 • {{inProgress}} 进行中 • 总体 {{overall}}% 完成"
+    },
+    "inProgress": {
+      "title": "{{destination}} - 填写中",
+      "ready": "准备提交",
+      "incomplete": "填写中",
+      "completionPercent": "{{percent}}% 完成"
+    },
+    "notifications": {
+      "autoArchived": "您的 {{destination}} 入境包已自动归档",
+      "reminderTitle": "完成入境信息",
+      "reminderBody": "您的 {{destination}} 旅程还有未完成的信息",
+      "submissionWindow": "可以提交泰国入境卡了",
+      "urgentReminder": "距离截止还有 {{hours}} 小时",
+      "logs": {
+        "title": "通知日志",
+        "analytics": "分析",
+        "performance": "性能",
+        "tools": "工具",
+        "filter": "筛选",
+        "export": "导出",
+        "clear": "清理",
+        "emptyState": "暂无通知日志",
+        "emptyStateSubtext": "当发送和交互通知时，日志将显示在这里",
+        "eventTypes": {
+          "scheduled": "已安排",
+          "sent": "已发送",
+          "received": "已接收",
+          "clicked": "已点击",
+          "interacted": "已交互",
+          "action_clicked": "操作按钮",
+          "ignored": "已忽略",
+          "dismissed": "已关闭",
+          "cancelled": "已取消"
+        },
+        "analytics": {
+          "overallStats": "总体统计",
+          "byType": "按类型统计",
+          "optimalTiming": "最佳时机",
+          "scheduled": "已安排",
+          "sent": "已发送",
+          "clicked": "已点击",
+          "clickRate": "点击率",
+          "bestHour": "最佳时间: {{hour}}:00",
+          "bestDay": "最佳日期: {{day}}",
+          "noData": "暂无数据"
+        },
+        "performance": {
+          "insights": "性能洞察",
+          "recommendations": "查看建议",
+          "exportLogs": "导出日志",
+          "clearOldLogs": "清理旧日志 (30+ 天)",
+          "clearAllLogs": "清理所有日志",
+          "clearOldConfirm": "这将删除30天前的日志。继续？",
+          "clearAllConfirm": "这将永久删除所有通知日志和分析数据。此操作无法撤销。",
+          "logsCleared": "已清理 {{removed}} 个旧日志条目。剩余 {{remaining}} 个条目。",
+          "allLogsCleared": "所有通知日志已清理"
+        },
+        "filters": {
+          "title": "筛选日志",
+          "eventType": "事件类型",
+          "notificationType": "通知类型",
+          "entryPackId": "入境包ID",
+          "apply": "应用筛选",
+          "clear": "清除",
+          "cancel": "取消"
+        }
+      },
+      "submissionWindowOpen": {
+        "title": "可以提交泰国入境卡了",
+        "body": "您的泰国旅程现在可以提交入境卡了。距离抵达还有{{daysRemaining}}天。"
+      },
+      "urgentReminderNotification": {
+        "title": "紧急：请尽快提交入境卡",
+        "body": "距离泰国入境截止时间还有{{hoursRemaining}}小时。请立即完成提交。"
+      },
+      "deadlineWarning": {
+        "title": "今天是提交截止日",
+        "body": "今天是泰国入境卡提交的最后一天。请立即完成提交以避免入境问题。"
+      },
+      "arrivalReminder": {
+        "title": "明天抵达泰国",
+        "body": "您将于明天抵达泰国，请准备好您的入境卡和相关文件。"
+      },
+      "arrivalDay": {
+        "title": "今天抵达泰国，祝您旅途愉快！",
+        "body": "今天是您的泰国之旅！记得准备好入境卡和护照。天气：{{weather}}"
+      },
+      "dataChangeDetected": {
+        "title": "数据已更改，可能需要重新提交",
+        "body": "您的{{changedFields}}信息已更改。您可能需要重新提交入境卡。"
+      },
+      "entryPackSuperseded": {
+        "title": "入境包已失效，请重新提交",
+        "body": "您的入境包因数据更改已失效，请重新提交入境卡。"
+      },
+      "entryPackExpiryWarning": {
+        "title": "入境包即将过期",
+        "body": "您的入境包将在1天后过期，请及时处理。"
+      },
+      "entryPackExpired": {
+        "title": "入境包已过期",
+        "body": "您的入境包已过期，已自动归档到历史记录。"
+      },
+      "entryPackArchived": {
+        "title": "入境包已归档",
+        "body": "您的{{destination}}入境包已归档到历史记录。"
+      },
+      "incompleteDataReminder": {
+        "title": "完成入境信息",
+        "body": "您的{{destination}}旅程还有未完成的信息，请继续填写。"
+      },
+      "storageWarning": {
+        "title": "存储空间不足",
+        "body": "历史记录占用空间较大，建议清理旧记录释放空间。"
+      },
+      "backupCompleted": {
+        "title": "备份完成",
+        "body": "您的数据已成功备份，共{{itemCount}}个入境包。"
+      },
+      "actions": {
+        "submit": "提交",
+        "later": "稍后",
+        "ignore": "忽略",
+        "view": "查看",
+        "resubmit": "重新提交",
+        "resubmitImmediately": "立即重新提交",
+        "continue": "继续填写",
+        "guide": "查看指引",
+        "archive": "归档",
+        "cleanup": "清理",
+        "settings": "设置",
+        "viewHistory": "查看历史",
+        "viewBackup": "查看备份",
+        "dismiss": "忽略",
+        "itinerary": "查看行程"
+      },
+      "feedback": {
+        "submitTitle": "正在提交入境卡",
+        "submitMessage": "您已从通知进入提交流程，请完成入境卡提交。",
+        "resubmitTitle": "重新提交入境卡",
+        "resubmitMessage": "您的数据已更改，请重新提交入境卡以确保信息准确。",
+        "continueTitle": "继续填写信息",
+        "continueMessage": "请完成剩余的入境信息填写。",
+        "viewTitle": "查看入境包详情",
+        "viewMessage": "正在为您显示入境包详细信息。"
+      },
+      "entryPackSuperseded": {
+        "title": "入境包已被替代，请重新提交",
+        "body": "您的入境包已被标记为已替代。请重新提交以确保入境顺利。"
+      },
+      "entryPackExpiryWarning": {
+        "title": "入境包即将过期",
+        "body": "您的{{destination}}入境包将在{{timeRemaining}}后过期。请考虑归档或更新。"
+      },
+      "entryPackExpired": {
+        "title": "入境包已过期",
+        "body": "您的{{destination}}入境包已过期。建议归档此入境包。"
+      },
+      "entryPackArchived": {
+        "title": "入境包已自动归档",
+        "body": "您的{{destination}}入境包已自动归档到历史记录中。"
+      },
+      "incompleteDataReminder": {
+        "title": "完成入境信息",
+        "body": "您的{{destination}}旅程还有未完成的信息。完成度：{{completionPercent}}%"
+      },
+      "storageWarning": {
+        "title": "存储空间不足",
+        "body": "历史记录占用空间较大（{{usedSpace}}MB），建议清理旧记录。"
+      },
+      "backupCompleted": {
+        "title": "数据备份已完成",
+        "body": "您的入境包数据已成功备份。备份大小：{{backupSize}}MB"
+      },
+      "actions": {
+        "submit": "立即提交",
+        "later": "稍后提醒",
+        "ignore": "忽略",
+        "view": "查看入境卡",
+        "guide": "查看指引",
+        "itinerary": "查看行程",
+        "resubmit": "重新提交",
+        "resubmitImmediately": "立即重新提交",
+        "archive": "归档",
+        "viewHistory": "查看历史",
+        "dismiss": "知道了",
+        "continue": "继续填写",
+        "cleanup": "立即清理",
+        "settings": "查看设置",
+        "viewBackup": "查看备份"
+      }
+    },
+    "entryFlow": {
+      "viewStatus": "查看准备状态",
+      "submitTDAC": "自动提交 TDAC",
+      "resubmitTDAC": "重新提交入境卡",
+      "continueEditing": "返回继续填写",
+      "editInformation": "编辑信息",
+      "startGuide": "开始入境指引",
+      "manualCopy": "手动抄写",
+      "webviewFill": "WebView 自动填表",
+      "incompleteMessage": "这个旅程还未完成，请继续填写信息",
+      "resubmissionWarning": "修改信息后需要重新提交入境卡，确认要修改吗？",
+      "completionPercent": "已完成 {{percent}}%"
+    },
+    "countdown": {
+      "noDate": "未设置泰国入境日期，无法提交入境卡",
+      "preWindow": "还有 {{days}} 天 {{hours}}:{{minutes}} 可以提交入境卡",
+      "withinWindow": "距离截止还有 {{hours}}:{{minutes}}，请尽快提交",
+      "urgent": "距离截止还有 {{hours}} 小时 {{minutes}} 分钟"
+    },
+    "categories": {
+      "passport": "护照信息",
+      "personal": "个人信息", 
+      "funds": "资金证明",
+      "travel": "旅行信息",
+      "fieldsComplete": "{{filled}}/{{total}} 字段已完成"
+    },
+    "dataChange": {
+      "handleError": "处理数据变更时出错，请重试。",
+      "confirmResubmit": {
+        "title": "确认重新提交",
+        "message": "重新提交将使当前入境卡失效，您需要重新生成入境卡。确定要继续吗？"
+      },
+      "confirmIgnore": {
+        "title": "忽略变更",
+        "message": "忽略变更可能导致入境时信息不匹配。建议重新提交以确保信息准确。确定要忽略吗？"
+      },
+      "detailsTitle": "变更详情",
+      "totalChanges": "总变更",
+      "significantChanges": "重要变更",
+      "minorChanges": "轻微变更",
+      "resubmit": "重新提交",
+      "ignore": "忽略变更",
+      "viewDetails": "查看详情"
+    },
+    "superseded": {
+      "resubmitHint": "信息已更新，需要重新提交",
+      "message": "您的入境信息已更新，需要重新提交入境卡以确保信息准确。"
+    },
+    "immigrationOfficer": {
+      "title": "出示给海关",
+      "exitButton": "退出展示模式",
+      "languageToggle": "语言切换",
+      "sections": {
+        "qrCode": "二维码",
+        "passport": "护照信息",
+        "travel": "旅行信息",
+        "funds": "资金证明",
+        "contact": "联系方式"
+      },
+      "quickActions": {
+        "showQR": "显示二维码",
+        "showPassport": "显示护照",
+        "showFunds": "显示资金",
+        "showHotel": "显示酒店",
+        "showTicket": "显示机票"
+      },
+      "offlineMode": "离线模式 - 使用缓存数据",
+      "disclaimer": "这是旅客准备的文件，请以官方系统为准",
+      "authentication": {
+        "title": "身份验证",
+        "message": "显示证件给入境官员需要验证您的身份",
+        "authenticate": "验证身份",
+        "cancel": "取消"
+      },
+      "presentation": {
+        "exitTitle": "退出展示模式",
+        "exitMessage": "确定要退出展示模式吗？",
+        "exit": "退出",
+        "cancel": "取消",
+        "showMoreInfo": "显示更多信息",
+        "showLessInfo": "显示较少信息",
+        "exitHint": "向下滑动退出",
+        "tdacQRCode": "TDAC 二维码",
+        "submitted": "提交时间",
+        "passportInformation": "护照信息",
+        "travelInformation": "旅行信息",
+        "fullName": "姓名",
+        "passportNumber": "护照号码",
+        "nationality": "国籍",
+        "dateOfBirth": "出生日期",
+        "gender": "性别",
+        "passportExpiry": "护照有效期",
+        "flightDetails": "航班详情",
+        "arrivalFlight": "到达航班",
+        "arrivalDateTime": "到达日期时间",
+        "departureDate": "离开日期",
+        "accommodation": "住宿",
+        "hotelName": "酒店名称",
+        "address": "地址",
+        "phone": "电话",
+        "visitPurpose": "访问目的",
+        "purpose": "目的",
+        "durationOfStay": "停留时间",
+        "qrCodePlaceholder": "二维码",
+        "qrCodeSubtext": "TDAC 提交后显示",
+        "saveQRCode": "保存二维码",
+        "saveQRMessage": "将二维码保存到相册？",
+        "save": "保存",
+        "saved": "已保存",
+        "qrCodeSaved": "二维码已保存到相册"
+      },
+      "help": {
+        "title": "手势帮助",
+        "pinchZoom": "捏合缩放二维码 (50% - 200%)",
+        "doubleTap": "双击切换信息显示",
+        "longPress": "长按二维码保存到相册",
+        "swipeDown": "从顶部向下滑动退出",
+        "gotIt": "知道了"
+      },
+      "languageModes": {
+        "bilingual": "中英双语",
+        "thai": "泰语",
+        "english": "英语"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "泰国入境准备状态",
+      "preparationTitle": "泰国入境准备状态",
+      "preparationSubtitle": "查看您的入境信息完成情况",
+      "loading": "正在加载准备状态...",
+      "completionStatus": "完成状态",
+      "categories": "信息类别",
+      "submissionWindow": "提交窗口",
+      "actions": "操作",
+      "continueImproving": "继续完善信息",
+      "completeAllFields": "还需完成信息",
+      "setArrivalDate": "请设置抵达日期",
+      "arrivalDateRequired": "需要设置抵达日期才能提交",
+      "waitForWindow": "等待提交窗口",
+      "windowNotOpen": "提交窗口尚未开启",
+      "submitTDAC": "提交泰国入境卡",
+      "readyToSubmit": "所有信息已完成，可以提交",
+      "editInfo": "编辑信息",
+      "preview": "预览入境卡",
+      "share": "找亲友帮忙填写",
+      "noData": {
+        "title": "开始填写泰国入境信息",
+        "description": "您还没有填写任何入境信息。点击下方按钮开始填写，我们将引导您完成整个过程。",
+        "hintsTitle": "您需要准备：",
+        "startButton": "开始填写"
+      },
+      "categories": {
+        "passport": "护照信息",
+        "personal": "个人信息",
+        "funds": "资金证明",
+        "travel": "旅行信息"
+      }
+    }
+  },
   "korea": {
     "info": {
       "headerTitle": "韩国入境信息",
@@ -691,12 +1131,53 @@
   },
   "thailand": {
     "travelInfo": {
+      "headerTitle": "泰国入境信息",
+      "title": "填写泰国入境信息",
+      "subtitle": "请提供以下信息以完成入境卡生成",
+      "loading": "正在加载数据...",
+      "privacyNotice": "所有信息仅保存在您的手机本地",
+      "lastEdited": "最近编辑",
+      "saveStatus": {
+        "pending": "等待保存...",
+        "saving": "正在保存...",
+        "saved": "已保存",
+        "error": "保存失败",
+        "retry": "重试"
+      },
       "sections": {
         "passport": "护照信息",
         "personal": "个人信息",
         "funds": "资金证明",
         "travel": "旅行信息"
-      }
+      },
+      "fields": {
+        "sex": {
+          "options": {
+            "female": "女性",
+            "male": "男性",
+            "undefined": "未定义"
+          }
+        }
+      },
+      "photo": {
+        "choose": "选择照片",
+        "takePhoto": "拍照",
+        "fromLibrary": "从相册选择",
+        "cancel": "取消",
+        "cameraPermission": "需要相机权限",
+        "cameraPermissionMessage": "请在设置中允许访问相机",
+        "cameraError": "相机错误",
+        "cameraErrorMessage": "模拟器不支持相机功能，请使用真机测试或选择相册照片",
+        "libraryPermission": "需要相册权限",
+        "libraryPermissionMessage": "请在设置中允许访问相册",
+        "chooseFailed": "选择照片失败",
+        "chooseFailedMessage": "请重试"
+      },
+      "submitEntry": "准备入境包",
+      "viewStatus": "查看准备状态",
+      "readyToSubmit": "准备提交",
+      "completionProgress": "已完成 {{percent}}%",
+      "completionHint": "完成所有信息后可提交入境卡"
     },
     "info": {
       "headerTitle": "泰国入境信息",
@@ -851,6 +1332,41 @@
       "startButton": "开始填写"
     }
   },
+  "thailand": {
+    "entryFlow": {
+      "title": "泰国入境准备状态",
+      "preparationTitle": "泰国入境准备状态",
+      "preparationSubtitle": "查看您的入境信息完成情况",
+      "loading": "正在加载准备状态...",
+      "completionStatus": "完成状态",
+      "categories": "信息类别",
+      "submissionWindow": "提交窗口",
+      "actions": "操作",
+      "continueImproving": "继续完善信息",
+      "completeAllFields": "还需完成信息",
+      "setArrivalDate": "请设置抵达日期",
+      "arrivalDateRequired": "需要设置抵达日期才能提交",
+      "waitForWindow": "等待提交窗口",
+      "windowNotOpen": "提交窗口尚未开启",
+      "submitTDAC": "提交泰国入境卡",
+      "readyToSubmit": "所有信息已完成，可以提交",
+      "editInfo": "编辑信息",
+      "preview": "预览入境卡",
+      "share": "找亲友帮忙填写",
+      "noData": {
+        "title": "开始填写泰国入境信息",
+        "description": "您还没有填写任何入境信息。点击下方按钮开始填写，我们将引导您完成整个过程。",
+        "hintsTitle": "您需要准备：",
+        "startButton": "开始填写"
+      },
+      "categories": {
+        "passport": "护照信息",
+        "personal": "个人信息",
+        "funds": "资金证明",
+        "travel": "旅行信息"
+      }
+    }
+  },
   "profile": {
     "funding": {
       "addButton": "添加资金项目",
@@ -928,8 +1444,96 @@
     }
   },
   "common": {
+    "ok": "确定",
     "back": "返回",
     "close": "关闭",
-    "cancel": "取消"
+    "cancel": "取消",
+    "reset": "重置"
+  },
+  "notificationSettings": {
+    "loading": "加载设置中...",
+    "sections": {
+      "general": "通用设置",
+      "types": "通知类型",
+      "timing": "时间设置",
+      "frequency": "频率控制",
+      "actions": "操作设置",
+      "testing": "测试与重置"
+    },
+    "general": {
+      "enabled": "启用通知",
+      "enabledDescription": "接收入境准备提醒通知"
+    },
+    "types": {
+      "submissionWindow": "提交窗口",
+      "submissionWindowDescription": "72小时提交窗口开启时通知",
+      "urgentReminder": "紧急提醒",
+      "urgentReminderDescription": "抵达前24小时紧急提醒",
+      "deadline": "截止提醒",
+      "deadlineDescription": "抵达当天未提交时提醒",
+      "arrivalReminder": "抵达提醒",
+      "arrivalReminderDescription": "抵达前1天提醒",
+      "arrivalDay": "抵达当天",
+      "arrivalDayDescription": "抵达当天早上祝福消息",
+      "dataChange": "数据变更",
+      "dataChangeDescription": "提交后数据变更时通知",
+      "expiry": "过期警告",
+      "expiryDescription": "入境包即将过期时警告",
+      "autoArchival": "自动归档",
+      "autoArchivalDescription": "入境包自动归档时通知"
+    },
+    "timing": {
+      "reminderTime": "默认提醒时间",
+      "reminderTimeDescription": "一般提醒的时间",
+      "quietHours": "免打扰时间",
+      "quietHoursDescription": "免打扰时间内禁用通知",
+      "quietStart": "免打扰开始",
+      "quietEnd": "免打扰结束"
+    },
+    "frequency": {
+      "dailySummary": "每日摘要",
+      "dailySummaryDescription": "发送每日摘要而非单独通知",
+      "summaryTime": "摘要时间",
+      "summaryTimeDescription": "每日摘要通知时间"
+    },
+    "actions": {
+      "quickActions": "快捷操作",
+      "quickActionsDescription": "在通知上显示操作按钮",
+      "test": "测试通知",
+      "reset": "恢复默认设置"
+    },
+    "status": {
+      "lastUpdated": "最后更新",
+      "version": "版本"
+    },
+    "error": {
+      "loadTitle": "错误",
+      "loadMessage": "加载通知设置失败",
+      "saveTitle": "错误",
+      "saveMessage": "保存设置失败",
+      "resetTitle": "错误",
+      "resetMessage": "重置设置失败",
+      "testTitle": "错误",
+      "testMessage": "发送测试通知失败"
+    },
+    "reset": {
+      "title": "重置设置",
+      "message": "这将重置所有通知设置为默认值。继续吗？"
+    },
+    "test": {
+      "title": "测试通知",
+      "body": "这是来自TripSecretary的测试通知",
+      "permissionTitle": "需要权限",
+      "permissionMessage": "请先在设备设置中启用通知权限",
+      "scheduledTitle": "测试已安排",
+      "scheduledMessage": "测试通知将在2秒后出现"
+    },
+    "timePicker": {
+      "title": "设置时间",
+      "message": "时间选择器将在未来版本中实现"
+    }
+  },
+  "screenTitles": {
+    "notificationSettings": "通知设置"
   }
 }

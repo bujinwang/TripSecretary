@@ -27,6 +27,19 @@ const deepMergeTranslations = (base = {}, overrides = {}) => {
 
 export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es'];
 
+// Progressive Entry Flow namespaces
+export const PROGRESSIVE_FLOW_NAMESPACES = ['progressiveFlow', 'entryPack', 'notifications'];
+
+// Language fallback configuration
+export const LANGUAGE_FALLBACK = {
+  'zh-TW': 'zh-CN',
+  'zh-HK': 'zh-CN',
+  'zh': 'zh-CN',
+  'fr': 'en',
+  'de': 'en',
+  'es': 'en'
+};
+
 // Base translations object (will be extended with Traditional Chinese variants)
 const baseTranslations = {
   en: {
@@ -436,6 +449,7 @@ const baseTranslations = {
               '• No visa application needed in advance',
               '• Valid for tourism, business, family visits',
               '• Extensions can be applied through Hong Kong Immigration if needed',
+              '• Document options: Both passport and Mainland Travel Permit for Hong Kong are valid',
             ],
           },
           onsite: {
@@ -1044,6 +1058,11 @@ const baseTranslations = {
         subtitle: 'Please provide the following information to complete the entry card generation',
         privacyNotice: 'All information is saved locally on your device only',
         loading: 'Loading data...',
+        submitEntry: 'Prepare Entry Pack',
+        viewStatus: 'View Preparation Status',
+        readyToSubmit: 'Ready to submit',
+        completionProgress: '{{percent}}% complete',
+        completionHint: 'Complete all information to submit the entry card.',
         sections: {
           passport: 'Passport Information',
           personal: 'Personal Information',
@@ -1721,6 +1740,7 @@ const baseTranslations = {
         help: { title: 'Help Center' },
         about: { title: 'About Us' },
         notifications: { title: 'Notification Settings' },
+        notificationLogs: { title: 'Notification Logs', subtitle: 'View notification history and analytics' },
       },
       editModal: {
         save: 'Save',
@@ -2782,6 +2802,7 @@ const baseTranslations = {
               '• 无需提前申请签证或注册',
               '• 适用于旅游、商务、探亲等目的',
               '• 停留不超过7天',
+              '• 证件说明：护照或港澳通行证均可使用',
             ],
           },
           onsite: {
@@ -3125,9 +3146,15 @@ const baseTranslations = {
         subtitle: '请提供以下信息以完成入境卡生成',
         privacyNotice: '所有信息仅保存在您的手机本地',
         loading: '正在加载数据...',
+        submitEntry: '准备入境包',
+        viewStatus: '查看准备状态',
+        readyToSubmit: '准备提交',
+        completionProgress: '已完成 {{percent}}%',
+        completionHint: '完成所有信息后可提交入境卡。',
         sections: {
           passport: '护照信息',
           personal: '个人信息',
+          funds: '资金证明',
           travel: '行程信息',
           accommodation: '住宿信息',
           emergency: '紧急联系人',
@@ -3527,6 +3554,7 @@ const baseTranslations = {
         help: { title: '帮助中心' },
         about: { title: '关于我们' },
         notifications: { title: '通知设置' },
+        notificationLogs: { title: '通知日志', subtitle: '查看通知历史和分析' },
       },
       editModal: {
         save: '保存',
@@ -4401,3 +4429,53 @@ Object.keys(countryTranslations).forEach((lang) => {
 
 export const getLanguageLabel = (language) =>
   translations?.en?.languages?.[language] || language;
+
+// Get translation with fallback mechanism
+export const getTranslationWithFallback = (key, language, params = {}) => {
+  const keys = key.split('.');
+  let current = translations[language];
+  
+  // Try primary language first
+  for (const k of keys) {
+    if (current && typeof current === 'object' && k in current) {
+      current = current[k];
+    } else {
+      current = null;
+      break;
+    }
+  }
+  
+  // If not found, try fallback language
+  if (!current && LANGUAGE_FALLBACK[language]) {
+    const fallbackLang = LANGUAGE_FALLBACK[language];
+    current = translations[fallbackLang];
+    for (const k of keys) {
+      if (current && typeof current === 'object' && k in current) {
+        current = current[k];
+      } else {
+        current = null;
+        break;
+      }
+    }
+  }
+  
+  // Final fallback to English
+  if (!current) {
+    current = translations.en;
+    for (const k of keys) {
+      if (current && typeof current === 'object' && k in current) {
+        current = current[k];
+      } else {
+        current = key; // Return key if not found
+        break;
+      }
+    }
+  }
+  
+  // Handle string interpolation
+  if (typeof current === 'string' && Object.keys(params).length > 0) {
+    return current.replace(/\{\{(\w+)\}\}/g, (match, param) => params[param] || match);
+  }
+  
+  return current;
+};

@@ -78,6 +78,16 @@ class SecureStorageService {
   }
 
   /**
+   * Ensure the database connection is ready before performing operations
+   * @throws {Error} When initialize() has not been called yet
+   */
+  async ensureInitialized() {
+    if (!this.db) {
+      throw new Error('Secure storage is not initialized. Call initialize() before accessing data.');
+    }
+  }
+
+  /**
    * Create database tables for secure data storage
    */
   async createTables() {
@@ -311,6 +321,160 @@ class SecureStorageService {
         tx.executeSql(`
           CREATE INDEX IF NOT EXISTS idx_travel_info_destination 
           ON travel_info(user_id, destination)
+        `);
+
+        // Entry info table (Progressive Entry Flow)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS entry_info (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            destination_id TEXT,
+            trip_id TEXT,
+            status TEXT DEFAULT 'incomplete',
+            completion_metrics TEXT,
+            last_updated_at TEXT,
+            created_at TEXT,
+            arrival_date TEXT,
+            departure_date TEXT,
+            travel_purpose TEXT,
+            flight_number TEXT,
+            accommodation TEXT,
+            tdac_submission TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // Entry packs table (Progressive Entry Flow)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS entry_packs (
+            id TEXT PRIMARY KEY,
+            entry_info_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            destination_id TEXT,
+            trip_id TEXT,
+            status TEXT DEFAULT 'in_progress',
+            tdac_submission TEXT,
+            submission_history TEXT,
+            documents TEXT,
+            display_status TEXT,
+            created_at TEXT,
+            updated_at TEXT,
+            archived_at TEXT,
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // TDAC submissions table (Progressive Entry Flow)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS tdac_submissions (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            entry_pack_id TEXT,
+            destination_id TEXT,
+            trip_id TEXT,
+            arr_card_no TEXT NOT NULL,
+            qr_uri TEXT,
+            pdf_path TEXT,
+            submitted_at TEXT NOT NULL,
+            submission_method TEXT DEFAULT 'api',
+            status TEXT DEFAULT 'success',
+            api_response TEXT,
+            processing_time INTEGER,
+            retry_count INTEGER DEFAULT 0,
+            error_details TEXT,
+            is_superseded INTEGER DEFAULT 0,
+            superseded_at TEXT,
+            superseded_reason TEXT,
+            superseded_by TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id)
+          )
+        `);
+
+        // Indexes for entry info and entry packs
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
+          ON entry_info(user_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
+          ON entry_info(user_id, destination_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_packs_user_id 
+          ON entry_packs(user_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info_id 
+          ON entry_packs(entry_info_id)
+        `);
+
+        // Audit events table (Progressive Entry Flow)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS audit_events (
+            id TEXT PRIMARY KEY,
+            event_type TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            snapshot_id TEXT,
+            entry_pack_id TEXT,
+            user_id TEXT,
+            metadata TEXT,
+            system_info TEXT,
+            immutable INTEGER DEFAULT 1,
+            version INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (snapshot_id) REFERENCES entry_pack_snapshots(id),
+            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // Indexes for TDAC submissions
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_user_id 
+          ON tdac_submissions(user_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_entry_pack_id 
+          ON tdac_submissions(entry_pack_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_arr_card_no 
+          ON tdac_submissions(arr_card_no)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_status 
+          ON tdac_submissions(user_id, status)
+        `);
+
+        // Indexes for audit events
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_audit_events_snapshot_id 
+          ON audit_events(snapshot_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_audit_events_user_id 
+          ON audit_events(user_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_audit_events_timestamp 
+          ON audit_events(timestamp)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_audit_events_type_timestamp 
+          ON audit_events(event_type, timestamp)
         `);
       }, reject, resolve);
     });
@@ -2466,9 +2630,1172 @@ class SecureStorageService {
     });
   }
 
+  // ============================================================================
+  // ENTRY INFO OPERATIONS (Progressive Entry Flow)
+  // ============================================================================
+
   /**
-    * Close database connection and clear encryption keys
-    */
+   * Get entry info for a user and destination
+   * @param {string} userId - User ID
+   * @param {string} destinationId - Destination ID (optional)
+   * @returns {Promise<Object|null>} - Entry info data or null
+   */
+  async getEntryInfo(userId, destinationId = null) {
+    return new Promise((resolve, reject) => {
+      try {
+        let query = 'SELECT * FROM entry_info WHERE user_id = ?';
+        let params = [userId];
+
+        if (destinationId) {
+          query += ' AND destination_id = ?';
+          params.push(destinationId);
+        }
+
+        query += ' ORDER BY created_at DESC LIMIT 1';
+
+        this.db.transaction(tx => {
+          tx.executeSql(
+            query,
+            params,
+            (_, result) => {
+              if (result.rows.length > 0) {
+                const row = result.rows.item(0);
+                resolve(this.deserializeEntryInfo(row));
+              } else {
+                resolve(null);
+              }
+            },
+            (_, error) => {
+              console.error('Failed to get entry info:', error);
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to get entry info:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Get entry info by destination
+   * @param {string} destinationId - Destination ID
+   * @param {string} tripId - Trip ID (optional)
+   * @returns {Promise<Object|null>} - Entry info data or null
+   */
+  async getEntryInfoByDestination(destinationId, tripId = null) {
+    return new Promise((resolve, reject) => {
+      try {
+        let query = 'SELECT * FROM entry_info WHERE destination_id = ?';
+        let params = [destinationId];
+
+        if (tripId) {
+          query += ' AND trip_id = ?';
+          params.push(tripId);
+        }
+
+        query += ' ORDER BY created_at DESC LIMIT 1';
+
+        this.db.transaction(tx => {
+          tx.executeSql(
+            query,
+            params,
+            (_, result) => {
+              if (result.rows.length > 0) {
+                const row = result.rows.item(0);
+                resolve(this.deserializeEntryInfo(row));
+              } else {
+                resolve(null);
+              }
+            },
+            (_, error) => {
+              console.error('Failed to get entry info by destination:', error);
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to get entry info by destination:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Get all entry infos for a user across all destinations
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} - Array of entry info data
+   */
+  async getAllEntryInfosForUser(userId) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM entry_info WHERE user_id = ? ORDER BY last_updated_at DESC',
+            [userId],
+            (_, result) => {
+              const entryInfos = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                entryInfos.push(this.deserializeEntryInfo(row));
+              }
+              resolve(entryInfos);
+            },
+            (_, error) => {
+              console.error('Failed to get all entry infos for user:', error);
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to get all entry infos for user:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Save entry info
+   * @param {Object} entryInfoData - Entry info data
+   * @returns {Promise<Object>} - Save result with ID
+   */
+  async saveEntryInfo(entryInfoData) {
+    return new Promise((resolve, reject) => {
+      try {
+        const serialized = this.serializeEntryInfo(entryInfoData);
+        
+        this.db.transaction(tx => {
+          tx.executeSql(
+            `INSERT OR REPLACE INTO entry_info (
+              id, user_id, destination_id, trip_id, status, 
+              completion_metrics, last_updated_at, created_at,
+              arrival_date, departure_date, travel_purpose,
+              flight_number, accommodation, tdac_submission
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              serialized.id,
+              serialized.user_id,
+              serialized.destination_id,
+              serialized.trip_id,
+              serialized.status,
+              serialized.completion_metrics,
+              serialized.last_updated_at,
+              serialized.created_at,
+              serialized.arrival_date,
+              serialized.departure_date,
+              serialized.travel_purpose,
+              serialized.flight_number,
+              serialized.accommodation,
+              serialized.tdac_submission
+            ],
+            (_, result) => {
+              resolve({ 
+                id: serialized.id,
+                insertId: result.insertId,
+                rowsAffected: result.rowsAffected
+              });
+            },
+            (_, error) => {
+              console.error('Failed to save entry info:', error);
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to save entry info:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Save entry pack
+   * @param {Object} entryPackData - Entry pack model or plain object
+   * @returns {Promise<Object>} - Save result
+   */
+  async saveEntryPack(entryPackData) {
+    try {
+      await this.ensureInitialized();
+
+      const serialized = this.serializeEntryPack(entryPackData);
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            `INSERT OR REPLACE INTO entry_packs (
+              id, entry_info_id, user_id, destination_id, trip_id, status,
+              tdac_submission, submission_history, documents, display_status,
+              created_at, updated_at, archived_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              serialized.id,
+              serialized.entry_info_id,
+              serialized.user_id,
+              serialized.destination_id,
+              serialized.trip_id,
+              serialized.status,
+              serialized.tdac_submission,
+              serialized.submission_history,
+              serialized.documents,
+              serialized.display_status,
+              serialized.created_at,
+              serialized.updated_at,
+              serialized.archived_at
+            ],
+            (_, result) => {
+              resolve({
+                success: true,
+                id: serialized.id,
+                insertId: result.insertId,
+                rowsAffected: result.rowsAffected
+              });
+            },
+            (_, error) => {
+              console.error('Failed to save entry pack:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('Failed to save entry pack:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get entry pack by ID
+   * @param {string} entryPackId - Entry pack ID
+   * @returns {Promise<Object|null>} - Entry pack data or null
+   */
+  async getEntryPack(entryPackId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM entry_packs WHERE id = ? LIMIT 1',
+            [entryPackId],
+            (_, result) => {
+              if (result.rows.length > 0) {
+                resolve(this.deserializeEntryPack(result.rows.item(0)));
+              } else {
+                resolve(null);
+              }
+            },
+            (_, error) => {
+              console.error('Failed to get entry pack:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('Failed to get entry pack:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get entry packs by user ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} - Array of entry pack data
+   */
+  async getEntryPacksByUserId(userId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM entry_packs WHERE user_id = ? ORDER BY created_at DESC',
+            [userId],
+            (_, result) => {
+              const packs = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                packs.push(this.deserializeEntryPack(result.rows.item(i)));
+              }
+              resolve(packs);
+            },
+            (_, error) => {
+              console.error('Failed to load entry packs by user ID:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('Failed to load entry packs by user ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete entry pack
+   * @param {string} entryPackId - Entry pack ID
+   * @returns {Promise<Object>} - Delete result
+   */
+  async deleteEntryPack(entryPackId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'DELETE FROM entry_packs WHERE id = ?',
+            [entryPackId],
+            (_, result) => {
+              resolve({
+                success: true,
+                rowsAffected: result.rowsAffected
+              });
+            },
+            (_, error) => {
+              console.error('Failed to delete entry pack:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      });
+    } catch (error) {
+      console.error('Failed to delete entry pack:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get entry packs by entry info ID
+   * @param {string} entryInfoId - Entry info ID
+   * @returns {Promise<Array>} - Array of entry pack data
+   */
+  async getEntryPacksByEntryInfoId(entryInfoId) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            'SELECT * FROM entry_packs WHERE entry_info_id = ? ORDER BY created_at DESC',
+            [entryInfoId],
+            (_, result) => {
+              const packs = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                packs.push(this.deserializeEntryPack(row));
+              }
+              resolve(packs);
+            },
+            (_, error) => {
+              console.error('Failed to get entry packs by entry info ID:', error);
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to get entry packs by entry info ID:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Serialize entry info for database storage
+   * @param {Object} entryInfo - Entry info data
+   * @returns {Object} - Serialized data
+   */
+  serializeEntryInfo(entryInfo) {
+    return {
+      id: entryInfo.id || this.generateId(),
+      user_id: entryInfo.userId,
+      destination_id: entryInfo.destinationId,
+      trip_id: entryInfo.tripId,
+      status: entryInfo.status || 'incomplete',
+      completion_metrics: JSON.stringify(entryInfo.completionMetrics || {}),
+      last_updated_at: entryInfo.lastUpdatedAt || new Date().toISOString(),
+      created_at: entryInfo.createdAt || new Date().toISOString(),
+      arrival_date: entryInfo.arrivalDate,
+      departure_date: entryInfo.departureDate,
+      travel_purpose: entryInfo.travelPurpose,
+      flight_number: entryInfo.flightNumber,
+      accommodation: entryInfo.accommodation,
+      tdac_submission: JSON.stringify(entryInfo.tdacSubmission || null)
+    };
+  }
+
+  /**
+   * Serialize entry pack for database storage
+   * @param {Object} entryPack - Entry pack data
+   * @returns {Object} - Serialized data
+   */
+  serializeEntryPack(entryPack) {
+    const createdAt = entryPack.createdAt || new Date().toISOString();
+    const updatedAt = entryPack.updatedAt || new Date().toISOString();
+
+    return {
+      id: entryPack.id || this.generateId(),
+      entry_info_id: entryPack.entryInfoId,
+      user_id: entryPack.userId,
+      destination_id: entryPack.destinationId,
+      trip_id: entryPack.tripId,
+      status: entryPack.status || 'in_progress',
+      tdac_submission: JSON.stringify(entryPack.tdacSubmission || null),
+      submission_history: JSON.stringify(entryPack.submissionHistory || []),
+      documents: JSON.stringify(entryPack.documents || {}),
+      display_status: JSON.stringify(entryPack.displayStatus || {}),
+      created_at: createdAt,
+      updated_at: updatedAt,
+      archived_at: entryPack.archivedAt || null
+    };
+  }
+
+  /**
+   * Deserialize entry info from database
+   * @param {Object} row - Database row
+   * @returns {Object} - Deserialized entry info
+   */
+  deserializeEntryInfo(row) {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      destinationId: row.destination_id,
+      tripId: row.trip_id,
+      status: row.status,
+      completionMetrics: this.safeJsonParse(row.completion_metrics, {}),
+      lastUpdatedAt: row.last_updated_at,
+      createdAt: row.created_at,
+      arrivalDate: row.arrival_date,
+      departureDate: row.departure_date,
+      travelPurpose: row.travel_purpose,
+      flightNumber: row.flight_number,
+      accommodation: row.accommodation,
+      tdacSubmission: this.safeJsonParse(row.tdac_submission, null)
+    };
+  }
+
+  /**
+   * Deserialize entry pack from database
+   * @param {Object} row - Database row
+   * @returns {Object} - Deserialized entry pack
+   */
+  deserializeEntryPack(row) {
+    return {
+      id: row.id,
+      entryInfoId: row.entry_info_id,
+      userId: row.user_id,
+      destinationId: row.destination_id,
+      tripId: row.trip_id,
+      status: row.status,
+      tdacSubmission: this.safeJsonParse(row.tdac_submission, null),
+      submissionHistory: this.safeJsonParse(row.submission_history, []),
+      documents: this.safeJsonParse(row.documents, {}),
+      displayStatus: this.safeJsonParse(row.display_status, {}),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      archivedAt: row.archived_at
+    };
+  }
+
+  // ===== TDAC SUBMISSION METADATA METHODS =====
+  // Requirements: 10.1-10.6, 19.1-19.5
+
+  /**
+   * Save TDAC submission metadata
+   * @param {Object} submissionData - TDAC submission data
+   * @returns {Promise<Object>} - Save result
+   */
+  async saveTDACSubmissionMetadata(submissionData) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            // Insert or replace TDAC submission
+            tx.executeSql(
+              `INSERT OR REPLACE INTO tdac_submissions (
+                id, user_id, entry_pack_id, destination_id, trip_id,
+                arr_card_no, qr_uri, pdf_path, submitted_at, submission_method,
+                status, api_response, processing_time, retry_count, error_details,
+                is_superseded, superseded_at, superseded_reason, superseded_by,
+                created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                submissionData.id,
+                submissionData.userId,
+                submissionData.entryPackId,
+                submissionData.destinationId,
+                submissionData.tripId,
+                submissionData.arrCardNo,
+                submissionData.qrUri,
+                submissionData.pdfPath,
+                submissionData.submittedAt,
+                submissionData.submissionMethod,
+                submissionData.status,
+                JSON.stringify(submissionData.apiResponse || null),
+                submissionData.processingTime,
+                submissionData.retryCount || 0,
+                JSON.stringify(submissionData.errorDetails || null),
+                submissionData.isSuperseded ? 1 : 0,
+                submissionData.supersededAt,
+                submissionData.supersededReason,
+                submissionData.supersededBy,
+                submissionData.createdAt,
+                submissionData.updatedAt
+              ],
+              (_, result) => {
+                console.log('TDAC submission metadata saved:', {
+                  id: submissionData.id,
+                  insertId: result.insertId
+                });
+                resolve({ success: true, id: submissionData.id });
+              },
+              (_, error) => {
+                console.error('Failed to save TDAC submission metadata:', error);
+                reject(error);
+              }
+            );
+          },
+          error => {
+            console.error('Transaction failed:', error);
+            reject(error);
+          }
+        );
+      });
+    } catch (error) {
+      console.error('Failed to save TDAC submission metadata:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get TDAC submission by ID
+   * @param {string} submissionId - Submission ID
+   * @returns {Promise<Object|null>} - TDAC submission or null
+   */
+  async getTDACSubmission(submissionId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              'SELECT * FROM tdac_submissions WHERE id = ?',
+              [submissionId],
+              (_, { rows }) => {
+                if (rows.length > 0) {
+                  const submission = this.deserializeTDACSubmission(rows.item(0));
+                  resolve(submission);
+                } else {
+                  resolve(null);
+                }
+              },
+              (_, error) => {
+                console.error('Failed to get TDAC submission:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get TDAC submission:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get TDAC submissions by user ID
+   * @param {string} userId - User ID
+   * @param {Object} filters - Filter options
+   * @returns {Promise<Array>} - Array of TDAC submissions
+   */
+  async getTDACSubmissionsByUserId(userId, filters = {}) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        let query = 'SELECT * FROM tdac_submissions WHERE user_id = ?';
+        const params = [userId];
+
+        // Apply filters
+        if (filters.status) {
+          query += ' AND status = ?';
+          params.push(filters.status);
+        }
+
+        if (filters.destinationId) {
+          query += ' AND destination_id = ?';
+          params.push(filters.destinationId);
+        }
+
+        if (filters.entryPackId) {
+          query += ' AND entry_pack_id = ?';
+          params.push(filters.entryPackId);
+        }
+
+        if (filters.isSuperseded !== undefined) {
+          query += ' AND is_superseded = ?';
+          params.push(filters.isSuperseded ? 1 : 0);
+        }
+
+        // Order by submission date (newest first)
+        query += ' ORDER BY submitted_at DESC';
+
+        // Apply limit if specified
+        if (filters.limit) {
+          query += ' LIMIT ?';
+          params.push(filters.limit);
+        }
+
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              query,
+              params,
+              (_, { rows }) => {
+                const submissions = [];
+                for (let i = 0; i < rows.length; i++) {
+                  submissions.push(this.deserializeTDACSubmission(rows.item(i)));
+                }
+                resolve(submissions);
+              },
+              (_, error) => {
+                console.error('Failed to get TDAC submissions by user ID:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get TDAC submissions by user ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get TDAC submissions by entry pack ID
+   * @param {string} entryPackId - Entry pack ID
+   * @returns {Promise<Array>} - Array of TDAC submissions
+   */
+  async getTDACSubmissionsByEntryPackId(entryPackId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              'SELECT * FROM tdac_submissions WHERE entry_pack_id = ? ORDER BY submitted_at DESC',
+              [entryPackId],
+              (_, { rows }) => {
+                const submissions = [];
+                for (let i = 0; i < rows.length; i++) {
+                  submissions.push(this.deserializeTDACSubmission(rows.item(i)));
+                }
+                resolve(submissions);
+              },
+              (_, error) => {
+                console.error('Failed to get TDAC submissions by entry pack ID:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get TDAC submissions by entry pack ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update TDAC submission
+   * @param {Object} submissionData - Updated submission data
+   * @returns {Promise<Object>} - Update result
+   */
+  async updateTDACSubmission(submissionData) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              `UPDATE tdac_submissions SET
+                status = ?, api_response = ?, processing_time = ?, retry_count = ?,
+                error_details = ?, is_superseded = ?, superseded_at = ?,
+                superseded_reason = ?, superseded_by = ?, updated_at = ?
+              WHERE id = ?`,
+              [
+                submissionData.status,
+                JSON.stringify(submissionData.apiResponse || null),
+                submissionData.processingTime,
+                submissionData.retryCount || 0,
+                JSON.stringify(submissionData.errorDetails || null),
+                submissionData.isSuperseded ? 1 : 0,
+                submissionData.supersededAt,
+                submissionData.supersededReason,
+                submissionData.supersededBy,
+                submissionData.updatedAt || new Date().toISOString(),
+                submissionData.id
+              ],
+              (_, result) => {
+                console.log('TDAC submission updated:', {
+                  id: submissionData.id,
+                  rowsAffected: result.rowsAffected
+                });
+                resolve({ success: true, rowsAffected: result.rowsAffected });
+              },
+              (_, error) => {
+                console.error('Failed to update TDAC submission:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to update TDAC submission:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete TDAC submission
+   * @param {string} submissionId - Submission ID
+   * @returns {Promise<Object>} - Delete result
+   */
+  async deleteTDACSubmission(submissionId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              'DELETE FROM tdac_submissions WHERE id = ?',
+              [submissionId],
+              (_, result) => {
+                console.log('TDAC submission deleted:', {
+                  id: submissionId,
+                  rowsAffected: result.rowsAffected
+                });
+                resolve({ success: true, rowsAffected: result.rowsAffected });
+              },
+              (_, error) => {
+                console.error('Failed to delete TDAC submission:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to delete TDAC submission:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deserialize TDAC submission from database
+   * @param {Object} row - Database row
+   * @returns {Object} - Deserialized TDAC submission
+   */
+  deserializeTDACSubmission(row) {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      entryPackId: row.entry_pack_id,
+      destinationId: row.destination_id,
+      tripId: row.trip_id,
+      arrCardNo: row.arr_card_no,
+      qrUri: row.qr_uri,
+      pdfPath: row.pdf_path,
+      submittedAt: row.submitted_at,
+      submissionMethod: row.submission_method,
+      status: row.status,
+      apiResponse: this.safeJsonParse(row.api_response, null),
+      processingTime: row.processing_time,
+      retryCount: row.retry_count || 0,
+      errorDetails: this.safeJsonParse(row.error_details, null),
+      isSuperseded: row.is_superseded === 1,
+      supersededAt: row.superseded_at,
+      supersededReason: row.superseded_reason,
+      supersededBy: row.superseded_by,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    };
+  }
+
+  // ===== AUDIT LOG METHODS =====
+  // Requirements: 28.1-28.5
+
+  /**
+   * Save audit event
+   * @param {Object} auditEvent - Audit event to save
+   * @returns {Promise<Object>} - Save result
+   */
+  async saveAuditEvent(auditEvent) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              `INSERT OR REPLACE INTO audit_events (
+                id, event_type, timestamp, snapshot_id, entry_pack_id, user_id,
+                metadata, system_info, immutable, version, created_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                auditEvent.id,
+                auditEvent.eventType,
+                auditEvent.timestamp,
+                auditEvent.snapshotId,
+                auditEvent.entryPackId,
+                auditEvent.userId,
+                JSON.stringify(auditEvent.metadata || {}),
+                JSON.stringify(auditEvent.systemInfo || {}),
+                auditEvent.immutable ? 1 : 0,
+                auditEvent.version || 1,
+                new Date().toISOString()
+              ],
+              (_, result) => {
+                console.log('Audit event saved:', {
+                  id: auditEvent.id,
+                  insertId: result.insertId
+                });
+                resolve({ success: true, id: auditEvent.id });
+              },
+              (_, error) => {
+                console.error('Failed to save audit event:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to save audit event:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get audit events by snapshot ID
+   * @param {string} snapshotId - Snapshot ID
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} - Array of audit events
+   */
+  async getAuditEventsBySnapshotId(snapshotId, options = {}) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        let query = 'SELECT * FROM audit_events WHERE snapshot_id = ?';
+        const params = [snapshotId];
+
+        // Apply filters
+        if (options.eventType) {
+          query += ' AND event_type = ?';
+          params.push(options.eventType);
+        }
+
+        if (options.fromDate) {
+          query += ' AND timestamp >= ?';
+          params.push(options.fromDate);
+        }
+
+        if (options.toDate) {
+          query += ' AND timestamp <= ?';
+          params.push(options.toDate);
+        }
+
+        // Order by timestamp
+        query += ' ORDER BY timestamp ASC';
+
+        // Apply limit if specified
+        if (options.limit) {
+          query += ' LIMIT ?';
+          params.push(options.limit);
+          
+          if (options.offset) {
+            query += ' OFFSET ?';
+            params.push(options.offset);
+          }
+        }
+
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              query,
+              params,
+              (_, { rows }) => {
+                const events = [];
+                for (let i = 0; i < rows.length; i++) {
+                  events.push(this.deserializeAuditEvent(rows.item(i)));
+                }
+                resolve(events);
+              },
+              (_, error) => {
+                console.error('Failed to get audit events by snapshot ID:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get audit events by snapshot ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get audit events by user ID
+   * @param {string} userId - User ID
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} - Array of audit events
+   */
+  async getAuditEventsByUserId(userId, options = {}) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        let query = 'SELECT * FROM audit_events WHERE user_id = ?';
+        const params = [userId];
+
+        // Apply filters similar to getAuditEventsBySnapshotId
+        if (options.eventType) {
+          query += ' AND event_type = ?';
+          params.push(options.eventType);
+        }
+
+        if (options.fromDate) {
+          query += ' AND timestamp >= ?';
+          params.push(options.fromDate);
+        }
+
+        if (options.toDate) {
+          query += ' AND timestamp <= ?';
+          params.push(options.toDate);
+        }
+
+        // Order by timestamp (newest first for user queries)
+        query += ' ORDER BY timestamp DESC';
+
+        // Apply limit
+        if (options.limit) {
+          query += ' LIMIT ?';
+          params.push(options.limit);
+          
+          if (options.offset) {
+            query += ' OFFSET ?';
+            params.push(options.offset);
+          }
+        }
+
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              query,
+              params,
+              (_, { rows }) => {
+                const events = [];
+                for (let i = 0; i < rows.length; i++) {
+                  events.push(this.deserializeAuditEvent(rows.item(i)));
+                }
+                resolve(events);
+              },
+              (_, error) => {
+                console.error('Failed to get audit events by user ID:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get audit events by user ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete audit events (for GDPR compliance)
+   * @param {string} snapshotId - Snapshot ID
+   * @returns {Promise<Object>} - Delete result
+   */
+  async deleteAuditEvents(snapshotId) {
+    try {
+      await this.ensureInitialized();
+
+      return new Promise((resolve, reject) => {
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              'DELETE FROM audit_events WHERE snapshot_id = ?',
+              [snapshotId],
+              (_, result) => {
+                console.log('Audit events deleted:', {
+                  snapshotId,
+                  rowsAffected: result.rowsAffected
+                });
+                resolve({ success: true, rowsAffected: result.rowsAffected });
+              },
+              (_, error) => {
+                console.error('Failed to delete audit events:', error);
+                reject(error);
+              }
+            );
+          },
+          error => reject(error)
+        );
+      });
+    } catch (error) {
+      console.error('Failed to delete audit events:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deserialize audit event from database
+   * @param {Object} row - Database row
+   * @returns {Object} - Deserialized audit event
+   */
+  deserializeAuditEvent(row) {
+    return {
+      id: row.id,
+      eventType: row.event_type,
+      timestamp: row.timestamp,
+      snapshotId: row.snapshot_id,
+      entryPackId: row.entry_pack_id,
+      userId: row.user_id,
+      metadata: this.safeJsonParse(row.metadata, {}),
+      systemInfo: this.safeJsonParse(row.system_info, {}),
+      immutable: row.immutable === 1,
+      version: row.version,
+      createdAt: row.created_at
+    };
+  }
+
+  // Data Encryption Methods (Requirements: 19.1-19.5)
+
+  /**
+   * Encrypt data using EncryptionService
+   * @param {string} data - Data to encrypt
+   * @param {string} fieldType - Field type for key derivation
+   * @returns {Promise<string>} - Encrypted data
+   */
+  async encrypt(data, fieldType = 'general') {
+    try {
+      if (!this.ENCRYPTION_ENABLED) {
+        console.warn('Encryption is disabled, returning plain text');
+        return data;
+      }
+
+      return await this.encryption.encrypt(data, fieldType);
+    } catch (error) {
+      console.error('Failed to encrypt data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Decrypt data using EncryptionService
+   * @param {string} encryptedData - Encrypted data
+   * @param {string} fieldType - Field type for key derivation
+   * @returns {Promise<string>} - Decrypted data
+   */
+  async decrypt(encryptedData, fieldType = 'general') {
+    try {
+      if (!this.ENCRYPTION_ENABLED) {
+        console.warn('Encryption is disabled, returning data as-is');
+        return encryptedData;
+      }
+
+      return await this.encryption.decrypt(encryptedData, fieldType);
+    } catch (error) {
+      console.error('Failed to decrypt data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Encrypt multiple fields
+   * @param {Object} data - Object with field data
+   * @returns {Promise<Object>} - Object with encrypted fields
+   */
+  async encryptFields(data) {
+    try {
+      if (!this.ENCRYPTION_ENABLED) {
+        return data;
+      }
+
+      return await this.encryption.encryptFields(data);
+    } catch (error) {
+      console.error('Failed to encrypt fields:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Decrypt multiple fields
+   * @param {Object} encryptedData - Object with encrypted field data
+   * @returns {Promise<Object>} - Object with decrypted fields
+   */
+  async decryptFields(encryptedData) {
+    try {
+      if (!this.ENCRYPTION_ENABLED) {
+        return encryptedData;
+      }
+
+      return await this.encryption.decryptFields(encryptedData);
+    } catch (error) {
+      console.error('Failed to decrypt fields:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get encryption status
+   * @returns {Object} - Encryption status information
+   */
+  getEncryptionStatus() {
+    return {
+      enabled: this.ENCRYPTION_ENABLED,
+      initialized: !!this.encryption.masterKey,
+      algorithm: 'AES-256-GCM',
+      keyDerivation: 'PBKDF2-SHA256'
+    };
+  }
+
+  /**
+   * Enable or disable encryption (for development/testing)
+   * @param {boolean} enabled - Whether to enable encryption
+   */
+  setEncryptionEnabled(enabled) {
+    this.ENCRYPTION_ENABLED = enabled;
+    console.log('Encryption', enabled ? 'enabled' : 'disabled');
+  }
+
+  /**
+   * Close database connection and clear encryption keys
+   */
   async close() {
     try {
       if (this.db) {

@@ -1,4 +1,380 @@
 {
+  "progressiveEntryFlow": {
+    "status": {
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "expired": "Expired", 
+      "inProgress": "In Progress",
+      "needsResubmission": "Needs Resubmission"
+    },
+    "snapshot": {
+      "readOnlyBanner": "This is a historical snapshot and cannot be modified",
+      "viewTitle": "History - Read Only",
+      "legacyBadge": "This is a legacy history record",
+      "incompleteNotice": "This entry pack was not completed",
+      "completenessIndicator": "Passport {{passport}}, Personal Info {{personal}}, Funds {{funds}}, Travel Info {{travel}}"
+    },
+    "history": {
+      "title": "History",
+      "filterOptions": {
+        "all": "All",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "expired": "Expired",
+        "legacy": "Legacy Records"
+      },
+      "timeGroups": {
+        "today": "Today",
+        "yesterday": "Yesterday", 
+        "thisWeek": "This Week",
+        "thisMonth": "This Month",
+        "earlier": "Earlier"
+      },
+      "resultCount": "Showing {{count}} results",
+      "deleteConfirm": "This cannot be undone. Are you sure you want to delete?",
+      "storageUsage": "History storage: {{size}} MB",
+      "migrationBanner": "Found {{count}} legacy records that can be migrated to new format",
+      "batchMigrate": "Migrate All",
+      "migrateItem": "Migrate to New Format",
+      "migrationSuccess": "Record successfully migrated to new format",
+      "migrationFailed": "Migration failed: {{error}}",
+      "batchMigrationConfirm": "Found {{count}} legacy records that can be migrated. Do you want to migrate them all to the new format?",
+      "batchMigrationResult": "Successfully migrated {{success}} records, {{failed}} failed."
+    },
+    "entryPack": {
+      "title": "{{destination}} Entry Pack - Submitted",
+      "submitted": "Submitted",
+      "arrivedToday": "Arriving Today",
+      "arrivesTomorrow": "Arriving Tomorrow",
+      "arrivesInDays": "Arriving in {{days}} days"
+    },
+    "notifications": {
+      "autoArchived": {
+        "title": "{{destination}} Entry Pack Archived",
+        "body": "Your {{destination}} entry pack has been automatically archived to history"
+      },
+      "reminderTitle": "Complete Entry Information",
+      "reminderBody": "Your {{destination}} trip has incomplete information",
+      "submissionWindow": "You can now submit your Thailand entry card",
+      "urgentReminder": "{{hours}} hours remaining until deadline",
+      "entryPackExpiryWarning": {
+        "title": "Entry Pack Will Expire Soon",
+        "body": "Your {{destination}} entry pack will expire in {{timeRemaining}}"
+      },
+      "entryPackExpired": {
+        "title": "Entry Pack Has Expired",
+        "body": "Your {{destination}} entry pack has expired and should be archived"
+      },
+      "actions": {
+        "view": "View",
+        "archive": "Archive",
+        "submit": "Submit",
+        "later": "Later",
+        "ignore": "Ignore",
+        "resubmit": "Resubmit",
+        "resubmitImmediately": "Resubmit Immediately",
+        "continue": "Continue",
+        "cleanup": "Cleanup",
+        "settings": "Settings",
+        "viewHistory": "View History",
+        "dismiss": "Dismiss",
+        "viewBackup": "View Backup",
+        "guide": "Immigration Guide",
+        "itinerary": "Itinerary"
+      }
+    },
+    "notifications": {
+      "autoArchived": {
+        "title": "{{destination}} Entry Pack Archived",
+        "body": "Your {{destination}} entry pack has been automatically archived to history"
+      },
+      "reminderTitle": "Complete Entry Information",
+      "reminderBody": "Your {{destination}} trip has incomplete information",
+      "submissionWindow": "You can now submit your Thailand entry card",
+      "urgentReminder": "{{hours}} hours remaining until deadline"
+    },
+    "multiDestination": {
+      "summary": "Multi-Destination Progress",
+      "stats": "{{submitted}} Submitted • {{inProgress}} In Progress • {{overall}}% Overall"
+    },
+    "inProgress": {
+      "title": "{{destination}} - In Progress",
+      "ready": "Ready to Submit",
+      "incomplete": "In Progress",
+      "completionPercent": "{{percent}}% Complete"
+    },
+    "notifications": {
+      "autoArchived": "Your {{destination}} entry pack has been automatically archived",
+      "reminderTitle": "Complete Entry Information",
+      "reminderBody": "Your {{destination}} trip has incomplete information",
+      "submissionWindow": "You can now submit your Thailand entry card",
+      "urgentReminder": "{{hours}} hours until deadline",
+      "submissionWindowOpen": {
+        "title": "Thailand Entry Card Submission Available",
+        "body": "You can now submit your Thailand entry card. {{daysRemaining}} days until arrival."
+      },
+      "urgentReminderNotification": {
+        "title": "Urgent: Please Submit Entry Card Soon",
+        "body": "{{hoursRemaining}} hours until Thailand entry deadline. Please complete submission immediately."
+      },
+      "deadlineWarning": {
+        "title": "Today is Submission Deadline",
+        "body": "Today is the last day to submit your Thailand entry card. Please complete submission immediately to avoid entry issues."
+      },
+      "arrivalReminder": {
+        "title": "Arriving in Thailand Tomorrow",
+        "body": "You will arrive in Thailand tomorrow. Please prepare your entry card and related documents."
+      },
+      "arrivalDay": {
+        "title": "Arriving in Thailand Today, Have a Great Trip!",
+        "body": "Today is your Thailand journey! Remember to prepare your entry card and passport. Weather: {{weather}}"
+      },
+      "dataChangeDetected": {
+        "title": "Data Changed, May Need to Resubmit",
+        "body": "Your {{changedFields}} information has changed. You may need to resubmit your entry card."
+      },
+      "entryPackSuperseded": {
+        "title": "Entry Pack Superseded, Please Resubmit",
+        "body": "Your entry pack has been marked as superseded. Please resubmit to ensure smooth entry."
+      },
+      "entryPackExpiryWarning": {
+        "title": "Entry Pack Will Expire Soon",
+        "body": "Your {{destination}} entry pack will expire in {{timeRemaining}}. Please consider archiving or updating."
+      },
+      "entryPackExpired": {
+        "title": "Entry Pack Has Expired",
+        "body": "Your {{destination}} entry pack has expired. We recommend archiving this entry pack."
+      },
+      "entryPackArchived": {
+        "title": "Entry Pack Automatically Archived",
+        "body": "Your {{destination}} entry pack has been automatically archived to history."
+      },
+      "incompleteDataReminder": {
+        "title": "Complete Entry Information",
+        "body": "Your {{destination}} trip has incomplete information. Completion: {{completionPercent}}%"
+      },
+      "storageWarning": {
+        "title": "Storage Space Low",
+        "body": "History records are taking up significant space. Consider cleaning up old records to free space."
+      },
+      "backupCompleted": {
+        "title": "Backup Completed",
+        "body": "Your data has been successfully backed up. {{itemCount}} entry packs included."
+      },
+      "actions": {
+        "submit": "Submit",
+        "later": "Later",
+        "ignore": "Ignore",
+        "view": "View",
+        "resubmit": "Resubmit",
+        "resubmitImmediately": "Resubmit Immediately",
+        "continue": "Continue",
+        "guide": "View Guide",
+        "archive": "Archive",
+        "cleanup": "Cleanup",
+        "settings": "Settings",
+        "viewHistory": "View History",
+        "viewBackup": "View Backup",
+        "dismiss": "Dismiss",
+        "itinerary": "View Itinerary"
+      },
+      "feedback": {
+        "submitTitle": "Submitting Entry Card",
+        "submitMessage": "You've entered the submission flow from a notification. Please complete your entry card submission.",
+        "resubmitTitle": "Resubmitting Entry Card",
+        "resubmitMessage": "Your data has changed. Please resubmit your entry card to ensure accurate information.",
+        "continueTitle": "Continue Filling Information",
+        "continueMessage": "Please complete the remaining entry information fields.",
+        "viewTitle": "Viewing Entry Pack Details",
+        "viewMessage": "Displaying your entry pack details as requested."
+      },
+      "storageWarning": {
+        "title": "Storage Space Low",
+        "body": "History records are using significant space ({{usedSpace}}MB). Consider cleaning old records."
+      },
+      "backupCompleted": {
+        "title": "Data Backup Completed",
+        "body": "Your entry pack data has been successfully backed up. Backup size: {{backupSize}}MB"
+      },
+      "actions": {
+        "submit": "Submit Now",
+        "later": "Remind Later",
+        "ignore": "Ignore",
+        "view": "View Entry Card",
+        "guide": "View Guide",
+        "itinerary": "View Itinerary",
+        "resubmit": "Resubmit",
+        "resubmitImmediately": "Resubmit Immediately",
+        "archive": "Archive",
+        "viewHistory": "View History",
+        "dismiss": "Got It",
+        "continue": "Continue Filling",
+        "cleanup": "Clean Now",
+        "settings": "View Settings",
+        "viewBackup": "View Backup"
+      }
+    },
+    "entryFlow": {
+      "viewStatus": "View Preparation Status",
+      "submitTDAC": "Submit TDAC Automatically",
+      "resubmitTDAC": "Resubmit Entry Card",
+      "continueEditing": "Continue Editing",
+      "editInformation": "Edit Information",
+      "startGuide": "Start Immigration Guide",
+      "manualCopy": "Manual Copy",
+      "webviewFill": "WebView Auto-fill",
+      "incompleteMessage": "This trip is not complete, please continue filling information",
+      "resubmissionWarning": "Editing information will require resubmission. Continue?",
+      "completionPercent": "{{percent}}% Complete"
+    },
+    "countdown": {
+      "noDate": "No Thailand arrival date set, cannot submit entry card",
+      "preWindow": "{{days}} days {{hours}}:{{minutes}} until submission opens",
+      "withinWindow": "{{hours}}:{{minutes}} until deadline, please submit soon",
+      "urgent": "{{hours}} hours {{minutes}} minutes until deadline"
+    },
+    "categories": {
+      "passport": "Passport Information",
+      "personal": "Personal Information",
+      "funds": "Fund Proof",
+      "travel": "Travel Information", 
+      "fieldsComplete": "{{filled}}/{{total}} fields complete"
+    },
+    "dataChange": {
+      "handleError": "Error handling data changes, please try again.",
+      "confirmResubmit": {
+        "title": "Confirm Resubmission",
+        "message": "Resubmitting will invalidate the current entry card, and you will need to regenerate the entry card. Are you sure you want to continue?"
+      },
+      "confirmIgnore": {
+        "title": "Ignore Changes",
+        "message": "Ignoring changes may cause information mismatch during entry. It is recommended to resubmit to ensure information accuracy. Are you sure you want to ignore?"
+      },
+      "detailsTitle": "Change Details",
+      "totalChanges": "Total Changes",
+      "significantChanges": "Significant Changes",
+      "minorChanges": "Minor Changes",
+      "resubmit": "Resubmit",
+      "ignore": "Ignore Changes",
+      "viewDetails": "View Details"
+    },
+    "superseded": {
+      "resubmitHint": "Information updated, resubmission required",
+      "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
+    },
+    "immigrationOfficer": {
+      "title": "Show to Officer",
+      "exitButton": "Exit Presentation Mode",
+      "languageToggle": "Language Toggle",
+      "sections": {
+        "qrCode": "QR Code",
+        "passport": "Passport Information",
+        "travel": "Travel Information",
+        "funds": "Fund Proof",
+        "contact": "Contact Information"
+      },
+      "quickActions": {
+        "showQR": "Show QR Code",
+        "showPassport": "Show Passport",
+        "showFunds": "Show Funds",
+        "showHotel": "Show Hotel",
+        "showTicket": "Show Ticket"
+      },
+      "offlineMode": "Offline Mode - Using cached data",
+      "disclaimer": "This is a traveler-prepared document. Please verify with official systems.",
+      "authentication": {
+        "title": "Authentication",
+        "message": "Authentication required to show documents to immigration officers",
+        "authenticate": "Authenticate",
+        "cancel": "Cancel"
+      },
+      "presentation": {
+        "exitTitle": "Exit Presentation Mode",
+        "exitMessage": "Are you sure you want to exit presentation mode?",
+        "exit": "Exit",
+        "cancel": "Cancel",
+        "showMoreInfo": "Show More Info",
+        "showLessInfo": "Show Less Info",
+        "exitHint": "Swipe down to exit",
+        "tdacQRCode": "TDAC QR Code",
+        "submitted": "Submitted",
+        "passportInformation": "Passport Information",
+        "travelInformation": "Travel Information",
+        "fullName": "Full Name",
+        "passportNumber": "Passport Number",
+        "nationality": "Nationality",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "passportExpiry": "Passport Expiry",
+        "flightDetails": "Flight Details",
+        "arrivalFlight": "Arrival Flight",
+        "arrivalDateTime": "Arrival Date & Time",
+        "departureDate": "Departure Date",
+        "accommodation": "Accommodation",
+        "hotelName": "Hotel Name",
+        "address": "Address",
+        "phone": "Phone",
+        "visitPurpose": "Visit Purpose",
+        "purpose": "Purpose",
+        "durationOfStay": "Duration of Stay",
+        "qrCodePlaceholder": "QR Code",
+        "qrCodeSubtext": "Will appear after TDAC submission",
+        "saveQRCode": "Save QR Code",
+        "saveQRMessage": "Save QR code to photo album?",
+        "save": "Save",
+        "saved": "Saved",
+        "qrCodeSaved": "QR code saved to photo album"
+      },
+      "help": {
+        "title": "Gesture Help",
+        "pinchZoom": "Pinch to zoom QR code (50% - 200%)",
+        "doubleTap": "Double tap to toggle information display",
+        "longPress": "Long press QR code to save to album",
+        "swipeDown": "Swipe down from top to exit",
+        "gotIt": "Got it"
+      },
+      "languageModes": {
+        "bilingual": "Bilingual",
+        "thai": "Thai Only",
+        "english": "English Only"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Thailand Entry Preparation Status",
+      "preparationTitle": "Thailand Entry Preparation Status",
+      "preparationSubtitle": "Check your entry information completion status",
+      "loading": "Loading preparation status...",
+      "completionStatus": "Completion Status",
+      "categories": "Information Categories",
+      "submissionWindow": "Submission Window",
+      "actions": "Actions",
+      "continueImproving": "Continue Improving Information",
+      "completeAllFields": "Need to complete information",
+      "setArrivalDate": "Please Set Arrival Date",
+      "arrivalDateRequired": "Arrival date required for submission",
+      "waitForWindow": "Wait for Submission Window",
+      "windowNotOpen": "Submission window not yet open",
+      "submitTDAC": "Submit Thailand Entry Card",
+      "readyToSubmit": "All information complete, ready to submit",
+      "editInfo": "Edit Information",
+      "preview": "Preview Entry Card",
+      "share": "Ask a friend to help fill in",
+      "noData": {
+        "title": "Start Filling Thailand Entry Information",
+        "description": "You haven't filled any entry information yet. Click the button below to start, and we'll guide you through the entire process.",
+        "hintsTitle": "You need to prepare:",
+        "startButton": "Start Filling"
+      },
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Fund Proof",
+        "travel": "Travel Information"
+      }
+    }
+  },
   "malaysia": {
     "travelInfo": {
       "sections": {
@@ -313,6 +689,11 @@
   },
   "thailand": {
     "travelInfo": {
+      "submitEntry": "Prepare Entry Pack",
+      "viewStatus": "View Preparation Status",
+      "readyToSubmit": "Ready to submit",
+      "completionProgress": "{{percent}}% complete",
+      "completionHint": "Complete all information to submit the entry card.",
       "sections": {
         "passport": "Passport Information",
         "personal": "Personal Information",
@@ -544,6 +925,41 @@
       "startButton": "Start preparing entry pack"
     }
   },
+  "thailand": {
+    "entryFlow": {
+      "title": "Thailand Entry Preparation Status",
+      "preparationTitle": "Thailand Entry Preparation Status",
+      "preparationSubtitle": "Check your entry information completion status",
+      "loading": "Loading preparation status...",
+      "completionStatus": "Completion Status",
+      "categories": "Information Categories",
+      "submissionWindow": "Submission Window",
+      "actions": "Actions",
+      "continueImproving": "Continue Improving Information",
+      "completeAllFields": "Need to complete information",
+      "setArrivalDate": "Please Set Arrival Date",
+      "arrivalDateRequired": "Arrival date required for submission",
+      "waitForWindow": "Wait for Submission Window",
+      "windowNotOpen": "Submission window not yet open",
+      "submitTDAC": "Submit Thailand Entry Card",
+      "readyToSubmit": "All information complete, ready to submit",
+      "editInfo": "Edit Information",
+      "preview": "Preview Entry Card",
+      "share": "Ask a friend to help fill in",
+      "noData": {
+        "title": "Start Filling Thailand Entry Information",
+        "description": "You haven't filled any entry information yet. Click the button below to start, and we'll guide you through the entire process.",
+        "hintsTitle": "You need to prepare:",
+        "startButton": "Start Filling"
+      },
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Fund Proof",
+        "travel": "Travel Information"
+      }
+    }
+  },
   "profile": {
     "funding": {
       "addButton": "Add Fund Item",
@@ -621,8 +1037,96 @@
     }
   },
   "common": {
+    "ok": "OK",
     "back": "Back",
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "reset": "Reset"
+  },
+  "notificationSettings": {
+    "loading": "Loading settings...",
+    "sections": {
+      "general": "General",
+      "types": "Notification Types",
+      "timing": "Timing",
+      "frequency": "Frequency",
+      "actions": "Actions",
+      "testing": "Testing & Reset"
+    },
+    "general": {
+      "enabled": "Enable Notifications",
+      "enabledDescription": "Receive notifications for entry preparation reminders"
+    },
+    "types": {
+      "submissionWindow": "Submission Window",
+      "submissionWindowDescription": "Notify when 72-hour submission window opens",
+      "urgentReminder": "Urgent Reminders",
+      "urgentReminderDescription": "Urgent reminders 24 hours before arrival",
+      "deadline": "Deadline Alerts",
+      "deadlineDescription": "Alerts on arrival day if not submitted",
+      "arrivalReminder": "Arrival Reminders",
+      "arrivalReminderDescription": "Remind 1 day before arrival",
+      "arrivalDay": "Arrival Day",
+      "arrivalDayDescription": "Good luck message on arrival day",
+      "dataChange": "Data Changes",
+      "dataChangeDescription": "Notify when data changes after submission",
+      "expiry": "Expiry Warnings",
+      "expiryDescription": "Warn when entry packs are about to expire",
+      "autoArchival": "Auto Archival",
+      "autoArchivalDescription": "Notify when entry packs are automatically archived"
+    },
+    "timing": {
+      "reminderTime": "Default Reminder Time",
+      "reminderTimeDescription": "Time of day for general reminders",
+      "quietHours": "Quiet Hours",
+      "quietHoursDescription": "Disable notifications during quiet hours",
+      "quietStart": "Quiet Hours Start",
+      "quietEnd": "Quiet Hours End"
+    },
+    "frequency": {
+      "dailySummary": "Daily Summary",
+      "dailySummaryDescription": "Receive one daily summary instead of individual notifications",
+      "summaryTime": "Summary Time",
+      "summaryTimeDescription": "Time for daily summary notification"
+    },
+    "actions": {
+      "quickActions": "Quick Actions",
+      "quickActionsDescription": "Show action buttons on notifications",
+      "test": "Test Notification",
+      "reset": "Reset to Defaults"
+    },
+    "status": {
+      "lastUpdated": "Last updated",
+      "version": "Version"
+    },
+    "error": {
+      "loadTitle": "Error",
+      "loadMessage": "Failed to load notification settings",
+      "saveTitle": "Error",
+      "saveMessage": "Failed to save setting",
+      "resetTitle": "Error",
+      "resetMessage": "Failed to reset settings",
+      "testTitle": "Error",
+      "testMessage": "Failed to schedule test notification"
+    },
+    "reset": {
+      "title": "Reset Settings",
+      "message": "This will reset all notification settings to default values. Continue?"
+    },
+    "test": {
+      "title": "Test Notification",
+      "body": "This is a test notification from TripSecretary",
+      "permissionTitle": "Permission Required",
+      "permissionMessage": "Please enable notifications in device settings first",
+      "scheduledTitle": "Test Scheduled",
+      "scheduledMessage": "Test notification will appear in 2 seconds"
+    },
+    "timePicker": {
+      "title": "Set Time",
+      "message": "Time picker will be implemented in a future update"
+    }
+  },
+  "screenTitles": {
+    "notificationSettings": "Notification Settings"
   }
 }

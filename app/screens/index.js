@@ -11,6 +11,7 @@ export { default as GeneratingScreen } from './GeneratingScreen';
 export { default as ResultScreen } from './ResultScreen';
 export { default as HistoryScreen } from './HistoryScreen';
 export { default as ProfileScreen } from './ProfileScreen';
+export { default as EntryPackHistoryScreen } from './EntryPackHistoryScreen';
 
 // Shared screens
 export { default as PresentToCustomsScreen } from './PresentToCustomsScreen';

@@ -23,12 +23,16 @@
     "@react-navigation/native-stack": "^6.9.17",
     "@types/react": "~18.2.14",
     "expo": "~49.0.0",
+    "expo-brightness": "~11.4.1",
     "expo-camera": "~13.4.4",
     "expo-file-system": "~15.4.0",
     "expo-image-picker": "~14.3.2",
     "expo-keep-awake": "~12.3.0",
+    "expo-local-authentication": "~13.4.1",
     "expo-media-library": "~15.4.1",
+    "expo-notifications": "~0.20.1",
     "expo-print": "~12.4.0",
+    "expo-screen-orientation": "~6.0.6",
     "expo-secure-store": "~12.3.1",
     "expo-sharing": "~11.5.0",
     "expo-splash-screen": "~0.20.5",
@@ -48,7 +52,11 @@
     "typescript": "^5.1.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "babel-jest": "^30.2.0",
+    "jest": "^30.2.0"
   },
   "keywords": [
     "travel",

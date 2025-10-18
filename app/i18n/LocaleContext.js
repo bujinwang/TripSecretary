@@ -157,4 +157,18 @@ export const getLanguageOptions = (t) =>
     label: NATIVE_LANGUAGE_NAMES[code] || code,
   }));
 
+/**
+ * Get user's preferred locale from AsyncStorage
+ * @returns {Promise<string>} User's preferred locale
+ */
+export const getUserPreferredLocale = async () => {
+  try {
+    const stored = await AsyncStorage.getItem(STORAGE_KEY);
+    return stored ? normalizeLanguage(stored) : detectDeviceLanguage();
+  } catch (error) {
+    console.error('Error getting user preferred locale:', error);
+    return DEFAULT_LANGUAGE;
+  }
+};
+
 export { SUPPORTED_LANGUAGES, translations };

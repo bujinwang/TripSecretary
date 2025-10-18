@@ -17,6 +17,9 @@ import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
 import PassportDataService from '../services/data/PassportDataService';
+import EntryPackService from '../services/entryPack/EntryPackService';
+import CountdownFormatter from '../utils/CountdownFormatter';
+import DateFormatter from '../utils/DateFormatter';
 
 const HOT_COUNTRIES = [
   { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
@@ -62,6 +65,9 @@ const HomeScreen = ({ navigation }) => {
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [passportData, setPassportData] = useState(null);
+  const [activeEntryPacks, setActiveEntryPacks] = useState([]);
+  const [multiDestinationData, setMultiDestinationData] = useState(null);
+  const [inProgressDestinations, setInProgressDestinations] = useState([]);
 
   const { t, language } = useLocale();
 
@@ -135,10 +141,11 @@ const HomeScreen = ({ navigation }) => {
   const pendingSectionTitle = t('home.sections.pending');
   const exploreSectionTitle = t('home.sections.whereToGo');
 
-  // 加载护照和历史记录
+  // 加载护照、历史记录和多目的地数据
   useEffect(() => {
     loadPassportData();
     loadHistory();
+    loadMultiDestinationData();
   }, []);
 
   const loadPassportData = async () => {
@@ -173,6 +180,45 @@ const HomeScreen = ({ navigation }) => {
       console.log('无法连接后端API，使用本地模拟数据:', error.message);
       // 使用mock数据作为后备（后端未运行时）
       setHistoryList(getMockHistory());
+    }
+  };
+
+  const loadMultiDestinationData = async () => {
+    try {
+      const userId = 'user_001'; // TODO: Get from auth context
+      await PassportDataService.initialize(userId);
+      
+      // Load home screen data with multi-destination support
+      const homeScreenData = await EntryPackService.getHomeScreenData(userId);
+      
+      console.log('Multi-destination data loaded:', {
+        submittedPacks: homeScreenData.submittedEntryPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length,
+        overallCompletion: homeScreenData.summary.overallCompletionPercent
+      });
+      
+      // Filter out archived entry packs from active display
+      const activeSubmittedPacks = homeScreenData.submittedEntryPacks.filter(pack => 
+        pack.status !== 'archived' && pack.status !== 'expired'
+      );
+      
+      // Set active entry packs (submitted ones, excluding archived)
+      setActiveEntryPacks(activeSubmittedPacks);
+      
+      // Set in-progress destinations
+      setInProgressDestinations(homeScreenData.inProgressDestinations);
+      
+      // Set overall multi-destination data
+      setMultiDestinationData({
+        ...homeScreenData,
+        submittedEntryPacks: activeSubmittedPacks
+      });
+      
+    } catch (error) {
+      console.log('Failed to load multi-destination data:', error.message);
+      setActiveEntryPacks([]);
+      setInProgressDestinations([]);
+      setMultiDestinationData(null);
     }
   };
 
@@ -324,6 +370,183 @@ const HomeScreen = ({ navigation }) => {
     ));
   };
 
+  const getDestinationFlag = (destinationId) => {
+    const flagMap = {
+      'th': '🇹🇭',
+      'jp': '🇯🇵',
+      'sg': '🇸🇬',
+      'my': '🇲🇾',
+      'hk': '🇭🇰',
+      'tw': '🇹🇼',
+      'kr': '🇰🇷',
+      'us': '🇺🇸'
+    };
+    return flagMap[destinationId] || '🌍';
+  };
+
+  const getDestinationName = (destinationId) => {
+    return t(`home.destinationNames.${destinationId}`, {
+      defaultValue: destinationId
+    });
+  };
+
+  const getArrivalCountdown = (arrivalDate) => {
+    if (!arrivalDate) return '';
+    
+    try {
+      const arrival = new Date(arrivalDate);
+      const now = new Date();
+      const diffMs = arrival.getTime() - now.getTime();
+      
+      if (diffMs <= 0) {
+        return t('progressiveEntryFlow.entryPack.arrivedToday', { defaultValue: '今日抵达' });
+      }
+      
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        return t('progressiveEntryFlow.entryPack.arrivesTomorrow', { defaultValue: '明日抵达' });
+      } else if (diffDays <= 7) {
+        return t('progressiveEntryFlow.entryPack.arrivesInDays', { 
+          days: diffDays,
+          defaultValue: `${diffDays}天后抵达`
+        });
+      } else {
+        return DateFormatter.formatDate(arrival, language);
+      }
+    } catch (error) {
+      console.log('Error formatting arrival countdown:', error);
+      return '';
+    }
+  };
+
+  const renderEntryPackCards = () => {
+    if (!activeEntryPacks.length) {
+      return null;
+    }
+
+    return activeEntryPacks.map((pack) => {
+      const flag = getDestinationFlag(pack.destinationId);
+      const destinationName = pack.destinationName || getDestinationName(pack.destinationId);
+      
+      // Get arrival date from entry info (we'll need to load this)
+      const arrivalCountdown = getArrivalCountdown(pack.arrivalDate);
+      
+      return (
+        <Card
+          key={pack.id}
+          style={[styles.historyCard, styles.entryPackCard]}
+          pressable
+          onPress={() => navigation.navigate('EntryPackDetail', { entryPackId: pack.id })}
+        >
+          <View style={styles.entryPackItem}>
+            <View style={styles.entryPackLeft}>
+              <Text style={styles.entryPackFlag}>{flag}</Text>
+              <View style={styles.entryPackQR}>
+                <Text style={styles.qrPlaceholder}>QR</Text>
+              </View>
+            </View>
+            <View style={styles.entryPackInfo}>
+              <Text style={styles.entryPackTitle}>
+                {t('progressiveEntryFlow.entryPack.title', { 
+                  destination: destinationName,
+                  defaultValue: `${destinationName} Entry Pack - Submitted`
+                })}
+              </Text>
+              <Text style={styles.entryPackStatus}>
+                {t('progressiveEntryFlow.entryPack.submitted', { defaultValue: '已提交' })}
+              </Text>
+              <Text style={styles.entryPackCountdown}>
+                {arrivalCountdown}
+              </Text>
+            </View>
+            <Text style={styles.historyArrow}>›</Text>
+          </View>
+        </Card>
+      );
+    });
+  };
+
+  const renderInProgressDestinationCards = () => {
+    if (!inProgressDestinations.length) {
+      return null;
+    }
+
+    return inProgressDestinations.map((destination) => {
+      const flag = getDestinationFlag(destination.destinationId);
+      const destinationName = destination.destinationName || getDestinationName(destination.destinationId);
+      
+      return (
+        <Card
+          key={destination.destinationId}
+          style={[styles.historyCard, styles.inProgressCard]}
+          pressable
+          onPress={() => {
+            // Navigate to the appropriate travel info screen for this destination
+            const screenMap = {
+              'jp': 'JapanTravelInfo',
+              'th': 'ThailandTravelInfo',
+              'hk': 'HongKongTravelInfo',
+              'tw': 'TaiwanTravelInfo',
+              'kr': 'KoreaTravelInfo',
+              'sg': 'SingaporeTravelInfo',
+              'my': 'MalaysiaTravelInfo',
+              'us': 'USATravelInfo',
+            };
+            
+            const screenName = screenMap[destination.destinationId];
+            if (screenName) {
+              navigation.navigate(screenName, {
+                destination: {
+                  id: destination.destinationId,
+                  name: destinationName,
+                  flag: flag
+                },
+                passport: passportData ? {
+                  type: t('home.passport.type'),
+                  name: passportData.fullName || '',
+                  nameEn: passportData.fullName || '',
+                  passportNo: passportData.passportNumber || '',
+                  expiry: passportData.expiryDate || '',
+                } : null
+              });
+            }
+          }}
+        >
+          <View style={styles.entryPackItem}>
+            <View style={styles.inProgressLeft}>
+              <Text style={styles.entryPackFlag}>{flag}</Text>
+              <View style={styles.progressIndicator}>
+                <Text style={styles.progressPercent}>{destination.completionPercent}%</Text>
+              </View>
+            </View>
+            <View style={styles.entryPackInfo}>
+              <Text style={styles.entryPackTitle}>
+                {t('progressiveEntryFlow.inProgress.title', { 
+                  destination: destinationName,
+                  defaultValue: `${destinationName} - In Progress`
+                })}
+              </Text>
+              <Text style={styles.inProgressStatus}>
+                {destination.isReady 
+                  ? t('progressiveEntryFlow.inProgress.ready', { defaultValue: '准备提交' })
+                  : t('progressiveEntryFlow.inProgress.incomplete', { defaultValue: '填写中' })
+                }
+              </Text>
+              <Text style={styles.entryPackCountdown}>
+                {t('progressiveEntryFlow.inProgress.completionPercent', { 
+                  percent: destination.completionPercent,
+                  defaultValue: `${destination.completionPercent}% 完成`
+                })}
+              </Text>
+            </View>
+            <Text style={styles.historyArrow}>›</Text>
+          </View>
+        </Card>
+      );
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -349,10 +572,54 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.welcomeText}>{welcomeMessage}</Text>
         </View>
 
-        {/* Pending Entries */}
-        {upcomingTrips.length > 0 && (
+        {/* Pending Entries - Entry Packs and In-Progress Destinations */}
+        {(activeEntryPacks.length > 0 || inProgressDestinations.length > 0 || upcomingTrips.length > 0) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{pendingSectionTitle}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{pendingSectionTitle}</Text>
+              <TouchableOpacity
+                style={styles.viewHistoryButton}
+                onPress={() => navigation.navigate('EntryPackHistory')}
+              >
+                <Text style={styles.viewHistoryText}>
+                  {t('home.viewHistory', { defaultValue: '查看历史' })}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Multi-destination Progress Summary */}
+            {multiDestinationData && multiDestinationData.summary.hasAnyProgress && (
+              <Card style={[styles.historyCard, styles.summaryCard]}>
+                <View style={styles.summaryContent}>
+                  <View style={styles.summaryLeft}>
+                    <Text style={styles.summaryIcon}>🌍</Text>
+                  </View>
+                  <View style={styles.summaryInfo}>
+                    <Text style={styles.summaryTitle}>
+                      {t('progressiveEntryFlow.multiDestination.summary', { 
+                        defaultValue: '多目的地进度'
+                      })}
+                    </Text>
+                    <Text style={styles.summaryStats}>
+                      {t('progressiveEntryFlow.multiDestination.stats', {
+                        submitted: multiDestinationData.summary.submittedEntryPacks,
+                        inProgress: multiDestinationData.summary.inProgressDestinations,
+                        overall: multiDestinationData.summary.overallCompletionPercent,
+                        defaultValue: `${multiDestinationData.summary.submittedEntryPacks} 已提交 • ${multiDestinationData.summary.inProgressDestinations} 进行中 • 总体 ${multiDestinationData.summary.overallCompletionPercent}% 完成`
+                      })}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
+            )}
+            
+            {/* Active Entry Packs (Submitted) */}
+            {renderEntryPackCards()}
+            
+            {/* In-Progress Destinations */}
+            {renderInProgressDestinationCards()}
+            
+            {/* Mock Upcoming Trips */}
             {upcomingTrips.map((trip) => (
               <Card
                 key={trip.id}
@@ -379,6 +646,40 @@ const HomeScreen = ({ navigation }) => {
             ))}
           </View>
         )}
+
+        {/* History Section - Always show */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('home.sections.history', { defaultValue: '历史记录' })}
+            </Text>
+            <TouchableOpacity
+              style={styles.viewHistoryButton}
+              onPress={() => navigation.navigate('EntryPackHistory')}
+            >
+              <Text style={styles.viewHistoryText}>
+                {t('home.viewAllHistory', { defaultValue: '查看全部' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.historyPreviewCard}
+            onPress={() => navigation.navigate('EntryPackHistory')}
+          >
+            <View style={styles.historyPreviewContent}>
+              <Text style={styles.historyPreviewIcon}>📋</Text>
+              <View style={styles.historyPreviewInfo}>
+                <Text style={styles.historyPreviewTitle}>
+                  {t('home.historyPreview.title', { defaultValue: '查看您的旅行历史' })}
+                </Text>
+                <Text style={styles.historyPreviewSubtitle}>
+                  {t('home.historyPreview.subtitle', { defaultValue: '已完成的入境包和旅程记录' })}
+                </Text>
+              </View>
+              <Text style={styles.historyArrow}>›</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Where to Go */}
         <View style={styles.section}>
@@ -542,10 +843,53 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.md,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   sectionTitle: {
     ...typography.h3,
     color: colors.text,
     fontWeight: '600',
+  },
+  viewHistoryButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  viewHistoryText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '500',
+  },
+  historyPreviewCard: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  historyPreviewContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  historyPreviewIcon: {
+    fontSize: 32,
+    marginRight: spacing.md,
+  },
+  historyPreviewInfo: {
+    flex: 1,
+  },
+  historyPreviewTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  historyPreviewSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   viewAllText: {
     ...typography.body1,
@@ -588,6 +932,124 @@ const styles = StyleSheet.create({
   historyArrow: {
     ...typography.h2,
     color: colors.textDisabled,
+  },
+
+  // Entry Pack Card Styles
+  entryPackCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.success,
+  },
+  entryPackItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  entryPackLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  entryPackFlag: {
+    fontSize: 32,
+    marginRight: spacing.sm,
+  },
+  entryPackQR: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  qrPlaceholder: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  entryPackInfo: {
+    flex: 1,
+  },
+  entryPackTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  entryPackStatus: {
+    ...typography.caption,
+    color: colors.success,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  entryPackCountdown: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+
+  // In-Progress Destination Card Styles
+  inProgressCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.warning,
+  },
+  inProgressLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  progressIndicator: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.warningLight,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  progressPercent: {
+    ...typography.caption,
+    color: colors.warning,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  inProgressStatus: {
+    ...typography.caption,
+    color: colors.warning,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+
+  // Multi-destination Summary Card Styles
+  summaryCard: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginBottom: spacing.sm,
+  },
+  summaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  summaryLeft: {
+    marginRight: spacing.md,
+  },
+  summaryIcon: {
+    fontSize: 32,
+  },
+  summaryInfo: {
+    flex: 1,
+  },
+  summaryTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  summaryStats: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
 });
 

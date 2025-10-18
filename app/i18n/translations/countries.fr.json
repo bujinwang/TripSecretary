@@ -1,4 +1,313 @@
 {
+  "progressiveEntryFlow": {
+    "status": {
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "expired": "Expiré",
+      "inProgress": "En Cours",
+      "needsResubmission": "Nécessite une Nouvelle Soumission"
+    },
+    "snapshot": {
+      "readOnlyBanner": "Ceci est un instantané historique et ne peut pas être modifié",
+      "viewTitle": "Historique - Lecture Seule",
+      "legacyBadge": "Ceci est un enregistrement historique hérité",
+      "incompleteNotice": "Ce pack d'entrée n'a pas été complété",
+      "completenessIndicator": "Passeport {{passport}}, Info Personnelle {{personal}}, Fonds {{funds}}, Info Voyage {{travel}}"
+    },
+    "history": {
+      "title": "Historique",
+      "filterOptions": {
+        "all": "Tous",
+        "completed": "Terminés",
+        "cancelled": "Annulés",
+        "expired": "Expirés"
+      },
+      "timeGroups": {
+        "today": "Aujourd'hui",
+        "yesterday": "Hier",
+        "thisWeek": "Cette Semaine",
+        "thisMonth": "Ce Mois",
+        "earlier": "Plus Tôt"
+      },
+      "resultCount": "Affichage de {{count}} résultats",
+      "deleteConfirm": "Ceci ne peut pas être annulé. Êtes-vous sûr de vouloir supprimer ?",
+      "storageUsage": "Stockage historique : {{size}} MB"
+    },
+    "entryPack": {
+      "title": "Pack d'Entrée {{destination}} - Soumis",
+      "submitted": "Soumis",
+      "arrivedToday": "Arrivée Aujourd'hui",
+      "arrivesTomorrow": "Arrivée Demain",
+      "arrivesInDays": "Arrivée dans {{days}} jours"
+    },
+    "notifications": {
+      "autoArchived": "Votre pack d'entrée {{destination}} a été archivé automatiquement",
+      "reminderTitle": "Compléter les Informations d'Entrée",
+      "reminderBody": "Votre voyage vers {{destination}} a des informations incomplètes",
+      "submissionWindow": "Vous pouvez maintenant soumettre votre carte d'entrée en Thaïlande",
+      "urgentReminder": "{{hours}} heures jusqu'à la date limite",
+      "submissionWindowOpen": {
+        "title": "Soumission de Carte d'Entrée Thaïlande Disponible",
+        "body": "Vous pouvez maintenant soumettre votre carte d'entrée en Thaïlande. {{daysRemaining}} jours jusqu'à l'arrivée."
+      },
+      "urgentReminderNotification": {
+        "title": "Urgent : Veuillez Soumettre la Carte d'Entrée Bientôt",
+        "body": "{{hoursRemaining}} heures jusqu'à la date limite d'entrée en Thaïlande. Veuillez compléter la soumission immédiatement."
+      },
+      "deadlineWarning": {
+        "title": "Aujourd'hui est la Date Limite de Soumission",
+        "body": "Aujourd'hui est le dernier jour pour soumettre votre carte d'entrée en Thaïlande. Veuillez compléter la soumission immédiatement pour éviter les problèmes d'entrée."
+      },
+      "arrivalReminder": {
+        "title": "Arrivée en Thaïlande Demain",
+        "body": "Vous arriverez en Thaïlande demain. Veuillez préparer votre carte d'entrée et les documents connexes."
+      },
+      "arrivalDay": {
+        "title": "Arrivée en Thaïlande Aujourd'hui, Bon Voyage !",
+        "body": "Aujourd'hui c'est votre voyage en Thaïlande ! N'oubliez pas de préparer votre carte d'entrée et votre passeport. Météo : {{weather}}"
+      },
+      "dataChangeDetected": {
+        "title": "Données Modifiées, Peut Nécessiter une Nouvelle Soumission",
+        "body": "Vos informations {{changedFields}} ont changé. Vous pourriez avoir besoin de soumettre à nouveau votre carte d'entrée."
+      },
+      "entryPackSuperseded": {
+        "title": "Pack d'Entrée Remplacé, Veuillez Soumettre à Nouveau",
+        "body": "Votre pack d'entrée a été marqué comme remplacé. Veuillez soumettre à nouveau pour assurer une entrée en douceur."
+      },
+      "entryPackExpired": {
+        "title": "Le Pack d'Entrée Expirera Bientôt",
+        "body": "Votre pack d'entrée expirera dans {{daysUntilExpiry}} jours. Veuillez considérer l'archivage ou la mise à jour."
+      },
+      "entryPackArchived": {
+        "title": "Pack d'Entrée Archivé Automatiquement",
+        "body": "Votre pack d'entrée {{destination}} a été automatiquement archivé dans l'historique."
+      },
+      "incompleteDataReminder": {
+        "title": "Compléter les Informations d'Entrée",
+        "body": "Votre voyage vers {{destination}} a des informations incomplètes. Complété : {{completionPercent}}%"
+      },
+      "storageWarning": {
+        "title": "Espace de Stockage Faible",
+        "body": "Les enregistrements historiques utilisent un espace significatif ({{usedSpace}}MB). Considérez nettoyer les anciens enregistrements."
+      },
+      "backupCompleted": {
+        "title": "Sauvegarde des Données Terminée",
+        "body": "Vos données de pack d'entrée ont été sauvegardées avec succès. Taille de sauvegarde : {{backupSize}}MB"
+      },
+      "actions": {
+        "submit": "Soumettre Maintenant",
+        "later": "Rappeler Plus Tard",
+        "ignore": "Ignorer",
+        "view": "Voir la Carte d'Entrée",
+        "guide": "Voir le Guide",
+        "itinerary": "Voir l'Itinéraire",
+        "resubmit": "Soumettre à Nouveau",
+        "resubmitImmediately": "Soumettre à Nouveau Immédiatement",
+        "archive": "Archiver",
+        "viewHistory": "Voir l'Historique",
+        "dismiss": "Compris",
+        "continue": "Continuer à Remplir",
+        "cleanup": "Nettoyer Maintenant",
+        "settings": "Voir les Paramètres",
+        "viewBackup": "Voir la Sauvegarde"
+      }
+    },
+    "entryFlow": {
+      "viewStatus": "Voir le Statut de Préparation",
+      "submitTDAC": "Soumettre TDAC Automatiquement",
+      "resubmitTDAC": "Soumettre à Nouveau la Carte d'Entrée",
+      "continueEditing": "Continuer l'Édition",
+      "editInformation": "Modifier les Informations",
+      "startGuide": "Commencer le Guide d'Immigration",
+      "manualCopy": "Copie Manuelle",
+      "webviewFill": "Remplissage Automatique WebView",
+      "incompleteMessage": "Ce voyage n'est pas complet, veuillez continuer à remplir les informations",
+      "resubmissionWarning": "Modifier les informations nécessitera une nouvelle soumission. Continuer ?",
+      "completionPercent": "{{percent}}% Terminé"
+    },
+    "countdown": {
+      "noDate": "Aucune date d'arrivée en Thaïlande définie, impossible de soumettre la carte d'entrée",
+      "preWindow": "{{days}} jours {{hours}}:{{minutes}} jusqu'à l'ouverture de la soumission",
+      "withinWindow": "{{hours}}:{{minutes}} jusqu'à la date limite, veuillez soumettre bientôt",
+      "urgent": "{{hours}} heures {{minutes}} minutes jusqu'à la date limite"
+    },
+    "categories": {
+      "passport": "Informations du Passeport",
+      "personal": "Informations Personnelles",
+      "funds": "Preuve de Fonds",
+      "travel": "Informations de Voyage",
+      "fieldsComplete": "{{filled}}/{{total}} champs complétés"
+    },
+    "dataChange": {
+      "handleError": "Erreur lors du traitement des changements de données, veuillez réessayer.",
+      "confirmResubmit": {
+        "title": "Confirmer la Nouvelle Soumission",
+        "message": "Soumettre à nouveau invalidera la carte d'entrée actuelle, et vous devrez régénérer la carte d'entrée. Êtes-vous sûr de vouloir continuer ?"
+      },
+      "confirmIgnore": {
+        "title": "Ignorer les Changements",
+        "message": "Ignorer les changements peut causer une discordance d'informations lors de l'entrée. Il est recommandé de soumettre à nouveau pour assurer la précision des informations. Êtes-vous sûr de vouloir ignorer ?"
+      },
+      "detailsTitle": "Détails des Changements",
+      "totalChanges": "Changements Totaux",
+      "significantChanges": "Changements Significatifs",
+      "minorChanges": "Changements Mineurs",
+      "resubmit": "Soumettre à Nouveau",
+      "ignore": "Ignorer les Changements",
+      "viewDetails": "Voir les Détails"
+    },
+    "superseded": {
+      "resubmitHint": "Informations mises à jour, nouvelle soumission requise",
+      "message": "Vos informations d'entrée ont été mises à jour, et vous devez soumettre à nouveau la carte d'entrée pour assurer la précision des informations."
+    },
+    "immigrationOfficer": {
+      "title": "Montrer à l'Agent",
+      "exitButton": "Quitter le Mode Présentation",
+      "languageToggle": "Basculer la Langue",
+      "sections": {
+        "qrCode": "Code QR",
+        "passport": "Informations du Passeport",
+        "travel": "Informations de Voyage",
+        "funds": "Preuve de Fonds",
+        "contact": "Informations de Contact"
+      },
+      "quickActions": {
+        "showQR": "Afficher le Code QR",
+        "showPassport": "Afficher le Passeport",
+        "showFunds": "Afficher les Fonds",
+        "showHotel": "Afficher l'Hôtel",
+        "showTicket": "Afficher le Billet"
+      },
+      "offlineMode": "Mode Hors Ligne - Utilisation des données en cache",
+      "disclaimer": "Ceci est un document préparé par le voyageur. Veuillez vérifier avec les systèmes officiels.",
+      "authentication": {
+        "title": "Authentification",
+        "message": "Authentification requise pour montrer les documents aux agents d'immigration",
+        "authenticate": "Authentifier",
+        "cancel": "Annuler"
+      },
+      "presentation": {
+        "exitTitle": "Quitter le Mode Présentation",
+        "exitMessage": "Êtes-vous sûr de vouloir quitter le mode présentation ?",
+        "exit": "Quitter",
+        "cancel": "Annuler",
+        "showMoreInfo": "Afficher Plus d'Informations",
+        "showLessInfo": "Afficher Moins d'Informations",
+        "exitHint": "Glisser vers le bas pour quitter",
+        "tdacQRCode": "Code QR TDAC",
+        "submitted": "Soumis",
+        "passportInformation": "Informations du Passeport",
+        "travelInformation": "Informations de Voyage",
+        "fullName": "Nom Complet",
+        "passportNumber": "Numéro de Passeport",
+        "nationality": "Nationalité",
+        "dateOfBirth": "Date de Naissance",
+        "gender": "Genre",
+        "passportExpiry": "Expiration du Passeport",
+        "flightDetails": "Détails du Vol",
+        "arrivalFlight": "Vol d'Arrivée",
+        "arrivalDateTime": "Date et Heure d'Arrivée",
+        "departureDate": "Date de Départ",
+        "accommodation": "Hébergement",
+        "hotelName": "Nom de l'Hôtel",
+        "address": "Adresse",
+        "phone": "Téléphone",
+        "visitPurpose": "Objectif de la Visite",
+        "purpose": "Objectif",
+        "durationOfStay": "Durée du Séjour",
+        "qrCodePlaceholder": "Code QR",
+        "qrCodeSubtext": "Apparaîtra après la soumission TDAC",
+        "saveQRCode": "Sauvegarder le Code QR",
+        "saveQRMessage": "Sauvegarder le code QR dans l'album photo ?",
+        "save": "Sauvegarder",
+        "saved": "Sauvegardé",
+        "qrCodeSaved": "Code QR sauvegardé dans l'album photo"
+      },
+      "help": {
+        "title": "Aide aux Gestes",
+        "pinchZoom": "Pincer pour zoomer le code QR (50% - 200%)",
+        "doubleTap": "Double-tap pour basculer l'affichage des informations",
+        "longPress": "Appui long sur le code QR pour sauvegarder dans l'album",
+        "swipeDown": "Glisser vers le bas depuis le haut pour quitter",
+        "gotIt": "Compris"
+      },
+      "languageModes": {
+        "bilingual": "Bilingue",
+        "thai": "Thaï Seulement",
+        "english": "Anglais Seulement"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Statut de Préparation d'Entrée en Thaïlande",
+      "preparationTitle": "Statut de Préparation d'Entrée en Thaïlande",
+      "preparationSubtitle": "Vérifiez le statut de completion de vos informations d'entrée",
+      "loading": "Chargement du statut de préparation...",
+      "completionStatus": "Statut de Completion",
+      "categories": "Catégories d'Informations",
+      "submissionWindow": "Fenêtre de Soumission",
+      "actions": "Actions",
+      "continueImproving": "Continuer à Améliorer les Informations",
+      "completeAllFields": "Besoin de compléter les informations",
+      "setArrivalDate": "Veuillez Définir la Date d'Arrivée",
+      "arrivalDateRequired": "Date d'arrivée requise pour la soumission",
+      "waitForWindow": "Attendre la Fenêtre de Soumission",
+      "windowNotOpen": "Fenêtre de soumission pas encore ouverte",
+      "submitTDAC": "Soumettre la Carte d'Entrée en Thaïlande",
+      "readyToSubmit": "Toutes les informations complètes, prêt à soumettre",
+      "editInfo": "Modifier les Informations",
+      "preview": "Aperçu de la Carte d'Entrée",
+      "share": "Demander à un ami de compléter pour vous",
+      "noData": {
+        "title": "Commencer à Remplir les Informations d'Entrée en Thaïlande",
+        "description": "Vous n'avez pas encore rempli d'informations d'entrée. Cliquez sur le bouton ci-dessous pour commencer, et nous vous guiderons à travers tout le processus.",
+        "hintsTitle": "Vous devez préparer :",
+        "startButton": "Commencer à Remplir"
+      },
+      "categories": {
+        "passport": "Informations du Passeport",
+        "personal": "Informations Personnelles",
+        "funds": "Preuve de Fonds",
+        "travel": "Informations de Voyage"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Statut de Préparation d'Entrée en Thaïlande",
+      "preparationTitle": "Statut de Préparation d'Entrée en Thaïlande",
+      "preparationSubtitle": "Vérifiez le statut de completion de vos informations d'entrée",
+      "loading": "Chargement du statut de préparation...",
+      "completionStatus": "Statut de Completion",
+      "categories": "Catégories d'Informations",
+      "submissionWindow": "Fenêtre de Soumission",
+      "actions": "Actions",
+      "continueImproving": "Continuer à Améliorer les Informations",
+      "completeAllFields": "Besoin de compléter les informations",
+      "setArrivalDate": "Veuillez Définir la Date d'Arrivée",
+      "arrivalDateRequired": "Date d'arrivée requise pour la soumission",
+      "waitForWindow": "Attendre la Fenêtre de Soumission",
+      "windowNotOpen": "Fenêtre de soumission pas encore ouverte",
+      "submitTDAC": "Soumettre la Carte d'Entrée en Thaïlande",
+      "readyToSubmit": "Toutes les informations complètes, prêt à soumettre",
+      "editInfo": "Modifier les Informations",
+      "preview": "Aperçu de la Carte d'Entrée",
+      "share": "Demander à un ami de compléter pour vous",
+      "noData": {
+        "title": "Commencer à Remplir les Informations d'Entrée en Thaïlande",
+        "description": "Vous n'avez pas encore rempli d'informations d'entrée. Cliquez sur le bouton ci-dessous pour commencer, et nous vous guiderons à travers tout le processus.",
+        "hintsTitle": "Vous devez préparer :",
+        "startButton": "Commencer à Remplir"
+      },
+      "categories": {
+        "passport": "Informations du Passeport",
+        "personal": "Informations Personnelles",
+        "funds": "Preuve de Fonds",
+        "travel": "Informations de Voyage"
+      }
+    }
+  },
   "malaysia": {
     "info": {
       "headerTitle": "Informations d'entrée en Malaisie",

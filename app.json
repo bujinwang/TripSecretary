@@ -56,6 +56,15 @@
           "savePhotosPermission": "需要保存TDAC入境卡二维码到相册",
           "isAccessMediaLocationEnabled": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#07C160",
+          "sounds": ["./assets/notification-sound.wav"],
+          "mode": "production"
+        }
       ]
     ]
   }

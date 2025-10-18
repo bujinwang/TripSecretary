@@ -17,6 +17,7 @@ export const colors = {
   // Background Colors
   white: '#FFFFFF',          // Pure white
   background: '#F5F5F5',     // Light gray background
+  backgroundLight: '#FAFAFA', // Very light gray background
   card: '#FFFFFF',           // Card background
   
   // Border & Divider

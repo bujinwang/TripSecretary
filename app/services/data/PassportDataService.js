@@ -1084,6 +1084,388 @@ class PassportDataService {
    }
 
   // ============================================================================
+  // ENTRY INFO OPERATIONS (Progressive Entry Flow)
+  // ============================================================================
+
+  /**
+   * Get entry info for a user and destination
+   * @param {string} userId - User ID
+   * @param {string} destinationId - Destination ID (optional)
+   * @returns {Promise<EntryInfo|null>} - Entry info instance or null
+   */
+  static async getEntryInfo(userId, destinationId = null) {
+    try {
+      console.log(`Getting entry info for user ${userId}, destination: ${destinationId || 'any'}`);
+      
+      const cacheKey = `entryInfo_${userId}_${destinationId || 'default'}`;
+
+      // Check cache first
+      if (this.isCacheValid(cacheKey)) {
+        const cached = this.cache.entryInfo?.get(`${userId}_${destinationId || 'default'}`);
+        if (cached) {
+          this.recordCacheHit('entryInfo', userId);
+          return cached;
+        }
+      }
+
+      // Cache miss - load from database
+      this.recordCacheMiss('entryInfo', userId);
+      
+      // Load entry info from storage
+      const entryInfoData = await SecureStorageService.getEntryInfo(userId, destinationId);
+      
+      let entryInfo = null;
+      if (entryInfoData) {
+        const EntryInfo = require('../../models/EntryInfo').default;
+        entryInfo = new EntryInfo(entryInfoData);
+      }
+
+      // Update cache
+      if (entryInfo) {
+        if (!this.cache.entryInfo) {
+          this.cache.entryInfo = new Map();
+        }
+        this.cache.entryInfo.set(`${userId}_${destinationId || 'default'}`, entryInfo);
+        this.updateCacheTimestamp(cacheKey);
+      }
+
+      return entryInfo;
+    } catch (error) {
+      console.error('Failed to get entry info:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save entry info for a user
+   * @param {Object} entryInfoData - Entry info data
+   * @param {string} userId - User ID
+   * @returns {Promise<EntryInfo>} - Saved entry info instance
+   */
+  static async saveEntryInfo(entryInfoData, userId) {
+    try {
+      console.log('Saving entry info for user:', userId);
+      
+      const EntryInfo = require('../../models/EntryInfo').default;
+      
+      // Create entry info instance
+      const entryInfo = new EntryInfo({
+        ...entryInfoData,
+        userId
+      });
+
+      // Save to database
+      await entryInfo.save({ skipValidation: true });
+
+      // Invalidate cache
+      const destinationId = entryInfo.destinationId || 'default';
+      this.invalidateCache('entryInfo', `${userId}_${destinationId}`);
+
+      // Update cache with new data
+      if (!this.cache.entryInfo) {
+        this.cache.entryInfo = new Map();
+      }
+      this.cache.entryInfo.set(`${userId}_${destinationId}`, entryInfo);
+      this.updateCacheTimestamp(`entryInfo_${userId}_${destinationId}`);
+
+      console.log(`Entry info saved for user ${userId}`);
+      return entryInfo;
+    } catch (error) {
+      console.error('Failed to save entry info:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update entry info status
+   * @param {string} entryInfoId - Entry info ID
+   * @param {string} newStatus - New status (ready, submitted, superseded, expired, archived)
+   * @param {Object} options - Additional options
+   * @returns {Promise<EntryInfo>} - Updated entry info instance
+   */
+  static async updateEntryInfoStatus(entryInfoId, newStatus, options = {}) {
+    try {
+      console.log(`Updating entry info status: ${entryInfoId} -> ${newStatus}`);
+      
+      const EntryInfo = require('../../models/EntryInfo').default;
+      
+      // Load existing entry info
+      const entryInfo = await EntryInfo.load(entryInfoId);
+      if (!entryInfo) {
+        throw new Error(`Entry info not found: ${entryInfoId}`);
+      }
+
+      const oldStatus = entryInfo.status;
+      
+      // Update status using the model's method
+      entryInfo.updateStatus(newStatus, options.reason);
+      
+      // If marking as submitted, store TDAC submission data
+      if (newStatus === 'submitted' && options.tdacSubmission) {
+        entryInfo.markAsSubmitted(options.tdacSubmission);
+      }
+
+      // Save updated entry info
+      await entryInfo.save({ skipValidation: true });
+
+      // Invalidate cache
+      const destinationId = entryInfo.destinationId || 'default';
+      this.invalidateCache('entryInfo', `${entryInfo.userId}_${destinationId}`);
+
+      // Update cache with new data
+      if (!this.cache.entryInfo) {
+        this.cache.entryInfo = new Map();
+      }
+      this.cache.entryInfo.set(`${entryInfo.userId}_${destinationId}`, entryInfo);
+      this.updateCacheTimestamp(`entryInfo_${entryInfo.userId}_${destinationId}`);
+
+      // Trigger state change event for notification system
+      this.triggerEntryInfoStateChangeEvent(entryInfo, oldStatus, newStatus, options);
+
+      console.log(`Entry info status updated: ${entryInfoId} (${oldStatus} -> ${newStatus})`);
+      return entryInfo;
+    } catch (error) {
+      console.error('Failed to update entry info status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get entry info by destination
+   * @param {string} destinationId - Destination ID
+   * @param {string} tripId - Trip ID (optional)
+   * @returns {Promise<EntryInfo|null>} - Entry info instance or null
+   */
+  static async getEntryInfoByDestination(destinationId, tripId = null) {
+    try {
+      console.log(`Getting entry info by destination: ${destinationId}, trip: ${tripId || 'any'}`);
+      
+      // Load from storage - this would need to be implemented in SecureStorageService
+      const entryInfoData = await SecureStorageService.getEntryInfoByDestination(destinationId, tripId);
+      
+      if (!entryInfoData) {
+        return null;
+      }
+
+      const EntryInfo = require('../../models/EntryInfo').default;
+      return new EntryInfo(entryInfoData);
+    } catch (error) {
+      console.error('Failed to get entry info by destination:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all entry infos for a user across all destinations
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} - Array of EntryInfo instances
+   */
+  static async getAllEntryInfosForUser(userId) {
+    try {
+      console.log(`Getting all entry infos for user: ${userId}`);
+      
+      // Load all entry infos from storage
+      const allEntryInfoData = await SecureStorageService.getAllEntryInfosForUser(userId);
+      
+      if (!allEntryInfoData || allEntryInfoData.length === 0) {
+        console.log(`No entry infos found for user: ${userId}`);
+        return [];
+      }
+
+      const EntryInfo = require('../../models/EntryInfo').default;
+      const entryInfos = allEntryInfoData.map(data => new EntryInfo(data));
+      
+      console.log(`${entryInfos.length} entry infos loaded for user ${userId}`);
+
+      return entryInfos;
+    } catch (error) {
+      console.error(`Failed to get all entry infos for user ${userId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get entry infos for multiple destinations
+   * @param {string} userId - User ID
+   * @param {Array} destinationIds - Array of destination IDs
+   * @returns {Promise<Object>} - Object with destinationId as key and EntryInfo as value
+   */
+  static async getEntryInfosForDestinations(userId, destinationIds) {
+    try {
+      console.log(`Getting entry infos for destinations:`, destinationIds);
+      
+      const entryInfos = {};
+      
+      // Load entry info for each destination
+      for (const destinationId of destinationIds) {
+        try {
+          const entryInfo = await this.getEntryInfoByDestination(destinationId);
+          entryInfos[destinationId] = entryInfo;
+        } catch (error) {
+          console.log(`Failed to load entry info for destination ${destinationId}:`, error.message);
+          entryInfos[destinationId] = null;
+        }
+      }
+      
+      console.log(`Entry infos loaded for ${Object.keys(entryInfos).length} destinations`);
+      
+      return entryInfos;
+    } catch (error) {
+      console.error('Failed to get entry infos for destinations:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Trigger state change event for notification system
+   * @param {EntryInfo} entryInfo - Entry info instance
+   * @param {string} oldStatus - Previous status
+   * @param {string} newStatus - New status
+   * @param {Object} options - Additional options
+   */
+  static triggerEntryInfoStateChangeEvent(entryInfo, oldStatus, newStatus, options = {}) {
+    try {
+      // Create state change event
+      const event = {
+        type: 'ENTRY_INFO_STATUS_CHANGED',
+        timestamp: new Date().toISOString(),
+        entryInfoId: entryInfo.id,
+        userId: entryInfo.userId,
+        destinationId: entryInfo.destinationId,
+        tripId: entryInfo.tripId,
+        oldStatus,
+        newStatus,
+        reason: options.reason,
+        metadata: {
+          completionPercent: entryInfo.getTotalCompletionPercent(),
+          isReady: entryInfo.isReadyForSubmission(),
+          requiresResubmission: entryInfo.requiresResubmission(),
+          arrivalDate: entryInfo.arrivalDate,
+          lastUpdatedAt: entryInfo.lastUpdatedAt
+        }
+      };
+
+      // Emit event for notification system
+      // In a real implementation, this would use an event emitter or message queue
+      console.log('Entry info state change event:', event);
+      
+      // Store event for potential notification processing
+      this.storeStateChangeEvent(event);
+      
+      // Trigger immediate notification processing if needed
+      if (this.shouldTriggerImmediateNotification(oldStatus, newStatus)) {
+        this.processImmediateNotification(event);
+      }
+    } catch (error) {
+      console.error('Failed to trigger state change event:', error);
+      // Don't throw - this is a side effect and shouldn't break the main operation
+    }
+  }
+
+  /**
+   * Store state change event for processing
+   * @param {Object} event - State change event
+   */
+  static storeStateChangeEvent(event) {
+    try {
+      // Store in a simple in-memory queue for now
+      // In production, this would use a proper event store or message queue
+      if (!this.stateChangeEvents) {
+        this.stateChangeEvents = [];
+      }
+      
+      this.stateChangeEvents.push(event);
+      
+      // Keep only recent events (last 100)
+      if (this.stateChangeEvents.length > 100) {
+        this.stateChangeEvents = this.stateChangeEvents.slice(-100);
+      }
+      
+      console.log(`State change event stored. Queue size: ${this.stateChangeEvents.length}`);
+    } catch (error) {
+      console.error('Failed to store state change event:', error);
+    }
+  }
+
+  /**
+   * Check if immediate notification should be triggered
+   * @param {string} oldStatus - Previous status
+   * @param {string} newStatus - New status
+   * @returns {boolean} - Should trigger immediate notification
+   */
+  static shouldTriggerImmediateNotification(oldStatus, newStatus) {
+    // Trigger immediate notifications for important status changes
+    const immediateNotificationTransitions = [
+      'ready->submitted',
+      'submitted->superseded',
+      'submitted->expired',
+      'in_progress->archived'
+    ];
+    
+    const transition = `${oldStatus}->${newStatus}`;
+    return immediateNotificationTransitions.includes(transition);
+  }
+
+  /**
+   * Process immediate notification
+   * @param {Object} event - State change event
+   */
+  static processImmediateNotification(event) {
+    try {
+      console.log('Processing immediate notification for event:', event.type);
+      
+      // This would integrate with the notification service
+      // For now, just log the notification that should be sent
+      const { oldStatus, newStatus, metadata } = event;
+      
+      if (oldStatus === 'ready' && newStatus === 'submitted') {
+        console.log('Should send notification: Entry pack submitted successfully');
+      } else if (oldStatus === 'submitted' && newStatus === 'superseded') {
+        console.log('Should send notification: Entry pack superseded, resubmission required');
+      } else if (oldStatus === 'submitted' && newStatus === 'expired') {
+        console.log('Should send notification: Entry pack expired');
+      } else if (newStatus === 'archived') {
+        console.log('Should send notification: Entry pack archived');
+      }
+      
+      // In a real implementation, this would call NotificationService
+      // const NotificationService = require('../notification/NotificationService').default;
+      // await NotificationService.sendStateChangeNotification(event);
+    } catch (error) {
+      console.error('Failed to process immediate notification:', error);
+    }
+  }
+
+  /**
+   * Get recent state change events
+   * @param {string} userId - User ID (optional)
+   * @param {number} limit - Maximum number of events to return
+   * @returns {Array} - Array of state change events
+   */
+  static getStateChangeEvents(userId = null, limit = 10) {
+    try {
+      if (!this.stateChangeEvents) {
+        return [];
+      }
+      
+      let events = this.stateChangeEvents;
+      
+      // Filter by user if specified
+      if (userId) {
+        events = events.filter(event => event.userId === userId);
+      }
+      
+      // Sort by timestamp (most recent first) and limit
+      return events
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, limit);
+    } catch (error) {
+      console.error('Failed to get state change events:', error);
+      return [];
+    }
+  }
+
+  // ============================================================================
   // TRAVEL INFO OPERATIONS
   // ============================================================================
 
@@ -1178,8 +1560,20 @@ class PassportDataService {
       
       if (!existing) {
         // No existing data, create new
-        return await this.saveTravelInfo(userId, { ...updates, destination });
+        const newTravelInfo = await this.saveTravelInfo(userId, { ...updates, destination });
+        
+        // Handle arrival date change for new travel info
+        if (updates.arrivalDate) {
+          await this.handleArrivalDateChange(userId, destination, null, updates.arrivalDate);
+        }
+        
+        return newTravelInfo;
       }
+
+      // Check for arrival date changes
+      const oldArrivalDate = existing.arrivalDate;
+      const newArrivalDate = updates.arrivalDate;
+      const arrivalDateChanged = oldArrivalDate !== newArrivalDate;
 
       // Filter out empty values from updates
       const nonEmptyUpdates = {};
@@ -1199,11 +1593,76 @@ class PassportDataService {
       const merged = { ...existing, ...nonEmptyUpdates };
       const result = await SecureStorageService.saveTravelInfo(merged);
       
+      // Handle arrival date change if it occurred
+      if (arrivalDateChanged) {
+        await this.handleArrivalDateChange(userId, destination, oldArrivalDate, newArrivalDate);
+      }
+      
       console.log('Travel info updated successfully');
       return merged;
     } catch (error) {
       console.error('Failed to update travel info:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Handle arrival date change - trigger notification scheduling
+   * @param {string} userId - User ID
+   * @param {string} destination - Destination
+   * @param {string} oldArrivalDate - Previous arrival date
+   * @param {string} newArrivalDate - New arrival date
+   */
+  static async handleArrivalDateChange(userId, destination, oldArrivalDate, newArrivalDate) {
+    try {
+      // Only handle Thailand for now (as per requirements)
+      if (destination !== 'thailand') {
+        return;
+      }
+
+      // Import NotificationCoordinator dynamically to avoid circular dependencies
+      const NotificationCoordinator = require('../notification/NotificationCoordinator').default;
+      
+      // Get or create entry pack for this destination
+      const EntryPackService = require('../entryPack/EntryPackService').default;
+      
+      // Find entry info for this destination
+      const entryInfo = await this.getEntryInfoByDestination(destination);
+      if (!entryInfo) {
+        console.log('No entry info found for destination:', destination);
+        return;
+      }
+
+      // Get or create entry pack
+      let entryPack = await EntryPackService.getByEntryInfoId(entryInfo.id);
+      if (!entryPack) {
+        entryPack = await EntryPackService.createOrUpdatePack(entryInfo.id);
+      }
+
+      // Parse dates
+      const oldDate = oldArrivalDate ? new Date(oldArrivalDate) : null;
+      const newDate = newArrivalDate ? new Date(newArrivalDate) : null;
+
+      // Handle notification scheduling
+      await NotificationCoordinator.handleArrivalDateChange(
+        userId,
+        entryPack.id,
+        newDate,
+        oldDate,
+        'Thailand'
+      );
+
+      console.log('Arrival date change handled for notifications:', {
+        userId,
+        destination,
+        entryPackId: entryPack.id,
+        oldDate: oldDate?.toISOString(),
+        newDate: newDate?.toISOString()
+      });
+
+    } catch (error) {
+      console.error('Failed to handle arrival date change:', error);
+      // Don't throw - this is a secondary operation that shouldn't break the main flow
     }
   }
 
@@ -2566,6 +3025,932 @@ class PassportDataService {
       };
     }
   }
+
+  // ===== TDAC SUBMISSION METADATA PERSISTENCE =====
+  // Requirements: 10.1-10.6, 19.1-19.5
+
+  /**
+   * Save TDAC submission metadata
+   * @param {string} userId - User ID
+   * @param {Object} metadata - TDAC submission metadata
+   * @param {Object} options - Save options
+   * @returns {Promise<Object>} - Save result
+   */
+  static async saveTDACSubmissionMetadata(userId, metadata, options = {}) {
+    try {
+      console.log('Saving TDAC submission metadata:', {
+        userId,
+        arrCardNo: metadata.arrCardNo,
+        submissionMethod: metadata.submissionMethod
+      });
+
+      // Validate required fields
+      if (!metadata.arrCardNo) {
+        throw new Error('TDAC arrival card number is required');
+      }
+
+      if (!metadata.qrUri && !metadata.pdfPath) {
+        throw new Error('Either QR URI or PDF path is required');
+      }
+
+      // Prepare metadata for storage
+      const submissionData = {
+        id: metadata.id || `tdac_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: userId,
+        arrCardNo: metadata.arrCardNo,
+        qrUri: metadata.qrUri || null,
+        pdfPath: metadata.pdfPath || null,
+        submittedAt: metadata.submittedAt || new Date().toISOString(),
+        submissionMethod: metadata.submissionMethod || 'api',
+        status: metadata.status || 'success',
+        entryPackId: metadata.entryPackId || null,
+        destinationId: metadata.destinationId || null,
+        tripId: metadata.tripId || null,
+        
+        // Additional metadata
+        apiResponse: metadata.apiResponse || null,
+        processingTime: metadata.processingTime || null,
+        retryCount: metadata.retryCount || 0,
+        errorDetails: metadata.errorDetails || null,
+        
+        // Timestamps
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Save to secure storage
+      const result = await SecureStorageService.saveTDACSubmissionMetadata(submissionData);
+
+      // Invalidate related cache
+      this.invalidateCache('tdacSubmission', userId);
+
+      console.log('TDAC submission metadata saved successfully:', {
+        id: submissionData.id,
+        userId,
+        arrCardNo: submissionData.arrCardNo
+      });
+
+      return {
+        success: true,
+        id: submissionData.id,
+        metadata: submissionData,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Failed to save TDAC submission metadata:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get submission status for user
+   * @param {string} userId - User ID
+   * @param {Object} filters - Filter options
+   * @returns {Promise<Object>} - Submission status
+   */
+  static async getSubmissionStatus(userId, filters = {}) {
+    try {
+      console.log('Getting submission status for user:', userId);
+
+      // Check cache first
+      const cacheKey = `${userId}_${JSON.stringify(filters)}`;
+      const cached = this.getCachedResult('submissionStatus', cacheKey);
+      if (cached) {
+        console.log('Returning cached submission status');
+        return cached;
+      }
+
+      // Load submission metadata from storage
+      const submissions = await SecureStorageService.getTDACSubmissionsByUserId(userId, filters);
+
+      // Calculate status summary
+      const status = {
+        userId: userId,
+        totalSubmissions: submissions.length,
+        successfulSubmissions: submissions.filter(s => s.status === 'success').length,
+        failedSubmissions: submissions.filter(s => s.status === 'failed').length,
+        pendingSubmissions: submissions.filter(s => s.status === 'pending').length,
+        
+        // Most recent submission
+        mostRecentSubmission: submissions.length > 0 ? 
+          submissions.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0] : null,
+        
+        // Submissions by destination
+        submissionsByDestination: this.groupSubmissionsByDestination(submissions),
+        
+        // Submissions by method
+        submissionsByMethod: this.groupSubmissionsByMethod(submissions),
+        
+        // Recent activity (last 30 days)
+        recentActivity: this.getRecentSubmissionActivity(submissions),
+        
+        // Status flags
+        hasActiveSubmission: submissions.some(s => s.status === 'success' && !s.isExpired),
+        requiresResubmission: submissions.some(s => s.requiresResubmission),
+        
+        // Timestamps
+        lastSubmissionAt: submissions.length > 0 ? 
+          Math.max(...submissions.map(s => new Date(s.submittedAt).getTime())) : null,
+        calculatedAt: new Date().toISOString()
+      };
+
+      // Cache result
+      this.setCachedResult('submissionStatus', cacheKey, status);
+
+      console.log('Submission status calculated:', {
+        userId,
+        totalSubmissions: status.totalSubmissions,
+        successfulSubmissions: status.successfulSubmissions
+      });
+
+      return status;
+    } catch (error) {
+      console.error('Failed to get submission status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get submission history for entry pack
+   * @param {string} entryPackId - Entry pack ID
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} - Submission history
+   */
+  static async getSubmissionHistory(entryPackId, options = {}) {
+    try {
+      console.log('Getting submission history for entry pack:', entryPackId);
+
+      // Load submission history from storage
+      const submissions = await SecureStorageService.getTDACSubmissionsByEntryPackId(entryPackId);
+
+      // Sort by submission date (newest first)
+      const sortedSubmissions = submissions.sort((a, b) => 
+        new Date(b.submittedAt) - new Date(a.submittedAt)
+      );
+
+      // Apply pagination if requested
+      let paginatedSubmissions = sortedSubmissions;
+      if (options.limit) {
+        const offset = options.offset || 0;
+        paginatedSubmissions = sortedSubmissions.slice(offset, offset + options.limit);
+      }
+
+      // Enhance submissions with additional metadata
+      const enhancedSubmissions = paginatedSubmissions.map(submission => ({
+        ...submission,
+        
+        // Calculate relative time
+        relativeTime: this.calculateRelativeTime(submission.submittedAt),
+        
+        // Determine if submission is current/active
+        isCurrent: submission.status === 'success' && !submission.isSuperseded,
+        
+        // Add display status
+        displayStatus: this.getSubmissionDisplayStatus(submission),
+        
+        // Add retry information
+        isRetry: submission.retryCount > 0,
+        originalSubmissionId: submission.originalSubmissionId || null
+      }));
+
+      console.log('Submission history retrieved:', {
+        entryPackId,
+        totalSubmissions: submissions.length,
+        returnedSubmissions: enhancedSubmissions.length
+      });
+
+      return {
+        entryPackId,
+        submissions: enhancedSubmissions,
+        totalCount: submissions.length,
+        hasMore: options.limit && submissions.length > (options.offset || 0) + options.limit,
+        retrievedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Failed to get submission history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update TDAC submission metadata
+   * @param {string} submissionId - Submission ID
+   * @param {Object} updates - Updates to apply
+   * @returns {Promise<Object>} - Update result
+   */
+  static async updateTDACSubmissionMetadata(submissionId, updates) {
+    try {
+      console.log('Updating TDAC submission metadata:', {
+        submissionId,
+        updates: Object.keys(updates)
+      });
+
+      // Load existing submission
+      const existingSubmission = await SecureStorageService.getTDACSubmission(submissionId);
+      if (!existingSubmission) {
+        throw new Error(`TDAC submission not found: ${submissionId}`);
+      }
+
+      // Merge updates
+      const updatedSubmission = {
+        ...existingSubmission,
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Save updated submission
+      await SecureStorageService.saveTDACSubmissionMetadata(updatedSubmission);
+
+      // Invalidate cache
+      this.invalidateCache('tdacSubmission', existingSubmission.userId);
+      this.invalidateCache('submissionStatus', existingSubmission.userId);
+
+      console.log('TDAC submission metadata updated successfully:', {
+        submissionId,
+        userId: existingSubmission.userId
+      });
+
+      return {
+        success: true,
+        submissionId,
+        updatedSubmission,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Failed to update TDAC submission metadata:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Mark TDAC submission as superseded
+   * @param {string} submissionId - Submission ID
+   * @param {Object} options - Supersede options
+   * @returns {Promise<Object>} - Update result
+   */
+  static async markTDACSubmissionAsSuperseded(submissionId, options = {}) {
+    try {
+      return await this.updateTDACSubmissionMetadata(submissionId, {
+        isSuperseded: true,
+        supersededAt: new Date().toISOString(),
+        supersededReason: options.reason || 'Data changed, resubmission required',
+        supersededBy: options.supersededBy || null
+      });
+    } catch (error) {
+      console.error('Failed to mark TDAC submission as superseded:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete TDAC submission metadata
+   * @param {string} submissionId - Submission ID
+   * @returns {Promise<Object>} - Delete result
+   */
+  static async deleteTDACSubmissionMetadata(submissionId) {
+    try {
+      console.log('Deleting TDAC submission metadata:', submissionId);
+
+      // Load submission to get user ID for cache invalidation
+      const submission = await SecureStorageService.getTDACSubmission(submissionId);
+      
+      // Delete from storage
+      await SecureStorageService.deleteTDACSubmission(submissionId);
+
+      // Invalidate cache if we found the submission
+      if (submission) {
+        this.invalidateCache('tdacSubmission', submission.userId);
+        this.invalidateCache('submissionStatus', submission.userId);
+      }
+
+      console.log('TDAC submission metadata deleted successfully:', submissionId);
+
+      return {
+        success: true,
+        submissionId,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Failed to delete TDAC submission metadata:', error);
+      throw error;
+    }
+  }
+
+  // ===== HELPER METHODS FOR TDAC SUBMISSION =====
+
+  /**
+   * Group submissions by destination
+   * @param {Array} submissions - Array of submissions
+   * @returns {Object} - Grouped submissions
+   */
+  static groupSubmissionsByDestination(submissions) {
+    const grouped = {};
+    
+    submissions.forEach(submission => {
+      const destination = submission.destinationId || 'unknown';
+      if (!grouped[destination]) {
+        grouped[destination] = {
+          count: 0,
+          successful: 0,
+          failed: 0,
+          mostRecent: null
+        };
+      }
+      
+      grouped[destination].count++;
+      if (submission.status === 'success') {
+        grouped[destination].successful++;
+      } else if (submission.status === 'failed') {
+        grouped[destination].failed++;
+      }
+      
+      if (!grouped[destination].mostRecent || 
+          new Date(submission.submittedAt) > new Date(grouped[destination].mostRecent.submittedAt)) {
+        grouped[destination].mostRecent = submission;
+      }
+    });
+    
+    return grouped;
+  }
+
+  /**
+   * Group submissions by method
+   * @param {Array} submissions - Array of submissions
+   * @returns {Object} - Grouped submissions
+   */
+  static groupSubmissionsByMethod(submissions) {
+    const grouped = {};
+    
+    submissions.forEach(submission => {
+      const method = submission.submissionMethod || 'unknown';
+      if (!grouped[method]) {
+        grouped[method] = {
+          count: 0,
+          successRate: 0
+        };
+      }
+      
+      grouped[method].count++;
+    });
+    
+    // Calculate success rates
+    Object.keys(grouped).forEach(method => {
+      const methodSubmissions = submissions.filter(s => s.submissionMethod === method);
+      const successful = methodSubmissions.filter(s => s.status === 'success').length;
+      grouped[method].successRate = methodSubmissions.length > 0 ? 
+        (successful / methodSubmissions.length) * 100 : 0;
+    });
+    
+    return grouped;
+  }
+
+  /**
+   * Get recent submission activity
+   * @param {Array} submissions - Array of submissions
+   * @returns {Array} - Recent activity
+   */
+  static getRecentSubmissionActivity(submissions) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    return submissions
+      .filter(s => new Date(s.submittedAt) > thirtyDaysAgo)
+      .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+      .slice(0, 10); // Last 10 recent activities
+  }
+
+  /**
+   * Calculate relative time from submission
+   * @param {string} submittedAt - Submission timestamp
+   * @returns {string} - Relative time string
+   */
+  static calculateRelativeTime(submittedAt) {
+    const now = new Date();
+    const submitted = new Date(submittedAt);
+    const diffMs = now - submitted;
+    
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes} minutes ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hours ago`;
+    } else {
+      return `${diffDays} days ago`;
+    }
+  }
+
+  /**
+   * Get display status for submission
+   * @param {Object} submission - Submission object
+   * @returns {Object} - Display status
+   */
+  static getSubmissionDisplayStatus(submission) {
+    const statusMap = {
+      success: { color: 'green', icon: '✅', message: 'Successful' },
+      failed: { color: 'red', icon: '❌', message: 'Failed' },
+      pending: { color: 'orange', icon: '⏳', message: 'Pending' },
+      superseded: { color: 'gray', icon: '🔄', message: 'Superseded' }
+    };
+    
+    let status = submission.status;
+    if (submission.isSuperseded) {
+      status = 'superseded';
+    }
+    
+    return statusMap[status] || statusMap.pending;
+  }
+
+  // ============================================================================
+  // DATA CHANGE DETECTION AND RESUBMISSION WARNINGS
+  // ============================================================================
+
+  /**
+   * Data change listeners for detecting modifications
+   * @type {Array}
+   * @static
+   */
+  static dataChangeListeners = [];
+
+  /**
+   * Add data change listener
+   * @param {Function} listener - Listener function
+   * @returns {Function} - Unsubscribe function
+   */
+  static addDataChangeListener(listener) {
+    this.dataChangeListeners.push(listener);
+    
+    // Return unsubscribe function
+    return () => {
+      const index = this.dataChangeListeners.indexOf(listener);
+      if (index > -1) {
+        this.dataChangeListeners.splice(index, 1);
+      }
+    };
+  }
+
+  /**
+   * Trigger data change event
+   * @param {string} dataType - Type of data that changed
+   * @param {string} userId - User ID
+   * @param {Object} changeDetails - Details about the change
+   */
+  static triggerDataChangeEvent(dataType, userId, changeDetails = {}) {
+    try {
+      const event = {
+        type: 'DATA_CHANGED',
+        dataType,
+        userId,
+        timestamp: new Date().toISOString(),
+        ...changeDetails
+      };
+
+      console.log('Data change event triggered:', event);
+
+      // Notify all listeners
+      this.dataChangeListeners.forEach(listener => {
+        try {
+          listener(event);
+        } catch (error) {
+          console.error('Error in data change listener:', error);
+        }
+      });
+
+      // Check for active entry packs and handle resubmission warnings
+      this.handleDataChangeForActiveEntryPacks(userId, dataType, changeDetails);
+    } catch (error) {
+      console.error('Failed to trigger data change event:', error);
+    }
+  }
+
+  /**
+   * Handle data changes for active entry packs
+   * @param {string} userId - User ID
+   * @param {string} dataType - Type of data that changed
+   * @param {Object} changeDetails - Details about the change
+   */
+  static async handleDataChangeForActiveEntryPacks(userId, dataType, changeDetails) {
+    try {
+      // Get active entry packs for user
+      const EntryPackService = require('../entryPack/EntryPackService').default;
+      const activeEntryPacks = await EntryPackService.getActivePacksForUser(userId);
+
+      // Filter for submitted entry packs (these need resubmission warnings)
+      const submittedPacks = activeEntryPacks.filter(pack => pack.status === 'submitted');
+
+      if (submittedPacks.length === 0) {
+        console.log('No submitted entry packs found, no resubmission warning needed');
+        return;
+      }
+
+      console.log(`Found ${submittedPacks.length} submitted entry packs, checking for data changes`);
+
+      // Check each submitted entry pack for data changes
+      for (const entryPack of submittedPacks) {
+        await this.checkEntryPackForDataChanges(entryPack, dataType, changeDetails);
+      }
+    } catch (error) {
+      console.error('Failed to handle data change for active entry packs:', error);
+    }
+  }
+
+  /**
+   * Check entry pack for data changes and trigger resubmission warning if needed
+   * @param {Object} entryPack - Entry pack to check
+   * @param {string} dataType - Type of data that changed
+   * @param {Object} changeDetails - Details about the change
+   */
+  static async checkEntryPackForDataChanges(entryPack, dataType, changeDetails) {
+    try {
+      console.log('Checking entry pack for data changes:', {
+        entryPackId: entryPack.id,
+        status: entryPack.status,
+        dataType
+      });
+
+      // Get snapshot data for comparison
+      const SnapshotService = require('../snapshot/SnapshotService').default;
+      const snapshots = await SnapshotService.list(entryPack.userId, {
+        entryPackId: entryPack.id
+      });
+
+      if (snapshots.length === 0) {
+        console.log('No snapshots found for entry pack, cannot compare data changes');
+        return;
+      }
+
+      // Use the most recent snapshot
+      const latestSnapshot = snapshots[0];
+      const snapshotData = {
+        passport: latestSnapshot.passport,
+        personalInfo: latestSnapshot.personalInfo,
+        funds: latestSnapshot.funds,
+        travel: latestSnapshot.travel
+      };
+
+      // Get current user data
+      const currentData = await this.getAllUserData(entryPack.userId);
+      
+      // Get current travel info
+      const currentTravel = await this.getTravelInfo(entryPack.userId, entryPack.destinationId);
+      
+      // Get current funds
+      const currentFunds = await this.getFundItems(entryPack.userId);
+
+      const completeCurrentData = {
+        passport: currentData.passport,
+        personalInfo: currentData.personalInfo,
+        funds: currentFunds,
+        travel: currentTravel
+      };
+
+      // Calculate differences
+      const DataDiffCalculator = require('../../utils/DataDiffCalculator').default;
+      const diffResult = DataDiffCalculator.calculateDiff(snapshotData, completeCurrentData);
+
+      if (diffResult.hasChanges) {
+        console.log('Data changes detected for entry pack:', {
+          entryPackId: entryPack.id,
+          totalChanges: diffResult.summary.totalChanges,
+          significantChanges: diffResult.summary.significantChanges
+        });
+
+        // Generate change summary
+        const changeSummary = DataDiffCalculator.generateChangeSummary(diffResult);
+
+        // Trigger resubmission warning event
+        this.triggerResubmissionWarningEvent(entryPack, diffResult, changeSummary);
+      } else {
+        console.log('No significant data changes detected for entry pack:', entryPack.id);
+      }
+    } catch (error) {
+      console.error('Failed to check entry pack for data changes:', error);
+    }
+  }
+
+  /**
+   * Trigger resubmission warning event
+   * @param {Object} entryPack - Entry pack that needs resubmission
+   * @param {Object} diffResult - Diff calculation result
+   * @param {Object} changeSummary - User-friendly change summary
+   */
+  static triggerResubmissionWarningEvent(entryPack, diffResult, changeSummary) {
+    try {
+      const event = {
+        type: 'RESUBMISSION_WARNING',
+        entryPackId: entryPack.id,
+        userId: entryPack.userId,
+        destinationId: entryPack.destinationId,
+        diffResult,
+        changeSummary,
+        requiresImmediateResubmission: DataDiffCalculator.requiresImmediateResubmission(diffResult),
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('Resubmission warning event triggered:', {
+        entryPackId: entryPack.id,
+        changesCount: diffResult.summary.totalChanges,
+        requiresImmediate: event.requiresImmediateResubmission
+      });
+
+      // Store event for UI to pick up
+      this.storeResubmissionWarningEvent(event);
+
+      // Notify listeners
+      this.dataChangeListeners.forEach(listener => {
+        try {
+          listener(event);
+        } catch (error) {
+          console.error('Error in resubmission warning listener:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to trigger resubmission warning event:', error);
+    }
+  }
+
+  /**
+   * Store resubmission warning event for UI consumption
+   * @param {Object} event - Resubmission warning event
+   */
+  static storeResubmissionWarningEvent(event) {
+    try {
+      if (!this.resubmissionWarnings) {
+        this.resubmissionWarnings = new Map();
+      }
+
+      // Store by entry pack ID for easy retrieval
+      this.resubmissionWarnings.set(event.entryPackId, event);
+
+      // Keep only recent warnings (last 10)
+      if (this.resubmissionWarnings.size > 10) {
+        const entries = Array.from(this.resubmissionWarnings.entries());
+        const oldestEntry = entries.sort((a, b) => 
+          new Date(a[1].timestamp) - new Date(b[1].timestamp)
+        )[0];
+        this.resubmissionWarnings.delete(oldestEntry[0]);
+      }
+
+      console.log('Resubmission warning stored:', {
+        entryPackId: event.entryPackId,
+        totalWarnings: this.resubmissionWarnings.size
+      });
+    } catch (error) {
+      console.error('Failed to store resubmission warning event:', error);
+    }
+  }
+
+  /**
+   * Get pending resubmission warnings for user
+   * @param {string} userId - User ID
+   * @returns {Array} - Array of resubmission warnings
+   */
+  static getPendingResubmissionWarnings(userId) {
+    try {
+      if (!this.resubmissionWarnings) {
+        return [];
+      }
+
+      const warnings = Array.from(this.resubmissionWarnings.values())
+        .filter(warning => warning.userId === userId)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      return warnings;
+    } catch (error) {
+      console.error('Failed to get pending resubmission warnings:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get resubmission warning for specific entry pack
+   * @param {string} entryPackId - Entry pack ID
+   * @returns {Object|null} - Resubmission warning or null
+   */
+  static getResubmissionWarning(entryPackId) {
+    try {
+      if (!this.resubmissionWarnings) {
+        return null;
+      }
+
+      return this.resubmissionWarnings.get(entryPackId) || null;
+    } catch (error) {
+      console.error('Failed to get resubmission warning:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear resubmission warning for entry pack
+   * @param {string} entryPackId - Entry pack ID
+   */
+  static clearResubmissionWarning(entryPackId) {
+    try {
+      if (this.resubmissionWarnings) {
+        this.resubmissionWarnings.delete(entryPackId);
+        console.log('Resubmission warning cleared:', entryPackId);
+      }
+    } catch (error) {
+      console.error('Failed to clear resubmission warning:', error);
+    }
+  }
+
+  /**
+   * Mark entry pack as superseded due to data changes
+   * @param {string} entryPackId - Entry pack ID
+   * @param {Object} changeDetails - Details about the changes
+   * @returns {Promise<Object>} - Updated entry pack
+   */
+  static async markEntryPackAsSuperseded(entryPackId, changeDetails = {}) {
+    try {
+      console.log('Marking entry pack as superseded:', {
+        entryPackId,
+        changeDetails
+      });
+
+      const EntryPackService = require('../entryPack/EntryPackService').default;
+      
+      // Mark entry pack as superseded
+      const updatedEntryPack = await EntryPackService.markAsSuperseded(entryPackId, {
+        reason: 'Data changes detected after TDAC submission',
+        triggeredBy: 'data_change_detection',
+        changedFields: changeDetails.changedFields || [],
+        metadata: {
+          changeTimestamp: new Date().toISOString(),
+          changeType: 'user_edit',
+          ...changeDetails
+        }
+      });
+
+      // Clear the resubmission warning since it's been handled
+      this.clearResubmissionWarning(entryPackId);
+
+      console.log('Entry pack marked as superseded successfully:', {
+        entryPackId,
+        newStatus: updatedEntryPack.status
+      });
+
+      return updatedEntryPack;
+    } catch (error) {
+      console.error('Failed to mark entry pack as superseded:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Override save methods to trigger change detection
+   */
+
+  /**
+   * Enhanced savePassport with change detection
+   */
+  static async savePassport(passportData, userId, options = {}) {
+    try {
+      // Call original save method
+      const result = await super.savePassport ? 
+        super.savePassport(passportData, userId, options) :
+        this.originalSavePassport(passportData, userId, options);
+
+      // Trigger change detection
+      this.triggerDataChangeEvent('passport', userId, {
+        updatedFields: Object.keys(passportData),
+        passportId: result.id
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced savePassport failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced updatePassport with change detection
+   */
+  static async updatePassport(passportId, updates, options = {}) {
+    try {
+      // Call original update method
+      const result = await this.originalUpdatePassport ? 
+        this.originalUpdatePassport(passportId, updates, options) :
+        this.baseUpdatePassport(passportId, updates, options);
+
+      // Trigger change detection
+      if (result && result.userId) {
+        this.triggerDataChangeEvent('passport', result.userId, {
+          updatedFields: Object.keys(updates),
+          passportId: result.id
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced updatePassport failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced updatePersonalInfo with change detection
+   */
+  static async updatePersonalInfo(userId, updates) {
+    try {
+      // Call original update method
+      const result = await this.originalUpdatePersonalInfo ? 
+        this.originalUpdatePersonalInfo(userId, updates) :
+        this.baseUpdatePersonalInfo(userId, updates);
+
+      // Trigger change detection
+      this.triggerDataChangeEvent('personalInfo', userId, {
+        updatedFields: Object.keys(updates),
+        personalInfoId: result.id
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced updatePersonalInfo failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced saveFundItem with change detection
+   */
+  static async saveFundItem(fundData, userId) {
+    try {
+      // Call original save method
+      const result = await this.originalSaveFundItem ? 
+        this.originalSaveFundItem(fundData, userId) :
+        this.baseSaveFundItem(fundData, userId);
+
+      // Trigger change detection
+      this.triggerDataChangeEvent('funds', userId, {
+        action: 'added',
+        fundItemId: result.id,
+        fundType: fundData.type
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced saveFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced deleteFundItem with change detection
+   */
+  static async deleteFundItem(fundItemId, userId) {
+    try {
+      // Call original delete method
+      const result = await this.originalDeleteFundItem ? 
+        this.originalDeleteFundItem(fundItemId, userId) :
+        this.baseDeleteFundItem(fundItemId, userId);
+
+      // Trigger change detection
+      this.triggerDataChangeEvent('funds', userId, {
+        action: 'deleted',
+        fundItemId: fundItemId
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced deleteFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced updateTravelInfo with change detection
+   */
+  static async updateTravelInfo(userId, destination, updates) {
+    try {
+      // Call original update method
+      const result = await this.originalUpdateTravelInfo ? 
+        this.originalUpdateTravelInfo(userId, destination, updates) :
+        this.baseUpdateTravelInfo(userId, destination, updates);
+
+      // Trigger change detection
+      this.triggerDataChangeEvent('travel', userId, {
+        updatedFields: Object.keys(updates),
+        destination: destination
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Enhanced updateTravelInfo failed:', error);
+      throw error;
+    }
+  }
+
+  // Store original methods to avoid infinite recursion
+  static originalSavePassport = this.savePassport;
+  static originalUpdatePassport = this.updatePassport;
+  static originalUpdatePersonalInfo = this.updatePersonalInfo;
+  static originalSaveFundItem = this.saveFundItem;
+  static originalDeleteFundItem = this.deleteFundItem;
+  static originalUpdateTravelInfo = this.updateTravelInfo;
 }
 
 export default PassportDataService;

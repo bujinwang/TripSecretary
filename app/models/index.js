@@ -7,6 +7,10 @@ export { default as Passport } from './Passport';
 export { default as PersonalInfo } from './PersonalInfo';
 export { default as FundingProof } from './FundingProof';
 export { default as EntryData } from './EntryData';
+export { default as EntryInfo } from './EntryInfo';
+export { default as EntryPack } from './EntryPack';
+export { default as EntryPackSnapshot } from './EntryPackSnapshot';
+export { default as FundItem } from './FundItem';
 
 // Model utilities and helpers
 export const ModelUtils = {

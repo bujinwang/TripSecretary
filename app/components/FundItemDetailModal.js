@@ -28,6 +28,7 @@ const FundItemDetailModal = ({
   onClose,
   onUpdate,
   onDelete,
+  onManageAll,
   isCreateMode = false,
   createItemType = null,
   onCreate = null,
@@ -1475,6 +1476,29 @@ const FundItemDetailModal = ({
           </View>
         )}
 
+        {/* Manage All Funds Link */}
+        {!isCreateMode && (
+          <TouchableOpacity
+            style={styles.manageAllLink}
+            onPress={() => {
+              onClose();
+              if (onManageAll) {
+                onManageAll();
+              }
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t('fundItem.detail.manageAll', { defaultValue: 'Manage All Funds' })}
+            accessibilityHint={t('fundItem.accessibility.manageAllHint', { 
+              defaultValue: 'Navigates to the full fund management screen' 
+            })}
+          >
+            <Text style={styles.manageAllText}>
+              {t('fundItem.detail.manageAll', { defaultValue: 'Manage All Funds' })}
+            </Text>
+            <Text style={styles.manageAllArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Delete Button - hide in create mode */}
         {!isCreateMode && (
           <View style={styles.actionButtons}>
@@ -1892,6 +1916,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.sm,
+  },
+  manageAllLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  manageAllText: {
+    ...typography.body1,
+    color: colors.secondary,
+    marginRight: spacing.xs,
+  },
+  manageAllArrow: {
+    ...typography.body1,
+    color: colors.secondary,
   },
 });
 

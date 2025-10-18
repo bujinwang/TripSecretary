@@ -24,6 +24,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
+import EntryPackService from '../../services/entryPack/EntryPackService';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -55,15 +56,56 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     try {
       console.log('📸 开始保存QR码...');
       
+      // Generate card number from QR data or timestamp
+      const cardNo = qrData.arrCardNo || `WV_${Date.now()}`;
+      
       // 1. 保存到AsyncStorage（App内部存储）
       const storageKey = `tdac_qr_${passport?.passportNo}_${Date.now()}`;
-      await AsyncStorage.setItem(storageKey, JSON.stringify({
+      const entryData = {
         ...qrData,
         passportNo: passport?.passportNo,
         name: passport?.nameEn || passport?.name,
-        savedAt: new Date().toISOString()
-      }));
+        savedAt: new Date().toISOString(),
+        submittedAt: new Date().toISOString(),
+        submissionMethod: 'webview',
+        // TDAC submission metadata for EntryPackService
+        arrCardNo: cardNo,
+        cardNo: cardNo,
+        qrUri: qrData.src,
+        pdfPath: qrData.src,
+        timestamp: Date.now(),
+        alreadySubmitted: true
+      };
+      
+      await AsyncStorage.setItem(storageKey, JSON.stringify(entryData));
       console.log('✅ QR码已保存到App');
+      
+      // Set flag for EntryPackService integration
+      await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
+      console.log('✅ Recent submission flag set for EntryPackService');
+      
+      // Create or update entry pack with TDAC submission
+      try {
+        const tdacSubmission = {
+          arrCardNo: cardNo,
+          qrUri: qrData.src,
+          pdfPath: qrData.src,
+          submittedAt: new Date().toISOString(),
+          submissionMethod: 'webview'
+        };
+        
+        // Find entry info ID - for now use a placeholder, this should be passed from navigation params
+        const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
+        
+        await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
+          submissionMethod: 'webview'
+        });
+        
+        console.log('✅ Entry pack created/updated successfully via WebView');
+      } catch (entryPackError) {
+        console.error('❌ Failed to create entry pack:', entryPackError);
+        // Don't block user flow - continue with QR code saving
+      }
       
       // 2. 保存到相册
       const saved = await saveToPhotoAlbum(qrData.src);

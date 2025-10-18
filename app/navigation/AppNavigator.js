@@ -16,6 +16,7 @@ import {
   ResultScreen,
   HistoryScreen,
   ProfileScreen,
+  EntryPackHistoryScreen,
   PresentToCustomsScreen,
   CopyWriteModeScreen,
   AirportArrivalScreen,
@@ -26,6 +27,7 @@ import {
   JapanTravelInfoScreen,
   InteractiveImmigrationGuide,
   // Thailand screens
+  ImmigrationOfficerViewScreen,
   ThailandInfoScreen,
   ThailandRequirementsScreen,
   PIKGuideScreen,
@@ -33,6 +35,7 @@ import {
   TDACAPIScreen,
   TDACSelectionScreen,
   TDACHybridScreen,
+  ThailandEntryFlowScreen,
   ThailandTravelInfoScreen,
   // Malaysia screens
   MalaysiaInfoScreen,
@@ -66,6 +69,12 @@ import {
   USAInfoScreen,
   USARequirementsScreen,
 } from '../screens';
+
+// Import NotificationSettingsScreen directly since it's not in the screens index yet
+import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
+import NotificationTestScreen from '../screens/NotificationTestScreen';
+import NotificationLogScreen from '../screens/NotificationLogScreen';
+import EntryPackDetailScreen from '../screens/thailand/EntryPackDetailScreen';
 
 import { colors } from '../theme';
 
@@ -133,11 +142,11 @@ const MainTabs = () => {
 };
 
 // Root Stack Navigator
-const AppNavigator = () => {
+const AppNavigator = React.forwardRef((props, ref) => {
   const { t } = useTranslation();
   
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={ref} onReady={props.onReady}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -488,8 +497,38 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="ThailandEntryFlow"
+          component={ThailandEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ImmigrationOfficerView"
+          component={ImmigrationOfficerViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
           name="ThailandTravelInfo"
           component={ThailandTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="EntryPackDetail"
+          component={EntryPackDetailScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="EntryPackHistory"
+          component={EntryPackHistoryScreen}
           options={{
             headerShown: false,
           }}
@@ -522,9 +561,63 @@ const AppNavigator = () => {
             headerShown: false,
           }}
         />
+        
+        {/* Settings Screens */}
+        <Stack.Screen
+          name="NotificationSettings"
+          component={NotificationSettingsScreen}
+          options={{
+            headerShown: true,
+            title: t('screenTitles.notificationSettings'),
+            headerTintColor: colors.text,
+            headerStyle: {
+              backgroundColor: colors.white,
+            },
+          }}
+        />
+        
+        <Stack.Screen
+          name="NotificationLog"
+          component={NotificationLogScreen}
+          options={{
+            headerShown: false, // Using custom header in the screen
+          }}
+        />
+        
+        {/* Development Tools (only in development mode) */}
+        {__DEV__ && (
+          <Stack.Screen
+            name="NotificationTest"
+            component={require('../screens/NotificationTestScreen').default}
+            options={{
+              headerShown: true,
+              title: 'Notification Testing',
+              headerTintColor: colors.text,
+              headerStyle: {
+                backgroundColor: colors.white,
+              },
+            }}
+          />
+        )}
+        
+        {/* Development Mode Only */}
+        {__DEV__ && (
+          <Stack.Screen
+            name="NotificationTest"
+            component={NotificationTestScreen}
+            options={{
+              headerShown: true,
+              title: 'Notification Testing',
+              headerTintColor: colors.text,
+              headerStyle: {
+                backgroundColor: colors.white,
+              },
+            }}
+          />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
+});
 
 export default AppNavigator;

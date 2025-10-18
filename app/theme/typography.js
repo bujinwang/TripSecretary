@@ -53,6 +53,23 @@ export const lineHeight = {
   caption: 1.4,
 };
 
+// Scaled size tokens for flexible usage
+export const sizes = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 24,
+};
+
+// Font weight aliases for consistency across components
+export const weights = {
+  regular: fontWeight.regular,
+  medium: fontWeight.medium,
+  semibold: fontWeight.semiBold,
+  bold: fontWeight.bold,
+};
+
 // Typography styles
 export const typography = {
   h1: {
@@ -96,6 +113,8 @@ export const typography = {
     fontSize: fontSize.button,
     fontWeight: fontWeight.semiBold,
   },
+  sizes,
+  weights,
 };
 
 export default typography;

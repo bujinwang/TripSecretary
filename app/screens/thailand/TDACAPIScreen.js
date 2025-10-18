@@ -25,6 +25,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { mergeTDACData } from '../../data/mockTDACData';
 import { colors } from '../../theme';
+import EntryPackService from '../../services/entryPack/EntryPackService';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};
@@ -165,7 +166,35 @@ const TDACAPIScreen = ({ navigation, route }) => {
       
       if (result.success) {
         // Save QR code
-        await saveQRCode(result.arrCardNo, result.pdfBlob);
+        await saveQRCode(result.arrCardNo, result.pdfBlob, result);
+        
+        // Create or update entry pack with TDAC submission
+        try {
+          const tdacSubmission = {
+            arrCardNo: result.arrCardNo,
+            qrUri: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
+            pdfPath: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
+            submittedAt: new Date().toISOString(),
+            submissionMethod: 'api'
+          };
+          
+          // Find entry info ID - for now use a placeholder, this should be passed from navigation params
+          const entryInfoId = params.entryInfoId || 'thailand_entry_info';
+          
+          await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
+            submissionMethod: 'api'
+          });
+          
+          console.log('✅ Entry pack created/updated successfully');
+        } catch (entryPackError) {
+          console.error('❌ Failed to create entry pack:', entryPackError);
+          // Don't block user flow - show warning but continue
+          Alert.alert(
+            '⚠️ 注意',
+            '入境卡提交成功，但保存到旅程记录时出现问题。QR码已保存到相册。',
+            [{ text: '好的' }]
+          );
+        }
         
         // Show result
         setResultData({
@@ -219,22 +248,37 @@ const TDACAPIScreen = ({ navigation, route }) => {
   /**
    * Save QR code to storage
    */
-  const saveQRCode = async (arrCardNo, pdfBlob) => {
+  const saveQRCode = async (arrCardNo, pdfBlob, result = {}) => {
     try {
+      const fileUri = `${FileSystem.documentDirectory}tdac_${arrCardNo}.pdf`;
+      
       // Save to AsyncStorage
-      await AsyncStorage.setItem(`tdac_${arrCardNo}`, JSON.stringify({
+      const entryData = {
         arrCardNo,
         travelerName: `${formData.firstName} ${formData.familyName}`,
         passportNo: formData.passportNo,
         arrivalDate: formData.arrivalDate,
-        savedAt: new Date().toISOString()
-      }));
+        savedAt: new Date().toISOString(),
+        submittedAt: result.submittedAt || new Date().toISOString(),
+        duration: result.duration,
+        submissionMethod: 'api',
+        // TDAC submission metadata for EntryPackService
+        cardNo: arrCardNo,
+        qrUri: fileUri,
+        pdfPath: fileUri,
+        timestamp: Date.now(),
+        alreadySubmitted: true
+      };
+      
+      await AsyncStorage.setItem(`tdac_${arrCardNo}`, JSON.stringify(entryData));
+      
+      // Set flag for EntryPackService integration
+      await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
+      console.log('✅ Recent submission flag set for EntryPackService');
       
       // Save PDF to photo album
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status === 'granted') {
-        const fileUri = `${FileSystem.documentDirectory}tdac_${arrCardNo}.pdf`;
-        
         // Convert blob to base64
         const reader = new FileReader();
         reader.readAsDataURL(pdfBlob);

@@ -15,12 +15,13 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { useTranslation } from '../i18n/LocaleContext';
+import { useTranslation, useLocale, getLanguageOptions } from '../i18n/LocaleContext';
 import { NationalitySelector, PassportNameInput } from '../components';
 import FundItemDetailModal from '../components/FundItemDetailModal';
 import { destinationRequirements } from '../config/destinationRequirements';
 import PassportDataService from '../services/data/PassportDataService';
 import SecureStorageService from '../services/security/SecureStorageService';
+import DataExportService from '../services/export/DataExportService';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { t, language } = useTranslation();
@@ -295,6 +296,12 @@ const ProfileScreen = ({ navigation, route }) => {
         section: t('profile.sections.myServices', { defaultValue: 'My Services' }),
         items: [
           {
+            id: 'entryPackHistory',
+            icon: '📋',
+            title: t('profile.menu.entryPackHistory.title', { defaultValue: 'Entry Pack History' }),
+            subtitle: t('profile.menu.entryPackHistory.subtitle', { defaultValue: 'View completed trips and archived entry packs' }),
+          },
+          {
             id: 'backup',
             icon: '💾',
             title: t('profile.menu.backup.title', { defaultValue: 'Cloud Backup' }),
@@ -324,8 +331,32 @@ const ProfileScreen = ({ navigation, route }) => {
             icon: '🔔',
             title: t('profile.menu.notifications.title', { defaultValue: 'Notification Settings' }),
           },
+          {
+            id: 'notificationLogs',
+            icon: '📊',
+            title: t('profile.menu.notificationLogs.title', { defaultValue: 'Notification Logs' }),
+            subtitle: t('profile.menu.notificationLogs.subtitle', { defaultValue: 'View notification history and analytics' }),
+          },
+          {
+            id: 'exportData',
+            icon: '📤',
+            title: t('profile.menu.exportData.title', { defaultValue: 'Export My Data' }),
+            subtitle: t('profile.menu.exportData.subtitle', { defaultValue: 'Download entry pack data as JSON' }),
+          },
         ],
       },
+      // Development tools section (only in development mode)
+      ...(__DEV__ ? [{
+        section: 'Development Tools',
+        items: [
+          {
+            id: 'notificationTest',
+            icon: '🧪',
+            title: 'Notification Testing',
+            subtitle: 'Test and debug notification system',
+          },
+        ],
+      }] : []),
     ],
     [t, languageLabel]
   );
@@ -355,12 +386,167 @@ const ProfileScreen = ({ navigation, route }) => {
     return { filled, total };
   }, [fundItems]);
 
+  const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
+
   const handleMenuPress = (itemId) => {
     if (itemId === 'language') {
-      // Navigate back to login to change language
-      navigation.replace('Login');
+      setLanguageSelectorVisible(true);
+    } else if (itemId === 'notifications') {
+      navigation.navigate('NotificationSettings');
+    } else if (itemId === 'notificationLogs') {
+      navigation.navigate('NotificationLog');
+    } else if (itemId === 'entryPackHistory') {
+      navigation.navigate('EntryPackHistory');
+    } else if (itemId === 'exportData') {
+      handleExportData();
+    } else if (itemId === 'notificationTest') {
+      navigation.navigate('NotificationTest');
     }
-    // TODO: Navigate to respective screens
+    // TODO: Navigate to other screens
+  };
+
+  const handleExportData = async () => {
+    try {
+      // Show confirmation dialog
+      Alert.alert(
+        t('profile.export.confirmTitle', { defaultValue: 'Export Data' }),
+        t('profile.export.confirmMessage', { 
+          defaultValue: 'This will export all your entry pack data as a JSON file. Continue?' 
+        }),
+        [
+          {
+            text: t('profile.export.cancel', { defaultValue: 'Cancel' }),
+            style: 'cancel'
+          },
+          {
+            text: t('profile.export.confirm', { defaultValue: 'Export' }),
+            onPress: performDataExport
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Export data error:', error);
+      Alert.alert(
+        t('profile.export.errorTitle', { defaultValue: 'Export Failed' }),
+        t('profile.export.errorMessage', { defaultValue: 'Failed to export data. Please try again.' })
+      );
+    }
+  };
+
+  const performDataExport = async () => {
+    try {
+      // For now, we'll export a sample entry pack
+      // In a real implementation, you'd get the actual entry pack ID from the user's data
+      const userId = 'default_user';
+      
+      // Check if user has any entry packs
+      const userData = await PassportDataService.getAllUserData(userId);
+      
+      if (!userData.passport && !userData.personalInfo && (!userData.funds || userData.funds.length === 0)) {
+        Alert.alert(
+          t('profile.export.noDataTitle', { defaultValue: 'No Data to Export' }),
+          t('profile.export.noDataMessage', { 
+            defaultValue: 'You don\'t have any entry pack data to export yet.' 
+          })
+        );
+        return;
+      }
+
+      // Create a mock entry pack for export (in real implementation, this would be actual entry pack data)
+      const mockEntryPackData = {
+        entryPack: {
+          id: `export_${Date.now()}`,
+          userId: userId,
+          destinationId: 'thailand',
+          status: 'in_progress',
+          createdAt: new Date().toISOString(),
+          exportData: () => ({
+            id: `export_${Date.now()}`,
+            userId: userId,
+            destinationId: 'thailand',
+            status: 'in_progress',
+            createdAt: new Date().toISOString()
+          }),
+          getSubmissionAttemptCount: () => 0,
+          getFailedSubmissionCount: () => 0,
+          hasValidTDACSubmission: () => false,
+          displayStatus: { completionPercent: 75 }
+        },
+        entryInfo: null,
+        passport: userData.passport,
+        personalInfo: userData.personalInfo,
+        funds: userData.funds || [],
+        travel: null
+      };
+
+      // Export as JSON
+      const result = await DataExportService.exportAsJSON(mockEntryPackData, {
+        includeMetadata: true,
+        includeSubmissionHistory: false,
+        includePhotos: true
+      });
+
+      if (result.success) {
+        // Show success dialog with sharing option
+        Alert.alert(
+          t('profile.export.successTitle', { defaultValue: 'Export Complete' }),
+          t('profile.export.successMessage', { 
+            defaultValue: `Data exported successfully!\nFile: ${result.filename}\nSize: ${Math.round(result.fileSize / 1024)} KB` 
+          }),
+          [
+            {
+              text: t('profile.export.ok', { defaultValue: 'OK' }),
+              style: 'default'
+            },
+            {
+              text: t('profile.export.share', { defaultValue: 'Share' }),
+              onPress: () => shareExportedFile(result.sharingOptions)
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Perform data export error:', error);
+      Alert.alert(
+        t('profile.export.errorTitle', { defaultValue: 'Export Failed' }),
+        t('profile.export.errorMessage', { 
+          defaultValue: `Failed to export data: ${error.message}` 
+        })
+      );
+    }
+  };
+
+  const shareExportedFile = async (sharingOptions) => {
+    try {
+      if (!sharingOptions.available) {
+        Alert.alert(
+          t('profile.export.shareUnavailableTitle', { defaultValue: 'Sharing Not Available' }),
+          t('profile.export.shareUnavailableMessage', { 
+            defaultValue: 'File sharing is not supported on this device' 
+          })
+        );
+        return;
+      }
+
+      await sharingOptions.share({
+        title: t('profile.export.shareTitle', { defaultValue: 'Entry Pack Data Export' }),
+        message: t('profile.export.shareMessage', { defaultValue: 'Here is my travel entry pack data' })
+      });
+    } catch (error) {
+      console.error('Share exported file error:', error);
+      Alert.alert(
+        t('profile.export.shareErrorTitle', { defaultValue: 'Share Failed' }),
+        t('profile.export.shareErrorMessage', { 
+          defaultValue: `Failed to share file: ${error.message}` 
+        })
+      );
+    }
+  };
+
+  const handleLanguageChange = (newLanguage) => {
+    const { setLanguage } = useLocale();
+    setLanguage(newLanguage);
+    setLanguageSelectorVisible(false);
   };
 
   const handleLogout = () => {
@@ -834,6 +1020,11 @@ const ProfileScreen = ({ navigation, route }) => {
     setSelectedFundItem(null);
     setIsCreatingFundItem(false);
     setNewFundItemType(null);
+  };
+
+  const handleManageFundItems = () => {
+    // Navigate to Thailand travel info screen where fund items can be managed
+    navigation.navigate('ThailandTravelInfo', { destination: 'th' });
   };
 
   // Handle add fund item button press
@@ -1577,7 +1768,56 @@ const ProfileScreen = ({ navigation, route }) => {
         onUpdate={handleFundItemUpdate}
         onCreate={handleFundItemCreate}
         onDelete={handleFundItemDelete}
+        onManageAll={handleManageFundItems}
       />
+
+      {/* Language Selector Modal */}
+      <Modal
+        visible={languageSelectorVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLanguageSelectorVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalWrapper}>
+            <View style={styles.languageModal}>
+            <View style={styles.languageModalHeader}>
+              <Text style={styles.languageModalTitle}>
+                {t('progressiveEntryFlow.settings.selectLanguage', { defaultValue: 'Select Language' })}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setLanguageSelectorVisible(false)}
+                style={styles.languageModalClose}
+              >
+                <Text style={styles.languageModalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.languageOptions}>
+              {getLanguageOptions(t).map((option) => (
+                <TouchableOpacity
+                  key={option.code}
+                  style={[
+                    styles.languageOption,
+                    language === option.code && styles.languageOptionSelected
+                  ]}
+                  onPress={() => handleLanguageChange(option.code)}
+                >
+                  <Text style={[
+                    styles.languageOptionText,
+                    language === option.code && styles.languageOptionTextSelected
+                  ]}>
+                    {option.label}
+                  </Text>
+                  {language === option.code && (
+                    <Text style={styles.languageOptionCheck}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -2225,6 +2465,65 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   addFundItemText: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+
+  // Language Selector Modal styles
+  languageModal: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+    maxHeight: '70%',
+  },
+  languageModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  languageModalTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  languageModalClose: {
+    padding: spacing.xs,
+  },
+  languageModalCloseText: {
+    ...typography.h3,
+    color: colors.textSecondary,
+  },
+  languageOptions: {
+    paddingTop: spacing.sm,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  languageOptionSelected: {
+    backgroundColor: colors.primaryLight,
+  },
+  languageOptionText: {
+    ...typography.body1,
+    color: colors.text,
+  },
+  languageOptionTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  languageOptionCheck: {
     ...typography.body1,
     color: colors.primary,
     fontWeight: '600',

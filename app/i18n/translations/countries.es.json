@@ -1,4 +1,306 @@
 {
+  "progressiveEntryFlow": {
+    "status": {
+      "completed": "Completado",
+      "cancelled": "Cancelado",
+      "expired": "Expirado",
+      "inProgress": "En Progreso", 
+      "needsResubmission": "Necesita Reenvío"
+    },
+    "snapshot": {
+      "readOnlyBanner": "Esta es una instantánea histórica y no se puede modificar",
+      "viewTitle": "Historial - Solo Lectura",
+      "legacyBadge": "Este es un registro histórico heredado",
+      "incompleteNotice": "Este paquete de entrada no se completó",
+      "completenessIndicator": "Pasaporte {{passport}}, Info Personal {{personal}}, Fondos {{funds}}, Info de Viaje {{travel}}"
+    },
+    "history": {
+      "title": "Historial",
+      "filterOptions": {
+        "all": "Todos",
+        "completed": "Completados",
+        "cancelled": "Cancelados",
+        "expired": "Expirados"
+      },
+      "timeGroups": {
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "thisWeek": "Esta Semana",
+        "thisMonth": "Este Mes",
+        "earlier": "Anterior"
+      },
+      "resultCount": "Mostrando {{count}} resultados",
+      "deleteConfirm": "Esto no se puede deshacer. ¿Está seguro de que desea eliminar?",
+      "storageUsage": "Almacenamiento del historial: {{size}} MB"
+    },
+    "entryPack": {
+      "title": "Paquete de Entrada {{destination}} - Enviado",
+      "submitted": "Enviado",
+      "arrivedToday": "Llegando Hoy",
+      "arrivesTomorrow": "Llegando Mañana",
+      "arrivesInDays": "Llegando en {{days}} días"
+    },
+    "notifications": {
+      "autoArchived": {
+        "title": "Paquete de Entrada {{destination}} Archivado",
+        "body": "Su paquete de entrada de {{destination}} ha sido archivado automáticamente al historial"
+      },
+      "reminderTitle": "Completar Información de Entrada",
+      "reminderBody": "Su viaje a {{destination}} tiene información incompleta",
+      "submissionWindow": "Ahora puede enviar su tarjeta de entrada de Tailandia",
+      "urgentReminder": "{{hours}} horas hasta la fecha límite",
+      "entryPackExpiryWarning": {
+        "title": "El Paquete de Entrada Expirará Pronto",
+        "body": "Su paquete de entrada de {{destination}} expirará en {{timeRemaining}}"
+      },
+      "entryPackExpired": {
+        "title": "El Paquete de Entrada Ha Expirado",
+        "body": "Su paquete de entrada de {{destination}} ha expirado y debe ser archivado"
+      },
+      "actions": {
+        "view": "Ver",
+        "archive": "Archivar",
+        "submit": "Enviar",
+        "later": "Más Tarde",
+        "ignore": "Ignorar",
+        "resubmit": "Reenviar",
+        "resubmitImmediately": "Reenviar Inmediatamente",
+        "continue": "Continuar",
+        "cleanup": "Limpiar",
+        "settings": "Configuración",
+        "viewHistory": "Ver Historial",
+        "dismiss": "Descartar",
+        "viewBackup": "Ver Respaldo",
+        "guide": "Guía de Inmigración",
+        "itinerary": "Itinerario"
+      },
+      "submissionWindowOpen": {
+        "title": "Envío de Tarjeta de Entrada de Tailandia Disponible",
+        "body": "Ahora puede enviar su tarjeta de entrada de Tailandia. {{daysRemaining}} días hasta la llegada."
+      },
+      "urgentReminderNotification": {
+        "title": "Urgente: Envíe la Tarjeta de Entrada Pronto",
+        "body": "{{hoursRemaining}} horas hasta la fecha límite de entrada a Tailandia. Complete el envío inmediatamente."
+      },
+      "deadlineWarning": {
+        "title": "Hoy es la Fecha Límite de Envío",
+        "body": "Hoy es el último día para enviar su tarjeta de entrada de Tailandia. Complete el envío inmediatamente para evitar problemas de entrada."
+      },
+      "arrivalReminder": {
+        "title": "Llegando a Tailandia Mañana",
+        "body": "Llegará a Tailandia mañana. Prepare su tarjeta de entrada y documentos relacionados."
+      },
+      "arrivalDay": {
+        "title": "¡Llegando a Tailandia Hoy, Que Tenga un Buen Viaje!",
+        "body": "¡Hoy es su viaje a Tailandia! Recuerde preparar su tarjeta de entrada y pasaporte. Clima: {{weather}}"
+      },
+      "dataChangeDetected": {
+        "title": "Datos Cambiados, Puede Necesitar Reenviar",
+        "body": "Su información de {{changedFields}} ha cambiado. Puede necesitar reenviar su tarjeta de entrada."
+      },
+      "entryPackSuperseded": {
+        "title": "Paquete de Entrada Reemplazado, Reenvíe Por Favor",
+        "body": "Su paquete de entrada ha sido marcado como reemplazado. Reenvíe para asegurar una entrada sin problemas."
+      },
+      "entryPackExpired": {
+        "title": "El Paquete de Entrada Expirará Pronto",
+        "body": "Su paquete de entrada expirará en {{daysUntilExpiry}} días. Considere archivar o actualizar."
+      },
+      "entryPackArchived": {
+        "title": "Paquete de Entrada Archivado Automáticamente",
+        "body": "Su paquete de entrada de {{destination}} ha sido archivado automáticamente al historial."
+      },
+      "incompleteDataReminder": {
+        "title": "Completar Información de Entrada",
+        "body": "Su viaje a {{destination}} tiene información incompleta. Completado: {{completionPercent}}%"
+      },
+      "storageWarning": {
+        "title": "Espacio de Almacenamiento Bajo",
+        "body": "Los registros del historial están usando espacio significativo ({{usedSpace}}MB). Considere limpiar registros antiguos."
+      },
+      "backupCompleted": {
+        "title": "Copia de Seguridad de Datos Completada",
+        "body": "Sus datos del paquete de entrada han sido respaldados exitosamente. Tamaño de respaldo: {{backupSize}}MB"
+      },
+      "actions": {
+        "submit": "Enviar Ahora",
+        "later": "Recordar Más Tarde",
+        "ignore": "Ignorar",
+        "view": "Ver Tarjeta de Entrada",
+        "guide": "Ver Guía",
+        "itinerary": "Ver Itinerario",
+        "resubmit": "Reenviar",
+        "resubmitImmediately": "Reenviar Inmediatamente",
+        "archive": "Archivar",
+        "viewHistory": "Ver Historial",
+        "dismiss": "Entendido",
+        "continue": "Continuar Llenando",
+        "cleanup": "Limpiar Ahora",
+        "settings": "Ver Configuración",
+        "viewBackup": "Ver Respaldo"
+      }
+    },
+    "entryFlow": {
+      "viewStatus": "Ver Estado de Preparación",
+      "submitTDAC": "Enviar TDAC Automáticamente",
+      "resubmitTDAC": "Reenviar Tarjeta de Entrada",
+      "continueEditing": "Continuar Editando",
+      "editInformation": "Editar Información",
+      "startGuide": "Iniciar Guía de Inmigración",
+      "manualCopy": "Copia Manual",
+      "webviewFill": "Autocompletar WebView",
+      "incompleteMessage": "Este viaje no está completo, por favor continúe llenando la información",
+      "resubmissionWarning": "Editar información requerirá reenvío. ¿Continuar?",
+      "completionPercent": "{{percent}}% Completo"
+    },
+    "countdown": {
+      "noDate": "No se ha establecido fecha de llegada a Tailandia, no se puede enviar tarjeta de entrada",
+      "preWindow": "{{days}} días {{hours}}:{{minutes}} hasta que se abra el envío",
+      "withinWindow": "{{hours}}:{{minutes}} hasta la fecha límite, por favor envíe pronto",
+      "urgent": "{{hours}} horas {{minutes}} minutos hasta la fecha límite"
+    },
+    "categories": {
+      "passport": "Información del Pasaporte",
+      "personal": "Información Personal",
+      "funds": "Prueba de Fondos",
+      "travel": "Información de Viaje",
+      "fieldsComplete": "{{filled}}/{{total}} campos completos"
+    },
+    "dataChange": {
+      "handleError": "Error al manejar cambios de datos, por favor intente de nuevo.",
+      "confirmResubmit": {
+        "title": "Confirmar Reenvío",
+        "message": "Reenviar invalidará la tarjeta de entrada actual, y necesitará regenerar la tarjeta de entrada. ¿Está seguro de que desea continuar?"
+      },
+      "confirmIgnore": {
+        "title": "Ignorar Cambios",
+        "message": "Ignorar cambios puede causar discrepancia de información durante la entrada. Se recomienda reenviar para asegurar la precisión de la información. ¿Está seguro de que desea ignorar?"
+      },
+      "detailsTitle": "Detalles de Cambios",
+      "totalChanges": "Cambios Totales",
+      "significantChanges": "Cambios Significativos",
+      "minorChanges": "Cambios Menores",
+      "resubmit": "Reenviar",
+      "ignore": "Ignorar Cambios",
+      "viewDetails": "Ver Detalles"
+    },
+    "superseded": {
+      "resubmitHint": "Información actualizada, reenvío requerido",
+      "message": "Su información de entrada ha sido actualizada, y necesita reenviar la tarjeta de entrada para asegurar la precisión de la información."
+    },
+    "immigrationOfficer": {
+      "title": "Mostrar al Oficial",
+      "exitButton": "Salir del Modo de Presentación",
+      "languageToggle": "Cambiar Idioma",
+      "sections": {
+        "qrCode": "Código QR",
+        "passport": "Información del Pasaporte",
+        "travel": "Información de Viaje",
+        "funds": "Prueba de Fondos",
+        "contact": "Información de Contacto"
+      },
+      "quickActions": {
+        "showQR": "Mostrar Código QR",
+        "showPassport": "Mostrar Pasaporte",
+        "showFunds": "Mostrar Fondos",
+        "showHotel": "Mostrar Hotel",
+        "showTicket": "Mostrar Boleto"
+      },
+      "offlineMode": "Modo Sin Conexión - Usando datos en caché",
+      "disclaimer": "Este es un documento preparado por el viajero. Por favor verifique con sistemas oficiales.",
+      "authentication": {
+        "title": "Autenticación",
+        "message": "Se requiere autenticación para mostrar documentos a los oficiales de inmigración",
+        "authenticate": "Autenticar",
+        "cancel": "Cancelar"
+      },
+      "presentation": {
+        "exitTitle": "Salir del Modo de Presentación",
+        "exitMessage": "¿Está seguro de que desea salir del modo de presentación?",
+        "exit": "Salir",
+        "cancel": "Cancelar",
+        "showMoreInfo": "Mostrar Más Información",
+        "showLessInfo": "Mostrar Menos Información",
+        "exitHint": "Deslice hacia abajo para salir",
+        "tdacQRCode": "Código QR TDAC",
+        "submitted": "Enviado",
+        "passportInformation": "Información del Pasaporte",
+        "travelInformation": "Información de Viaje",
+        "fullName": "Nombre Completo",
+        "passportNumber": "Número de Pasaporte",
+        "nationality": "Nacionalidad",
+        "dateOfBirth": "Fecha de Nacimiento",
+        "gender": "Género",
+        "passportExpiry": "Vencimiento del Pasaporte",
+        "flightDetails": "Detalles del Vuelo",
+        "arrivalFlight": "Vuelo de Llegada",
+        "arrivalDateTime": "Fecha y Hora de Llegada",
+        "departureDate": "Fecha de Salida",
+        "accommodation": "Alojamiento",
+        "hotelName": "Nombre del Hotel",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "visitPurpose": "Propósito de la Visita",
+        "purpose": "Propósito",
+        "durationOfStay": "Duración de la Estadía",
+        "qrCodePlaceholder": "Código QR",
+        "qrCodeSubtext": "Aparecerá después del envío TDAC",
+        "saveQRCode": "Guardar Código QR",
+        "saveQRMessage": "¿Guardar código QR en el álbum de fotos?",
+        "save": "Guardar",
+        "saved": "Guardado",
+        "qrCodeSaved": "Código QR guardado en el álbum de fotos"
+      },
+      "help": {
+        "title": "Ayuda de Gestos",
+        "pinchZoom": "Pellizcar para hacer zoom al código QR (50% - 200%)",
+        "doubleTap": "Doble toque para alternar la visualización de información",
+        "longPress": "Mantener presionado el código QR para guardar en el álbum",
+        "swipeDown": "Deslizar hacia abajo desde arriba para salir",
+        "gotIt": "Entendido"
+      },
+      "languageModes": {
+        "bilingual": "Bilingüe",
+        "thai": "Solo Tailandés",
+        "english": "Solo Inglés"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Estado de Preparación de Entrada a Tailandia",
+      "preparationTitle": "Estado de Preparación de Entrada a Tailandia",
+      "preparationSubtitle": "Verifique el estado de finalización de su información de entrada",
+      "loading": "Cargando estado de preparación...",
+      "completionStatus": "Estado de Finalización",
+      "categories": "Categorías de Información",
+      "submissionWindow": "Ventana de Envío",
+      "actions": "Acciones",
+      "continueImproving": "Continuar Mejorando Información",
+      "completeAllFields": "Necesita completar información",
+      "setArrivalDate": "Por Favor Establezca Fecha de Llegada",
+      "arrivalDateRequired": "Fecha de llegada requerida para envío",
+      "waitForWindow": "Esperar Ventana de Envío",
+      "windowNotOpen": "Ventana de envío aún no abierta",
+      "submitTDAC": "Enviar Tarjeta de Entrada de Tailandia",
+      "readyToSubmit": "Toda la información completa, listo para enviar",
+      "editInfo": "Editar Información",
+      "preview": "Vista Previa de Tarjeta de Entrada",
+      "share": "Pedir a un amigo que complete por ti",
+      "noData": {
+        "title": "Comenzar a Llenar Información de Entrada a Tailandia",
+        "description": "Aún no ha llenado ninguna información de entrada. Haga clic en el botón de abajo para comenzar, y lo guiaremos a través de todo el proceso.",
+        "hintsTitle": "Necesita preparar:",
+        "startButton": "Comenzar a Llenar"
+      },
+      "categories": {
+        "passport": "Información del Pasaporte",
+        "personal": "Información Personal",
+        "funds": "Prueba de Fondos",
+        "travel": "Información de Viaje"
+      }
+    }
+  },
   "malaysia": {
     "info": {
       "headerTitle": "Información de entrada a Malasia",
@@ -501,6 +803,41 @@
       "continueButton": "Continuar a información de viaje"
     }
   },
+  "thailand": {
+    "entryFlow": {
+      "title": "Estado de Preparación de Entrada a Tailandia",
+      "preparationTitle": "Estado de Preparación de Entrada a Tailandia",
+      "preparationSubtitle": "Verifique el estado de finalización de su información de entrada",
+      "loading": "Cargando estado de preparación...",
+      "completionStatus": "Estado de Finalización",
+      "categories": "Categorías de Información",
+      "submissionWindow": "Ventana de Envío",
+      "actions": "Acciones",
+      "continueImproving": "Continuar Mejorando Información",
+      "completeAllFields": "Necesita completar información",
+      "setArrivalDate": "Por Favor Establezca Fecha de Llegada",
+      "arrivalDateRequired": "Fecha de llegada requerida para envío",
+      "waitForWindow": "Esperar Ventana de Envío",
+      "windowNotOpen": "Ventana de envío aún no abierta",
+      "submitTDAC": "Enviar Tarjeta de Entrada de Tailandia",
+      "readyToSubmit": "Toda la información completa, listo para enviar",
+      "editInfo": "Editar Información",
+      "preview": "Vista Previa de Tarjeta de Entrada",
+      "share": "Pedir a un amigo que complete por ti",
+      "noData": {
+        "title": "Comenzar a Llenar Información de Entrada a Tailandia",
+        "description": "Aún no ha llenado ninguna información de entrada. Haga clic en el botón de abajo para comenzar, y lo guiaremos a través de todo el proceso.",
+        "hintsTitle": "Necesita preparar:",
+        "startButton": "Comenzar a Llenar"
+      },
+      "categories": {
+        "passport": "Información del Pasaporte",
+        "personal": "Información Personal",
+        "funds": "Prueba de Fondos",
+        "travel": "Información de Viaje"
+      }
+    }
+  },
   "profile": {
     "funding": {
       "addButton": "Agregar Artículo de Fondos",
@@ -580,6 +917,93 @@
   "common": {
     "back": "Atrás",
     "close": "Cerrar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "reset": "Restablecer"
+  },
+  "notificationSettings": {
+    "loading": "Cargando configuración...",
+    "sections": {
+      "general": "General",
+      "types": "Tipos de Notificación",
+      "timing": "Horarios",
+      "frequency": "Frecuencia",
+      "actions": "Acciones",
+      "testing": "Pruebas y Restablecimiento"
+    },
+    "general": {
+      "enabled": "Habilitar Notificaciones",
+      "enabledDescription": "Recibir notificaciones para recordatorios de preparación de entrada"
+    },
+    "types": {
+      "submissionWindow": "Ventana de Envío",
+      "submissionWindowDescription": "Notificar cuando se abra la ventana de envío de 72 horas",
+      "urgentReminder": "Recordatorios Urgentes",
+      "urgentReminderDescription": "Recordatorios urgentes 24 horas antes de la llegada",
+      "deadline": "Alertas de Fecha Límite",
+      "deadlineDescription": "Alertas el día de llegada si no se ha enviado",
+      "arrivalReminder": "Recordatorios de Llegada",
+      "arrivalReminderDescription": "Recordar 1 día antes de la llegada",
+      "arrivalDay": "Día de Llegada",
+      "arrivalDayDescription": "Mensaje de buena suerte el día de llegada",
+      "dataChange": "Cambios de Datos",
+      "dataChangeDescription": "Notificar cuando los datos cambien después del envío",
+      "expiry": "Advertencias de Expiración",
+      "expiryDescription": "Advertir cuando los paquetes de entrada estén a punto de expirar",
+      "autoArchival": "Archivo Automático",
+      "autoArchivalDescription": "Notificar cuando los paquetes de entrada se archiven automáticamente"
+    },
+    "timing": {
+      "reminderTime": "Hora de Recordatorio Predeterminada",
+      "reminderTimeDescription": "Hora del día para recordatorios generales",
+      "quietHours": "Horas Silenciosas",
+      "quietHoursDescription": "Deshabilitar notificaciones durante las horas silenciosas",
+      "quietStart": "Inicio de Horas Silenciosas",
+      "quietEnd": "Fin de Horas Silenciosas"
+    },
+    "frequency": {
+      "dailySummary": "Resumen Diario",
+      "dailySummaryDescription": "Recibir un resumen diario en lugar de notificaciones individuales",
+      "summaryTime": "Hora del Resumen",
+      "summaryTimeDescription": "Hora para la notificación del resumen diario"
+    },
+    "actions": {
+      "quickActions": "Acciones Rápidas",
+      "quickActionsDescription": "Mostrar botones de acción en las notificaciones",
+      "test": "Probar Notificación",
+      "reset": "Restablecer a Valores Predeterminados"
+    },
+    "status": {
+      "lastUpdated": "Última actualización",
+      "version": "Versión"
+    },
+    "error": {
+      "loadTitle": "Error",
+      "loadMessage": "Error al cargar la configuración de notificaciones",
+      "saveTitle": "Error",
+      "saveMessage": "Error al guardar la configuración",
+      "resetTitle": "Error",
+      "resetMessage": "Error al restablecer la configuración",
+      "testTitle": "Error",
+      "testMessage": "Error al programar la notificación de prueba"
+    },
+    "reset": {
+      "title": "Restablecer Configuración",
+      "message": "Esto restablecerá toda la configuración de notificaciones a los valores predeterminados. ¿Continuar?"
+    },
+    "test": {
+      "title": "Notificación de Prueba",
+      "body": "Esta es una notificación de prueba de TripSecretary",
+      "permissionTitle": "Permiso Requerido",
+      "permissionMessage": "Por favor habilite las notificaciones en la configuración del dispositivo primero",
+      "scheduledTitle": "Prueba Programada",
+      "scheduledMessage": "La notificación de prueba aparecerá en 2 segundos"
+    },
+    "timePicker": {
+      "title": "Establecer Hora",
+      "message": "El selector de hora se implementará en una actualización futura"
+    }
+  },
+  "screenTitles": {
+    "notificationSettings": "Configuración de Notificaciones"
   }
 }

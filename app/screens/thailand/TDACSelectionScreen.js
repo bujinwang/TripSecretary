@@ -13,10 +13,311 @@ import {
 } from 'react-native';
 import { colors } from '../../theme';
 import { mergeTDACData } from '../../data/mockTDACData';
+import EntryPackService from '../../services/entryPack/EntryPackService';
+import SnapshotService from '../../services/snapshot/SnapshotService';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
   const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
   const travelerInfo = mergeTDACData(incomingTravelerInfo);
+
+  /**
+   * Handle successful TDAC submission by creating/updating entry pack
+   * This is called when user returns from successful TDAC submission
+   */
+  const handleTDACSubmissionSuccess = async (submissionData) => {
+    try {
+      console.log('🎉 Handling TDAC submission success:', submissionData);
+
+      // Task 4.2: Extract and validate all necessary fields from TDAC submission
+      const tdacSubmission = extractTDACSubmissionMetadata(submissionData);
+
+      // Validate metadata completeness (must have arrCardNo and qrUri)
+      if (!validateTDACSubmissionMetadata(tdacSubmission)) {
+        console.warn('⚠️ Invalid TDAC submission metadata:', tdacSubmission);
+        return;
+      }
+
+      // Record submission history
+      const submissionHistoryEntry = {
+        timestamp: tdacSubmission.submittedAt,
+        status: 'success',
+        method: tdacSubmission.submissionMethod,
+        arrCardNo: tdacSubmission.arrCardNo,
+        duration: submissionData.duration || null,
+        metadata: {
+          qrUri: tdacSubmission.qrUri,
+          pdfPath: tdacSubmission.pdfPath,
+          travelerName: submissionData.travelerName,
+          passportNo: submissionData.passportNo,
+          arrivalDate: submissionData.arrivalDate
+        }
+      };
+
+      console.log('📋 Submission history entry:', submissionHistoryEntry);
+
+      // Find or create entry info ID (placeholder - would need actual implementation)
+      const entryInfoId = await findOrCreateEntryInfoId(travelerInfo);
+      
+      if (entryInfoId) {
+        // Create or update entry pack
+        const entryPack = await EntryPackService.createOrUpdatePack(
+          entryInfoId,
+          tdacSubmission,
+          { submissionMethod: tdacSubmission.submissionMethod }
+        );
+
+        console.log('✅ Entry pack created/updated:', {
+          entryPackId: entryPack.id,
+          arrCardNo: tdacSubmission.arrCardNo,
+          status: entryPack.status
+        });
+
+        // Task 4.2: Record submission history
+        await recordSubmissionHistory(entryPack.id, submissionHistoryEntry);
+
+        // Task 4.3: Create entry pack snapshot immediately after creating entry pack
+        await createEntryPackSnapshot(entryPack.id, 'submission', {
+          appVersion: '1.0.0', // Would get from app config
+          deviceInfo: 'mobile', // Would get from device info
+          creationMethod: 'auto',
+          submissionMethod: tdacSubmission.submissionMethod
+        });
+
+        // TODO: Update EntryInfo status (task 4.4)
+        
+      } else {
+        console.warn('⚠️ Could not find or create entry info ID');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to handle TDAC submission success:', error);
+      
+      // Task 4.1: Handle creation failure cases (show error but don't block user)
+      // This is background processing, so we log the error but don't interrupt user flow
+      
+      // Could optionally show a non-blocking toast notification
+      // Toast.show({
+      //   type: 'error',
+      //   text1: 'Entry Pack Creation Failed',
+      //   text2: 'Your TDAC was submitted successfully, but we couldn\'t save the entry pack.',
+      //   position: 'bottom',
+      //   visibilityTime: 4000,
+      // });
+      
+      // Record the failure for debugging
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        const failureLog = {
+          timestamp: new Date().toISOString(),
+          error: error.message,
+          stack: error.stack,
+          submissionData: JSON.stringify(arguments[0]) // Log the submission data that failed
+        };
+        
+        await AsyncStorage.setItem('entry_pack_creation_failures', JSON.stringify(failureLog));
+        console.log('📝 Entry pack creation failure logged');
+      } catch (logError) {
+        console.error('❌ Failed to log entry pack creation failure:', logError);
+      }
+    }
+  };
+
+  /**
+   * Task 4.2: Extract all necessary fields from TDAC API response
+   * Standardizes metadata from different submission methods (API/WebView/Hybrid)
+   */
+  const extractTDACSubmissionMetadata = (submissionData) => {
+    return {
+      arrCardNo: submissionData.arrCardNo || submissionData.cardNo,
+      qrUri: submissionData.qrUri || submissionData.fileUri || submissionData.src,
+      pdfPath: submissionData.pdfPath || submissionData.fileUri,
+      submittedAt: submissionData.submittedAt || submissionData.timestamp 
+        ? new Date(submissionData.submittedAt || submissionData.timestamp).toISOString()
+        : new Date().toISOString(),
+      submissionMethod: submissionData.submissionMethod || 'unknown'
+    };
+  };
+
+  /**
+   * Task 4.2: Validate metadata completeness (must have arrCardNo and qrUri)
+   */
+  const validateTDACSubmissionMetadata = (tdacSubmission) => {
+    const required = ['arrCardNo', 'qrUri'];
+    const missing = required.filter(field => !tdacSubmission[field] || !tdacSubmission[field].trim());
+    
+    if (missing.length > 0) {
+      console.error('❌ Missing required TDAC submission fields:', missing);
+      return false;
+    }
+
+    // Validate arrCardNo format (should be alphanumeric)
+    if (!/^[A-Za-z0-9_]+$/.test(tdacSubmission.arrCardNo)) {
+      console.error('❌ Invalid arrCardNo format:', tdacSubmission.arrCardNo);
+      return false;
+    }
+
+    // Validate qrUri/pdfPath exists
+    if (!tdacSubmission.qrUri.includes('file://') && !tdacSubmission.qrUri.startsWith('data:')) {
+      console.warn('⚠️ Unusual qrUri format:', tdacSubmission.qrUri);
+    }
+
+    return true;
+  };
+
+  /**
+   * Task 4.2: Record submission history to submissionHistory array
+   */
+  const recordSubmissionHistory = async (entryPackId, submissionHistoryEntry) => {
+    try {
+      // This would integrate with EntryPack model to append to submissionHistory array
+      console.log('📝 Recording submission history:', {
+        entryPackId,
+        entry: submissionHistoryEntry
+      });
+      
+      // For now, just log - actual implementation would update EntryPack.submissionHistory
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to record submission history:', error);
+      return false;
+    }
+  };
+
+  /**
+   * Task 4.3: Create entry pack snapshot
+   * Creates immutable snapshot of entry pack data after successful TDAC submission
+   */
+  const createEntryPackSnapshot = async (entryPackId, reason = 'submission', metadata = {}) => {
+    try {
+      console.log('📸 Creating entry pack snapshot:', {
+        entryPackId,
+        reason,
+        metadata
+      });
+
+      // Optional: Display snapshot creation progress
+      // This could be a toast or loading indicator
+      // For now, we'll just log the progress
+
+      console.log('📸 Starting snapshot creation process...');
+
+      // Call SnapshotService to create snapshot
+      const snapshot = await SnapshotService.createSnapshot(entryPackId, reason, metadata);
+
+      if (snapshot) {
+        console.log('✅ Entry pack snapshot created successfully:', {
+          snapshotId: snapshot.snapshotId,
+          entryPackId: entryPackId,
+          reason: reason,
+          photoCount: snapshot.getPhotoCount(),
+          createdAt: snapshot.createdAt
+        });
+
+        // Optional: Display success notification
+        // Toast.show({
+        //   type: 'success',
+        //   text1: 'Entry Pack Saved',
+        //   text2: 'Your travel documents have been securely archived.',
+        //   position: 'bottom',
+        //   visibilityTime: 3000,
+        // });
+
+        return snapshot;
+      } else {
+        throw new Error('Snapshot creation returned null');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to create entry pack snapshot:', error);
+      
+      // Task 4.3: Handle snapshot creation failure gracefully
+      // Don't block the user flow, but log the error for debugging
+      
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        const failureLog = {
+          timestamp: new Date().toISOString(),
+          entryPackId,
+          reason,
+          error: error.message,
+          stack: error.stack,
+          metadata
+        };
+        
+        await AsyncStorage.setItem('snapshot_creation_failures', JSON.stringify(failureLog));
+        console.log('📝 Snapshot creation failure logged');
+      } catch (logError) {
+        console.error('❌ Failed to log snapshot creation failure:', logError);
+      }
+
+      // Optional: Display non-blocking warning
+      // Toast.show({
+      //   type: 'info',
+      //   text1: 'Archive Warning',
+      //   text2: 'Documents saved but archival incomplete. Your TDAC is still valid.',
+      //   position: 'bottom',
+      //   visibilityTime: 4000,
+      // });
+
+      return null;
+    }
+  };
+
+  /**
+   * Find or create entry info ID for the traveler
+   * This is a placeholder implementation - would need actual logic
+   */
+  const findOrCreateEntryInfoId = async (travelerInfo) => {
+    try {
+      // This would need to be implemented based on how entry info is stored
+      // For now, return a placeholder ID
+      const userId = 'current_user'; // Would get from auth context
+      const destinationId = 'thailand';
+      
+      // Generate a consistent ID based on user and destination
+      const entryInfoId = `entry_${userId}_${destinationId}_${Date.now()}`;
+      
+      console.log('📝 Generated entry info ID:', entryInfoId);
+      return entryInfoId;
+    } catch (error) {
+      console.error('❌ Failed to find/create entry info ID:', error);
+      return null;
+    }
+  };
+
+  // Listen for navigation focus to check for successful submissions
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      try {
+        // Check AsyncStorage for recent TDAC submissions
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        
+        // Check for recent submissions in the last 5 minutes
+        const recentSubmissionKey = 'recent_tdac_submission';
+        const recentSubmissionData = await AsyncStorage.getItem(recentSubmissionKey);
+        
+        if (recentSubmissionData) {
+          const submissionData = JSON.parse(recentSubmissionData);
+          const submissionTime = new Date(submissionData.timestamp || submissionData.submittedAt);
+          const now = new Date();
+          const timeDiff = now.getTime() - submissionTime.getTime();
+          
+          // If submission was within last 5 minutes, process it
+          if (timeDiff < 5 * 60 * 1000) {
+            console.log('🔍 Found recent TDAC submission:', submissionData);
+            await handleTDACSubmissionSuccess(submissionData);
+            
+            // Clear the recent submission flag
+            await AsyncStorage.removeItem(recentSubmissionKey);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error checking for recent submissions:', error);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   return (
     <ScrollView style={styles.container}>

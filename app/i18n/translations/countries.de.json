@@ -1,4 +1,313 @@
 {
+  "progressiveEntryFlow": {
+    "status": {
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "expired": "Abgelaufen",
+      "inProgress": "In Bearbeitung",
+      "needsResubmission": "Erneute Einreichung Erforderlich"
+    },
+    "snapshot": {
+      "readOnlyBanner": "Dies ist ein historischer Schnappschuss und kann nicht geändert werden",
+      "viewTitle": "Verlauf - Nur Lesen",
+      "legacyBadge": "Dies ist ein veralteter Verlaufseintrag",
+      "incompleteNotice": "Dieses Einreisepaket wurde nicht vervollständigt",
+      "completenessIndicator": "Reisepass {{passport}}, Persönliche Info {{personal}}, Geldmittel {{funds}}, Reiseinfo {{travel}}"
+    },
+    "history": {
+      "title": "Verlauf",
+      "filterOptions": {
+        "all": "Alle",
+        "completed": "Abgeschlossen",
+        "cancelled": "Storniert",
+        "expired": "Abgelaufen"
+      },
+      "timeGroups": {
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "thisWeek": "Diese Woche",
+        "thisMonth": "Diesen Monat",
+        "earlier": "Früher"
+      },
+      "resultCount": "{{count}} Ergebnisse anzeigen",
+      "deleteConfirm": "Dies kann nicht rückgängig gemacht werden. Sind Sie sicher, dass Sie löschen möchten?",
+      "storageUsage": "Verlaufsspeicher: {{size}} MB"
+    },
+    "entryPack": {
+      "title": "{{destination}} Einreisepaket - Eingereicht",
+      "submitted": "Eingereicht",
+      "arrivedToday": "Ankunft Heute",
+      "arrivesTomorrow": "Ankunft Morgen",
+      "arrivesInDays": "Ankunft in {{days}} Tagen"
+    },
+    "notifications": {
+      "autoArchived": "Ihr {{destination}} Einreisepaket wurde automatisch archiviert",
+      "reminderTitle": "Einreiseinformationen Vervollständigen",
+      "reminderBody": "Ihre {{destination}} Reise hat unvollständige Informationen",
+      "submissionWindow": "Sie können jetzt Ihre Thailand-Einreisekarte einreichen",
+      "urgentReminder": "{{hours}} Stunden bis zur Frist",
+      "submissionWindowOpen": {
+        "title": "Thailand-Einreisekarte Einreichung Verfügbar",
+        "body": "Sie können jetzt Ihre Thailand-Einreisekarte einreichen. {{daysRemaining}} Tage bis zur Ankunft."
+      },
+      "urgentReminderNotification": {
+        "title": "Dringend: Bitte Einreisekarte Bald Einreichen",
+        "body": "{{hoursRemaining}} Stunden bis zur Thailand-Einreisefrist. Bitte vervollständigen Sie die Einreichung sofort."
+      },
+      "deadlineWarning": {
+        "title": "Heute ist Einreichungsfrist",
+        "body": "Heute ist der letzte Tag zur Einreichung Ihrer Thailand-Einreisekarte. Bitte vervollständigen Sie die Einreichung sofort, um Einreiseprobleme zu vermeiden."
+      },
+      "arrivalReminder": {
+        "title": "Ankunft in Thailand Morgen",
+        "body": "Sie werden morgen in Thailand ankommen. Bitte bereiten Sie Ihre Einreisekarte und zugehörigen Dokumente vor."
+      },
+      "arrivalDay": {
+        "title": "Ankunft in Thailand Heute, Gute Reise!",
+        "body": "Heute ist Ihre Thailand-Reise! Denken Sie daran, Ihre Einreisekarte und Ihren Reisepass vorzubereiten. Wetter: {{weather}}"
+      },
+      "dataChangeDetected": {
+        "title": "Daten Geändert, Möglicherweise Erneute Einreichung Erforderlich",
+        "body": "Ihre {{changedFields}} Informationen haben sich geändert. Sie müssen möglicherweise Ihre Einreisekarte erneut einreichen."
+      },
+      "entryPackSuperseded": {
+        "title": "Einreisepaket Ersetzt, Bitte Erneut Einreichen",
+        "body": "Ihr Einreisepaket wurde als ersetzt markiert. Bitte reichen Sie erneut ein, um eine reibungslose Einreise zu gewährleisten."
+      },
+      "entryPackExpired": {
+        "title": "Einreisepaket Läuft Bald Ab",
+        "body": "Ihr Einreisepaket läuft in {{daysUntilExpiry}} Tagen ab. Bitte erwägen Sie Archivierung oder Aktualisierung."
+      },
+      "entryPackArchived": {
+        "title": "Einreisepaket Automatisch Archiviert",
+        "body": "Ihr {{destination}} Einreisepaket wurde automatisch in den Verlauf archiviert."
+      },
+      "incompleteDataReminder": {
+        "title": "Einreiseinformationen Vervollständigen",
+        "body": "Ihre {{destination}} Reise hat unvollständige Informationen. Vervollständigt: {{completionPercent}}%"
+      },
+      "storageWarning": {
+        "title": "Speicherplatz Niedrig",
+        "body": "Verlaufseinträge verwenden erheblichen Speicherplatz ({{usedSpace}}MB). Erwägen Sie das Löschen alter Einträge."
+      },
+      "backupCompleted": {
+        "title": "Datensicherung Abgeschlossen",
+        "body": "Ihre Einreisepaket-Daten wurden erfolgreich gesichert. Sicherungsgröße: {{backupSize}}MB"
+      },
+      "actions": {
+        "submit": "Jetzt Einreichen",
+        "later": "Später Erinnern",
+        "ignore": "Ignorieren",
+        "view": "Einreisekarte Anzeigen",
+        "guide": "Anleitung Anzeigen",
+        "itinerary": "Reiseplan Anzeigen",
+        "resubmit": "Erneut Einreichen",
+        "resubmitImmediately": "Sofort Erneut Einreichen",
+        "archive": "Archivieren",
+        "viewHistory": "Verlauf Anzeigen",
+        "dismiss": "Verstanden",
+        "continue": "Weiter Ausfüllen",
+        "cleanup": "Jetzt Bereinigen",
+        "settings": "Einstellungen Anzeigen",
+        "viewBackup": "Sicherung Anzeigen"
+      }
+    },
+    "entryFlow": {
+      "viewStatus": "Vorbereitungsstatus Anzeigen",
+      "submitTDAC": "TDAC Automatisch Einreichen",
+      "resubmitTDAC": "Einreisekarte Erneut Einreichen",
+      "continueEditing": "Bearbeitung Fortsetzen",
+      "editInformation": "Informationen Bearbeiten",
+      "startGuide": "Einwanderungsanleitung Starten",
+      "manualCopy": "Manuelle Kopie",
+      "webviewFill": "WebView Auto-Ausfüllen",
+      "incompleteMessage": "Diese Reise ist nicht vollständig, bitte setzen Sie das Ausfüllen der Informationen fort",
+      "resubmissionWarning": "Das Bearbeiten von Informationen erfordert eine erneute Einreichung. Fortfahren?",
+      "completionPercent": "{{percent}}% Abgeschlossen"
+    },
+    "countdown": {
+      "noDate": "Kein Thailand-Ankunftsdatum festgelegt, Einreisekarte kann nicht eingereicht werden",
+      "preWindow": "{{days}} Tage {{hours}}:{{minutes}} bis Einreichung öffnet",
+      "withinWindow": "{{hours}}:{{minutes}} bis zur Frist, bitte bald einreichen",
+      "urgent": "{{hours}} Stunden {{minutes}} Minuten bis zur Frist"
+    },
+    "categories": {
+      "passport": "Reisepass-Informationen",
+      "personal": "Persönliche Informationen",
+      "funds": "Geldnachweis",
+      "travel": "Reiseinformationen",
+      "fieldsComplete": "{{filled}}/{{total}} Felder ausgefüllt"
+    },
+    "dataChange": {
+      "handleError": "Fehler beim Verarbeiten von Datenänderungen, bitte versuchen Sie es erneut.",
+      "confirmResubmit": {
+        "title": "Erneute Einreichung Bestätigen",
+        "message": "Erneute Einreichung wird die aktuelle Einreisekarte ungültig machen, und Sie müssen die Einreisekarte neu generieren. Sind Sie sicher, dass Sie fortfahren möchten?"
+      },
+      "confirmIgnore": {
+        "title": "Änderungen Ignorieren",
+        "message": "Das Ignorieren von Änderungen kann zu Informationsdiskrepanzen bei der Einreise führen. Es wird empfohlen, erneut einzureichen, um die Genauigkeit der Informationen zu gewährleisten. Sind Sie sicher, dass Sie ignorieren möchten?"
+      },
+      "detailsTitle": "Änderungsdetails",
+      "totalChanges": "Gesamte Änderungen",
+      "significantChanges": "Bedeutende Änderungen",
+      "minorChanges": "Geringfügige Änderungen",
+      "resubmit": "Erneut Einreichen",
+      "ignore": "Änderungen Ignorieren",
+      "viewDetails": "Details Anzeigen"
+    },
+    "superseded": {
+      "resubmitHint": "Informationen aktualisiert, erneute Einreichung erforderlich",
+      "message": "Ihre Einreiseinformationen wurden aktualisiert, und Sie müssen die Einreisekarte erneut einreichen, um die Genauigkeit der Informationen zu gewährleisten."
+    },
+    "immigrationOfficer": {
+      "title": "Beamten Zeigen",
+      "exitButton": "Präsentationsmodus Verlassen",
+      "languageToggle": "Sprache Wechseln",
+      "sections": {
+        "qrCode": "QR-Code",
+        "passport": "Reisepass-Informationen",
+        "travel": "Reiseinformationen",
+        "funds": "Geldnachweis",
+        "contact": "Kontaktinformationen"
+      },
+      "quickActions": {
+        "showQR": "QR-Code Zeigen",
+        "showPassport": "Reisepass Zeigen",
+        "showFunds": "Geldmittel Zeigen",
+        "showHotel": "Hotel Zeigen",
+        "showTicket": "Ticket Zeigen"
+      },
+      "offlineMode": "Offline-Modus - Verwende zwischengespeicherte Daten",
+      "disclaimer": "Dies ist ein vom Reisenden vorbereitetes Dokument. Bitte mit offiziellen Systemen überprüfen.",
+      "authentication": {
+        "title": "Authentifizierung",
+        "message": "Authentifizierung erforderlich, um Dokumente Einwanderungsbeamten zu zeigen",
+        "authenticate": "Authentifizieren",
+        "cancel": "Abbrechen"
+      },
+      "presentation": {
+        "exitTitle": "Präsentationsmodus Verlassen",
+        "exitMessage": "Sind Sie sicher, dass Sie den Präsentationsmodus verlassen möchten?",
+        "exit": "Verlassen",
+        "cancel": "Abbrechen",
+        "showMoreInfo": "Mehr Informationen Zeigen",
+        "showLessInfo": "Weniger Informationen Zeigen",
+        "exitHint": "Nach unten wischen zum Verlassen",
+        "tdacQRCode": "TDAC QR-Code",
+        "submitted": "Eingereicht",
+        "passportInformation": "Reisepass-Informationen",
+        "travelInformation": "Reiseinformationen",
+        "fullName": "Vollständiger Name",
+        "passportNumber": "Reisepassnummer",
+        "nationality": "Staatsangehörigkeit",
+        "dateOfBirth": "Geburtsdatum",
+        "gender": "Geschlecht",
+        "passportExpiry": "Reisepass-Ablauf",
+        "flightDetails": "Flugdetails",
+        "arrivalFlight": "Ankunftsflug",
+        "arrivalDateTime": "Ankunftsdatum und -zeit",
+        "departureDate": "Abreisedatum",
+        "accommodation": "Unterkunft",
+        "hotelName": "Hotelname",
+        "address": "Adresse",
+        "phone": "Telefon",
+        "visitPurpose": "Besuchszweck",
+        "purpose": "Zweck",
+        "durationOfStay": "Aufenthaltsdauer",
+        "qrCodePlaceholder": "QR-Code",
+        "qrCodeSubtext": "Erscheint nach TDAC-Einreichung",
+        "saveQRCode": "QR-Code Speichern",
+        "saveQRMessage": "QR-Code im Fotoalbum speichern?",
+        "save": "Speichern",
+        "saved": "Gespeichert",
+        "qrCodeSaved": "QR-Code im Fotoalbum gespeichert"
+      },
+      "help": {
+        "title": "Gestenhilfe",
+        "pinchZoom": "Kneifen zum Zoomen des QR-Codes (50% - 200%)",
+        "doubleTap": "Doppeltippen zum Umschalten der Informationsanzeige",
+        "longPress": "Langen Druck auf QR-Code zum Speichern im Album",
+        "swipeDown": "Von oben nach unten wischen zum Verlassen",
+        "gotIt": "Verstanden"
+      },
+      "languageModes": {
+        "bilingual": "Zweisprachig",
+        "thai": "Nur Thai",
+        "english": "Nur Englisch"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Thailand-Einreise Vorbereitungsstatus",
+      "preparationTitle": "Thailand-Einreise Vorbereitungsstatus",
+      "preparationSubtitle": "Überprüfen Sie den Vervollständigungsstatus Ihrer Einreiseinformationen",
+      "loading": "Lade Vorbereitungsstatus...",
+      "completionStatus": "Vervollständigungsstatus",
+      "categories": "Informationskategorien",
+      "submissionWindow": "Einreichungsfenster",
+      "actions": "Aktionen",
+      "continueImproving": "Informationen Weiter Verbessern",
+      "completeAllFields": "Informationen müssen vervollständigt werden",
+      "setArrivalDate": "Bitte Ankunftsdatum Festlegen",
+      "arrivalDateRequired": "Ankunftsdatum für Einreichung erforderlich",
+      "waitForWindow": "Auf Einreichungsfenster Warten",
+      "windowNotOpen": "Einreichungsfenster noch nicht geöffnet",
+      "submitTDAC": "Thailand-Einreisekarte Einreichen",
+      "readyToSubmit": "Alle Informationen vollständig, bereit zur Einreichung",
+      "editInfo": "Informationen Bearbeiten",
+      "preview": "Einreisekarte Vorschau",
+      "share": "Freund bitten, für Sie auszufüllen",
+      "noData": {
+        "title": "Thailand-Einreiseinformationen Ausfüllen Beginnen",
+        "description": "Sie haben noch keine Einreiseinformationen ausgefüllt. Klicken Sie auf die Schaltfläche unten, um zu beginnen, und wir führen Sie durch den gesamten Prozess.",
+        "hintsTitle": "Sie müssen vorbereiten:",
+        "startButton": "Ausfüllen Beginnen"
+      },
+      "categories": {
+        "passport": "Reisepass-Informationen",
+        "personal": "Persönliche Informationen",
+        "funds": "Geldnachweis",
+        "travel": "Reiseinformationen"
+      }
+    }
+  },
+  "thailand": {
+    "entryFlow": {
+      "title": "Thailand-Einreise Vorbereitungsstatus",
+      "preparationTitle": "Thailand-Einreise Vorbereitungsstatus",
+      "preparationSubtitle": "Überprüfen Sie den Vervollständigungsstatus Ihrer Einreiseinformationen",
+      "loading": "Lade Vorbereitungsstatus...",
+      "completionStatus": "Vervollständigungsstatus",
+      "categories": "Informationskategorien",
+      "submissionWindow": "Einreichungsfenster",
+      "actions": "Aktionen",
+      "continueImproving": "Informationen Weiter Verbessern",
+      "completeAllFields": "Informationen müssen vervollständigt werden",
+      "setArrivalDate": "Bitte Ankunftsdatum Festlegen",
+      "arrivalDateRequired": "Ankunftsdatum für Einreichung erforderlich",
+      "waitForWindow": "Auf Einreichungsfenster Warten",
+      "windowNotOpen": "Einreichungsfenster noch nicht geöffnet",
+      "submitTDAC": "Thailand-Einreisekarte Einreichen",
+      "readyToSubmit": "Alle Informationen vollständig, bereit zur Einreichung",
+      "editInfo": "Informationen Bearbeiten",
+      "preview": "Einreisekarte Vorschau",
+      "share": "Freund bitten, für Sie auszufüllen",
+      "noData": {
+        "title": "Thailand-Einreiseinformationen Ausfüllen Beginnen",
+        "description": "Sie haben noch keine Einreiseinformationen ausgefüllt. Klicken Sie auf die Schaltfläche unten, um zu beginnen, und wir führen Sie durch den gesamten Prozess.",
+        "hintsTitle": "Sie müssen vorbereiten:",
+        "startButton": "Ausfüllen Beginnen"
+      },
+      "categories": {
+        "passport": "Reisepass-Informationen",
+        "personal": "Persönliche Informationen",
+        "funds": "Geldnachweis",
+        "travel": "Reiseinformationen"
+      }
+    }
+  },
   "malaysia": {
     "info": {
       "headerTitle": "Einreiseinformationen Malaysia",

@@ -2,7 +2,7 @@
 // Central export for all theme constants
 
 export { colors } from './colors';
-export { typography, fontSize, fontWeight, fontFamily } from './typography';
+export { typography, fontSize, fontWeight, fontFamily, sizes as typographySizes, weights as typographyWeights } from './typography';
 export { spacing, borderRadius, touchable } from './spacing';
 export { shadows } from './shadows';
 

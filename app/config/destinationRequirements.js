@@ -62,13 +62,34 @@ export const destinationRequirements = {
     needsCopyMode: false,  // 不需要
     hasAutoKiosk: true,    // 有e-道
     pdfFormat: null,       // 无需PDF
-    entryMethod: 'none',   // 无需填表
+    entryMethod: 'visa-free', // 免签入境
     kioskName: 'e-Channel (e道)',
     kioskSupported: true,  // 内地居民可注册使用
+    visaInfo: {
+      type: 'visa-free',
+      duration: '7 days',
+      requirements: [
+        '中国护照持有者免签7天',
+        '无需提前申请签证或注册',
+        '适用于旅游、商务、探亲',
+        '如需延期可通过香港入境处申请'
+      ],
+      documentOptions: [
+        '护照入境：中国护照可直接免签入境香港7天',
+        '港澳通行证：持有效港澳通行证也可入境香港',
+        '两者皆可：护照和通行证都是有效入境证件',
+        '首次使用护照：建议提前准备好相关证明文件'
+      ]
+    },
     notes: [
       '持回乡证可直接通关',
       '持护照可注册e-道服务',
-      '年满11岁即可使用'
+      '年满11岁即可使用',
+      '入境须知：仅7天，必须按时离境或申请延期',
+      '入境检查严格：可能被详细询问来港目的、住宿、资金情况',
+      '证件需准备齐全：往返机票、酒店预订、资金证明均需准备',
+      '可能需健康申报：视当前健康政策而定',
+      'e道限制：首次访港需人工柜台，排队时间较长'
     ]
   },
 

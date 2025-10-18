@@ -30,6 +30,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { mergeTDACData } from '../../data/mockTDACData';
 import { colors } from '../../theme';
+import EntryPackService from '../../services/entryPack/EntryPackService';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -260,11 +261,42 @@ const TDACHybridScreen = ({ navigation, route }) => {
           duration: result.duration,
           // Flag to prevent resubmission
           alreadySubmitted: true,
-          submissionMethod: 'api' // Mark that this was submitted via API
+          submissionMethod: 'hybrid', // Mark that this was submitted via Hybrid method
+          // TDAC submission metadata for EntryPackService
+          arrCardNo: result.arrCardNo,
+          qrUri: fileUri,
+          pdfPath: fileUri
         };
         
         await AsyncStorage.setItem(`tdac_qr_${cardNo}`, JSON.stringify(entryData));
         console.log('✅ Entry data saved to history');
+        
+        // Set flag for EntryPackService integration
+        await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
+        console.log('✅ Recent submission flag set for EntryPackService');
+        
+        // Create or update entry pack with TDAC submission
+        try {
+          const tdacSubmission = {
+            arrCardNo: result.arrCardNo,
+            qrUri: fileUri,
+            pdfPath: fileUri,
+            submittedAt: result.submittedAt,
+            submissionMethod: 'hybrid'
+          };
+          
+          // Find entry info ID - for now use a placeholder, this should be passed from navigation params
+          const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
+          
+          await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
+            submissionMethod: 'hybrid'
+          });
+          
+          console.log('✅ Entry pack created/updated successfully via Hybrid');
+        } catch (entryPackError) {
+          console.error('❌ Failed to create entry pack:', entryPackError);
+          // Don't block user flow - continue with file saving
+        }
         
         // Also add to history list
         const historyKey = 'tdac_history';
