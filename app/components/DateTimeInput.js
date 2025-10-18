@@ -21,6 +21,7 @@ const DateTimeInput = ({
   errorMessage,
   onBlur,
   minDate, // For date validation
+  dateType = 'future', // 'future', 'past', or 'any' - determines year range
 }) => {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -48,7 +49,18 @@ const DateTimeInput = ({
   const currentDate = mode === 'date' ? parseDate(value) : null;
   const currentTime = mode === 'time' ? parseTime(value) : null;
 
-  const [selectedYear, setSelectedYear] = useState(currentDate?.year || new Date().getFullYear());
+  // Initialize with appropriate defaults based on dateType
+  const getDefaultYear = () => {
+    if (dateType === 'past') {
+      // For birth dates, default to a reasonable birth year (e.g., 30 years ago)
+      return new Date().getFullYear() - 30;
+    } else {
+      // For future dates or any dates, use current year
+      return new Date().getFullYear();
+    }
+  };
+
+  const [selectedYear, setSelectedYear] = useState(currentDate?.year || getDefaultYear());
   const [selectedMonth, setSelectedMonth] = useState(currentDate?.month || 1);
   const [selectedDay, setSelectedDay] = useState(currentDate?.day || 1);
   const [selectedHour, setSelectedHour] = useState(currentTime?.hour || 0);
@@ -65,12 +77,29 @@ const DateTimeInput = ({
       const parsed = parseTime(value);
       setSelectedHour(parsed.hour);
       setSelectedMinute(parsed.minute);
+    } else if (mode === 'date' && !value) {
+      // Reset to appropriate defaults when value is cleared
+      setSelectedYear(getDefaultYear());
+      setSelectedMonth(1);
+      setSelectedDay(1);
     }
-  }, [value, mode]);
+  }, [value, mode, dateType]);
 
   // Generate arrays for pickers
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
+  
+  // Generate years based on dateType
+  let years;
+  if (dateType === 'past') {
+    // For birth dates: show years from 1900 to current year
+    years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i).reverse();
+  } else if (dateType === 'future') {
+    // For future dates: show current year + 10 years ahead
+    years = Array.from({ length: 11 }, (_, i) => currentYear + i);
+  } else {
+    // For any dates: show 50 years before to 10 years ahead
+    years = Array.from({ length: 61 }, (_, i) => currentYear - 50 + i);
+  }
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const getDaysInMonth = (year, month) => new Date(year, month, 0).getDate();
   const days = Array.from({ length: getDaysInMonth(selectedYear, selectedMonth) }, (_, i) => i + 1);
@@ -78,6 +107,10 @@ const DateTimeInput = ({
   const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const formatValue = () => {
+    console.log('=== DateTimeInput formatValue ===');
+    console.log('label:', label);
+    console.log('value:', value);
+    console.log('mode:', mode);
     if (!value) return mode === 'date' ? 'YYYY-MM-DD' : 'HH:MM';
     return value;
   };
@@ -93,6 +126,13 @@ const DateTimeInput = ({
       const minute = String(selectedMinute).padStart(2, '0');
       newValue = `${hour}:${minute}`;
     }
+    console.log('=== DateTimeInput handleConfirm ===');
+    console.log('Label:', label);
+    console.log('New value:', newValue);
+    console.log('Previous value:', value);
+    console.log('dateType:', dateType);
+    console.log('Selected year/month/day:', selectedYear, selectedMonth, selectedDay);
+    console.log('Calling onChangeText with:', newValue);
     onChangeText(newValue);
     setShowPicker(false);
     // Call onBlur with the new value to ensure it's saved

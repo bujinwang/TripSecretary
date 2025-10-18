@@ -18,8 +18,8 @@ const VISA_REQUIREMENTS = {
   // 中国护照
   CN: {
     jp: { visaFree: false, stayDays: 0, visaType: 'required' }, // 日本需要签证
-    th: { visaFree: true, stayDays: 30, visaType: 'visa-free' }, // 泰国免签30天
-    hk: { visaFree: true, stayDays: 7, visaType: 'visa-free' }, // 香港免签7天
+    th: { visaFree: true, stayDays: 60, visaType: 'visa-free' }, // 泰国免签60天
+    hk: { visaFree: false, stayDays: 7, visaType: 'permit' }, // 香港需要港澳通行证
     tw: { visaFree: false, stayDays: 0, visaType: 'permit' }, // 台湾需要入台证
     kr: { visaFree: false, stayDays: 0, visaType: 'required' }, // 韩国需要签证
     sg: { visaFree: true, stayDays: 30, visaType: 'visa-free' }, // 新加坡免签30天

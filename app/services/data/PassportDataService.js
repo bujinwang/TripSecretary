@@ -698,6 +698,23 @@ class PassportDataService {
       this.cache.passport.set(userId, passport);
       this.updateCacheTimestamp(`passport_${userId}`);
 
+      const updatedFields = Object.keys(passportData || {}).filter(key => {
+        if (key === 'userId') {
+          return false;
+        }
+        const value = passportData[key];
+        if (value === null || value === undefined) {
+          return false;
+        }
+        return typeof value !== 'string' || value.trim().length > 0;
+      });
+      if (updatedFields.length > 0) {
+        this.triggerDataChangeEvent('passport', userId, {
+          passportId: passport.id || passportData.id,
+          updatedFields,
+        });
+      }
+
       console.log('PassportDataService.savePassport completed successfully');
       return passport;
     } catch (error) {
@@ -764,6 +781,14 @@ class PassportDataService {
         // Update cache with new data
         this.cache.passport.set(passport.userId, passport);
         this.updateCacheTimestamp(`passport_${passport.userId}`);
+      }
+
+      const updatedFields = Object.keys(nonEmptyUpdates).filter(field => field !== 'userId');
+      if (updatedFields.length > 0 && passport.userId) {
+        this.triggerDataChangeEvent('passport', passport.userId, {
+          passportId: passport.id || passportId,
+          updatedFields,
+        });
       }
 
       return passport;
@@ -901,6 +926,23 @@ class PassportDataService {
         this.updateCacheTimestamp(`personalInfo_${personalInfo.userId}`);
       }
 
+      const updatedFields = Object.keys(updates || {}).filter(key => {
+        if (key === 'userId') {
+          return false;
+        }
+        const value = updates[key];
+        if (value === null || value === undefined) {
+          return false;
+        }
+        return typeof value !== 'string' || value.trim().length > 0;
+      });
+      if (updatedFields.length > 0 && personalInfo.userId) {
+        this.triggerDataChangeEvent('personalInfo', personalInfo.userId, {
+          personalInfoId: personalInfo.id,
+          updatedFields,
+        });
+      }
+
       console.log(`Personal info updated for userId: ${userId}`);
       return personalInfo;
     } catch (error) {
@@ -993,6 +1035,12 @@ class PassportDataService {
          this.cache.fundItems.delete(userId);
        }
 
+       this.triggerDataChangeEvent('funds', userId, {
+         action: 'added',
+         fundItemId: fundItem.id,
+         fundType: fundItem.type || fundData.type,
+       });
+
        console.log(`✅ Fund item saved for user ${userId}`);
        return fundItem;
      } catch (error) {
@@ -1074,6 +1122,12 @@ class PassportDataService {
        if (this.cache.fundItems) {
          this.cache.fundItems.delete(userId);
        }
+
+       this.triggerDataChangeEvent('funds', userId, {
+         action: 'deleted',
+         fundItemId,
+         fundType: fundItem.type,
+       });
 
        console.log(`✅ Fund item deleted: ${fundItemId}`);
        return result;
@@ -1524,18 +1578,29 @@ class PassportDataService {
       // Check if travel info already exists
       const existing = await this.getTravelInfo(userId, travelData.destination);
       
+      let savedTravelInfo;
       if (existing) {
         // Merge with existing data
         const merged = { ...existing, ...nonEmptyUpdates, id: existing.id };
         const result = await SecureStorageService.saveTravelInfo(merged);
         console.log('Travel info updated:', result.id);
-        return merged;
+        savedTravelInfo = merged;
       } else {
         // Create new travel info
         const result = await SecureStorageService.saveTravelInfo(nonEmptyUpdates);
         console.log('Travel info created:', result.id);
-        return { ...nonEmptyUpdates, id: result.id };
+        savedTravelInfo = { ...nonEmptyUpdates, id: result.id };
       }
+
+      const updatedFields = Object.keys(nonEmptyUpdates).filter(field => field !== 'userId');
+      if (updatedFields.length > 0) {
+        this.triggerDataChangeEvent('travel', userId, {
+          updatedFields,
+          destination: savedTravelInfo.destination,
+        });
+      }
+
+      return savedTravelInfo;
     } catch (error) {
       console.error('Failed to save travel info:', error);
       throw error;
@@ -1562,18 +1627,17 @@ class PassportDataService {
         // No existing data, create new
         const newTravelInfo = await this.saveTravelInfo(userId, { ...updates, destination });
         
-        // Handle arrival date change for new travel info
-        if (updates.arrivalDate) {
-          await this.handleArrivalDateChange(userId, destination, null, updates.arrivalDate);
+        // Handle arrival date change for new travel info (support legacy and new field names)
+        const createdArrivalDate = (updates.arrivalArrivalDate ?? updates.arrivalDate) || null;
+        if (createdArrivalDate) {
+          await this.handleArrivalDateChange(userId, destination, null, createdArrivalDate);
         }
         
         return newTravelInfo;
       }
 
-      // Check for arrival date changes
-      const oldArrivalDate = existing.arrivalDate;
-      const newArrivalDate = updates.arrivalDate;
-      const arrivalDateChanged = oldArrivalDate !== newArrivalDate;
+      // Capture existing arrival date using both legacy and new field names
+      const oldArrivalDate = existing.arrivalArrivalDate || existing.arrivalDate || null;
 
       // Filter out empty values from updates
       const nonEmptyUpdates = {};
@@ -1591,11 +1655,27 @@ class PassportDataService {
 
       // Merge with existing data
       const merged = { ...existing, ...nonEmptyUpdates };
-      const result = await SecureStorageService.saveTravelInfo(merged);
+      await SecureStorageService.saveTravelInfo(merged);
       
+      // Determine if arrival date changed (supporting legacy and new field names)
+      const updatedArrivalDate =
+        nonEmptyUpdates.arrivalArrivalDate ??
+        nonEmptyUpdates.arrivalDate ??
+        undefined;
+      const arrivalDateChanged =
+        updatedArrivalDate !== undefined && updatedArrivalDate !== oldArrivalDate;
+
       // Handle arrival date change if it occurred
       if (arrivalDateChanged) {
-        await this.handleArrivalDateChange(userId, destination, oldArrivalDate, newArrivalDate);
+        await this.handleArrivalDateChange(userId, destination, oldArrivalDate, updatedArrivalDate);
+      }
+
+      const updatedFields = Object.keys(nonEmptyUpdates);
+      if (updatedFields.length > 0) {
+        this.triggerDataChangeEvent('travel', userId, {
+          updatedFields,
+          destination,
+        });
       }
       
       console.log('Travel info updated successfully');
@@ -3799,158 +3879,6 @@ class PassportDataService {
     }
   }
 
-  /**
-   * Override save methods to trigger change detection
-   */
-
-  /**
-   * Enhanced savePassport with change detection
-   */
-  static async savePassport(passportData, userId, options = {}) {
-    try {
-      // Call original save method
-      const result = await super.savePassport ? 
-        super.savePassport(passportData, userId, options) :
-        this.originalSavePassport(passportData, userId, options);
-
-      // Trigger change detection
-      this.triggerDataChangeEvent('passport', userId, {
-        updatedFields: Object.keys(passportData),
-        passportId: result.id
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced savePassport failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enhanced updatePassport with change detection
-   */
-  static async updatePassport(passportId, updates, options = {}) {
-    try {
-      // Call original update method
-      const result = await this.originalUpdatePassport ? 
-        this.originalUpdatePassport(passportId, updates, options) :
-        this.baseUpdatePassport(passportId, updates, options);
-
-      // Trigger change detection
-      if (result && result.userId) {
-        this.triggerDataChangeEvent('passport', result.userId, {
-          updatedFields: Object.keys(updates),
-          passportId: result.id
-        });
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced updatePassport failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enhanced updatePersonalInfo with change detection
-   */
-  static async updatePersonalInfo(userId, updates) {
-    try {
-      // Call original update method
-      const result = await this.originalUpdatePersonalInfo ? 
-        this.originalUpdatePersonalInfo(userId, updates) :
-        this.baseUpdatePersonalInfo(userId, updates);
-
-      // Trigger change detection
-      this.triggerDataChangeEvent('personalInfo', userId, {
-        updatedFields: Object.keys(updates),
-        personalInfoId: result.id
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced updatePersonalInfo failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enhanced saveFundItem with change detection
-   */
-  static async saveFundItem(fundData, userId) {
-    try {
-      // Call original save method
-      const result = await this.originalSaveFundItem ? 
-        this.originalSaveFundItem(fundData, userId) :
-        this.baseSaveFundItem(fundData, userId);
-
-      // Trigger change detection
-      this.triggerDataChangeEvent('funds', userId, {
-        action: 'added',
-        fundItemId: result.id,
-        fundType: fundData.type
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced saveFundItem failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enhanced deleteFundItem with change detection
-   */
-  static async deleteFundItem(fundItemId, userId) {
-    try {
-      // Call original delete method
-      const result = await this.originalDeleteFundItem ? 
-        this.originalDeleteFundItem(fundItemId, userId) :
-        this.baseDeleteFundItem(fundItemId, userId);
-
-      // Trigger change detection
-      this.triggerDataChangeEvent('funds', userId, {
-        action: 'deleted',
-        fundItemId: fundItemId
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced deleteFundItem failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enhanced updateTravelInfo with change detection
-   */
-  static async updateTravelInfo(userId, destination, updates) {
-    try {
-      // Call original update method
-      const result = await this.originalUpdateTravelInfo ? 
-        this.originalUpdateTravelInfo(userId, destination, updates) :
-        this.baseUpdateTravelInfo(userId, destination, updates);
-
-      // Trigger change detection
-      this.triggerDataChangeEvent('travel', userId, {
-        updatedFields: Object.keys(updates),
-        destination: destination
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Enhanced updateTravelInfo failed:', error);
-      throw error;
-    }
-  }
-
-  // Store original methods to avoid infinite recursion
-  static originalSavePassport = this.savePassport;
-  static originalUpdatePassport = this.updatePassport;
-  static originalUpdatePersonalInfo = this.updatePersonalInfo;
-  static originalSaveFundItem = this.saveFundItem;
-  static originalDeleteFundItem = this.deleteFundItem;
-  static originalUpdateTravelInfo = this.updateTravelInfo;
 }
 
 export default PassportDataService;

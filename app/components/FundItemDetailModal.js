@@ -378,10 +378,12 @@ const FundItemDetailModal = ({
       const currencyError = validateCurrency(editedCurrency);
       
       if (amountError || currencyError) {
-        console.warn('[FundItemDetailModal] Validation failed:', {
-          amountError,
-          currencyError,
-        });
+        if (__DEV__) {
+          console.debug('[FundItemDetailModal] Validation failed:', {
+            amountError,
+            currencyError,
+          });
+        }
         setValidationErrors({
           amount: amountError,
           currency: currencyError,

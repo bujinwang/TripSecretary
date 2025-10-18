@@ -688,6 +688,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               onChangeText={setDob}
               onBlur={() => handleFieldBlur('dob', dob)}
               mode="date"
+              dateType="past"
               error={errors.dob}
               errorMessage={errors.dob}
               helpText={t('japan.travelInfo.fields.dateOfBirthHelp')}
@@ -699,6 +700,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               onChangeText={setExpiryDate}
               onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
               mode="date"
+              dateType="future"
               error={errors.expiryDate}
               errorMessage={errors.expiryDate}
               helpText={t('japan.travelInfo.fields.expiryDateHelp')}
@@ -1066,6 +1068,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               onChangeText={setArrivalDate}
               onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
               mode="date"
+              dateType="future"
               error={errors.arrivalDate}
               errorMessage={errors.arrivalDate}
               helpText={t('japan.travelInfo.fields.arrivalDateHelp')}

@@ -184,6 +184,7 @@ class SecureStorageService {
             postal_code TEXT,
             hotel_name TEXT,
             hotel_address TEXT,
+            is_transit_passenger INTEGER DEFAULT 0,
             status TEXT,
             created_at TEXT,
             updated_at TEXT
@@ -218,6 +219,37 @@ class SecureStorageService {
         });
         
         // Add length_of_stay column for Japan entry
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT
+        `, [], () => {}, (_, error) => {
+          return false;
+        });
+
+        // Ensure all required columns exist for travel_info table
+        const requiredColumns = [
+          'travel_purpose',
+          'boarding_country', 
+          'visa_number',
+          'accommodation_phone',
+          'length_of_stay'
+        ];
+
+        requiredColumns.forEach(column => {
+          tx.executeSql(`
+            ALTER TABLE travel_info ADD COLUMN ${column} TEXT
+          `, [], () => {}, (_, error) => {
+            // Column might already exist, ignore error
+            return false;
+          });
+        });
+
+        // Add is_transit_passenger column
+        tx.executeSql(`
+          ALTER TABLE travel_info ADD COLUMN is_transit_passenger INTEGER DEFAULT 0
+        `, [], () => {}, (_, error) => {
+          // Column might already exist, ignore error
+          return false;
+        });
         tx.executeSql(`
           ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT
         `, [], () => {}, (_, error) => {
@@ -1085,6 +1117,21 @@ class SecureStorageService {
    * LEGACY: saveFundingProof and getFundingProof methods removed
    * Use saveFundItem/getFundItemsByUserId instead with the fund_items table
    */
+  async saveFundingProof(/* fundingData */) {
+    console.warn(
+      'SecureStorageService.saveFundingProof() is deprecated. ' +
+      'The call was ignored. Use saveFundItem() with the fund_items table instead.'
+    );
+    return null;
+  }
+
+  async getFundingProof(/* idOrUserId */) {
+    console.warn(
+      'SecureStorageService.getFundingProof() is deprecated and returns null. ' +
+      'Use getFundItemsByUserId() for the new fund_items schema.'
+    );
+    return null;
+  }
 
   /**
    * Save individual fund item
@@ -1266,6 +1313,10 @@ class SecureStorageService {
    */
   async saveTravelInfo(travelData) {
     try {
+      console.log('=== SAVING TRAVEL INFO TO DB ===');
+      console.log('travelData.departureDepartureDate:', travelData.departureDepartureDate);
+      console.log('All travelData keys:', Object.keys(travelData));
+      
       const now = new Date().toISOString();
       const id = travelData.id || this.generateId();
 
@@ -1282,9 +1333,9 @@ class SecureStorageService {
               departure_departure_date, departure_departure_time,
               departure_arrival_airport, departure_arrival_date, departure_arrival_time,
               accommodation_type, province, district, sub_district, postal_code,
-              hotel_name, hotel_address, accommodation_phone, length_of_stay, status,
-              created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              hotel_name, hotel_address, accommodation_phone, length_of_stay, 
+              is_transit_passenger, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               travelData.userId,
@@ -1315,6 +1366,7 @@ class SecureStorageService {
               travelData.hotelAddress,
               travelData.accommodationPhone,
               travelData.lengthOfStay,
+              travelData.isTransitPassenger ? 1 : 0,
               travelData.status || 'draft',
               travelData.createdAt || now,
               now
@@ -1364,6 +1416,10 @@ class SecureStorageService {
 
               const result = rows._array[0];
 
+              console.log('=== DB RESULT FOR TRAVEL INFO ===');
+              console.log('Raw DB result.departure_departure_date:', result.departure_departure_date);
+              console.log('All DB result keys:', Object.keys(result));
+
               const travelInfo = {
                 id: result.id,
                 userId: result.user_id,
@@ -1394,10 +1450,14 @@ class SecureStorageService {
                 hotelAddress: result.hotel_address,
                 accommodationPhone: result.accommodation_phone,
                 lengthOfStay: result.length_of_stay,
+                isTransitPassenger: result.is_transit_passenger === 1,
                 status: result.status,
                 createdAt: result.created_at,
                 updatedAt: result.updated_at
               };
+
+              console.log('=== MAPPED TRAVEL INFO ===');
+              console.log('Mapped departureDepartureDate:', travelInfo.departureDepartureDate);
 
               resolve(travelInfo);
             },
@@ -2289,7 +2349,7 @@ class SecureStorageService {
         this.db.transaction(tx => {
           tx.executeSql('DELETE FROM passports WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM personal_info WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM funding_proof WHERE user_id = ?', [userId]);
+          tx.executeSql('DELETE FROM fund_items WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM travel_history WHERE user_id = ?', [userId]);
           tx.executeSql('DELETE FROM migrations WHERE user_id = ?', [userId]);
         }, 

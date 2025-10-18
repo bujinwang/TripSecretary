@@ -397,6 +397,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
              value={dob}
              onChangeText={setDob}
              mode="date"
+             dateType="past"
              helpText="选择出生日期"
              error={!!errors.dob}
              errorMessage={errors.dob}
@@ -407,6 +408,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
              value={expiryDate}
              onChangeText={setExpiryDate}
              mode="date"
+             dateType="future"
              helpText="选择护照有效期"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
@@ -476,6 +478,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
             value={arrivalDate} 
             onChangeText={setArrivalDate} 
             mode="date"
+            dateType="future"
             helpText="选择日期"
             error={!!errors.arrivalDate} 
             errorMessage={errors.arrivalDate}

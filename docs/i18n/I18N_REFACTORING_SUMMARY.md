@@ -54,7 +54,7 @@ Each country now has professional translations for:
 ### 5. Countries Covered
 1. **Malaysia** - MDAC entry card system
 2. **Singapore** - SG Arrival Card system
-3. **Hong Kong** - Visa-free entry
+3. **Hong Kong** - Hong Kong and Macau Travel Permit required
 4. **Taiwan** - Entry permit & online arrival card
 5. **Thailand** - Visa-free travel information
 

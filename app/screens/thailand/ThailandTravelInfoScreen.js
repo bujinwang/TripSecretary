@@ -1,6 +1,6 @@
 
 // 入境通 - Thailand Travel Info Screen (泰国入境信息)
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,14 +12,13 @@ import {
   Platform,
   UIManager,
   Alert,
-  Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import FundItemDetailModal from '../../components/FundItemDetailModal';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
@@ -28,8 +27,6 @@ import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
-import NotificationCoordinator from '../../services/notification/NotificationCoordinator';
-import EntryPackService from '../../services/entryPack/EntryPackService';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import apiClient from '../../services/api';
 
@@ -153,6 +150,7 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport, destination } = route.params || {};
+  const userId = passport?.id || 'default_user';
   const { t } = useLocale();
 
   // Data model instances
@@ -179,6 +177,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
+  const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
+  const [selectedFundItem, setSelectedFundItem] = useState(null);
+  const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
+  const [newFundItemType, setNewFundItemType] = useState(null);
 
   // Travel Info State
   const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
@@ -235,11 +237,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
         break;
       
-      case 'funds':
-        // For funds, count the number of fund items added
-        total = 1; // At least one fund proof is expected
-        filled = funds.length > 0 ? 1 : 0;
-        break;
+    case 'funds':
+      // For funds, count the number of fund items added
+      const fundItemCount = funds.length;
+      total = Math.max(1, fundItemCount); // Show real count while keeping minimum expectation of 1
+      filled = fundItemCount;
+      break;
       
       case 'travel':
         // Thailand requires both arrival and departure flight info
@@ -503,26 +506,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
 
-        // Load fund items from database
-        try {
-          const fundItems = await PassportDataService.getFundItems(userId);
-          console.log('Loaded fund items:', fundItems.length);
-          
-          // Convert FundItem instances to plain objects for state
-          const fundsArray = fundItems.map(item => ({
-            id: item.id,
-            type: item.type,
-            amount: item.amount,
-            currency: item.currency,
-            details: item.details,
-            photo: item.photoUri
-          }));
-          
-          setFunds(fundsArray);
-        } catch (error) {
-          console.error('Failed to load fund items:', error);
-          setFunds([]);
-        }
+        await refreshFundItems();
 
         // Travel Info - load from centralized data
         try {
@@ -562,6 +546,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
             setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
             setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+            console.log('=== LOADING DEPARTURE DATE FROM DB ===');
+            console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
+            console.log('travelInfo object keys:', Object.keys(travelInfo));
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
             setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
@@ -616,7 +603,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [passport]);
+  }, [passport, refreshFundItems]);
 
   // Add focus listener to reload data when returning to screen
   useEffect(() => {
@@ -657,6 +644,55 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               setPhoneCode(personalInfo.phoneCode || phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
               setPersonalInfoData(personalInfo);
             }
+
+            await refreshFundItems({ forceRefresh: true });
+
+            // Reload travel info data as well
+            try {
+              const destinationId = destination?.id || 'thailand';
+              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              
+              if (travelInfo) {
+                console.log('=== RELOADING TRAVEL INFO ON FOCUS ===');
+                console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
+                
+                // Update travel info state
+                const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
+                const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
+                if (predefinedPurposes.includes(loadedPurpose)) {
+                  setTravelPurpose(loadedPurpose);
+                  setCustomTravelPurpose('');
+                } else {
+                  setTravelPurpose('OTHER');
+                  setCustomTravelPurpose(loadedPurpose);
+                }
+                setBoardingCountry(travelInfo.boardingCountry || '');
+                setVisaNumber(travelInfo.visaNumber || '');
+                setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+                setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
+                setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+                setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+                setIsTransitPassenger(travelInfo.isTransitPassenger || false);
+                
+                // Load accommodation type
+                const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
+                const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
+                if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
+                  setAccommodationType(loadedAccommodationType);
+                  setCustomAccommodationType('');
+                } else {
+                  setAccommodationType('OTHER');
+                  setCustomAccommodationType(loadedAccommodationType);
+                }
+                setProvince(travelInfo.province || '');
+                setDistrict(travelInfo.district || '');
+                setSubDistrict(travelInfo.subDistrict || '');
+                setPostalCode(travelInfo.postalCode || '');
+                setHotelAddress(travelInfo.hotelAddress || '');
+              }
+            } catch (travelInfoError) {
+              console.log('Failed to reload travel info on focus:', travelInfoError);
+            }
           }
         } catch (error) {
           // Failed to reload data on focus
@@ -667,7 +703,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     });
 
     return unsubscribe;
-  }, [navigation, passport]);
+  }, [navigation, passport, refreshFundItems]);
 
   // Add blur listener to save data when leaving the screen
   useEffect(() => {
@@ -1185,7 +1221,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       if (isValid) {
         console.log('Validation passed, triggering debounced save...');
         try {
-          debouncedSaveData();
+          // For date fields, we need to pass the new value directly to avoid React state delay
+          if (['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate'].includes(fieldName)) {
+            console.log('Date field detected, saving immediately with new value:', fieldValue);
+            // Save immediately with the new value to avoid React state delay
+            await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
+            setLastEditedAt(new Date());
+          } else {
+            debouncedSaveData();
+          }
         } catch (saveError) {
           console.error('Failed to trigger debounced save:', saveError);
           // Don't show error to user for debounced saves, as they will retry automatically
@@ -1201,48 +1245,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  // Handle arrival date change and schedule notifications
-  const handleArrivalDateChange = async (newArrivalDate, oldArrivalDate) => {
-    try {
-      console.log('Handling arrival date change:', { newArrivalDate, oldArrivalDate });
-      
-      // Initialize notification coordinator
-      await NotificationCoordinator.initialize();
-      
-      const userId = passport?.id || 'default_user';
-      const destinationId = destination?.id || 'thailand';
-      
-      // Get or create entry pack for this destination
-      let entryPack = await EntryPackService.getByEntryInfoId(`${userId}_${destinationId}`);
-      if (!entryPack) {
-        // Create entry pack if it doesn't exist
-        entryPack = await EntryPackService.createOrUpdatePack(`${userId}_${destinationId}`);
-      }
-      
-      if (entryPack) {
-        // Handle arrival date change in notification coordinator
-        await NotificationCoordinator.handleArrivalDateChange(
-          userId,
-          entryPack.id,
-          newArrivalDate ? new Date(newArrivalDate) : null,
-          oldArrivalDate ? new Date(oldArrivalDate) : null,
-          'Thailand'
-        );
-        
-        console.log('Notifications updated for arrival date change');
-      }
-    } catch (error) {
-      console.error('Failed to handle arrival date change:', error);
-      // Don't throw - this is a secondary operation that shouldn't break the main flow
-    }
-  };
-
-  // Save all data to secure storage
-  const saveDataToSecureStorage = async () => {
+  // Save all data to secure storage with optional field overrides
+  const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     try {
       const userId = passport?.id || 'default_user';
-      console.log('=== SAVING DATA TO SECURE STORAGE ===');
+      console.log('=== SAVING DATA TO SECURE STORAGE WITH OVERRIDES ===');
       console.log('userId:', userId);
+      console.log('fieldOverrides:', fieldOverrides);
+
+      // Get current values with overrides applied
+      const getCurrentValue = (fieldName, currentValue) => {
+        return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
+      };
 
       // Get existing passport first to ensure we're updating the right one
       const existingPassport = await PassportDataService.getPassport(userId);
@@ -1253,12 +1267,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
       if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
       if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
-      if (dob && dob.trim()) {
-        console.log('=== DOB SAVING DEBUG ===');
-        console.log('dob value being saved:', dob);
-        passportUpdates.dateOfBirth = dob;
+      
+      const currentDob = getCurrentValue('dob', dob);
+      if (currentDob && currentDob.trim()) {
+        console.log('=== DOB SAVING DEBUG WITH OVERRIDE ===');
+        console.log('dob value being saved:', currentDob);
+        passportUpdates.dateOfBirth = currentDob;
       }
-      if (expiryDate && expiryDate.trim()) passportUpdates.expiryDate = expiryDate;
+      
+      const currentExpiryDate = getCurrentValue('expiryDate', expiryDate);
+      if (currentExpiryDate && currentExpiryDate.trim()) passportUpdates.expiryDate = currentExpiryDate;
       if (sex && sex.trim()) passportUpdates.gender = sex;
 
       if (Object.keys(passportUpdates).length > 0) {
@@ -1309,21 +1327,64 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       if (boardingCountry && boardingCountry.trim()) travelInfoUpdates.boardingCountry = boardingCountry;
       if (visaNumber && visaNumber.trim()) travelInfoUpdates.visaNumber = visaNumber.trim();
       if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
-      if (arrivalArrivalDate && arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalArrivalDate;
+      
+      const currentArrivalDate = getCurrentValue('arrivalArrivalDate', arrivalArrivalDate);
+      if (currentArrivalDate && currentArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = currentArrivalDate;
+      
       if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
-      if (departureDepartureDate && departureDepartureDate.trim()) travelInfoUpdates.departureDepartureDate = departureDepartureDate;
-      travelInfoUpdates.isTransitPassenger = isTransitPassenger;
+      
+      const currentDepartureDate = getCurrentValue('departureDepartureDate', departureDepartureDate);
+      if (currentDepartureDate && currentDepartureDate.trim()) {
+        console.log('=== ADDING DEPARTURE DATE TO UPDATES WITH OVERRIDE ===');
+        console.log('departureDepartureDate value:', currentDepartureDate);
+        travelInfoUpdates.departureDepartureDate = currentDepartureDate;
+      } else {
+        console.log('=== DEPARTURE DATE NOT ADDED WITH OVERRIDE ===');
+        console.log('departureDepartureDate value:', currentDepartureDate);
+        console.log('departureDepartureDate type:', typeof currentDepartureDate);
+      }
+      
+      const currentIsTransitPassenger = getCurrentValue('isTransitPassenger', isTransitPassenger);
+      console.log('=== TRANSIT PASSENGER SAVE DEBUG ===');
+      console.log('isTransitPassenger (original):', isTransitPassenger);
+      console.log('isTransitPassenger (current):', currentIsTransitPassenger);
+      
+      travelInfoUpdates.isTransitPassenger = currentIsTransitPassenger;
       // Save accommodation type - if "OTHER" is selected, use custom type
-      if (!isTransitPassenger) {
-        const finalAccommodationType = accommodationType === 'OTHER' && customAccommodationType.trim()
-          ? customAccommodationType.trim()
-          : accommodationType;
-        if (finalAccommodationType && finalAccommodationType.trim()) travelInfoUpdates.accommodationType = finalAccommodationType;
-        if (province && province.trim()) travelInfoUpdates.province = province;
-        if (district && district.trim()) travelInfoUpdates.district = district;
-        if (subDistrict && subDistrict.trim()) travelInfoUpdates.subDistrict = subDistrict;
-        if (postalCode && postalCode.trim()) travelInfoUpdates.postalCode = postalCode;
-        if (hotelAddress && hotelAddress.trim()) travelInfoUpdates.hotelAddress = hotelAddress;
+      if (!currentIsTransitPassenger) {
+        const currentAccommodationType = getCurrentValue('accommodationType', accommodationType);
+        const currentCustomAccommodationType = getCurrentValue('customAccommodationType', customAccommodationType);
+        
+        const finalAccommodationType = currentAccommodationType === 'OTHER' && currentCustomAccommodationType && currentCustomAccommodationType.trim()
+          ? currentCustomAccommodationType.trim()
+          : currentAccommodationType;
+          
+        console.log('=== ACCOMMODATION TYPE SAVE DEBUG WITH OVERRIDE ===');
+        console.log('accommodationType (original):', accommodationType);
+        console.log('accommodationType (current):', currentAccommodationType);
+        console.log('customAccommodationType (original):', customAccommodationType);
+        console.log('customAccommodationType (current):', currentCustomAccommodationType);
+        console.log('finalAccommodationType:', finalAccommodationType);
+        console.log('isTransitPassenger (original):', isTransitPassenger);
+        console.log('isTransitPassenger (current):', currentIsTransitPassenger);
+        
+        if (finalAccommodationType && finalAccommodationType.trim()) {
+          console.log('Adding accommodation type to updates:', finalAccommodationType);
+          travelInfoUpdates.accommodationType = finalAccommodationType;
+        } else {
+          console.log('Accommodation type not added - empty or invalid');
+        }
+        const currentProvince = getCurrentValue('province', province);
+        const currentDistrict = getCurrentValue('district', district);
+        const currentSubDistrict = getCurrentValue('subDistrict', subDistrict);
+        const currentPostalCode = getCurrentValue('postalCode', postalCode);
+        const currentHotelAddress = getCurrentValue('hotelAddress', hotelAddress);
+        
+        if (currentProvince && currentProvince.trim()) travelInfoUpdates.province = currentProvince;
+        if (currentDistrict && currentDistrict.trim()) travelInfoUpdates.district = currentDistrict;
+        if (currentSubDistrict && currentSubDistrict.trim()) travelInfoUpdates.subDistrict = currentSubDistrict;
+        if (currentPostalCode && currentPostalCode.trim()) travelInfoUpdates.postalCode = currentPostalCode;
+        if (currentHotelAddress && currentHotelAddress.trim()) travelInfoUpdates.hotelAddress = currentHotelAddress;
       }
 
       if (Object.keys(travelInfoUpdates).length > 0) {
@@ -1337,8 +1398,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           
           // Check if arrival date changed and handle notifications
           if (travelInfoUpdates.arrivalArrivalDate && travelInfoUpdates.arrivalArrivalDate !== previousArrivalDate) {
-            console.log('Arrival date changed, updating notifications');
-            await handleArrivalDateChange(travelInfoUpdates.arrivalArrivalDate, previousArrivalDate);
+            console.log('Arrival date changed; PassportDataService will handle notification updates');
             setPreviousArrivalDate(travelInfoUpdates.arrivalArrivalDate);
           }
         } catch (travelInfoError) {
@@ -1347,96 +1407,88 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         }
       }
 
-      console.log('=== DATA SAVED SUCCESSFULLY ===');
+      console.log('=== DATA SAVED SUCCESSFULLY WITH OVERRIDES ===');
     } catch (error) {
       console.error('Failed to save data to secure storage:', error);
       console.error('Error details:', error.message, error.stack);
     }
   };
 
-  const addFund = async (type) => {
-    try {
-      const userId = passport?.id || 'default_user';
-      // Create new fund item in database with appropriate defaults
-      const fundItem = await PassportDataService.saveFundItem({
-        type,
-        amount: '',
-        currency: type === 'cash' ? 'THB' : null, // Default to THB for cash, null for others
-        details: '',
-        photoUri: null,
-      }, userId);
-      
-      console.log('Fund item created:', fundItem.id);
-      
-      // Add to local state
-      const newFund = {
-        id: fundItem.id,
-        type: fundItem.type,
-        amount: fundItem.amount,
-        currency: fundItem.currency,
-        details: fundItem.details,
-        photo: fundItem.photoUri
-      };
-      
-      setFunds([...funds, newFund]);
-    } catch (error) {
-      console.error('Failed to add fund item:', error);
-      Alert.alert('Error', 'Failed to add fund item');
-    }
+  // Save all data to secure storage
+  const saveDataToSecureStorage = async () => {
+    return saveDataToSecureStorageWithOverride();
   };
 
-  const removeFund = async (id) => {
+const normalizeFundItem = useCallback((item) => ({
+    id: item.id,
+    type: item.type || item.itemType || 'cash',
+    amount: item.amount,
+    currency: item.currency,
+    details: item.details || item.description || '',
+    photo: item.photoUri || item.photo || null,
+    userId: item.userId || userId,
+  }), [userId]);
+
+  const refreshFundItems = useCallback(async (options = {}) => {
     try {
-      const userId = passport?.id || 'default_user';
-      // Delete from database
-      const success = await PassportDataService.deleteFundItem(id, userId);
-      
-      if (success) {
-        console.log('Fund item deleted:', id);
-        
-        // Remove from local state
-        setFunds(funds.filter((fund) => fund.id !== id));
-      } else {
-        console.warn('Fund item not found:', id);
+      const fundItems = await PassportDataService.getFundItems(userId, options);
+      const normalized = fundItems.map(normalizeFundItem);
+      setFunds(normalized);
+    } catch (error) {
+      console.error('Failed to refresh fund items:', error);
+    }
+  }, [userId, normalizeFundItem]);
+
+  const addFund = (type) => {
+    setNewFundItemType(type);
+    setIsCreatingFundItem(true);
+    setSelectedFundItem(null);
+    setFundItemModalVisible(true);
+  };
+
+  const handleFundItemPress = (fund) => {
+    setSelectedFundItem(fund);
+    setIsCreatingFundItem(false);
+    setNewFundItemType(null);
+    setFundItemModalVisible(true);
+  };
+
+  const handleFundItemModalClose = () => {
+    setFundItemModalVisible(false);
+    setSelectedFundItem(null);
+    setIsCreatingFundItem(false);
+    setNewFundItemType(null);
+  };
+
+  const handleFundItemUpdate = async (updatedItem) => {
+    try {
+      if (updatedItem) {
+        setSelectedFundItem(normalizeFundItem(updatedItem));
       }
+      await refreshFundItems({ forceRefresh: true });
     } catch (error) {
-      console.error('Failed to delete fund item:', error);
-      Alert.alert('Error', 'Failed to delete fund item');
+      console.error('Failed to update fund item state:', error);
     }
   };
 
-  const updateFundField = async (id, key, value) => {
+  const handleFundItemCreate = async () => {
     try {
-      const userId = passport?.id || 'default_user';
-      // Update local state immediately for responsive UI
-      const updatedFunds = funds.map((fund) =>
-        (fund.id === id ? { ...fund, [key]: value } : fund)
-      );
-      setFunds(updatedFunds);
-      
-      // Find the updated fund
-      const updatedFund = updatedFunds.find(f => f.id === id);
-      if (!updatedFund) return;
-      
-      // Save to database
-      // Map 'photo' key to 'photoUri' for the model
-      const fundData = {
-        type: updatedFund.type,
-        amount: updatedFund.amount,
-        currency: updatedFund.currency,
-        details: updatedFund.details,
-        photoUri: updatedFund.photo
-      };
-      
-      await PassportDataService.saveFundItem({
-        id: id,
-        ...fundData
-      }, userId);
-      
-      console.log('Fund item updated:', id, key);
+      await refreshFundItems({ forceRefresh: true });
     } catch (error) {
-      console.error('Failed to update fund item:', error);
-      // Optionally show error to user
+      console.error('Failed to refresh fund items after creation:', error);
+    } finally {
+      handleFundItemModalClose();
+    }
+  };
+
+  const handleFundItemDelete = async (id) => {
+    try {
+      setFunds((prev) => prev.filter((fund) => fund.id !== id));
+      await refreshFundItems({ forceRefresh: true });
+    } catch (error) {
+      console.error('Failed to refresh fund items after deletion:', error);
+    } finally {
+      handleFundItemModalClose();
     }
   };
 
@@ -1845,97 +1897,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     return null;
   };
 
-  const handleTakePhoto = () => {
-    // TODO: Implement take photo
-  };
-
-  // Function to copy image to permanent storage
-  const copyImageToPermanentStorage = async (uri) => {
-    try {
-      // Create a permanent directory for fund photos if it doesn't exist
-      const fundsDir = `${FileSystem.documentDirectory}funds/`;
-      const dirInfo = await FileSystem.getInfoAsync(fundsDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(fundsDir, { intermediates: true });
-      }
-
-      // Generate a unique filename
-      const filename = `fund_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const permanentUri = fundsDir + filename;
-
-      // Copy the image to permanent storage
-      await FileSystem.copyAsync({
-        from: uri,
-        to: permanentUri
-      });
-
-      console.log('Image copied to permanent storage:', permanentUri);
-      return permanentUri;
-    } catch (error) {
-      console.error('Failed to copy image to permanent storage:', error);
-      // Return original URI as fallback
-      return uri;
-    }
-  };
-
-  const handleChoosePhoto = (id) => {
-    Alert.alert(t('thailand.travelInfo.photo.choose', { defaultValue: '选择照片' }), '', [
-      {
-        text: t('thailand.travelInfo.photo.takePhoto', { defaultValue: '拍照' }),
-        onPress: async () => {
-          try {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert(
-                t('thailand.travelInfo.photo.cameraPermission', { defaultValue: '需要相机权限' }), 
-                t('thailand.travelInfo.photo.cameraPermissionMessage', { defaultValue: '请在设置中允许访问相机' })
-              );
-              return;
-            }
-              const permanentUri = await copyImageToPermanentStorage(result.assets[0].uri);
-              updateFundField(id, 'photo', permanentUri);
-          } catch (error) {
-            console.error('Camera error:', error);
-            Alert.alert(
-              t('thailand.travelInfo.photo.cameraError', { defaultValue: '相机错误' }), 
-              t('thailand.travelInfo.photo.cameraErrorMessage', { defaultValue: '模拟器不支持相机功能，请使用真机测试或选择相册照片' })
-            );
-          }
-        },
-      },
-      {
-        text: t('thailand.travelInfo.photo.fromLibrary', { defaultValue: '从相册选择' }),
-        onPress: async () => {
-          try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert(
-                t('thailand.travelInfo.photo.libraryPermission', { defaultValue: '需要相册权限' }), 
-                t('thailand.travelInfo.photo.libraryPermissionMessage', { defaultValue: '请在设置中允许访问相册' })
-              );
-              return;
-            }
-            const result = await ImagePicker.launchImageLibraryAsync({
-              allowsEditing: true,
-              quality: 0.8,
-            });
-            if (!result.canceled) {
-              const permanentUri = await copyImageToPermanentStorage(result.assets[0].uri);
-              updateFundField(id, 'photo', permanentUri);
-            }
-          } catch (error) {
-            console.error('Photo library error:', error);
-            Alert.alert(
-              t('thailand.travelInfo.photo.chooseFailed', { defaultValue: '选择照片失败' }), 
-              t('thailand.travelInfo.photo.chooseFailedMessage', { defaultValue: '请重试' })
-            );
-          }
-        },
-      },
-      { text: t('thailand.travelInfo.photo.cancel', { defaultValue: '取消' }), style: 'cancel' },
-    ]);
-  };
-
   const renderGenderOptions = () => {
     const options = [
       { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
@@ -2124,24 +2085,30 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
            <DateTimeInput
              label="出生日期"
              value={dob}
-             onChangeText={setDob}
+             onChangeText={(newValue) => {
+               setDob(newValue);
+               // Trigger validation and save immediately when value changes
+               handleFieldBlur('dob', newValue);
+             }}
              mode="date"
              dateType="past"
              helpText="选择出生日期"
              error={!!errors.dob}
              errorMessage={errors.dob}
-             onBlur={() => handleFieldBlur('dob', dob)}
            />
            <DateTimeInput
              label="护照有效期"
              value={expiryDate}
-             onChangeText={setExpiryDate}
+             onChangeText={(newValue) => {
+               setExpiryDate(newValue);
+               // Trigger validation and save immediately when value changes
+               handleFieldBlur('expiryDate', newValue);
+             }}
              mode="date"
              dateType="future"
              helpText="选择护照有效期"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
-             onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
            />
          </CollapsibleSection>
 
@@ -2235,58 +2202,104 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             <Button title="添加银行账户余额" onPress={() => addFund('bank_balance')} variant="secondary" style={styles.fundButton} />
           </View>
 
-          {funds.map((fund, index) => (
-            <View key={fund.id} style={styles.fundItem}>
-              <Text style={styles.fundType}>{{
-                'cash': '现金',
-                'credit_card': '信用卡照片',
-                'bank_balance': '银行账户余额',
-              }[fund.type]}</Text>
-              {fund.type === 'cash' ? (
-                <>
-                  <Input
-                    label="Amount"
-                    value={fund.amount}
-                    onChangeText={(text) => updateFundField(fund.id, 'amount', text)}
-                    keyboardType="numeric"
-                    testID="cash-amount-input"
-                  />
-                  <Input
-                    label="Currency"
-                    value={fund.currency}
-                    onChangeText={(text) => updateFundField(fund.id, 'currency', text)}
-                    placeholder="THB"
-                    autoCapitalize="characters"
-                    maxLength={3}
-                    testID="cash-currency-input"
-                  />
-                  <Input
-                    label="Details"
-                    value={fund.details}
-                    onChangeText={(text) => updateFundField(fund.id, 'details', text)}
-                  />
-                </>
-              ) : (
-                <View>
-                  <TouchableOpacity style={styles.photoButton} onPress={() => handleChoosePhoto(fund.id)}>
-                    <Text style={styles.photoButtonText}>{fund.photo ? '更换照片' : '添加照片'}</Text>
-                  </TouchableOpacity>
-                  {fund.photo && (
-                    <View>
-                      <Text style={styles.photoDebug}>Photo URI: {fund.photo.substring(0, 50)}...</Text>
-                      <Image 
-                        source={{ uri: fund.photo }} 
-                        style={styles.fundImage}
-                        onError={(e) => console.error('Image load error:', e.nativeEvent.error)}
-                        onLoad={() => console.log('Image loaded successfully:', fund.photo)}
-                      />
-                    </View>
-                  )}
-                </View>
-              )}
-              <Button title="删除" onPress={() => removeFund(fund.id)} variant="danger" />
+          {funds.length === 0 ? (
+            <View style={styles.fundEmptyState}>
+              <Text style={styles.fundEmptyText}>
+                {t('thailand.travelInfo.funds.empty', { defaultValue: '尚未添加资金证明，请先新建条目。' })}
+              </Text>
             </View>
-          ))}
+          ) : (
+            <View style={styles.fundList}>
+              {funds.map((fund, index) => {
+                const isLast = index === funds.length - 1;
+                const typeKey = (fund.type || 'OTHER').toUpperCase();
+                const typeMeta = {
+                  CASH: { icon: '💵' },
+                  BANK_CARD: { icon: '💳' },
+                  CREDIT_CARD: { icon: '💳' },
+                  BANK_BALANCE: { icon: '🏦' },
+                  DOCUMENT: { icon: '📄' },
+                  INVESTMENT: { icon: '📈' },
+                  OTHER: { icon: '💰' },
+                };
+                const defaultTypeLabels = {
+                  CASH: 'Cash',
+                  BANK_CARD: 'Bank Card',
+                  CREDIT_CARD: 'Bank Card',
+                  BANK_BALANCE: 'Bank Balance',
+                  DOCUMENT: 'Supporting Document',
+                  INVESTMENT: 'Investment',
+                  OTHER: 'Funding',
+                };
+                const typeIcon = (typeMeta[typeKey] || typeMeta.OTHER).icon;
+                const typeLabel = t(`fundItem.types.${typeKey}`, {
+                  defaultValue: defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER,
+                });
+                const notProvidedLabel = t('fundItem.detail.notProvided', {
+                  defaultValue: 'Not provided yet',
+                });
+
+                const normalizeAmount = (value) => {
+                  if (value === null || value === undefined || value === '') return '';
+                  if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value.toLocaleString();
+                  }
+                  if (typeof value === 'string') {
+                    const trimmed = value.trim();
+                    if (!trimmed) return '';
+                    const parsed = Number(trimmed.replace(/,/g, ''));
+                    return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
+                  }
+                  return `${value}`;
+                };
+
+                const amountValue = normalizeAmount(fund.amount);
+                const currencyValue = fund.currency ? fund.currency.toUpperCase() : '';
+                const detailsValue = fund.details || '';
+
+                let displayText;
+                if (typeKey === 'DOCUMENT') {
+                  displayText = detailsValue || notProvidedLabel;
+                } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
+                  const cardLabel = detailsValue || notProvidedLabel;
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
+                } else if (['CASH', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey)) {
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${amountLabel} ${currencyLabel}`.trim();
+                } else {
+                  displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
+                }
+
+                if (fund.photo && typeKey !== 'CASH') {
+                  const photoLabel = t('fundItem.detail.photoAttached', { defaultValue: 'Photo attached' });
+                  displayText = `${displayText} • ${photoLabel}`;
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={fund.id}
+                    style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
+                    onPress={() => handleFundItemPress(fund)}
+                    accessibilityRole="button"
+                  >
+                    <View style={styles.fundListItemContent}>
+                      <Text style={styles.fundItemIcon}>{typeIcon}</Text>
+                      <View style={styles.fundItemDetails}>
+                        <Text style={styles.fundItemTitle}>{typeLabel}</Text>
+                        <Text style={styles.fundItemSubtitle} numberOfLines={2}>
+                          {displayText}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.fundListItemArrow}>›</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
         </CollapsibleSection>
 
         <CollapsibleSection 
@@ -2389,13 +2402,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           <DateTimeInput 
             label="抵达日期" 
             value={arrivalArrivalDate} 
-            onChangeText={setArrivalArrivalDate} 
+            onChangeText={(newValue) => {
+              setArrivalArrivalDate(newValue);
+              // Trigger validation and save immediately when value changes
+              handleFieldBlur('arrivalArrivalDate', newValue);
+            }}
             mode="date"
             dateType="future"
             helpText="格式: YYYY-MM-DD"
             error={!!errors.arrivalArrivalDate} 
             errorMessage={errors.arrivalArrivalDate}
-            onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
           />
 
           <View style={styles.subSectionHeader}>
@@ -2409,13 +2425,25 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           <DateTimeInput 
             label="出发日期" 
             value={departureDepartureDate} 
-            onChangeText={setDepartureDepartureDate} 
+            onChangeText={(newValue) => {
+              console.log('=== DEPARTURE DATE CHANGE ===');
+              console.log('New departure date value:', newValue);
+              console.log('Previous departure date value:', departureDepartureDate);
+              console.log('Setting state and triggering save...');
+              
+              setDepartureDepartureDate(newValue);
+              
+              // Use setTimeout to ensure state has updated before saving
+              setTimeout(() => {
+                console.log('State after update:', newValue);
+                handleFieldBlur('departureDepartureDate', newValue);
+              }, 0);
+            }}
             mode="date"
             dateType="future"
             helpText="格式: YYYY-MM-DD"
             error={!!errors.departureDepartureDate} 
             errorMessage={errors.departureDepartureDate}
-            onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}
           />
 
           <View style={styles.subSectionHeader}>
@@ -2429,8 +2457,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           {/* Transit Passenger Checkbox */}
           <TouchableOpacity
             style={styles.checkboxContainer}
-            onPress={() => {
+            onPress={async () => {
               const newValue = !isTransitPassenger;
+              console.log('=== TRANSIT PASSENGER SELECTED ===');
+              console.log('New isTransitPassenger value:', newValue);
+              console.log('Previous isTransitPassenger value:', isTransitPassenger);
+              
               setIsTransitPassenger(newValue);
               if (newValue) {
                 setAccommodationType('HOTEL');
@@ -2441,8 +2473,27 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 setPostalCode('');
                 setHotelAddress('');
               }
-              // Trigger debounced save after transit passenger selection
-              debouncedSaveData();
+              
+              console.log('Saving immediately with new transit passenger status...');
+              // Save immediately with the new value to avoid React state delay
+              try {
+                const overrides = { isTransitPassenger: newValue };
+                if (newValue) {
+                  // If becoming transit passenger, reset accommodation fields
+                  overrides.accommodationType = 'HOTEL';
+                  overrides.customAccommodationType = '';
+                  overrides.province = '';
+                  overrides.district = '';
+                  overrides.subDistrict = '';
+                  overrides.postalCode = '';
+                  overrides.hotelAddress = '';
+                }
+                
+                await saveDataToSecureStorageWithOverride(overrides);
+                setLastEditedAt(new Date());
+              } catch (error) {
+                console.error('Failed to save transit passenger status:', error);
+              }
             }}
             activeOpacity={0.7}
           >
@@ -2474,13 +2525,27 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                       styles.optionButton,
                       isActive && styles.optionButtonActive,
                     ]}
-                    onPress={() => {
+                    onPress={async () => {
+                      console.log('=== ACCOMMODATION TYPE SELECTED ===');
+                      console.log('Selected option:', option.value);
+                      console.log('Previous accommodationType:', accommodationType);
+                      
                       setAccommodationType(option.value);
                       if (option.value !== 'OTHER') {
                         setCustomAccommodationType('');
                       }
-                      // Trigger debounced save after accommodation type selection
-                      debouncedSaveData();
+                      
+                      console.log('Saving immediately with new accommodation type...');
+                      // Save immediately with the new value to avoid React state delay
+                      try {
+                        await saveDataToSecureStorageWithOverride({ 
+                          accommodationType: option.value,
+                          customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
+                        });
+                        setLastEditedAt(new Date());
+                      } catch (error) {
+                        console.error('Failed to save accommodation type:', error);
+                      }
                     }}
                   >
                     <Text style={styles.optionIcon}>{option.icon}</Text>
@@ -2630,6 +2695,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           )}
         </View>
       </ScrollView>
+
+      <FundItemDetailModal
+        visible={fundItemModalVisible}
+        fundItem={isCreatingFundItem ? null : selectedFundItem}
+        isCreateMode={isCreatingFundItem}
+        createItemType={newFundItemType}
+        onClose={handleFundItemModalClose}
+        onUpdate={handleFundItemUpdate}
+        onCreate={handleFundItemCreate}
+        onDelete={handleFundItemDelete}
+      />
     </SafeAreaView>
   );
 };
@@ -2864,35 +2940,66 @@ const styles = StyleSheet.create({
   fundButton: {
     marginVertical: spacing.xs,
   },
-  fundItem: {
-    marginBottom: spacing.sm,
-    padding: spacing.sm,
+  fundEmptyState: {
+    padding: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-  },
-  fundType: {
-    ...typography.body1,
-    fontWeight: '600',
+    backgroundColor: colors.background,
     marginBottom: spacing.sm,
   },
-  photoButton: {
-    backgroundColor: colors.primaryLight,
-    padding: spacing.md,
+  fundEmptyText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  fundList: {
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 8,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+  },
+  fundListItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
-  photoButtonText: {
+  fundListItemDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  fundListItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  fundItemIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  fundItemDetails: {
+    flex: 1,
+  },
+  fundItemTitle: {
     ...typography.body1,
-    color: colors.primary,
     fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
   },
-  fundImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    marginBottom: spacing.md,
+  fundItemSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  fundListItemArrow: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    fontSize: 18,
   },
   checkboxContainer: {
     flexDirection: 'row',

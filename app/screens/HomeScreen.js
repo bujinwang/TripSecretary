@@ -94,9 +94,9 @@ const HomeScreen = ({ navigation }) => {
   // Intelligent country prioritization based on visa requirements
   const getVisaRequirement = (countryId) => {
     // Accurate visa requirements for Chinese passport holders (中国护照)
-    const visaFreeDestinations = ['hk', 'my']; // Hong Kong (港澳通行证), Malaysia (30天免签)
-    const visaOnArrival = ['th']; // Thailand (落地签/免签可互换)
-    const visaRequired = ['jp', 'tw', 'kr', 'sg', 'us']; // Japan, Taiwan, Korea, Singapore, USA (都需要签证)
+    const visaFreeDestinations = ['th', 'my', 'sg']; // Thailand (60天免签), Malaysia (30天免签), Singapore (30天免签)
+    const visaOnArrival = []; // Currently no destinations with visa on arrival
+    const visaRequired = ['hk', 'jp', 'tw', 'kr', 'us']; // Hong Kong (需要港澳通行证), Japan, Taiwan, Korea, USA (都需要签证)
 
     if (visaFreeDestinations.includes(countryId)) return 'visa_free';
     if (visaOnArrival.includes(countryId)) return 'visa_on_arrival';
