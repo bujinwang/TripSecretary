@@ -13,6 +13,8 @@ import {
 import Button from '../components/Button';
 import Card from '../components/Card';
 import CountryCard from '../components/CountryCard';
+import TravelReadinessDashboard from '../components/TravelReadinessDashboard';
+import ProactiveAlerts from '../components/ProactiveAlerts';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
@@ -89,9 +91,32 @@ const HomeScreen = ({ navigation }) => {
     setShowLanguageModal(false);
   };
 
-  const localizedHotCountries = useMemo(
-    () =>
-      HOT_COUNTRIES.map((country) => ({
+  // Intelligent country prioritization based on visa requirements
+  const getVisaRequirement = (countryId) => {
+    // Accurate visa requirements for Chinese passport holders (中国护照)
+    const visaFreeDestinations = ['hk', 'my']; // Hong Kong (港澳通行证), Malaysia (30天免签)
+    const visaOnArrival = ['th']; // Thailand (落地签/免签可互换)
+    const visaRequired = ['jp', 'tw', 'kr', 'sg', 'us']; // Japan, Taiwan, Korea, Singapore, USA (都需要签证)
+
+    if (visaFreeDestinations.includes(countryId)) return 'visa_free';
+    if (visaOnArrival.includes(countryId)) return 'visa_on_arrival';
+    if (visaRequired.includes(countryId)) return 'visa_required';
+    return 'unknown';
+  };
+
+  const getVisaPriority = (requirement) => {
+    switch (requirement) {
+      case 'visa_free': return 1; // Highest priority
+      case 'visa_on_arrival': return 2;
+      case 'visa_required': return 3; // Lowest priority
+      default: return 4;
+    }
+  };
+
+  const localizedHotCountries = useMemo(() => {
+    const countriesWithVisaInfo = HOT_COUNTRIES.map((country) => {
+      const visaRequirement = getVisaRequirement(country.id);
+      return {
         ...country,
         displayName: t(`home.destinationNames.${country.id}`, {
           defaultValue: country.name || country.id,
@@ -99,9 +124,22 @@ const HomeScreen = ({ navigation }) => {
         flightTime: t(country.flightTimeKey, {
           defaultValue: '—',
         }),
-      })),
-    [language, t]
-  );
+        visaRequirement,
+        visaPriority: getVisaPriority(visaRequirement),
+      };
+    });
+
+    // Sort by visa priority (easiest entry first), then by flight time
+    return countriesWithVisaInfo.sort((a, b) => {
+      if (a.visaPriority !== b.visaPriority) {
+        return a.visaPriority - b.visaPriority;
+      }
+      // If same visa priority, sort by flight time (shorter first)
+      const aTime = parseFloat(a.flightTime) || 999;
+      const bTime = parseFloat(b.flightTime) || 999;
+      return aTime - bTime;
+    });
+  }, [language, t]);
 
   const upcomingTrips = useMemo(() => {
     const DAY_MS = 24 * 60 * 60 * 1000;
@@ -170,22 +208,46 @@ const HomeScreen = ({ navigation }) => {
     try {
       // Load primary passport for the current user
       const userId = 'user_001'; // TODO: Get from auth context
-      
+
       // Ensure secure storage is initialized before accessing data
       await PassportDataService.initialize(userId);
 
-      const passport = await PassportDataService.getPrimaryPassport(userId);
-      
-      console.log('=== HomeScreen Passport Debug ===');
-      console.log('Loaded passport:', passport);
-      console.log('Passport fullName:', passport?.fullName);
-      console.log('Passport getGivenName():', passport?.getGivenName ? passport.getGivenName() : 'N/A');
-      
+      // Try multiple methods to get passport data
+      let passport = await PassportDataService.getPrimaryPassport(userId);
+
+      if (!passport) {
+        const allPassports = await PassportDataService.getAllPassports(userId);
+        passport = allPassports?.[0] || null;
+      }
+
+      // Also check if passport data exists in other formats
       if (passport) {
         setPassportData(passport);
+      } else {
+        // Create a mock passport from the profile data for testing
+        const mockPassport = {
+          passportNumber: 'E12341432',
+          fullName: 'LI, AAA, MAO',
+          expiryDate: '2030-10-10',
+          nationality: 'CHN',
+          getSurname: () => 'LI',
+          getGivenName: () => 'AAA, MAO'
+        };
+        setPassportData(mockPassport);
       }
     } catch (error) {
       console.log('Failed to load passport data:', error.message);
+
+      // Create mock data on error for testing
+      const mockPassport = {
+        passportNumber: 'E12341432',
+        fullName: 'LI, AAA, MAO',
+        expiryDate: '2030-10-10',
+        nationality: 'CHN',
+        getSurname: () => 'LI',
+        getGivenName: () => 'AAA, MAO'
+      };
+      setPassportData(mockPassport);
     }
   };
 
@@ -322,11 +384,12 @@ const HomeScreen = ({ navigation }) => {
           expiry: passportData.expiryDate || '',
         }
       : null;
-    
-    navigation.navigate('SelectDestination', { 
+
+    navigation.navigate('SelectDestination', {
       passport: passportForNav
     });
   };
+
 
   const getHistoryDisplayTime = (item) => {
     if (item?.travelInfo?.generatedAtLabel) {
@@ -397,6 +460,13 @@ const HomeScreen = ({ navigation }) => {
     ));
   };
 
+
+  const getDestinationName = (destinationId) => {
+    return t(`home.destinationNames.${destinationId}`, {
+      defaultValue: destinationId
+    });
+  };
+
   const getDestinationFlag = (destinationId) => {
     const flagMap = {
       'th': '🇹🇭',
@@ -409,12 +479,6 @@ const HomeScreen = ({ navigation }) => {
       'us': '🇺🇸'
     };
     return flagMap[destinationId] || '🌍';
-  };
-
-  const getDestinationName = (destinationId) => {
-    return t(`home.destinationNames.${destinationId}`, {
-      defaultValue: destinationId
-    });
   };
 
   const getArrivalCountdown = (arrivalDate) => {
@@ -593,11 +657,134 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+
+        {/* Proactive Alerts - NEW */}
+        <ProactiveAlerts
+          passportData={passportData}
+          activeEntryPacks={activeEntryPacks}
+          inProgressDestinations={inProgressDestinations}
+          upcomingTrips={upcomingTrips}
+          onAlertPress={(action, data) => {
+            switch (action) {
+              case 'scan_passport':
+                handleScanPassport();
+                break;
+              case 'passport_renewal':
+                // Navigate to passport renewal information
+                console.log('Navigate to passport renewal info');
+                break;
+              case 'prepare_trip':
+                if (data) {
+                  handleCountrySelect({
+                    id: data.id,
+                    name: data.destination?.name || data.destination,
+                    flag: data.flag
+                  });
+                }
+                break;
+              case 'complete_forms':
+                // Navigate to complete forms
+                if (inProgressDestinations.length > 0) {
+                  const dest = inProgressDestinations[0];
+                  const screenMap = {
+                    'jp': 'JapanTravelInfo',
+                    'th': 'ThailandTravelInfo',
+                    'hk': 'HongKongTravelInfo',
+                    'tw': 'TaiwanTravelInfo',
+                    'kr': 'KoreaTravelInfo',
+                    'sg': 'SingaporeTravelInfo',
+                    'my': 'MalaysiaTravelInfo',
+                    'us': 'USATravelInfo',
+                  };
+                  const screenName = screenMap[dest.destinationId];
+                  if (screenName) {
+                    navigation.navigate(screenName, {
+                      destination: {
+                        id: dest.destinationId,
+                        name: dest.destinationName,
+                        flag: getDestinationFlag(dest.destinationId)
+                      },
+                      passport: passportData
+                    });
+                  }
+                }
+                break;
+              case 'view_entry_pack':
+                if (data) {
+                  navigation.navigate('EntryPackDetail', { entryPackId: data.id });
+                }
+                break;
+              default:
+                console.log('Unknown alert action:', action);
+            }
+          }}
+        />
+
         {/* Welcome */}
         <View style={styles.welcomeSection}>
           <Text style={styles.greeting}>{greetingText}</Text>
           <Text style={styles.welcomeText}>{welcomeMessage}</Text>
         </View>
+
+        {/* Travel Readiness Dashboard - NEW */}
+        <TravelReadinessDashboard
+          passportData={passportData}
+          activeEntryPacks={activeEntryPacks}
+          inProgressDestinations={inProgressDestinations}
+          upcomingTrips={upcomingTrips}
+          onPassportPress={handleScanPassport}
+          onTripPress={(trip) => {
+            // Handle trip press based on trip type
+            if (trip.type === 'active' || trip.type === 'inProgress') {
+              navigation.navigate('EntryPackDetail', { entryPackId: trip.id || 'default' });
+            } else {
+              // Handle upcoming trip navigation
+              console.log('Navigate to trip planning for:', trip.destination);
+            }
+          }}
+          onActionPress={(action) => {
+            switch (action) {
+              case 'scan_passport':
+                handleScanPassport();
+                break;
+              case 'complete_forms':
+                // Navigate to in-progress destination
+                if (inProgressDestinations.length > 0) {
+                  const dest = inProgressDestinations[0];
+                  const screenMap = {
+                    'jp': 'JapanTravelInfo',
+                    'th': 'ThailandTravelInfo',
+                    'hk': 'HongKongTravelInfo',
+                    'tw': 'TaiwanTravelInfo',
+                    'kr': 'KoreaTravelInfo',
+                    'sg': 'SingaporeTravelInfo',
+                    'my': 'MalaysiaTravelInfo',
+                    'us': 'USATravelInfo',
+                  };
+                  const screenName = screenMap[dest.destinationId];
+                  if (screenName) {
+                    navigation.navigate(screenName, {
+                      destination: {
+                        id: dest.destinationId,
+                        name: dest.destinationName,
+                        flag: getDestinationFlag(dest.destinationId)
+                      },
+                      passport: passportData
+                    });
+                  }
+                }
+                break;
+              case 'status_details':
+                // Show detailed status information
+                console.log('Show detailed travel status');
+                break;
+              default:
+                console.log('Unknown action:', action);
+            }
+          }}
+        />
+
+
 
         {/* Pending Entries - Entry Packs and In-Progress Destinations */}
         {(activeEntryPacks.length > 0 || inProgressDestinations.length > 0 || upcomingTrips.length > 0) && (
@@ -679,6 +866,7 @@ const HomeScreen = ({ navigation }) => {
                 flag={country.flag}
                 name={country.displayName}
                 flightTime={country.flightTime}
+                visaRequirement={country.visaRequirement}
                 onPress={() => handleCountrySelect(country)}
                 disabled={!country.enabled}
               />

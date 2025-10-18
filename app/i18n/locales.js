@@ -829,6 +829,17 @@ const baseTranslations = {
       defaultChineseName: 'Zhang Wei',
     },
     login: {
+      tagline: 'Cross-border entry • Seamless passage',
+      benefits: {
+        free: 'Completely free',
+        noRegistration: 'No registration',
+        instant: 'Instant use',
+      },
+      ctaTitle: 'Cross-border entry has never been so simple',
+      ctaSubtitle: 'One-click form filling, enjoy seamless customs experience',
+      buttonText: 'Get Started • Free',
+      buttonSubtext: 'No signup, instant access',
+      popularityText: '{{percent}}% smooth entry',
       hotlistLabel: 'Trending destinations',
       hotlistDescription: 'Popular picks this week',
     },
@@ -2027,6 +2038,17 @@ const baseTranslations = {
       defaultChineseName: '张伟',
     },
     login: {
+      tagline: '跨境入境 • 畅通无阻',
+      benefits: {
+        free: '完全免费',
+        noRegistration: '无需注册',
+        instant: '即时使用',
+      },
+      ctaTitle: '跨境入境，从未如此简单',
+      ctaSubtitle: '一键填写入境表格，畅享无缝通关体验',
+      buttonText: '开始使用 · 免费',
+      buttonSubtext: '无需注册，即刻体验',
+      popularityText: '🔥 {{percent}}% 顺畅入境',
       hotlistLabel: '热门目的地',
       hotlistDescription: '本周最受关注的旅行地',
     },
@@ -3780,6 +3802,17 @@ const baseTranslations = {
       result: 'Pack d\'entrée',
     },
     login: {
+      tagline: 'Entrée transfrontalière • Passage fluide',
+      benefits: {
+        free: 'Entièrement gratuit',
+        noRegistration: 'Aucune inscription',
+        instant: 'Utilisation instantanée',
+      },
+      ctaTitle: 'L\'entrée transfrontalière n\'a jamais été aussi simple',
+      ctaSubtitle: 'Remplissage de formulaires en un clic, profitez d\'une expérience douanière fluide',
+      buttonText: 'Commencer • Gratuit',
+      buttonSubtext: 'Pas d\'inscription, accès instantané',
+      popularityText: '🔥 {{percent}}% d\'entrée fluide',
       hotlistLabel: 'Destinations en tendance',
       hotlistDescription: 'Les favoris de la semaine',
     },
@@ -3998,6 +4031,17 @@ const baseTranslations = {
       result: 'Einreisepaket',
     },
     login: {
+      tagline: 'Grenzüberschreitende Einreise • Nahtloser Durchgang',
+      benefits: {
+        free: 'Völlig kostenlos',
+        noRegistration: 'Keine Registrierung',
+        instant: 'Sofortige Nutzung',
+      },
+      ctaTitle: 'Grenzüberschreitende Einreise war noch nie so einfach',
+      ctaSubtitle: 'Ein-Klick-Formularausfüllung, genießen Sie nahtlose Zollerfahrung',
+      buttonText: 'Loslegen • Kostenlos',
+      buttonSubtext: 'Keine Anmeldung, sofortiger Zugang',
+      popularityText: '🔥 {{percent}}% reibungslose Einreise',
       hotlistLabel: 'Reisetrends',
       hotlistDescription: 'Beliebte Ziele dieser Woche',
     },
@@ -4212,6 +4256,17 @@ const baseTranslations = {
       result: 'Paquete de entrada',
     },
     login: {
+      tagline: 'Entrada transfronteriza • Paso fluido',
+      benefits: {
+        free: 'Completamente gratis',
+        noRegistration: 'Sin registro',
+        instant: 'Uso instantáneo',
+      },
+      ctaTitle: 'La entrada transfronteriza nunca ha sido tan simple',
+      ctaSubtitle: 'Llenado de formularios con un clic, disfruta de una experiencia aduanera fluida',
+      buttonText: 'Comenzar • Gratis',
+      buttonSubtext: 'Sin registro, acceso instantáneo',
+      popularityText: '🔥 {{percent}}% entrada fluida',
       hotlistLabel: 'Destinos en tendencia',
       hotlistDescription: 'Favoritos de esta semana',
     },
@@ -4478,20 +4533,17 @@ const baseTranslations = {
 };
 
 // Generate Traditional Chinese variants from Simplified Chinese
-let zhTWTranslations = null;
+const generateTraditionalChineseTranslations = () => {
+  const traditionalBase = convertToTraditional(baseTranslations.zh, 'zh-TW');
+  const traditionalCountries = countryTranslations['zh-TW'];
+  return deepMergeTranslations(traditionalBase, traditionalCountries);
+};
 
-// Create final translations object with lazy getter for Traditional Chinese
+// Create final translations object with pre-computed Traditional Chinese
 export const translations = {
   ...baseTranslations,
   'zh-CN': baseTranslations.zh,
-  get 'zh-TW'() {
-    if (!zhTWTranslations) {
-      const traditionalBase = convertToTraditional(baseTranslations.zh, 'zh-TW');
-      const traditionalCountries = countryTranslations['zh-TW'];
-      zhTWTranslations = deepMergeTranslations(traditionalBase, traditionalCountries);
-    }
-    return zhTWTranslations;
-  },
+  'zh-TW': generateTraditionalChineseTranslations(),
 };
 
 // Merge country-specific translations from JSON files

@@ -117,7 +117,7 @@ const PassportNameInput = ({
     }
   }, [value]);
 
-  // Update combined value when individual parts change
+  // Update combined value when individual parts change (debounced)
   useEffect(() => {
     if (isInternalUpdate.current) {
       return;
@@ -137,13 +137,20 @@ const PassportNameInput = ({
     }
 
     if (combined !== lastValueRef.current) {
-      isInternalUpdate.current = true;
-      lastValueRef.current = combined;
-      onChangeText(combined);
+      // Debounce the update to prevent rapid re-renders
+      const timeoutId = setTimeout(() => {
+        if (combined !== lastValueRef.current) {
+          isInternalUpdate.current = true;
+          lastValueRef.current = combined;
+          onChangeText(combined);
+          
+          setTimeout(() => {
+            isInternalUpdate.current = false;
+          }, 100);
+        }
+      }, 150);
 
-      setTimeout(() => {
-        isInternalUpdate.current = false;
-      }, 50);
+      return () => clearTimeout(timeoutId);
     }
   }, [surname, middleName, givenName, onChangeText]);
 
@@ -182,10 +189,10 @@ const PassportNameInput = ({
                 setSurname(text);
                 setSurnameError('');
               }
-              // Clear typing flag after a short delay
+              // Clear typing flag after a longer delay to prevent rapid updates
               setTimeout(() => {
                 isUserTyping.current = false;
-              }, 100);
+              }, 300);
             }}
             onBlur={handleBlur}
             placeholder="LI"
@@ -220,10 +227,10 @@ const PassportNameInput = ({
                 setMiddleName(text);
                 setMiddleNameError('');
               }
-              // Clear typing flag after a short delay
+              // Clear typing flag after a longer delay to prevent rapid updates
               setTimeout(() => {
                 isUserTyping.current = false;
-              }, 100);
+              }, 300);
             }}
             onBlur={handleBlur}
             placeholder="可选"
@@ -258,10 +265,10 @@ const PassportNameInput = ({
                 setGivenName(text);
                 setGivenNameError('');
               }
-              // Clear typing flag after a short delay
+              // Clear typing flag after a longer delay to prevent rapid updates
               setTimeout(() => {
                 isUserTyping.current = false;
-              }, 100);
+              }, 300);
             }}
             onBlur={handleBlur}
             placeholder="MAOA"
