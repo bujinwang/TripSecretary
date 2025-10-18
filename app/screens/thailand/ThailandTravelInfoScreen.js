@@ -21,6 +21,7 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
+import SecureStorageService from '../../services/security/SecureStorageService';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
@@ -68,6 +69,7 @@ const InputWithValidation = ({
   lastEditedField,
   ...props 
 }) => {
+  const { t } = useLocale();
   const hasError = error && errorMessage;
   const hasWarning = warning && warningMessage && !hasError;
   const isLastEdited = fieldName && lastEditedField === fieldName;
@@ -382,6 +384,32 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
+  // Debug function to clear user data
+  const clearUserData = async () => {
+    try {
+      const userId = passport?.id || 'default_user';
+      console.log('Clearing user data for userId:', userId);
+      await SecureStorageService.clearUserData(userId);
+      console.log('User data cleared successfully');
+      
+      // Clear local state
+      setDob('');
+      setPassportNo('');
+      setFullName('');
+      setNationality('');
+      setExpiryDate('');
+      setSex('Male');
+      
+      // Clear cache
+      PassportDataService.clearCache();
+      
+      alert('User data cleared successfully');
+    } catch (error) {
+      console.error('Failed to clear user data:', error);
+      alert('Failed to clear user data: ' + error.message);
+    }
+  };
+
   // Load saved data on component mount and when screen gains focus
   useEffect(() => {
     const loadSavedData = async () => {
@@ -401,6 +429,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         console.log('=== LOADED USER DATA ===');
         console.log('userData:', userData);
         console.log('userData.passport:', userData?.passport);
+        console.log('userData.passport.dateOfBirth:', userData?.passport?.dateOfBirth);
         console.log('userData.personalInfo:', userData?.personalInfo);
 
         // Passport Info - prioritize centralized data, fallback to route params
@@ -1224,7 +1253,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
       if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
       if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
-      if (dob && dob.trim()) passportUpdates.dateOfBirth = dob;
+      if (dob && dob.trim()) {
+        console.log('=== DOB SAVING DEBUG ===');
+        console.log('dob value being saved:', dob);
+        passportUpdates.dateOfBirth = dob;
+      }
       if (expiryDate && expiryDate.trim()) passportUpdates.expiryDate = expiryDate;
       if (sex && sex.trim()) passportUpdates.gender = sex;
 
@@ -1324,11 +1357,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const addFund = async (type) => {
     try {
       const userId = passport?.id || 'default_user';
-      // Create new fund item in database
+      // Create new fund item in database with appropriate defaults
       const fundItem = await PassportDataService.saveFundItem({
         type,
         amount: '',
-        currency: 'THB',
+        currency: type === 'cash' ? 'THB' : null, // Default to THB for cash, null for others
         details: '',
         photoUri: null,
       }, userId);
@@ -2005,7 +2038,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               )}
             </View>
           )}
-          
           {/* Last Edited Timestamp */}
           {lastEditedAt && (
             <Text style={styles.lastEditedText}>
@@ -2094,6 +2126,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
              value={dob}
              onChangeText={setDob}
              mode="date"
+             dateType="past"
              helpText="选择出生日期"
              error={!!errors.dob}
              errorMessage={errors.dob}
@@ -2104,6 +2137,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
              value={expiryDate}
              onChangeText={setExpiryDate}
              mode="date"
+             dateType="future"
              helpText="选择护照有效期"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
@@ -2216,6 +2250,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                     onChangeText={(text) => updateFundField(fund.id, 'amount', text)}
                     keyboardType="numeric"
                     testID="cash-amount-input"
+                  />
+                  <Input
+                    label="Currency"
+                    value={fund.currency}
+                    onChangeText={(text) => updateFundField(fund.id, 'currency', text)}
+                    placeholder="THB"
+                    autoCapitalize="characters"
+                    maxLength={3}
+                    testID="cash-currency-input"
                   />
                   <Input
                     label="Details"
@@ -2348,6 +2391,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             value={arrivalArrivalDate} 
             onChangeText={setArrivalArrivalDate} 
             mode="date"
+            dateType="future"
             helpText="格式: YYYY-MM-DD"
             error={!!errors.arrivalArrivalDate} 
             errorMessage={errors.arrivalArrivalDate}
@@ -2367,6 +2411,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             value={departureDepartureDate} 
             onChangeText={setDepartureDepartureDate} 
             mode="date"
+            dateType="future"
             helpText="格式: YYYY-MM-DD"
             error={!!errors.departureDepartureDate} 
             errorMessage={errors.departureDepartureDate}
