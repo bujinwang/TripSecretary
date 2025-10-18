@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Modal,
 } from 'react-native';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -69,8 +70,24 @@ const HomeScreen = ({ navigation }) => {
   const [activeEntryPacks, setActiveEntryPacks] = useState([]);
   const [multiDestinationData, setMultiDestinationData] = useState(null);
   const [inProgressDestinations, setInProgressDestinations] = useState([]);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
-  const { t, language } = useLocale();
+  const { t, language, setLanguage } = useLocale();
+
+  // Available languages for selection
+  const availableLanguages = [
+    { code: 'en', label: 'English' },
+    { code: 'zh-CN', label: '简体中文' },
+    { code: 'zh-TW', label: '繁體中文' },
+    { code: 'fr', label: 'Français' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'es', label: 'Español' },
+  ];
+
+  const handleLanguageSelect = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    setShowLanguageModal(false);
+  };
 
   const localizedHotCountries = useMemo(
     () =>
@@ -568,9 +585,9 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.headerRight}
-            onPress={() => navigation.replace('Login')}
+            onPress={() => setShowLanguageModal(true)}
           >
             <Text style={styles.settingsIcon}>🌐</Text>
           </TouchableOpacity>
@@ -670,6 +687,57 @@ const HomeScreen = ({ navigation }) => {
         {/* Bottom Spacing */}
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
+
+      {/* Language Selection Modal - iOS Style */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowLanguageModal(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Select Language</Text>
+              <View style={styles.languageList}>
+                {availableLanguages.map((lang, index) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[
+                      styles.languageOption,
+                      index === 0 && styles.languageOptionFirst,
+                      index === availableLanguages.length - 1 && styles.languageOptionLast,
+                      language === lang.code && styles.languageOptionSelected
+                    ]}
+                    onPress={() => handleLanguageSelect(lang.code)}
+                  >
+                    <Text style={[
+                      styles.languageOptionText,
+                      language === lang.code && styles.languageOptionTextSelected
+                    ]}>
+                      {lang.label}
+                    </Text>
+                    {language === lang.code && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowLanguageModal(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -978,6 +1046,88 @@ const styles = StyleSheet.create({
   summaryStats: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+
+  // Language Selection Modal Styles - iOS Style
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: spacing.xl,
+    maxHeight: '70%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  languageList: {
+    paddingHorizontal: spacing.md,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  languageOptionFirst: {
+    borderTopWidth: 0,
+  },
+  languageOptionLast: {
+    borderBottomWidth: 0,
+  },
+  languageOptionSelected: {
+    backgroundColor: colors.primaryLight,
+  },
+  languageOptionText: {
+    ...typography.body1,
+    color: colors.text,
+    flex: 1,
+  },
+  languageOptionTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  checkmark: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: colors.white,
+    marginTop: spacing.md,
+    marginHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cancelButtonText: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
   },
 });
 
