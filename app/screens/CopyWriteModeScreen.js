@@ -13,10 +13,12 @@ import Card from '../components/Card';
 import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
+import PassportDataService from '../services/data/PassportDataService';
 
 const CopyWriteModeScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const [fontSize, setFontSize] = useState(24);
 
   // Check destination for conditional content

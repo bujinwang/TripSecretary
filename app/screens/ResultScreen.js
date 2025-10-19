@@ -21,6 +21,7 @@ import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
 import { mergeTDACData } from '../data/mockTDACData';
 import { useTranslation } from '../i18n/LocaleContext';
+import PassportDataService from '../services/data/PassportDataService';
 
 const ResultScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ const ResultScreen = ({ navigation, route }) => {
   const currentDestination = resultData?.destination || routeParams.destination;
   const currentTravelInfo = resultData?.travelInfo || routeParams.travelInfo;
 
-  const passport = currentPassport;
+  const passport = PassportDataService.toSerializablePassport(currentPassport);
   const destination = currentDestination;
   const travelInfo = currentTravelInfo;
   const isThailand = destination?.id === 'th';

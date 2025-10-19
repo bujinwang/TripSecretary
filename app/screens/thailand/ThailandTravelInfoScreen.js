@@ -1,6 +1,6 @@
 
 // 入境通 - Thailand Travel Info Screen (泰国入境信息)
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -131,7 +131,7 @@ const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onT
                 styles.fieldCountText,
                 isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
               ]}>
-                {isComplete ? '✓' : `${fieldCount.filled}/${fieldCount.total}`}
+                {`${fieldCount.filled}/${fieldCount.total}`}
               </Text>
             </View>
           )}
@@ -152,9 +152,16 @@ const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onT
 };
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
-  const userId = passport?.id || 'default_user';
+  const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
+  
+  // Memoize passport to prevent infinite re-renders
+  const passport = useMemo(() => {
+    return PassportDataService.toSerializablePassport(rawPassport);
+  }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
+  
+  // Memoize userId to prevent unnecessary re-renders
+  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);
@@ -462,7 +469,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     const loadSavedData = async () => {
       try {
         setIsLoading(true);
-        const userId = passport?.id || 'default_user';
         
         // Initialize PassportDataService and trigger migration if needed
         try {
@@ -647,14 +653,13 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [passport, refreshFundItems]);
+  }, [userId]); // Only depend on userId, not the entire passport object or refreshFundItems
 
   // Add focus listener to reload data when returning to screen
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       const reloadData = async () => {
         try {
-          const userId = passport?.id || 'default_user';
           
           // Reload data from PassportDataService
           const userData = await PassportDataService.getAllUserData(userId);

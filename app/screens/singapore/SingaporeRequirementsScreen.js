@@ -11,9 +11,11 @@ import {
 import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import PassportDataService from '../../services/data/PassportDataService';
 
 const SingaporeRequirementsScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
   
   // For info screen, we show success status by default

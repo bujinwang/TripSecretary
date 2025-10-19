@@ -988,6 +988,107 @@ const baseTranslations = {
       },
     },
     thailand: {
+      entryGuide: {
+        title: 'Thailand Entry Guide (DMK Airport)',
+        subtitle: 'Complete 8-step process from TDAC to hotel arrival',
+        steps: {
+          tdac: {
+            title: 'TDAC Digital Arrival Card',
+            titleZh: 'TDAC数字入境卡',
+            description: 'Submit within 72 hours before arrival',
+            descriptionZh: '抵达前72小时内提交',
+            tips: [
+              'Prepare passport, flight info, Thailand address',
+              'Fill in English personal information',
+              'Save QR code to phone gallery'
+            ],
+            tipsZh: [
+              '准备护照、航班信息、泰国地址',
+              '填写英文个人信息',
+              '保存QR码到手机相册'
+            ]
+          },
+          atm: {
+            title: 'ATM Cash Withdrawal',
+            titleZh: 'ATM取泰铢现金',
+            description: 'Withdraw 3,000-5,000 THB at airport ATM',
+            descriptionZh: '在机场ATM机取3,000-5,000泰铢',
+            banks: [
+              'Bangkok Bank (曼谷银行)',
+              'Krungsri (泰国大城银行)',
+              'Kasikorn Bank (开泰银行)'
+            ],
+            steps: [
+              'Find ATM in arrival hall (1st floor)',
+              'Choose English interface',
+              'Enter PIN, select Savings account',
+              'Withdraw 3,000-5,000 THB',
+              'Fee: ~220 THB per transaction'
+            ],
+            stepsZh: [
+              '找到ATM机（到达大厅1楼）',
+              '选择英语界面',
+              '输入密码，选择储蓄账户',
+              '取款3,000-5,000泰铢',
+              '手续费：约220泰铢/次'
+            ],
+            safety: [
+              'Watch surroundings carefully',
+              'Protect your PIN when entering',
+              'Don\'t accept "help" from strangers',
+              'Note ATM number if card is retained'
+            ],
+            safetyZh: [
+              '注意周边环境安全',
+              '保护密码输入安全',
+              '不要接受陌生人"帮助"',
+              '如ATM吞卡，记下ATM编号联系银行'
+            ]
+          },
+          taxi: {
+            title: 'Official Taxi to Hotel',
+            titleZh: '官方出租车到酒店',
+            description: 'Use BorderBuddy driver page for hotel address',
+            descriptionZh: '使用入境通司机页面显示酒店地址',
+            steps: [
+              'Find Public Taxi counter (Gate 6 or 8)',
+              'Show BorderBuddy "Driver Page" to staff',
+              'Get queue number ticket',
+              'Confirm driver uses meter',
+              'Cost: 320-470 THB (meter + 50 airport fee + highway)'
+            ],
+            stepsZh: [
+              '找官方Public Taxi柜台（6号门或8号门附近）',
+              '向工作人员出示入境通"给司机看的页面"',
+              '拿到排队号码单',
+              '确认司机打表（Meter在跳字）',
+              '费用：320-470泰铢（打表+50机场费+高速费）'
+            ],
+            payment: [
+              'Prepare small bills (100, 50, 20 THB)',
+              'Pay in cash (recommended)',
+              'Ask for receipt if needed'
+            ],
+            paymentZh: [
+              '准备小额钞票（100、50、20泰铢）',
+              '现金支付（推荐）',
+              '需要时索要收据'
+            ]
+          }
+        },
+        importantNotes: [
+          'TDAC must be submitted within 72 hours before arrival',
+          'ATM withdrawal fee ~220 THB, withdraw more to save fees',
+          'Only use official Public Taxi, avoid unauthorized drivers',
+          'BorderBuddy driver page shows bilingual hotel address'
+        ],
+        importantNotesZh: [
+          '抵达前72小时内必须提交TDAC',
+          'ATM取款手续费约220泰铢，一次多取节省费用',
+          '只使用官方Public Taxi，避免黑车',
+          '入境通司机页面显示泰文+英文酒店地址'
+        ]
+      },
       info: {
         headerTitle: 'Thailand Entry Information',
         title: 'Thailand Entry Guide',
@@ -3125,6 +3226,107 @@ const baseTranslations = {
       },
     },
     thailand: {
+      entryGuide: {
+        title: '泰国入境指南（廊曼机场DMK）',
+        subtitle: '从TDAC到酒店的完整8步骤流程',
+        steps: {
+          tdac: {
+            title: 'TDAC数字入境卡',
+            titleZh: 'TDAC数字入境卡',
+            description: '抵达前72小时内提交',
+            descriptionZh: '抵达前72小时内提交',
+            tips: [
+              '准备护照、航班信息、泰国地址',
+              '填写英文个人信息',
+              '保存QR码到手机相册'
+            ],
+            tipsZh: [
+              '准备护照、航班信息、泰国地址',
+              '填写英文个人信息',
+              '保存QR码到手机相册'
+            ]
+          },
+          atm: {
+            title: 'ATM取泰铢现金',
+            titleZh: 'ATM取泰铢现金',
+            description: '在机场ATM机取3,000-5,000泰铢',
+            descriptionZh: '在机场ATM机取3,000-5,000泰铢',
+            banks: [
+              'Bangkok Bank（曼谷银行）',
+              'Krungsri（泰国大城银行）',
+              'Kasikorn Bank（开泰银行）'
+            ],
+            steps: [
+              '找到ATM机（到达大厅1楼）',
+              '选择英语界面',
+              '输入密码，选择储蓄账户',
+              '取款3,000-5,000泰铢',
+              '手续费：约220泰铢/次'
+            ],
+            stepsZh: [
+              '找到ATM机（到达大厅1楼）',
+              '选择英语界面',
+              '输入密码，选择储蓄账户',
+              '取款3,000-5,000泰铢',
+              '手续费：约220泰铢/次'
+            ],
+            safety: [
+              '注意周边环境安全',
+              '保护密码输入安全',
+              '不要接受陌生人"帮助"',
+              '如ATM吞卡，记下ATM编号联系银行'
+            ],
+            safetyZh: [
+              '注意周边环境安全',
+              '保护密码输入安全',
+              '不要接受陌生人"帮助"',
+              '如ATM吞卡，记下ATM编号联系银行'
+            ]
+          },
+          taxi: {
+            title: '官方出租车到酒店',
+            titleZh: '官方出租车到酒店',
+            description: '使用入境通司机页面显示酒店地址',
+            descriptionZh: '使用入境通司机页面显示酒店地址',
+            steps: [
+              '找官方Public Taxi柜台（6号门或8号门附近）',
+              '向工作人员出示入境通"给司机看的页面"',
+              '拿到排队号码单',
+              '确认司机打表（Meter在跳字）',
+              '费用：320-470泰铢（打表+50机场费+高速费）'
+            ],
+            stepsZh: [
+              '找官方Public Taxi柜台（6号门或8号门附近）',
+              '向工作人员出示入境通"给司机看的页面"',
+              '拿到排队号码单',
+              '确认司机打表（Meter在跳字）',
+              '费用：320-470泰铢（打表+50机场费+高速费）'
+            ],
+            payment: [
+              '准备小额钞票（100、50、20泰铢）',
+              '现金支付（推荐）',
+              '需要时索要收据'
+            ],
+            paymentZh: [
+              '准备小额钞票（100、50、20泰铢）',
+              '现金支付（推荐）',
+              '需要时索要收据'
+            ]
+          }
+        },
+        importantNotes: [
+          '抵达前72小时内必须提交TDAC',
+          'ATM取款手续费约220泰铢，一次多取节省费用',
+          '只使用官方Public Taxi，避免黑车',
+          '入境通司机页面显示泰文+英文酒店地址'
+        ],
+        importantNotesZh: [
+          '抵达前72小时内必须提交TDAC',
+          'ATM取款手续费约220泰铢，一次多取节省费用',
+          '只使用官方Public Taxi，避免黑车',
+          '入境通司机页面显示泰文+英文酒店地址'
+        ]
+      },
       info: {
         headerTitle: '泰国入境信息',
         title: '泰国入境指南',

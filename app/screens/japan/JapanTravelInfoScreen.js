@@ -34,10 +34,9 @@ if (Platform.OS === 'android') {
   }
 }
 
-
-
 const JapanTravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { t, language } = useLocale();
   
   // Debug: Log current language

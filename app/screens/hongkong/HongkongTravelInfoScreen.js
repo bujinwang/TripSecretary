@@ -1,6 +1,6 @@
 
 // 入境通 - Hong Kong Travel Info Screen (香港入境信息)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -73,8 +73,16 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 };
 
 const HongkongTravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
+  
+  // Memoize passport to prevent infinite re-renders
+  const passport = useMemo(() => {
+    return PassportDataService.toSerializablePassport(rawPassport);
+  }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
+  
+  // Memoize userId to prevent unnecessary re-renders
+  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);
@@ -159,7 +167,6 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
     const loadSavedData = async () => {
       try {
         setIsLoading(true);
-        const userId = passport?.id || 'default_user';
         
         await PassportDataService.initialize(userId);
         
@@ -227,7 +234,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [passport]);
+  }, [userId]); // Only depend on userId, not the entire passport object
 
   const handleFieldBlur = async (fieldName, fieldValue) => {
     await saveDataToSecureStorage();
@@ -235,7 +242,6 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
 
   const saveDataToSecureStorage = async () => {
     try {
-      const userId = passport?.id || 'default_user';
 
       const existingPassport = await PassportDataService.getPassport(userId);
 

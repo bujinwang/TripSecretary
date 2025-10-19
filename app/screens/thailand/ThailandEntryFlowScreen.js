@@ -27,6 +27,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const passportParam = PassportDataService.toSerializablePassport(route.params?.passport);
   
   // Completion state - calculated from real user data
   const [completionPercent, setCompletionPercent] = useState(0);
@@ -99,7 +100,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       setIsLoading(true);
       
       // Get user ID from route params or use default
-      const userId = route.params?.passport?.id || 'default_user';
+      const userId = passportParam?.id || 'default_user';
       
       // Initialize PassportDataService
       await PassportDataService.initialize(userId);
@@ -123,10 +124,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       if (!normalizedPersonalInfo.gender || !normalizedPersonalInfo.gender.trim()) {
         if (passportInfo.gender && passportInfo.gender.trim()) {
           normalizedPersonalInfo.gender = passportInfo.gender.trim();
-        } else if (route.params?.passport?.gender && route.params.passport.gender.trim()) {
-          normalizedPersonalInfo.gender = route.params.passport.gender.trim();
-        } else if (route.params?.passport?.sex && route.params.passport.sex.trim()) {
-          normalizedPersonalInfo.gender = route.params.passport.sex.trim();
+        } else if (passportParam?.gender && passportParam.gender.trim()) {
+          normalizedPersonalInfo.gender = passportParam.gender.trim();
+        } else if (passportParam?.sex && passportParam.sex.trim()) {
+          normalizedPersonalInfo.gender = passportParam.sex.trim();
         }
       }
 
@@ -201,8 +202,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       
       setCategories(categoryData);
 
-      // Check for entry pack and resubmission warnings
-      await loadEntryPackStatus(userId);
+      // Check for entry pack and resubmission warnings (non-blocking)
+      loadEntryPackStatus(userId).catch(error => {
+        console.log('Entry pack status check failed, continuing without it:', error);
+      });
       
     } catch (error) {
       console.error('Failed to load entry flow data:', error);
@@ -210,7 +213,44 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       // Fallback to empty state on error
       setCompletionPercent(0);
       setCompletionStatus('needs_improvement');
-      setCategories([]);
+      setCategories([
+        {
+          id: 'passport',
+          name: '护照信息',
+          icon: '📘',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 5,
+          missingFields: ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'],
+        },
+        {
+          id: 'personal',
+          name: '个人信息',
+          icon: '👤',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 4,
+          missingFields: ['occupation', 'phoneNumber', 'email', 'gender'],
+        },
+        {
+          id: 'funds',
+          name: '资金证明',
+          icon: '💰',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 1,
+          missingFields: ['fundItems'],
+        },
+        {
+          id: 'travel',
+          name: '旅行信息',
+          icon: '✈️',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 4,
+          missingFields: ['arrivalDate', 'flightNumber', 'accommodation', 'travelPurpose'],
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -224,13 +264,31 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
   const loadEntryPackStatus = async (userId) => {
     try {
-      // Get entry pack for this destination
-      const EntryPackService = require('../../services/entryPack/EntryPackService').default;
+      // Try to load EntryPackService, but don't fail if it doesn't exist
+      let EntryPackService;
+      try {
+        EntryPackService = require('../../services/entryPack/EntryPackService').default;
+      } catch (requireError) {
+        console.log('EntryPackService not available, skipping entry pack status check');
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setResubmissionWarning(null);
+        return;
+      }
+
+      if (!EntryPackService || typeof EntryPackService.getActivePacksForUser !== 'function') {
+        console.log('EntryPackService methods not available, skipping entry pack status check');
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setResubmissionWarning(null);
+        return;
+      }
+
       const activeEntryPacks = await EntryPackService.getActivePacksForUser(userId);
       
       // Find entry pack for Thailand
       const destinationId = route.params?.destination?.id || 'thailand';
-      const thailandEntryPack = activeEntryPacks.find(pack => 
+      const thailandEntryPack = activeEntryPacks?.find(pack => 
         pack.destinationId === destinationId || pack.destinationId === 'thailand'
       );
 
@@ -239,15 +297,19 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         setShowSupersededStatus(thailandEntryPack.status === 'superseded');
 
         // Check for pending resubmission warnings
-        const warning = PassportDataService.getResubmissionWarning(thailandEntryPack.id);
-        if (warning) {
-          setResubmissionWarning(warning);
+        try {
+          const warning = PassportDataService.getResubmissionWarning(thailandEntryPack.id);
+          if (warning) {
+            setResubmissionWarning(warning);
+          }
+        } catch (warningError) {
+          console.log('Resubmission warning check failed:', warningError);
         }
 
         console.log('Entry pack status loaded:', {
           entryPackId: thailandEntryPack.id,
           status: thailandEntryPack.status,
-          hasWarning: !!warning
+          hasWarning: !!resubmissionWarning
         });
       } else {
         setEntryPackStatus(null);
@@ -256,6 +318,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('Failed to load entry pack status:', error);
+      // Don't let entry pack status loading failure block the main UI
+      setEntryPackStatus(null);
+      setShowSupersededStatus(false);
+      setResubmissionWarning(null);
     }
   };
 
@@ -274,7 +340,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
         // Navigate to edit screen
         navigation.navigate('ThailandTravelInfo', {
-          passport: route.params?.passport,
+          passport: passportParam,
           destination: route.params?.destination,
           resubmissionMode: true
         });
@@ -301,16 +367,24 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const handleEditInformation = () => {
     // Navigate back to ThailandTravelInfoScreen
     navigation.navigate('ThailandTravelInfo', {
-      passport: route.params?.passport,
+      passport: passportParam,
       destination: route.params?.destination,
     });
   };
 
   const handlePreviewEntryCard = () => {
-    // Navigate to preview screen (placeholder for now)
-    // This could navigate to a preview modal or screen
-    console.log('Preview entry card - to be implemented');
-    // navigation.navigate('EntryCardPreview', { userData });
+    // Navigate to EntryPackPreview to show the complete entry pack preview
+    navigation.navigate('EntryPackPreview', {
+      userData,
+      passport: passportParam,
+      destination: route.params?.destination,
+      entryPackData: {
+        personalInfo: userData?.personalInfo,
+        travelInfo: userData?.travel,
+        funds: userData?.funds,
+        tdacSubmission: null // Will be populated when TDAC is submitted
+      }
+    });
   };
 
   const handleShareWithFriends = () => {
@@ -324,7 +398,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     // This will be enhanced in future tasks to expand the correct section
     navigation.navigate('ThailandTravelInfo', {
       expandSection: category.id,
-      passport: route.params?.passport,
+      passport: passportParam,
       destination: route.params?.destination,
     });
   };
@@ -336,21 +410,25 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       case 'continue_improving':
         // Navigate back to ThailandTravelInfoScreen
         navigation.navigate('ThailandTravelInfo', {
-          passport: route.params?.passport,
+          passport: passportParam,
           destination: route.params?.destination,
         });
         break;
       case 'submit_tdac':
         // Navigate to TDAC submission screen
         navigation.navigate('TDACSelection', {
-          passport: route.params?.passport,
+          passport: passportParam,
           destination: route.params?.destination,
         });
+        break;
+      case 'view_entry_pack':
+        // Navigate to entry pack detail screen
+        handlePreviewEntryCard();
         break;
       case 'resubmit_tdac':
         // Handle resubmission - navigate to edit screen first
         navigation.navigate('ThailandTravelInfo', {
-          passport: route.params?.passport,
+          passport: passportParam,
           destination: route.params?.destination,
           resubmissionMode: true,
           showResubmissionHint: true
@@ -385,7 +463,23 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       canSubmitNow = window.canSubmit;
     }
 
-    if (!isComplete) {
+    // If completion is high enough, show entry pack option
+    if (completionPercent >= 80 && isComplete && canSubmitNow) {
+      return {
+        title: '准备好入境泰国了！🌴',
+        action: 'submit_tdac',
+        disabled: false,
+        variant: 'primary'
+      };
+    } else if (completionPercent >= 60) {
+      return {
+        title: '查看我的通关包 📋',
+        action: 'view_entry_pack',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '看看你已经准备好的入境信息'
+      };
+    } else if (!isComplete) {
       return {
         title: '继续准备我的泰国之旅 💪',
         action: 'continue_improving',
@@ -601,11 +695,33 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     );
                   })()}
                 </View>
+
+                {/* Entry Guide Button - New Addition */}
+                <TouchableOpacity
+                  style={styles.entryGuideButton}
+                  onPress={() => navigation.navigate('ThailandEntryGuide', {
+                    passport: passportParam,
+                    destination: route.params?.destination,
+                    completionData: userData
+                  })}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.entryGuideIcon}>🗺️</Text>
+                  <View style={styles.entryGuideContent}>
+                    <Text style={styles.entryGuideTitle}>
+                      查看泰国入境指引
+                    </Text>
+                    <Text style={styles.entryGuideSubtitle}>
+                      6步骤完整入境流程指南
+                    </Text>
+                  </View>
+                  <Text style={styles.entryGuideArrow}>›</Text>
+                </TouchableOpacity>
                 
                 {/* Secondary Actions */}
                 <View style={styles.secondaryActionsContainer}>
-                  {/* Preview Entry Card Button - Available when completion > 80% */}
-                  {completionPercent > 80 && (
+                  {/* Preview Entry Card Button - Available when completion > 50% */}
+                  {completionPercent > 50 && (
                     <TouchableOpacity 
                       style={styles.secondaryActionButton}
                       onPress={handlePreviewEntryCard}
@@ -613,7 +729,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     >
                       <Text style={styles.secondaryActionIcon}>👁️</Text>
                       <Text style={styles.secondaryActionText}>
-                        看看我的入境卡长啥样 👁️
+                        看看我的通关包 📋
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -869,6 +985,46 @@ const styles = StyleSheet.create({
   // Data Change Alert Styles
   dataChangeAlert: {
     marginBottom: spacing.md,
+  },
+
+  // Entry Guide Button Styles
+  entryGuideButton: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginTop: spacing.md,
+  },
+  entryGuideContent: {
+    flex: 1,
+    marginLeft: spacing.sm,
+  },
+  entryGuideTitle: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  entryGuideSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  entryGuideIcon: {
+    fontSize: 20,
+    marginRight: spacing.xs,
+  },
+  entryGuideArrow: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    fontSize: 18,
   },
 });
 

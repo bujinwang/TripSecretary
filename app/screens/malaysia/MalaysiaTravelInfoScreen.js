@@ -73,7 +73,8 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 };
 
 const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
   // Data model instances

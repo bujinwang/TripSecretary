@@ -11,9 +11,11 @@ import {
 import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import PassportDataService from '../../services/data/PassportDataService';
 
 const TWArrivalGuideScreen = ({ navigation, route }) => {
-  const { passport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
   const steps = useMemo(

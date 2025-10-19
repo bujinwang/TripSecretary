@@ -26,6 +26,7 @@ import {
   JapanProceduresScreen,
   JapanTravelInfoScreen,
   InteractiveImmigrationGuide,
+  JapanInteractiveImmigrationGuide,
   // Thailand screens
   ImmigrationOfficerViewScreen,
   ThailandInfoScreen,
@@ -37,6 +38,7 @@ import {
   TDACHybridScreen,
   ThailandEntryFlowScreen,
   ThailandTravelInfoScreen,
+  ThailandEntryGuideScreen,
   // Malaysia screens
   MalaysiaInfoScreen,
   MalaysiaRequirementsScreen,
@@ -528,10 +530,33 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ThailandEntryGuide"
+          component={ThailandEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanInteractiveImmigrationGuide"
+          component={JapanInteractiveImmigrationGuide}
+          options={{
+            headerShown: false,
+            gestureEnabled: false, // Prevent accidental back during immigration
+          }}
+        />
+        <Stack.Screen
           name="EntryPackDetail"
           component={EntryPackDetailScreen}
           options={{
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="EntryPackPreview"
+          component={require('../screens/thailand/EntryPackPreviewScreen').default}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
         <Stack.Screen

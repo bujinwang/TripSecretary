@@ -18,6 +18,10 @@ export { default as PresentToCustomsScreen } from './PresentToCustomsScreen';
 export { default as CopyWriteModeScreen } from './CopyWriteModeScreen';
 export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 
+// Entry guide screens
+export { default as ThailandEntryGuideScreen } from './entryGuide/ThailandEntryGuideScreen';
+export { default as JapanInteractiveImmigrationGuide } from './japan/JapanInteractiveImmigrationGuide';
+
 // Country-specific screens
 export * from './japan';
 export * from './thailand';

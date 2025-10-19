@@ -68,24 +68,24 @@ const ProactiveAlerts = ({
       });
     }
 
-    // Upcoming trip reminders
-    const nextTrip = upcomingTrips.find(trip => trip.daysFromNow <= 7);
-    if (nextTrip && passportData) {
-      alertList.push({
-        id: 'upcoming_trip',
-        type: 'info',
-        urgency: 'medium',
-        icon: '✈️',
-        title: t('alerts.tripReminder', { defaultValue: '旅行即将开始' }),
-        message: t('alerts.prepareDocuments', {
-          destination: nextTrip.destination?.name || '目的地',
-          days: nextTrip.daysFromNow,
-          defaultValue: `${nextTrip.daysFromNow} 天后前往 ${nextTrip.destination?.name || '目的地'}，请准备相关文件`
-        }),
-        actionText: t('alerts.prepareNow', { defaultValue: '立即准备' }),
-        onPress: () => onAlertPress?.('prepare_trip', nextTrip),
-      });
-    }
+    // Upcoming trip reminders - DISABLED as requested
+    // const nextTrip = upcomingTrips.find(trip => trip.daysFromNow <= 7);
+    // if (nextTrip && passportData) {
+    //   alertList.push({
+    //     id: 'upcoming_trip',
+    //     type: 'info',
+    //     urgency: 'medium',
+    //     icon: '✈️',
+    //     title: t('alerts.tripReminder', { defaultValue: '旅行即将开始' }),
+    //     message: t('alerts.prepareDocuments', {
+    //       destination: nextTrip.destination?.name || '目的地',
+    //       days: nextTrip.daysFromNow,
+    //       defaultValue: `${nextTrip.daysFromNow} 天后前往 ${nextTrip.destination?.name || '目的地'}，请准备相关文件`
+    //     }),
+    //     actionText: t('alerts.prepareNow', { defaultValue: '立即准备' }),
+    //     onPress: () => onAlertPress?.('prepare_trip', nextTrip),
+    //   });
+    // }
 
     // Incomplete entry packs
     if (inProgressDestinations.length > 0 && passportData) {

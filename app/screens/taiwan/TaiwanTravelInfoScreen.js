@@ -1,6 +1,6 @@
 
 // 入境通 - Taiwan Travel Info Screen (台湾入境信息)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -73,8 +73,13 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 };
 
 const TaiwanTravelInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
+  
+  // Memoize passport to prevent infinite re-renders
+  const passport = useMemo(() => {
+    return PassportDataService.toSerializablePassport(rawPassport);
+  }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);
@@ -140,6 +145,35 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
     return { filled, total };
   };
 
+  // Calculate total completion percentage with memoization
+  const totalCompletionPercent = useMemo(() => {
+    const passportCount = getFieldCount('passport');
+    const personalCount = getFieldCount('personal');
+    const travelCount = getFieldCount('travel');
+    
+    const totalFields = passportCount.total + personalCount.total + travelCount.total;
+    const filledFields = passportCount.filled + personalCount.filled + travelCount.filled;
+    
+    const percent = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+    
+    // Debug logging to track completion changes
+    console.log('Taiwan completion calculation:', {
+      passport: passportCount,
+      personal: personalCount,
+      travel: travelCount,
+      totalFields,
+      filledFields,
+      percent
+    });
+    
+    return percent;
+  }, [
+    // Dependencies: all form fields that affect completion calculation
+    passportNo, fullName, nationality, dob, expiryDate,
+    occupation, residentCountry, phoneCode, phoneNumber, email, sex,
+    arrivalFlightNumber, arrivalDate, hotelAddress, stayDuration
+  ]);
+
   const isFormValid = () => {
     const passportCount = getFieldCount('passport');
     const personalCount = getFieldCount('personal');
@@ -155,11 +189,102 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
     return allFieldsFilled && noErrors;
   };
 
+  // Get smart button configuration based on journey progress
+  const smartButtonConfig = useMemo(() => {
+    if (totalCompletionPercent >= 100) {
+      return {
+        label: '开始台湾之旅！🌸',
+        variant: 'primary',
+        icon: '🚀',
+        action: 'submit'
+      };
+    } else if (totalCompletionPercent >= 80) {
+      return {
+        label: '继续填写，即将完成！✨',
+        variant: 'secondary',
+        icon: '🌺',
+        action: 'edit'
+      };
+    } else if (totalCompletionPercent >= 40) {
+      return {
+        label: '继续我的台湾准备之旅 💪',
+        variant: 'secondary',
+        icon: '🏖️',
+        action: 'edit'
+      };
+    } else {
+      return {
+        label: '开始准备台湾之旅吧！🇹🇼',
+        variant: 'outline',
+        icon: '�',
+        action: 'start'
+      };
+    }
+  }, [totalCompletionPercent]);
+
+  // Get progress indicator text - traveler-friendly messaging
+  const progressText = useMemo(() => {
+    if (totalCompletionPercent >= 100) {
+      return '准备好迎接台湾之旅了！🌸';
+    } else if (totalCompletionPercent >= 80) {
+      return '快完成了！台湾在向你招手 ✨';
+    } else if (totalCompletionPercent >= 60) {
+      return '进展不错！继续加油 💪';
+    } else if (totalCompletionPercent >= 40) {
+      return '已经完成一半了！🏖️';
+    } else if (totalCompletionPercent >= 20) {
+      return '好的开始！台湾欢迎你 🌺';
+    } else {
+      return '让我们开始准备台湾之旅吧！🇹�';
+    }
+  }, [totalCompletionPercent]);
+
+  // Get progress color based on completion
+  const progressColor = useMemo(() => {
+    if (totalCompletionPercent >= 100) {
+      return '#34C759'; // Green
+    } else if (totalCompletionPercent >= 50) {
+      return '#FF9500'; // Orange
+    } else {
+      return '#FF3B30'; // Red
+    }
+  }, [totalCompletionPercent]);
+
+  // Get encouraging hint message
+  const encouragingHint = useMemo(() => {
+    if (totalCompletionPercent >= 100) return null;
+    
+    if (totalCompletionPercent < 30) {
+      return '🌟 第一步，从介绍自己开始吧！';
+    } else if (totalCompletionPercent < 60) {
+      return '🎉 太棒了！继续保持这个节奏';
+    } else {
+      return '🚀 快要完成了，你的台湾之旅近在咫尺！';
+    }
+  }, [totalCompletionPercent]);
+
+  // Get next step hint message
+  const nextStepHint = useMemo(() => {
+    if (totalCompletionPercent >= 100) return null;
+    
+    if (totalCompletionPercent < 25) {
+      return '💡 从护照信息开始，告诉台湾你是谁';
+    } else if (totalCompletionPercent < 50) {
+      return '📞 添加联系方式，这样台湾就能找到你了';
+    } else if (totalCompletionPercent < 75) {
+      return '✈️ 分享你的旅行计划，台湾在等你！';
+    } else {
+      return '🎯 最后一步，完成所有信息填写！';
+    }
+  }, [totalCompletionPercent]);
+
+  // Memoize userId to prevent unnecessary re-renders
+  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
+
   useEffect(() => {
     const loadSavedData = async () => {
       try {
         setIsLoading(true);
-        const userId = passport?.id || 'default_user';
         
         await PassportDataService.initialize(userId);
         
@@ -227,7 +352,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [passport]);
+  }, [userId]); // Only depend on userId, not the entire passport object
 
   const handleFieldBlur = async (fieldName, fieldValue) => {
     await saveDataToSecureStorage();
@@ -235,7 +360,6 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
 
   const saveDataToSecureStorage = async () => {
     try {
-      const userId = passport?.id || 'default_user';
 
       const existingPassport = await PassportDataService.getPassport(userId);
 
@@ -508,12 +632,54 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
+          {/* Enhanced Progress Indicator */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBarContainer}>
+              <View style={styles.progressBarEnhanced}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${totalCompletionPercent}%`,
+                      backgroundColor: progressColor
+                    }
+                  ]}
+                />
+                {/* Completion Badge */}
+                {totalCompletionPercent >= 100 && (
+                  <View style={styles.completionBadge}>
+                    <Text style={styles.completionBadgeText}>台湾准备就绪！🌸</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+            <Text style={[styles.progressText, { color: progressColor }]}>
+              {progressText}
+            </Text>
+          </View>
+
+          {/* Smart Button with Dynamic Configuration */}
           <Button
-            title="生成入境包"
+            title={`${smartButtonConfig.icon} ${smartButtonConfig.label}`}
             onPress={handleContinue}
-            variant="primary"
-            disabled={!isFormValid()}
+            variant={smartButtonConfig.variant}
+            disabled={false}
+            style={smartButtonConfig.style}
           />
+          
+          {/* Encouraging Progress Messages */}
+          {encouragingHint && (
+            <Text style={styles.encouragingHint}>
+              {encouragingHint}
+            </Text>
+          )}
+
+          {/* Travel-Focused Next Steps */}
+          {nextStepHint && (
+            <Text style={styles.nextStepHint}>
+              {nextStepHint}
+            </Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -727,6 +893,72 @@ const styles = StyleSheet.create({
   loadingText: {
     ...typography.body1,
     color: colors.textSecondary,
+  },
+  // Progress and button styles
+  progressContainer: {
+    marginBottom: spacing.md,
+  },
+  progressBarContainer: {
+    marginBottom: spacing.sm,
+  },
+  progressBarEnhanced: {
+    height: 8,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+    transition: 'width 0.3s ease',
+  },
+  completionBadge: {
+    position: 'absolute',
+    top: -30,
+    right: 0,
+    backgroundColor: '#34C759',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  completionBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  progressText: {
+    ...typography.body2,
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  encouragingHint: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontStyle: 'italic',
+  },
+  nextStepHint: {
+    ...typography.caption,
+    color: colors.primary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+    fontWeight: '500',
+  },
+  // Button variant styles
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderColor: colors.primary,
   },
 });
 

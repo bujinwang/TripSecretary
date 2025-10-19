@@ -14,9 +14,11 @@ import BackButton from '../components/BackButton';
 import { colors, typography, spacing } from '../theme';
 import { findRecentValidGeneration } from '../utils/historyChecker';
 import { Alert } from 'react-native';
+import PassportDataService from '../services/data/PassportDataService';
 
 const SelectDestinationScreen = ({ navigation, route }) => {
-  const { passport, country } = route.params || {};
+  const { passport: rawPassport, country } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const [selectedCountry, setSelectedCountry] = useState(country || null);
 
   const countries = [

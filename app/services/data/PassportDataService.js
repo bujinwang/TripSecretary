@@ -106,6 +106,28 @@ try {
  */
 class PassportDataService {
   /**
+   * Ensure passport objects passed across layers (e.g., navigation params)
+   * are plain serializable objects. React Navigation warns when class instances
+   * with prototype methods are stored in params.
+   * @param {Passport|Object|null} passport - Passport instance or plain data
+   * @returns {Object|null} Plain serializable passport data or null
+   */
+  static toSerializablePassport(passport) {
+    if (!passport) {
+      return null;
+    }
+
+    if (typeof passport.toPlainObject === 'function') {
+      return passport.toPlainObject();
+    }
+
+    // Fallback: shallow copy enumerable properties from plain objects
+    return {
+      ...passport
+    };
+  }
+
+  /**
    * Cache time-to-live in milliseconds (5 minutes)
    * @type {number}
    * @static

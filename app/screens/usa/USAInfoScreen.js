@@ -11,9 +11,11 @@ import {
 import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
+import PassportDataService from '../../services/data/PassportDataService';
 
 const USAInfoScreen = ({ navigation, route }) => {
-  const { passport, destination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
   const handleContinue = () => {

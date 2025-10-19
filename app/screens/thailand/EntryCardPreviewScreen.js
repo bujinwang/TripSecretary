@@ -24,6 +24,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [previewData, setPreviewData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const passportParam = PassportDataService.toSerializablePassport(route.params?.passport);
 
   // Load user data and prepare preview
   useEffect(() => {
@@ -35,7 +36,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
       setIsLoading(true);
 
       // Get user ID from route params or use default
-      const userId = route.params?.passport?.id || 'default_user';
+      const userId = passportParam?.id || 'default_user';
 
       // Initialize PassportDataService
       await PassportDataService.initialize(userId);
@@ -58,10 +59,10 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
       if (!normalizedPersonalInfo.gender || !normalizedPersonalInfo.gender.trim()) {
         if (passportInfo.gender && passportInfo.gender.trim()) {
           normalizedPersonalInfo.gender = passportInfo.gender.trim();
-        } else if (route.params?.passport?.gender && route.params.passport.gender.trim()) {
-          normalizedPersonalInfo.gender = route.params.passport.gender.trim();
-        } else if (route.params?.passport?.sex && route.params.passport.sex.trim()) {
-          normalizedPersonalInfo.gender = route.params.passport.sex.trim();
+        } else if (passportParam?.gender && passportParam.gender.trim()) {
+          normalizedPersonalInfo.gender = passportParam.gender.trim();
+        } else if (passportParam?.sex && passportParam.sex.trim()) {
+          normalizedPersonalInfo.gender = passportParam.sex.trim();
         }
       }
 
@@ -122,7 +123,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
   const handleEdit = () => {
     setShowPreview(false);
     navigation.navigate('ThailandTravelInfo', {
-      passport: route.params?.passport,
+      passport: passportParam,
       destination: route.params?.destination,
     });
   };

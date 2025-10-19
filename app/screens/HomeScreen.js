@@ -50,19 +50,20 @@ const UPCOMING_TRIPS_CONFIG = [
     contactPhone: '+81 3 3261 1111',
     stayDuration: '7',
   },
-  {
-    id: 'th',
-    flag: '🇹🇭',
-    titleKey: 'home.pendingTrips.cards.th.title',
-    city: '曼谷',
-    cityEn: 'Bangkok',
-    daysFromNow: 2,
-    flightNumber: 'TG615',
-    hotelName: 'Bangkok Grand Hotel',
-    hotelAddress: '123 Sukhumvit Road, Bangkok',
-    contactPhone: '+66 2 123 4567',
-    stayDuration: '7',
-  },
+  // Thailand trip removed as requested - keeping only Japan upcoming trip
+  // {
+  //   id: 'th',
+  //   flag: '🇹🇭',
+  //   titleKey: 'home.pendingTrips.cards.th.title',
+  //   city: '曼谷',
+  //   cityEn: 'Bangkok',
+  //   daysFromNow: 2,
+  //   flightNumber: 'TG615',
+  //   hotelName: 'Bangkok Grand Hotel',
+  //   hotelAddress: '123 Sukhumvit Road, Bangkok',
+  //   contactPhone: '+66 2 123 4567',
+  //   stayDuration: '7',
+  // },
 ];
 
 const HomeScreen = ({ navigation }) => {

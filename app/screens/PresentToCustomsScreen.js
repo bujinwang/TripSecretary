@@ -11,9 +11,11 @@ import {
 import { colors, typography, spacing } from '../theme';
 import { translateField, getDestinationLanguage, DESTINATION_LANGUAGES } from '../utils/translations';
 import BackButton from '../components/BackButton';
+import PassportDataService from '../services/data/PassportDataService';
 
 const PresentToCustomsScreen = ({ navigation, route }) => {
-  const { passport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const { width, height } = useWindowDimensions();
   
   const destLang = getDestinationLanguage(destination?.id);

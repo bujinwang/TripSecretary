@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
+import PassportDataService from '../../services/data/PassportDataService';
 
 const TDACGuideScreen = ({ navigation, route }) => {
-  const { passport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const [copiedField, setCopiedField] = useState(null);
 
   const copyToClipboard = (text, fieldName) => {

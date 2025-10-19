@@ -25,12 +25,14 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import EntryPackService from '../../services/entryPack/EntryPackService';
+import PassportDataService from '../../services/data/PassportDataService';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const TDACWebViewScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = PassportDataService.toSerializablePassport(rawPassport);
   const [showHelper, setShowHelper] = useState(false); // 控制浮动助手显示
   const [copiedField, setCopiedField] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +40,10 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   const [showVisualMask, setShowVisualMask] = useState(false);
   const [qrCodeData, setQrCodeData] = useState(null); // 存储QR码数据
   const [showQrCode, setShowQrCode] = useState(false); // 显示QR码模态框
+
+  // Data comparison state for DEV mode
+  const [showDataComparison, setShowDataComparison] = useState(__DEV__ ? false : false);
+  const [comparisonData, setComparisonData] = useState(null);
   const webViewRef = useRef(null);
 
   // 解析姓名
@@ -319,6 +325,262 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     `;
     webViewRef.current?.injectJavaScript(jsCode);
   };
+
+  // Compare entry data with TDAC submission data
+  const compareEntryDataWithTDAC = React.useCallback(() => {
+    if (!__DEV__ || !debugMode) return;
+
+    try {
+      // Get original entry data
+      const originalData = {
+        passport: passport,
+        destination: destination,
+        travelInfo: travelInfo,
+        formFields: formFields
+      };
+
+      // Generate what will be submitted to TDAC
+      const tdacSubmissionData = generateTDACSubmissionPayload();
+
+      // Create detailed comparison
+      const comparison = {
+        timestamp: new Date().toISOString(),
+        originalEntryData: originalData,
+        tdacSubmissionData: tdacSubmissionData,
+        fieldMappings: createFieldMappingReport(originalData, tdacSubmissionData),
+        validationResults: validateDataTransformation(originalData, tdacSubmissionData),
+        summary: generateComparisonSummary(originalData, tdacSubmissionData)
+      };
+
+      setComparisonData(comparison);
+
+      if (debugMode) {
+        addDebugLog(
+          'validation',
+          'Data comparison completed - check comparison modal for details',
+          {
+            totalFields: Object.keys(comparison.fieldMappings).length,
+            validationPassed: comparison.validationResults.overall,
+            summary: comparison.summary
+          }
+        );
+      }
+
+      console.log('🔍 Data Comparison Generated:', comparison);
+    } catch (error) {
+      console.error('❌ Data comparison failed:', error);
+      if (debugMode) {
+        addDebugLog('error', 'Data comparison failed', { error: error.message });
+      }
+    }
+  }, [passport, destination, travelInfo, formFields, debugMode, addDebugLog]);
+
+  // Generate what would be submitted to TDAC API
+  const generateTDACSubmissionPayload = React.useCallback(() => {
+    try {
+      // Parse form fields into TDAC format
+      const personalInfo = {};
+      const tripInfo = {};
+
+      formFields.forEach(field => {
+        const { field: fieldName, value } = field;
+
+        // Map fields to TDAC format
+        switch (fieldName) {
+          case 'firstName':
+            personalInfo.firstName = value.toUpperCase();
+            break;
+          case 'lastName':
+            personalInfo.familyName = value.toUpperCase();
+            break;
+          case 'passportNo':
+            personalInfo.passportNo = value.toUpperCase();
+            break;
+          case 'nationality':
+            personalInfo.nationalityDesc = value;
+            break;
+          case 'bdDateYear':
+            personalInfo.bdDateYear = value;
+            break;
+          case 'bdDateMonth':
+            personalInfo.bdDateMonth = value.padStart(2, '0');
+            break;
+          case 'bdDateDay':
+            personalInfo.bdDateDay = value.padStart(2, '0');
+            break;
+          case 'gender':
+            personalInfo.gender = value.toUpperCase();
+            break;
+          case 'occupation':
+            personalInfo.occupation = value.toUpperCase();
+            break;
+          case 'flightNumber':
+            tripInfo.flightNo = value ? value.toUpperCase() : '';
+            break;
+          case 'arrivalDate':
+            tripInfo.arrDate = value;
+            break;
+          case 'purpose':
+            tripInfo.traPurposeId = value;
+            break;
+          case 'boardedCountry':
+            tripInfo.countryBoardDesc = value;
+            break;
+          case 'phoneCode':
+            personalInfo.phoneCode = value;
+            break;
+          case 'phoneNo':
+            personalInfo.phoneNo = value;
+            break;
+          case 'address':
+            tripInfo.accAddress = value ? value.toUpperCase() : '';
+            break;
+          case 'province':
+            tripInfo.accProvinceDesc = value;
+            break;
+        }
+      });
+
+      // Add default values for missing fields
+      const payload = {
+        personalInfo: {
+          ...personalInfo,
+          countryResDesc: 'CHINA',
+          cityRes: 'BEIJING',
+          visaNo: '',
+          middleName: ''
+        },
+        tripInfo: {
+          ...tripInfo,
+          deptDate: null,
+          countryBoardCode: 'CHN',
+          traModeId: 'AIR',
+          tranModeId: 'COMMERCIAL FLIGHT',
+          accTypeId: 'HOTEL',
+          accProvinceId: 'BANGKOK',
+          accDistrictId: 'BANG BON',
+          accSubDistrictId: 'BANG BON NUEA',
+          accPostCode: '',
+          notStayInTh: false
+        },
+        healthInfo: {
+          ddcCountryCodes: ''
+        }
+      };
+
+      return payload;
+    } catch (error) {
+      console.error('❌ Failed to generate TDAC payload:', error);
+      return null;
+    }
+  }, [formFields]);
+
+  // Create detailed field mapping report
+  const createFieldMappingReport = React.useCallback((originalData, tdacData) => {
+    const mappings = {};
+
+    // Personal info mappings
+    if (originalData.passport) {
+      mappings.firstName = {
+        source: 'passport.nameEn (first part)',
+        original: originalData.passport.nameEn?.split(' ')[0] || '',
+        tdac: tdacData.personalInfo?.firstName || '',
+        status: 'mapped'
+      };
+
+      mappings.lastName = {
+        source: 'passport.nameEn (remaining parts)',
+        original: originalData.passport.nameEn?.split(' ').slice(1).join(' ') || '',
+        tdac: tdacData.personalInfo?.familyName || '',
+        status: 'mapped'
+      };
+
+      mappings.passportNo = {
+        source: 'passport.passportNo',
+        original: originalData.passport.passportNo || '',
+        tdac: tdacData.personalInfo?.passportNo || '',
+        status: 'mapped'
+      };
+
+      mappings.birthDate = {
+        source: 'passport.birthDate',
+        original: originalData.passport.birthDate || '',
+        tdac: `${tdacData.personalInfo?.bdDateYear || ''}-${tdacData.personalInfo?.bdDateMonth || ''}-${tdacData.personalInfo?.bdDateDay || ''}`,
+        status: 'transformed'
+      };
+    }
+
+    // Travel info mappings
+    if (originalData.travelInfo) {
+      mappings.flightNumber = {
+        source: 'travelInfo.flightNumber',
+        original: originalData.travelInfo.flightNumber || '',
+        tdac: tdacData.tripInfo?.flightNo || '',
+        status: 'mapped'
+      };
+
+      mappings.arrivalDate = {
+        source: 'travelInfo.arrivalDate',
+        original: originalData.travelInfo.arrivalDate || '',
+        tdac: tdacData.tripInfo?.arrDate || '',
+        status: 'mapped'
+      };
+    }
+
+    return mappings;
+  }, []);
+
+  // Validate data transformation
+  const validateDataTransformation = React.useCallback((originalData, tdacData) => {
+    const validations = {
+      personalInfo: {},
+      tripInfo: {},
+      overall: true
+    };
+
+    // Validate personal info
+    if (originalData.passport) {
+      validations.personalInfo.firstName = {
+        valid: tdacData.personalInfo?.firstName === (originalData.passport.nameEn?.split(' ')[0] || '').toUpperCase(),
+        original: originalData.passport.nameEn?.split(' ')[0] || '',
+        tdac: tdacData.personalInfo?.firstName || ''
+      };
+
+      validations.personalInfo.lastName = {
+        valid: tdacData.personalInfo?.familyName === (originalData.passport.nameEn?.split(' ').slice(1).join(' ') || '').toUpperCase(),
+        original: originalData.passport.nameEn?.split(' ').slice(1).join(' ') || '',
+        tdac: tdacData.personalInfo?.familyName || ''
+      };
+
+      validations.personalInfo.passportNo = {
+        valid: tdacData.personalInfo?.passportNo === (originalData.passport.passportNo || '').toUpperCase(),
+        original: originalData.passport.passportNo || '',
+        tdac: tdacData.personalInfo?.passportNo || ''
+      };
+    }
+
+    // Check overall validity
+    validations.overall = Object.values(validations.personalInfo).every(v => v.valid) &&
+                         Object.values(validations.tripInfo).every(v => v.valid);
+
+    return validations;
+  }, []);
+
+  // Generate comparison summary
+  const generateComparisonSummary = React.useCallback((originalData, tdacData) => {
+    const totalFields = Object.keys(createFieldMappingReport(originalData, tdacData)).length;
+    const validationResults = validateDataTransformation(originalData, tdacData);
+    const validFields = Object.values(validationResults.personalInfo).filter(v => v.valid).length +
+                       Object.values(validationResults.tripInfo).filter(v => v.valid).length;
+
+    return {
+      totalFields,
+      validFields,
+      accuracy: totalFields > 0 ? Math.round((validFields / totalFields) * 100) : 0,
+      transformationType: 'WebView to TDAC API',
+      timestamp: new Date().toISOString()
+    };
+  }, [createFieldMappingReport, validateDataTransformation]);
 
   // 检测QR码
   const checkForQRCode = () => {
@@ -1190,6 +1452,166 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
             <View style={styles.bottomPadding} />
           </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Data Comparison Modal (DEV mode only) */}
+      <Modal
+        visible={showDataComparison}
+        animationType="slide"
+        onRequestClose={() => setShowDataComparison(false)}
+        statusBarTranslucent={true}
+      >
+        <SafeAreaView style={styles.comparisonContainer}>
+          <View style={styles.comparisonHeader}>
+            <View style={styles.comparisonHeaderLeft}>
+              <Text style={styles.comparisonTitle}>🔍 Data Comparison</Text>
+              <Text style={styles.comparisonSubtitle}>Entry Info vs TDAC Submission</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowDataComparison(false)}
+              style={styles.comparisonCloseButton}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.comparisonCloseButtonText}>✕ Close</Text>
+            </TouchableOpacity>
+          </View>
+
+          {comparisonData && (
+            <ScrollView style={styles.comparisonContent} showsVerticalScrollIndicator={true}>
+              {/* Summary Section */}
+              <View style={styles.comparisonSection}>
+                <Text style={styles.comparisonSectionTitle}>📊 Summary</Text>
+                <View style={styles.comparisonSummary}>
+                  <View style={styles.comparisonSummaryItem}>
+                    <Text style={styles.comparisonSummaryLabel}>Total Fields:</Text>
+                    <Text style={styles.comparisonSummaryValue}>{comparisonData.summary.totalFields}</Text>
+                  </View>
+                  <View style={styles.comparisonSummaryItem}>
+                    <Text style={styles.comparisonSummaryLabel}>Valid Mappings:</Text>
+                    <Text style={[
+                      styles.comparisonSummaryValue,
+                      { color: comparisonData.summary.accuracy >= 90 ? '#4CAF50' : comparisonData.summary.accuracy >= 70 ? '#FF9800' : '#F44336' }
+                    ]}>
+                      {comparisonData.summary.validFields}/{comparisonData.summary.totalFields} ({comparisonData.summary.accuracy}%)
+                    </Text>
+                  </View>
+                  <View style={styles.comparisonSummaryItem}>
+                    <Text style={styles.comparisonSummaryLabel}>Overall Status:</Text>
+                    <Text style={[
+                      styles.comparisonSummaryValue,
+                      { color: comparisonData.validationResults.overall ? '#4CAF50' : '#F44336' }
+                    ]}>
+                      {comparisonData.validationResults.overall ? '✅ VALID' : '❌ ISSUES'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Field Mappings */}
+              <View style={styles.comparisonSection}>
+                <Text style={styles.comparisonSectionTitle}>🔄 Field Mappings</Text>
+                {Object.entries(comparisonData.fieldMappings).map(([fieldName, mapping]) => (
+                  <View key={fieldName} style={[
+                    styles.comparisonFieldItem,
+                    mapping.status === 'error' && styles.comparisonFieldItemError,
+                    mapping.status === 'transformed' && styles.comparisonFieldItemWarning
+                  ]}>
+                    <View style={styles.comparisonFieldHeader}>
+                      <Text style={styles.comparisonFieldName}>{fieldName}</Text>
+                      <Text style={[
+                        styles.comparisonFieldStatus,
+                        { color: mapping.status === 'mapped' ? '#4CAF50' : mapping.status === 'transformed' ? '#FF9800' : '#F44336' }
+                      ]}>
+                        {mapping.status === 'mapped' ? '✅' : mapping.status === 'transformed' ? '🔄' : '❌'}
+                      </Text>
+                    </View>
+
+                    <View style={styles.comparisonFieldRow}>
+                      <Text style={styles.comparisonFieldLabel}>Source:</Text>
+                      <Text style={styles.comparisonFieldSource}>{mapping.source}</Text>
+                    </View>
+
+                    <View style={styles.comparisonFieldRow}>
+                      <Text style={styles.comparisonFieldLabel}>Original:</Text>
+                      <Text style={styles.comparisonFieldOriginal}>{mapping.original}</Text>
+                    </View>
+
+                    <View style={styles.comparisonFieldRow}>
+                      <Text style={styles.comparisonFieldLabel}>TDAC:</Text>
+                      <Text style={styles.comparisonFieldTdac}>{mapping.tdac}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {/* Validation Results */}
+              <View style={styles.comparisonSection}>
+                <Text style={styles.comparisonSectionTitle}>✨ Validation Results</Text>
+
+                <Text style={styles.comparisonSubSectionTitle}>Personal Information:</Text>
+                {Object.entries(comparisonData.validationResults.personalInfo).map(([field, validation]) => (
+                  <View key={field} style={[
+                    styles.comparisonValidationItem,
+                    !validation.valid && styles.comparisonValidationItemError
+                  ]}>
+                    <Text style={styles.comparisonValidationField}>{field}</Text>
+                    <Text style={[
+                      styles.comparisonValidationStatus,
+                      { color: validation.valid ? '#4CAF50' : '#F44336' }
+                    ]}>
+                      {validation.valid ? '✅' : '❌'}
+                    </Text>
+                    {!validation.valid && (
+                      <View style={styles.comparisonValidationDetails}>
+                        <Text style={styles.comparisonValidationOriginal}>Original: {validation.original}</Text>
+                        <Text style={styles.comparisonValidationTdac}>TDAC: {validation.tdac}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+
+              {/* Complete Payload Preview */}
+              <View style={styles.comparisonSection}>
+                <Text style={styles.comparisonSectionTitle}>📋 Complete TDAC Payload</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.comparisonPayloadScroll}>
+                  <Text style={styles.comparisonPayload}>
+                    {JSON.stringify(comparisonData.tdacSubmissionData, null, 2)}
+                  </Text>
+                </ScrollView>
+              </View>
+
+              {/* Actions */}
+              <View style={styles.comparisonActions}>
+                <TouchableOpacity
+                  style={styles.comparisonRefreshButton}
+                  onPress={() => {
+                    compareEntryDataWithTDAC();
+                    addDebugLog('validation', 'Data comparison refreshed');
+                  }}
+                >
+                  <Text style={styles.comparisonRefreshButtonText}>🔄 Refresh Comparison</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.comparisonExportButton}
+                  onPress={() => {
+                    const exportData = {
+                      comparison: comparisonData,
+                      exportedAt: new Date().toISOString(),
+                      exportVersion: '1.0'
+                    };
+
+                    Clipboard.setString(JSON.stringify(exportData, null, 2));
+                    Alert.alert('✅ Exported', 'Comparison data copied to clipboard');
+                  }}
+                >
+                  <Text style={styles.comparisonExportButtonText}>📋 Export Data</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          )}
         </SafeAreaView>
       </Modal>
 

@@ -252,11 +252,34 @@ class Passport {
    * @returns {number} - Days until expiry (negative if expired)
    */
   daysUntilExpiry() {
-    if (!this.expiryDate) return null;
-    const expiry = new Date(this.expiryDate);
-    const now = new Date();
-    const diffTime = expiry - now;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+   if (!this.expiryDate) return null;
+   const expiry = new Date(this.expiryDate);
+   const now = new Date();
+   const diffTime = expiry - now;
+   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+ }
+
+  /**
+   * Provide a plain serializable snapshot of the passport fields.
+   * @returns {Object} Plain object copy without prototype methods
+   */
+  toPlainObject() {
+    return {
+      id: this.id,
+      userId: this.userId,
+      passportNumber: this.passportNumber,
+      fullName: this.fullName,
+      dateOfBirth: this.dateOfBirth,
+      nationality: this.nationality,
+      gender: this.gender,
+      expiryDate: this.expiryDate,
+      issueDate: this.issueDate,
+      issuePlace: this.issuePlace,
+      photoUri: this.photoUri,
+      isPrimary: this.isPrimary,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
   }
 
   /**

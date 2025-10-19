@@ -17,48 +17,48 @@ const EntryPackStatusBanner = ({
           backgroundColor: colors.success,
           textColor: colors.surface,
           icon: '✓',
-          title: '已提交',
-          description: '入境卡已成功提交',
+          title: 'ส่งแล้ว / Submitted',
+          description: 'ส่งแบบฟอร์มเข้าเมืองเรียบร้อยแล้ว / Entry card submitted successfully',
         };
       case 'superseded':
         return {
           backgroundColor: colors.warning,
           textColor: colors.surface,
           icon: '⚠',
-          title: '需要重新提交',
-          description: '信息已修改，需要重新提交入境卡',
+          title: 'ต้องส่งใหม่ / Resubmission Required',
+          description: 'ข้อมูลถูกแก้ไข ต้องส่งแบบฟอร์มเข้าเมืองใหม่ / Information changed, please resubmit entry card',
         };
       case 'expired':
         return {
           backgroundColor: colors.error,
           textColor: colors.surface,
           icon: '⏰',
-          title: '已过期',
-          description: '入境包已过期',
+          title: 'หมดอายุ / Expired',
+          description: 'ชุดข้อมูลเข้าเมืองหมดอายุ / Entry pack has expired',
         };
       case 'archived':
         return {
           backgroundColor: colors.textSecondary,
           textColor: colors.surface,
           icon: '📁',
-          title: '已归档',
-          description: '入境包已归档到历史记录',
+          title: 'เก็บถาวรแล้ว / Archived',
+          description: 'ชุดข้อมูลถูกเก็บไว้ในประวัติ / Entry pack archived',
         };
       case 'completed':
         return {
           backgroundColor: colors.success,
           textColor: colors.surface,
           icon: '🎉',
-          title: '已完成',
-          description: '已成功入境',
+          title: 'เสร็จสมบูรณ์ / Completed',
+          description: 'ผ่านด่านเข้าเมืองเรียบร้อย / Successfully entered',
         };
       case 'cancelled':
         return {
           backgroundColor: colors.textSecondary,
           textColor: colors.surface,
           icon: '❌',
-          title: '已取消',
-          description: '用户已取消此入境包',
+          title: 'ยกเลิกแล้ว / Cancelled',
+          description: 'ผู้ใช้ยกเลิกชุดข้อมูลนี้แล้ว / Entry pack cancelled by user',
         };
       case 'in_progress':
       default:
@@ -66,8 +66,8 @@ const EntryPackStatusBanner = ({
           backgroundColor: colors.primary,
           textColor: colors.surface,
           icon: '⏳',
-          title: '进行中',
-          description: '入境包准备中',
+          title: 'กำลังดำเนินการ / In Progress',
+          description: 'กำลังเตรียมชุดข้อมูลเข้าเมือง / Entry pack preparing',
         };
     }
   };
@@ -77,13 +77,27 @@ const EntryPackStatusBanner = ({
     
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('zh-CN', {
+      if (Number.isNaN(date.getTime())) return '';
+
+      const thaiDate = `${date.toLocaleDateString('th-TH', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+      })} ${date.toLocaleTimeString('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
-      });
+      })}`;
+
+      const englishDate = `${date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })} ${date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+
+      return `${thaiDate} / ${englishDate}`;
     } catch (error) {
       return dateString;
     }
@@ -112,7 +126,7 @@ const EntryPackStatusBanner = ({
         {submissionDate && (
           <View style={styles.dateRow}>
             <Text style={[styles.dateLabel, { color: statusConfig.textColor }]}>
-              提交时间:
+              เวลาส่ง / Submission Time:
             </Text>
             <Text style={[styles.dateValue, { color: statusConfig.textColor }]}>
               {formatDate(submissionDate)}
@@ -123,7 +137,7 @@ const EntryPackStatusBanner = ({
         {arrivalDate && (
           <View style={styles.dateRow}>
             <Text style={[styles.dateLabel, { color: statusConfig.textColor }]}>
-              入境日期:
+              วันเข้าประเทศ / Arrival Date:
             </Text>
             <Text style={[styles.dateValue, { color: statusConfig.textColor }]}>
               {formatDate(arrivalDate)}
@@ -136,7 +150,7 @@ const EntryPackStatusBanner = ({
       {isReadOnly && (
         <View style={styles.readOnlyIndicator}>
           <Text style={[styles.readOnlyText, { color: statusConfig.textColor }]}>
-            📖 历史记录 - 只读
+            📖 ประวัติ - อ่านอย่างเดียว / History - Read Only
           </Text>
         </View>
       )}
