@@ -17,7 +17,7 @@ const EntryPackDisplay = ({
   onClose,
   isModal = false
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('tdac');
 
   const fallbackHotelText = 'โปรดระบุที่อยู่ที่พัก / Please provide hotel address';
 
@@ -153,42 +153,6 @@ const EntryPackDisplay = ({
         return type ? `${type} / ${type}` : 'อื่น ๆ / Other';
     }
   };
-
-  const renderOverview = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>📋 ภาพรวมชุดข้อมูลเข้าเมือง / Entry Pack Overview</Text>
-
-      <View style={styles.overviewGrid}>
-        <View style={styles.overviewItem}>
-          <Text style={styles.overviewLabel}>หมายเลขบัตรเข้าเมือง</Text>
-          <Text style={styles.overviewValue}>
-            {entryPack.tdacSubmission?.arrCardNo || 'ยังไม่มี / Not available'}
-          </Text>
-        </View>
-
-        <View style={styles.overviewItem}>
-          <Text style={styles.overviewLabel}>วันเข้าประเทศ</Text>
-          <Text style={styles.overviewValue}>
-            {formatBilingualDate(travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate)}
-          </Text>
-        </View>
-
-        <View style={styles.overviewItem}>
-          <Text style={styles.overviewLabel}>ยอดรวมเงินทุน</Text>
-          <Text style={styles.overviewValue}>
-            {formatBilingualCurrency(totalFunds)}
-          </Text>
-        </View>
-
-        <View style={styles.overviewItem}>
-          <Text style={styles.overviewLabel}>หมายเลขหนังสือเดินทาง</Text>
-          <Text style={styles.overviewValue}>
-            {entryPack?.passport?.passportNumber || personalInfo?.passportNumber || 'ยังไม่ได้กรอก / Not provided'}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
 
   const renderPersonalInfo = () => (
     <View style={styles.section}>
@@ -382,8 +346,6 @@ const EntryPackDisplay = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'overview':
-        return renderOverview();
       case 'personal':
         return renderPersonalInfo();
       case 'travel':
@@ -395,16 +357,15 @@ const EntryPackDisplay = ({
       case 'tips':
         return renderImmigrationTips();
       default:
-        return renderOverview();
+        return renderTDACInfo();
     }
   };
 
   const tabs = [
-    { key: 'overview', label: 'ภาพรวม', labelEn: 'Overview' },
+    { key: 'tdac', label: 'บัตร TDAC', labelEn: 'TDAC' },
     { key: 'personal', label: 'ข้อมูลส่วนตัว', labelEn: 'Personal' },
     { key: 'travel', label: 'ข้อมูลการเดินทาง', labelEn: 'Travel' },
     { key: 'funds', label: 'เงินทุน', labelEn: 'Funds' },
-    { key: 'tdac', label: 'บัตร TDAC', labelEn: 'TDAC' },
     { key: 'tips', label: 'คำถาม-คำตอบ', labelEn: 'FAQs' },
   ];
 
@@ -546,28 +507,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: spacing.md,
   },
-  overviewGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  overviewItem: {
-    width: '48%',
-    backgroundColor: colors.background,
-    padding: spacing.md,
-    borderRadius: 12,
-    marginBottom: spacing.sm,
-  },
-  overviewLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  overviewValue: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '600',
-  },
+
   infoGrid: {
     backgroundColor: colors.background,
     borderRadius: 12,

@@ -377,7 +377,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const getSmartButtonConfig = () => {
     if (totalCompletionPercent >= 100) {
       return {
-        label: '开始泰国之旅！🌴',
+        label: '准备入境包',
         variant: 'primary',
         style: styles.primaryButton,
         icon: '🚀',
@@ -2779,6 +2779,8 @@ const normalizeFundItem = useCallback((item) => ({
               }
             </Text>
           )}
+
+
         </View>
       </ScrollView>
 
@@ -3303,15 +3305,6 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 2,
   },
-  nextStepHint: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    fontStyle: 'italic',
-    fontSize: 12,
-    paddingHorizontal: spacing.md,
-  },
   // Enhanced visual feedback styles
   sectionContainerActive: {
     borderColor: colors.primary,
@@ -3348,6 +3341,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 10,
   },
+  nextStepHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontStyle: 'italic',
+    lineHeight: 16,
+  },
+
+
 });
 
 export default ThailandTravelInfoScreen;

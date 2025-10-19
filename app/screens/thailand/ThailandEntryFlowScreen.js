@@ -15,7 +15,7 @@ import {
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
-import CategoryStatusList from '../../components/CategoryStatusList';
+
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing } from '../../theme';
@@ -41,23 +41,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [entryPackStatus, setEntryPackStatus] = useState(null);
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
 
-  const categoriesSectionTitle = useMemo(() => {
-    const translation = t('thailand.entryFlow.categories');
-    if (typeof translation === 'string') {
-      return translation;
-    }
 
-    const fallback = t('thailand.entryFlow.categoriesTitle', { defaultValue: '' });
-    if (fallback) {
-      return fallback;
-    }
-
-    if (language?.startsWith('zh')) {
-      return language === 'zh-TW' ? '泰国准备项目 🌴' : '泰国准备项目 🌴';
-    }
-
-    return 'Thailand Preparation Items 🌴';
-  }, [t, language]);
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
@@ -387,11 +371,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
-  const handleShareWithFriends = () => {
-    // Share functionality (placeholder for now)
-    // This could generate a QR code or shareable link
-    console.log('Share with friends - to be implemented');
-  };
+
 
   const handleCategoryPress = (category) => {
     // Navigate back to ThailandTravelInfoScreen with the specific section expanded
@@ -466,7 +446,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     // If completion is high enough, show entry pack option
     if (completionPercent >= 80 && isComplete && canSubmitNow) {
       return {
-        title: '准备好入境泰国了！🌴',
+        title: '提交入境卡',
         action: 'submit_tdac',
         disabled: false,
         variant: 'primary'
@@ -506,7 +486,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       };
     } else {
       return {
-        title: '准备好入境泰国了！🌴',
+        title: '提交入境卡',
         action: 'submit_tdac',
         disabled: false,
         variant: 'primary'
@@ -626,9 +606,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
               <>
                 {/* Status Cards Section */}
                 <View style={styles.statusSection}>
-              <Text style={styles.sectionTitle}>
-                我的泰国准备进度 🌴
-              </Text>
+
               
               {/* Completion Summary Card */}
               <CompletionSummaryCard 
@@ -637,17 +615,52 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                 showProgressBar={true}
               />
 
-              {/* Category Status List */}
-              <View style={styles.categoriesContainer}>
-                <Text style={styles.categoriesTitle}>
-                  {categoriesSectionTitle}
-                </Text>
-                <CategoryStatusList 
-                  categories={categories}
-                  onCategoryPress={handleCategoryPress}
-                  showMissingFields={true}
-                />
-              </View>
+              {/* Additional Action Buttons - Show when completion is high */}
+              {completionPercent >= 80 && (
+                <View style={styles.additionalActionsContainer}>
+                  <TouchableOpacity 
+                    style={styles.additionalActionButton}
+                    onPress={() => {
+                      // Navigate back to allow editing
+                      Alert.alert(
+                        '继续编辑',
+                        '您可以继续修改任何信息，所有更改都会自动保存。',
+                        [
+                          { text: '好的', style: 'default' }
+                        ]
+                      );
+                    }}
+                  >
+                    <Text style={styles.additionalActionIcon}>✏️</Text>
+                    <Text style={styles.additionalActionText}>再改改</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.additionalActionButton}
+                    onPress={() => {
+                      // Show sharing options
+                      Alert.alert(
+                        '寻求帮助',
+                        '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
+                        [
+                          { 
+                            text: '截图分享', 
+                            onPress: () => {
+                              // Here you could implement screenshot functionality
+                              Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
+                            }
+                          },
+                          { text: '取消', style: 'cancel' }
+                        ]
+                      );
+                    }}
+                  >
+                    <Text style={styles.additionalActionIcon}>👥</Text>
+                    <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
             </View>
 
             {/* Countdown Section */}
@@ -667,86 +680,66 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
             {/* Action Buttons Section */}
             <View style={styles.actionSection}>
-              <Text style={styles.sectionTitle}>
-                接下来做什么？🌟
-              </Text>
-              
-              {/* Action Buttons */}
-              <View style={styles.actionButtonsContainer}>
-                {/* Smart Primary Action Button */}
-                <View style={styles.primaryActionContainer}>
-                  {(() => {
-                    const buttonState = getPrimaryButtonState();
-                    return (
-                      <View>
-                        <Button
-                          title={buttonState.title}
-                          onPress={handlePrimaryAction}
-                          variant={buttonState.variant}
-                          disabled={buttonState.disabled}
-                          style={styles.primaryActionButton}
-                        />
-                        {buttonState.subtitle && (
-                          <Text style={styles.primaryActionSubtitle}>
-                            {buttonState.subtitle}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  })()}
+              {/* Smart Primary Action Button */}
+              <View style={styles.primaryActionContainer}>
+                {(() => {
+                  const buttonState = getPrimaryButtonState();
+                  return (
+                    <View>
+                      <Button
+                        title={buttonState.title}
+                        onPress={handlePrimaryAction}
+                        variant={buttonState.variant}
+                        disabled={buttonState.disabled}
+                        style={styles.primaryActionButton}
+                      />
+                      {buttonState.subtitle && (
+                        <Text style={styles.primaryActionSubtitle}>
+                          {buttonState.subtitle}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })()}
+              </View>
+
+              {/* Entry Guide Button */}
+              <TouchableOpacity
+                style={styles.entryGuideButton}
+                onPress={() => navigation.navigate('ThailandEntryGuide', {
+                  passport: passportParam,
+                  destination: route.params?.destination,
+                  completionData: userData
+                })}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.entryGuideIcon}>🗺️</Text>
+                <View style={styles.entryGuideContent}>
+                  <Text style={styles.entryGuideTitle}>
+                    查看泰国入境指引
+                  </Text>
+                  <Text style={styles.entryGuideSubtitle}>
+                    6步骤完整入境流程指南
+                  </Text>
                 </View>
-
-                {/* Entry Guide Button - New Addition */}
-                <TouchableOpacity
-                  style={styles.entryGuideButton}
-                  onPress={() => navigation.navigate('ThailandEntryGuide', {
-                    passport: passportParam,
-                    destination: route.params?.destination,
-                    completionData: userData
-                  })}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.entryGuideIcon}>🗺️</Text>
-                  <View style={styles.entryGuideContent}>
-                    <Text style={styles.entryGuideTitle}>
-                      查看泰国入境指引
-                    </Text>
-                    <Text style={styles.entryGuideSubtitle}>
-                      6步骤完整入境流程指南
-                    </Text>
-                  </View>
-                  <Text style={styles.entryGuideArrow}>›</Text>
-                </TouchableOpacity>
-                
-                {/* Secondary Actions */}
+                <Text style={styles.entryGuideArrow}>›</Text>
+              </TouchableOpacity>
+              
+              {/* Secondary Actions - Redesigned */}
+              {completionPercent > 50 && (
                 <View style={styles.secondaryActionsContainer}>
-                  {/* Preview Entry Card Button - Available when completion > 50% */}
-                  {completionPercent > 50 && (
-                    <TouchableOpacity 
-                      style={styles.secondaryActionButton}
-                      onPress={handlePreviewEntryCard}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.secondaryActionIcon}>👁️</Text>
-                      <Text style={styles.secondaryActionText}>
-                        看看我的通关包 📋
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Share with Friends Button - Optional */}
                   <TouchableOpacity 
                     style={styles.secondaryActionButton}
-                    onPress={handleShareWithFriends}
+                    onPress={handlePreviewEntryCard}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.secondaryActionIcon}>📤</Text>
+                    <Text style={styles.secondaryActionIcon}>👁️</Text>
                     <Text style={styles.secondaryActionText}>
-                      和朋友一起准备 📤
+                      看看我的通关包
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              )}
             </View>
               </>
             )}
@@ -830,20 +823,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 
-  // Categories Section Styles
-  categoriesContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  categoriesTitle: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
+
 
   // Countdown Section Styles
   countdownSection: {
@@ -1025,6 +1005,39 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.textSecondary,
     fontSize: 18,
+  },
+
+  // Additional action buttons styles
+  additionalActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  additionalActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  additionalActionIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  additionalActionText: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '500',
+    fontSize: 13,
   },
 });
 
