@@ -563,16 +563,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           <View style={styles.additionalActionsContainer}>
             <TouchableOpacity
               style={styles.additionalActionButton}
-              onPress={() => {
-                // Navigate back to allow editing
-                Alert.alert(
-                  '继续编辑',
-                  '您可以继续修改任何信息，所有更改都会自动保存。',
-                  [
-                    { text: '好的', style: 'default' }
-                  ]
-                );
-              }}
+              onPress={handleEditInformation}
             >
               <Text style={styles.additionalActionIcon}>✏️</Text>
               <Text style={styles.additionalActionText}>再改改</Text>

@@ -94,24 +94,34 @@ const HomeScreen = ({ navigation }) => {
 
   // Intelligent country prioritization based on visa requirements
   const getVisaRequirement = (countryId) => {
-    // Accurate visa requirements for Chinese passport holders (中国护照)
-    const visaFreeDestinations = ['th', 'my', 'sg']; // Thailand (60天免签), Malaysia (30天免签), Singapore (30天免签)
-    const visaOnArrival = []; // Currently no destinations with visa on arrival
-    const visaRequired = ['hk', 'jp', 'tw', 'kr', 'us']; // Hong Kong (需要港澳通行证), Japan, Taiwan, Korea, USA (都需要签证)
+    // Accurate visa and permit requirements for Chinese passport holders (中国护照)
+    const requirementMap = {
+      th: 'visa_free',            // 泰国免签
+      my: 'visa_free',            // 马来西亚免签
+      sg: 'visa_free',            // 新加坡免签
+      hk: 'hk_permit',            // 香港需要港澳通行证
+      tw: 'tw_entry_permit',      // 台湾需要入台证
+      jp: 'visa_required',        // 日本需要签证
+      kr: 'visa_required',        // 韩国需要签证
+      us: 'visa_required',        // 美国需要签证
+    };
 
-    if (visaFreeDestinations.includes(countryId)) return 'visa_free';
-    if (visaOnArrival.includes(countryId)) return 'visa_on_arrival';
-    if (visaRequired.includes(countryId)) return 'visa_required';
-    return 'unknown';
+    return requirementMap[countryId] || 'unknown';
   };
 
   const getVisaPriority = (requirement) => {
-    switch (requirement) {
-      case 'visa_free': return 1; // Highest priority
-      case 'visa_on_arrival': return 2;
-      case 'visa_required': return 3; // Lowest priority
-      default: return 4;
-    }
+    const priorityMap = {
+      visa_free: 1,           // 最容易安排的免签目的地
+      visa_on_arrival: 2,     // 落地签
+      evisa: 3,               // 电子签证
+      eta: 3,                 // ETA电子旅行许可
+      hk_permit: 3,           // 港澳通行证
+      tw_entry_permit: 3,     // 入台证
+      visa_required: 4,       // 传统签证
+      unknown: 5,
+    };
+
+    return priorityMap[requirement] ?? 5;
   };
 
   const localizedHotCountries = useMemo(() => {

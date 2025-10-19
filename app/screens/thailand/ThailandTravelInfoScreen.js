@@ -14,6 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
@@ -2072,11 +2073,18 @@ const normalizeFundItem = useCallback((item) => ({
         scrollEventThrottle={100}
       >
         {/* Enhanced Hero Section for Border Crossing Beginners */}
-        <View style={styles.heroSection}>
+        <LinearGradient
+          colors={['#1a3568', '#102347']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroSection}
+        >
           <View style={styles.heroContent}>
             <Text style={styles.heroFlag}>🇹🇭</Text>
-            <Text style={styles.heroTitle}>泰国入境准备指南</Text>
-            <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
+            <View style={styles.heroHeading}>
+              <Text style={styles.heroTitle}>泰国入境准备指南</Text>
+              <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
+            </View>
 
             {/* Beginner-Friendly Value Proposition */}
             <View style={styles.valueProposition}>
@@ -2101,7 +2109,7 @@ const normalizeFundItem = useCallback((item) => ({
               </Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Progress Overview Card */}
         <View style={styles.progressOverviewCard}>
@@ -3521,16 +3529,18 @@ const styles = StyleSheet.create({
 
   // New styles for beginner-friendly UX improvements
   heroSection: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    borderRadius: 16,
-    padding: spacing.lg,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderRadius: 20,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    shadowColor: 'rgba(16, 35, 71, 0.6)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   heroContent: {
     alignItems: 'center',
@@ -3539,55 +3549,92 @@ const styles = StyleSheet.create({
     fontSize: 48,
     marginBottom: spacing.sm,
   },
+  heroHeading: {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
   heroTitle: {
     ...typography.h2,
     color: colors.white,
     fontWeight: '700',
     marginBottom: spacing.xs,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   heroSubtitle: {
     ...typography.body1,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     marginBottom: spacing.md,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   valueProposition: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
     marginBottom: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    padding: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   valueItem: {
     alignItems: 'center',
     flex: 1,
+    paddingHorizontal: spacing.xs,
   },
   valueIcon: {
     fontSize: 20,
     marginBottom: spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   valueText: {
     ...typography.caption,
     color: colors.white,
     textAlign: 'center',
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   beginnerTip: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    padding: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     alignItems: 'flex-start',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
   tipIcon: {
     fontSize: 20,
     marginRight: spacing.sm,
     marginTop: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   tipText: {
     ...typography.body2,
     color: colors.white,
     flex: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
     lineHeight: 20,
   },
   progressOverviewCard: {
