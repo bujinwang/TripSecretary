@@ -53,23 +53,32 @@ const FieldWarningIcon = ({ hasWarning, hasError }) => {
 };
 
 // Enhanced Input wrapper that shows warning icons and highlights last edited field
-const InputWithValidation = ({ 
-  label, 
-  value, 
-  onChangeText, 
-  onBlur, 
-  error, 
-  errorMessage, 
+const InputWithValidation = ({
+  label,
+  value,
+  onChangeText,
+  onBlur,
+  error,
+  errorMessage,
   warning,
   warningMessage,
   fieldName,
   lastEditedField,
-  ...props 
+  required = false,
+  optional = false,
+  ...props
 }) => {
   const { t } = useLocale();
   const hasError = error && errorMessage;
   const hasWarning = warning && warningMessage && !hasError;
   const isLastEdited = fieldName && lastEditedField === fieldName;
+
+  // Determine if field is required or optional
+  const getFieldRequirementText = () => {
+    if (required) return <Text style={styles.requiredText}>*</Text>;
+    if (optional) return <Text style={styles.optionalText}>（可选）</Text>;
+    return null;
+  };
   
   return (
     <View style={[
@@ -77,13 +86,18 @@ const InputWithValidation = ({
       isLastEdited && styles.lastEditedField
     ]}>
       <View style={styles.inputLabelContainer}>
-        <Text style={[
-          styles.inputLabel,
-          isLastEdited && styles.lastEditedLabel
-        ]}>
-          {label}
-          {isLastEdited && ' ✨'}
-        </Text>
+        <View style={styles.labelRow}>
+          <Text style={[
+            styles.inputLabel,
+            isLastEdited && styles.lastEditedLabel
+          ]}>
+            {label}
+            {isLastEdited && ' ✨'}
+          </Text>
+          <View style={styles.requirementIndicator}>
+            {getFieldRequirementText()}
+          </View>
+        </View>
         <FieldWarningIcon hasWarning={hasWarning} hasError={hasError} />
       </View>
       <Input
@@ -168,6 +182,49 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [personalInfoData, setPersonalInfoData] = useState(null);
   const [entryData, setEntryData] = useState(null);
 
+  // Smart defaults for common scenarios
+  const getSmartDefaults = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    return {
+      travelPurpose: 'HOLIDAY', // Most common purpose
+      accommodationType: 'HOTEL', // Most common accommodation
+      arrivalDate: tomorrow.toISOString().split('T')[0], // Default to tomorrow
+      departureDate: nextWeek.toISOString().split('T')[0], // Default to 1 week later
+      boardingCountry: passport?.nationality || 'CHN', // Default to passport nationality
+    };
+  };
+
+  // Auto-complete suggestions for common scenarios
+  const getAutoCompleteSuggestions = (fieldType, currentValue) => {
+    const suggestions = {
+      flightNumber: [
+        'TG123', 'TG456', 'CX123', 'CX456', 'MU123', 'MU456',
+        'CA123', 'CA456', 'ZH123', 'ZH456', 'MF123', 'MF456'
+      ],
+      hotelName: [
+        'Bangkok Marriott Hotel', 'Chiang Mai Night Bazaar Hotel',
+        'Phuket Patong Beach Hotel', 'Hua Hin Hilton Resort',
+        'Centara Grand', 'Anantara', 'Mandarin Oriental',
+        'Shangri-La Hotel', 'JW Marriott', 'Hilton'
+      ],
+      occupation: [
+        '软件工程师', '学生', '教师', '医生', '律师', '会计师',
+        '销售经理', '退休人员', '家庭主妇', '自由职业者'
+      ]
+    };
+
+    if (!currentValue || currentValue.length < 2) return [];
+
+    return suggestions[fieldType]?.filter(item =>
+      item.toLowerCase().includes(currentValue.toLowerCase())
+    ).slice(0, 5) || [];
+  };
+
   // UI State (loaded from database, not from route params)
   const [passportNo, setPassportNo] = useState('');
   const [visaNumber, setVisaNumber] = useState('');
@@ -192,15 +249,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState(null);
 
-  // Travel Info State
+  // Travel Info State - with smart defaults
+  const smartDefaults = getSmartDefaults();
   const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
-  const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
+  const [boardingCountry, setBoardingCountry] = useState(smartDefaults.boardingCountry); // 登机国家或地区
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalArrivalDate, setArrivalArrivalDate] = useState('');
+  const [arrivalArrivalDate, setArrivalArrivalDate] = useState(smartDefaults.arrivalDate);
   const [previousArrivalDate, setPreviousArrivalDate] = useState('');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
-  const [departureDepartureDate, setDepartureDepartureDate] = useState('');
+  const [departureDepartureDate, setDepartureDepartureDate] = useState(smartDefaults.departureDate);
   const [isTransitPassenger, setIsTransitPassenger] = useState(false);
   const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
   const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
@@ -2003,9 +2061,9 @@ const normalizeFundItem = useCallback((item) => ({
         </View>
       )}
 
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        showsVerticalScrollIndicator={false} 
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
         onScroll={(event) => {
           const currentScrollPosition = event.nativeEvent.contentOffset.y;
@@ -2013,10 +2071,68 @@ const normalizeFundItem = useCallback((item) => ({
         }}
         scrollEventThrottle={100}
       >
-        <View style={styles.titleSection}>
-          <Text style={styles.flag}>🇹🇭</Text>
-          <Text style={styles.title}>欢迎来到泰国！🌺</Text>
-          <Text style={styles.subtitle}>让我们准备好你的泰国冒险之旅</Text>
+        {/* Enhanced Hero Section for Border Crossing Beginners */}
+        <View style={styles.heroSection}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroFlag}>🇹🇭</Text>
+            <Text style={styles.heroTitle}>泰国入境准备指南</Text>
+            <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
+
+            {/* Beginner-Friendly Value Proposition */}
+            <View style={styles.valueProposition}>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>⏱️</Text>
+                <Text style={styles.valueText}>3分钟完成</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🔒</Text>
+                <Text style={styles.valueText}>100%隐私保护</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🎯</Text>
+                <Text style={styles.valueText}>避免通关延误</Text>
+              </View>
+            </View>
+
+            <View style={styles.beginnerTip}>
+              <Text style={styles.tipIcon}>💡</Text>
+              <Text style={styles.tipText}>
+                第一次过泰国海关？我们会一步步教你准备所有必需文件，确保顺利通关！
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Progress Overview Card */}
+        <View style={styles.progressOverviewCard}>
+          <Text style={styles.progressTitle}>准备进度</Text>
+          <View style={styles.progressSteps}>
+            <View style={[styles.progressStep, totalCompletionPercent >= 25 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>👤</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 25 && styles.stepTextActive]}>
+                个人信息 {totalCompletionPercent >= 25 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 50 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>✈️</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 50 && styles.stepTextActive]}>
+                旅行信息 {totalCompletionPercent >= 50 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 75 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>🏨</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 75 && styles.stepTextActive]}>
+                住宿信息 {totalCompletionPercent >= 75 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 100 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>💰</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 100 && styles.stepTextActive]}>
+                资金证明 {totalCompletionPercent >= 100 ? '✓' : ''}
+              </Text>
+            </View>
+          </View>
+        </View>
           
           {/* Enhanced Save Status Indicator */}
           {saveStatus && (
@@ -2057,7 +2173,6 @@ const normalizeFundItem = useCallback((item) => ({
               })}
             </Text>
           )}
-        </View>
 
         {/* Privacy Notice */}
         <View style={styles.privacyBox}>
@@ -2067,24 +2182,32 @@ const normalizeFundItem = useCallback((item) => ({
           </Text>
         </View>
 
+        {/* Enhanced Personal Information Section */}
         <CollapsibleSection
-          title="👤 关于我自己"
-          subtitle="让我们认识一下你"
+          title="👤 个人信息"
+          subtitle="泰国海关需要核实你的身份"
           onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
+          {/* Border Crossing Context for Personal Info */}
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>🛂</Text>
+            <Text style={styles.sectionIntroText}>
+              海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！
+            </Text>
+          </View>
            <View style={styles.inputWithValidationContainer}>
              <View style={styles.inputLabelContainer}>
-               <Text style={styles.inputLabel}>Full Name</Text>
+               <Text style={styles.inputLabel}>护照上的姓名</Text>
                <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!errors.fullName} />
              </View>
              <PassportNameInput
                value={fullName}
                onChangeText={setFullName}
                onBlur={() => handleFieldBlur('fullName', fullName)}
-               helpText="请填写汉语拼音（例如：LI, MAO）- 不要输入中文字符"
+               helpText="填写护照上显示的英文姓名，例如：LI, MAO（姓在前，名在后）"
                error={!!errors.fullName}
                errorMessage={errors.fullName}
              />
@@ -2103,34 +2226,36 @@ const normalizeFundItem = useCallback((item) => ({
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
-           <InputWithValidation 
-             label="护照号" 
-             value={passportNo} 
-             onChangeText={setPassportNo} 
-             onBlur={() => handleFieldBlur('passportNo', passportNo)} 
-             helpText="请输入您的护照号码" 
-             error={!!errors.passportNo} 
+           <InputWithValidation
+             label="护照号码"
+             value={passportNo}
+             onChangeText={setPassportNo}
+             onBlur={() => handleFieldBlur('passportNo', passportNo)}
+             helpText="护照号码通常是8-9位字母和数字的组合，输入时会自动转大写"
+             error={!!errors.passportNo}
              errorMessage={errors.passportNo}
              warning={!!warnings.passportNo}
              warningMessage={warnings.passportNo}
-             autoCapitalize="characters" 
-             testID="passport-number-input" 
+             required={true}
+             autoCapitalize="characters"
+             testID="passport-number-input"
            />
-           <InputWithValidation 
-             label="签证号（如有）" 
-             value={visaNumber} 
-             onChangeText={(text) => setVisaNumber(text.toUpperCase())} 
-             onBlur={() => handleFieldBlur('visaNumber', visaNumber)} 
-             helpText="如有签证，请填写签证号码（仅限字母或数字）" 
-             error={!!errors.visaNumber} 
+           <InputWithValidation
+             label="签证号（如有）"
+             value={visaNumber}
+             onChangeText={(text) => setVisaNumber(text.toUpperCase())}
+             onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
+             helpText="如有签证，请填写签证号码（仅限字母或数字）"
+             error={!!errors.visaNumber}
              errorMessage={errors.visaNumber}
              warning={!!warnings.visaNumber}
              warningMessage={warnings.visaNumber}
-             autoCapitalize="characters" 
-             autoCorrect={false} 
-             autoComplete="off" 
-             spellCheck={false} 
-             keyboardType="ascii-capable" 
+             optional={true}
+             autoCapitalize="characters"
+             autoCorrect={false}
+             autoComplete="off"
+             spellCheck={false}
+             keyboardType="ascii-capable"
            />
            <DateTimeInput
              label="出生日期"
@@ -2162,26 +2287,34 @@ const normalizeFundItem = useCallback((item) => ({
            />
          </CollapsibleSection>
 
+        {/* Enhanced Contact Information Section */}
         <CollapsibleSection
           title="📞 联系方式"
-          subtitle="泰国怎么找到你"
+          subtitle="泰国海关可能需要联系你"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
-           <InputWithValidation 
-             label="职业" 
-             value={occupation} 
-             onChangeText={setOccupation} 
-             onBlur={() => handleFieldBlur('occupation', occupation)} 
-             helpText="请输入您的职业 (请使用英文)" 
-             error={!!errors.occupation} 
+          {/* Border Crossing Context for Contact Info */}
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>📱</Text>
+            <Text style={styles.sectionIntroText}>
+              如果海关有疑问，他们可能会打电话给你。提供常用的手机号码和邮箱，确保能联系到你。
+            </Text>
+          </View>
+           <InputWithValidation
+             label="职业"
+             value={occupation}
+             onChangeText={setOccupation}
+             onBlur={() => handleFieldBlur('occupation', occupation)}
+             helpText="填写你的工作职位，例如：软件工程师、学生、退休人员等（用英文）"
+             error={!!errors.occupation}
              errorMessage={errors.occupation}
              warning={!!warnings.occupation}
              warningMessage={warnings.occupation}
              fieldName="occupation"
              lastEditedField={lastEditedField}
-             autoCapitalize="words" 
+             autoCapitalize="words"
            />
            <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="words" />
            <NationalitySelector
@@ -2241,13 +2374,21 @@ const normalizeFundItem = useCallback((item) => ({
            </View>
          </CollapsibleSection>
 
+        {/* Enhanced Funds Section */}
         <CollapsibleSection
           title="💰 资金证明"
-          subtitle="告诉泰国你有足够的旅行资金"
+          subtitle="证明你有足够资金在泰国旅行"
           isExpanded={expandedSection === 'funds'}
           onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
         >
+          {/* Border Crossing Context for Funds */}
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>💳</Text>
+            <Text style={styles.sectionIntroText}>
+              泰国海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用，通常是每天至少500泰铢。
+            </Text>
+          </View>
           <View style={styles.fundActions}>
             <Button title="添加现金" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
             <Button title="添加信用卡照片" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
@@ -2354,28 +2495,36 @@ const normalizeFundItem = useCallback((item) => ({
           )}
         </CollapsibleSection>
 
+        {/* Enhanced Travel Information Section */}
         <CollapsibleSection
           title="✈️ 旅行计划"
-          subtitle="你的泰国冒险之旅"
+          subtitle="告诉泰国你的旅行安排"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
+          {/* Border Crossing Context for Travel Info */}
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>✈️</Text>
+            <Text style={styles.sectionIntroText}>
+              海关想知道你为什么来泰国、何时来、何时走、在哪里住。这有助于他们确认你是合法游客。
+            </Text>
+          </View>
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>旅行目的</Text>
+            <Text style={styles.fieldLabel}>为什么来泰国？</Text>
             <View style={styles.optionsContainer}>
               {[
-                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️' },
-                { value: 'MEETING', label: '会议', icon: '👔' },
-                { value: 'SPORTS', label: '体育活动', icon: '⚽' },
-                { value: 'BUSINESS', label: '商务', icon: '💼' },
-                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁' },
-                { value: 'CONVENTION', label: '会展', icon: '🎪' },
-                { value: 'EDUCATION', label: '教育', icon: '📚' },
-                { value: 'EMPLOYMENT', label: '就业', icon: '💻' },
-                { value: 'EXHIBITION', label: '展览', icon: '🎨' },
-                { value: 'MEDICAL', label: '医疗', icon: '🏥' },
-                { value: 'OTHER', label: '其他', icon: '✏️' },
+                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️', tip: '最受欢迎的选择！' },
+                { value: 'MEETING', label: '会议', icon: '👔', tip: '商务会议或活动' },
+                { value: 'SPORTS', label: '体育活动', icon: '⚽', tip: '运动或比赛' },
+                { value: 'BUSINESS', label: '商务', icon: '💼', tip: '商务考察或工作' },
+                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁', tip: '公司奖励旅行' },
+                { value: 'CONVENTION', label: '会展', icon: '🎪', tip: '参加会议或展览' },
+                { value: 'EDUCATION', label: '教育', icon: '📚', tip: '学习或培训' },
+                { value: 'EMPLOYMENT', label: '就业', icon: '💻', tip: '工作签证' },
+                { value: 'EXHIBITION', label: '展览', icon: '🎨', tip: '参观展览或展会' },
+                { value: 'MEDICAL', label: '医疗', icon: '🏥', tip: '医疗旅游或治疗' },
+                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
               ].map((option) => {
                 const isActive = travelPurpose === option.value;
                 return (
@@ -2560,15 +2709,15 @@ const normalizeFundItem = useCallback((item) => ({
 
           {!isTransitPassenger && (
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>住宿类型</Text>
+            <Text style={styles.fieldLabel}>住在哪里？</Text>
             <View style={styles.optionsContainer}>
               {[
-                { value: 'HOTEL', label: '酒店', icon: '🏨' },
-                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠' },
-                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡' },
-                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥' },
-                { value: 'APARTMENT', label: '公寓', icon: '🏢' },
-                { value: 'OTHER', label: '其他', icon: '✏️' },
+                { value: 'HOTEL', label: '酒店', icon: '🏨', tip: '最常见的选择' },
+                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠', tip: '经济实惠，交朋友' },
+                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡', tip: '体验当地生活' },
+                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥', tip: '住在朋友家' },
+                { value: 'APARTMENT', label: '公寓', icon: '🏢', tip: '短期租住民宿' },
+                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
               ].map((option) => {
                 const isActive = accommodationType === option.value;
                 return (
@@ -2778,6 +2927,19 @@ const normalizeFundItem = useCallback((item) => ({
                 : '✈️ 最后一步，分享你的旅行计划吧！'
               }
             </Text>
+          )}
+
+          {/* Cultural Tips for Border Crossing Beginners */}
+          {totalCompletionPercent >= 80 && (
+            <View style={styles.culturalTipsCard}>
+              <Text style={styles.culturalTipsTitle}>🧡 通关小贴士</Text>
+              <Text style={styles.culturalTipsText}>
+                • 海关官员可能会问你来泰国的目的，保持微笑礼貌回答{'\n'}
+                • 准备好返程机票证明你不会逾期停留{'\n'}
+                • 保持冷静，海关检查是正常程序{'\n'}
+                • 如果听不懂，可以礼貌地说"Can you speak English?"
+              </Text>
+            </View>
           )}
 
 
@@ -3247,10 +3409,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   inputLabelContainer: {
+    marginBottom: spacing.xs,
+  },
+  labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.xs,
+    width: '100%',
+  },
+  requirementIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputLabel: {
     ...typography.body1,
@@ -3350,7 +3519,175 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
+  // New styles for beginner-friendly UX improvements
+  heroSection: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 16,
+    padding: spacing.lg,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroFlag: {
+    fontSize: 48,
+    marginBottom: spacing.sm,
+  },
+  heroTitle: {
+    ...typography.h2,
+    color: colors.white,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    ...typography.body1,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  valueProposition: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: spacing.md,
+  },
+  valueItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  valueIcon: {
+    fontSize: 20,
+    marginBottom: spacing.xs,
+  },
+  valueText: {
+    ...typography.caption,
+    color: colors.white,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  beginnerTip: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: spacing.md,
+    alignItems: 'flex-start',
+  },
+  tipIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+    marginTop: 2,
+  },
+  tipText: {
+    ...typography.body2,
+    color: colors.white,
+    flex: 1,
+    lineHeight: 20,
+  },
+  progressOverviewCard: {
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  progressSteps: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  progressStep: {
+    alignItems: 'center',
+    flex: 1,
+    opacity: 0.4,
+  },
+  progressStepActive: {
+    opacity: 1,
+  },
+  stepIcon: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
+  stepText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontSize: 11,
+  },
+  stepTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  sectionIntro: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    borderRadius: 8,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    alignItems: 'flex-start',
+  },
+  sectionIntroIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+    marginTop: 2,
+  },
+  sectionIntroText: {
+    ...typography.body2,
+    color: colors.primary,
+    flex: 1,
+    lineHeight: 20,
+  },
+  culturalTipsCard: {
+    backgroundColor: '#FFF3CD',
+    borderRadius: 12,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: '#FFEAA7',
+  },
+  culturalTipsTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: spacing.sm,
+  },
+  culturalTipsText: {
+    ...typography.caption,
+    color: '#856404',
+    lineHeight: 20,
+  },
+  requiredText: {
+    ...typography.caption,
+    color: '#e74c3c',
+    fontWeight: '600',
+    marginLeft: spacing.xs,
+  },
+  optionalText: {
+    ...typography.caption,
+    color: '#27ae60',
+    fontWeight: '400',
+    marginLeft: spacing.xs,
+  },
 
-});
+
+ });
 
 export default ThailandTravelInfoScreen;

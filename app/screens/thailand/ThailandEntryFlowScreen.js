@@ -494,6 +494,218 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
+  const hasNoEntryData = completionPercent === 0 && categories.every(cat => cat.completedCount === 0);
+
+  const renderPrimaryAction = () => {
+    const buttonState = getPrimaryButtonState();
+    return (
+      <View>
+        <Button
+          title={buttonState.title}
+          onPress={handlePrimaryAction}
+          variant={buttonState.variant}
+          disabled={buttonState.disabled}
+          style={styles.primaryActionButton}
+        />
+        {buttonState.subtitle && (
+          <Text style={styles.primaryActionSubtitle}>
+            {buttonState.subtitle}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderNoDataState = () => (
+    <View style={styles.noDataContainer}>
+      <Text style={styles.noDataIcon}>📝</Text>
+      <Text style={styles.noDataTitle}>
+        准备开始泰国之旅吧！🌴
+      </Text>
+      <Text style={styles.noDataDescription}>
+        你还没有填写泰国入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境泰国！
+      </Text>
+
+      {/* Example/Tutorial hints */}
+      <View style={styles.noDataHints}>
+        <Text style={styles.noDataHintsTitle}>
+          泰国入境需要准备这些信息 🌺
+        </Text>
+        <View style={styles.noDataHintsList}>
+          <Text style={styles.noDataHint}>• 📘 护照信息 - 让泰国认识你</Text>
+          <Text style={styles.noDataHint}>• 📞 联系方式 - 泰国怎么找到你</Text>
+          <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
+          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
+        </View>
+      </View>
+
+      <Button
+        title="开始我的泰国准备之旅！🇹🇭"
+        onPress={handleEditInformation}
+        variant="primary"
+        style={styles.noDataButton}
+      />
+    </View>
+  );
+
+  const renderPreparedState = () => (
+    <View>
+      {/* Status Cards Section */}
+      <View style={styles.statusSection}>
+        <CompletionSummaryCard
+          completionPercent={completionPercent}
+          status={completionStatus}
+          showProgressBar={true}
+        />
+
+        {/* Additional Action Buttons - Show when completion is high */}
+        {completionPercent >= 80 && (
+          <View style={styles.additionalActionsContainer}>
+            <TouchableOpacity
+              style={styles.additionalActionButton}
+              onPress={() => {
+                // Navigate back to allow editing
+                Alert.alert(
+                  '继续编辑',
+                  '您可以继续修改任何信息，所有更改都会自动保存。',
+                  [
+                    { text: '好的', style: 'default' }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.additionalActionIcon}>✏️</Text>
+              <Text style={styles.additionalActionText}>再改改</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.additionalActionButton}
+              onPress={() => {
+                // Show sharing options
+                Alert.alert(
+                  '寻求帮助',
+                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
+                  [
+                    {
+                      text: '截图分享',
+                      onPress: () => {
+                        // Here you could implement screenshot functionality
+                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
+                      }
+                    },
+                    { text: '取消', style: 'cancel' }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.additionalActionIcon}>👥</Text>
+              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Integrated Countdown & Submission Section */}
+      <View style={styles.countdownSection}>
+        <Text style={styles.sectionTitle}>
+          最佳提交时间 ⏰
+        </Text>
+
+        {/* Submission Countdown */}
+        <SubmissionCountdown
+          arrivalDate={arrivalDate}
+          locale={t('locale', { defaultValue: 'zh' })}
+          showIcon={true}
+          updateInterval={1000} // Update every second for real-time countdown
+        />
+
+        {/* Smart Primary Action Button - Integrated with Countdown */}
+        <View style={styles.primaryActionContainer}>
+          {renderPrimaryAction()}
+        </View>
+      </View>
+
+      {/* Secondary Actions Section */}
+      <View style={styles.actionSection}>
+        {/* Entry Guide Button */}
+        <TouchableOpacity
+          style={styles.entryGuideButton}
+          onPress={() => navigation.navigate('ThailandEntryGuide', {
+            passport: passportParam,
+            destination: route.params?.destination,
+            completionData: userData
+          })}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.entryGuideIcon}>🗺️</Text>
+          <View style={styles.entryGuideContent}>
+            <Text style={styles.entryGuideTitle}>
+              查看泰国入境指引
+            </Text>
+            <Text style={styles.entryGuideSubtitle}>
+              6步骤完整入境流程指南
+            </Text>
+          </View>
+          <Text style={styles.entryGuideArrow}>›</Text>
+        </TouchableOpacity>
+
+        {/* Secondary Actions - Redesigned */}
+        {completionPercent > 50 && (
+          <View style={styles.secondaryActionsContainer}>
+            <TouchableOpacity
+              style={styles.secondaryActionButton}
+              onPress={handlePreviewEntryCard}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.secondaryActionIcon}>👁️</Text>
+              <Text style={styles.secondaryActionText}>
+                看看我的通关包
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
+  const renderContent = () => (
+    <View style={styles.contentContainer}>
+      {/* Superseded Status Banner */}
+      {showSupersededStatus && (
+        <View style={styles.supersededBanner}>
+          <Text style={styles.supersededIcon}>🔄</Text>
+          <View style={styles.supersededContent}>
+            <Text style={styles.supersededTitle}>
+              {t('progressiveEntryFlow.status.superseded', {
+                defaultValue: '需要重新提交'
+              })}
+            </Text>
+            <Text style={styles.supersededMessage}>
+              {t('progressiveEntryFlow.superseded.message', {
+                defaultValue: '您的入境信息已更新，需要重新提交入境卡以确保信息准确。'
+              })}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Data Change Alert */}
+      {resubmissionWarning && (
+        <DataChangeAlert
+          warning={resubmissionWarning}
+          onResubmit={(warning) => handleResubmissionWarning(warning, 'resubmit')}
+          onIgnore={(warning) => handleResubmissionWarning(warning, 'ignore')}
+          onViewDetails={(warning) => {
+            console.log('View details for warning:', warning);
+          }}
+          style={styles.dataChangeAlert}
+        />
+      )}
+
+      {hasNoEntryData ? renderNoDataState() : renderPreparedState()}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -537,213 +749,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             </Text>
           </View>
         ) : (
-          <View style={styles.contentContainer}>
-            {/* Superseded Status Banner */}
-            {showSupersededStatus && (
-              <View style={styles.supersededBanner}>
-                <Text style={styles.supersededIcon}>🔄</Text>
-                <View style={styles.supersededContent}>
-                  <Text style={styles.supersededTitle}>
-                    {t('progressiveEntryFlow.status.superseded', { 
-                      defaultValue: '需要重新提交' 
-                    })}
-                  </Text>
-                  <Text style={styles.supersededMessage}>
-                    {t('progressiveEntryFlow.superseded.message', { 
-                      defaultValue: '您的入境信息已更新，需要重新提交入境卡以确保信息准确。' 
-                    })}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Data Change Alert */}
-            {resubmissionWarning && (
-              <DataChangeAlert
-                warning={resubmissionWarning}
-                onResubmit={(warning) => handleResubmissionWarning(warning, 'resubmit')}
-                onIgnore={(warning) => handleResubmissionWarning(warning, 'ignore')}
-                onViewDetails={(warning) => {
-                  console.log('View details for warning:', warning);
-                }}
-                style={styles.dataChangeAlert}
-              />
-            )}
-            {/* Check if user has any entry information */}
-            {completionPercent === 0 && categories.every(cat => cat.completedCount === 0) ? (
-              // No data case
-              <View style={styles.noDataContainer}>
-                <Text style={styles.noDataIcon}>📝</Text>
-                <Text style={styles.noDataTitle}>
-                  准备开始泰国之旅吧！🌴
-                </Text>
-                <Text style={styles.noDataDescription}>
-                  你还没有填写泰国入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境泰国！
-                </Text>
-                
-                {/* Example/Tutorial hints */}
-                <View style={styles.noDataHints}>
-                  <Text style={styles.noDataHintsTitle}>
-                    泰国入境需要准备这些信息 🌺
-                  </Text>
-                  <View style={styles.noDataHintsList}>
-                    <Text style={styles.noDataHint}>• 📘 护照信息 - 让泰国认识你</Text>
-                    <Text style={styles.noDataHint}>• 📞 联系方式 - 泰国怎么找到你</Text>
-                    <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
-                    <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
-                  </View>
-                </View>
-
-                <Button
-                  title="开始我的泰国准备之旅！🇹🇭"
-                  onPress={handleEditInformation}
-                  variant="primary"
-                  style={styles.noDataButton}
-                />
-              </View>
-            ) : (
-              // Normal data display
-              <>
-                {/* Status Cards Section */}
-                <View style={styles.statusSection}>
-
-              
-              {/* Completion Summary Card */}
-              <CompletionSummaryCard 
-                completionPercent={completionPercent}
-                status={completionStatus}
-                showProgressBar={true}
-              />
-
-              {/* Additional Action Buttons - Show when completion is high */}
-              {completionPercent >= 80 && (
-                <View style={styles.additionalActionsContainer}>
-                  <TouchableOpacity 
-                    style={styles.additionalActionButton}
-                    onPress={() => {
-                      // Navigate back to allow editing
-                      Alert.alert(
-                        '继续编辑',
-                        '您可以继续修改任何信息，所有更改都会自动保存。',
-                        [
-                          { text: '好的', style: 'default' }
-                        ]
-                      );
-                    }}
-                  >
-                    <Text style={styles.additionalActionIcon}>✏️</Text>
-                    <Text style={styles.additionalActionText}>再改改</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                    style={styles.additionalActionButton}
-                    onPress={() => {
-                      // Show sharing options
-                      Alert.alert(
-                        '寻求帮助',
-                        '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
-                        [
-                          { 
-                            text: '截图分享', 
-                            onPress: () => {
-                              // Here you could implement screenshot functionality
-                              Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
-                            }
-                          },
-                          { text: '取消', style: 'cancel' }
-                        ]
-                      );
-                    }}
-                  >
-                    <Text style={styles.additionalActionIcon}>👥</Text>
-                    <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-            </View>
-
-            {/* Countdown Section */}
-            <View style={styles.countdownSection}>
-              <Text style={styles.sectionTitle}>
-                最佳提交时间 ⏰
-              </Text>
-              
-              {/* Submission Countdown */}
-              <SubmissionCountdown
-                arrivalDate={arrivalDate}
-                locale={t('locale', { defaultValue: 'zh' })}
-                showIcon={true}
-                updateInterval={1000} // Update every second for real-time countdown
-              />
-            </View>
-
-            {/* Action Buttons Section */}
-            <View style={styles.actionSection}>
-              {/* Smart Primary Action Button */}
-              <View style={styles.primaryActionContainer}>
-                {(() => {
-                  const buttonState = getPrimaryButtonState();
-                  return (
-                    <View>
-                      <Button
-                        title={buttonState.title}
-                        onPress={handlePrimaryAction}
-                        variant={buttonState.variant}
-                        disabled={buttonState.disabled}
-                        style={styles.primaryActionButton}
-                      />
-                      {buttonState.subtitle && (
-                        <Text style={styles.primaryActionSubtitle}>
-                          {buttonState.subtitle}
-                        </Text>
-                      )}
-                    </View>
-                  );
-                })()}
-              </View>
-
-              {/* Entry Guide Button */}
-              <TouchableOpacity
-                style={styles.entryGuideButton}
-                onPress={() => navigation.navigate('ThailandEntryGuide', {
-                  passport: passportParam,
-                  destination: route.params?.destination,
-                  completionData: userData
-                })}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.entryGuideIcon}>🗺️</Text>
-                <View style={styles.entryGuideContent}>
-                  <Text style={styles.entryGuideTitle}>
-                    查看泰国入境指引
-                  </Text>
-                  <Text style={styles.entryGuideSubtitle}>
-                    6步骤完整入境流程指南
-                  </Text>
-                </View>
-                <Text style={styles.entryGuideArrow}>›</Text>
-              </TouchableOpacity>
-              
-              {/* Secondary Actions - Redesigned */}
-              {completionPercent > 50 && (
-                <View style={styles.secondaryActionsContainer}>
-                  <TouchableOpacity 
-                    style={styles.secondaryActionButton}
-                    onPress={handlePreviewEntryCard}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.secondaryActionIcon}>👁️</Text>
-                    <Text style={styles.secondaryActionText}>
-                      看看我的通关包
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-              </>
-            )}
-          </View>
+          renderContent()
         )}
       </ScrollView>
     </SafeAreaView>
@@ -825,12 +831,20 @@ const styles = StyleSheet.create({
 
 
 
-  // Countdown Section Styles
+  // Integrated Countdown & Submission Section Styles
   countdownSection: {
     marginBottom: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 
-  // Action Section Styles
+  // Action Section Styles (now only for secondary actions)
   actionSection: {
     marginBottom: spacing.lg,
   },
@@ -838,7 +852,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   primaryActionContainer: {
-    marginBottom: spacing.md,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   primaryActionButton: {
     marginBottom: spacing.xs,
