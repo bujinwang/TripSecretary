@@ -1,0 +1,672 @@
+{
+  "info": {
+    "name": "TDAC Thailand Departure Card Submission",
+    "description": "Complete sequence of API requests for TDAC submission extracted from HAR file. Note: submitId and token values are session-specific and will need to be updated for each test run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Initialize Action Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"token\":\"0.GtnxxAuFOdApe2sKtevjGOoOzZM6jAr1SlF40ziPHQWVQ1lLqgabY9U2GHllINp20LfV9VUC7v6hzpLq7SEfFKvpgi3S2MOJdK82jRc7qB-mZHMEdMi7CURQQFcYEa5vOn1e3oILHZO0lGjcx5C-CgnML4Oqg551QuTbI3p_IwUEKU__kC3ocLOJ1oeLm-0ziJDAWbzSPF9M0YuUVDQzfHurP_ToPd6WPWvkSvykwUYA5f6Ac_acdpNlERXguT4j_1RNXBKR5IrLB27uO3Nne2f0jDdOjE6MpWnvloZKEA89UckoUTLvuf42P8KWJX7WTUFnixqvagmPzGBj8xXHsgpayyQ4QMqGPTw75YbPoJ0E0bzll8tW3ww7gOnvOnxeShyCVaZ-ekGmSoHoTfDOYjCgC9kt1WLOsdvkNe4iq_MIuN7Eo1ZsYSIqosCQ83Dr9iN-cnPrcLC9rT3X8sfe8KlQJPeQzd4DssRQLPmqzGer30zR4NHJEv6j-BqY61YQHg8R0abKvPfwEnXQnfUDhUyoFLHpgDbefFzw1sLyIDh982gBzFY_w3OHOFU5aO5gnPP_WeeUFECe3tJFiFgXWvCU7fR8Sphcf7OpfblJ4V83Q_x5CAiOurrCmy60WeFulSiE1gCfHE_m1GZoTmP5pMvBTtInI_Rb_Ur9QyBgvSDox6d1KE_vGgttB368wxY9lm9M_eHxLopRqzY_B-K0iLgnvHYauw_I2BuYep7_V1RLo_GGhDGcIZdZLVzPhhqRNN7kubJAntxkiQhbqFTuz9NRhbr-jyofR0wVzpMD68hShm8Gay0SFMtYNfyu6IwgdnKkOYoQj6DOY1oHIaRZ7Ncg1YjbWQiyLhgKBewD3rMhcMUNjzWV0hSjOXK7JYFuMigFUcHLQYQjaJh58Q5ONyw6n_HD6IGTrhWjbuJTVog8rTTWWe4d00lFCIuSgaId.LGQF3x1YSMVlqtGSHtITIA.20abd78ae8088516b167075b559da9a92d4751986300a25da01b7ab8cb6e3c49\",\"langague\":\"EN\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/security/initActionToken?submitId=mgh4rn8mp8fykkgxoi",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "security",
+            "initActionToken"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4rn8mp8fykkgxoi"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Go to Add Form",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":null,\"informTempId\":null}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoAdd?submitId=mgh4rnktivrm4yvaatf",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "gotoAdd"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4rnktivrm4yvaatf"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Search Nationality",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":\"chn\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchNationalitySelectItem?submitId=mgh4rxakbqwpnfcpqp",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchNationalitySelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4rxakbqwpnfcpqp"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Search Country with Phone",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":\"chn\",\"ddcCountrys\":null}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountryWithPhoneSelectItem?submitId=mgh4sdv6wiylqf7x5s",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchCountryWithPhoneSelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4sdv6wiylqf7x5s"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Search State of Residence",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"countryId\":\"eRWjmoKET/j8UPcg3CBYrg==\",\"term\":null}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchSuggestionStateOfResidence?submitId=mgh4sjzycg8vedc0waa",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchSuggestionStateOfResidence"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4sjzycg8vedc0waa"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Search Country (General)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":null}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountrySelectItem?submitId=mgh4t31602hwllybu4rw",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchCountrySelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4t31602hwllybu4rw"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Search Country (CHN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":\"chn\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountrySelectItem?submitId=mgh4t78s4v8xgl12zkw",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchCountrySelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4t78s4v8xgl12zkw"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Search Transport Mode",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"modeOfTravelId\":\"ZUSsbcDrA+GoD4mQxvf7Ag==\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchTranModeSelectItem?submitId=mgh4tcqez7p6lnnmlgr",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchTranModeSelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4tcqez7p6lnnmlgr"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. Search Province",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":null}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchProvinceSelectItem?submitId=mgh4ty0zo6pktyhlx7",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchProvinceSelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4ty0zo6pktyhlx7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. Search District",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":null,\"provinceCode\":\"MIIPKOQBf05A/1ueNg8gSA==\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchDistrictSelectItem?submitId=mgh4u2ak0sks1d2zwp7d",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchDistrictSelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4u2ak0sks1d2zwp7d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "11. Search Sub-District",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"term\":null,\"provinceCode\":\"MIIPKOQBf05A/1ueNg8gSA==\",\"districtCode\":\"cOkiChhfwcVMgpXDEcxoOg==\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchSubDistrictSelectItem?submitId=mgh4u5hed88bwpoale9",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "selectitem",
+            "searchSubDistrictSelectItem"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4u5hed88bwpoale9"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "12. Check Health Declaration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"\",\"traModeId\":\"ZUSsbcDrA+GoD4mQxvf7Ag==\",\"flightNo\":\"AC012\",\"nationalityId\":\"n8NVa/feQ+F5Ok859Oywuw==\",\"countryBoardCode\":\"n8NVa/feQ+F5Ok859Oywuw==\",\"ddcCountrys\":\"\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/checkHealthDeclaration?submitId=mgh4uvu12vpn27npc7",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "checkHealthDeclaration"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4uvu12vpn27npc7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "13. Save Form Data (Next)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"\",\"informTempId\":\"\",\"informTempIdForSearch\":\"\",\"personalInfo\":{\"familyName\":\"Li\",\"middleName\":\"\",\"firstName\":\"laolao\",\"gender\":\"JGb85pWhehCWn5EM6PeL5A==\",\"nationalityId\":\"n8NVa/feQ+F5Ok859Oywuw==\",\"nationalityDesc\":\"CHN : CHINESE\",\"passportNo\":\"E1324234\",\"bdDateDay\":\"05\",\"bdDateMonth\":\"01\",\"bdDateYear\":\"1966\",\"occupation\":\"accountant\",\"cityResCode\":\"1K78YOelWC9oHYwBpH3cgQ==\",\"cityRes\":\"FUJIAN\",\"countryResCode\":\"n8NVa/feQ+F5Ok859Oywuw==\",\"countryResDesc\":\"CHN : PEOPLE'S REPUBLIC OF CHINA\",\"visaNo\":\"\",\"phoneCode\":\"86\",\"phoneNo\":\"123544478756\"},\"tripInfo\":{\"arrDate\":\"2025/10/09\",\"deptDate\":null,\"countryBoardCode\":\"n8NVa/feQ+F5Ok859Oywuw==\",\"countryBoardDesc\":\"CHN : PEOPLE'S REPUBLIC OF CHINA\",\"traPurposeId\":\"ZUSsbcDrA+GoD4mQxvf7Ag==\",\"traModeId\":\"ZUSsbcDrA+GoD4mQxvf7Ag==\",\"tranModeId\":\"6XcrGmsUxFe9ua1gehBv/Q==\",\"flightNo\":\"AC012\",\"deptTraModeId\":\"\",\"deptFlightNo\":\"\",\"accTypeId\":\"kSqK152aNAx9HQigxwgnUg==\",\"accProvinceId\":\"MIIPKOQBf05A/1ueNg8gSA==\",\"accProvinceDesc\":\"BANGKOK\",\"accDistrictId\":\"cOkiChhfwcVMgpXDEcxoOg==\",\"accDistrictDesc\":\"BANG BON\",\"accSubDistrictId\":\"v82TxFSFM1kAlkcoEsyxIg==\",\"accSubDistrictDesc\":\"BANG BON NUEA\",\"accPostCode\":\"10150\",\"accAddress\":\"BANG BON HOTEL, 88 MOO 5, EKKACHAI ROAD, BANG BON NUEA, BANG BON, BANGKOK 10150\",\"notStayInTh\":false},\"healthInfo\":{\"ddcCountryCodes\":\"\"}}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/next?submitId=mgh4vamimmj3lsyxnip",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "next"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4vamimmj3lsyxnip"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. Go to Preview",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"3xCBADfBn2EsHmb94UOzq3ZhHpv4Z3ElKVwSmLBCOCU=\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoPreview?submitId=mgh4vaxvpcry14zjd7",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "gotoPreview"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4vaxvpcry14zjd7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "15. Submit Form",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"3xCBADfBn2EsHmb94UOzq3ZhHpv4Z3ElKVwSmLBCOCU=\",\"sendTo\":\"bwang@autobebesys.com\",\"checkedDecalraion\":true,\"bluetoothName\":\"\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/submit?submitId=mgh4vt5at8aaxesi6q",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "submit"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4vt5at8aaxesi6q"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "16. Go to Submitted Page",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTk4NzYzNzcxOTIsImlhdCI6MCwiaGlkZGVuVG9rZW4iOiJIKzV3TzJiVU5JMG11cDB5NEh2eTN3PT0iLCJmaWxlUGF0aCI6IjBWcHRzVy8zcUJKWjNaRzBnUmludnJjY3JuOTVSZ0N4K0ViNXBRdnRyZ3cxMEJnaGRaa1FsV2IxZ2dWWGdRK1hVOU92Q1RMdG5CVHN4bE5lbDY0M0pBPT0iLCJnZW5PayI6dHJ1ZX0.jJ9x9ClNk6dhx8s6zlmSVpi-nb8W4AO1dMAY2128EOk\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoSubmitted?submitId=mgh4vuvs9pw0w4jkls",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "gotoSubmitted"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4vuvs9pw0w4jkls"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "17. Download PDF",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hiddenToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTk4NzYzNzcxOTIsImlhdCI6MCwiaGlkZGVuVG9rZW4iOiJIKzV3TzJiVU5JMG11cDB5NEh2eTN3PT0iLCJmaWxlUGF0aCI6IjBWcHRzVy8zcUJKWjNaRzBnUmludnJjY3JuOTVSZ0N4K0ViNXBRdnRyZ3cxMEJnaGRaa1FsV2IxZ2dWWGdRK1hVOU92Q1RMdG5CVHN4bE5lbDY0M0pBPT0iLCJnZW5PayI6dHJ1ZX0.jJ9x9ClNk6dhx8s6zlmSVpi-nb8W4AO1dMAY2128EOk\"}"
+        },
+        "url": {
+          "raw": "https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/downloadPdf?submitId=mgh4vwo83sy7apuaelc",
+          "protocol": "https",
+          "host": [
+            "tdac",
+            "immigration",
+            "go",
+            "th"
+          ],
+          "path": [
+            "arrival-card-api",
+            "api",
+            "v1",
+            "arrivalcard",
+            "downloadPdf"
+          ],
+          "query": [
+            {
+              "key": "submitId",
+              "value": "mgh4vwo83sy7apuaelc"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

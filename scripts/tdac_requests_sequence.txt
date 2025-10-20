@@ -1,0 +1,253 @@
+TDAC Submission Sequence - Full Request List for Postman
+
+This file contains the complete sequence of API requests extracted from the HAR file for a full TDAC (Thailand Departure Card) submission process.
+
+Each request includes:
+- Method and URL
+- Request body (JSON)
+- Notes on purpose and dependencies
+
+The sequence follows the logical flow of the TDAC submission process.
+
+---
+
+1. Initialize Action Token
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/security/initActionToken?submitId=mgh4rn8mp8fykkgxoi
+Body:
+{
+  "token": "0.GtnxxAuFOdApe2sKtevjGOoOzZM6jAr1SlF40ziPHQWVQ1lLqgabY9U2GHllINp20LfV9VUC7v6hzpLq7SEfFKvpgi3S2MOJdK82jRc7qB-mZHMEdMi7CURQQFcYEa5vOn1e3oILHZO0lGjcx5C-CgnML4Oqg551QuTbI3p_IwUEKU__kC3ocLOJ1oeLm-0ziJDAWbzSPF9M0YuUVDQzfHurP_ToPd6WPWvkSvykwUYA5f6Ac_acdpNlERXguT4j_1RNXBKR5IrLB27uO3Nne2f0jDdOjE6MpWnvloZKEA89UckoUTLvuf42P8KWJX7WTUFnixqvagmPzGBj8xXHsgpayyQ4QMqGPTw75YbPoJ0E0bzll8tW3ww7gOnvOnxeShyCVaZ-ekGmSoHoTfDOYjCgC9kt1WLOsdvkNe4iq_MIuN7Eo1ZsYSIqosCQ83Dr9iN-cnPrcLC9rT3X8sfe8KlQJPeQzd4DssRQLPmqzGer30zR4NHJEv6j-BqY61YQHg8R0abKvPfwEnXQnfUDhUyoFLHpgDbefFzw1sLyIDh982gBzFY_w3OHOFU5aO5gnPP_WeeUFECe3tJFiFgXWvCU7fR8Sphcf7OpfblJ4V83Q_x5CAiOurrCmy60WeFulSiE1gCfHE_m1GZoTmP5pMvBTtInI_Rb_Ur9QyBgvSDox6d1KE_vGgttB368wxY9lm9M_eHxLopRqzY_B-K0iLgnvHYauw_I2BuYep7_V1RLo_GGhDGcIZdZLVzPhhqRNN7kubJAntxkiQhbqFTuz9NRhbr-jyofR0wVzpMD68hShm8Gay0SFMtYNfyu6IwgdnKkOYoQj6DOY1oHIaRZ7Ncg1YjbWQiyLhgKBewD3rMhcMUNjzWV0hSjOXK7JYFuMigFUcHLQYQjaJh58Q5ONyw6n_HD6IGTrhWjbuJTVog8rTTWWe4d00lFCIuSgaId.LGQF3x1YSMVlqtGSHtITIA.20abd78ae8088516b167075b559da9a92d4751986300a25da01b7ab8cb6e3c49",
+  "langague": "EN"
+}
+Notes: Initializes the session with a security token. This is the first request in the sequence.
+
+---
+
+2. Go to Add Form
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoAdd?submitId=mgh4rnktivrm4yvaatf
+Body:
+{
+  "hiddenToken": null,
+  "informTempId": null
+}
+Notes: Navigates to the form entry page. Requires previous initActionToken call.
+
+---
+
+3. Search Nationality
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchNationalitySelectItem?submitId=mgh4rxakbqwpnfcpqp
+Body:
+{
+  "term": "chn"
+}
+Notes: Searches for nationality options. Used to populate nationality dropdown.
+
+---
+
+4. Search Country with Phone Code
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountryWithPhoneSelectItem?submitId=mgh4sdv6wiylqf7x5s
+Body:
+{
+  "term": "chn",
+  "ddcCountrys": null
+}
+Notes: Searches for countries with phone codes. Used for residence country selection.
+
+---
+
+5. Search State of Residence
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchSuggestionStateOfResidence?submitId=mgh4sjzycg8vedc0waa
+Body:
+{
+  "countryId": "eRWjmoKET/j8UPcg3CBYrg==",
+  "term": null
+}
+Notes: Searches for states/provinces within a country. Requires countryId from previous search.
+
+---
+
+6. Search Country (General)
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountrySelectItem?submitId=mgh4t31602hwllybu4rw
+Body:
+{
+  "term": null
+}
+Notes: General country search. Returns all countries or filtered by term.
+
+---
+
+7. Search Country (Specific)
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchCountrySelectItem?submitId=mgh4t78s4v8xgl12zkw
+Body:
+{
+  "term": "chn"
+}
+Notes: Country search with specific term (e.g., "chn" for China).
+
+---
+
+8. Search Transport Mode
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchTranModeSelectItem?submitId=mgh4tcqez7p6lnnmlgr
+Body:
+{
+  "modeOfTravelId": "ZUSsbcDrA+GoD4mQxvf7Ag=="
+}
+Notes: Searches for transport modes based on modeOfTravelId.
+
+---
+
+9. Search Province
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchProvinceSelectItem?submitId=mgh4ty0zo6pktyhlx7
+Body:
+{
+  "term": null
+}
+Notes: Searches for provinces in Thailand. Used for accommodation address.
+
+---
+
+10. Search District
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchDistrictSelectItem?submitId=mgh4u2ak0sks1d2zwp7d
+Body:
+{
+  "term": null,
+  "provinceCode": "MIIPKOQBf05A/1ueNg8gSA=="
+}
+Notes: Searches for districts within a province. Requires provinceCode.
+
+---
+
+11. Search Sub-District
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/selectitem/searchSubDistrictSelectItem?submitId=mgh4u5hed88bwpoale9
+Body:
+{
+  "term": null,
+  "provinceCode": "MIIPKOQBf05A/1ueNg8gSA==",
+  "districtCode": "cOkiChhfwcVMgpXDEcxoOg=="
+}
+Notes: Searches for sub-districts within a district. Requires provinceCode and districtCode.
+
+---
+
+12. Check Health Declaration
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/checkHealthDeclaration?submitId=mgh4uvu12vpn27npc7
+Body:
+{
+  "hiddenToken": "",
+  "traModeId": "ZUSsbcDrA+GoD4mQxvf7Ag==",
+  "flightNo": "AC012",
+  "nationalityId": "n8NVa/feQ+F5Ok859Oywuw==",
+  "countryBoardCode": "n8NVa/feQ+F5Ok859Oywuw==",
+  "ddcCountrys": ""
+}
+Notes: Validates health declaration requirements based on travel details.
+
+---
+
+13. Save Form Data (Next)
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/next?submitId=mgh4vamimmj3lsyxnip
+Body:
+{
+  "hiddenToken": "",
+  "informTempId": "",
+  "informTempIdForSearch": "",
+  "personalInfo": {
+    "familyName": "Li",
+    "middleName": "",
+    "firstName": "laolao",
+    "gender": "JGb85pWhehCWn5EM6PeL5A==",
+    "nationalityId": "n8NVa/feQ+F5Ok859Oywuw==",
+    "nationalityDesc": "CHN : CHINESE",
+    "passportNo": "E1324234",
+    "bdDateDay": "05",
+    "bdDateMonth": "01",
+    "bdDateYear": "1966",
+    "occupation": "accountant",
+    "cityResCode": "1K78YOelWC9oHYwBpH3cgQ==",
+    "cityRes": "FUJIAN",
+    "countryResCode": "n8NVa/feQ+F5Ok859Oywuw==",
+    "countryResDesc": "CHN : PEOPLE'S REPUBLIC OF CHINA",
+    "visaNo": "",
+    "phoneCode": "86",
+    "phoneNo": "123544478756"
+  },
+  "tripInfo": {
+    "arrDate": "2025/10/09",
+    "deptDate": null,
+    "countryBoardCode": "n8NVa/feQ+F5Ok859Oywuw==",
+    "countryBoardDesc": "CHN : PEOPLE'S REPUBLIC OF CHINA",
+    "traPurposeId": "ZUSsbcDrA+GoD4mQxvf7Ag==",
+    "traModeId": "ZUSsbcDrA+GoD4mQxvf7Ag==",
+    "tranModeId": "6XcrGmsUxFe9ua1gehBv/Q==",
+    "flightNo": "AC012",
+    "deptTraModeId": "",
+    "deptFlightNo": "",
+    "accTypeId": "kSqK152aNAx9HQigxwgnUg==",
+    "accProvinceId": "MIIPKOQBf05A/1ueNg8gSA==",
+    "accProvinceDesc": "BANGKOK",
+    "accDistrictId": "cOkiChhfwcVMgpXDEcxoOg==",
+    "accDistrictDesc": "BANG BON",
+    "accSubDistrictId": "v82TxFSFM1kAlkcoEsyxIg==",
+    "accSubDistrictDesc": "BANG BON NUEA",
+    "accPostCode": "10150",
+    "accAddress": "BANG BON HOTEL, 88 MOO 5, EKKACHAI ROAD, BANG BON NUEA, BANG BON, BANGKOK 10150",
+    "notStayInTh": false
+  },
+  "healthInfo": {
+    "ddcCountryCodes": ""
+  }
+}
+Notes: Saves the complete form data. This is the main data submission step.
+
+---
+
+14. Go to Preview
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoPreview?submitId=mgh4vaxvpcry14zjd7
+Body:
+{
+  "hiddenToken": "3xCBADfBn2EsHmb94UOzq3ZhHpv4Z3ElKVwSmLBCOCU="
+}
+Notes: Navigates to the preview page. Requires hiddenToken from previous step.
+
+---
+
+15. Submit Form
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/submit?submitId=mgh4vt5at8aaxesi6q
+Body:
+{
+  "hiddenToken": "3xCBADfBn2EsHmb94UOzq3ZhHpv4Z3ElKVwSmLBCOCU=",
+  "sendTo": "bwang@autobebesys.com",
+  "checkedDecalraion": true,
+  "bluetoothName": ""
+}
+Notes: Final submission of the TDAC form. Includes email for confirmation.
+
+---
+
+16. Go to Submitted Page
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/gotoSubmitted?submitId=mgh4vuvs9pw0w4jkls
+Body:
+{
+  "hiddenToken": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTk4NzYzNzcxOTIsImlhdCI6MCwiaGlkZGVuVG9rZW4iOiJIKzV3TzJiVU5JMG11cDB5NEh2eTN3PT0iLCJmaWxlUGF0aCI6IjBWcHRzVy8zcUJKWjNaRzBnUmludnJjY3JuOTVSZ0N4K0ViNXBRdnRyZ3cxMEJnaGRaa1FsV2IxZ2dWWGdRK1hVOU92Q1RMdG5CVHN4bE5lbDY0M0pBPT0iLCJnZW5PayI6dHJ1ZX0.jJ9x9ClNk6dhx8s6zlmSVpi-nb8W4AO1dMAY2128EOk"
+}
+Notes: Navigates to the confirmation page after successful submission.
+
+---
+
+17. Download PDF
+POST https://tdac.immigration.go.th/arrival-card-api/api/v1/arrivalcard/downloadPdf?submitId=mgh4vwo83sy7apuaelc
+Body:
+{
+  "hiddenToken": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTk4NzYzNzcxOTIsImlhdCI6MCwiaGlkZGVuVG9rZW4iOiJIKzV3TzJiVU5JMG11cDB5NEh2eTN3PT0iLCJmaWxlUGF0aCI6IjBWcHRzVy8zcUJKWjNaRzBnUmludnJjY3JuOTVSZ0N4K0ViNXBRdnRyZ3cxMEJnaGRaa1FsV2IxZ2dWWGdRK1hVOU92Q1RMdG5CVHN4bE5lbDY0M0pBPT0iLCJnZW5PayI6dHJ1ZX0.jJ9x9ClNk6dhx8s6zlmSVpi-nb8W4AO1dMAY2128EOk"
+}
+Notes: Downloads the PDF version of the submitted TDAC form.
+
+---
+
+Additional Notes:
+- All requests use Content-Type: application/json
+- submitId parameter is unique per session and changes with each request
+- hiddenToken is generated after form data is saved and used for subsequent steps
+- IDs like nationalityId, country codes, etc. are encrypted/hashed values
+- The sequence must be followed in order as later requests depend on data from earlier ones
+- For testing, you may need to obtain fresh submitId and tokens from the actual TDAC website
+- Some search endpoints may not be strictly required if you have the IDs from previous knowledge
