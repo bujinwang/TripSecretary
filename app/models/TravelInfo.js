@@ -17,6 +17,9 @@ class TravelInfo {
     // Travel Purpose
     this.travelPurpose = data.travelPurpose || 'HOLIDAY'; // HOLIDAY, MEETING, SPORTS, BUSINESS, etc.
     
+    // Recent stay (last 14 days) country for health declaration
+    this.recentStayCountry = data.recentStayCountry || '';
+    
     // Visa Information (optional)
     this.visaNumber = data.visaNumber || '';
     
@@ -250,6 +253,7 @@ class TravelInfo {
         userId: this.userId,
         destination: this.destination,
         travelPurpose: this.travelPurpose,
+        recentStayCountry: this.recentStayCountry,
         boardingCountry: this.boardingCountry,
         visaNumber: this.visaNumber,
         arrivalFlightNumber: this.arrivalFlightNumber,
@@ -395,6 +399,7 @@ class TravelInfo {
     return {
       id: this.id,
       destination: this.destination,
+      recentStayCountry: this.recentStayCountry,
       arrivalFlight: this.arrivalFlightNumber,
       departureFlight: this.departureFlightNumber,
       hotel: this.hotelName,

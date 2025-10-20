@@ -13,7 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import { colors } from '../../theme';
-import { mergeTDACData } from '../../data/mockTDACData';
+// Removed mockTDACData dependency - using pure user data
 import EntryPackService from '../../services/entryPack/EntryPackService';
 import SnapshotService from '../../services/snapshot/SnapshotService';
 import PassportDataService from '../../services/data/PassportDataService';
@@ -22,7 +22,30 @@ import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
   const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
-  const travelerInfo = mergeTDACData(incomingTravelerInfo);
+  
+  // Log incoming data for debugging
+  console.log('🔍 TDACSelectionScreen received travelerInfo:', {
+    hasData: Object.keys(incomingTravelerInfo).length > 0,
+    keys: Object.keys(incomingTravelerInfo),
+    passportNo: incomingTravelerInfo.passportNo,
+    familyName: incomingTravelerInfo.familyName,
+    firstName: incomingTravelerInfo.firstName,
+    arrivalDate: incomingTravelerInfo.arrivalDate,
+    email: incomingTravelerInfo.email
+  });
+  
+  // Use pure user data directly - no mock data fallbacks
+  const travelerInfo = incomingTravelerInfo;
+  
+  // Log user data for debugging
+  console.log('🔍 Using pure user data:', {
+    passportNo: travelerInfo.passportNo,
+    familyName: travelerInfo.familyName,
+    firstName: travelerInfo.firstName,
+    arrivalDate: travelerInfo.arrivalDate,
+    email: travelerInfo.email,
+    flightNo: travelerInfo.flightNo
+  });
 
   /**
    * Handle successful TDAC submission by creating/updating entry pack

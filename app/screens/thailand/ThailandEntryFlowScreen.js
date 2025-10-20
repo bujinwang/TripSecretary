@@ -383,7 +383,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
-  const handlePrimaryAction = () => {
+  const handlePrimaryAction = async () => {
     const buttonState = getPrimaryButtonState();
     
     switch (buttonState.action) {
@@ -395,11 +395,87 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         });
         break;
       case 'submit_tdac':
-        // Navigate to TDAC submission screen
-        navigation.navigate('TDACSelection', {
-          passport: passportParam,
-          destination: route.params?.destination,
-        });
+        // Navigate to TDAC submission screen with complete traveler info
+        try {
+          // Build complete traveler context from user data
+          const userId = passportParam?.id || 'default_user';
+          const ThailandTravelerContextBuilder = require('../../services/thailand/ThailandTravelerContextBuilder').default;
+          const contextResult = await ThailandTravelerContextBuilder.buildThailandTravelerContext(userId);
+          
+          if (contextResult.success) {
+            console.log('✅ Built traveler context for TDAC submission:', {
+              hasPassportNo: !!contextResult.payload.passportNo,
+              hasFullName: !!contextResult.payload.familyName && !!contextResult.payload.firstName,
+              hasArrivalDate: !!contextResult.payload.arrivalDate,
+              hasEmail: !!contextResult.payload.email,
+              warnings: contextResult.warnings
+            });
+            
+            // Show warnings if any (but still allow submission since validation passed)
+            if (contextResult.warnings && contextResult.warnings.length > 0) {
+              Alert.alert(
+                '⚠️ 数据提醒',
+                '以下信息需要注意：\n\n• ' + contextResult.warnings.join('\n• ') + '\n\n数据验证通过，可以继续提交。',
+                [
+                  {
+                    text: '完善信息',
+                    onPress: () => {
+                      navigation.navigate('ThailandTravelInfo', {
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                      });
+                    }
+                  },
+                  {
+                    text: '继续提交',
+                    style: 'default',
+                    onPress: () => {
+                      navigation.navigate('TDACSelection', {
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                        travelerInfo: contextResult.payload,
+                      });
+                    }
+                  }
+                ]
+              );
+            } else {
+              // No warnings, proceed directly
+              navigation.navigate('TDACSelection', {
+                passport: passportParam,
+                destination: route.params?.destination,
+                travelerInfo: contextResult.payload,
+              });
+            }
+          } else {
+            console.error('❌ Failed to build traveler context:', contextResult.errors);
+            Alert.alert(
+              '❌ TDAC提交要求严格',
+              '泰国入境卡(TDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ' + contextResult.errors.join('\n• ') + '\n\n请返回完善所有必需信息后再提交。',
+              [
+                {
+                  text: '立即完善',
+                  style: 'default',
+                  onPress: () => {
+                    navigation.navigate('ThailandTravelInfo', {
+                      passport: passportParam,
+                      destination: route.params?.destination,
+                      highlightMissingFields: true, // Flag to highlight missing fields
+                    });
+                  }
+                },
+                { text: '取消', style: 'cancel' }
+              ]
+            );
+          }
+        } catch (error) {
+          console.error('❌ Error building traveler context:', error);
+          Alert.alert(
+            '系统错误',
+            '构建旅行者信息时出错，请稍后重试。',
+            [{ text: '确定' }]
+          );
+        }
         break;
       case 'view_entry_pack':
         // Navigate to entry pack detail screen

@@ -20,7 +20,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  SafeAreaView
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import TDACAPIService from '../../services/TDACAPIService';
@@ -28,17 +31,40 @@ import CloudflareTokenExtractor from '../../services/CloudflareTokenExtractor';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import { mergeTDACData } from '../../data/mockTDACData';
+// Removed mockTDACData dependency - using pure user data
 import { colors } from '../../theme';
 import EntryPackService from '../../services/entryPack/EntryPackService';
 import TDACValidationService from '../../services/validation/TDACValidationService';
 import TDACErrorHandler from '../../services/error/TDACErrorHandler';
+import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
-  console.log('🔍 Raw traveler info arrival date:', rawTravelerInfo?.arrivalDate);
-  const travelerInfo = mergeTDACData(rawTravelerInfo);
-  console.log('🔍 After merge arrival date:', travelerInfo?.arrivalDate);
+  
+  // Log incoming data for debugging
+  console.log('🔍 TDACHybridScreen received travelerInfo:', {
+    hasData: Object.keys(rawTravelerInfo).length > 0,
+    keys: Object.keys(rawTravelerInfo),
+    passportNo: rawTravelerInfo.passportNo,
+    familyName: rawTravelerInfo.familyName,
+    firstName: rawTravelerInfo.firstName,
+    arrivalDate: rawTravelerInfo.arrivalDate,
+    email: rawTravelerInfo.email,
+    flightNo: rawTravelerInfo.flightNo
+  });
+  
+  // Use pure user data directly - no mock data fallbacks
+  const travelerInfo = rawTravelerInfo;
+  
+  // Log user data for debugging
+  console.log('🔍 Using pure user data:', {
+    passportNo: travelerInfo.passportNo,
+    familyName: travelerInfo.familyName,
+    firstName: travelerInfo.firstName,
+    arrivalDate: travelerInfo.arrivalDate,
+    email: travelerInfo.email,
+    flightNo: travelerInfo.flightNo
+  });
   
   const webViewRef = useRef(null);
   const [stage, setStage] = useState('loading'); // loading, extracting, submitting, success, error
@@ -128,7 +154,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
   };
 
   /**
-   * Submit arrival card via API
+   * Submit arrival card via API with detailed logging and manual confirmation
    */
   const submitWithAPI = async (token) => {
     try {
@@ -141,7 +167,19 @@ const TDACHybridScreen = ({ navigation, route }) => {
       console.log('✅ Valid token received, length:', token.length);
       console.log('   Token preview:', token.substring(0, 50) + '...' + token.substring(token.length - 20));
       
-      setProgress('步骤 1/9: 初始化...');
+      setProgress('步骤 1/9: 验证数据完整性...');
+      
+      // FINAL VALIDATION: Ensure all required TDAC fields are present
+      const TDACValidationService = require('../../services/validation/TDACValidationService').default;
+      const validationResult = TDACValidationService.validateTravelerData(travelerInfo);
+      
+      if (!validationResult.isValid) {
+        console.error('❌ Final TDAC validation failed:', validationResult.errors);
+        throw new Error('数据验证失败：' + validationResult.errors.join(', '));
+      }
+      
+      console.log('✅ Final TDAC validation passed');
+      setProgress('步骤 2/9: 初始化...');
       
       // Prepare traveler data
       const travelerData = {
@@ -163,6 +201,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
         arrivalDate: travelerInfo.arrivalDate,
         departureDate: travelerInfo.departureDate || null,
         countryBoarded: travelerInfo.countryBoarded,
+        recentStayCountry: travelerInfo.recentStayCountry,
         purpose: travelerInfo.purpose,
         travelMode: travelerInfo.travelMode,
         flightNo: travelerInfo.flightNo,
@@ -175,12 +214,25 @@ const TDACHybridScreen = ({ navigation, route }) => {
         address: travelerInfo.address
       };
 
+      // 🔍 DETAILED LOGGING: Log all submission data and field mappings
+      await TDACSubmissionLogger.logHybridSubmission(travelerData, token);
+
+      // 🛑 MANUAL CONFIRMATION: Show confirmation dialog before final submission
+      const shouldProceed = await showSubmissionConfirmation(travelerData);
+      
+      if (!shouldProceed) {
+        console.log('❌ User cancelled submission');
+        setStage('error');
+        setProgress('用户取消提交');
+        return;
+      }
+
       // Submit with progress updates
       const updateProgress = (step, total, message) => {
         setProgress(`步骤 ${step}/${total}: ${message}`);
       };
 
-      updateProgress(1, 9, '初始化Token...');
+      updateProgress(3, 9, '初始化Token...');
       const result = await TDACAPIService.submitArrivalCard(travelerData);
 
       if (result.success) {
@@ -781,5 +833,160 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
 });
+
+
+
+/**
+ * 🛑 MANUAL CONFIRMATION: Show detailed confirmation dialog
+ * 显示详细的确认对话框，让用户手动确认提交
+ */
+const showSubmissionConfirmation = (travelerData) => {
+  return new Promise((resolve) => {
+    // 创建详细的确认信息
+    const confirmationDetails = `
+🔍 即将提交的信息：
+
+👤 个人信息：
+• 姓名: ${travelerData.familyName} ${travelerData.firstName}
+• 护照号: ${travelerData.passportNo}
+• 国籍: ${travelerData.nationality}
+• 性别: ${travelerData.gender}
+• 出生日期: ${travelerData.birthDate}
+
+✈️ 旅行信息：
+• 到达日期: ${travelerData.arrivalDate}
+• 航班号: ${travelerData.flightNo}
+• 出发国家: ${travelerData.countryBoarded}
+• 最近停留国家: ${travelerData.recentStayCountry || '未填写'}
+• 旅行目的: ${travelerData.purpose}
+
+🏨 住宿信息：
+• 住宿类型: ${travelerData.accommodationType}
+• 省份: ${travelerData.province}
+• 地址: ${travelerData.address}
+
+📞 联系信息：
+• 邮箱: ${travelerData.email}
+• 电话: +${travelerData.phoneCode} ${travelerData.phoneNo}
+
+⚠️ 重要提醒：
+• 信息将直接提交给泰国移民局
+• 提交后无法修改
+• 多次提交可能被封禁
+• 请确保与护照信息一致
+    `.trim();
+
+    Alert.alert(
+      '🛑 确认提交',
+      confirmationDetails,
+      [
+        {
+          text: '❌ 取消',
+          style: 'cancel',
+          onPress: () => {
+            console.log('🛑 用户取消了提交');
+            resolve(false);
+          }
+        },
+        {
+          text: '📝 查看详细日志',
+          onPress: () => {
+            // 显示更详细的日志信息
+            showDetailedLog(travelerData, resolve);
+          }
+        },
+        {
+          text: '✅ 确认提交',
+          style: 'default',
+          onPress: () => {
+            console.log('✅ 用户确认提交');
+            resolve(true);
+          }
+        }
+      ],
+      { 
+        cancelable: false // 防止意外取消
+      }
+    );
+  });
+};
+
+/**
+ * 显示更详细的日志信息
+ */
+const showDetailedLog = (travelerData, resolve) => {
+  const detailedLog = `
+🔍 TDAC 表单字段映射详情：
+
+📋 个人信息字段：
+• familyName → "${travelerData.familyName}"
+• firstName → "${travelerData.firstName}"
+• middleName → "${travelerData.middleName || '(空)'}"
+• passportNo → "${travelerData.passportNo}"
+• nationality → "${travelerData.nationality}"
+• gender → "${travelerData.gender}"
+• birthDate → "${travelerData.birthDate}"
+• occupation → "${travelerData.occupation}"
+
+📋 居住信息字段：
+• cityResidence → "${travelerData.cityResidence}"
+• countryResidence → "${travelerData.countryResidence}"
+
+📋 旅行信息字段：
+• arrivalDate → "${travelerData.arrivalDate}"
+• departureDate → "${travelerData.departureDate || '(未设置)'}"
+• flightNo → "${travelerData.flightNo}"
+• countryBoarded → "${travelerData.countryBoarded}"
+• recentStayCountry → "${travelerData.recentStayCountry || '(未填写)'}"
+• travelMode → "${travelerData.travelMode}"
+• purpose → "${travelerData.purpose}"
+
+📋 住宿信息字段：
+• accommodationType → "${travelerData.accommodationType}"
+• province → "${travelerData.province}"
+• district → "${travelerData.district}"
+• subDistrict → "${travelerData.subDistrict}"
+• postCode → "${travelerData.postCode}"
+• address → "${travelerData.address}"
+
+📋 联系信息字段：
+• email → "${travelerData.email}"
+• phoneCode → "${travelerData.phoneCode}"
+• phoneNo → "${travelerData.phoneNo}"
+
+📋 签证信息字段：
+• visaNo → "${travelerData.visaNo || '(免签)'}"
+
+🔧 技术字段：
+• cloudflareToken → "已获取 (${travelerData.cloudflareToken?.length} 字符)"
+• tranModeId → "${travelerData.tranModeId || '(自动)'}"
+
+⚠️ 这些字段将直接发送到泰国移民局系统
+  `.trim();
+
+  Alert.alert(
+    '📋 详细字段映射',
+    detailedLog,
+    [
+      {
+        text: '❌ 取消提交',
+        style: 'cancel',
+        onPress: () => {
+          console.log('🛑 用户在查看详细日志后取消了提交');
+          resolve(false);
+        }
+      },
+      {
+        text: '✅ 确认无误，立即提交',
+        style: 'default',
+        onPress: () => {
+          console.log('✅ 用户在查看详细日志后确认提交');
+          resolve(true);
+        }
+      }
+    ],
+    { cancelable: false }
+  );
+};
 
 export default TDACHybridScreen;

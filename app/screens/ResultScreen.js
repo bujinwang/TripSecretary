@@ -19,7 +19,7 @@ import * as Print from 'expo-print';
 import { colors, typography, spacing, borderRadius, shadows, touchable } from '../theme';
 import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
-import { mergeTDACData } from '../data/mockTDACData';
+// Removed mockTDACData dependency - using pure user data
 import { useTranslation } from '../i18n/LocaleContext';
 import PassportDataService from '../services/data/PassportDataService';
 
@@ -838,8 +838,8 @@ const ResultScreen = ({ navigation, route }) => {
                         cloudflareToken: 'auto',
                       };
                       
-                      // 直接跳转到混合模式
-                      const travelerInfoWithFallbacks = mergeTDACData(tdacTravelInfo);
+                      // 直接跳转到混合模式 - 使用纯用户数据
+                      const travelerInfoWithFallbacks = tdacTravelInfo;
                       
                       navigation.navigate('TDACHybrid', { 
                         travelerInfo: travelerInfoWithFallbacks

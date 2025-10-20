@@ -23,13 +23,14 @@ import TDACAPIService from '../../services/TDACAPIService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import { mergeTDACData } from '../../data/mockTDACData';
+// Removed mockTDACData dependency - using pure user data
 import { colors } from '../../theme';
 import EntryPackService from '../../services/entryPack/EntryPackService';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};
-  const travelerInfo = mergeTDACData(params.travelerInfo || {});
+  // Use pure user data directly - no mock data fallbacks
+  const travelerInfo = params.travelerInfo || {};
   const { autoSubmit } = params;
   
   // Cloudflare verification
@@ -68,6 +69,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
     arrivalDate: travelerInfo?.arrivalDate || '',
     departureDate: travelerInfo?.departureDate || '',
     countryBoarded: travelerInfo?.countryBoarded || 'CHN',
+    recentStayCountry: travelerInfo?.recentStayCountry || '',
     purpose: travelerInfo?.purpose || 'HOLIDAY',
     travelMode: travelerInfo?.travelMode || 'AIR',
     flightNo: travelerInfo?.flightNo || '',
@@ -149,6 +151,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
         arrivalDate: formData.arrivalDate,
         departureDate: formData.departureDate || null,
         countryBoarded: formData.countryBoarded,
+        recentStayCountry: formData.recentStayCountry,
         purpose: formData.purpose,
         travelMode: formData.travelMode,
         flightNo: formData.flightNo,
@@ -510,6 +513,13 @@ const TDACAPIScreen = ({ navigation, route }) => {
               placeholder="航班号 *"
               value={formData.flightNo}
               onChangeText={(text) => setFormData({...formData, flightNo: text.toUpperCase()})}
+            />
+            
+            <TextInput
+              style={styles.input}
+              placeholder="最近14天停留国家或地区代码 (例如 CHN)"
+              value={formData.recentStayCountry}
+              onChangeText={(text) => setFormData({...formData, recentStayCountry: text.toUpperCase()})}
             />
             
             <Text style={styles.label}>旅行目的 *</Text>

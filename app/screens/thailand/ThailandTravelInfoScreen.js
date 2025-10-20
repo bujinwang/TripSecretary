@@ -29,6 +29,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
+import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
 import apiClient from '../../services/api';
 
 // Import secure data models and services
@@ -243,6 +244,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
+  const isChineseResidence = residentCountry === 'CHN';
+  const cityOfResidenceLabel = isChineseResidence ? '居住省份' : '居住省份 / 城市';
+  const cityOfResidenceHelpText = isChineseResidence
+    ? '中国地址请填写所在省份（请使用英文，例如 Anhui）'
+    : '请输入您居住的省份或城市 (请使用英文)';
+  const cityOfResidencePlaceholder = isChineseResidence
+    ? '例如 Anhui, Guangdong'
+    : '例如 Anhui, Shanghai';
+
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
@@ -254,6 +264,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const smartDefaults = getSmartDefaults();
   const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
+  const [recentStayCountry, setRecentStayCountry] = useState('');
   const [boardingCountry, setBoardingCountry] = useState(smartDefaults.boardingCountry); // 登机国家或地区
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
   const [arrivalArrivalDate, setArrivalArrivalDate] = useState(smartDefaults.arrivalDate);
@@ -329,6 +340,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         
         const travelFields = [
           purposeFilled,
+          recentStayCountry,
           boardingCountry,
           arrivalFlightNumber, arrivalArrivalDate,
           departureFlightNumber, departureDepartureDate
@@ -389,6 +401,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           departureDate: departureDepartureDate,
           arrivalFlightNumber: arrivalFlightNumber,
           departureFlightNumber: departureFlightNumber,
+          recentStayCountry: recentStayCountry,
           boardingCountry: boardingCountry,
           accommodation: hotelAddress,
           accommodationType: accommodationType === 'OTHER' ? customAccommodationType : accommodationType,
@@ -650,6 +663,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               setCustomTravelPurpose(loadedPurpose);
             }
             setBoardingCountry(travelInfo.boardingCountry || '');
+            setRecentStayCountry(travelInfo.recentStayCountry || '');
             setVisaNumber(travelInfo.visaNumber || '');
             setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
             setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
@@ -775,6 +789,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                   setCustomTravelPurpose(loadedPurpose);
                 }
                 setBoardingCountry(travelInfo.boardingCountry || '');
+                setRecentStayCountry(travelInfo.recentStayCountry || '');
                 setVisaNumber(travelInfo.visaNumber || '');
                 setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
                 setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
@@ -948,7 +963,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
     funds,
     travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, boardingCountry, hotelAddress,
+    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry, hotelAddress,
     accommodationType, customAccommodationType, province, district, subDistrict,
     postalCode, isTransitPassenger, isLoading
   ]);
@@ -1193,7 +1208,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           break;
 
         case 'occupation':
-        case 'cityOfResidence':
           if (fieldValue && fieldValue.trim()) {
             // Check for English characters only
             if (!/^[A-Za-z\s\-\.]+$/.test(fieldValue.trim())) {
@@ -1205,7 +1219,47 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             }
           } else {
             isWarning = true;
-            errorMessage = `${fieldName === 'occupation' ? 'Occupation' : 'City of residence'} is required`;
+            errorMessage = 'Occupation is required';
+          }
+          break;
+
+        case 'cityOfResidence':
+          if (fieldValue && fieldValue.trim()) {
+            const trimmedValue = fieldValue.trim();
+            
+            if (!/^[A-Za-z\s\-\.]+$/.test(trimmedValue)) {
+              isValid = false;
+              errorMessage = 'Please use English letters only';
+            } else if (trimmedValue.length < 2) {
+              isValid = false;
+              errorMessage = 'Must be at least 2 characters long';
+            } else if (residentCountry === 'CHN') {
+              const provinceMatch = findChinaProvince(trimmedValue);
+              if (!provinceMatch) {
+                isValid = false;
+                errorMessage = 'For China, please enter a province name (e.g., Anhui, Guangdong)';
+              } else if (provinceMatch.displayName !== cityOfResidence) {
+                setCityOfResidence(provinceMatch.displayName);
+              }
+            }
+          } else {
+            isWarning = true;
+            errorMessage = residentCountry === 'CHN'
+              ? 'Province is required for China'
+              : 'Province or city is required';
+          }
+          break;
+
+        case 'recentStayCountry':
+          if (fieldValue && fieldValue.trim()) {
+            // Ensure ISO code format
+            if (!/^[A-Za-z]{3}$/.test(fieldValue.trim())) {
+              isValid = false;
+              errorMessage = 'Please select a valid country or territory';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = '最近14天停留国家或地区是必填信息';
           }
           break;
 
@@ -1330,8 +1384,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         console.log('Validation passed, triggering debounced save...');
         try {
           // For date fields, we need to pass the new value directly to avoid React state delay
-          if (['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate'].includes(fieldName)) {
-            console.log('Date field detected, saving immediately with new value:', fieldValue);
+          const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
+          if (immediateSaveFields.includes(fieldName)) {
+            console.log('Immediate-save field detected, saving with new value:', fieldValue);
             // Save immediately with the new value to avoid React state delay
             await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
             setLastEditedAt(new Date());
@@ -1352,6 +1407,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       // Don't show error to user for field validation, as it's non-critical
     }
   };
+
+  // Re-validate residence field whenever the selected country changes
+  useEffect(() => {
+    if (!residentCountry) return;
+    handleFieldBlur('cityOfResidence', cityOfResidence);
+  }, [residentCountry]);
 
   // Save all data to secure storage with optional field overrides
   const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
@@ -1432,6 +1493,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         ? customTravelPurpose.trim() 
         : travelPurpose;
       if (finalTravelPurpose && finalTravelPurpose.trim()) travelInfoUpdates.travelPurpose = finalTravelPurpose;
+      const currentRecentStayCountry = getCurrentValue('recentStayCountry', recentStayCountry);
+      if (currentRecentStayCountry && currentRecentStayCountry.trim()) {
+        travelInfoUpdates.recentStayCountry = currentRecentStayCountry;
+      }
       if (boardingCountry && boardingCountry.trim()) travelInfoUpdates.boardingCountry = boardingCountry;
       if (visaNumber && visaNumber.trim()) travelInfoUpdates.visaNumber = visaNumber.trim();
       if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
@@ -2324,7 +2389,21 @@ const normalizeFundItem = useCallback((item) => ({
              lastEditedField={lastEditedField}
              autoCapitalize="words"
            />
-           <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="words" />
+           <InputWithValidation
+             label={cityOfResidenceLabel}
+             value={cityOfResidence}
+             onChangeText={setCityOfResidence}
+             onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
+             helpText={cityOfResidenceHelpText}
+             error={!!errors.cityOfResidence}
+             errorMessage={errors.cityOfResidence}
+             warning={!!warnings.cityOfResidence}
+             warningMessage={warnings.cityOfResidence}
+             fieldName="cityOfResidence"
+             lastEditedField={lastEditedField}
+             autoCapitalize="words"
+             placeholder={cityOfResidencePlaceholder}
+           />
            <NationalitySelector
              label="居住国家"
              value={residentCountry}
@@ -2576,6 +2655,17 @@ const normalizeFundItem = useCallback((item) => ({
               />
             )}
           </View>
+
+          <NationalitySelector
+            label="过去14天停留国家或地区"
+            value={recentStayCountry}
+            onValueChange={(code) => {
+              setRecentStayCountry(code);
+              handleFieldBlur('recentStayCountry', code);
+            }}
+            placeholder="请选择最近停留的国家或地区"
+            helpText="用于健康申报，通常为您最后停留的国家或地区"
+          />
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>来程机票（入境泰国）</Text>

@@ -161,6 +161,7 @@ class SecureStorageService {
             user_id TEXT,
             destination TEXT,
             travel_purpose TEXT,
+            recent_stay_country TEXT,
             boarding_country TEXT,
             visa_number TEXT,
             arrival_flight_number TEXT,
@@ -228,6 +229,7 @@ class SecureStorageService {
         // Ensure all required columns exist for travel_info table
         const requiredColumns = [
           'travel_purpose',
+          'recent_stay_country',
           'boarding_country', 
           'visa_number',
           'accommodation_phone',
@@ -530,6 +532,8 @@ class SecureStorageService {
       await this.addPassportFields();
       // Migration 2: Ensure travel_info has boarding_country column
       await this.addTravelInfoBoardingCountryColumn();
+      // Migration 2b: Ensure travel_info has recent_stay_country column
+      await this.addTravelInfoRecentStayCountryColumn();
       // Migration 3: Ensure travel_info has visa_number column
       await this.addTravelInfoVisaNumberColumn();
       // Migration 4: Ensure personal_info has phone_code column
@@ -644,6 +648,39 @@ class SecureStorageService {
                 () => console.log('Added boarding_country column to travel_info table'),
                 (_, error) => {
                   console.error('Failed to add boarding_country column to travel_info table:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to check travel_info table schema:', error);
+            return false;
+          }
+        );
+      }, reject, resolve);
+    });
+  }
+
+  /**
+   * Ensure travel_info table includes recent_stay_country column
+   */
+  async addTravelInfoRecentStayCountryColumn() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(travel_info)`,
+          [],
+          (_, { rows }) => {
+            const columns = rows._array.map(col => col.name);
+
+            if (!columns.includes('recent_stay_country')) {
+              tx.executeSql(
+                `ALTER TABLE travel_info ADD COLUMN recent_stay_country TEXT`,
+                [],
+                () => console.log('Added recent_stay_country column to travel_info table'),
+                (_, error) => {
+                  console.error('Failed to add recent_stay_country column to travel_info table:', error);
                   return false;
                 }
               );
@@ -1325,7 +1362,7 @@ class SecureStorageService {
           tx.executeSql(
             `INSERT OR REPLACE INTO travel_info (
               id, user_id, destination,
-              travel_purpose, boarding_country, visa_number,
+              travel_purpose, recent_stay_country, boarding_country, visa_number,
               arrival_flight_number, arrival_departure_airport,
               arrival_departure_date, arrival_departure_time,
               arrival_arrival_airport, arrival_arrival_date, arrival_arrival_time,
@@ -1335,12 +1372,13 @@ class SecureStorageService {
               accommodation_type, province, district, sub_district, postal_code,
               hotel_name, hotel_address, accommodation_phone, length_of_stay, 
               is_transit_passenger, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               travelData.userId,
               travelData.destination,
               travelData.travelPurpose,
+              travelData.recentStayCountry,
               travelData.boardingCountry,
               travelData.visaNumber,
               travelData.arrivalFlightNumber,
@@ -1425,6 +1463,7 @@ class SecureStorageService {
                 userId: result.user_id,
                 destination: result.destination,
                 travelPurpose: result.travel_purpose,
+                recentStayCountry: result.recent_stay_country,
                 boardingCountry: result.boarding_country,
                 visaNumber: result.visa_number,
                 arrivalFlightNumber: result.arrival_flight_number,

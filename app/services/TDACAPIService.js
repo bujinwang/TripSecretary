@@ -980,6 +980,15 @@ class TDACAPIService {
       rawDepartureMode: traveler.departureTravelMode,
       rawDepartureFlight: traveler.departureFlightNo || traveler.departureFlightNumber
     });
+    const recentStayCountries = Array.isArray(traveler.recentStayCountry)
+      ? traveler.recentStayCountry
+      : traveler.recentStayCountry
+        ? String(traveler.recentStayCountry).split(',').map(item => item.trim())
+        : [];
+    const ddcCountryCodes = recentStayCountries
+      .map(code => (code || '').toUpperCase())
+      .filter(Boolean)
+      .join(',');
     
     const payload = {
       hiddenToken: '',
@@ -1028,7 +1037,7 @@ class TDACAPIService {
         notStayInTh: false
       },
       healthInfo: {
-        ddcCountryCodes: '' // Visited countries in last 21 days
+        ddcCountryCodes // Visited countries in last 21 days
       }
     };
 

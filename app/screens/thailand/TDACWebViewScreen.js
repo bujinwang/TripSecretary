@@ -26,6 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import EntryPackService from '../../services/entryPack/EntryPackService';
 import PassportDataService from '../../services/data/PassportDataService';
+import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -813,12 +814,26 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     webViewRef.current?.injectJavaScript(jsCode);
   };
 
-  // 自动填充所有字段 - 智能批量填充
-  const autoFillAll = () => {
-    const allFields = formFields.map(field => ({
-      value: field.value,
-      searchTerms: field.searchTerms || [field.label]
-    }));
+  // 自动填充所有字段 - 智能批量填充（带详细日志和手动确认）
+  const autoFillAll = async () => {
+    try {
+      // 🔍 记录详细的填充信息
+      await TDACSubmissionLogger.logWebViewFill(formFields);
+      
+      // 🛑 显示手动确认对话框
+      const shouldProceed = await showWebViewFillConfirmation();
+      
+      if (!shouldProceed) {
+        console.log('❌ 用户取消了自动填充');
+        return;
+      }
+      
+      console.log('✅ 用户确认自动填充，开始执行...');
+      
+      const allFields = formFields.map(field => ({
+        value: field.value,
+        searchTerms: field.searchTerms || [field.label]
+      }));
 
     const jsCode = `
       (function() {
@@ -969,6 +984,15 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     `;
     
     webViewRef.current?.injectJavaScript(jsCode);
+    
+    } catch (error) {
+      console.error('❌ 自动填充失败:', error);
+      Alert.alert(
+        '❌ 自动填充失败',
+        '无法执行自动填充，请使用手动复制方式。\n\n错误信息: ' + error.message,
+        [{ text: '好的' }]
+      );
+    }
   };
 
   // 字段数据 - 带多个搜索词提高匹配率
@@ -2319,5 +2343,126 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
   },
 });
+
+
+
+/**
+ * 🛑 显示WebView自动填充确认对话框
+ */
+const showWebViewFillConfirmation = () => {
+  return new Promise((resolve) => {
+    const personalFields = formFields.filter(f => f.section === 'personal');
+    const tripFields = formFields.filter(f => f.section === 'trip');
+    const accommodationFields = formFields.filter(f => f.section === 'accommodation');
+    
+    const confirmationMessage = `
+🔍 即将自动填充的信息：
+
+👤 个人信息 (${personalFields.length}个字段):
+${personalFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+✈️ 旅行信息 (${tripFields.length}个字段):
+${tripFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+🏨 住宿信息 (${accommodationFields.length}个字段):
+${accommodationFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+⚠️ 重要提醒：
+• 信息将自动填入TDAC网站
+• 填充后请仔细检查准确性
+• 确认无误后再提交
+• 避免多次提交被封禁
+    `.trim();
+
+    Alert.alert(
+      '🛑 确认自动填充',
+      confirmationMessage,
+      [
+        {
+          text: '❌ 取消',
+          style: 'cancel',
+          onPress: () => {
+            console.log('🛑 用户取消了自动填充');
+            resolve(false);
+          }
+        },
+        {
+          text: '📋 查看字段详情',
+          onPress: () => {
+            showWebViewFieldDetails(resolve);
+          }
+        },
+        {
+          text: '✅ 开始填充',
+          style: 'default',
+          onPress: () => {
+            console.log('✅ 用户确认开始自动填充');
+            resolve(true);
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+  });
+};
+
+/**
+ * 显示WebView字段详情
+ */
+const showWebViewFieldDetails = (resolve) => {
+  const fieldDetails = `
+🔍 TDAC 网站字段映射详情：
+
+📋 字段查找策略：
+每个字段将尝试以下方式查找：
+1. formcontrolname="${field.field}"
+2. ng-reflect-name="${field.field}"
+3. name="${field.field}"
+4. placeholder包含"${field.label}"
+5. label文本包含"${field.labelCn}"
+
+📊 具体字段映射：
+${formFields.map((field, index) => `
+${index + 1}. ${field.labelCn} (${field.label})
+   值: "${field.value}"
+   搜索: [${field.searchTerms.join(', ')}]
+   目标: ${field.field}`).join('\n')}
+
+🔧 填充机制：
+• 智能重试：最多15次尝试
+• 事件触发：input, change, blur等
+• Angular支持：兼容Angular表单
+• 单选按钮：自动选择匹配项
+
+⚠️ 填充完成后会自动：
+• 滚动到页面底部
+• 查找Continue按钮
+• 提示用户检查并提交
+  `.trim();
+
+  Alert.alert(
+    '📋 字段映射详情',
+    fieldDetails,
+    [
+      {
+        text: '❌ 取消填充',
+        style: 'cancel',
+        onPress: () => {
+          console.log('🛑 用户在查看详情后取消了填充');
+          resolve(false);
+        }
+      },
+      {
+        text: '✅ 确认无误，开始填充',
+        style: 'default',
+        onPress: () => {
+          console.log('✅ 用户在查看详情后确认填充');
+          resolve(true);
+        }
+      }
+    ],
+    { cancelable: false }
+  );
+};
 
 export default TDACWebViewScreen;
