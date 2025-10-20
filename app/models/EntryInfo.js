@@ -392,6 +392,9 @@ class EntryInfo extends EntryData {
           lastUpdatedAt: this.lastUpdatedAt,
           tripId: this.tripId,
           destinationId: this.destinationId,
+          passportId: this.passportId,
+          personalInfoId: this.personalInfoId,
+          fundItemIds: [...this.fundItemIds],
           tdacSubmission: this.tdacSubmission
         }
       };

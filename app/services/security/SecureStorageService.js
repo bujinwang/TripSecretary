@@ -19,7 +19,7 @@ class SecureStorageService {
     this.db = null;
     this.encryption = EncryptionService;
     this.DB_NAME = 'tripsecretary_secure';
-    this.DB_VERSION = '1.2.0';
+    this.DB_VERSION = '1.3.0';
     this.BACKUP_DIR = FileSystem.documentDirectory + 'backups/';
     this.AUDIT_LOG_KEY = 'secure_storage_audit';
     // TODO: Re-enable encryption before production release
@@ -93,6 +93,17 @@ class SecureStorageService {
   async createTables() {
     return new Promise((resolve, reject) => {
       this.db.transaction(tx => {
+        // Users table (local reference for foreign keys)
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            external_id TEXT,
+            display_name TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `);
+
         // Passport data table
         tx.executeSql(`
           CREATE TABLE IF NOT EXISTS passports (
@@ -362,6 +373,8 @@ class SecureStorageService {
           CREATE TABLE IF NOT EXISTS entry_info (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,
+            passport_id TEXT,
+            personal_info_id TEXT,
             destination_id TEXT,
             trip_id TEXT,
             status TEXT DEFAULT 'incomplete',
@@ -373,8 +386,9 @@ class SecureStorageService {
             travel_purpose TEXT,
             flight_number TEXT,
             accommodation TEXT,
-            tdac_submission TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (passport_id) REFERENCES passports(id),
+            FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
           )
         `);
 
@@ -395,6 +409,20 @@ class SecureStorageService {
             updated_at TEXT,
             archived_at TEXT,
             FOREIGN KEY (entry_info_id) REFERENCES entry_info(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // Entry info to fund items mapping table
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS entry_info_fund_items (
+            entry_info_id TEXT NOT NULL,
+            fund_item_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (entry_info_id, fund_item_id),
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+            FOREIGN KEY (fund_item_id) REFERENCES fund_items(id),
             FOREIGN KEY (user_id) REFERENCES users(id)
           )
         `);
@@ -439,6 +467,70 @@ class SecureStorageService {
           ON entry_info(user_id, destination_id)
         `);
 
+        tx.executeSql(
+          `PRAGMA table_info(entry_info)`,
+          [],
+          (tx, { rows }) => {
+            const columnNames = Array.isArray(rows?._array)
+              ? rows._array.map(column => column.name)
+              : [];
+
+            if (columnNames.includes('passport_id')) {
+              tx.executeSql(`
+                CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+                ON entry_info(passport_id)
+              `);
+            } else {
+              console.info(
+                'entry_info table missing passport_id column; attempting in-place schema update'
+              );
+              tx.executeSql(
+                `ALTER TABLE entry_info ADD COLUMN passport_id TEXT`,
+                [],
+                () => {
+                  tx.executeSql(`
+                    CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+                    ON entry_info(passport_id)
+                  `);
+                },
+                (_, error) => {
+                  console.error('Failed to add passport_id column to entry_info:', error);
+                  return false;
+                }
+              );
+            }
+
+            if (columnNames.includes('personal_info_id')) {
+              tx.executeSql(`
+                CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+                ON entry_info(personal_info_id)
+              `);
+            } else {
+              console.info(
+                'entry_info table missing personal_info_id column; attempting in-place schema update'
+              );
+              tx.executeSql(
+                `ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT`,
+                [],
+                () => {
+                  tx.executeSql(`
+                    CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+                    ON entry_info(personal_info_id)
+                  `);
+                },
+                (_, error) => {
+                  console.error('Failed to add personal_info_id column to entry_info:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to inspect entry_info schema for initial index creation:', error);
+            return false;
+          }
+        );
+
         tx.executeSql(`
           CREATE INDEX IF NOT EXISTS idx_entry_packs_user_id 
           ON entry_packs(user_id)
@@ -447,6 +539,21 @@ class SecureStorageService {
         tx.executeSql(`
           CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info_id 
           ON entry_packs(entry_info_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
+          ON entry_info_fund_items(entry_info_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
+          ON entry_info_fund_items(fund_item_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
+          ON entry_info_fund_items(user_id)
         `);
 
         // Audit events table (Progressive Entry Flow)
@@ -538,6 +645,8 @@ class SecureStorageService {
       await this.addTravelInfoVisaNumberColumn();
       // Migration 4: Ensure personal_info has phone_code column
       await this.addPersonalInfoPhoneCodeColumn();
+      // Migration 5: Update entry_info schema for passport/personal references
+      await this.migrateEntryInfoTable();
       
       // Update version if needed
       if (!currentVersion || currentVersion !== this.DB_VERSION) {
@@ -770,6 +879,237 @@ class SecureStorageService {
           }
         );
       }, reject, resolve);
+    });
+  }
+
+  /**
+   * Migrate entry_info table to include passport/personal references and remove tdac_submission column
+   */
+  async migrateEntryInfoTable() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(entry_info)`,
+          [],
+          (_, { rows }) => {
+            const columns = rows._array.map(col => col.name);
+            const needsPassportColumn = !columns.includes('passport_id');
+            const needsPersonalColumn = !columns.includes('personal_info_id');
+            const hasTdacColumn = columns.includes('tdac_submission');
+
+            if (!needsPassportColumn && !needsPersonalColumn && !hasTdacColumn) {
+              return;
+            }
+
+            tx.executeSql(
+              'DROP TABLE IF EXISTS entry_info_migrating',
+              [],
+              () => {},
+              (_, error) => {
+                console.error('Failed to drop entry_info_migrating table:', error);
+                return false;
+              }
+            );
+
+            tx.executeSql(
+              `CREATE TABLE entry_info_migrating (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                passport_id TEXT,
+                personal_info_id TEXT,
+                destination_id TEXT,
+                trip_id TEXT,
+                status TEXT DEFAULT 'incomplete',
+                completion_metrics TEXT,
+                last_updated_at TEXT,
+                created_at TEXT,
+                arrival_date TEXT,
+                departure_date TEXT,
+                travel_purpose TEXT,
+                flight_number TEXT,
+                accommodation TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (passport_id) REFERENCES passports(id),
+                FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
+              )`,
+              [],
+              () => {},
+              (_, error) => {
+                console.error('Failed to create entry_info_migrating table:', error);
+                return false;
+              }
+            );
+
+            tx.executeSql(
+              `INSERT INTO entry_info_migrating (
+                id, user_id, passport_id, personal_info_id, destination_id,
+                trip_id, status, completion_metrics, last_updated_at, created_at,
+                arrival_date, departure_date, travel_purpose, flight_number, accommodation
+              )
+              SELECT
+                id, user_id, NULL, NULL, destination_id,
+                trip_id, status, completion_metrics, last_updated_at, created_at,
+                arrival_date, departure_date, travel_purpose, flight_number, accommodation
+              FROM entry_info`,
+              [],
+              () => {},
+              (_, error) => {
+                console.error('Failed to copy data into entry_info_migrating table:', error);
+                return false;
+              }
+            );
+
+            tx.executeSql(
+              'DROP TABLE entry_info',
+              [],
+              () => {},
+              (_, error) => {
+                console.error('Failed to drop original entry_info table:', error);
+                return false;
+              }
+            );
+
+            tx.executeSql(
+              'ALTER TABLE entry_info_migrating RENAME TO entry_info',
+              [],
+              () => {},
+              (_, error) => {
+                console.error('Failed to rename entry_info_migrating table:', error);
+                return false;
+              }
+            );
+          },
+          (_, error) => {
+            console.error('Failed to inspect entry_info table for migration:', error);
+            return false;
+          }
+        );
+
+        // Ensure join table exists even if migration isn't triggered
+        tx.executeSql(`
+          CREATE TABLE IF NOT EXISTS entry_info_fund_items (
+            entry_info_id TEXT NOT NULL,
+            fund_item_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (entry_info_id, fund_item_id),
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+            FOREIGN KEY (fund_item_id) REFERENCES fund_items(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+      }, error => {
+        console.error('Entry info migration transaction failed:', error);
+        reject(error);
+      }, () => {
+        this.ensureEntryInfoIndexes()
+          .then(() => resolve())
+          .catch(indexError => {
+            console.error('Failed to ensure entry info indexes:', indexError);
+            reject(indexError);
+          });
+      });
+    });
+  }
+
+  /**
+   * Ensure indexes for entry_info and associated tables are present
+   */
+  async ensureEntryInfoIndexes() {
+    return new Promise((resolve, reject) => {
+      this.db.transaction(tx => {
+        tx.executeSql(
+          `PRAGMA table_info(entry_info)`,
+          [],
+          (tx, { rows }) => {
+            const columnNames = Array.isArray(rows?._array)
+              ? rows._array.map(column => column.name)
+              : [];
+
+            tx.executeSql(`
+              CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
+              ON entry_info(user_id)
+            `);
+
+            tx.executeSql(`
+              CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
+              ON entry_info(user_id, destination_id)
+            `);
+
+            if (columnNames.includes('passport_id')) {
+              tx.executeSql(`
+                CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+                ON entry_info(passport_id)
+              `);
+            } else {
+              console.info(
+                'entry_info schema missing passport_id column; attempting in-place schema update'
+              );
+              tx.executeSql(
+                `ALTER TABLE entry_info ADD COLUMN passport_id TEXT`,
+                [],
+                () => {
+                  tx.executeSql(`
+                    CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+                    ON entry_info(passport_id)
+                  `);
+                },
+                (_, error) => {
+                  console.error('Failed to add passport_id column to entry_info during index ensure:', error);
+                  return false;
+                }
+              );
+            }
+
+            if (columnNames.includes('personal_info_id')) {
+              tx.executeSql(`
+                CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+                ON entry_info(personal_info_id)
+              `);
+            } else {
+              console.info(
+                'entry_info schema missing personal_info_id column; attempting in-place schema update'
+              );
+              tx.executeSql(
+                `ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT`,
+                [],
+                () => {
+                  tx.executeSql(`
+                    CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+                    ON entry_info(personal_info_id)
+                  `);
+                },
+                (_, error) => {
+                  console.error('Failed to add personal_info_id column to entry_info during index ensure:', error);
+                  return false;
+                }
+              );
+            }
+          },
+          (_, error) => {
+            console.error('Failed to inspect entry_info schema before index creation:', error);
+            return false;
+          }
+        );
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
+          ON entry_info_fund_items(entry_info_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
+          ON entry_info_fund_items(fund_item_id)
+        `);
+
+        tx.executeSql(`
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
+          ON entry_info_fund_items(user_id)
+        `);
+      }, error => {
+        console.error('Failed to ensure entry info indexes:', error);
+        reject(error);
+      }, resolve);
     });
   }
 
@@ -2742,15 +3082,20 @@ class SecureStorageService {
   async getEntryInfo(userId, destinationId = null) {
     return new Promise((resolve, reject) => {
       try {
-        let query = 'SELECT * FROM entry_info WHERE user_id = ?';
+        let query = `
+          SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+          FROM entry_info ei
+          LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+          WHERE ei.user_id = ?
+        `;
         let params = [userId];
 
         if (destinationId) {
-          query += ' AND destination_id = ?';
+          query += ' AND ei.destination_id = ?';
           params.push(destinationId);
         }
 
-        query += ' ORDER BY created_at DESC LIMIT 1';
+        query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
 
         this.db.transaction(tx => {
           tx.executeSql(
@@ -2786,15 +3131,20 @@ class SecureStorageService {
   async getEntryInfoByDestination(destinationId, tripId = null) {
     return new Promise((resolve, reject) => {
       try {
-        let query = 'SELECT * FROM entry_info WHERE destination_id = ?';
+        let query = `
+          SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+          FROM entry_info ei
+          LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+          WHERE ei.destination_id = ?
+        `;
         let params = [destinationId];
 
         if (tripId) {
-          query += ' AND trip_id = ?';
+          query += ' AND ei.trip_id = ?';
           params.push(tripId);
         }
 
-        query += ' ORDER BY created_at DESC LIMIT 1';
+        query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
 
         this.db.transaction(tx => {
           tx.executeSql(
@@ -2831,7 +3181,14 @@ class SecureStorageService {
       try {
         this.db.transaction(tx => {
           tx.executeSql(
-            'SELECT * FROM entry_info WHERE user_id = ? ORDER BY last_updated_at DESC',
+            `
+              SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+              FROM entry_info ei
+              LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+              WHERE ei.user_id = ?
+              GROUP BY ei.id
+              ORDER BY ei.last_updated_at DESC
+            `,
             [userId],
             (_, result) => {
               const entryInfos = [];
@@ -2860,47 +3217,91 @@ class SecureStorageService {
    * @returns {Promise<Object>} - Save result with ID
    */
   async saveEntryInfo(entryInfoData) {
+    try {
+      await this.ensureInitialized();
+    } catch (initError) {
+      console.error('Failed to initialize secure storage before saving entry info:', initError);
+      throw initError;
+    }
+
     return new Promise((resolve, reject) => {
       try {
         const serialized = this.serializeEntryInfo(entryInfoData);
-        
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO entry_info (
-              id, user_id, destination_id, trip_id, status, 
-              completion_metrics, last_updated_at, created_at,
-              arrival_date, departure_date, travel_purpose,
-              flight_number, accommodation, tdac_submission
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              serialized.id,
-              serialized.user_id,
-              serialized.destination_id,
-              serialized.trip_id,
-              serialized.status,
-              serialized.completion_metrics,
-              serialized.last_updated_at,
-              serialized.created_at,
-              serialized.arrival_date,
-              serialized.departure_date,
-              serialized.travel_purpose,
-              serialized.flight_number,
-              serialized.accommodation,
-              serialized.tdac_submission
-            ],
-            (_, result) => {
-              resolve({ 
-                id: serialized.id,
-                insertId: result.insertId,
-                rowsAffected: result.rowsAffected
-              });
-            },
-            (_, error) => {
-              console.error('Failed to save entry info:', error);
-              reject(error);
-            }
-          );
-        });
+        const fundItemIds = this.extractFundItemIds(entryInfoData);
+        let insertResult = null;
+        const linkedAt = new Date().toISOString();
+
+        this.db.transaction(
+          tx => {
+            tx.executeSql(
+              `INSERT OR REPLACE INTO entry_info (
+                id, user_id, passport_id, personal_info_id, destination_id, trip_id, status, 
+                completion_metrics, last_updated_at, created_at,
+                arrival_date, departure_date, travel_purpose,
+                flight_number, accommodation
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                serialized.id,
+                serialized.user_id,
+                serialized.passport_id,
+                serialized.personal_info_id,
+                serialized.destination_id,
+                serialized.trip_id,
+                serialized.status,
+                serialized.completion_metrics,
+                serialized.last_updated_at,
+                serialized.created_at,
+                serialized.arrival_date,
+                serialized.departure_date,
+                serialized.travel_purpose,
+                serialized.flight_number,
+                serialized.accommodation
+              ],
+              (_, result) => {
+                insertResult = result;
+              },
+              (_, error) => {
+                console.error('Failed to save entry info:', error);
+                return false;
+              }
+            );
+
+            tx.executeSql(
+              'DELETE FROM entry_info_fund_items WHERE entry_info_id = ?',
+              [serialized.id],
+              () => {},
+              (_, error) => {
+                console.error('Failed to clear entry info fund item links:', error);
+                return false;
+              }
+            );
+
+            fundItemIds.forEach(fundItemId => {
+              tx.executeSql(
+                `INSERT OR REPLACE INTO entry_info_fund_items (
+                  entry_info_id, fund_item_id, user_id, linked_at
+                ) VALUES (?, ?, ?, ?)`,
+                [serialized.id, fundItemId, serialized.user_id, linkedAt],
+                () => {},
+                (_, error) => {
+                  console.error('Failed to link fund item to entry info:', error);
+                  return false;
+                }
+              );
+            });
+          },
+          error => {
+            console.error('Failed to save entry info transaction:', error);
+            reject(error);
+          },
+          () => {
+            resolve({
+              id: serialized.id,
+              insertId: insertResult?.insertId,
+              rowsAffected: insertResult?.rowsAffected ?? 0
+            });
+          }
+        );
       } catch (error) {
         console.error('Failed to save entry info:', error);
         reject(error);
@@ -3102,6 +3503,141 @@ class SecureStorageService {
   }
 
   /**
+   * Retrieve fund items associated with an entry info record
+   * @param {string} entryInfoId - Entry info identifier
+   * @returns {Promise<Array>} - Array of fund item objects with link metadata
+   */
+  async getFundItemsForEntryInfo(entryInfoId) {
+    try {
+      await this.ensureInitialized();
+    } catch (initError) {
+      console.error('Failed to initialize storage before loading fund items:', initError);
+      throw initError;
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        this.db.transaction(tx => {
+          tx.executeSql(
+            `
+              SELECT fi.*, eifi.linked_at
+              FROM entry_info_fund_items eifi
+              JOIN fund_items fi ON fi.id = eifi.fund_item_id
+              WHERE eifi.entry_info_id = ?
+              ORDER BY eifi.linked_at DESC
+            `,
+            [entryInfoId],
+            (_, result) => {
+              const items = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                items.push({
+                  id: row.id,
+                  userId: row.user_id,
+                  type: row.type,
+                  amount: row.amount,
+                  currency: row.currency,
+                  details: row.details,
+                  photoUri: row.photo_uri,
+                  createdAt: row.created_at,
+                  updatedAt: row.updated_at,
+                  linkedAt: row.linked_at
+                });
+              }
+              resolve(items);
+            },
+            (_, error) => {
+              console.error('Failed to load fund items for entry info:', error);
+              reject(error);
+              return false;
+            }
+          );
+        });
+      } catch (error) {
+        console.error('Failed to get fund items for entry info:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Safely parse JSON columns while tolerating invalid data
+   * @param {*} value - Raw value from SQLite result
+   * @param {*} fallback - Value to return when parsing fails
+   * @returns {*} - Parsed JSON or fallback
+   */
+  safeJsonParse(value, fallback = null) {
+    if (value === null || value === undefined || value === '') {
+      return fallback;
+    }
+
+    if (typeof value === 'object') {
+      return value;
+    }
+
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      console.warn('Failed to parse JSON value in SecureStorageService:', {
+        valuePreview: typeof value === 'string' ? value.slice(0, 200) : value,
+        error: error.message
+      });
+      return fallback;
+    }
+  }
+
+  /**
+   * Normalize fund item identifiers from entry info payloads
+   * @param {Object} entryInfoData - Entry info payload
+   * @returns {Array<string>} - List of fund item IDs
+  */
+  extractFundItemIds(entryInfoData = {}) {
+    const identifiers = [];
+
+    if (!entryInfoData) {
+      return identifiers;
+    }
+
+    if (Array.isArray(entryInfoData.fundItemIds)) {
+      identifiers.push(...entryInfoData.fundItemIds);
+    } else if (Array.isArray(entryInfoData.fundItems)) {
+      identifiers.push(
+        ...entryInfoData.fundItems.map(item => {
+          if (!item) return null;
+          if (typeof item === 'string') return item;
+          return item.id || item.fundItemId || null;
+        })
+      );
+    } else if (entryInfoData.fundItemId) {
+      identifiers.push(entryInfoData.fundItemId);
+    }
+
+    return Array.from(
+      new Set(
+        identifiers
+          .map(id => (typeof id === 'string' ? id.trim() : id))
+          .filter(Boolean)
+      )
+    );
+  }
+
+  /**
+   * Parse fund item IDs from aggregated SQL field
+   * @param {string|null} aggregatedIds - Comma-separated fund item IDs
+   * @returns {Array<string>} - List of fund item IDs
+   */
+  parseFundItemIds(aggregatedIds) {
+    if (!aggregatedIds || typeof aggregatedIds !== 'string') {
+      return [];
+    }
+
+    return aggregatedIds
+      .split(',')
+      .map(id => id?.trim())
+      .filter(Boolean);
+  }
+
+  /**
    * Serialize entry info for database storage
    * @param {Object} entryInfo - Entry info data
    * @returns {Object} - Serialized data
@@ -3110,6 +3646,8 @@ class SecureStorageService {
     return {
       id: entryInfo.id || this.generateId(),
       user_id: entryInfo.userId,
+      passport_id: entryInfo.passportId || null,
+      personal_info_id: entryInfo.personalInfoId || null,
       destination_id: entryInfo.destinationId,
       trip_id: entryInfo.tripId,
       status: entryInfo.status || 'incomplete',
@@ -3120,8 +3658,7 @@ class SecureStorageService {
       departure_date: entryInfo.departureDate,
       travel_purpose: entryInfo.travelPurpose,
       flight_number: entryInfo.flightNumber,
-      accommodation: entryInfo.accommodation,
-      tdac_submission: JSON.stringify(entryInfo.tdacSubmission || null)
+      accommodation: entryInfo.accommodation
     };
   }
 
@@ -3160,6 +3697,8 @@ class SecureStorageService {
     return {
       id: row.id,
       userId: row.user_id,
+      passportId: row.passport_id,
+      personalInfoId: row.personal_info_id,
       destinationId: row.destination_id,
       tripId: row.trip_id,
       status: row.status,
@@ -3171,7 +3710,8 @@ class SecureStorageService {
       travelPurpose: row.travel_purpose,
       flightNumber: row.flight_number,
       accommodation: row.accommodation,
-      tdacSubmission: this.safeJsonParse(row.tdac_submission, null)
+      tdacSubmission: this.safeJsonParse(row.tdac_submission, null),
+      fundItemIds: this.parseFundItemIds(row.fund_item_ids)
     };
   }
 

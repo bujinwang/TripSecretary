@@ -142,11 +142,35 @@ class TDACSubmissionLogger {
    */
   static logAccommodationInfo(travelerData) {
     console.log('\n🏨 === 住宿信息 Accommodation Information ===');
-    console.log('🏠 住宿类型 (Type):', travelerData.accommodationType, '→ TDAC字段: accommodationType');
+    const accommodationDisplay = travelerData.accommodationTypeDisplay || travelerData.accommodationType;
+    console.log(
+      '🏠 住宿类型 (Type):',
+      accommodationDisplay,
+      '→ TDAC字段: accommodationType',
+      travelerData.accommodationType ? `(ID: ${travelerData.accommodationType})` : ''
+    );
     console.log('📍 地址信息 (Address):');
-    console.log('  - 省份 (Province):', travelerData.province, '→ TDAC字段: province');
-    console.log('  - 区域 (District):', travelerData.district, '→ TDAC字段: district');
-    console.log('  - 子区域 (Sub District):', travelerData.subDistrict, '→ TDAC字段: subDistrict');
+    const provinceDisplay = travelerData.provinceDisplay || travelerData.province;
+    const districtDisplay = travelerData.districtDisplay || travelerData.district;
+    const subDistrictDisplay = travelerData.subDistrictDisplay || travelerData.subDistrict;
+    console.log(
+      '  - 省份 (Province):',
+      provinceDisplay,
+      '→ TDAC字段: province',
+      travelerData.province ? `(Code: ${travelerData.province})` : ''
+    );
+    console.log(
+      '  - 区域 (District):',
+      districtDisplay || '(未填写)',
+      '→ TDAC字段: district',
+      travelerData.district ? `(Code: ${travelerData.district})` : ''
+    );
+    console.log(
+      '  - 子区域 (Sub District):',
+      subDistrictDisplay || '(未填写)',
+      '→ TDAC字段: subDistrict',
+      travelerData.subDistrict ? `(Code: ${travelerData.subDistrict})` : ''
+    );
     console.log('  - 邮编 (Post Code):', travelerData.postCode, '→ TDAC字段: postCode');
     console.log('  - 详细地址 (Address):', travelerData.address, '→ TDAC字段: address');
   }
@@ -172,6 +196,62 @@ class TDACSubmissionLogger {
     console.log('\n🆔 === 签证信息 Visa Information ===');
     console.log('📋 签证号 (Visa No):', travelerData.visaNo || '(免签)', '→ TDAC字段: visaNo');
   }
+
+  /**
+   * 记录TDAC解析后的下拉选项ID
+   * 在TDACAPIService完成下拉匹配后调用，展示最终提交给TDAC的编码
+   * @param {Object} originalTravelerData - 原始旅行者数据
+   * @param {Object} payload - 提交给TDAC的最终payload
+   * @param {Object} dynamicData - TDACAPIService匹配到的行数据
+   */
+  static async logResolvedSelectMappings(originalTravelerData, payload, dynamicData = {}) {
+    try {
+      if (!payload) {
+        console.log('ℹ️ logResolvedSelectMappings called without payload, skipping');
+        return;
+      }
+
+      const tripInfo = payload.tripInfo || {};
+      const resolvedInfo = {
+        tranModeId: tripInfo.tranModeId || '',
+        tranModeDesc: dynamicData.tranModeRow?.value || '',
+        accTypeId: tripInfo.accTypeId || '',
+        accProvinceId: tripInfo.accProvinceId || dynamicData.provinceRow?.key || '',
+        accProvinceDesc: tripInfo.accProvinceDesc || dynamicData.provinceRow?.value || '',
+        accDistrictId: tripInfo.accDistrictId || dynamicData.districtRow?.key || '',
+        accDistrictDesc: tripInfo.accDistrictDesc || dynamicData.districtRow?.value || '',
+        accSubDistrictId: tripInfo.accSubDistrictId || dynamicData.subDistrictRow?.key || '',
+        accSubDistrictDesc: tripInfo.accSubDistrictDesc || dynamicData.subDistrictRow?.value || '',
+        accPostCode: tripInfo.accPostCode || dynamicData.districtRow?.code || ''
+      };
+
+      console.log('\n🔁 === TDAC 解析后的下拉选项编码 ===');
+      console.log('   • 住宿类型 ID:', resolvedInfo.accTypeId);
+      console.log('   • 省份 ID:', resolvedInfo.accProvinceId, '→', resolvedInfo.accProvinceDesc);
+      console.log('   • 区域 ID:', resolvedInfo.accDistrictId, '→', resolvedInfo.accDistrictDesc);
+      console.log('   • 子区域 ID:', resolvedInfo.accSubDistrictId, '→', resolvedInfo.accSubDistrictDesc);
+      console.log('   • 邮编:', resolvedInfo.accPostCode);
+      console.log('   • 交通方式 ID:', resolvedInfo.tranModeId, resolvedInfo.tranModeDesc ? `→ ${resolvedInfo.tranModeDesc}` : '');
+
+      // 保存解析后的信息，便于事后审计
+      await this.saveSubmissionLog('hybrid_resolved', originalTravelerData || {}, {
+        resolvedSelectItems: resolvedInfo,
+        payloadPreview: {
+          tranModeId: tripInfo.tranModeId,
+          accTypeId: tripInfo.accTypeId,
+          accProvinceId: tripInfo.accProvinceId,
+          accProvinceDesc: tripInfo.accProvinceDesc,
+          accDistrictId: tripInfo.accDistrictId,
+          accDistrictDesc: tripInfo.accDistrictDesc,
+          accSubDistrictId: tripInfo.accSubDistrictId,
+          accSubDistrictDesc: tripInfo.accSubDistrictDesc,
+          accPostCode: tripInfo.accPostCode
+        }
+      });
+    } catch (error) {
+      console.error('❌ 记录解析后的TDAC编码失败:', error);
+    }
+  }
   
   /**
    * 记录字段映射
@@ -194,8 +274,10 @@ class TDACSubmissionLogger {
       { label: '出发国家', field: 'countryBoarded', value: travelerData.countryBoarded, tdacId: 'countryBoarded' },
       { label: '最近停留国家', field: 'recentStayCountry', value: travelerData.recentStayCountry, tdacId: 'recentStayCountry' },
       { label: '旅行目的', field: 'purpose', value: travelerData.purpose, tdacId: 'purpose' },
-      { label: '住宿类型', field: 'accommodationType', value: travelerData.accommodationType, tdacId: 'accommodationType' },
-      { label: '省份', field: 'province', value: travelerData.province, tdacId: 'province' },
+      { label: '住宿类型', field: 'accommodationType', value: travelerData.accommodationTypeDisplay || travelerData.accommodationType, tdacId: 'accommodationType' },
+      { label: '省份', field: 'province', value: travelerData.provinceDisplay || travelerData.province, tdacId: 'province' },
+      { label: '区域', field: 'district', value: travelerData.districtDisplay || travelerData.district, tdacId: 'district' },
+      { label: '子区域', field: 'subDistrict', value: travelerData.subDistrictDisplay || travelerData.subDistrict, tdacId: 'subDistrict' },
       { label: '详细地址', field: 'address', value: travelerData.address, tdacId: 'address' }
     ];
     

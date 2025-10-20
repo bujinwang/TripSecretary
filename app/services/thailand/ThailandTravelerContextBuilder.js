@@ -26,7 +26,7 @@ class ThailandTravelerContextBuilder {
       // Also get travel info and fund items separately since they're not included in getAllUserData
       // Try multiple destination identifiers to ensure we find the data
       const [travelInfo, fundItems] = await Promise.all([
-        this.getTravelInfoWithFallback(userId),
+        ThailandTravelerContextBuilder.getTravelInfoWithFallback(userId),
         PassportDataService.getFundItems(userId).catch(() => [])
       ]);
       
@@ -54,9 +54,8 @@ class ThailandTravelerContextBuilder {
       } else {
         console.log('❌ No travel info found - this will cause validation to fail');
       }
-
       // Validate that we have the required data
-      const validationResult = this.validateUserData(userData);
+      const validationResult = ThailandTravelerContextBuilder.validateUserData(userData);
       if (!validationResult.isValid) {
         console.log('User data validation failed:', validationResult.errors);
         return {
@@ -73,7 +72,7 @@ class ThailandTravelerContextBuilder {
       }
 
       // Transform user data to TDAC format
-      const tdacData = this.transformToTDACFormat(userData);
+      const tdacData = ThailandTravelerContextBuilder.transformToTDACFormat(userData);
       console.log('Transformed to TDAC format:', {
         hasPassportNo: !!tdacData.passportNo,
         hasFullName: !!tdacData.familyName && !!tdacData.firstName,
@@ -86,13 +85,13 @@ class ThailandTravelerContextBuilder {
         ...tdacData,
         // Technical fields required by TDAC API
         cloudflareToken: 'auto',
-        tranModeId: '', // Will be determined by API based on travelMode
+        tranModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo), // Required transport mode
       };
       
       console.log('Using pure user data with minimal technical fields');
 
       // Final validation of the complete payload
-      const payloadValidation = this.validateTDACPayload(travelerPayload);
+      const payloadValidation = ThailandTravelerContextBuilder.validateTDACPayload(travelerPayload);
       if (!payloadValidation.isValid) {
         console.log('TDAC payload validation failed:', payloadValidation.errors);
         return {
@@ -103,6 +102,8 @@ class ThailandTravelerContextBuilder {
       }
 
       console.log('Thailand traveler context built successfully');
+
+      
       return {
         success: true,
         errors: [],
@@ -187,6 +188,12 @@ class ThailandTravelerContextBuilder {
       }
       if (!userData.travelInfo.hotelAddress && !userData.travelInfo.address) {
         errors.push('住宿地址是必需的');
+      } else {
+        // Validate address quality
+        const address = userData.travelInfo.hotelAddress || userData.travelInfo.address;
+        if (ThailandTravelerContextBuilder.isTestOrDummyAddress(address)) {
+          errors.push('住宿地址看起来像测试数据，请提供真实的酒店地址');
+        }
       }
     }
 
@@ -231,7 +238,7 @@ class ThailandTravelerContextBuilder {
     });
 
     // Parse full name into family and first name
-    const nameInfo = this.parseFullName(passport?.fullName || '');
+    const nameInfo = ThailandTravelerContextBuilder.parseFullName(passport?.fullName || '');
 
     // Transform passport data - use ONLY actual user data, no fallbacks
     const tdacData = {
@@ -240,40 +247,49 @@ class ThailandTravelerContextBuilder {
       firstName: nameInfo.firstName,
       middleName: nameInfo.middleName || '',
       passportNo: passport?.passportNumber || '',
-      nationality: passport?.nationality || '',
+      nationality: ThailandTravelerContextBuilder.getNationalityId(passport?.nationality) || passport?.nationality || '',
       
       // Personal Information (from user's personal info)
-      birthDate: this.formatDateForTDAC(passport?.dateOfBirth),
+      birthDate: ThailandTravelerContextBuilder.formatDateForTDAC(passport?.dateOfBirth),
       occupation: personalInfo?.occupation || '',
-      gender: this.transformGender(passport?.gender),
-      countryResidence: this.getCountryFromNationality(passport?.nationality),
+      gender: ThailandTravelerContextBuilder.getGenderId(passport?.gender),
+      countryResidence: ThailandTravelerContextBuilder.getCountryFromNationality(passport?.nationality),
       cityResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
-      phoneCode: this.getPhoneCode(personalInfo),
-      phoneNo: this.getPhoneNumber(personalInfo),
+      phoneCode: ThailandTravelerContextBuilder.getPhoneCode(personalInfo),
+      phoneNo: ThailandTravelerContextBuilder.getPhoneNumber(personalInfo),
       
       // Contact (from user's personal info)
       email: personalInfo?.email || '',
       
       // Trip Information (from user's travel info)
-      arrivalDate: this.formatDateForTDAC(travelInfo?.arrivalArrivalDate),
-      departureDate: travelInfo?.departureDepartureDate ? this.formatDateForTDAC(travelInfo.departureDepartureDate) : null,
-      countryBoarded: this.getCountryFromAirport(travelInfo?.arrivalDepartureAirport),
-      recentStayCountry: travelInfo?.recentStayCountry || '',
-      purpose: this.transformTravelPurpose(travelInfo?.travelPurpose),
-      travelMode: 'AIR', // Default for air travel
+      arrivalDate: ThailandTravelerContextBuilder.formatDateForTDAC(travelInfo?.arrivalArrivalDate),
+      departureDate: travelInfo?.departureDepartureDate ? ThailandTravelerContextBuilder.formatDateForTDAC(travelInfo.departureDepartureDate) : null,
+      countryBoarded: ThailandTravelerContextBuilder.getCountryBoarded(travelInfo, passport),
+      recentStayCountry: travelInfo?.recentStayCountry || passport?.nationality || '',
+      purpose: ThailandTravelerContextBuilder.getPurposeId(travelInfo?.travelPurpose),
+      travelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo),
       flightNo: travelInfo?.arrivalFlightNumber || '',
+      tranModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo), // Add transport mode ID
       
       // Departure flight information (optional but include if provided)
       // Map to the fields that TDACAPIService expects
       departureFlightNo: travelInfo?.departureFlightNumber || '',
       departureFlightNumber: travelInfo?.departureFlightNumber || '', // Alternative field name
-      departureTravelMode: 'AIR', // Same as arrival for most cases
+      departureTravelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo), // Same as arrival for most cases
       
       // Accommodation (from user's travel info)
-      accommodationType: this.transformAccommodationType(travelInfo?.accommodationType),
-      province: this.transformProvince(travelInfo?.province),
+      accommodationType: ThailandTravelerContextBuilder.getAccommodationTypeId(travelInfo?.accommodationType),
+      accommodationTypeDisplay: ThailandTravelerContextBuilder.getAccommodationTypeDisplay(travelInfo?.accommodationType),
+      province: ThailandTravelerContextBuilder.transformProvince(travelInfo?.province),
+      provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
       district: travelInfo?.district || '',
+      districtDisplay: ThailandTravelerContextBuilder.formatLocationDisplay(
+        travelInfo?.districtDisplay || travelInfo?.district
+      ),
       subDistrict: travelInfo?.subDistrict || '',
+      subDistrictDisplay: ThailandTravelerContextBuilder.formatLocationDisplay(
+        travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
+      ),
       postCode: travelInfo?.postalCode || '',
       address: travelInfo?.hotelAddress || travelInfo?.address || '',
       
@@ -316,13 +332,16 @@ class ThailandTravelerContextBuilder {
 
     console.log('🔍 Parsing full name:', fullName);
 
+    // Clean the full name - remove extra spaces and normalize
+    const cleanedName = fullName.trim().replace(/\s+/g, ' ');
+
     // Try comma-separated format first (e.g., "ZHANG, WEI MING")
-    if (fullName.includes(',')) {
-      const parts = fullName.split(',').map(part => part.trim());
+    if (cleanedName.includes(',')) {
+      const parts = cleanedName.split(',').map(part => part.trim());
       if (parts.length === 2) {
         const givenNames = parts[1].split(' ').filter(name => name.length > 0);
         const result = {
-          familyName: parts[0],
+          familyName: parts[0].replace(/,+$/, '').trim(), // Remove trailing commas
           middleName: givenNames[0] || '',
           firstName: givenNames.slice(1).join(' ') || givenNames[0] || ''
         };
@@ -332,31 +351,31 @@ class ThailandTravelerContextBuilder {
     }
 
     // Try space-separated format (e.g., "LI A MAO")
-    const spaceParts = fullName.trim().split(/\s+/);
+    const spaceParts = cleanedName.split(/\s+/);
     if (spaceParts.length === 3) {
       // Three parts: Family Middle First
       const result = {
-        familyName: spaceParts[0],    // LI
-        middleName: spaceParts[1],    // A
-        firstName: spaceParts[2]      // MAO
+        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
+        middleName: spaceParts[1].replace(/,+$/, '').trim(),    // Remove trailing commas
+        firstName: spaceParts[2].replace(/,+$/, '').trim()      // Remove trailing commas
       };
       console.log('✅ Three-part name parsed:', result);
       return result;
     } else if (spaceParts.length === 2) {
       // Two parts: Family First (no middle name)
       const result = {
-        familyName: spaceParts[0],    // LI
-        middleName: '',               // (empty)
-        firstName: spaceParts[1]      // A MAO
+        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
+        middleName: '',                                         // (empty)
+        firstName: spaceParts[1].replace(/,+$/, '').trim()      // Remove trailing commas
       };
       console.log('✅ Two-part name parsed:', result);
       return result;
     } else if (spaceParts.length > 3) {
       // More than three parts: First is family, second is middle, rest is first
       const result = {
-        familyName: spaceParts[0],                    // First part as family
-        middleName: spaceParts[1],                    // Second part as middle
-        firstName: spaceParts.slice(2).join(' ')     // Rest as first name
+        familyName: spaceParts[0].replace(/,+$/, '').trim(),                    // First part as family
+        middleName: spaceParts[1].replace(/,+$/, '').trim(),                    // Second part as middle
+        firstName: spaceParts.slice(2).join(' ').replace(/,+$/, '').trim()     // Rest as first name
       };
       console.log('✅ Multi-part name parsed:', result);
       return result;
@@ -366,7 +385,7 @@ class ThailandTravelerContextBuilder {
     const result = {
       familyName: '',
       middleName: '',
-      firstName: fullName
+      firstName: cleanedName.replace(/,+$/, '').trim()
     };
     console.log('✅ Single name parsed:', result);
     return result;
@@ -439,7 +458,7 @@ class ThailandTravelerContextBuilder {
     }
 
     // Fallback: try to extract from phoneNumber field
-    return this.extractPhoneCode(personalInfo.phoneNumber);
+    return ThailandTravelerContextBuilder.extractPhoneCode(personalInfo.phoneNumber);
   }
 
   /**
@@ -599,23 +618,128 @@ class ThailandTravelerContextBuilder {
   }
 
   /**
+   * Get human-readable province name for confirmation dialogs
+   * @param {string} provinceCode - Province code stored in traveler data
+   * @returns {string} - Display value with localized name when available
+   */
+  static getProvinceDisplayName(provinceCode) {
+    if (!provinceCode) return '';
+    try {
+      const provinceData = require('../../data/thailandProvinces');
+      const provinces = provinceData?.thailandProvinces || [];
+      const normalized = provinceCode.toUpperCase().trim();
+      const match = provinces.find((item) => item.code === normalized);
+      if (!match) {
+        return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+      }
+      return `${match.name} - ${match.nameZh}`;
+    } catch (error) {
+      console.warn('⚠️ Failed to load province display data:', error.message);
+      return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+    }
+  }
+
+  /**
+   * Format location strings for display (convert codes like AMNAT_CHAROEN → Amnat Charoen)
+   * @param {string} value - Location string or code
+   * @returns {string} - Formatted display string
+   */
+  static formatLocationDisplay(value) {
+    if (!value) return '';
+    const raw = value.toString().trim();
+    if (!raw) return '';
+    
+    if (/^[A-Z_]+$/.test(raw)) {
+      return raw
+        .toLowerCase()
+        .split('_')
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+    }
+    
+    return raw;
+  }
+
+  /**
+   * Get country boarded (departure country) with multiple fallback strategies
+   * @param {Object} travelInfo - Travel information
+   * @param {Object} passport - Passport information
+   * @returns {string} - Country code for departure country
+   */
+  static getCountryBoarded(travelInfo, passport) {
+    // Strategy 1: Use explicit departure country if provided
+    if (travelInfo?.departureCountry) {
+      return travelInfo.departureCountry;
+    }
+
+    // Strategy 2: Derive from departure airport code
+    if (travelInfo?.arrivalDepartureAirport) {
+      const countryFromAirport = ThailandTravelerContextBuilder.getCountryFromAirport(travelInfo.arrivalDepartureAirport);
+      if (countryFromAirport) {
+        return countryFromAirport;
+      }
+    }
+
+    // Strategy 3: Use recent stay country if available
+    if (travelInfo?.recentStayCountry) {
+      return travelInfo.recentStayCountry;
+    }
+
+    // Strategy 4: Use passport nationality as fallback (most common case)
+    if (passport?.nationality) {
+      return passport.nationality;
+    }
+
+    // Strategy 5: Default to empty (will be flagged as validation error)
+    return '';
+  }
+
+  /**
    * Get country from airport code
    * @param {string} airportCode - Airport code
    * @returns {string} - Country code
    */
   static getCountryFromAirport(airportCode) {
-    if (!airportCode) return ''; // No default - derive from other data
+    if (!airportCode) return '';
+
+    // Normalize airport code
+    const normalizedCode = airportCode.toUpperCase().trim();
 
     // Map common airport codes to countries
     const airportMap = {
-      'PEK': 'CHN', 'PVG': 'CHN', 'CAN': 'CHN', 'SZX': 'CHN',
-      'HKG': 'HKG', 'MFM': 'MAC', 'TPE': 'TWN',
-      'NRT': 'JPN', 'KIX': 'JPN', 'ICN': 'KOR',
-      'SIN': 'SGP', 'KUL': 'MYS',
-      'LAX': 'USA', 'JFK': 'USA', 'LHR': 'GBR'
+      // China
+      'PEK': 'CHN', 'PVG': 'CHN', 'CAN': 'CHN', 'SZX': 'CHN', 'CTU': 'CHN', 'KMG': 'CHN',
+      'XIY': 'CHN', 'WUH': 'CHN', 'CSX': 'CHN', 'NKG': 'CHN', 'HGH': 'CHN', 'TSN': 'CHN',
+      
+      // Hong Kong, Macau, Taiwan
+      'HKG': 'HKG', 'MFM': 'MAC', 'TPE': 'TWN', 'KHH': 'TWN',
+      
+      // Japan
+      'NRT': 'JPN', 'HND': 'JPN', 'KIX': 'JPN', 'NGO': 'JPN', 'FUK': 'JPN', 'CTS': 'JPN',
+      
+      // Korea
+      'ICN': 'KOR', 'GMP': 'KOR', 'PUS': 'KOR',
+      
+      // Southeast Asia
+      'SIN': 'SGP', 'KUL': 'MYS', 'CGK': 'IDN', 'MNL': 'PHL', 'BKK': 'THA', 'DMK': 'THA',
+      'HAN': 'VNM', 'SGN': 'VNM', 'RGN': 'MMR', 'PNH': 'KHM',
+      
+      // USA & Canada
+      'LAX': 'USA', 'JFK': 'USA', 'SFO': 'USA', 'ORD': 'USA', 'DFW': 'USA', 'ATL': 'USA',
+      'YVR': 'CAN', 'YYZ': 'CAN', 'YUL': 'CAN',
+      
+      // Europe
+      'LHR': 'GBR', 'CDG': 'FRA', 'FRA': 'DEU', 'AMS': 'NLD', 'FCO': 'ITA', 'MAD': 'ESP',
+      
+      // Australia & New Zealand
+      'SYD': 'AUS', 'MEL': 'AUS', 'AKL': 'NZL',
+      
+      // Middle East
+      'DXB': 'ARE', 'DOH': 'QAT', 'KWI': 'KWT'
     };
 
-    return airportMap[airportCode] || '';
+    return airportMap[normalizedCode] || '';
   }
 
   /**
@@ -673,20 +797,20 @@ class ThailandTravelerContextBuilder {
     });
 
     // Validate date formats (YYYY-MM-DD)
-    if (payload.arrivalDate && !this.isValidDate(payload.arrivalDate)) {
+    if (payload.arrivalDate && !ThailandTravelerContextBuilder.isValidDate(payload.arrivalDate)) {
       errors.push(`到达日期格式无效: ${payload.arrivalDate}，应为 YYYY-MM-DD 格式`);
     }
 
-    if (payload.departureDate && !this.isValidDate(payload.departureDate)) {
+    if (payload.departureDate && !ThailandTravelerContextBuilder.isValidDate(payload.departureDate)) {
       errors.push(`离开日期格式无效: ${payload.departureDate}，应为 YYYY-MM-DD 格式`);
     }
 
-    if (payload.birthDate && !this.isValidDate(payload.birthDate)) {
+    if (payload.birthDate && !ThailandTravelerContextBuilder.isValidDate(payload.birthDate)) {
       errors.push(`出生日期格式无效: ${payload.birthDate}，应为 YYYY-MM-DD 格式`);
     }
 
     // Validate email format
-    if (payload.email && !this.isValidEmail(payload.email)) {
+    if (payload.email && !ThailandTravelerContextBuilder.isValidEmail(payload.email)) {
       errors.push(`邮箱格式无效: ${payload.email}`);
     }
 
@@ -734,6 +858,310 @@ class ThailandTravelerContextBuilder {
     if (!email) return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }
+
+  /**
+   * Check if address appears to be test or dummy data
+   * @param {string} address - Address string
+   * @returns {boolean} - Is test/dummy address
+   */
+  static isTestOrDummyAddress(address) {
+    if (!address) return false;
+    
+    const lowerAddress = address.toLowerCase().trim();
+    
+    // Common test/dummy patterns
+    const testPatterns = [
+      'test', 'dummy', 'fake', 'sample', 'example',
+      'add add', 'adidas dad', 'abc', '123', 'xxx',
+      'temp', 'placeholder', 'default', 'lorem ipsum'
+    ];
+    
+    // Check for test patterns
+    for (const pattern of testPatterns) {
+      if (lowerAddress.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // Check for very short addresses (likely incomplete)
+    if (lowerAddress.length < 10) {
+      return true;
+    }
+    
+    // Check for repeated characters (e.g., "aaaa", "1111")
+    if (/(.)\1{3,}/.test(lowerAddress)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Determine travel mode from travel information
+   * @param {Object} travelInfo - Travel information
+   * @returns {string} - Travel mode (AIR, LAND, SEA)
+   */
+  static getTravelMode(travelInfo) {
+    // If flight information is present, it's air travel
+    if (travelInfo?.arrivalFlightNumber || travelInfo?.departureFlightNumber) {
+      return 'AIR';
+    }
+
+    // Check for explicit travel mode
+    if (travelInfo?.travelMode) {
+      const mode = travelInfo.travelMode.toUpperCase();
+      if (['AIR', 'LAND', 'SEA'].includes(mode)) {
+        return mode;
+      }
+    }
+
+    // Default to AIR for most international tourists
+    return 'AIR';
+  }
+
+  /**
+   * Get transport mode ID based on travel mode
+   * Uses TDAC's encoded transport mode IDs with specific subtypes
+   * @param {Object} travelInfo - Travel information
+   * @returns {string} - TDAC encoded transport mode ID
+   */
+  static getTransportModeId(travelInfo) {
+    console.log('🚨 getTransportModeId called with travelInfo:', travelInfo?.arrivalFlightNumber);
+    const travelMode = ThailandTravelerContextBuilder.getTravelMode(travelInfo);
+    console.log('🚨 Determined travel mode:', travelMode);
+    
+    // TDAC transport mode IDs (extracted from HAR file)
+    const TDAC_TRANSPORT_MODE_IDS = {
+      // Air transport subtypes
+      'COMMERCIAL_FLIGHT': '6XcrGmsUxFe9ua1gehBv/Q==',     // Commercial flights (most common)
+      'PRIVATE_CARGO': 'yYdaVPLIpwqddAuVOLDorQ==',         // Private/Cargo airline
+      'OTHERS_AIR': 'mhapxYyzDmGnIyuZ0XgD8Q==',           // Others (please specify)
+      
+      // General transport modes (fallback)
+      'AIR_GENERAL': 'ZUSsbcDrA+GoD4mQxvf7Ag==',           // General air transport
+      'LAND_GENERAL': 'roui+vydIOBtjzLaEq6hCg==',          // General land transport
+      'SEA_GENERAL': 'kFiGEpiBus5ZgYvP6i3CNQ==',          // General sea transport
+      
+      // Fallback mappings
+      'AIR': '6XcrGmsUxFe9ua1gehBv/Q==',                   // Default to commercial flight
+      'LAND': 'roui+vydIOBtjzLaEq6hCg==',                  // Land transport
+      'SEA': 'kFiGEpiBus5ZgYvP6i3CNQ=='                    // Sea transport
+    };
+    
+    // For air travel, determine specific subtype
+    if (travelMode === 'AIR') {
+      // Check if we can determine the specific flight type
+      if (travelInfo?.arrivalFlightNumber) {
+        const flightNo = travelInfo.arrivalFlightNumber.toUpperCase();
+        
+        // Commercial flights typically have airline codes (2 letters + numbers)
+        const isCommercial = /^[A-Z]{2}\d+$/.test(flightNo);
+        
+        if (isCommercial) {
+          console.log('🚨 TDAC_TRANSPORT_MODE_IDS keys:', Object.keys(TDAC_TRANSPORT_MODE_IDS));
+          console.log('🚨 COMMERCIAL_FLIGHT value:', TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT']);
+          const result = TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+          console.log('🚨 Returning result:', result);
+          return result;
+        }
+      }
+      
+      // Default to commercial flight for air travel (most common case)
+      return TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+    }
+    
+    return TDAC_TRANSPORT_MODE_IDS[travelMode] || TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+  }
+
+  /**
+   * Get gender ID based on gender string
+   * Uses TDAC's encoded gender IDs
+   * @param {string} gender - Gender string (MALE, FEMALE, etc.)
+   * @returns {string} - TDAC encoded gender ID
+   */
+  static getGenderId(gender) {
+    if (!gender) return '';
+    
+    // TDAC gender IDs (extracted from HAR file)
+    const TDAC_GENDER_IDS = {
+      'MALE': 'g5iW15ADyFWOAxDewREkVA==',
+      'FEMALE': 'JGb85pWhehCWn5EM6PeL5A==',
+      'UNDEFINED': 'W6iZt0z/ayaCvyGt6LXKIA=='
+    };
+    
+    const normalizedGender = gender.toUpperCase().trim();
+    
+    // Map common variations
+    if (normalizedGender === 'M' || normalizedGender === 'MALE' || normalizedGender === '男性') {
+      return TDAC_GENDER_IDS['MALE'];
+    }
+    if (normalizedGender === 'F' || normalizedGender === 'FEMALE' || normalizedGender === '女性') {
+      return TDAC_GENDER_IDS['FEMALE'];
+    }
+    
+    return TDAC_GENDER_IDS['UNDEFINED']; // Fallback
+  }
+
+  /**
+   * Get accommodation type ID based on accommodation type
+   * Uses TDAC's encoded accommodation IDs
+   * @param {string} accommodationType - Accommodation type string
+   * @returns {string} - TDAC encoded accommodation ID
+   */
+  static getAccommodationTypeId(accommodationType) {
+    if (!accommodationType) return '';
+    
+    // TDAC accommodation type IDs (extracted from HAR file)
+    const TDAC_ACCOMMODATION_IDS = {
+      'HOTEL': 'kSqK152aNAx9HQigxwgnUg==',
+      'YOUTH_HOSTEL': 'Bsldsb4eRsgtHy+rwxGvyQ==',
+      'GUEST_HOUSE': 'xyft2pbI953g9FKKER4OZw==',
+      'FRIEND_HOUSE': 'ze+djQZsddZtZdi37G7mZg==',
+      'APARTMENT': 'PUB3ud2M4eOVGBmCEe4q2Q==',
+      'OTHERS': 'lIaJ6Z7teVjIeRF2RT97Hw=='
+    };
+    
+    const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
+    return TDAC_ACCOMMODATION_IDS[normalizedType] || TDAC_ACCOMMODATION_IDS.HOTEL;
+  }
+
+  /**
+   * Normalize accommodation type to TDAC key
+   * @param {string} accommodationType - Accommodation type string
+   * @returns {string} - Normalized accommodation type key
+   */
+  static normalizeAccommodationType(accommodationType) {
+    if (!accommodationType) return 'HOTEL';
+    const normalizedType = accommodationType.toUpperCase().trim();
+    
+    const typeMapping = {
+      'HOTEL': 'HOTEL',
+      '酒店': 'HOTEL',
+      'YOUTH HOSTEL': 'YOUTH_HOSTEL',
+      'HOSTEL': 'YOUTH_HOSTEL',
+      '青年旅舍': 'YOUTH_HOSTEL',
+      'GUEST HOUSE': 'GUEST_HOUSE',
+      'GUESTHOUSE': 'GUEST_HOUSE',
+      '民宿': 'GUEST_HOUSE',
+      'FRIEND\'S HOUSE': 'FRIEND_HOUSE',
+      'FRIENDS HOUSE': 'FRIEND_HOUSE',
+      '朋友家': 'FRIEND_HOUSE',
+      'APARTMENT': 'APARTMENT',
+      '公寓': 'APARTMENT',
+      'OTHER': 'OTHERS',
+      'OTHERS': 'OTHERS',
+      '其他': 'OTHERS'
+    };
+    
+    return typeMapping[normalizedType] || 'HOTEL';
+  }
+
+  /**
+   * Get human-readable accommodation type display value
+   * @param {string} accommodationType - Accommodation type string
+   * @returns {string} - Friendly accommodation description
+   */
+  static getAccommodationTypeDisplay(accommodationType) {
+    if (!accommodationType) return '';
+    const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
+    
+    const displayMap = {
+      'HOTEL': 'Hotel (酒店)',
+      'YOUTH_HOSTEL': 'Youth Hostel (青年旅舍)',
+      'GUEST_HOUSE': 'Guest House (民宿)',
+      'FRIEND_HOUSE': "Friend's House (朋友家)",
+      'APARTMENT': 'Apartment (公寓)',
+      'OTHERS': 'Other (其他)'
+    };
+    
+    return displayMap[normalizedType] || accommodationType;
+  }
+
+  /**
+   * Get purpose ID based on travel purpose
+   * Uses TDAC's encoded purpose IDs
+   * @param {string} purpose - Travel purpose string
+   * @returns {string} - TDAC encoded purpose ID
+   */
+  static getPurposeId(purpose) {
+    if (!purpose) return '';
+    
+    // TDAC purpose IDs (extracted from HAR file)
+    const TDAC_PURPOSE_IDS = {
+      'HOLIDAY': 'ZUSsbcDrA+GoD4mQxvf7Ag==',
+      'MEETING': 'roui+vydIOBtjzLaEq6hCg==',
+      'SPORTS': 'kFiGEpiBus5ZgYvP6i3CNQ==',
+      'BUSINESS': '//wEUc0hKyGLuN5vojDBgA==',
+      'INCENTIVE': 'g3Kfs7hn033IoeTa5VYrKQ==',
+      'MEDICAL_WELLNESS': 'Khu8eZW5Xt/2dVTwRTc7oA==',
+      'EDUCATION': '/LDehQQnXbGFGUe2mSC2lw==',
+      'CONVENTION': 'a7NwNw5YbtyIQQClpkDxiQ==',
+      'EMPLOYMENT': 'MIIPKOQBf05A/1ueNg8gSA==',
+      'EXHIBITION': 'DeSHtTxpXJk+XIG5nUlW6w==',
+      'OTHERS': 'J4Ru2J4RqpnDSHeA0k32PQ=='
+    };
+    
+    const normalizedPurpose = purpose.toUpperCase().trim();
+    
+    // Map common variations
+    const purposeMapping = {
+      'HOLIDAY': 'HOLIDAY',
+      'VACATION': 'HOLIDAY',
+      'TOURISM': 'HOLIDAY',
+      '度假': 'HOLIDAY',
+      '旅游': 'HOLIDAY',
+      'BUSINESS': 'BUSINESS',
+      '商务': 'BUSINESS',
+      'MEETING': 'MEETING',
+      '会议': 'MEETING',
+      'SPORTS': 'SPORTS',
+      'SPORT': 'SPORTS',
+      '体育': 'SPORTS',
+      'EDUCATION': 'EDUCATION',
+      'STUDY': 'EDUCATION',
+      '教育': 'EDUCATION',
+      '学习': 'EDUCATION',
+      'EMPLOYMENT': 'EMPLOYMENT',
+      'WORK': 'EMPLOYMENT',
+      '就业': 'EMPLOYMENT',
+      '工作': 'EMPLOYMENT',
+      'MEDICAL': 'MEDICAL_WELLNESS',
+      'WELLNESS': 'MEDICAL_WELLNESS',
+      '医疗': 'MEDICAL_WELLNESS',
+      'CONVENTION': 'CONVENTION',
+      'EXHIBITION': 'EXHIBITION',
+      'INCENTIVE': 'INCENTIVE',
+      'OTHER': 'OTHERS',
+      'OTHERS': 'OTHERS',
+      '其他': 'OTHERS'
+    };
+    
+    const mappedPurpose = purposeMapping[normalizedPurpose] || 'HOLIDAY'; // Default to holiday
+    return TDAC_PURPOSE_IDS[mappedPurpose];
+  }
+
+  /**
+   * Get nationality ID based on nationality code
+   * Uses TDAC's encoded nationality IDs
+   * @param {string} nationality - Nationality code (CHN, USA, etc.)
+   * @returns {string} - TDAC encoded nationality ID
+   */
+  static getNationalityId(nationality) {
+    if (!nationality) return '';
+    
+    // TDAC nationality IDs (extracted from HAR file - sample set)
+    const TDAC_NATIONALITY_IDS = {
+      'CHN': 'n8NVa/feQ+F5Ok859Oywuw==',  // China
+      'HKG': 'g6ud3ID/+b3U95emMTZsBw==',  // Hong Kong
+      'MAC': '6H4SM3pACzdpLaJx/SR7sg=='   // Macao
+      // Note: More nationality IDs would need to be extracted from additional HAR captures
+    };
+    
+    const normalizedNationality = nationality.toUpperCase().trim();
+    
+    // Return the encoded ID if available, otherwise return empty (will need API lookup)
+    return TDAC_NATIONALITY_IDS[normalizedNationality] || '';
   }
 
   /**
@@ -802,7 +1230,7 @@ class ThailandTravelerContextBuilder {
    * @returns {Promise<Object>} - Traveler context with success/error status
    */
   static async buildThailandTravelerContext(userId) {
-    return await this.buildContext(userId);
+    return await ThailandTravelerContextBuilder.buildContext(userId);
   }
 }
 

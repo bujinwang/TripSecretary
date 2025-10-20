@@ -28,6 +28,7 @@ class EntryData {
 
     // Funding proof (encrypted)
     this.fundingProof = data.fundingProof || {}; // 🔴 ENCRYPTED object
+    this.fundItemIds = Array.isArray(data.fundItemIds) ? [...data.fundItemIds] : [];
 
     // Immigration-specific data
     this.immigrationNotes = data.immigrationNotes; // 🟢 PLAINTEXT
@@ -312,6 +313,7 @@ class EntryData {
         immigrationNotes: this.immigrationNotes,
         specialRequirements: this.specialRequirements,
         fundingProof: this.fundingProof,
+        fundItemIds: [...this.fundItemIds],
         submissionDate: this.submissionDate,
         generatedAt: this.generatedAt,
         lastModified: this.lastModified,

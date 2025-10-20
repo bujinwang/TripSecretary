@@ -9,8 +9,12 @@
 
 import TDACValidationService from './validation/TDACValidationService';
 import TDACErrorHandler from './error/TDACErrorHandler';
+import TDACSubmissionLogger from './tdac/TDACSubmissionLogger';
 
 const BASE_URL = 'https://tdac.immigration.go.th/arrival-card-api/api/v1';
+const REQUEST_TIMEOUTS = {
+  INIT_ACTION_TOKEN: 30000 // 30s timeout - API responds in 0-1s, so 30s should be plenty to detect real issues
+};
 
 // ID Mappings from HAR file analysis
 const ID_MAPS = {
@@ -30,10 +34,24 @@ const ID_MAPS = {
     // Add more as needed
   },
   
-  // Travel Mode IDs
+  // Travel Mode IDs (General categories)
   travelMode: {
     AIR: 'ZUSsbcDrA+GoD4mQxvf7Ag==',
     LAND: 'roui+vydIOBtjzLaEq6hCg==',
+    SEA: 'kFiGEpiBus5ZgYvP6i3CNQ=='
+  },
+  
+  // Transport Mode IDs (Specific subtypes)
+  transportMode: {
+    // Air transport subtypes
+    COMMERCIAL_FLIGHT: '6XcrGmsUxFe9ua1gehBv/Q==',
+    PRIVATE_CARGO_AIRLINE: 'yYdaVPLIpwqddAuVOLDorQ==',
+    OTHERS_AIR: 'mhapxYyzDmGnIyuZ0XgD8Q==',
+    
+    // Land transport (using general ID for now)
+    LAND: 'roui+vydIOBtjzLaEq6hCg==',
+    
+    // Sea transport (using general ID for now)
     SEA: 'kFiGEpiBus5ZgYvP6i3CNQ=='
   },
   
@@ -103,26 +121,27 @@ class TDACAPIService {
   }
 
   async fetchSelectItems(apiName, body = {}) {
-    if (!this.submitId) {
-      throw new Error(`fetchSelectItems called before submitId is generated for ${apiName}`);
-    }
+    console.log(`📤 fetchSelectItems: Calling ${apiName} with body:`, JSON.stringify(body));
     const url = `${BASE_URL}/selectitem/${apiName}?submitId=${this.submitId}`;
+    console.log(`   URL: ${url}`);
     const response = await fetch(url, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(body)
     });
 
+    console.log(`📥 fetchSelectItems: ${apiName} response status:`, response.status);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ ${apiName} failed with status:`, response.status);
+      console.error(`❌ fetchSelectItems: ${apiName} failed with status:`, response.status);
       console.error('   error body:', errorText);
       throw new Error(`${apiName} failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`✅ fetchSelectItems: ${apiName} success, data preview:`, JSON.stringify(data).substring(0, 200));
     if (data?.messageCode !== 'X00000') {
-      console.error(`❌ ${apiName} returned error`, data);
+      console.error(`❌ fetchSelectItems: ${apiName} returned error`, data);
       throw new Error(`${apiName} returned error: ${data?.messageDesc || 'Unknown error'}`);
     }
 
@@ -133,10 +152,12 @@ class TDACAPIService {
    * Get common headers for authenticated requests
    */
   getAuthHeaders() {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'User-Agent': 'PostmanRuntime/7.49.0',
+          'Cache-Control': 'no-cache'
+        };
     
     if (this.actionToken) {
       headers['Authorization'] = this.actionToken;
@@ -167,67 +188,136 @@ class TDACAPIService {
     this.cloudflareToken = cloudflareToken;
     this.generateSubmitId();
 
-    console.log('📤 Step 1: Sending initActionToken request...');
-    console.log('   submitId:', this.submitId);
-    console.log('   token length:', cloudflareToken?.length || 0);
-
-    const response = await fetch(
-      `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
+        const timeoutMs = REQUEST_TIMEOUTS.INIT_ACTION_TOKEN;
+        const timeoutSeconds = Math.round(timeoutMs / 1000);
+        console.log('📤 Step 1: Sending initActionToken request...');
+        console.log('   submitId:', this.submitId);
+        console.log('   token length:', cloudflareToken?.length || 0);
+        console.log('   timeout configured:', `${timeoutSeconds}s (${timeoutMs}ms)`);
+        console.log('   API endpoint:', `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`);
+        
+        // Validate token format before sending
+        if (!cloudflareToken || typeof cloudflareToken !== 'string') {
+          throw new Error('Invalid Cloudflare token: missing or not a string');
+        }
+        
+        const requestBody = JSON.stringify({
           token: cloudflareToken,
           langague: 'EN'
-        })
-      }
-    );
-
-    console.log('📥 Step 1 response status:', response.status, response.statusText);
-    console.log('   response headers:', JSON.stringify(response.headers));
+        });
+        console.log('   Request Body size:', requestBody.length, 'bytes');
+        console.log('   Request Body preview:', requestBody.substring(0, 100) + '...');
+        console.log('Full Cloudflare Token:', cloudflareToken);
     
-    // Check if response is ok
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Step 1 failed with status:', response.status);
-      console.error('   error body:', errorText);
-      throw new Error('initActionToken failed: ' + response.status + ' - ' + errorText);
-    }
-
-    // Check if response has content
-    const contentType = response.headers.get('content-type');
-    console.log('   content-type:', contentType);
+        const requestStartTime = Date.now();
     
-    const responseText = await response.text();
-    console.log('   response body length:', responseText.length);
-    console.log('   response body preview:', responseText.substring(0, 200));
-
-    if (!responseText || responseText.length === 0) {
-      console.error('❌ Step 1: Empty response body');
-      throw new Error('initActionToken returned empty response');
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('❌ Step 1: JSON parse error');
-      console.error('   response text:', responseText);
-      throw new Error('initActionToken returned invalid JSON: ' + parseError.message);
-    }
-
-    console.log('✅ Step 1: initActionToken success');
-    console.log('   response data:', JSON.stringify(data));
+        const fetchUrl = `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`;
+        const fetchOptions = {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: requestBody,
+        };
+        
+        console.log('🌐 Fetch request details:');
+        console.log('   URL:', fetchUrl);
+        console.log('   Method:', fetchOptions.method);
+        console.log('   Headers:', JSON.stringify(fetchOptions.headers));
+        console.log('   Body length:', fetchOptions.body.length);
+        console.log('   Signal attached:', !!fetchOptions.signal);
+        
+        let response;
+        try {
+          console.log('⏳ Starting fetch request...');
+          response = await fetch(fetchUrl, fetchOptions);
+        } catch (error) {
+          const actualDuration = Date.now() - requestStartTime;
+          console.error(`❌ Request failed after ${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
+          console.error('🔍 Error analysis:');
+          console.error('   Error name:', error.name);
+          console.error('   Error message:', error.message);
+          console.error('   Error type:', typeof error);
+          console.error('   Error stack:', error.stack?.substring(0, 200) + '...');
+          
+          if (error.name === 'AbortError') {
+            console.error('⏰ TIMEOUT DETECTED:');
+            console.error('   Configured timeout:', timeoutMs + 'ms (' + timeoutSeconds + 's)');
+            console.error('   Actual duration:', actualDuration + 'ms (' + Math.round(actualDuration/1000) + 's)');
+            
+            // Check if timeout is close to our configured timeout
+            const timeoutDiff = Math.abs(actualDuration - timeoutMs);
+            if (timeoutDiff < 1000) {
+              console.error('   ✅ Timeout matches our configuration - this is our timeout');
+            } else if (actualDuration < timeoutMs - 1000) {
+              console.error('   ⚠️  Timeout is SHORTER than configured - external timeout detected!');
+              console.error('   Possible sources: React Native, browser, proxy, firewall, network layer');
+            } else {
+              console.error('   ❓ Timeout timing is unexpected');
+            }
+            
+            const timeoutError = new Error(`initActionToken request timed out after ${Math.round(actualDuration/1000)} seconds (configured: ${timeoutSeconds}s)`);
+            timeoutError.name = 'TimeoutError';
+            timeoutError.actualDuration = actualDuration;
+            timeoutError.configuredTimeout = timeoutMs;
+            timeoutError.isExternalTimeout = actualDuration < timeoutMs - 1000;
+            throw timeoutError;
+          }
+          
+          // Analyze other types of errors
+          if (error.message.includes('Network request failed')) {
+            console.error('🌐 NETWORK ERROR: Request failed to reach server');
+            console.error('   Possible causes: No internet, DNS issues, server down, firewall blocking');
+          } else if (error.message.includes('fetch')) {
+            console.error('🔧 FETCH ERROR: JavaScript fetch API issue');
+            console.error('   Possible causes: React Native fetch polyfill, CORS, invalid URL');
+          }
+          
+          throw error;
+        } finally {
+        }
     
-    // Store the action token for subsequent requests
-    this.actionToken = data.data.actionToken;
-    console.log('   stored actionToken:', this.actionToken ? 'Yes (' + this.actionToken.length + ' chars)' : 'No');
+        const actualDuration = Date.now() - requestStartTime;
+        console.log('📥 Step 1 response status:', response.status, response.statusText);
+        console.log('   response received in:', `${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
+        console.log('   response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
     
-    return data;
-  }
+        // Check if response is ok
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Step 1 failed with status:', response.status);
+          console.error('   error body:', errorText);
+          throw new Error('initActionToken failed: ' + response.status + ' - ' + errorText);
+        }
+    
+        // Check if response has content
+        const contentType = response.headers.get('content-type');
+        console.log('   content-type:', contentType);
+    
+        const responseText = await response.text();
+        console.log('   response body length:', responseText.length);
+        console.log('   response body preview:', responseText.substring(0, 200));
+    
+        if (!responseText || responseText.length === 0) {
+          console.error('❌ Step 1: Empty response body');
+          throw new Error('initActionToken returned empty response');
+        }
+    
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Step 1: JSON parse error');
+          console.error('   response text:', responseText);
+          throw new Error('initActionToken returned invalid JSON: ' + parseError.message);
+        }
+    
+        console.log('✅ Step 1: initActionToken success');
+        console.log('   response data:', JSON.stringify(data).substring(0, 200));
+    
+        // Store the action token for subsequent requests
+        this.actionToken = data.data.actionToken;
+        console.log('   stored actionToken:', this.actionToken ? 'Yes (' + this.actionToken.length + ' chars)' : 'No');
+    
+        return data;  }
 
   /**
    * Step 2: Go to add page
@@ -823,8 +913,27 @@ class TDACAPIService {
         throw new Error('Invalid Cloudflare token: token is too short or missing');
       }
 
+      console.log(`🔄 initActionTokenWithRetry attempt ${attemptNumber + 1}`);
       return await this.initActionToken(cloudflareToken);
     } catch (error) {
+      console.error('❌ initActionTokenWithRetry failed:', error.message);
+      
+      // Check if this is a timeout error and log details
+      if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+        console.error('🔍 Timeout error analysis:');
+        console.error('   Error name:', error.name);
+        console.error('   Error message:', error.message);
+        console.error('   Actual duration:', error.actualDuration || 'unknown');
+        console.error('   Configured timeout:', error.configuredTimeout || 'unknown');
+        
+        // If we're seeing a 15-second timeout but configured 60 seconds, there's another timeout source
+        if (error.message.includes('15 seconds') || (error.actualDuration && error.actualDuration < 20000)) {
+          console.error('⚠️  DETECTED: Timeout is shorter than configured!');
+          console.error('   This suggests there is another timeout source (browser, React Native, network layer)');
+          console.error('   Consider using WebView mode or investigating network configuration');
+        }
+      }
+      
       if (error.message.includes('Cloudflare') && attemptNumber === 0) {
         console.log('🔄 Cloudflare token issue, attempting to refresh...');
         // Could implement token refresh logic here
@@ -1047,6 +1156,11 @@ class TDACAPIService {
       delete payload.tripInfo.deptDate;
     }
 
+    TDACSubmissionLogger.logResolvedSelectMappings(travelerData, payload, dyn)
+      .catch((error) => {
+        console.warn('⚠️ Failed to log resolved TDAC select mappings:', error?.message || error);
+      });
+
     console.log('   Payload preview:', JSON.stringify(payload));
     return payload;
   }
@@ -1244,8 +1358,26 @@ class TDACAPIService {
     if (dyn.tranModeRow?.key) {
       return dyn.tranModeRow.key;
     }
-    // Fallback: reuse travel mode ID if detailed transport list unavailable
-    return this.getTravelModeId(mode);
+    
+    // Enhanced fallback: use specific transport mode IDs based on travel mode
+    const normalizedMode = this.normalizeInput(mode);
+    
+    // For air travel, default to commercial flight (most common case)
+    if (normalizedMode === 'AIR' || !normalizedMode) {
+      return '6XcrGmsUxFe9ua1gehBv/Q=='; // Commercial Flight ID
+    }
+    
+    // For other modes, use the general transport mode IDs
+    if (normalizedMode === 'LAND') {
+      return 'roui+vydIOBtjzLaEq6hCg=='; // Land transport
+    }
+    
+    if (normalizedMode === 'SEA') {
+      return 'kFiGEpiBus5ZgYvP6i3CNQ=='; // Sea transport
+    }
+    
+    // Default fallback to commercial flight for unknown modes
+    return '6XcrGmsUxFe9ua1gehBv/Q==';
   }
 
   normalizeDate(value, fieldName, options = {}) {

@@ -1,4 +1,6 @@
+
 // 入境通 - Main App Entry
+import './app/utils/AbortSignalPolyfill';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { AppState } from 'react-native';

@@ -37,6 +37,7 @@ import EntryPackService from '../../services/entryPack/EntryPackService';
 import TDACValidationService from '../../services/validation/TDACValidationService';
 import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
+import ThailandTravelerContextBuilder from '../../services/thailand/ThailandTravelerContextBuilder';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -50,8 +51,11 @@ const TDACHybridScreen = ({ navigation, route }) => {
     firstName: rawTravelerInfo.firstName,
     arrivalDate: rawTravelerInfo.arrivalDate,
     email: rawTravelerInfo.email,
-    flightNo: rawTravelerInfo.flightNo
+    flightNo: rawTravelerInfo.flightNo,
+    tranModeId: rawTravelerInfo.tranModeId // Add this to debug logging
   });
+  
+
   
   // Use pure user data directly - no mock data fallbacks
   const travelerInfo = rawTravelerInfo;
@@ -63,7 +67,8 @@ const TDACHybridScreen = ({ navigation, route }) => {
     firstName: travelerInfo.firstName,
     arrivalDate: travelerInfo.arrivalDate,
     email: travelerInfo.email,
-    flightNo: travelerInfo.flightNo
+    flightNo: travelerInfo.flightNo,
+    tranModeId: travelerInfo.tranModeId // Add this to debug logging
   });
   
   const webViewRef = useRef(null);
@@ -182,6 +187,11 @@ const TDACHybridScreen = ({ navigation, route }) => {
       setProgress('步骤 2/9: 初始化...');
       
       // Prepare traveler data
+      const resolvedTranModeId =
+        (travelerInfo.tranModeId && travelerInfo.tranModeId.trim()) ||
+        ThailandTravelerContextBuilder.getTransportModeId(travelerInfo);
+      console.log('✈️ Resolved tranModeId for submission:', resolvedTranModeId);
+
       const travelerData = {
         cloudflareToken: token,
         email: travelerInfo.email,
@@ -205,7 +215,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
         purpose: travelerInfo.purpose,
         travelMode: travelerInfo.travelMode,
         flightNo: travelerInfo.flightNo,
-        tranModeId: '',
+        tranModeId: resolvedTranModeId,
         accommodationType: travelerInfo.accommodationType,
         province: travelerInfo.province,
         district: travelerInfo.district,
@@ -861,8 +871,10 @@ const showSubmissionConfirmation = (travelerData) => {
 • 旅行目的: ${travelerData.purpose}
 
 🏨 住宿信息：
-• 住宿类型: ${travelerData.accommodationType}
-• 省份: ${travelerData.province}
+• 住宿类型: ${travelerData.accommodationTypeDisplay || travelerData.accommodationType}
+• 省份: ${travelerData.provinceDisplay || travelerData.province}
+• 区域: ${travelerData.districtDisplay || travelerData.district || '未填写'}
+• 子区域: ${travelerData.subDistrictDisplay || travelerData.subDistrict || '未填写'}
 • 地址: ${travelerData.address}
 
 📞 联系信息：
@@ -915,57 +927,63 @@ const showSubmissionConfirmation = (travelerData) => {
  * 显示更详细的日志信息
  */
 const showDetailedLog = (travelerData, resolve) => {
-  const detailedLog = `
-🔍 TDAC 表单字段映射详情：
+  // Create JSON payload for verification
+  const jsonPayload = {
+    cloudflareToken: travelerData.cloudflareToken ? `已获取 (${travelerData.cloudflareToken.length} 字符)` : "未获取",
+    email: travelerData.email || "",
+    
+    familyName: travelerData.familyName || "",
+    middleName: travelerData.middleName || "",
+    firstName: travelerData.firstName || "",
+    gender: travelerData.gender || "",
+    nationality: travelerData.nationality || "",
+    passportNo: travelerData.passportNo || "",
+    birthDate: travelerData.birthDate || "",
+    occupation: travelerData.occupation || "",
+    cityResidence: travelerData.cityResidence || "",
+    countryResidence: travelerData.countryResidence || "",
+    visaNo: travelerData.visaNo || "",
+    phoneCode: travelerData.phoneCode || "",
+    phoneNo: travelerData.phoneNo || "",
+    
+    arrivalDate: travelerData.arrivalDate || "",
+    departureDate: travelerData.departureDate || "",
+    countryBoarded: travelerData.countryBoarded || "",
+    recentStayCountry: travelerData.recentStayCountry || "",
+    purpose: travelerData.purpose || "",
+    travelMode: travelerData.travelMode || "",
+    flightNo: travelerData.flightNo || "",
+    tranModeId: (() => {
+      console.log('🚨 FINAL CHECK - travelerData.tranModeId:', travelerData.tranModeId);
+      console.log('🚨 FINAL CHECK - typeof:', typeof travelerData.tranModeId);
+      console.log('🚨 FINAL CHECK - length:', travelerData.tranModeId?.length);
+      const result = travelerData.tranModeId || "";
+      console.log('🚨 FINAL CHECK - result:', result);
+      return result;
+    })(),
+    
+    accommodationType: travelerData.accommodationTypeDisplay || travelerData.accommodationType || "",
+    accommodationTypeId: travelerData.accommodationType || "",
+    province: travelerData.provinceDisplay || travelerData.province || "",
+    provinceCode: travelerData.province || "",
+    district: travelerData.districtDisplay || travelerData.district || "",
+    districtCode: travelerData.district || "",
+    subDistrict: travelerData.subDistrictDisplay || travelerData.subDistrict || "",
+    subDistrictCode: travelerData.subDistrict || "",
+    postCode: travelerData.postCode || "",
+    address: travelerData.address || ""
+  };
 
-📋 个人信息字段：
-• familyName → "${travelerData.familyName}"
-• firstName → "${travelerData.firstName}"
-• middleName → "${travelerData.middleName || '(空)'}"
-• passportNo → "${travelerData.passportNo}"
-• nationality → "${travelerData.nationality}"
-• gender → "${travelerData.gender}"
-• birthDate → "${travelerData.birthDate}"
-• occupation → "${travelerData.occupation}"
+  const detailedLog = `📋 TDAC JSON 提交载荷：
 
-📋 居住信息字段：
-• cityResidence → "${travelerData.cityResidence}"
-• countryResidence → "${travelerData.countryResidence}"
+${JSON.stringify(jsonPayload, null, 2)}
 
-📋 旅行信息字段：
-• arrivalDate → "${travelerData.arrivalDate}"
-• departureDate → "${travelerData.departureDate || '(未设置)'}"
-• flightNo → "${travelerData.flightNo}"
-• countryBoarded → "${travelerData.countryBoarded}"
-• recentStayCountry → "${travelerData.recentStayCountry || '(未填写)'}"
-• travelMode → "${travelerData.travelMode}"
-• purpose → "${travelerData.purpose}"
-
-📋 住宿信息字段：
-• accommodationType → "${travelerData.accommodationType}"
-• province → "${travelerData.province}"
-• district → "${travelerData.district}"
-• subDistrict → "${travelerData.subDistrict}"
-• postCode → "${travelerData.postCode}"
-• address → "${travelerData.address}"
-
-📋 联系信息字段：
-• email → "${travelerData.email}"
-• phoneCode → "${travelerData.phoneCode}"
-• phoneNo → "${travelerData.phoneNo}"
-
-📋 签证信息字段：
-• visaNo → "${travelerData.visaNo || '(免签)'}"
-
-🔧 技术字段：
-• cloudflareToken → "已获取 (${travelerData.cloudflareToken?.length} 字符)"
-• tranModeId → "${travelerData.tranModeId || '(自动)'}"
-
-⚠️ 这些字段将直接发送到泰国移民局系统
+⚠️ 此数据将直接发送到泰国移民局系统
+请仔细核对所有信息的准确性
   `.trim();
 
   Alert.alert(
-    '📋 详细字段映射',
+    '📋 JSON 提交载荷预览',
     detailedLog,
     [
       {
