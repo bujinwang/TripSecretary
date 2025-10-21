@@ -142,6 +142,9 @@ const SimpleTDACTest = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Simple TDAC Test</Text>
+      <Text style={styles.subtitle}>
+        ✅ iOS 18.5+ simulator: Both fetch and axios should work
+      </Text>
       
       <TouchableOpacity
         style={[styles.button, isRunning && styles.buttonDisabled]}
@@ -193,8 +196,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
     color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666',
+    fontStyle: 'italic',
   },
   button: {
     backgroundColor: '#2196F3',

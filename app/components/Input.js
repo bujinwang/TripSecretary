@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 
-const Input = ({
+const Input = React.forwardRef(({
   label,
   value,
   onChangeText,
@@ -22,9 +22,11 @@ const Input = ({
   multiline = false,
   autoCapitalize = 'none', // New prop for capitalization
   maskType, // New prop for masking
+  returnKeyType = 'next', // Tab navigation support
+  onSubmitEditing, // Called when return key pressed
   style,
   ...rest
-}) => {
+}, ref) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleTextChange = (text) => {
@@ -61,6 +63,7 @@ const Input = ({
       {label && <Text style={styles.label}>{label}</Text>}
       
       <TextInput
+        ref={ref}
         style={[
           styles.input,
           isFocused && styles.inputFocused,
@@ -75,6 +78,8 @@ const Input = ({
         keyboardType={keyboardType}
         multiline={multiline}
         autoCapitalize={autoCapitalize}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
         {...rest}
@@ -88,7 +93,9 @@ const Input = ({
       )}
     </View>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
   container: {

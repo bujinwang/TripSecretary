@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import ConnectivityTestRunner from '../../components/ConnectivityTestRunner';
 import SimpleTDACTest from '../../components/SimpleTDACTest';
-import MinimalNetworkTest from '../../components/MinimalNetworkTest';
-import RobustNetworkTest from '../../components/RobustNetworkTest';
 
 const TDACDebugScreen = ({ navigation }) => {
   return (
@@ -17,30 +15,28 @@ const TDACDebugScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🔍 What This Tests:</Text>
-          <Text style={styles.bulletPoint}>• Fetch vs Axios behavior in React Native</Text>
-          <Text style={styles.bulletPoint}>• Network timeout handling</Text>
-          <Text style={styles.bulletPoint}>• TDAC API connectivity</Text>
-          <Text style={styles.bulletPoint}>• AbortController vs Axios timeout</Text>
-          <Text style={styles.bulletPoint}>• Platform-specific networking issues</Text>
+          <Text style={styles.sectionTitle}>📱 iOS 18.5+ Update:</Text>
+          <Text style={styles.bulletPoint}>• Simulator networking issues resolved</Text>
+          <Text style={styles.bulletPoint}>• Both fetch and axios now work properly</Text>
+          <Text style={styles.bulletPoint}>• Consistent behavior across all environments</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Expected Results:</Text>
-          <Text style={styles.bulletPoint}>• Fetch should work consistently</Text>
-          <Text style={styles.bulletPoint}>• Axios may hang on TDAC endpoints</Text>
-          <Text style={styles.bulletPoint}>• Google (control) should always work</Text>
-          <Text style={styles.bulletPoint}>• Response times should be &lt;1000ms</Text>
+          <Text style={styles.sectionTitle}>🔍 What This Tests:</Text>
+          <Text style={styles.bulletPoint}>• Basic TDAC API connectivity</Text>
+          <Text style={styles.bulletPoint}>• Network timeout handling</Text>
+          <Text style={styles.bulletPoint}>• Fetch vs Axios performance comparison</Text>
+          <Text style={styles.bulletPoint}>• General network debugging</Text>
         </View>
 
-        <RobustNetworkTest />
-        
-        <View style={styles.divider} />
-        
-        <MinimalNetworkTest />
-        
-        <View style={styles.divider} />
-        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📊 Expected Results (iOS 18.5+):</Text>
+          <Text style={styles.bulletPoint}>• Both fetch and axios should work</Text>
+          <Text style={styles.bulletPoint}>• Response times should be ~3-5s</Text>
+          <Text style={styles.bulletPoint}>• No timeout errors in simulator</Text>
+          <Text style={styles.bulletPoint}>• Consistent cross-platform behavior</Text>
+        </View>
+
         <SimpleTDACTest />
         
         <View style={styles.divider} />

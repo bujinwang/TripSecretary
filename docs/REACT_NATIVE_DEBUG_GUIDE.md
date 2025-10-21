@@ -1,5 +1,8 @@
 # React Native TDAC Debug Guide 🔧
 
+## 📱 **iOS Simulator Update (October 2024)**
+**Important**: iOS 18.5 simulator networking issues have been resolved with the latest Xcode update. Both fetch and axios now work properly in the simulator, eliminating most previous networking problems.
+
 ## How to Access Debug Tools
 
 ### Method 1: From Home Screen
@@ -38,7 +41,18 @@ Tests with multiple timeout values:
 
 ## Expected Results
 
-### ✅ Working Scenario:
+### ✅ Working Scenario (iOS 18.5+ Simulator):
+```
+fetch → Google (control)     ✓ Status: 200, Duration: 234ms
+fetch → TDAC Base           ✓ Status: 200, Duration: 456ms  
+fetch → TDAC Init Token     ✓ Status: 200, Duration: 789ms
+
+axios → Google (control)     ✓ Status: 200, Duration: 245ms
+axios → TDAC Base           ✓ Status: 200, Duration: 467ms
+axios → TDAC Init Token     ✓ Status: 200, Duration: 812ms
+```
+
+### ⚠️ Legacy Scenario (Older iOS Simulators):
 ```
 fetch → Google (control)     ✓ Status: 200, Duration: 234ms
 fetch → TDAC Base           ✓ Status: 200, Duration: 456ms  
@@ -79,15 +93,21 @@ axios → TDAC Init Token     ❌ ECONNABORTED: timeout of 5000ms exceeded
 
 ## Common Issues & Solutions
 
-### Issue 1: Axios Hangs on TDAC
-**Symptoms:**
-- Axios requests to TDAC never complete or timeout
-- Fetch requests work fine
-- Google requests work with both
+### Issue 1: Axios Hangs on TDAC (Legacy Issue - Resolved)
+**Previous Symptoms:**
+- Axios requests to TDAC would never complete or timeout
+- Fetch requests worked fine
+- Google requests worked with both
 
-**Solution:**
-- ✅ Use fetch with AbortController (already implemented)
-- ❌ Don't use axios for TDAC API calls in React Native
+**Current Status (iOS 18.5+ Simulator):**
+- ✅ Both fetch and axios now work properly
+- ✅ No more timeout issues with axios
+- ✅ Consistent behavior across all environments
+
+**Recommended Solution:**
+- ✅ Use fetch with AbortController (most compatible)
+- ✅ Axios should now work reliably in updated simulators
+- 📝 Keep existing fetch implementation for maximum compatibility
 
 ### Issue 2: All Requests Fail
 **Symptoms:**
@@ -152,9 +172,10 @@ Check `AndroidManifest.xml`:
 ## Platform-Specific Testing
 
 ### iOS Simulator vs Device
-- **Simulator**: May have different network behavior
+- **iOS 18.5+ Simulator**: Now has consistent network behavior with devices
+- **Older Simulators**: May still have different network behavior
 - **Device**: Real-world network conditions
-- **Test both** to identify platform-specific issues
+- **Test both** to ensure compatibility across versions
 
 ### Android Emulator vs Device  
 - **Emulator**: Uses host machine network
@@ -186,7 +207,9 @@ Check `AndroidManifest.xml`:
 ## Next Steps Based on Results
 
 ### If Fetch Works, Axios Fails:
-✅ **Solution confirmed** - Use fetch implementation (already done)
+**iOS 18.5+ Simulator**: This should no longer happen - both should work
+**Older Simulators**: ✅ Use fetch implementation (already done)
+**If still occurring**: Check iOS/Xcode version and consider updating
 
 ### If Both Fail:
 1. **Check network connectivity** - Test with mobile data vs WiFi

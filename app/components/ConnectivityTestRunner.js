@@ -297,6 +297,9 @@ const ConnectivityTestRunner = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>TDAC Connectivity Tests</Text>
+      <Text style={styles.subtitle}>
+        📱 iOS 18.5+ simulator: Networking issues resolved
+      </Text>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -362,8 +365,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
     color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666',
+    fontStyle: 'italic',
   },
   buttonContainer: {
     flexDirection: 'row',

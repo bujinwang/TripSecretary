@@ -235,30 +235,13 @@ const HomeScreen = ({ navigation }) => {
       if (passport) {
         setPassportData(passport);
       } else {
-        // Create a mock passport from the profile data for testing
-        const mockPassport = {
-          passportNumber: 'E12341432',
-          fullName: 'LI, AAA, MAO',
-          expiryDate: '2030-10-10',
-          nationality: 'CHN',
-          getSurname: () => 'LI',
-          getGivenName: () => 'AAA, MAO'
-        };
-        setPassportData(mockPassport);
+        // No passport data found - user needs to input it
+        setPassportData(null);
       }
     } catch (error) {
       console.log('Failed to load passport data:', error.message);
-
-      // Create mock data on error for testing
-      const mockPassport = {
-        passportNumber: 'E12341432',
-        fullName: 'LI, AAA, MAO',
-        expiryDate: '2030-10-10',
-        nationality: 'CHN',
-        getSurname: () => 'LI',
-        getGivenName: () => 'AAA, MAO'
-      };
-      setPassportData(mockPassport);
+      // No mock data - data must come from user input or SQLite
+      setPassportData(null);
     }
   };
 

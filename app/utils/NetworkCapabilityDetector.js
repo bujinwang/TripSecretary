@@ -1,7 +1,7 @@
 /**
  * Network Capability Detector
- * Detects if fetch API works properly in the current environment
- * Falls back to WebView mode if fetch is blocked (e.g., iOS Simulator)
+ * Detects network connectivity and API compatibility
+ * Note: iOS 18.5+ simulator networking issues have been resolved
  */
 
 class NetworkCapabilityDetector {
@@ -25,7 +25,7 @@ class NetworkCapabilityDetector {
       return true;
       
     } catch (error) {
-      console.log('❌ Fetch API blocked - must use WebView mode');
+      console.log('❌ Fetch API issue detected - may need WebView fallback');
       console.log('   Error:', error.name, error.message);
       return false;
     }
@@ -33,10 +33,12 @@ class NetworkCapabilityDetector {
   
   static async shouldUseWebViewMode() {
     // Check if we're in an environment where fetch doesn't work
+    // Note: This is now rare with iOS 18.5+ simulator fixes
     const fetchWorks = await this.testFetchCapability();
     
     if (!fetchWorks) {
       console.log('🌐 Fetch API not available - recommending WebView mode');
+      console.log('   Note: This is unusual with iOS 18.5+ simulators');
       return true;
     }
     

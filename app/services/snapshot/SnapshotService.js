@@ -6,29 +6,41 @@
  */
 
 import EntryPackSnapshot from '../../models/EntryPackSnapshot';
-import * as FileSystem from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import DataEncryptionService from '../security/DataEncryptionService';
 
 class SnapshotService {
   constructor() {
-    this.snapshotStorageDir = `${FileSystem.documentDirectory}snapshots/`;
+    this.snapshotStorageDir = new Directory(Paths.document, 'snapshots');
     this.encryptionService = DataEncryptionService;
     this.encryptionEnabled = true; // Enable encryption for snapshots by default
-    this.initializeStorage();
+    this.initialized = false;
+    // Don't call initializeStorage() in constructor - it's async
   }
 
   /**
    * Initialize snapshot storage directory and encryption
    */
   async initializeStorage() {
+    if (this.initialized) return;
+    
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.snapshotStorageDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
-        console.log('Snapshot storage directory created:', this.snapshotStorageDir);
+      if (!this.snapshotStorageDir.exists) {
+        this.snapshotStorageDir.create({ intermediates: true });
+        console.log('Snapshot storage directory created:', this.snapshotStorageDir.uri);
       }
+      this.initialized = true;
     } catch (error) {
       console.error('Failed to initialize snapshot storage:', error);
+    }
+  }
+
+  /**
+   * Ensure service is initialized before operations
+   */
+  async ensureInitialized() {
+    if (!this.initialized) {
+      await this.initializeStorage();
     }
   }
 
@@ -58,6 +70,8 @@ class SnapshotService {
    * @returns {Promise<EntryPackSnapshot>} - Created snapshot
    */
   async createSnapshot(entryPackId, reason = 'completed', metadata = {}) {
+    await this.ensureInitialized();
+    
     try {
       console.log('Creating snapshot:', {
         entryPackId,
