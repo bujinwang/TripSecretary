@@ -7,6 +7,7 @@
  * Reliability: 98% (vs WebView 85%)
  */
 
+// Using fetch for React Native compatibility
 import TDACValidationService from './validation/TDACValidationService';
 import TDACErrorHandler from './error/TDACErrorHandler';
 import TDACSubmissionLogger from './tdac/TDACSubmissionLogger';
@@ -124,28 +125,34 @@ class TDACAPIService {
     console.log(`📤 fetchSelectItems: Calling ${apiName} with body:`, JSON.stringify(body));
     const url = `${BASE_URL}/selectitem/${apiName}?submitId=${this.submitId}`;
     console.log(`   URL: ${url}`);
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(body)
-    });
+    try {
+      const response = await axios.post(url, body, {
+        headers: this.getAuthHeaders()
+      });
 
-    console.log(`📥 fetchSelectItems: ${apiName} response status:`, response.status);
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ fetchSelectItems: ${apiName} failed with status:`, response.status);
-      console.error('   error body:', errorText);
-      throw new Error(`${apiName} failed: ${response.status} - ${errorText}`);
+      console.log(`📥 fetchSelectItems: ${apiName} response status:`, response.status);
+      const data = response.data;
+      console.log(`✅ fetchSelectItems: ${apiName} success, data preview:`, JSON.stringify(data).substring(0, 200));
+      if (data?.messageCode !== 'X00000') {
+        console.error(`❌ fetchSelectItems: ${apiName} returned error`, data);
+        throw new Error(`${apiName} returned error: ${data?.messageDesc || 'Unknown error'}`);
+      }
+
+      return data?.data || [];
+    } catch (error) {
+      console.error(`❌ fetchSelectItems: ${apiName} failed:`, error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`${apiName} failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`${apiName} failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`${apiName} failed: Request setup error - ${error.message}`);
+      }
     }
-
-    const data = await response.json();
-    console.log(`✅ fetchSelectItems: ${apiName} success, data preview:`, JSON.stringify(data).substring(0, 200));
-    if (data?.messageCode !== 'X00000') {
-      console.error(`❌ fetchSelectItems: ${apiName} returned error`, data);
-      throw new Error(`${apiName} returned error: ${data?.messageDesc || 'Unknown error'}`);
-    }
-
-    return data?.data || [];
   }
 
   /**
@@ -201,34 +208,86 @@ class TDACAPIService {
           throw new Error('Invalid Cloudflare token: missing or not a string');
         }
         
-        const requestBody = JSON.stringify({
+        const requestBody = {
           token: cloudflareToken,
           langague: 'EN'
-        });
-        console.log('   Request Body size:', requestBody.length, 'bytes');
-        console.log('   Request Body preview:', requestBody.substring(0, 100) + '...');
+        };
+        console.log('   Request Body:', JSON.stringify(requestBody).substring(0, 100) + '...');
         console.log('Full Cloudflare Token:', cloudflareToken);
     
         const requestStartTime = Date.now();
     
-        const fetchUrl = `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`;
-        const fetchOptions = {
-          method: 'POST',
-          headers: this.getAuthHeaders(),
-          body: requestBody,
-        };
+        const apiUrl = `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`;
         
-        console.log('🌐 Fetch request details:');
-        console.log('   URL:', fetchUrl);
-        console.log('   Method:', fetchOptions.method);
-        console.log('   Headers:', JSON.stringify(fetchOptions.headers));
-        console.log('   Body length:', fetchOptions.body.length);
-        console.log('   Signal attached:', !!fetchOptions.signal);
+        console.log('🌐 Axios request details:');
+        console.log('   URL:', apiUrl);
+        console.log('   Method: POST');
+        console.log('   Headers:', JSON.stringify(this.getAuthHeaders()));
+        console.log('   Timeout:', `${timeoutMs}ms`);
+        console.log('   Body:', JSON.stringify(requestBody));
         
-        let response;
+        // Use fetch with AbortController for React Native compatibility
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+          console.error(`⏰ Request timeout after ${timeoutSeconds} seconds`);
+        }, timeoutMs);
+
         try {
-          console.log('⏳ Starting fetch request...');
-          response = await fetch(fetchUrl, fetchOptions);
+          console.log('⏳ Starting fetch request (React Native compatible)...');
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          const actualDuration = Date.now() - requestStartTime;
+          console.log('📥 Step 1 response status:', response.status, response.statusText);
+          console.log('   response received in:', `${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
+          console.log('   response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Step 1 failed with status:', response.status);
+            console.error('   error body:', errorText);
+            throw new Error('initActionToken failed: ' + response.status + ' - ' + errorText);
+          }
+
+          // Check if response has content
+          const contentType = response.headers.get('content-type');
+          console.log('   content-type:', contentType);
+
+          const responseText = await response.text();
+          console.log('   response body length:', responseText.length);
+
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('❌ Step 1: JSON parse error');
+            console.error('   response text:', responseText.substring(0, 500));
+            throw new Error('initActionToken returned invalid JSON: ' + parseError.message);
+          }
+
+          if (!data || (typeof data === 'string' && data.length === 0)) {
+            console.error('❌ Step 1: Empty response body');
+            throw new Error('initActionToken returned empty response');
+          }
+
+          // Data is now properly parsed from JSON
+
+          console.log('✅ Step 1: initActionToken success');
+          console.log('   response data:', JSON.stringify(data).substring(0, 200));
+
+          // Store the action token for subsequent requests
+          this.actionToken = data.data.actionToken;
+          console.log('   stored actionToken:', this.actionToken ? 'Yes (' + this.actionToken.length + ' chars)' : 'No');
+
+          return data;
+
         } catch (error) {
           const actualDuration = Date.now() - requestStartTime;
           console.error(`❌ Request failed after ${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
@@ -237,87 +296,22 @@ class TDACAPIService {
           console.error('   Error message:', error.message);
           console.error('   Error type:', typeof error);
           console.error('   Error stack:', error.stack?.substring(0, 200) + '...');
-          
+
           if (error.name === 'AbortError') {
-            console.error('⏰ TIMEOUT DETECTED:');
-            console.error('   Configured timeout:', timeoutMs + 'ms (' + timeoutSeconds + 's)');
-            console.error('   Actual duration:', actualDuration + 'ms (' + Math.round(actualDuration/1000) + 's)');
-            
-            // Check if timeout is close to our configured timeout
-            const timeoutDiff = Math.abs(actualDuration - timeoutMs);
-            if (timeoutDiff < 1000) {
-              console.error('   ✅ Timeout matches our configuration - this is our timeout');
-            } else if (actualDuration < timeoutMs - 1000) {
-              console.error('   ⚠️  Timeout is SHORTER than configured - external timeout detected!');
-              console.error('   Possible sources: React Native, browser, proxy, firewall, network layer');
-            } else {
-              console.error('   ❓ Timeout timing is unexpected');
-            }
-            
+            console.error('⏰ FETCH TIMEOUT DETECTED (AbortController):', error.message);
             const timeoutError = new Error(`initActionToken request timed out after ${Math.round(actualDuration/1000)} seconds (configured: ${timeoutSeconds}s)`);
             timeoutError.name = 'TimeoutError';
             timeoutError.actualDuration = actualDuration;
             timeoutError.configuredTimeout = timeoutMs;
             timeoutError.isExternalTimeout = actualDuration < timeoutMs - 1000;
             throw timeoutError;
+          } else {
+            console.error('🌐 FETCH REQUEST ERROR:');
+            console.error('   Message:', error.message);
+            throw new Error(`initActionToken failed: ${error.message}`);
           }
-          
-          // Analyze other types of errors
-          if (error.message.includes('Network request failed')) {
-            console.error('🌐 NETWORK ERROR: Request failed to reach server');
-            console.error('   Possible causes: No internet, DNS issues, server down, firewall blocking');
-          } else if (error.message.includes('fetch')) {
-            console.error('🔧 FETCH ERROR: JavaScript fetch API issue');
-            console.error('   Possible causes: React Native fetch polyfill, CORS, invalid URL');
-          }
-          
-          throw error;
-        } finally {
         }
-    
-        const actualDuration = Date.now() - requestStartTime;
-        console.log('📥 Step 1 response status:', response.status, response.statusText);
-        console.log('   response received in:', `${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
-        console.log('   response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
-    
-        // Check if response is ok
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Step 1 failed with status:', response.status);
-          console.error('   error body:', errorText);
-          throw new Error('initActionToken failed: ' + response.status + ' - ' + errorText);
-        }
-    
-        // Check if response has content
-        const contentType = response.headers.get('content-type');
-        console.log('   content-type:', contentType);
-    
-        const responseText = await response.text();
-        console.log('   response body length:', responseText.length);
-        console.log('   response body preview:', responseText.substring(0, 200));
-    
-        if (!responseText || responseText.length === 0) {
-          console.error('❌ Step 1: Empty response body');
-          throw new Error('initActionToken returned empty response');
-        }
-    
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('❌ Step 1: JSON parse error');
-          console.error('   response text:', responseText);
-          throw new Error('initActionToken returned invalid JSON: ' + parseError.message);
-        }
-    
-        console.log('✅ Step 1: initActionToken success');
-        console.log('   response data:', JSON.stringify(data).substring(0, 200));
-    
-        // Store the action token for subsequent requests
-        this.actionToken = data.data.actionToken;
-        console.log('   stored actionToken:', this.actionToken ? 'Yes (' + this.actionToken.length + ' chars)' : 'No');
-    
-        return data;  }
+  }
 
   /**
    * Step 2: Go to add page
@@ -326,63 +320,70 @@ class TDACAPIService {
     console.log('📤 Step 2: Sending gotoAdd request...');
     console.log('   Using actionToken:', this.actionToken ? 'Yes' : 'No');
     
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/gotoAdd?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/gotoAdd?submitId=${this.submitId}`,
+        {
           hiddenToken: null,
           informTempId: null
-        })
+        },
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
+
+      console.log('📥 Step 2 response status:', response.status);
+      const data = response.data;
+
+      if (!data || (typeof data === 'string' && data.length === 0)) {
+        console.error('❌ Step 2: Empty response body');
+        throw new Error('gotoAdd returned empty response');
       }
-    );
 
-    console.log('📥 Step 2 response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Step 2 failed with status:', response.status);
-      console.error('   error body:', errorText);
-      throw new Error('gotoAdd failed: ' + response.status + ' - ' + errorText);
+      if (typeof data === 'string') {
+        console.warn('⚠️ Step 2: Response data is a string, expected JSON. Preview:', data.substring(0, 200));
+        try {
+          const parsedData = JSON.parse(data);
+          console.log('   Successfully parsed string data to JSON.');
+          throw new Error('gotoAdd returned unexpected string response: ' + data.substring(0, 100));
+        } catch (parseError) {
+          console.error('❌ Step 2: JSON parse error for string response:', parseError.message);
+          throw new Error('gotoAdd returned invalid JSON string: ' + parseError.message);
+        }
+      }
+
+      if (data?.messageCode !== 'X00000') {
+        console.error('❌ Step 2: gotoAdd failed', data);
+        throw new Error(`TDAC gotoAdd failed: ${data?.messageDesc || 'Unknown error'}`);
+      }
+
+      const lists = data?.data || {};
+      this.selectItemCache.gender = this.buildValueMap(lists.listGender);
+      this.selectItemCache.travelMode = this.buildValueMap(lists.listTraMode);
+      this.selectItemCache.accommodation = this.buildValueMap(lists.listAccom);
+      this.selectItemCache.purpose = this.buildValueMap(lists.listPurposeOfTravel);
+      this.selectItemRows.gender = lists.listGender || [];
+      this.selectItemRows.travelMode = lists.listTraMode || [];
+      this.selectItemRows.accommodation = lists.listAccom || [];
+      this.selectItemRows.purpose = lists.listPurposeOfTravel || [];
+      this.selectItemRows.purposeCodeMap = this.buildValueMap(lists.listPurposeOfTravel);
+
+      console.log('✅ Step 2: gotoAdd success');
+      return data;
+    } catch (error) {
+      console.error('❌ Step 2: gotoAdd failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`gotoAdd failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`gotoAdd failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`gotoAdd failed: Request setup error - ${error.message}`);
+      }
     }
-
-    const responseText = await response.text();
-    console.log('   response body length:', responseText.length);
-    console.log('   response body preview:', responseText.substring(0, 200));
-
-    if (!responseText || responseText.length === 0) {
-      console.error('❌ Step 2: Empty response body');
-      throw new Error('gotoAdd returned empty response');
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('❌ Step 2: JSON parse error');
-      console.error('   response text:', responseText);
-      throw new Error('gotoAdd returned invalid JSON: ' + parseError.message);
-    }
-
-    if (data?.messageCode !== 'X00000') {
-      console.error('❌ Step 2: gotoAdd failed', data);
-      throw new Error(`TDAC gotoAdd failed: ${data?.messageDesc || 'Unknown error'}`);
-    }
-
-    const lists = data?.data || {};
-    this.selectItemCache.gender = this.buildValueMap(lists.listGender);
-    this.selectItemCache.travelMode = this.buildValueMap(lists.listTraMode);
-    this.selectItemCache.accommodation = this.buildValueMap(lists.listAccom);
-    this.selectItemCache.purpose = this.buildValueMap(lists.listPurposeOfTravel);
-    this.selectItemRows.gender = lists.listGender || [];
-    this.selectItemRows.travelMode = lists.listTraMode || [];
-    this.selectItemRows.accommodation = lists.listAccom || [];
-    this.selectItemRows.purpose = lists.listPurposeOfTravel || [];
-    this.selectItemRows.purposeCodeMap = this.buildValueMap(lists.listPurposeOfTravel);
-
-    console.log('✅ Step 2: gotoAdd success');
-    return data;
   }
 
   /**
@@ -564,39 +565,50 @@ class TDACAPIService {
   async checkHealthDeclaration() {
     console.log('📤 Step 4: Sending checkHealthDeclaration request...');
     
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/checkHealthDeclaration?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({})
-      }
-    );
-
-    console.log('📥 Step 4 response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Step 4 failed with status:', response.status);
-      console.error('   error body:', errorText);
-      throw new Error('checkHealthDeclaration failed: ' + response.status + ' - ' + errorText);
-    }
-
-    const responseText = await response.text();
-    console.log('   response body length:', responseText.length);
-
-    if (!responseText || responseText.length === 0) {
-      console.error('❌ Step 4: Empty response body');
-      throw new Error('checkHealthDeclaration returned empty response');
-    }
-
-    let data;
     try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('❌ Step 4: JSON parse error');
-      console.error('   response text:', responseText.substring(0, 500));
-      throw new Error('checkHealthDeclaration returned invalid JSON: ' + parseError.message);
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/checkHealthDeclaration?submitId=${this.submitId}`,
+        {},
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
+
+      console.log('📥 Step 4 response status:', response.status);
+      const data = response.data;
+
+      if (!data || (typeof data === 'string' && data.length === 0)) {
+        console.error('❌ Step 4: Empty response body');
+        throw new Error('checkHealthDeclaration returned empty response');
+      }
+
+      if (typeof data === 'string') {
+        console.warn('⚠️ Step 4: Response data is a string, expected JSON. Preview:', data.substring(0, 200));
+        try {
+          const parsedData = JSON.parse(data);
+          console.log('   Successfully parsed string data to JSON.');
+          throw new Error('checkHealthDeclaration returned unexpected string response: ' + data.substring(0, 100));
+        } catch (parseError) {
+          console.error('❌ Step 4: JSON parse error for string response:', parseError.message);
+          throw new Error('checkHealthDeclaration returned invalid JSON string: ' + parseError.message);
+        }
+      }
+
+      console.log('✅ Step 4: checkHealthDeclaration success');
+      return data;
+    } catch (error) {
+      console.error('❌ Step 4: checkHealthDeclaration failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`checkHealthDeclaration failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`checkHealthDeclaration failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`checkHealthDeclaration failed: Request setup error - ${error.message}`);
+      }
     }
 
     console.log('✅ Step 4: checkHealthDeclaration success');
@@ -608,30 +620,44 @@ class TDACAPIService {
    * This is called for each page of the form
    */
   async next(formData) {
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/next?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(formData)
-      }
-    );
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/next?submitId=${this.submitId}`,
+        formData,
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
 
-    const data = await response.json();
-    if (data?.messageCode !== 'X00000') {
-      console.error('❌ Step 5: next() failed', data);
-      throw new Error(`TDAC next() failed: ${data?.messageDesc || 'Unknown error'}`);
+      const data = response.data;
+      if (data?.messageCode !== 'X00000') {
+        console.error('❌ Step 5: next() failed', data);
+        throw new Error(`TDAC next() failed: ${data?.messageDesc || 'Unknown error'}`);
+      }
+      console.log('✅ Step 5: next() success');
+      console.log('📋 Step 5 returned data:', JSON.stringify(data));
+      
+      // Store the inFormTempId if it exists in the response
+      if (data?.data?.listPersonal?.[0]?.inFormTempId) {
+        this.inFormTempId = data.data.listPersonal[0].inFormTempId;
+        console.log('   Stored inFormTempId:', this.inFormTempId);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Step 5: next() failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`TDAC next() failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`TDAC next() failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`TDAC next() failed: Request setup error - ${error.message}`);
+      }
     }
-    console.log('✅ Step 5: next() success');
-    console.log('📋 Step 5 returned data:', JSON.stringify(data));
-    
-    // Store the inFormTempId if it exists in the response
-    if (data?.data?.listPersonal?.[0]?.inFormTempId) {
-      this.inFormTempId = data.data.listPersonal[0].inFormTempId;
-      console.log('   Stored inFormTempId:', this.inFormTempId);
-    }
-    
-    return data;
   }
 
   /**
@@ -646,110 +672,167 @@ class TDACAPIService {
     const hiddenToken = nextResponseData?.data?.hiddenToken;
     console.log('   Using hiddenToken from next():', hiddenToken);
     
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/gotoPreview?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/gotoPreview?submitId=${this.submitId}`,
+        {
           hiddenToken: hiddenToken || "",
           relateKey: hiddenToken || ""  // Try using hiddenToken as relateKey
-        })
-      }
-    );
+        },
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
 
-    const data = await response.json();
-    
-    if (data?.messageCode !== 'X00000') {
-      console.error('❌ Step 6: gotoPreview failed', data);
-      throw new Error(`TDAC gotoPreview failed: ${data?.messageDesc || 'Unknown error'}`);
+      const data = response.data;
+      
+      if (data?.messageCode !== 'X00000') {
+        console.error('❌ Step 6: gotoPreview failed', data);
+        throw new Error(`TDAC gotoPreview failed: ${data?.messageDesc || 'Unknown error'}`);
+      }
+      
+      // Extract hiddenToken from the preview list (for single traveler, it's in listPreview[0])
+      const previewToken = data?.data?.listPreview?.[0]?.hiddenToken;
+      
+      if (!previewToken) {
+        console.error('❌ Step 6: No hiddenToken in preview response', data);
+        throw new Error('TDAC gotoPreview succeeded but no hiddenToken found in response');
+      }
+      
+      console.log('✅ Step 6: gotoPreview success - hiddenToken generated!');
+      console.log('   previewToken:', previewToken);
+      return { data, hiddenToken: previewToken };
+    } catch (error) {
+      console.error('❌ Step 6: gotoPreview failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`TDAC gotoPreview failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`TDAC gotoPreview failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`TDAC gotoPreview failed: Request setup error - ${error.message}`);
+      }
     }
-    
-    // Extract hiddenToken from the preview list (for single traveler, it's in listPreview[0])
-    const previewToken = data?.data?.listPreview?.[0]?.hiddenToken;
-    
-    if (!previewToken) {
-      console.error('❌ Step 6: No hiddenToken in preview response', data);
-      throw new Error('TDAC gotoPreview succeeded but no hiddenToken found in response');
-    }
-    
-    console.log('✅ Step 6: gotoPreview success - hiddenToken generated!');
-    console.log('   previewToken:', previewToken);
-    return { data, hiddenToken: previewToken };
   }
 
   /**
    * Step 7: Submit the arrival card
    */
   async submit(hiddenToken, email) {
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/submit?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/submit?submitId=${this.submitId}`,
+        {
           hiddenToken: hiddenToken,
           sendTo: email,
           checkedDecalraion: true,
           bluetoothName: ''
-        })
-      }
-    );
+        },
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
 
-    const data = await response.json();
-    const newToken = data?.data?.hiddenToken;
-    
-    if (data?.messageCode !== 'X00000' || !newToken) {
-      console.error('❌ Step 7: submit failed', data);
-      throw new Error(`TDAC submit failed: ${data?.messageDesc || 'Missing hiddenToken'}`);
+      const data = response.data;
+      const newToken = data?.data?.hiddenToken;
+      
+      if (data?.messageCode !== 'X00000' || !newToken) {
+        console.error('❌ Step 7: submit failed', data);
+        throw new Error(`TDAC submit failed: ${data?.messageDesc || 'Missing hiddenToken'}`);
+      }
+      
+      console.log('✅ Step 7: submit success - received JWT token');
+      return { data, hiddenToken: newToken };
+    } catch (error) {
+      console.error('❌ Step 7: submit failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`TDAC submit failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`TDAC submit failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`TDAC submit failed: Request setup error - ${error.message}`);
+      }
     }
-    
-    console.log('✅ Step 7: submit success - received JWT token');
-    return { data, hiddenToken: newToken };
   }
 
   /**
    * Step 8: Get submitted result
    */
   async gotoSubmitted(hiddenToken) {
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/gotoSubmitted?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ hiddenToken })
-      }
-    );
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/gotoSubmitted?submitId=${this.submitId}`,
+        { hiddenToken },
+        {
+          headers: this.getAuthHeaders()
+        }
+      );
 
-    const data = await response.json();
-    const arrCardNo = data?.data?.listTraveller?.[0]?.arrCardNo;
-    
-    if (data?.messageCode !== 'X00000' || !arrCardNo) {
-      console.error('❌ Step 8: gotoSubmitted failed', data);
-      throw new Error(`TDAC gotoSubmitted failed: ${data?.messageDesc || 'Missing arrival card number'}`);
+      const data = response.data;
+      const arrCardNo = data?.data?.listTraveller?.[0]?.arrCardNo;
+      
+      if (data?.messageCode !== 'X00000' || !arrCardNo) {
+        console.error('❌ Step 8: gotoSubmitted failed', data);
+        throw new Error(`TDAC gotoSubmitted failed: ${data?.messageDesc || 'Missing arrival card number'}`);
+      }
+      
+      console.log(`✅ Step 8: gotoSubmitted success - Card No: ${arrCardNo}`);
+      return { data, arrCardNo };
+    } catch (error) {
+      console.error('❌ Step 8: gotoSubmitted failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`TDAC gotoSubmitted failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`TDAC gotoSubmitted failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`TDAC gotoSubmitted failed: Request setup error - ${error.message}`);
+      }
     }
-    
-    console.log(`✅ Step 8: gotoSubmitted success - Card No: ${arrCardNo}`);
-    return { data, arrCardNo };
   }
 
   /**
    * Step 9: Download PDF with QR code
    */
   async downloadPdf(hiddenToken) {
-    const response = await fetch(
-      `${BASE_URL}/arrivalcard/downloadPdf?submitId=${this.submitId}`,
-      {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ hiddenToken })
-      }
-    );
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/arrivalcard/downloadPdf?submitId=${this.submitId}`,
+        { hiddenToken },
+        {
+          headers: this.getAuthHeaders(),
+          responseType: 'blob' // Important for downloading files
+        }
+      );
 
-    const pdfBlob = await response.blob();
-    
-    console.log('✅ Step 9: downloadPdf success');
-    return pdfBlob;
+      const pdfBlob = response.data; // axios returns blob directly in response.data
+      
+      console.log('✅ Step 9: downloadPdf success');
+      return pdfBlob;
+    } catch (error) {
+      console.error('❌ Step 9: downloadPdf failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+        throw new Error(`TDAC downloadPdf failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        console.error('   No response received:', error.request);
+        throw new Error(`TDAC downloadPdf failed: No response received - ${error.message}`);
+      } else {
+        console.error('   Error setting up request:', error.message);
+        throw new Error(`TDAC downloadPdf failed: Request setup error - ${error.message}`);
+      }
+    }
   }
 
   /**

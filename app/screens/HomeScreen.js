@@ -660,12 +660,22 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
-          <TouchableOpacity
-            style={styles.headerRight}
-            onPress={() => setShowLanguageModal(true)}
-          >
-            <Text style={styles.settingsIcon}>🌐</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {__DEV__ && (
+              <TouchableOpacity
+                style={styles.debugButton}
+                onPress={() => navigation.navigate('TDACDebug')}
+              >
+                <Text style={styles.debugIcon}>🔧</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.languageButton}
+              onPress={() => setShowLanguageModal(true)}
+            >
+              <Text style={styles.settingsIcon}>🌐</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
 
@@ -979,8 +989,18 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   headerRight: {
-    width: 40,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  debugButton: {
+    padding: 4,
+  },
+  debugIcon: {
+    fontSize: 20,
+  },
+  languageButton: {
+    padding: 4,
   },
   settingsIcon: {
     fontSize: 24,

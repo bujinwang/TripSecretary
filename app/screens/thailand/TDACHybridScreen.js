@@ -554,6 +554,15 @@ const TDACHybridScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
+      {/* Debug Button (Development Only) */}
+      {__DEV__ && (
+        <TouchableOpacity
+          style={styles.debugButton}
+          onPress={() => navigation.navigate('TDACDebug')}
+        >
+          <Text style={styles.debugButtonText}>🔧 Debug</Text>
+        </TouchableOpacity>
+      )}
       {/* WebView for Cloudflare token extraction - Shows when needed */}
       {(stage === 'loading' || stage === 'extracting') && (
         <WebView
@@ -663,6 +672,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  debugButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 1000,
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   progressContainer: {
     position: 'absolute',
