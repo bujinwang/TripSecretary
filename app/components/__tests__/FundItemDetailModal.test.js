@@ -30,7 +30,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   const mockCashItem = {
     id: 'fund-1',
-    userId: 'default_user',
+    userId: 'user_001',
     type: 'CASH',
     amount: 5000,
     currency: 'USD',
@@ -42,7 +42,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   const mockBankCardItem = {
     id: 'fund-2',
-    userId: 'default_user',
+    userId: 'user_001',
     type: 'BANK_CARD',
     amount: 10000,
     currency: 'EUR',
@@ -54,7 +54,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   const mockDocumentItem = {
     id: 'fund-3',
-    userId: 'default_user',
+    userId: 'user_001',
     type: 'DOCUMENT',
     amount: null,
     currency: null,
@@ -66,7 +66,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   const mockBankBalanceItem = {
     id: 'fund-4',
-    userId: 'default_user',
+    userId: 'user_001',
     type: 'BANK_BALANCE',
     amount: '',
     currency: '',

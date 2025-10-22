@@ -457,34 +457,6 @@ class SecureStorageService {
           CREATE INDEX IF NOT EXISTS idx_audit_events_type_timestamp ON audit_events(event_type, timestamp);
         `);
 
-        // Add missing columns with error handling
-        const alterTableStatements = [
-          'ALTER TABLE travel_info ADD COLUMN travel_purpose TEXT',
-          'ALTER TABLE travel_info ADD COLUMN accommodation_type TEXT',
-          'ALTER TABLE travel_info ADD COLUMN province TEXT',
-          'ALTER TABLE travel_info ADD COLUMN accommodation_phone TEXT',
-          'ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT',
-          'ALTER TABLE travel_info ADD COLUMN recent_stay_country TEXT',
-          'ALTER TABLE travel_info ADD COLUMN boarding_country TEXT',
-          'ALTER TABLE travel_info ADD COLUMN visa_number TEXT',
-          'ALTER TABLE travel_info ADD COLUMN is_transit_passenger INTEGER DEFAULT 0',
-          'ALTER TABLE travel_info ADD COLUMN district TEXT',
-          'ALTER TABLE travel_info ADD COLUMN sub_district TEXT',
-          'ALTER TABLE travel_info ADD COLUMN postal_code TEXT',
-          'ALTER TABLE personal_info ADD COLUMN phone_code TEXT',
-          'ALTER TABLE personal_info ADD COLUMN gender TEXT',
-          'ALTER TABLE entry_info ADD COLUMN passport_id TEXT',
-          'ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT'
-        ];
-
-        for (const statement of alterTableStatements) {
-          try {
-            await this.modernDb.execAsync(statement);
-          } catch (error) {
-            // Column might already exist, ignore error
-            console.log(`Column already exists or other non-critical error: ${error.message}`);
-          }
-        }
       });
     } catch (error) {
       console.error('Failed to create tables:', error);

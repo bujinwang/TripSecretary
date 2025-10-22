@@ -5,44 +5,53 @@
 console.log('=== FINAL DATA MAPPING VERIFICATION ===');
 
 // Original database records from user
-const databaseRecords = {
-  travel: {
-    "id": "mgwlyesrnwpr3cn1ojg",
-    "user_id": "default_user",
-    "destination": "th",
-    "travel_purpose": "HOLIDAY",
-    "boarding_country": "CHN",
-    "visa_number": "123412312",
-    "arrival_flight_number": "AC111",
-    "arrival_arrival_date": "2025-10-20",
-    "departure_flight_number": "AC223",
-    "departure_departure_date": "2025-10-26",
-    "accommodation_type": "HOTEL",
-    "province": "BANGKOK",
-    "hotel_address": "Add add Adidas Dad",
-    "recent_stay_country": "CHN"
-  },
-  passport: {
-    "id": "passport_1760811922420_di0leh7ap",
-    "user_id": "default_user",
-    "encrypted_passport_number": "E12341433",
-    "encrypted_full_name": "LI, A, MAO",
-    "encrypted_date_of_birth": "1987-01-10",
-    "encrypted_nationality": "CHN",
-    "gender": "Male",
-    "expiry_date": "2030-10-15"
-  },
-  personal: {
-    "id": "personal_1760811922489_a3zt2ssd8",
-    "user_id": "default_user",
-    "encrypted_phone_number": "12341234132413",
-    "encrypted_email": "aaa@bbb.com",
-    "occupation": "Manager",
-    "province_city": "Anhui",
-    "country_region": "CHN",
-    "phone_code": "+86",
-    "gender": "Male"
-  }
+const userData = {
+    "personal_info": {
+        "id": "personal_info_001",
+        "user_id": "user_001",
+        "encrypted_phone_number": "13800138000",
+        "encrypted_email": "test@example.com",
+        "encrypted_home_address": "123 Main St, Anytown, USA",
+        "occupation": "Engineer",
+        "province_city": "California",
+        "country_region": "USA",
+        "phone_code": "+1",
+        "gender": "Male",
+        "created_at": "2023-10-26T10:00:00Z",
+        "updated_at": "2023-10-26T10:00:00Z"
+    },
+    "passport": {
+        "id": "passport_001",
+        "user_id": "user_001",
+        "encrypted_passport_number": "G12345678",
+        "encrypted_full_name": "ZHANG, SAN",
+        "encrypted_date_of_birth": "1990-01-01",
+        "encrypted_nationality": "CHN",
+        "gender": "Male",
+        "expiry_date": "2030-01-01",
+        "issue_date": "2020-01-01",
+        "issue_place": "Beijing",
+        "photo_uri": "file:///path/to/photo.jpg"
+    },
+    "travel_info": {
+        "id": "travel_info_001",
+        "user_id": "user_001",
+        "destination": "Thailand",
+        "travel_purpose": "HOLIDAY",
+        "recent_stay_country": "USA",
+        "boarding_country": "USA",
+        "visa_number": "V1234567",
+        "arrival_flight_number": "UA123",
+        "departure_flight_number": "UA456",
+        "accommodation_type": "HOTEL",
+        "hotel_name": "Grand Hyatt",
+        "hotel_address": "123 Main St, Bangkok",
+        "length_of_stay": "10",
+        "province": "Bangkok",
+        "district": "Pathum Wan",
+        "sub_district": "Lumphini",
+        "accommodation_phone": "+6621234567"
+    }
 };
 
 // Expected TDAC submission format (from images)

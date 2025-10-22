@@ -134,7 +134,7 @@ const removeFund = async (id) => {
 
 ### Expected Behavior
 - Photos stored in: `{DocumentDirectory}/funds/fund_*.jpg`
-- Database uses consistent ID: `funding_default_user`
+- Database uses consistent ID: `funding_user_001`
 - Updates replace existing record instead of creating new ones
 - Photos display correctly after app restart
 

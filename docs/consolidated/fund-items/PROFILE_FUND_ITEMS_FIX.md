@@ -54,7 +54,7 @@ useFocusEffect(
   useCallback(() => {
     const loadFundItems = async () => {
       try {
-        const userId = 'default_user';
+        const userId = 'user_001';
         const items = await PassportDataService.getFundItems(userId);
         console.log('Reloaded fund items on focus:', items);
         setFundItems(items || []);
