@@ -33,7 +33,7 @@ If you can open the React Native Debugger:
 // Run this in the console:
 const SecureStorageService = require('./app/services/security/SecureStorageService').default;
 await SecureStorageService.resetDatabase();
-await SecureStorageService.initialize('default_user');
+await SecureStorageService.initialize('user_001');
 ```
 
 Then reload the app.

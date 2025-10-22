@@ -11,7 +11,7 @@ console.log('=== DATA DISCREPANCY ANALYSIS ===');
 // Database records provided by user
 const travelRecord = {
   "id": "mgwlyesrnwpr3cn1ojg",
-  "user_id": "default_user",
+  "user_id": "user_001",
   "destination": "th",
   "travel_purpose": "HOLIDAY",
   "boarding_country": "CHN",
@@ -48,7 +48,7 @@ const travelRecord = {
 
 const passportRecord = {
   "id": "passport_1760811922420_di0leh7ap",
-  "user_id": "default_user",
+  "user_id": "user_001",
   "encrypted_passport_number": "E12341433",
   "encrypted_full_name": "LI, A, MAO",
   "encrypted_date_of_birth": "1987-01-10",
@@ -64,7 +64,7 @@ const passportRecord = {
 
 const personalRecord = {
   "id": "personal_1760811922489_a3zt2ssd8",
-  "user_id": "default_user",
+  "user_id": "user_001",
   "encrypted_phone_number": "12341234132413",
   "encrypted_email": "aaa@bbb.com",
   "encrypted_home_address": null,

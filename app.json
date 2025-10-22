@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.borderbuddy.chujingtong",
+      "deploymentTarget": "17.0",
       "infoPlist": {
         "NSCameraUsageDescription": "需要使用相机扫描您的护照信息",
         "NSPhotoLibraryUsageDescription": "需要访问相册以选择护照照片",

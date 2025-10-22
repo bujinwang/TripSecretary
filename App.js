@@ -3,7 +3,7 @@
 import './app/utils/AbortSignalPolyfill';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import AppNavigator from './app/navigation/AppNavigator';
 import { LocaleProvider } from './app/i18n/LocaleContext';
 import { NotificationService } from './app/services/notification';
@@ -18,12 +18,18 @@ export default function App() {
     // Initialize services when app starts
     const initializeServices = async () => {
       try {
-        // Initialize notification service
-        const permissionStatus = await NotificationService.initialize();
-        console.log('Notification service initialized:', permissionStatus);
-        
-        // Set navigation reference for deep link handling
-        NotificationService.setNavigationRef(navigationRef);
+        // Initialize notification service with iOS 18.5 simulator protection
+        if (Platform.OS === 'ios' && __DEV__) {
+          console.log('Skipping notification initialization in iOS simulator to prevent crash');
+          // Set navigation reference for deep link handling
+          NotificationService.setNavigationRef(navigationRef);
+        } else {
+          const permissionStatus = await NotificationService.initialize();
+          console.log('Notification service initialized:', permissionStatus);
+          
+          // Set navigation reference for deep link handling
+          NotificationService.setNavigationRef(navigationRef);
+        }
         
         // Start background job service for automatic archival
         await BackgroundJobService.start();

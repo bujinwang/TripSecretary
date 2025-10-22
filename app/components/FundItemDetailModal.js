@@ -420,7 +420,7 @@ const FundItemDetailModal = ({
         });
 
         // Get userId - use default for new items
-        const userId = 'default_user';
+        const userId = 'user_001';
         
         // Create the new fund item using PassportDataService
         console.log('[FundItemDetailModal] Calling PassportDataService.saveFundItem for creation...');
@@ -460,7 +460,7 @@ const FundItemDetailModal = ({
         });
 
         // Get userId from fundItem or use default
-        const userId = fundItem.userId || 'default_user';
+        const userId = fundItem.userId || 'user_001';
         
         // Save the updated fund item using PassportDataService
         console.log('[FundItemDetailModal] Calling PassportDataService.saveFundItem...');
@@ -539,7 +539,7 @@ const FundItemDetailModal = ({
               const PassportDataService = require('../services/data/PassportDataService').default;
               
               // Get userId from fundItem or use default
-              const userId = fundItem.userId || 'default_user';
+              const userId = fundItem.userId || 'user_001';
               
               console.log('[FundItemDetailModal] Calling PassportDataService.deleteFundItem...', {
                 fundItemId: fundItem.id,
@@ -845,7 +845,7 @@ const FundItemDetailModal = ({
         };
 
         // Get userId from fundItem or use default
-        const userId = fundItem.userId || 'default_user';
+        const userId = fundItem.userId || 'user_001';
         
         console.log('[FundItemDetailModal] Saving fund item with new photo...', {
           fundItemId: fundData.id,

@@ -212,10 +212,14 @@ class TDACAPIService {
         const requestStartTime = Date.now();
     
         const fetchUrl = `${BASE_URL}/security/initActionToken?submitId=${this.submitId}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
         const fetchOptions = {
           method: 'POST',
           headers: this.getAuthHeaders(),
           body: requestBody,
+          signal: controller.signal
         };
         
         console.log('🌐 Fetch request details:');
@@ -273,6 +277,7 @@ class TDACAPIService {
           
           throw error;
         } finally {
+          clearTimeout(timeoutId);
         }
     
         const actualDuration = Date.now() - requestStartTime;

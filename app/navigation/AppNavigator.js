@@ -619,18 +619,32 @@ const AppNavigator = React.forwardRef((props, ref) => {
         
         {/* Development Tools (only in development mode) */}
         {__DEV__ && (
-          <Stack.Screen
-            name="NotificationTest"
-            component={require('../screens/NotificationTestScreen').default}
-            options={{
-              headerShown: true,
-              title: 'Notification Testing',
-              headerTintColor: colors.text,
-              headerStyle: {
-                backgroundColor: colors.white,
-              },
-            }}
-          />
+          <>
+            <Stack.Screen
+              name="NotificationTest"
+              component={require('../screens/NotificationTestScreen').default}
+              options={{
+                headerShown: true,
+                title: 'Notification Testing',
+                headerTintColor: colors.text,
+                headerStyle: {
+                  backgroundColor: colors.white,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="TDACDebug"
+              component={require('../screens/debug/TDACDebugScreen').default}
+              options={{
+                headerShown: true,
+                title: 'TDAC Debug & Connectivity',
+                headerTintColor: colors.text,
+                headerStyle: {
+                  backgroundColor: colors.white,
+                },
+              }}
+            />
+          </>
         )}
         
       </Stack.Navigator>

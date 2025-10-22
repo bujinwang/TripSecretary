@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * Debug script for TDAC token initialization hang
  * Run this to diagnose why step 3/9 is hanging
@@ -28,18 +30,17 @@ async function testInitActionToken(cloudflareToken) {
     console.log('📤 Making request to initActionToken...');
     const startTime = Date.now();
     
-    const response = await fetch(
+    const response = await axios.post(
       `${BASE_URL}/security/initActionToken?submitId=${submitId}`,
       {
-        method: 'POST',
+        token: cloudflareToken,
+        langague: 'EN'  // Note: API has typo "langague" instead of "language"
+      },
+      {
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          token: cloudflareToken,
-          langague: 'EN'  // Note: API has typo "langague" instead of "language"
-        })
+        }
       }
     );
     
@@ -48,43 +49,38 @@ async function testInitActionToken(cloudflareToken) {
     
     console.log('📥 Response received after', duration + 'ms');
     console.log('   Status:', response.status, response.statusText);
-    console.log('   Headers:', Object.fromEntries(response.headers.entries()));
+    console.log('   Headers:', response.headers); // axios headers are already an object
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Request failed:');
-      console.error('   Status:', response.status);
-      console.error('   Error body:', errorText);
-      return { success: false, error: errorText, status: response.status };
-    }
+    const data = response.data; // axios directly provides data
+    console.log('   Response body length:', JSON.stringify(data).length);
+    console.log('   Response preview:', JSON.stringify(data).substring(0, 200));
     
-    const responseText = await response.text();
-    console.log('   Response body length:', responseText.length);
-    console.log('   Response preview:', responseText.substring(0, 200));
-    
-    if (!responseText || responseText.length === 0) {
+    if (!data || (typeof data === 'string' && data.length === 0)) {
       console.error('❌ Empty response body');
       return { success: false, error: 'Empty response' };
     }
     
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log('✅ JSON parsed successfully');
-      console.log('   Response data:', JSON.stringify(data, null, 2));
-      
-      if (data.data?.actionToken) {
-        console.log('✅ Action token received:', data.data.actionToken.substring(0, 50) + '...');
-        return { success: true, data, actionToken: data.data.actionToken };
-      } else {
-        console.error('❌ No action token in response');
-        return { success: false, error: 'No action token', data };
+    if (typeof data === 'string') {
+      console.warn('⚠️ Response data is a string, expected JSON. Preview:', data.substring(0, 200));
+      try {
+        const parsedData = JSON.parse(data);
+        console.log('   Successfully parsed string data to JSON.');
+        return { success: false, error: 'Unexpected string response', responseText: data };
+      } catch (parseError) {
+        console.error('❌ JSON parse error for string response:', parseError.message);
+        return { success: false, error: 'Invalid JSON string', responseText: data };
       }
-      
-    } catch (parseError) {
-      console.error('❌ JSON parse error:', parseError.message);
-      console.error('   Response text:', responseText);
-      return { success: false, error: 'Invalid JSON', responseText };
+    }
+    
+    console.log('✅ JSON parsed successfully');
+    console.log('   Response data:', JSON.stringify(data, null, 2));
+    
+    if (data.data?.actionToken) {
+      console.log('✅ Action token received:', data.data.actionToken.substring(0, 50) + '...');
+      return { success: true, data, actionToken: data.data.actionToken };
+    } else {
+      console.error('❌ No action token in response');
+      return { success: false, error: 'No action token', data };
     }
     
   } catch (networkError) {

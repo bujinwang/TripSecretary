@@ -45,6 +45,14 @@ class NotificationService {
     }
 
     try {
+      // iOS 18.5 Simulator protection - skip permission request in dev mode
+      if (Platform.OS === 'ios' && __DEV__) {
+        console.log('Skipping notification permissions in iOS simulator (dev mode)');
+        this.permissionStatus = { granted: false, status: 'simulator-skip' };
+        this.isInitialized = true;
+        return this.permissionStatus;
+      }
+
       // Request permissions
       this.permissionStatus = await this.requestPermissions();
       
@@ -57,6 +65,13 @@ class NotificationService {
       return this.permissionStatus;
     } catch (error) {
       console.error('Failed to initialize NotificationService:', error);
+      // Don't throw in dev mode to prevent crashes
+      if (__DEV__) {
+        console.warn('Continuing without notifications in dev mode');
+        this.permissionStatus = { granted: false, status: 'error' };
+        this.isInitialized = true;
+        return this.permissionStatus;
+      }
       throw error;
     }
   }

@@ -9,10 +9,60 @@
  * - Automatic data migration and backup
  */
 
-import * as SQLite from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
+import { openDatabaseAsync } from 'expo-sqlite';
+import { Directory, File, Paths } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import EncryptionService from './EncryptionService';
+
+// Legacy API wrapper to maintain compatibility
+class LegacyDatabaseWrapper {
+  constructor(db) {
+    this.db = db;
+  }
+
+  transaction(callback, errorCallback, successCallback) {
+    this.db.withTransactionAsync(async () => {
+      const tx = new LegacyTransactionWrapper(this.db);
+      callback(tx);
+    })
+    .then(() => {
+      if (successCallback) successCallback();
+    })
+    .catch((error) => {
+      if (errorCallback) errorCallback(error);
+    });
+  }
+}
+
+class LegacyTransactionWrapper {
+  constructor(db) {
+    this.db = db;
+  }
+
+  executeSql(sql, params = [], successCallback, errorCallback) {
+    this.db.getAllAsync(sql, params)
+      .then((rows) => {
+        const result = {
+          rows: {
+            length: rows.length,
+            _array: rows
+          }
+        };
+        if (successCallback) successCallback(this, result);
+      })
+      .catch((error) => {
+        if (errorCallback) {
+          const shouldContinue = errorCallback(this, error);
+          if (shouldContinue !== false) {
+            // If error callback returns false, stop transaction
+            throw error;
+          }
+        } else {
+          throw error;
+        }
+      });
+  }
+}
 
 class SecureStorageService {
   constructor() {
@@ -20,7 +70,7 @@ class SecureStorageService {
     this.encryption = EncryptionService;
     this.DB_NAME = 'tripsecretary_secure';
     this.DB_VERSION = '1.3.0';
-    this.BACKUP_DIR = FileSystem.documentDirectory + 'backups/';
+    this.BACKUP_DIR = new Directory(Paths.document, 'backups');
     this.AUDIT_LOG_KEY = 'secure_storage_audit';
     // TODO: Re-enable encryption before production release
     this.ENCRYPTION_ENABLED = false;
@@ -51,11 +101,12 @@ class SecureStorageService {
         await this.encryption.setupUserKey(userId);
       }
 
-      // Open SQLite database using expo-sqlite v11 API
-      // v11 uses the synchronous openDatabase method
+      // Open SQLite database using modern API
       console.log('Opening database:', this.DB_NAME);
       
-      this.db = SQLite.openDatabase(this.DB_NAME);
+      const modernDb = await openDatabaseAsync(this.DB_NAME);
+      this.db = new LegacyDatabaseWrapper(modernDb);
+      this.modernDb = modernDb; // Keep reference to modern API for new methods
 
       // Create tables if they don't exist
       await this.createTables();
@@ -85,16 +136,20 @@ class SecureStorageService {
     if (!this.db) {
       throw new Error('Secure storage is not initialized. Call initialize() before accessing data.');
     }
+    if (!this.modernDb) {
+      throw new Error('Modern database API is not available. Database may not be properly initialized.');
+    }
   }
 
   /**
    * Create database tables for secure data storage
    */
   async createTables() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
+    try {
+      // Execute all DDL statements in a single transaction for better performance
+      await this.modernDb.withTransactionAsync(async () => {
         // Users table (local reference for foreign keys)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             external_id TEXT,
@@ -105,7 +160,7 @@ class SecureStorageService {
         `);
 
         // Passport data table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS passports (
             id TEXT PRIMARY KEY,
             user_id TEXT,
@@ -124,7 +179,7 @@ class SecureStorageService {
         `);
 
         // Personal information table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS personal_info (
             id TEXT PRIMARY KEY,
             user_id TEXT,
@@ -141,10 +196,8 @@ class SecureStorageService {
           )
         `);
 
-        // Legacy funding_proof table removed - replaced by fund_items table
-
         // New individual fund items table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS fund_items (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,
@@ -159,14 +212,8 @@ class SecureStorageService {
           )
         `);
 
-        // Index for faster queries by user
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_fund_items_user_id 
-          ON fund_items(user_id)
-        `);
-
         // Travel info table (trip-specific draft data)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS travel_info (
             id TEXT PRIMARY KEY,
             user_id TEXT,
@@ -196,113 +243,17 @@ class SecureStorageService {
             postal_code TEXT,
             hotel_name TEXT,
             hotel_address TEXT,
+            accommodation_phone TEXT,
+            length_of_stay TEXT,
             is_transit_passenger INTEGER DEFAULT 0,
             status TEXT,
             created_at TEXT,
             updated_at TEXT
           )
         `);
-        
-        // Add missing columns to existing travel_info table (migration)
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN travel_purpose TEXT
-        `, [], () => {}, (_, error) => {
-          // Column might already exist, ignore error
-          return false;
-        });
-        
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN accommodation_type TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN province TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        // Add accommodation_phone column for Japan entry
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN accommodation_phone TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        // Add length_of_stay column for Japan entry
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-
-        // Ensure all required columns exist for travel_info table
-        const requiredColumns = [
-          'travel_purpose',
-          'recent_stay_country',
-          'boarding_country', 
-          'visa_number',
-          'accommodation_phone',
-          'length_of_stay'
-        ];
-
-        requiredColumns.forEach(column => {
-          tx.executeSql(`
-            ALTER TABLE travel_info ADD COLUMN ${column} TEXT
-          `, [], () => {}, (_, error) => {
-            // Column might already exist, ignore error
-            return false;
-          });
-        });
-
-        // Add is_transit_passenger column
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN is_transit_passenger INTEGER DEFAULT 0
-        `, [], () => {}, (_, error) => {
-          // Column might already exist, ignore error
-          return false;
-        });
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN length_of_stay TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN district TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN sub_district TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-        
-        tx.executeSql(`
-          ALTER TABLE travel_info ADD COLUMN postal_code TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
-
-        // Backfill missing personal_info columns for legacy databases
-        tx.executeSql(`
-          ALTER TABLE personal_info ADD COLUMN phone_code TEXT
-        `, [], () => {}, (_, error) => {
-          // Column might already exist; ignore the error so startup continues
-          return false;
-        });
-
-        tx.executeSql(`
-          ALTER TABLE personal_info ADD COLUMN gender TEXT
-        `, [], () => {}, (_, error) => {
-          return false;
-        });
 
         // Travel history table (non-sensitive data)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS travel_history (
             id TEXT PRIMARY KEY,
             user_id TEXT,
@@ -316,7 +267,7 @@ class SecureStorageService {
         `);
 
         // Audit log table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS audit_log (
             id TEXT PRIMARY KEY,
             action TEXT,
@@ -328,7 +279,7 @@ class SecureStorageService {
         `);
 
         // Settings table (non-sensitive)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT,
@@ -337,7 +288,7 @@ class SecureStorageService {
         `);
 
         // Migrations tracking table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS migrations (
             user_id TEXT PRIMARY KEY,
             migrated_at TEXT,
@@ -345,31 +296,8 @@ class SecureStorageService {
           )
         `);
 
-        // Create indexes for userId lookups
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_passports_user_id 
-          ON passports(user_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_personal_info_user_id 
-          ON personal_info(user_id)
-        `);
-
-        // Legacy funding_proof index removed
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_travel_info_user_id 
-          ON travel_info(user_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_travel_info_destination 
-          ON travel_info(user_id, destination)
-        `);
-
         // Entry info table (Progressive Entry Flow)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS entry_info (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,
@@ -393,7 +321,7 @@ class SecureStorageService {
         `);
 
         // Entry packs table (Progressive Entry Flow)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS entry_packs (
             id TEXT PRIMARY KEY,
             entry_info_id TEXT NOT NULL,
@@ -414,7 +342,7 @@ class SecureStorageService {
         `);
 
         // Entry info to fund items mapping table
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS entry_info_fund_items (
             entry_info_id TEXT NOT NULL,
             fund_item_id TEXT NOT NULL,
@@ -428,7 +356,7 @@ class SecureStorageService {
         `);
 
         // TDAC submissions table (Progressive Entry Flow)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS tdac_submissions (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,
@@ -456,108 +384,31 @@ class SecureStorageService {
           )
         `);
 
-        // Indexes for entry info and entry packs
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
-          ON entry_info(user_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
-          ON entry_info(user_id, destination_id)
-        `);
-
-        tx.executeSql(
-          `PRAGMA table_info(entry_info)`,
-          [],
-          (tx, { rows }) => {
-            const columnNames = Array.isArray(rows?._array)
-              ? rows._array.map(column => column.name)
-              : [];
-
-            if (columnNames.includes('passport_id')) {
-              tx.executeSql(`
-                CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
-                ON entry_info(passport_id)
-              `);
-            } else {
-              console.info(
-                'entry_info table missing passport_id column; attempting in-place schema update'
-              );
-              tx.executeSql(
-                `ALTER TABLE entry_info ADD COLUMN passport_id TEXT`,
-                [],
-                () => {
-                  tx.executeSql(`
-                    CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
-                    ON entry_info(passport_id)
-                  `);
-                },
-                (_, error) => {
-                  console.error('Failed to add passport_id column to entry_info:', error);
-                  return false;
-                }
-              );
-            }
-
-            if (columnNames.includes('personal_info_id')) {
-              tx.executeSql(`
-                CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
-                ON entry_info(personal_info_id)
-              `);
-            } else {
-              console.info(
-                'entry_info table missing personal_info_id column; attempting in-place schema update'
-              );
-              tx.executeSql(
-                `ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT`,
-                [],
-                () => {
-                  tx.executeSql(`
-                    CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
-                    ON entry_info(personal_info_id)
-                  `);
-                },
-                (_, error) => {
-                  console.error('Failed to add personal_info_id column to entry_info:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to inspect entry_info schema for initial index creation:', error);
-            return false;
-          }
-        );
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_packs_user_id 
-          ON entry_packs(user_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info_id 
-          ON entry_packs(entry_info_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
-          ON entry_info_fund_items(entry_info_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
-          ON entry_info_fund_items(fund_item_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
-          ON entry_info_fund_items(user_id)
+        // Entry pack snapshots table (Progressive Entry Flow)
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS entry_pack_snapshots (
+            id TEXT PRIMARY KEY,
+            entry_pack_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            destination_id TEXT,
+            trip_id TEXT,
+            status TEXT NOT NULL,
+            snapshot_reason TEXT,
+            creation_method TEXT DEFAULT 'auto',
+            data_file_path TEXT,
+            photo_manifest TEXT,
+            completeness_indicator TEXT,
+            app_version TEXT,
+            device_info TEXT,
+            created_at TEXT NOT NULL,
+            version INTEGER DEFAULT 1,
+            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
         `);
 
         // Audit events table (Progressive Entry Flow)
-        tx.executeSql(`
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS audit_events (
             id TEXT PRIMARY KEY,
             event_type TEXT NOT NULL,
@@ -576,49 +427,41 @@ class SecureStorageService {
           )
         `);
 
-        // Indexes for TDAC submissions
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_user_id 
-          ON tdac_submissions(user_id)
+        // Create all indexes
+        await this.modernDb.execAsync(`
+          CREATE INDEX IF NOT EXISTS idx_fund_items_user_id ON fund_items(user_id);
+          CREATE INDEX IF NOT EXISTS idx_passports_user_id ON passports(user_id);
+          CREATE INDEX IF NOT EXISTS idx_personal_info_user_id ON personal_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_travel_info_user_id ON travel_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_travel_info_destination ON travel_info(user_id, destination);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_user_id ON entry_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_destination ON entry_info(user_id, destination_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id ON entry_info(passport_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id ON entry_info(personal_info_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_packs_user_id ON entry_packs(user_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info_id ON entry_packs(entry_info_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id ON entry_info_fund_items(entry_info_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id ON entry_info_fund_items(fund_item_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id ON entry_info_fund_items(user_id);
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_user_id ON tdac_submissions(user_id);
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_entry_pack_id ON tdac_submissions(entry_pack_id);
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_arr_card_no ON tdac_submissions(arr_card_no);
+          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_status ON tdac_submissions(user_id, status);
+          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_user_id ON entry_pack_snapshots(user_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_entry_pack_id ON entry_pack_snapshots(entry_pack_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_status ON entry_pack_snapshots(user_id, status);
+          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_created_at ON entry_pack_snapshots(created_at);
+          CREATE INDEX IF NOT EXISTS idx_audit_events_snapshot_id ON audit_events(snapshot_id);
+          CREATE INDEX IF NOT EXISTS idx_audit_events_user_id ON audit_events(user_id);
+          CREATE INDEX IF NOT EXISTS idx_audit_events_timestamp ON audit_events(timestamp);
+          CREATE INDEX IF NOT EXISTS idx_audit_events_type_timestamp ON audit_events(event_type, timestamp);
         `);
 
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_entry_pack_id 
-          ON tdac_submissions(entry_pack_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_arr_card_no 
-          ON tdac_submissions(arr_card_no)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_status 
-          ON tdac_submissions(user_id, status)
-        `);
-
-        // Indexes for audit events
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_audit_events_snapshot_id 
-          ON audit_events(snapshot_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_audit_events_user_id 
-          ON audit_events(user_id)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_audit_events_timestamp 
-          ON audit_events(timestamp)
-        `);
-
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_audit_events_type_timestamp 
-          ON audit_events(event_type, timestamp)
-        `);
-      }, reject, resolve);
-    });
+      });
+    } catch (error) {
+      console.error('Failed to create tables:', error);
+      throw error;
+    }
   }
 
   /**
@@ -666,327 +509,203 @@ class SecureStorageService {
    * Also add user_id to personal_info table
    */
   async addPassportFields() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        // Check and update passports table
-        tx.executeSql(
-          `PRAGMA table_info(passports)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
-            
-            // Add gender column if it doesn't exist
-            if (!columns.includes('gender')) {
-              tx.executeSql(
-                `ALTER TABLE passports ADD COLUMN gender TEXT`,
-                [],
-                () => console.log('Added gender column to passports table'),
-                (_, error) => {
-                  console.error('Failed to add gender column:', error);
-                  return false; // Continue transaction
-                }
-              );
-            }
-            
-            // Add user_id column if it doesn't exist
-            if (!columns.includes('user_id')) {
-              tx.executeSql(
-                `ALTER TABLE passports ADD COLUMN user_id TEXT`,
-                [],
-                () => console.log('Added user_id column to passports table'),
-                (_, error) => {
-                  console.error('Failed to add user_id column:', error);
-                  return false; // Continue transaction
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check passports table schema:', error);
-            return false; // Continue transaction
-          }
-        );
+    try {
+      // Check and update passports table
+      const passportColumns = await this.modernDb.getAllAsync(`PRAGMA table_info(passports)`);
+      const passportColumnNames = passportColumns.map(col => col.name);
+      
+      if (!passportColumnNames.includes('gender')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE passports ADD COLUMN gender TEXT`);
+          console.log('Added gender column to passports table');
+        } catch (error) {
+          console.error('Failed to add gender column:', error);
+        }
+      }
+      
+      if (!passportColumnNames.includes('user_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE passports ADD COLUMN user_id TEXT`);
+          console.log('Added user_id column to passports table');
+        } catch (error) {
+          console.error('Failed to add user_id column:', error);
+        }
+      }
 
-        // Check and update personal_info table
-        tx.executeSql(
-          `PRAGMA table_info(personal_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
-            
-            // Add user_id column if it doesn't exist
-            if (!columns.includes('user_id')) {
-              tx.executeSql(
-                `ALTER TABLE personal_info ADD COLUMN user_id TEXT`,
-                [],
-                () => console.log('Added user_id column to personal_info table'),
-                (_, error) => {
-                  console.error('Failed to add user_id column to personal_info:', error);
-                  return false; // Continue transaction
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check personal_info table schema:', error);
-            return false; // Continue transaction
-          }
-        );
-
-        // Legacy funding_proof table migration removed
-      }, reject, resolve);
-    });
+      // Check and update personal_info table
+      const personalColumns = await this.modernDb.getAllAsync(`PRAGMA table_info(personal_info)`);
+      const personalColumnNames = personalColumns.map(col => col.name);
+      
+      if (!personalColumnNames.includes('user_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN user_id TEXT`);
+          console.log('Added user_id column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add user_id column to personal_info:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to add passport fields:', error);
+      // Don't throw - allow app to continue
+    }
   }
 
   /**
    * Ensure travel_info table includes boarding_country column
    */
   async addTravelInfoBoardingCountryColumn() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(travel_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(travel_info)`);
+      const columnNames = columns.map(col => col.name);
 
-            if (!columns.includes('boarding_country')) {
-              tx.executeSql(
-                `ALTER TABLE travel_info ADD COLUMN boarding_country TEXT`,
-                [],
-                () => console.log('Added boarding_country column to travel_info table'),
-                (_, error) => {
-                  console.error('Failed to add boarding_country column to travel_info table:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check travel_info table schema:', error);
-            return false;
-          }
-        );
-      }, reject, resolve);
-    });
+      if (!columnNames.includes('boarding_country')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE travel_info ADD COLUMN boarding_country TEXT`);
+          console.log('Added boarding_country column to travel_info table');
+        } catch (error) {
+          console.error('Failed to add boarding_country column to travel_info table:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check travel_info table schema:', error);
+    }
   }
 
   /**
    * Ensure travel_info table includes recent_stay_country column
    */
   async addTravelInfoRecentStayCountryColumn() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(travel_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(travel_info)`);
+      const columnNames = columns.map(col => col.name);
 
-            if (!columns.includes('recent_stay_country')) {
-              tx.executeSql(
-                `ALTER TABLE travel_info ADD COLUMN recent_stay_country TEXT`,
-                [],
-                () => console.log('Added recent_stay_country column to travel_info table'),
-                (_, error) => {
-                  console.error('Failed to add recent_stay_country column to travel_info table:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check travel_info table schema:', error);
-            return false;
-          }
-        );
-      }, reject, resolve);
-    });
+      if (!columnNames.includes('recent_stay_country')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE travel_info ADD COLUMN recent_stay_country TEXT`);
+          console.log('Added recent_stay_country column to travel_info table');
+        } catch (error) {
+          console.error('Failed to add recent_stay_country column to travel_info table:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check travel_info table schema:', error);
+    }
   }
 
   /**
    * Ensure travel_info table includes visa_number column
    */
   async addTravelInfoVisaNumberColumn() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(travel_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(travel_info)`);
+      const columnNames = columns.map(col => col.name);
 
-            if (!columns.includes('visa_number')) {
-              tx.executeSql(
-                `ALTER TABLE travel_info ADD COLUMN visa_number TEXT`,
-                [],
-                () => console.log('Added visa_number column to travel_info table'),
-                (_, error) => {
-                  console.error('Failed to add visa_number column to travel_info table:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check travel_info table schema:', error);
-            return false;
-          }
-        );
-      }, reject, resolve);
-    });
+      if (!columnNames.includes('visa_number')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE travel_info ADD COLUMN visa_number TEXT`);
+          console.log('Added visa_number column to travel_info table');
+        } catch (error) {
+          console.error('Failed to add visa_number column to travel_info table:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check travel_info table schema:', error);
+    }
   }
 
   /**
    * Ensure personal_info table includes new optional columns
    */
   async addPersonalInfoPhoneCodeColumn() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(personal_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(personal_info)`);
+      const columnNames = columns.map(col => col.name);
 
-            if (!columns.includes('phone_code')) {
-              tx.executeSql(
-                `ALTER TABLE personal_info ADD COLUMN phone_code TEXT`,
-                [],
-                () => console.log('Added phone_code column to personal_info table'),
-                (_, error) => {
-                  console.error('Failed to add phone_code column to personal_info table:', error);
-                  return false;
-                }
-              );
-            }
+      if (!columnNames.includes('phone_code')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN phone_code TEXT`);
+          console.log('Added phone_code column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add phone_code column to personal_info table:', error);
+        }
+      }
 
-            if (!columns.includes('gender')) {
-              tx.executeSql(
-                `ALTER TABLE personal_info ADD COLUMN gender TEXT`,
-                [],
-                () => console.log('Added gender column to personal_info table'),
-                (_, error) => {
-                  console.error('Failed to add gender column to personal_info table:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to check personal_info table schema:', error);
-            return false;
-          }
-        );
-      }, reject, resolve);
-    });
+      if (!columnNames.includes('gender')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN gender TEXT`);
+          console.log('Added gender column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add gender column to personal_info table:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check personal_info table schema:', error);
+    }
   }
 
   /**
    * Migrate entry_info table to include passport/personal references and remove tdac_submission column
    */
   async migrateEntryInfoTable() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(entry_info)`,
-          [],
-          (_, { rows }) => {
-            const columns = rows._array.map(col => col.name);
-            const needsPassportColumn = !columns.includes('passport_id');
-            const needsPersonalColumn = !columns.includes('personal_info_id');
-            const hasTdacColumn = columns.includes('tdac_submission');
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(entry_info)`);
+      const columnNames = columns.map(col => col.name);
+      const needsPassportColumn = !columnNames.includes('passport_id');
+      const needsPersonalColumn = !columnNames.includes('personal_info_id');
+      const hasTdacColumn = columnNames.includes('tdac_submission');
 
-            if (!needsPassportColumn && !needsPersonalColumn && !hasTdacColumn) {
-              return;
-            }
+      if (!needsPassportColumn && !needsPersonalColumn && !hasTdacColumn) {
+        return;
+      }
 
-            tx.executeSql(
-              'DROP TABLE IF EXISTS entry_info_migrating',
-              [],
-              () => {},
-              (_, error) => {
-                console.error('Failed to drop entry_info_migrating table:', error);
-                return false;
-              }
-            );
+      await this.modernDb.withTransactionAsync(async () => {
+        // Drop temporary table if it exists
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS entry_info_migrating');
 
-            tx.executeSql(
-              `CREATE TABLE entry_info_migrating (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                passport_id TEXT,
-                personal_info_id TEXT,
-                destination_id TEXT,
-                trip_id TEXT,
-                status TEXT DEFAULT 'incomplete',
-                completion_metrics TEXT,
-                last_updated_at TEXT,
-                created_at TEXT,
-                arrival_date TEXT,
-                departure_date TEXT,
-                travel_purpose TEXT,
-                flight_number TEXT,
-                accommodation TEXT,
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (passport_id) REFERENCES passports(id),
-                FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
-              )`,
-              [],
-              () => {},
-              (_, error) => {
-                console.error('Failed to create entry_info_migrating table:', error);
-                return false;
-              }
-            );
+        // Create new table with correct schema
+        await this.modernDb.execAsync(`
+          CREATE TABLE entry_info_migrating (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            passport_id TEXT,
+            personal_info_id TEXT,
+            destination_id TEXT,
+            trip_id TEXT,
+            status TEXT DEFAULT 'incomplete',
+            completion_metrics TEXT,
+            last_updated_at TEXT,
+            created_at TEXT,
+            arrival_date TEXT,
+            departure_date TEXT,
+            travel_purpose TEXT,
+            flight_number TEXT,
+            accommodation TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (passport_id) REFERENCES passports(id),
+            FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
+          )
+        `);
 
-            tx.executeSql(
-              `INSERT INTO entry_info_migrating (
-                id, user_id, passport_id, personal_info_id, destination_id,
-                trip_id, status, completion_metrics, last_updated_at, created_at,
-                arrival_date, departure_date, travel_purpose, flight_number, accommodation
-              )
-              SELECT
-                id, user_id, NULL, NULL, destination_id,
-                trip_id, status, completion_metrics, last_updated_at, created_at,
-                arrival_date, departure_date, travel_purpose, flight_number, accommodation
-              FROM entry_info`,
-              [],
-              () => {},
-              (_, error) => {
-                console.error('Failed to copy data into entry_info_migrating table:', error);
-                return false;
-              }
-            );
+        // Copy data from old table to new table
+        await this.modernDb.execAsync(`
+          INSERT INTO entry_info_migrating (
+            id, user_id, passport_id, personal_info_id, destination_id,
+            trip_id, status, completion_metrics, last_updated_at, created_at,
+            arrival_date, departure_date, travel_purpose, flight_number, accommodation
+          )
+          SELECT
+            id, user_id, NULL, NULL, destination_id,
+            trip_id, status, completion_metrics, last_updated_at, created_at,
+            arrival_date, departure_date, travel_purpose, flight_number, accommodation
+          FROM entry_info
+        `);
 
-            tx.executeSql(
-              'DROP TABLE entry_info',
-              [],
-              () => {},
-              (_, error) => {
-                console.error('Failed to drop original entry_info table:', error);
-                return false;
-              }
-            );
+        // Drop old table and rename new one
+        await this.modernDb.execAsync('DROP TABLE entry_info');
+        await this.modernDb.execAsync('ALTER TABLE entry_info_migrating RENAME TO entry_info');
 
-            tx.executeSql(
-              'ALTER TABLE entry_info_migrating RENAME TO entry_info',
-              [],
-              () => {},
-              (_, error) => {
-                console.error('Failed to rename entry_info_migrating table:', error);
-                return false;
-              }
-            );
-          },
-          (_, error) => {
-            console.error('Failed to inspect entry_info table for migration:', error);
-            return false;
-          }
-        );
-
-        // Ensure join table exists even if migration isn't triggered
-        tx.executeSql(`
+        // Ensure join table exists
+        await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS entry_info_fund_items (
             entry_info_id TEXT NOT NULL,
             fund_item_id TEXT NOT NULL,
@@ -998,119 +717,77 @@ class SecureStorageService {
             FOREIGN KEY (user_id) REFERENCES users(id)
           )
         `);
-      }, error => {
-        console.error('Entry info migration transaction failed:', error);
-        reject(error);
-      }, () => {
-        this.ensureEntryInfoIndexes()
-          .then(() => resolve())
-          .catch(indexError => {
-            console.error('Failed to ensure entry info indexes:', indexError);
-            reject(indexError);
-          });
       });
-    });
+
+      await this.ensureEntryInfoIndexes();
+    } catch (error) {
+      console.error('Entry info migration failed:', error);
+      // Don't throw - allow app to continue
+    }
   }
 
   /**
    * Ensure indexes for entry_info and associated tables are present
    */
   async ensureEntryInfoIndexes() {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          `PRAGMA table_info(entry_info)`,
-          [],
-          (tx, { rows }) => {
-            const columnNames = Array.isArray(rows?._array)
-              ? rows._array.map(column => column.name)
-              : [];
+    try {
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(entry_info)`);
+      const columnNames = columns.map(column => column.name);
 
-            tx.executeSql(`
-              CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
-              ON entry_info(user_id)
-            `);
+      // Create basic indexes
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
+        ON entry_info(user_id)
+      `);
 
-            tx.executeSql(`
-              CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
-              ON entry_info(user_id, destination_id)
-            `);
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
+        ON entry_info(user_id, destination_id)
+      `);
 
-            if (columnNames.includes('passport_id')) {
-              tx.executeSql(`
-                CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
-                ON entry_info(passport_id)
-              `);
-            } else {
-              console.info(
-                'entry_info schema missing passport_id column; attempting in-place schema update'
-              );
-              tx.executeSql(
-                `ALTER TABLE entry_info ADD COLUMN passport_id TEXT`,
-                [],
-                () => {
-                  tx.executeSql(`
-                    CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
-                    ON entry_info(passport_id)
-                  `);
-                },
-                (_, error) => {
-                  console.error('Failed to add passport_id column to entry_info during index ensure:', error);
-                  return false;
-                }
-              );
-            }
+      // Add missing columns and their indexes
+      if (!columnNames.includes('passport_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info ADD COLUMN passport_id TEXT`);
+          console.info('Added passport_id column to entry_info during index ensure');
+        } catch (error) {
+          console.error('Failed to add passport_id column to entry_info during index ensure:', error);
+        }
+      }
 
-            if (columnNames.includes('personal_info_id')) {
-              tx.executeSql(`
-                CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
-                ON entry_info(personal_info_id)
-              `);
-            } else {
-              console.info(
-                'entry_info schema missing personal_info_id column; attempting in-place schema update'
-              );
-              tx.executeSql(
-                `ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT`,
-                [],
-                () => {
-                  tx.executeSql(`
-                    CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
-                    ON entry_info(personal_info_id)
-                  `);
-                },
-                (_, error) => {
-                  console.error('Failed to add personal_info_id column to entry_info during index ensure:', error);
-                  return false;
-                }
-              );
-            }
-          },
-          (_, error) => {
-            console.error('Failed to inspect entry_info schema before index creation:', error);
-            return false;
-          }
-        );
+      if (!columnNames.includes('personal_info_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info ADD COLUMN personal_info_id TEXT`);
+          console.info('Added personal_info_id column to entry_info during index ensure');
+        } catch (error) {
+          console.error('Failed to add personal_info_id column to entry_info during index ensure:', error);
+        }
+      }
 
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
-          ON entry_info_fund_items(entry_info_id)
-        `);
+      // Create indexes for the columns (whether they existed or were just added)
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+        ON entry_info(passport_id)
+      `);
 
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
-          ON entry_info_fund_items(fund_item_id)
-        `);
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+        ON entry_info(personal_info_id)
+      `);
 
-        tx.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
-          ON entry_info_fund_items(user_id)
-        `);
-      }, error => {
-        console.error('Failed to ensure entry info indexes:', error);
-        reject(error);
-      }, resolve);
-    });
+      // Create indexes for join table
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
+        ON entry_info_fund_items(entry_info_id);
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
+        ON entry_info_fund_items(fund_item_id);
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
+        ON entry_info_fund_items(user_id);
+      `);
+    } catch (error) {
+      console.error('Failed to ensure entry info indexes:', error);
+      // Don't throw - allow app to continue
+    }
   }
 
   /**
@@ -1118,9 +795,9 @@ class SecureStorageService {
    */
   async ensureBackupDirectory() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.BACKUP_DIR);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(this.BACKUP_DIR, { intermediates: true });
+      // Use the new Directory API - exists is a property, not a method
+      if (!this.BACKUP_DIR.exists) {
+        this.BACKUP_DIR.create({ intermediates: true });
       }
     } catch (error) {
       console.error('Failed to create backup directory:', error);
@@ -1132,76 +809,64 @@ class SecureStorageService {
    * @param {Object} passportData - Passport information
    */
   async savePassport(passportData) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // TODO: Re-enable encryption before production release
-        const encryptedData = this.ENCRYPTION_ENABLED 
-          ? await this.encryption.encryptFields({
-              passport_number: passportData.passportNumber,
-              full_name: passportData.fullName,
-              date_of_birth: passportData.dateOfBirth,
-              nationality: passportData.nationality
-            })
-          : {
-              passport_number: passportData.passportNumber,
-              full_name: passportData.fullName,
-              date_of_birth: passportData.dateOfBirth,
-              nationality: passportData.nationality
-            };
+    try {
+      // TODO: Re-enable encryption before production release
+      const encryptedData = this.ENCRYPTION_ENABLED 
+        ? await this.encryption.encryptFields({
+            passport_number: passportData.passportNumber,
+            full_name: passportData.fullName,
+            date_of_birth: passportData.dateOfBirth,
+            nationality: passportData.nationality
+          })
+        : {
+            passport_number: passportData.passportNumber,
+            full_name: passportData.fullName,
+            date_of_birth: passportData.dateOfBirth,
+            nationality: passportData.nationality
+          };
 
-        const now = new Date().toISOString();
-        const passportId = passportData.id || this.generateId();
+      const now = new Date().toISOString();
+      const passportId = passportData.id || this.generateId();
 
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              `INSERT OR REPLACE INTO passports (
-                id,
-                user_id,
-                encrypted_passport_number,
-                encrypted_full_name,
-                encrypted_date_of_birth,
-                encrypted_nationality,
-                gender,
-                expiry_date,
-                issue_date,
-                issue_place,
-                photo_uri,
-                created_at,
-                updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                passportId,
-                passportData.userId,
-                encryptedData.passport_number,
-                encryptedData.full_name,
-                encryptedData.date_of_birth,
-                encryptedData.nationality,
-                passportData.gender,
-                passportData.expiryDate,
-                passportData.issueDate,
-                passportData.issuePlace,
-                passportData.photoUri,
-                passportData.createdAt || now,
-                now
-              ],
-              () => {
-                this.logAudit('INSERT', 'passports', passportId);
-              },
-              (_, error) => {
-                console.error('Failed to save passport:', error);
-                return false;
-              }
-            );
-          },
-          reject,
-          () => resolve({ id: passportId })
-        );
-      } catch (error) {
-        console.error('Failed to save passport:', error);
-        reject(error);
-      }
-    });
+      await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO passports (
+          id,
+          user_id,
+          encrypted_passport_number,
+          encrypted_full_name,
+          encrypted_date_of_birth,
+          encrypted_nationality,
+          gender,
+          expiry_date,
+          issue_date,
+          issue_place,
+          photo_uri,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          passportId,
+          passportData.userId,
+          encryptedData.passport_number,
+          encryptedData.full_name,
+          encryptedData.date_of_birth,
+          encryptedData.nationality,
+          passportData.gender,
+          passportData.expiryDate,
+          passportData.issueDate,
+          passportData.issuePlace,
+          passportData.photoUri,
+          passportData.createdAt || now,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'passports', passportId);
+      return { id: passportId };
+    } catch (error) {
+      console.error('Failed to save passport:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1210,65 +875,52 @@ class SecureStorageService {
    * @returns {Object} - Decrypted passport data
    */
   async getPassport(id) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM passports WHERE id = ? LIMIT 1',
-            [id],
-            async (_, { rows }) => {
-              if (rows.length === 0) {
-                resolve(null);
-                return;
-              }
+    try {
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM passports WHERE id = ? LIMIT 1',
+        [id]
+      );
 
-              const result = rows._array[0];
-
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    passport_number: result.encrypted_passport_number,
-                    full_name: result.encrypted_full_name,
-                    date_of_birth: result.encrypted_date_of_birth,
-                    nationality: result.encrypted_nationality
-                  })
-                : {
-                    passport_number: result.encrypted_passport_number,
-                    full_name: result.encrypted_full_name,
-                    date_of_birth: result.encrypted_date_of_birth,
-                    nationality: result.encrypted_nationality
-                  };
-
-              const passport = {
-                id: result.id,
-                userId: result.user_id,
-                passportNumber: decryptedFields.passport_number,
-                fullName: decryptedFields.full_name,
-                dateOfBirth: decryptedFields.date_of_birth,
-                nationality: decryptedFields.nationality,
-                gender: result.gender,
-                expiryDate: result.expiry_date,
-                issueDate: result.issue_date,
-                issuePlace: result.issue_place,
-                photoUri: result.photo_uri,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
-
-              resolve(passport);
-            },
-            (_, error) => {
-              console.error('Failed to get passport:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get passport:', error);
-        reject(error);
+      if (!result) {
+        return null;
       }
-    });
+
+      // TODO: Re-enable encryption before production release
+      const decryptedFields = this.ENCRYPTION_ENABLED
+        ? await this.encryption.decryptFields({
+            passport_number: result.encrypted_passport_number,
+            full_name: result.encrypted_full_name,
+            date_of_birth: result.encrypted_date_of_birth,
+            nationality: result.encrypted_nationality
+          })
+        : {
+            passport_number: result.encrypted_passport_number,
+            full_name: result.encrypted_full_name,
+            date_of_birth: result.encrypted_date_of_birth,
+            nationality: result.encrypted_nationality
+          };
+
+      const passport = {
+        id: result.id,
+        userId: result.user_id,
+        passportNumber: decryptedFields.passport_number,
+        fullName: decryptedFields.full_name,
+        dateOfBirth: decryptedFields.date_of_birth,
+        nationality: decryptedFields.nationality,
+        gender: result.gender,
+        expiryDate: result.expiry_date,
+        issueDate: result.issue_date,
+        issuePlace: result.issue_place,
+        photoUri: result.photo_uri,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
+
+      return passport;
+    } catch (error) {
+      console.error('Failed to get passport:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1526,6 +1178,9 @@ class SecureStorageService {
         photoLength: fundItem.photoUri?.length
       });
 
+      // Ensure database is initialized
+      await this.ensureInitialized();
+
       const now = new Date().toISOString();
 
       return new Promise((resolve, reject) => {
@@ -1570,6 +1225,9 @@ class SecureStorageService {
    */
   async getFundItem(id) {
     try {
+      // Ensure database is initialized
+      await this.ensureInitialized();
+
       return new Promise((resolve, reject) => {
         this.db.transaction(tx => {
           tx.executeSql(
@@ -1614,6 +1272,9 @@ class SecureStorageService {
   async getFundItemsByUserId(userId) {
     try {
       console.log('=== SECURE STORAGE: GET FUND ITEMS BY USER ID ===');
+      
+      // Ensure database is initialized
+      await this.ensureInitialized();
       console.log('Querying fund items for userId:', userId);
 
       return new Promise((resolve, reject) => {
@@ -1658,6 +1319,9 @@ class SecureStorageService {
   async deleteFundItem(id) {
     try {
       console.log('=== SECURE STORAGE: DELETE FUND ITEM ===');
+      
+      // Ensure database is initialized
+      await this.ensureInitialized();
       console.log('Deleting fund item:', id);
 
       return new Promise((resolve, reject) => {
@@ -2490,7 +2154,7 @@ class SecureStorageService {
 
   /**
    * Batch load operations for efficient data retrieval
-   * Uses a single transaction to load multiple data types at once
+   * Uses modern async/await pattern for better error handling
    * OPTIMIZED: Fetches all data in transaction, then decrypts outside for better performance
    * @param {string} userId - User ID
    * @param {Array<string>} dataTypes - Array of data types to load ('passport', 'personalInfo', 'fundingProof')
@@ -2499,67 +2163,45 @@ class SecureStorageService {
   async batchLoad(userId, dataTypes = ['passport', 'personalInfo', 'fundingProof']) {
     try {
       console.log(`Starting batch load for user ${userId} with types:`, dataTypes);
+      
+      // Ensure database is initialized
+      await this.ensureInitialized();
+      
+      if (!this.modernDb) {
+        throw new Error('Modern database API not available. Please reinitialize the service.');
+      }
+      
       const startTime = Date.now();
       
-      // OPTIMIZATION: Fetch all encrypted data in a single transaction
-      const encryptedData = await new Promise((resolve, reject) => {
-        const rawData = {};
-        
-        this.db.transaction(
-          (tx) => {
-            const queries = [];
-            
-            // Load passport if requested
-            if (dataTypes.includes('passport')) {
-              queries.push(
-                new Promise((resolveQuery, rejectQuery) => {
-                  tx.executeSql(
-                    'SELECT * FROM passports WHERE user_id = ? LIMIT 1',
-                    [userId],
-                    (_, { rows }) => {
-                      rawData.passport = rows.length > 0 ? rows._array[0] : null;
-                      resolveQuery();
-                    },
-                    (_, error) => rejectQuery(error)
-                  );
-                })
-              );
-            }
-            
-            // Load personal info if requested
-            if (dataTypes.includes('personalInfo')) {
-              queries.push(
-                new Promise((resolveQuery, rejectQuery) => {
-                  tx.executeSql(
-                    'SELECT * FROM personal_info WHERE user_id = ? LIMIT 1',
-                    [userId],
-                    (_, { rows }) => {
-                      rawData.personalInfo = rows.length > 0 ? rows._array[0] : null;
-                      resolveQuery();
-                    },
-                    (_, error) => rejectQuery(error)
-                  );
-                })
-              );
-            }
-            
-            // Legacy funding_proof load removed - use fund_items instead
-            if (dataTypes.includes('fundingProof')) {
-              console.warn('fundingProof type is deprecated, use fund_items instead');
-              rawData.fundingProof = null;
-            }
-            
-            // Wait for all queries to complete
-            Promise.all(queries)
-              .then(() => resolve(rawData))
-              .catch(reject);
-          },
-          (error) => {
-            console.error('Batch load transaction failed:', error);
-            reject(error);
-          }
+      // Use modern API directly - no transaction wrapper to avoid execAsync issues
+      const rawData = {};
+      
+      // Load passport if requested
+      if (dataTypes.includes('passport')) {
+        const passportRows = await this.modernDb.getAllAsync(
+          'SELECT * FROM passports WHERE user_id = ? LIMIT 1',
+          [userId]
         );
-      });
+        rawData.passport = passportRows.length > 0 ? passportRows[0] : null;
+      }
+      
+      // Load personal info if requested
+      if (dataTypes.includes('personalInfo')) {
+        const personalRows = await this.modernDb.getAllAsync(
+          'SELECT * FROM personal_info WHERE user_id = ? LIMIT 1',
+          [userId]
+        );
+        rawData.personalInfo = personalRows.length > 0 ? personalRows[0] : null;
+      }
+      
+      // Legacy funding_proof load removed - use fund_items instead
+      if (dataTypes.includes('fundingProof')) {
+        console.warn('fundingProof type is deprecated, use fund_items instead');
+        rawData.fundingProof = null;
+      }
+      
+      const encryptedData = rawData;
+
       
       const fetchTime = Date.now() - startTime;
       console.log(`Data fetched in ${fetchTime}ms, starting decryption...`);
@@ -2684,6 +2326,14 @@ class SecureStorageService {
       return results;
     } catch (error) {
       console.error('Batch load failed:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        modernDbAvailable: !!this.modernDb,
+        dbAvailable: !!this.db,
+        userId: userId,
+        dataTypes: dataTypes
+      });
       throw error;
     }
   }
@@ -2755,16 +2405,17 @@ class SecureStorageService {
   async createBackup(userId) {
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupPath = `${this.BACKUP_DIR}backup_${userId}_${timestamp}.db`;
+      const backupFileName = `backup_${userId}_${timestamp}.db`;
+      
+      // Create source and destination file objects
+      const sourceFile = new File(this.DB_NAME);
+      const backupFile = new File(this.BACKUP_DIR, backupFileName);
 
       // Copy database file to backup location
-      await FileSystem.copyAsync({
-        from: this.DB_NAME,
-        to: backupPath
-      });
+      sourceFile.copy(backupFile);
 
-      this.logAudit('BACKUP', 'database', userId);
-      return backupPath;
+      await this.logAudit('BACKUP', 'database', userId);
+      return backupFile.uri;
     } catch (error) {
       console.error('Failed to create backup:', error);
       throw error;
@@ -2777,18 +2428,16 @@ class SecureStorageService {
    * @returns {string} - Setting value
    */
   async getSetting(key) {
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          'SELECT value FROM settings WHERE key = ?',
-          [key],
-          (_, { rows }) => {
-            resolve(rows.length > 0 ? rows._array[0].value : null);
-          },
-          (_, error) => reject(error)
-        );
-      });
-    });
+    try {
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT value FROM settings WHERE key = ?',
+        [key]
+      );
+      return result ? result.value : null;
+    } catch (error) {
+      console.error('Failed to get setting:', error);
+      return null;
+    }
   }
 
   /**
@@ -2797,18 +2446,17 @@ class SecureStorageService {
    * @param {string} value - Setting value
    */
   async setSetting(key, value) {
-    const now = new Date().toISOString();
-
-    return new Promise((resolve, reject) => {
-      this.db.transaction(tx => {
-        tx.executeSql(
-          'INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)',
-          [key, value, now],
-          (_, result) => resolve(result),
-          (_, error) => reject(error)
-        );
-      });
-    });
+    try {
+      const now = new Date().toISOString();
+      const result = await this.modernDb.runAsync(
+        'INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)',
+        [key, value, now]
+      );
+      return result;
+    } catch (error) {
+      console.error('Failed to set setting:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2829,28 +2477,21 @@ class SecureStorageService {
         details: JSON.stringify(details)
       };
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'INSERT INTO audit_log (id, action, table_name, record_id, timestamp, details) VALUES (?, ?, ?, ?, ?, ?)',
-            [
-              auditEntry.id,
-              auditEntry.action,
-              auditEntry.tableName,
-              auditEntry.recordId,
-              auditEntry.timestamp,
-              auditEntry.details
-            ],
-            (_, result) => resolve(result),
-            (_, error) => {
-              console.error('Failed to log audit event:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        'INSERT INTO audit_log (id, action, table_name, record_id, timestamp, details) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          auditEntry.id,
+          auditEntry.action,
+          auditEntry.tableName,
+          auditEntry.recordId,
+          auditEntry.timestamp,
+          auditEntry.details
+        ]
+      );
+      return result;
     } catch (error) {
       console.error('Failed to log audit event:', error);
+      // Don't throw - audit logging shouldn't break the main operation
     }
   }
 

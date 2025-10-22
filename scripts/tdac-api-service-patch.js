@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * TDAC API Service Patch - Fix for hanging at step 3/9
  * 
@@ -14,39 +16,49 @@ const BASE_URL = 'https://tdac.immigration.go.th/arrival-card-api/api/v1';
  * Enhanced fetch with timeout and retry
  */
 async function fetchWithTimeout(url, options = {}, timeoutMs = 15000, retries = 2) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  
-  const fetchOptions = {
-    ...options,
-    signal: controller.signal
-  };
-  
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       console.log(`📤 Attempt ${attempt + 1}/${retries + 1}: ${options.method || 'GET'} ${url}`);
       const startTime = Date.now();
       
-      const response = await fetch(url, fetchOptions);
+      const response = await axios({
+        method: options.method || 'GET',
+        url: url,
+        headers: options.headers,
+        data: options.body ? JSON.parse(options.body) : undefined, // axios expects object for data
+        timeout: timeoutMs,
+        signal: options.signal // Pass signal for AbortController if used externally
+      });
+      
       const duration = Date.now() - startTime;
       
-      clearTimeout(timeoutId);
       console.log(`📥 Response received in ${duration}ms (status: ${response.status})`);
       
       return response;
       
     } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error.name === 'AbortError') {
+      if (axios.isCancel(error) || error.code === 'ECONNABORTED') { // Timeout or Abort
         console.error(`⏰ Request timeout after ${timeoutMs}ms (attempt ${attempt + 1})`);
         if (attempt === retries) {
           throw new Error(`Request timeout after ${timeoutMs}ms. The TDAC server may be slow or unresponsive.`);
         }
-      } else {
-        console.error(`❌ Network error on attempt ${attempt + 1}:`, error.message);
+      } else if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error(`❌ Server error on attempt ${attempt + 1}:`, error.response.status, error.response.data);
         if (attempt === retries) {
-          throw new Error(`Network error: ${error.message}. Please check your internet connection.`);
+          throw new Error(`Server error (${error.response.status}): ${JSON.stringify(error.response.data)}`);
+        }
+      } else if (error.request) {
+        // Request made but no response received
+        console.error(`❌ Network error on attempt ${attempt + 1}: No response received`);
+        if (attempt === retries) {
+          throw new Error(`Network error: No response received. Please check your internet connection.`);
+        }
+      } else {
+        // Something else happened
+        console.error(`❌ Request setup error on attempt ${attempt + 1}:`, error.message);
+        if (attempt === retries) {
+          throw new Error(`Request setup error: ${error.message}`);
         }
       }
       
@@ -133,41 +145,23 @@ async function initActionTokenFixed(cloudflareToken, submitId) {
   
   console.log('📥 Step 1 response status:', response.status, response.statusText);
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('❌ Step 1 failed with status:', response.status);
-    console.error('   error body:', errorText);
-    
-    // Provide specific error messages based on status code
-    if (response.status === 400) {
-      throw new Error(`Invalid request: ${errorText}. The Cloudflare token may be malformed or expired.`);
-    } else if (response.status === 403) {
-      throw new Error(`Access denied: ${errorText}. The Cloudflare token may be invalid or expired.`);
-    } else if (response.status === 429) {
-      throw new Error(`Rate limited: ${errorText}. Please wait a few minutes before trying again.`);
-    } else if (response.status >= 500) {
-      throw new Error(`Server error: ${errorText}. The TDAC system may be temporarily unavailable.`);
-    } else {
-      throw new Error(`Request failed (${response.status}): ${errorText}`);
-    }
-  }
+  const data = response.data; // axios directly provides data
   
-  const responseText = await response.text();
-  console.log('   response body length:', responseText.length);
-  console.log('   response body preview:', responseText.substring(0, 200));
-  
-  if (!responseText || responseText.length === 0) {
+  if (!data || (typeof data === 'string' && data.length === 0)) {
     console.error('❌ Step 1: Empty response body');
     throw new Error('TDAC server returned empty response. The service may be temporarily unavailable.');
   }
   
-  let data;
-  try {
-    data = JSON.parse(responseText);
-  } catch (parseError) {
-    console.error('❌ Step 1: JSON parse error');
-    console.error('   response text:', responseText.substring(0, 500));
-    throw new Error(`Invalid response from TDAC server: ${parseError.message}`);
+  if (typeof data === 'string') {
+    console.warn('⚠️ Step 1: Response data is a string, expected JSON. Preview:', data.substring(0, 200));
+    try {
+      const parsedData = JSON.parse(data);
+      console.log('   Successfully parsed string data to JSON.');
+      throw new Error('Invalid response from TDAC server: Unexpected string response');
+    } catch (parseError) {
+      console.error('❌ Step 1: JSON parse error for string response:', parseError.message);
+      throw new Error(`Invalid response from TDAC server: ${parseError.message}`);
+    }
   }
   
   console.log('✅ Step 1: initActionToken success');
