@@ -216,11 +216,9 @@ describe('PassportDataService - CRUD Operations', () => {
       it('should load all user data types', async () => {
         const mockPassport = { id: 'passport-1', userId: testUserId };
         const mockPersonalInfo = { id: 'personal-1', userId: testUserId };
-        // mockFundingProof removed
 
         Passport.load.mockResolvedValue(mockPassport);
         PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
-        // FundingProof.load removed
 
         const result = await PassportDataService.getAllUserData(testUserId, {
           useBatchLoad: false
@@ -228,14 +226,12 @@ describe('PassportDataService - CRUD Operations', () => {
 
         expect(result.passport).toEqual(mockPassport);
         expect(result.personalInfo).toEqual(mockPersonalInfo);
-        // fundingProof assertion removed
         expect(result.userId).toBe(testUserId);
       });
 
       it('should handle partial data gracefully', async () => {
         Passport.load.mockResolvedValue({ id: 'passport-1' });
         PersonalInfo.load.mockResolvedValue(null);
-        // FundingProof.load removed
 
         const result = await PassportDataService.getAllUserData(testUserId, {
           useBatchLoad: false
@@ -243,7 +239,6 @@ describe('PassportDataService - CRUD Operations', () => {
 
         expect(result.passport).toBeDefined();
         expect(result.personalInfo).toBeNull();
-        // fundingProof assertion removed
       });
     });
   });
@@ -319,6 +314,7 @@ describe('PassportDataService - CRUD Operations', () => {
       });
     });
 
+    /*
     describe('updateFundingProof', () => {
       it('should update existing funding proof', async () => {
         const existingFundingProof = {
@@ -339,6 +335,7 @@ describe('PassportDataService - CRUD Operations', () => {
         expect(existingFundingProof.update).toHaveBeenCalledWith(updates, { skipValidation: true });
       });
     });
+    */
   });
 
   describe('Error Handling', () => {

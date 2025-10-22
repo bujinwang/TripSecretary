@@ -6,12 +6,12 @@
  */
 
 import EntryPackSnapshot from '../../models/EntryPackSnapshot';
-import { Directory, File, Paths } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system';
 import DataEncryptionService from '../security/DataEncryptionService';
 
 class SnapshotService {
   constructor() {
-    this.snapshotStorageDir = new Directory(Paths.document, 'snapshots');
+    this.snapshotStorageDir = FileSystem.documentDirectory + 'snapshots/';
     this.encryptionService = DataEncryptionService;
     this.encryptionEnabled = true; // Enable encryption for snapshots by default
     this.initialized = false;
@@ -25,9 +25,11 @@ class SnapshotService {
     if (this.initialized) return;
     
     try {
-      if (!this.snapshotStorageDir.exists) {
-        this.snapshotStorageDir.create({ intermediates: true });
-        console.log('Snapshot storage directory created:', this.snapshotStorageDir.uri);
+      const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir);
+      const dirExists = await snapshotDir.exists();
+      if (!dirExists) {
+        await FileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
+        console.log('Snapshot storage directory created:', this.snapshotStorageDir);
       }
       this.initialized = true;
     } catch (error) {

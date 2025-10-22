@@ -121,6 +121,7 @@ const FundItemDetailModal = ({
     amount: '',
     currency: '',
   });
+  const [pendingPhotoUri, setPendingPhotoUri] = useState(null);
 
   // Common currencies
   const currencies = [
@@ -177,6 +178,20 @@ const FundItemDetailModal = ({
       console.log('[FundItemDetailModal] Modal closed');
     }
   }, [visible, fundItem]);
+
+  // Track fundItem changes for debugging
+  useEffect(() => {
+    if (fundItem) {
+      console.log('[FundItemDetailModal] FundItem prop changed:', {
+        fundItemId: fundItem.id,
+        hasPhotoUri: !!fundItem.photoUri,
+        hasPhoto: !!fundItem.photo,
+        photoUri: fundItem.photoUri,
+        photo: fundItem.photo,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [fundItem]);
 
   // Initialize state for create mode
   useEffect(() => {
@@ -611,7 +626,8 @@ const FundItemDetailModal = ({
   // Handle photo press to open full-screen view
   const handlePhotoPress = () => {
     try {
-      if (fundItem.photoUri) {
+      const photoUri = fundItem.photoUri || fundItem.photo;
+      if (photoUri) {
         console.log('[FundItemDetailModal] Opening full-screen photo view...', {
           fundItemId: fundItem?.id,
         });
@@ -1136,7 +1152,7 @@ const FundItemDetailModal = ({
           <Text style={styles.fieldLabel}>
             {t('fundItem.detail.photo', { defaultValue: 'Photo' })}
           </Text>
-          {!isCreateMode && fundItem?.photoUri ? (
+          {!isCreateMode && (fundItem?.photoUri || fundItem?.photo) ? (
             <View style={styles.photoContainer}>
               <TouchableOpacity
                 onPress={handlePhotoPress}
@@ -1150,7 +1166,7 @@ const FundItemDetailModal = ({
                 })}
               >
                 <Image
-                  source={{ uri: fundItem.photoUri }}
+                  source={{ uri: fundItem.photoUri || fundItem.photo }}
                   style={styles.photoThumbnail}
                   resizeMode="cover"
                   accessible={false}
@@ -1239,7 +1255,8 @@ const FundItemDetailModal = ({
 
   // Render full-screen photo view
   const renderPhotoView = () => {
-    if (!fundItem.photoUri) return null;
+    const photoUri = fundItem.photoUri || fundItem.photo;
+    if (!photoUri) return null;
 
     return (
       <View style={styles.photoViewContainer}>
@@ -1257,7 +1274,7 @@ const FundItemDetailModal = ({
           {...panResponder.panHandlers}
         >
           <Image
-            source={{ uri: fundItem.photoUri }}
+            source={{ uri: photoUri }}
             style={styles.photoViewImage}
             resizeMode="contain"
           />
@@ -1310,8 +1327,10 @@ const FundItemDetailModal = ({
     console.log('[FundItemDetailModal] View mode data:', {
       itemType,
       supportsAmountFields,
-      hasPhotoUri: !!fundItem.photoUri,
-      photoUriLength: fundItem.photoUri?.length,
+      hasPhotoUri: !!(fundItem.photoUri || fundItem.photo),
+      photoUriLength: (fundItem.photoUri || fundItem.photo)?.length,
+      photoUri: fundItem.photoUri,
+      photo: fundItem.photo,
     });
     
     return (
@@ -1398,7 +1417,7 @@ const FundItemDetailModal = ({
           <Text style={styles.fieldLabel}>
             {t('fundItem.detail.photo', { defaultValue: 'Photo' })}
           </Text>
-          {fundItem.photoUri ? (
+          {(fundItem.photoUri || fundItem.photo) ? (
             <View>
               <TouchableOpacity
                 style={styles.photoContainer}
@@ -1413,7 +1432,7 @@ const FundItemDetailModal = ({
                 })}
               >
                 <Image
-                  source={{ uri: fundItem.photoUri }}
+                  source={{ uri: fundItem.photoUri || fundItem.photo }}
                   style={styles.photoThumbnail}
                   resizeMode="cover"
                   accessible={false}

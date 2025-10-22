@@ -36,7 +36,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
       setIsLoading(true);
 
       // Get user ID from route params or use default
-      const userId = passportParam?.id || 'default_user';
+      const userId = passportParam?.id || 'user_001';
 
       // Initialize PassportDataService
       await PassportDataService.initialize(userId);

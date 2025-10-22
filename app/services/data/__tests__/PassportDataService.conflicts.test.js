@@ -42,7 +42,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(passportData);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       // Mock AsyncStorage data (same as SQLite)
       AsyncStorage.getItem.mockImplementation((key) => {
@@ -82,7 +81,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(sqlitePassport);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       AsyncStorage.getItem.mockImplementation((key) => {
         if (key === '@passport' || key === `@passport_${testUserId}`) {
@@ -119,7 +117,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(null);
       PersonalInfo.load.mockResolvedValue(sqlitePersonalInfo);
-      FundingProof.load.mockResolvedValue(null);
 
       AsyncStorage.getItem.mockImplementation((key) => {
         if (key === '@personal_info' || key === `@personal_info_${testUserId}`) {
@@ -136,6 +133,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       expect(result.conflicts.personalInfo.differences).toHaveLength(2);
     });
 
+    /*
     it('should detect conflicts in funding proof', async () => {
       const sqliteFunding = {
         id: 'funding-1',
@@ -166,6 +164,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       expect(result.conflicts.fundingProof).toBeDefined();
       expect(result.conflicts.fundingProof.hasDifferences).toBe(true);
     });
+    */
   });
 
   describe('resolveDataConflicts', () => {
@@ -183,7 +182,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(sqlitePassport);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       AsyncStorage.getItem.mockImplementation((key) => {
         if (key === '@passport' || key === `@passport_${testUserId}`) {
@@ -203,7 +201,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
     it('should return no conflicts message when no conflicts exist', async () => {
       Passport.load.mockResolvedValue(null);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
       const result = await PassportDataService.resolveDataConflicts(testUserId);
@@ -224,7 +221,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(passportData);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
       const result = await PassportDataService.getAllUserDataWithConflictHandling(testUserId);
@@ -246,7 +242,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(sqlitePassport);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       AsyncStorage.getItem.mockImplementation((key) => {
         if (key === '@passport' || key === `@passport_${testUserId}`) {
@@ -265,7 +260,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
     it('should skip conflict detection when disabled', async () => {
       Passport.load.mockResolvedValue({ id: 'passport-1' });
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       const result = await PassportDataService.getAllUserDataWithConflictHandling(
         testUserId,
@@ -279,7 +273,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
     it('should handle conflict detection errors gracefully', async () => {
       Passport.load.mockResolvedValue({ id: 'passport-1' });
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockRejectedValue(new Error('AsyncStorage error'));
 
       const result = await PassportDataService.getAllUserDataWithConflictHandling(testUserId);
@@ -305,7 +298,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
       Passport.load.mockResolvedValue(sqlitePassport);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
 
       AsyncStorage.getItem.mockImplementation((key) => {
         if (key === '@passport' || key === `@passport_${testUserId}`) {
@@ -326,7 +318,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
     it('should return no conflicts when none exist', async () => {
       Passport.load.mockResolvedValue(null);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
       const result = await PassportDataService.checkAndLogConflicts(testUserId);
@@ -417,7 +408,6 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       
       Passport.load.mockResolvedValue(passportData);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
       const result = await PassportDataService.safeLoadUserData(testUserId);

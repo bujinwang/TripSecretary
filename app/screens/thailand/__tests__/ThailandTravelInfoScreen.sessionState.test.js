@@ -26,10 +26,10 @@ describe('ThailandTravelInfoScreen Session State', () => {
     });
 
     it('should handle default user ID', () => {
-      const userId = 'default_user';
+      const userId = 'user_001';
       const expectedKey = `session_state_thailand_${userId}`;
       
-      expect(expectedKey).toBe('session_state_thailand_default_user');
+      expect(expectedKey).toBe('session_state_thailand_user_001');
     });
   });
 

@@ -44,7 +44,7 @@ describe('ProfileScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI',
           dateOfBirth: '1988-01-22',
@@ -54,17 +54,17 @@ describe('ProfileScreen - Integration Tests', () => {
         },
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           phoneNumber: '+86 13812345678',
           email: 'test@example.com',
           occupation: 'Engineer'
         },
         fundingProof: {
           id: 'funding-1',
-          userId: 'default_user',
+          userId: 'user_001',
           cashAmount: '10000 THB'
         },
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -92,7 +92,7 @@ describe('ProfileScreen - Integration Tests', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       const { queryByDisplayValue } = render(
@@ -114,7 +114,7 @@ describe('ProfileScreen - Integration Tests', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       PassportDataService.migrateFromAsyncStorage.mockResolvedValue({
@@ -139,14 +139,14 @@ describe('ProfileScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI',
           gender: 'Male'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -173,12 +173,12 @@ describe('ProfileScreen - Integration Tests', () => {
         passport: null,
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           email: 'old@example.com',
           phoneNumber: '+86 13812345678'
         },
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -206,11 +206,11 @@ describe('ProfileScreen - Integration Tests', () => {
         personalInfo: null,
         fundingProof: {
           id: 'funding-1',
-          userId: 'default_user',
+          userId: 'user_001',
           cashAmount: '10000 THB',
           bankCards: 'Visa ****1234'
         },
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -236,17 +236,17 @@ describe('ProfileScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI'
         },
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           email: 'test@example.com'
         },
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -278,22 +278,22 @@ describe('ProfileScreen - Integration Tests', () => {
       const sharedData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI',
           nationality: 'CHN'
         },
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           email: 'test@example.com'
         },
         fundingProof: {
           id: 'funding-1',
-          userId: 'default_user',
+          userId: 'user_001',
           cashAmount: '10000 THB'
         },
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(sharedData);
@@ -310,7 +310,7 @@ describe('ProfileScreen - Integration Tests', () => {
 
       // Verify all data is loaded - service was called
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('default_user');
+        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('user_001');
       }, { timeout: 3000 });
     });
 
@@ -318,12 +318,12 @@ describe('ProfileScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -372,12 +372,12 @@ describe('ProfileScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -416,7 +416,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
   const mockFundItems = [
     {
       id: 'fund-1',
-      userId: 'default_user',
+      userId: 'user_001',
       type: 'CASH',
       amount: 5000,
       currency: 'USD',
@@ -427,7 +427,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
     },
     {
       id: 'fund-2',
-      userId: 'default_user',
+      userId: 'user_001',
       type: 'BANK_CARD',
       amount: 10000,
       currency: 'EUR',
@@ -444,7 +444,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -462,7 +462,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
 
       // Verify fund items service is called
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalledWith('default_user');
+        expect(PassportDataService.getFundItems).toHaveBeenCalledWith('user_001');
       });
 
       // Verify service methods are available
@@ -477,7 +477,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -506,7 +506,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -535,7 +535,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);

@@ -177,7 +177,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
   
   // Memoize userId to prevent unnecessary re-renders
-  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
+  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);
@@ -513,7 +513,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Debug function to clear user data
   const clearUserData = async () => {
     try {
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       console.log('Clearing user data for userId:', userId);
       await SecureStorageService.clearUserData(userId);
       console.log('User data cleared successfully');
@@ -864,7 +864,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // Session state management functions
   const getSessionStateKey = () => {
-    const userId = passport?.id || 'default_user';
+    const userId = passport?.id || 'user_001';
     return `session_state_thailand_${userId}`;
   };
 
@@ -1417,7 +1417,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Save all data to secure storage with optional field overrides
   const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     try {
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       console.log('=== SAVING DATA TO SECURE STORAGE WITH OVERRIDES ===');
       console.log('userId:', userId);
       console.log('fieldOverrides:', fieldOverrides);
@@ -1598,7 +1598,7 @@ const normalizeFundItem = useCallback((item) => ({
     amount: item.amount,
     currency: item.currency,
     details: item.details || item.description || '',
-    photo: item.photoUri || item.photo || null,
+    photoUri: item.photoUri || item.photo || null,
     userId: item.userId || userId,
   }), [userId]);
 
@@ -2553,7 +2553,7 @@ const normalizeFundItem = useCallback((item) => ({
                   displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
                 }
 
-                if (fund.photo && typeKey !== 'CASH') {
+                if ((fund.photoUri || fund.photo) && typeKey !== 'CASH') {
                   const photoLabel = t('fundItem.detail.photoAttached', { defaultValue: 'Photo attached' });
                   displayText = `${displayText} • ${photoLabel}`;
                 }

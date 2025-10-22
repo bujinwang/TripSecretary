@@ -77,7 +77,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   const passport = useMemo(() => {
     return PassportDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
-  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
+  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
   const { t } = useLocale();
 
   // Data model instances

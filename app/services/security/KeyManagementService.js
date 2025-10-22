@@ -50,8 +50,9 @@ class KeyManagementService {
   async ensureKeyBackupDirectory() {
     try {
       const backupDir = FileSystem.documentDirectory + 'key_backups/';
-      const dirInfo = await FileSystem.getInfoAsync(backupDir);
-      if (!dirInfo.exists) {
+      const keyBackupDir = new FileSystem.Directory(backupDir);
+      const dirExists = await keyBackupDir.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(backupDir, { intermediates: true });
       }
     } catch (error) {

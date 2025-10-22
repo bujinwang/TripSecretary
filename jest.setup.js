@@ -20,8 +20,8 @@ jest.mock('expo-secure-store', () => ({
 }));
 
 // Mock expo-sqlite
-jest.mock('expo-sqlite', () => ({
-  openDatabase: jest.fn(() => ({
+jest.mock('expo-sqlite', () => {
+  const mockDb = {
     transaction: jest.fn((callback) => {
       callback({
         executeSql: jest.fn((sql, params, success) => {
@@ -29,8 +29,19 @@ jest.mock('expo-sqlite', () => ({
         }),
       });
     }),
-  })),
-}));
+    withTransactionAsync: jest.fn(async (callback) => {
+      await callback();
+    }),
+    execAsync: jest.fn(() => Promise.resolve()),
+    getAllAsync: jest.fn(() => Promise.resolve([])),
+    runAsync: jest.fn(() => Promise.resolve({ rowsAffected: 1 })),
+    getFirstAsync: jest.fn(() => Promise.resolve(null)),
+  };
+  return {
+    openDatabase: jest.fn(() => mockDb),
+    openDatabaseAsync: jest.fn(() => Promise.resolve(mockDb)),
+  };
+});
 
 // Mock expo-image-picker
 jest.mock('expo-image-picker', () => ({
@@ -52,9 +63,29 @@ jest.mock('expo-file-system', () => ({
   readAsStringAsync: jest.fn(() => Promise.resolve('')),
   writeAsStringAsync: jest.fn(() => Promise.resolve()),
   deleteAsync: jest.fn(() => Promise.resolve()),
-  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })), // Keep for backward compatibility
   makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  // New File/Directory API mocks
+  File: jest.fn().mockImplementation((path) => ({
+    exists: jest.fn(() => Promise.resolve(false)),
+    getInfo: jest.fn(() => Promise.resolve({ exists: false, size: 0 }))
+  })),
+  Directory: jest.fn().mockImplementation((path) => ({
+    exists: jest.fn(() => Promise.resolve(false))
+  }))
 }));
+
+// Mock expo-notifications
+jest.mock('expo-notifications', () => ({
+  scheduleNotificationAsync: jest.fn(),
+  cancelScheduledNotificationAsync: jest.fn(),
+  getAllScheduledNotificationsAsync: jest.fn(),
+  requestPermissionsAsync: jest.fn(),
+  getPermissionsAsync: jest.fn(),
+  setNotificationHandler: jest.fn(),
+}));
+
+// Suppress console warnings during tests
 
 // Suppress console warnings during tests
 global.console = {

@@ -26,7 +26,7 @@ const SGACSelectionScreen = ({ navigation, route }) => {
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
   const passport = PassportDataService.toSerializablePassport(rawPassport);
-  const userId = passport?.id || 'default_user';
+  const userId = passport?.id || 'user_001';
 
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState(null);

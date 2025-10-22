@@ -1415,8 +1415,9 @@ class DataExportService {
         if (fund.photoUri) {
           try {
             // Check if file exists
-            const fileInfo = await FileSystem.getInfoAsync(fund.photoUri);
-            if (fileInfo.exists) {
+            const photoFile = new FileSystem.File(fund.photoUri);
+            const fileExists = await photoFile.exists();
+            if (fileExists) {
               // Read file as base64
               const base64Data = await FileSystem.readAsStringAsync(fund.photoUri, {
                 encoding: FileSystem.EncodingType.Base64
@@ -1619,8 +1620,9 @@ class DataExportService {
    */
   async ensureDirectoryExists(dirPath) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(dirPath);
+      const dirExists = await directory.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }

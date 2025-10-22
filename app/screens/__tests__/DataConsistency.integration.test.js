@@ -9,7 +9,7 @@ import PassportDataService from '../../services/data/PassportDataService';
 jest.mock('../../services/data/PassportDataService');
 
 describe('Cross-Screen Data Consistency', () => {
-  const testUserId = 'default_user';
+  const testUserId = 'user_001';
 
   beforeEach(() => {
     jest.clearAllMocks();

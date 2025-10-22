@@ -10,67 +10,19 @@
  */
 
 import { openDatabaseAsync } from 'expo-sqlite';
-import { Directory, File, Paths } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import EncryptionService from './EncryptionService';
 
-// Legacy API wrapper to maintain compatibility
-class LegacyDatabaseWrapper {
-  constructor(db) {
-    this.db = db;
-  }
-
-  transaction(callback, errorCallback, successCallback) {
-    this.db.withTransactionAsync(async () => {
-      const tx = new LegacyTransactionWrapper(this.db);
-      callback(tx);
-    })
-    .then(() => {
-      if (successCallback) successCallback();
-    })
-    .catch((error) => {
-      if (errorCallback) errorCallback(error);
-    });
-  }
-}
-
-class LegacyTransactionWrapper {
-  constructor(db) {
-    this.db = db;
-  }
-
-  executeSql(sql, params = [], successCallback, errorCallback) {
-    this.db.getAllAsync(sql, params)
-      .then((rows) => {
-        const result = {
-          rows: {
-            length: rows.length,
-            _array: rows
-          }
-        };
-        if (successCallback) successCallback(this, result);
-      })
-      .catch((error) => {
-        if (errorCallback) {
-          const shouldContinue = errorCallback(this, error);
-          if (shouldContinue !== false) {
-            // If error callback returns false, stop transaction
-            throw error;
-          }
-        } else {
-          throw error;
-        }
-      });
-  }
-}
+// Legacy wrapper classes removed - now using modern async/await API directly
 
 class SecureStorageService {
   constructor() {
-    this.db = null;
+    this.modernDb = null;
     this.encryption = EncryptionService;
     this.DB_NAME = 'tripsecretary_secure';
     this.DB_VERSION = '1.3.0';
-    this.BACKUP_DIR = new Directory(Paths.document, 'backups');
+    this.BACKUP_DIR = null; // Will be set in getBackupDir()
     this.AUDIT_LOG_KEY = 'secure_storage_audit';
     // TODO: Re-enable encryption before production release
     this.ENCRYPTION_ENABLED = false;
@@ -87,7 +39,7 @@ class SecureStorageService {
       }
 
       // Skip if already initialized
-      if (this.db) {
+      if (this.modernDb) {
         console.log('Secure storage already initialized');
         return;
       }
@@ -104,9 +56,7 @@ class SecureStorageService {
       // Open SQLite database using modern API
       console.log('Opening database:', this.DB_NAME);
       
-      const modernDb = await openDatabaseAsync(this.DB_NAME);
-      this.db = new LegacyDatabaseWrapper(modernDb);
-      this.modernDb = modernDb; // Keep reference to modern API for new methods
+      this.modernDb = await openDatabaseAsync(this.DB_NAME);
 
       // Create tables if they don't exist
       await this.createTables();
@@ -133,11 +83,8 @@ class SecureStorageService {
    * @throws {Error} When initialize() has not been called yet
    */
   async ensureInitialized() {
-    if (!this.db) {
-      throw new Error('Secure storage is not initialized. Call initialize() before accessing data.');
-    }
     if (!this.modernDb) {
-      throw new Error('Modern database API is not available. Database may not be properly initialized.');
+      throw new Error('Secure storage is not initialized. Call initialize() before accessing data.');
     }
   }
 
@@ -791,16 +738,33 @@ class SecureStorageService {
   }
 
   /**
+   * Get backup directory path
+   */
+  getBackupDir() {
+    if (!this.BACKUP_DIR) {
+      // Use documentDirectory with fallback to cacheDirectory if documentDirectory is unavailable
+      const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      if (!baseDir) {
+        throw new Error('No available file system directory. FileSystem.documentDirectory and FileSystem.cacheDirectory are both undefined.');
+      }
+      this.BACKUP_DIR = baseDir + 'backups/';
+    }
+    return this.BACKUP_DIR;
+  }
+
+  /**
    * Ensure backup directory exists
    */
   async ensureBackupDirectory() {
     try {
-      // Use the new Directory API - exists is a property, not a method
-      if (!this.BACKUP_DIR.exists) {
-        this.BACKUP_DIR.create({ intermediates: true });
+      const backupPath = this.getBackupDir();
+      const info = await FileSystem.getInfoAsync(backupPath);
+      if (!info.exists) {
+        await FileSystem.makeDirectoryAsync(backupPath, { intermediates: true });
       }
     } catch (error) {
-      console.error('Failed to create backup directory:', error);
+      console.warn('Warning: Could not create backup directory. Backups may not be available.', error.message);
+      // Don't throw - backups are optional, don't block initialization
     }
   }
 
@@ -945,48 +909,39 @@ class SecureStorageService {
       const now = new Date().toISOString();
       const id = personalData.id || this.generateId();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO personal_info (
-              id,
-              user_id,
-              encrypted_phone_number,
-              encrypted_email,
-              encrypted_home_address,
-              occupation,
-              province_city,
-              country_region,
-              phone_code,
-              gender,
-              created_at,
-              updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              personalData.userId,
-              encryptedData.phone_number,
-              encryptedData.email,
-              encryptedData.home_address,
-              personalData.occupation,
-              personalData.provinceCity,
-              personalData.countryRegion,
-              personalData.phoneCode,
-              personalData.gender,
-              personalData.createdAt || now,
-              now
-            ],
-            (_, result) => {
-              this.logAudit('INSERT', 'personal_info', id).catch(console.error);
-              resolve(result);
-            },
-            (_, error) => {
-              console.error('Failed to save personal info:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO personal_info (
+          id,
+          user_id,
+          encrypted_phone_number,
+          encrypted_email,
+          encrypted_home_address,
+          occupation,
+          province_city,
+          country_region,
+          phone_code,
+          gender,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          personalData.userId,
+          encryptedData.phone_number,
+          encryptedData.email,
+          encryptedData.home_address,
+          personalData.occupation,
+          personalData.provinceCity,
+          personalData.countryRegion,
+          personalData.phoneCode,
+          personalData.gender,
+          personalData.createdAt || now,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'personal_info', id);
+      return { id };
     } catch (error) {
       console.error('Failed to save personal info:', error);
       throw error;
@@ -999,75 +954,61 @@ class SecureStorageService {
     * @returns {Object} - Decrypted personal information
     */
    async getPersonalInfo(userId) {
-     return new Promise((resolve, reject) => {
-       try {
-         console.log('=== SECURE STORAGE DEBUG ===');
-         console.log('getPersonalInfo called with userId:', userId);
-         console.log('Type of userId:', typeof userId);
-         console.log('userId length:', userId?.length);
+     try {
+       console.log('=== SECURE STORAGE DEBUG ===');
+       console.log('getPersonalInfo called with userId:', userId);
+       console.log('Type of userId:', typeof userId);
+       console.log('userId length:', userId?.length);
 
-         this.db.transaction(tx => {
-           console.log('Executing SQL query: SELECT * FROM personal_info WHERE user_id = ? LIMIT 1');
-           console.log('Query parameter:', userId);
+       console.log('Executing SQL query: SELECT * FROM personal_info WHERE user_id = ? LIMIT 1');
+       console.log('Query parameter:', userId);
 
-           tx.executeSql(
-             'SELECT * FROM personal_info WHERE user_id = ? LIMIT 1',
-             [userId],
-             async (_, { rows }) => {
-               console.log('Query executed, rows.length:', rows.length);
-               console.log('Rows raw data:', rows);
+       const result = await this.modernDb.getFirstAsync(
+         'SELECT * FROM personal_info WHERE user_id = ? LIMIT 1',
+         [userId]
+       );
 
-               if (rows.length === 0) {
-                 console.log('No personal info records found for userId:', userId);
-                 resolve(null);
-                 return;
-               }
+       console.log('Query executed, result:', result);
 
-              const result = rows._array[0];
+       if (!result) {
+         console.log('No personal info records found for userId:', userId);
+         return null;
+       }
 
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    phone_number: result.encrypted_phone_number,
-                    email: result.encrypted_email,
-                    home_address: result.encrypted_home_address
-                  })
-                : {
-                    phone_number: result.encrypted_phone_number,
-                    email: result.encrypted_email,
-                    home_address: result.encrypted_home_address
-                  };
+       // TODO: Re-enable encryption before production release
+       const decryptedFields = this.ENCRYPTION_ENABLED
+         ? await this.encryption.decryptFields({
+             phone_number: result.encrypted_phone_number,
+             email: result.encrypted_email,
+             home_address: result.encrypted_home_address
+           })
+         : {
+             phone_number: result.encrypted_phone_number,
+             email: result.encrypted_email,
+             home_address: result.encrypted_home_address
+           };
 
-              const personalInfo = {
-                id: result.id,
-                userId: result.user_id,
-                phoneNumber: decryptedFields.phone_number,
-                email: decryptedFields.email,
-                homeAddress: decryptedFields.home_address,
-                occupation: result.occupation,
-                provinceCity: result.province_city,
-                countryRegion: result.country_region,
-                phoneCode: result.phone_code,
-                gender: result.gender,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
+       const personalInfo = {
+         id: result.id,
+         userId: result.user_id,
+         phoneNumber: decryptedFields.phone_number,
+         email: decryptedFields.email,
+         homeAddress: decryptedFields.home_address,
+         occupation: result.occupation,
+         provinceCity: result.province_city,
+         countryRegion: result.country_region,
+         phoneCode: result.phone_code,
+         gender: result.gender,
+         createdAt: result.created_at,
+         updatedAt: result.updated_at
+       };
 
-              resolve(personalInfo);
-            },
-            (_, error) => {
-              console.error('Failed to get personal info:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get personal info:', error);
-        reject(error);
-      }
-    });
-  }
+       return personalInfo;
+     } catch (error) {
+       console.error('Failed to get personal info:', error);
+       throw error;
+     }
+   }
 
   /**
    * Get personal information by personal info ID (not userId)
@@ -1075,71 +1016,58 @@ class SecureStorageService {
    * @returns {Object} - Decrypted personal information
    */
   async getPersonalInfoById(personalInfoId) {
-    return new Promise((resolve, reject) => {
-      try {
-        console.log('=== SECURE STORAGE DEBUG ===');
-        console.log('getPersonalInfoById called with personalInfoId:', personalInfoId);
+    try {
+      console.log('=== SECURE STORAGE DEBUG ===');
+      console.log('getPersonalInfoById called with personalInfoId:', personalInfoId);
 
-        this.db.transaction(tx => {
-          console.log('Executing SQL query: SELECT * FROM personal_info WHERE id = ? LIMIT 1');
-          console.log('Query parameter:', personalInfoId);
+      console.log('Executing SQL query: SELECT * FROM personal_info WHERE id = ? LIMIT 1');
+      console.log('Query parameter:', personalInfoId);
 
-          tx.executeSql(
-            'SELECT * FROM personal_info WHERE id = ? LIMIT 1',
-            [personalInfoId],
-            async (_, { rows }) => {
-              console.log('Query executed, rows.length:', rows.length);
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM personal_info WHERE id = ? LIMIT 1',
+        [personalInfoId]
+      );
 
-              if (rows.length === 0) {
-                console.log('No personal info records found for personalInfoId:', personalInfoId);
-                resolve(null);
-                return;
-              }
+      console.log('Query executed, result:', result);
 
-              const result = rows._array[0];
-
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    phone_number: result.encrypted_phone_number,
-                    email: result.encrypted_email,
-                    home_address: result.encrypted_home_address
-                  })
-                : {
-                    phone_number: result.encrypted_phone_number,
-                    email: result.encrypted_email,
-                    home_address: result.encrypted_home_address
-                  };
-
-              const personalInfo = {
-                id: result.id,
-                userId: result.user_id,
-                phoneNumber: decryptedFields.phone_number,
-                email: decryptedFields.email,
-                homeAddress: decryptedFields.home_address,
-                occupation: result.occupation,
-                provinceCity: result.province_city,
-                countryRegion: result.country_region,
-                phoneCode: result.phone_code,
-                gender: result.gender,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
-
-              resolve(personalInfo);
-            },
-            (_, error) => {
-              console.error('Failed to get personal info by ID:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get personal info by ID:', error);
-        reject(error);
+      if (!result) {
+        console.log('No personal info records found for personalInfoId:', personalInfoId);
+        return null;
       }
-    });
+
+      // TODO: Re-enable encryption before production release
+      const decryptedFields = this.ENCRYPTION_ENABLED
+        ? await this.encryption.decryptFields({
+            phone_number: result.encrypted_phone_number,
+            email: result.encrypted_email,
+            home_address: result.encrypted_home_address
+          })
+        : {
+            phone_number: result.encrypted_phone_number,
+            email: result.encrypted_email,
+            home_address: result.encrypted_home_address
+          };
+
+      const personalInfo = {
+        id: result.id,
+        userId: result.user_id,
+        phoneNumber: decryptedFields.phone_number,
+        email: decryptedFields.email,
+        homeAddress: decryptedFields.home_address,
+        occupation: result.occupation,
+        provinceCity: result.province_city,
+        countryRegion: result.country_region,
+        phoneCode: result.phone_code,
+        gender: result.gender,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
+
+      return personalInfo;
+    } catch (error) {
+      console.error('Failed to get personal info by ID:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1183,35 +1111,26 @@ class SecureStorageService {
 
       const now = new Date().toISOString();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO fund_items 
-             (id, user_id, type, amount, currency, details, photo_uri, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              fundItem.id,
-              fundItem.userId,
-              fundItem.type,
-              fundItem.amount,
-              fundItem.currency,
-              fundItem.details,
-              fundItem.photoUri,
-              fundItem.createdAt,
-              now
-            ],
-            (_, result) => {
-              console.log('✅ Fund item SQL INSERT successful, rows affected:', result.rowsAffected);
-              this.logAudit('INSERT', 'fund_items', fundItem.id).catch(console.error);
-              resolve({ ...fundItem.toJSON(), updatedAt: now });
-            },
-            (_, error) => {
-              console.error('❌ Fund item SQL INSERT failed:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO fund_items 
+         (id, user_id, type, amount, currency, details, photo_uri, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          fundItem.id,
+          fundItem.userId,
+          fundItem.type,
+          fundItem.amount,
+          fundItem.currency,
+          fundItem.details,
+          fundItem.photoUri,
+          fundItem.createdAt,
+          now
+        ]
+      );
+
+      console.log('✅ Fund item SQL INSERT successful, rows affected:', result.changes);
+      await this.logAudit('INSERT', 'fund_items', fundItem.id);
+      return { ...fundItem.toJSON(), updatedAt: now };
     } catch (error) {
       console.error('SecureStorageService.saveFundItem failed:', error);
       throw error;
@@ -1228,36 +1147,26 @@ class SecureStorageService {
       // Ensure database is initialized
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM fund_items WHERE id = ? LIMIT 1',
-            [id],
-            (_, { rows }) => {
-              if (rows.length > 0) {
-                const item = rows._array[0];
-                resolve({
-                  id: item.id,
-                  userId: item.user_id,
-                  type: item.type,
-                  amount: item.amount,
-                  currency: item.currency,
-                  details: item.details,
-                  photoUri: item.photo_uri,
-                  createdAt: item.created_at,
-                  updatedAt: item.updated_at
-                });
-              } else {
-                resolve(null);
-              }
-            },
-            (_, error) => {
-              console.error('getFundItem query failed:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const item = await this.modernDb.getFirstAsync(
+        'SELECT * FROM fund_items WHERE id = ? LIMIT 1',
+        [id]
+      );
+
+      if (!item) {
+        return null;
+      }
+
+      return {
+        id: item.id,
+        userId: item.user_id,
+        type: item.type,
+        amount: item.amount,
+        currency: item.currency,
+        details: item.details,
+        photoUri: item.photo_uri,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      };
     } catch (error) {
       console.error('SecureStorageService.getFundItem failed:', error);
       throw error;
@@ -1277,34 +1186,25 @@ class SecureStorageService {
       await this.ensureInitialized();
       console.log('Querying fund items for userId:', userId);
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM fund_items WHERE user_id = ? ORDER BY created_at DESC',
-            [userId],
-            (_, { rows }) => {
-              console.log('Fund items query result:', rows.length, 'rows');
-              const items = rows._array.map(item => ({
-                id: item.id,
-                userId: item.user_id,
-                type: item.type,
-                amount: item.amount,
-                currency: item.currency,
-                details: item.details,
-                photoUri: item.photo_uri,
-                createdAt: item.created_at,
-                updatedAt: item.updated_at
-              }));
-              console.log('Mapped fund items:', items.length);
-              resolve(items);
-            },
-            (_, error) => {
-              console.error('getFundItemsByUserId query failed:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM fund_items WHERE user_id = ? ORDER BY created_at DESC',
+        [userId]
+      );
+
+      console.log('Fund items query result:', rows.length, 'rows');
+      const items = rows.map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        type: item.type,
+        amount: item.amount,
+        currency: item.currency,
+        details: item.details,
+        photoUri: item.photo_uri,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      }));
+      console.log('Mapped fund items:', items.length);
+      return items;
     } catch (error) {
       console.error('SecureStorageService.getFundItemsByUserId failed:', error);
       throw error;
@@ -1324,23 +1224,14 @@ class SecureStorageService {
       await this.ensureInitialized();
       console.log('Deleting fund item:', id);
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'DELETE FROM fund_items WHERE id = ?',
-            [id],
-            (_, result) => {
-              console.log('✅ Fund item deleted, rows affected:', result.rowsAffected);
-              this.logAudit('DELETE', 'fund_items', id).catch(console.error);
-              resolve(result.rowsAffected > 0);
-            },
-            (_, error) => {
-              console.error('❌ Delete fund item failed:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM fund_items WHERE id = ?',
+        [id]
+      );
+
+      console.log('✅ Fund item deleted, rows affected:', result.changes);
+      await this.logAudit('DELETE', 'fund_items', id);
+      return result.changes > 0;
     } catch (error) {
       console.error('SecureStorageService.deleteFundItem failed:', error);
       throw error;
@@ -1361,70 +1252,60 @@ class SecureStorageService {
       const now = new Date().toISOString();
       const id = travelData.id || this.generateId();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO travel_info (
-              id, user_id, destination,
-              travel_purpose, recent_stay_country, boarding_country, visa_number,
-              arrival_flight_number, arrival_departure_airport,
-              arrival_departure_date, arrival_departure_time,
-              arrival_arrival_airport, arrival_arrival_date, arrival_arrival_time,
-              departure_flight_number, departure_departure_airport,
-              departure_departure_date, departure_departure_time,
-              departure_arrival_airport, departure_arrival_date, departure_arrival_time,
-              accommodation_type, province, district, sub_district, postal_code,
-              hotel_name, hotel_address, accommodation_phone, length_of_stay, 
-              is_transit_passenger, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              travelData.userId,
-              travelData.destination,
-              travelData.travelPurpose,
-              travelData.recentStayCountry,
-              travelData.boardingCountry,
-              travelData.visaNumber,
-              travelData.arrivalFlightNumber,
-              travelData.arrivalDepartureAirport,
-              travelData.arrivalDepartureDate,
-              travelData.arrivalDepartureTime,
-              travelData.arrivalArrivalAirport,
-              travelData.arrivalArrivalDate,
-              travelData.arrivalArrivalTime,
-              travelData.departureFlightNumber,
-              travelData.departureDepartureAirport,
-              travelData.departureDepartureDate,
-              travelData.departureDepartureTime,
-              travelData.departureArrivalAirport,
-              travelData.departureArrivalDate,
-              travelData.departureArrivalTime,
-              travelData.accommodationType,
-              travelData.province,
-              travelData.district,
-              travelData.subDistrict,
-              travelData.postalCode,
-              travelData.hotelName,
-              travelData.hotelAddress,
-              travelData.accommodationPhone,
-              travelData.lengthOfStay,
-              travelData.isTransitPassenger ? 1 : 0,
-              travelData.status || 'draft',
-              travelData.createdAt || now,
-              now
-            ],
-            (_, result) => {
-              this.logAudit('INSERT', 'travel_info', id).catch(console.error);
-              resolve({ id, result });
-            },
-            (_, error) => {
-              console.error('Failed to save travel info:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO travel_info (
+          id, user_id, destination,
+          travel_purpose, recent_stay_country, boarding_country, visa_number,
+          arrival_flight_number, arrival_departure_airport,
+          arrival_departure_date, arrival_departure_time,
+          arrival_arrival_airport, arrival_arrival_date, arrival_arrival_time,
+          departure_flight_number, departure_departure_airport,
+          departure_departure_date, departure_departure_time,
+          departure_arrival_airport, departure_arrival_date, departure_arrival_time,
+          accommodation_type, province, district, sub_district, postal_code,
+          hotel_name, hotel_address, accommodation_phone, length_of_stay, 
+          is_transit_passenger, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          travelData.userId,
+          travelData.destination,
+          travelData.travelPurpose,
+          travelData.recentStayCountry,
+          travelData.boardingCountry,
+          travelData.visaNumber,
+          travelData.arrivalFlightNumber,
+          travelData.arrivalDepartureAirport,
+          travelData.arrivalDepartureDate,
+          travelData.arrivalDepartureTime,
+          travelData.arrivalArrivalAirport,
+          travelData.arrivalArrivalDate,
+          travelData.arrivalArrivalTime,
+          travelData.departureFlightNumber,
+          travelData.departureDepartureAirport,
+          travelData.departureDepartureDate,
+          travelData.departureDepartureTime,
+          travelData.departureArrivalAirport,
+          travelData.departureArrivalDate,
+          travelData.departureArrivalTime,
+          travelData.accommodationType,
+          travelData.province,
+          travelData.district,
+          travelData.subDistrict,
+          travelData.postalCode,
+          travelData.hotelName,
+          travelData.hotelAddress,
+          travelData.accommodationPhone,
+          travelData.lengthOfStay,
+          travelData.isTransitPassenger ? 1 : 0,
+          travelData.status || 'draft',
+          travelData.createdAt || now,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'travel_info', id);
+      return { id, result };
     } catch (error) {
       console.error('Failed to save travel info:', error);
       throw error;
@@ -1438,84 +1319,68 @@ class SecureStorageService {
    * @returns {Promise<Object>} - Travel info data
    */
   async getTravelInfo(userId, destination = null) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          const query = destination
-            ? 'SELECT * FROM travel_info WHERE user_id = ? AND destination = ? ORDER BY updated_at DESC LIMIT 1'
-            : 'SELECT * FROM travel_info WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1';
-          
-          const params = destination ? [userId, destination] : [userId];
+    try {
+      const query = destination
+        ? 'SELECT * FROM travel_info WHERE user_id = ? AND destination = ? ORDER BY updated_at DESC LIMIT 1'
+        : 'SELECT * FROM travel_info WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1';
+      
+      const params = destination ? [userId, destination] : [userId];
 
-          tx.executeSql(
-            query,
-            params,
-            (_, { rows }) => {
-              if (rows.length === 0) {
-                resolve(null);
-                return;
-              }
+      const result = await this.modernDb.getFirstAsync(query, params);
 
-              const result = rows._array[0];
-
-              console.log('=== DB RESULT FOR TRAVEL INFO ===');
-              console.log('Raw DB result.departure_departure_date:', result.departure_departure_date);
-              console.log('All DB result keys:', Object.keys(result));
-
-              const travelInfo = {
-                id: result.id,
-                userId: result.user_id,
-                destination: result.destination,
-                travelPurpose: result.travel_purpose,
-                recentStayCountry: result.recent_stay_country,
-                boardingCountry: result.boarding_country,
-                visaNumber: result.visa_number,
-                arrivalFlightNumber: result.arrival_flight_number,
-                arrivalDepartureAirport: result.arrival_departure_airport,
-                arrivalDepartureDate: result.arrival_departure_date,
-                arrivalDepartureTime: result.arrival_departure_time,
-                arrivalArrivalAirport: result.arrival_arrival_airport,
-                arrivalArrivalDate: result.arrival_arrival_date,
-                arrivalArrivalTime: result.arrival_arrival_time,
-                departureFlightNumber: result.departure_flight_number,
-                departureDepartureAirport: result.departure_departure_airport,
-                departureDepartureDate: result.departure_departure_date,
-                departureDepartureTime: result.departure_departure_time,
-                departureArrivalAirport: result.departure_arrival_airport,
-                departureArrivalDate: result.departure_arrival_date,
-                departureArrivalTime: result.departure_arrival_time,
-                accommodationType: result.accommodation_type,
-                province: result.province,
-                district: result.district,
-                subDistrict: result.sub_district,
-                postalCode: result.postal_code,
-                hotelName: result.hotel_name,
-                hotelAddress: result.hotel_address,
-                accommodationPhone: result.accommodation_phone,
-                lengthOfStay: result.length_of_stay,
-                isTransitPassenger: result.is_transit_passenger === 1,
-                status: result.status,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
-
-              console.log('=== MAPPED TRAVEL INFO ===');
-              console.log('Mapped departureDepartureDate:', travelInfo.departureDepartureDate);
-
-              resolve(travelInfo);
-            },
-            (_, error) => {
-              console.error('Failed to get travel info:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get travel info:', error);
-        reject(error);
+      if (!result) {
+        return null;
       }
-    });
+
+      console.log('=== DB RESULT FOR TRAVEL INFO ===');
+      console.log('Raw DB result.departure_departure_date:', result.departure_departure_date);
+      console.log('All DB result keys:', Object.keys(result));
+
+      const travelInfo = {
+        id: result.id,
+        userId: result.user_id,
+        destination: result.destination,
+        travelPurpose: result.travel_purpose,
+        recentStayCountry: result.recent_stay_country,
+        boardingCountry: result.boarding_country,
+        visaNumber: result.visa_number,
+        arrivalFlightNumber: result.arrival_flight_number,
+        arrivalDepartureAirport: result.arrival_departure_airport,
+        arrivalDepartureDate: result.arrival_departure_date,
+        arrivalDepartureTime: result.arrival_departure_time,
+        arrivalArrivalAirport: result.arrival_arrival_airport,
+        arrivalArrivalDate: result.arrival_arrival_date,
+        arrivalArrivalTime: result.arrival_arrival_time,
+        departureFlightNumber: result.departure_flight_number,
+        departureDepartureAirport: result.departure_departure_airport,
+        departureDepartureDate: result.departure_departure_date,
+        departureDepartureTime: result.departure_departure_time,
+        departureArrivalAirport: result.departure_arrival_airport,
+        departureArrivalDate: result.departure_arrival_date,
+        departureArrivalTime: result.departure_arrival_time,
+        accommodationType: result.accommodation_type,
+        province: result.province,
+        district: result.district,
+        subDistrict: result.sub_district,
+        postalCode: result.postal_code,
+        hotelName: result.hotel_name,
+        hotelAddress: result.hotel_address,
+        accommodationPhone: result.accommodation_phone,
+        lengthOfStay: result.length_of_stay,
+        isTransitPassenger: result.is_transit_passenger === 1,
+        status: result.status,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
+
+      console.log('=== MAPPED TRAVEL INFO ===');
+      console.log('Mapped departureDepartureDate:', travelInfo.departureDepartureDate);
+
+      return travelInfo;
+    } catch (error) {
+      console.error('Failed to get travel info:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1527,40 +1392,31 @@ class SecureStorageService {
       const now = new Date().toISOString();
       const id = travelData.id || this.generateId();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT INTO travel_history (
-              id,
-              user_id,
-              destination_id,
-              destination_name,
-              travel_date,
-              return_date,
-              purpose,
-              created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              travelData.userId,
-              travelData.destinationId,
-              travelData.destinationName,
-              travelData.travelDate,
-              travelData.returnDate,
-              travelData.purpose,
-              now
-            ],
-            (_, result) => {
-              this.logAudit('INSERT', 'travel_history', id).catch(console.error);
-              resolve(result);
-            },
-            (_, error) => {
-              console.error('Failed to save travel history:', error);
-              reject(error);
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        `INSERT INTO travel_history (
+          id,
+          user_id,
+          destination_id,
+          destination_name,
+          travel_date,
+          return_date,
+          purpose,
+          created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          travelData.userId,
+          travelData.destinationId,
+          travelData.destinationName,
+          travelData.travelDate,
+          travelData.returnDate,
+          travelData.purpose,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'travel_history', id);
+      return result;
     } catch (error) {
       console.error('Failed to save travel history:', error);
       throw error;
@@ -1575,7 +1431,7 @@ class SecureStorageService {
    */
   async getTravelHistory(userId, limit = 50) {
     try {
-      const results = await this.db.getAllAsync(
+      const results = await this.modernDb.getAllAsync(
         'SELECT * FROM travel_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
         [userId, limit]
       );
@@ -1592,65 +1448,52 @@ class SecureStorageService {
    * @returns {Object} - Decrypted passport data
    */
   async getUserPassport(userId) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM passports WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
-            [userId],
-            async (_, { rows }) => {
-              if (rows.length === 0) {
-                resolve(null);
-                return;
-              }
+    try {
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM passports WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+        [userId]
+      );
 
-              const result = rows._array[0];
-
-              // TODO: Re-enable encryption before production release
-              const decryptedFields = this.ENCRYPTION_ENABLED
-                ? await this.encryption.decryptFields({
-                    passport_number: result.encrypted_passport_number,
-                    full_name: result.encrypted_full_name,
-                    date_of_birth: result.encrypted_date_of_birth,
-                    nationality: result.encrypted_nationality
-                  })
-                : {
-                    passport_number: result.encrypted_passport_number,
-                    full_name: result.encrypted_full_name,
-                    date_of_birth: result.encrypted_date_of_birth,
-                    nationality: result.encrypted_nationality
-                  };
-
-              const passport = {
-                id: result.id,
-                userId: result.user_id,
-                passportNumber: decryptedFields.passport_number,
-                fullName: decryptedFields.full_name,
-                dateOfBirth: decryptedFields.date_of_birth,
-                nationality: decryptedFields.nationality,
-                gender: result.gender,
-                expiryDate: result.expiry_date,
-                issueDate: result.issue_date,
-                issuePlace: result.issue_place,
-                photoUri: result.photo_uri,
-                createdAt: result.created_at,
-                updatedAt: result.updated_at
-              };
-
-              resolve(passport);
-            },
-            (_, error) => {
-              console.error('Failed to get user passport:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get user passport:', error);
-        reject(error);
+      if (!result) {
+        return null;
       }
-    });
+
+      // TODO: Re-enable encryption before production release
+      const decryptedFields = this.ENCRYPTION_ENABLED
+        ? await this.encryption.decryptFields({
+            passport_number: result.encrypted_passport_number,
+            full_name: result.encrypted_full_name,
+            date_of_birth: result.encrypted_date_of_birth,
+            nationality: result.encrypted_nationality
+          })
+        : {
+            passport_number: result.encrypted_passport_number,
+            full_name: result.encrypted_full_name,
+            date_of_birth: result.encrypted_date_of_birth,
+            nationality: result.encrypted_nationality
+          };
+
+      const passport = {
+        id: result.id,
+        userId: result.user_id,
+        passportNumber: decryptedFields.passport_number,
+        fullName: decryptedFields.full_name,
+        dateOfBirth: decryptedFields.date_of_birth,
+        nationality: decryptedFields.nationality,
+        gender: result.gender,
+        expiryDate: result.expiry_date,
+        issueDate: result.issue_date,
+        issuePlace: result.issue_place,
+        photoUri: result.photo_uri,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
+
+      return passport;
+    } catch (error) {
+      console.error('Failed to get user passport:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1659,60 +1502,42 @@ class SecureStorageService {
    * @returns {Promise<number>} - Number of duplicate passports deleted
    */
   async cleanupDuplicatePassports(userId) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          // First, get all passports for this user
-          tx.executeSql(
-            'SELECT id, updated_at FROM passports WHERE user_id = ? ORDER BY updated_at DESC',
-            [userId],
-            (_, { rows }) => {
-              if (rows.length <= 1) {
-                // No duplicates
-                resolve(0);
-                return;
-              }
+    try {
+      // First, get all passports for this user
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT id, updated_at FROM passports WHERE user_id = ? ORDER BY updated_at DESC',
+        [userId]
+      );
 
-              // Keep the first one (most recent), delete the rest
-              const passportsToDelete = rows._array.slice(1);
-              const idsToDelete = passportsToDelete.map(p => p.id);
-              
-              if (idsToDelete.length === 0) {
-                resolve(0);
-                return;
-              }
-
-              console.log(`Cleaning up ${idsToDelete.length} duplicate passport(s) for user ${userId}`);
-              console.log('Keeping most recent passport, deleting:', idsToDelete);
-
-              // Delete duplicates
-              const placeholders = idsToDelete.map(() => '?').join(',');
-              tx.executeSql(
-                `DELETE FROM passports WHERE id IN (${placeholders})`,
-                idsToDelete,
-                () => {
-                  console.log(`Successfully deleted ${idsToDelete.length} duplicate passport(s)`);
-                  resolve(idsToDelete.length);
-                },
-                (_, error) => {
-                  console.error('Failed to delete duplicate passports:', error);
-                  reject(error);
-                  return false;
-                }
-              );
-            },
-            (_, error) => {
-              console.error('Failed to query passports for cleanup:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to cleanup duplicate passports:', error);
-        reject(error);
+      if (rows.length <= 1) {
+        // No duplicates
+        return 0;
       }
-    });
+
+      // Keep the first one (most recent), delete the rest
+      const passportsToDelete = rows.slice(1);
+      const idsToDelete = passportsToDelete.map(p => p.id);
+      
+      if (idsToDelete.length === 0) {
+        return 0;
+      }
+
+      console.log(`Cleaning up ${idsToDelete.length} duplicate passport(s) for user ${userId}`);
+      console.log('Keeping most recent passport, deleting:', idsToDelete);
+
+      // Delete duplicates
+      const placeholders = idsToDelete.map(() => '?').join(',');
+      const result = await this.modernDb.runAsync(
+        `DELETE FROM passports WHERE id IN (${placeholders})`,
+        idsToDelete
+      );
+
+      console.log(`Successfully deleted ${result.changes} duplicate passport(s)`);
+      return result.changes;
+    } catch (error) {
+      console.error('Failed to cleanup duplicate passports:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1722,7 +1547,7 @@ class SecureStorageService {
    */
   async listUserPassports(userId) {
     try {
-      const results = await this.db.getAllAsync(
+      const results = await this.modernDb.getAllAsync(
         'SELECT * FROM passports WHERE user_id = ?',
         [userId]
       );
@@ -1779,27 +1604,17 @@ class SecureStorageService {
    * @returns {boolean} - True if migration is needed
    */
   async needsMigration(userId) {
-    return new Promise((resolve) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
-            [userId],
-            (_, { rows }) => {
-              resolve(rows.length === 0);
-            },
-            (_, error) => {
-              console.error('Failed to check migration status:', error);
-              resolve(true); // Assume migration needed on error
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to check migration status:', error);
-        resolve(true); // Assume migration needed on error
-      }
-    });
+    try {
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
+        [userId]
+      );
+      
+      return !result;
+    } catch (error) {
+      console.error('Failed to check migration status:', error);
+      return true; // Assume migration needed on error
+    }
   }
 
   /**
@@ -1808,31 +1623,17 @@ class SecureStorageService {
    * @param {string} source - Migration source (e.g., 'AsyncStorage')
    */
   async markMigrationComplete(userId, source = 'AsyncStorage') {
-    return new Promise((resolve, reject) => {
-      try {
-        const now = new Date().toISOString();
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              'INSERT OR REPLACE INTO migrations (user_id, migrated_at, source) VALUES (?, ?, ?)',
-              [userId, now, source],
-              () => {
-                console.log(`Migration marked complete for user ${userId} from ${source}`);
-              },
-              (_, error) => {
-                console.error('Failed to mark migration complete:', error);
-                return false;
-              }
-            );
-          },
-          reject,
-          resolve
-        );
-      } catch (error) {
-        console.error('Failed to mark migration complete:', error);
-        reject(error);
-      }
-    });
+    try {
+      const now = new Date().toISOString();
+      await this.modernDb.runAsync(
+        'INSERT OR REPLACE INTO migrations (user_id, migrated_at, source) VALUES (?, ?, ?)',
+        [userId, now, source]
+      );
+      console.log(`Migration marked complete for user ${userId} from ${source}`);
+    } catch (error) {
+      console.error('Failed to mark migration complete:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1841,36 +1642,25 @@ class SecureStorageService {
    * @returns {Object|null} - Migration status or null if not migrated
    */
   async getMigrationStatus(userId) {
-    return new Promise((resolve) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
-            [userId],
-            (_, { rows }) => {
-              if (rows.length === 0) {
-                resolve(null);
-                return;
-              }
-              const result = rows._array[0];
-              resolve({
-                userId: result.user_id,
-                migratedAt: result.migrated_at,
-                source: result.source
-              });
-            },
-            (_, error) => {
-              console.error('Failed to get migration status:', error);
-              resolve(null);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get migration status:', error);
-        resolve(null);
+    try {
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
+        [userId]
+      );
+      
+      if (!result) {
+        return null;
       }
-    });
+      
+      return {
+        userId: result.user_id,
+        migratedAt: result.migrated_at,
+        source: result.source
+      };
+    } catch (error) {
+      console.error('Failed to get migration status:', error);
+      return null;
+    }
   }
 
   /**
@@ -1997,160 +1787,41 @@ class SecureStorageService {
       console.log(`Pre-encryption completed in ${encryptionTime}ms`);
       
       // Execute all operations in a single transaction
-      return new Promise((resolve, reject) => {
-        const results = [];
-        
-        this.db.transaction(
-          (tx) => {
-            // Execute all SQL statements synchronously within the transaction
-            validOperations.forEach((op) => {
-              tx.executeSql(
-                op.sql,
-                op.params,
-                (_, result) => {
-                  results.push({ type: op.type, id: op.id, result });
-                },
-                (_, error) => {
-                  console.error(`Failed to save ${op.type}:`, error);
-                  return true; // Trigger transaction rollback
-                }
-              );
-            });
-          },
-          (error) => {
-            // Transaction failed - rollback automatic
-            const duration = Date.now() - startTime;
-            console.error(`Batch save transaction failed after ${duration}ms:`, error);
-            reject(error);
-          },
-          async () => {
-            // Transaction succeeded
-            const duration = Date.now() - startTime;
-            const transactionTime = duration - encryptionTime;
-            console.log(`Batch save completed in ${duration}ms (encryption: ${encryptionTime}ms, transaction: ${transactionTime}ms)`);
-            
-            await this.logAudit('BATCH_SAVE', 'multiple', 'batch', { 
-              operationCount: validOperations.length,
-              durationMs: duration,
-              encryptionMs: encryptionTime,
-              transactionMs: transactionTime
-            });
-            
-            resolve(results);
+      const results = [];
+      
+      await this.modernDb.withTransactionAsync(async () => {
+        // Execute all SQL statements within the transaction
+        for (const op of validOperations) {
+          try {
+            const result = await this.modernDb.runAsync(op.sql, op.params);
+            results.push({ type: op.type, id: op.id, result });
+          } catch (error) {
+            console.error(`Failed to save ${op.type}:`, error);
+            throw error; // This will trigger transaction rollback
           }
-        );
+        }
       });
+
+      // Transaction succeeded
+      const duration = Date.now() - startTime;
+      const transactionTime = duration - encryptionTime;
+      console.log(`Batch save completed in ${duration}ms (encryption: ${encryptionTime}ms, transaction: ${transactionTime}ms)`);
+      
+      await this.logAudit('BATCH_SAVE', 'multiple', 'batch', { 
+        operationCount: validOperations.length,
+        durationMs: duration,
+        encryptionMs: encryptionTime,
+        transactionMs: transactionTime
+      });
+      
+      return results;
     } catch (error) {
       console.error('Batch save failed:', error);
       throw error;
     }
   }
 
-  /**
-   * Save passport within a transaction
-   * @private
-   */
-  async savePassportInTransaction(tx, passportData) {
-    const encryptedData = this.ENCRYPTION_ENABLED 
-      ? await this.encryption.encryptFields({
-          passport_number: passportData.passportNumber,
-          full_name: passportData.fullName,
-          date_of_birth: passportData.dateOfBirth,
-          nationality: passportData.nationality
-        })
-      : {
-          passport_number: passportData.passportNumber,
-          full_name: passportData.fullName,
-          date_of_birth: passportData.dateOfBirth,
-          nationality: passportData.nationality
-        };
-
-    const now = new Date().toISOString();
-    const id = passportData.id || this.generateId();
-
-    return new Promise((resolve, reject) => {
-      tx.executeSql(
-        `INSERT OR REPLACE INTO passports (
-          id, user_id, encrypted_passport_number, encrypted_full_name,
-          encrypted_date_of_birth, encrypted_nationality, gender,
-          expiry_date, issue_date, issue_place, photo_uri,
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id, passportData.userId,
-          encryptedData.passport_number, encryptedData.full_name,
-          encryptedData.date_of_birth, encryptedData.nationality,
-          passportData.gender, passportData.expiryDate,
-          passportData.issueDate, passportData.issuePlace,
-          passportData.photoUri, passportData.createdAt || now, now
-        ],
-        (_, result) => resolve({ type: 'passport', id, result }),
-        (_, error) => reject(error)
-      );
-    });
-  }
-
-  /**
-   * Save personal info within a transaction
-   * @private
-   */
-  async savePersonalInfoInTransaction(tx, personalData) {
-    const encryptedData = this.ENCRYPTION_ENABLED
-      ? await this.encryption.encryptFields({
-          phone_number: personalData.phoneNumber,
-          email: personalData.email,
-          home_address: personalData.homeAddress
-        })
-      : {
-          phone_number: personalData.phoneNumber,
-          email: personalData.email,
-          home_address: personalData.homeAddress
-        };
-
-    const now = new Date().toISOString();
-    const id = personalData.id || this.generateId();
-
-    return new Promise((resolve, reject) => {
-      tx.executeSql(
-        `INSERT OR REPLACE INTO personal_info (
-          id, user_id, encrypted_phone_number, encrypted_email,
-          encrypted_home_address, occupation, province_city,
-          country_region, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id, personalData.userId,
-          encryptedData.phone_number, encryptedData.email,
-          encryptedData.home_address, personalData.occupation,
-          personalData.provinceCity, personalData.countryRegion,
-          personalData.createdAt || now, now
-        ],
-        (_, result) => resolve({ type: 'personalInfo', id, result }),
-        (_, error) => reject(error)
-      );
-    });
-  }
-
-  /**
-   * Save funding proof within a transaction
-   * @private
-   */
-  async saveFundingProofInTransaction(tx, fundingData) {
-    const encryptedData = this.ENCRYPTION_ENABLED
-      ? await this.encryption.encryptFields({
-          cash_amount: fundingData.cashAmount,
-          bank_cards: fundingData.bankCards,
-          supporting_docs: fundingData.supportingDocs
-        })
-      : {
-          cash_amount: fundingData.cashAmount,
-          bank_cards: fundingData.bankCards,
-          supporting_docs: fundingData.supportingDocs
-        };
-
-    // Legacy funding_proof save operation removed
-    console.warn('saveFundingProofInTransaction is deprecated, use saveFundItem instead');
-    return Promise.resolve({ type: 'fundingProof', id: null, result: null });
-  }
+  // Legacy transaction helper methods removed - no longer needed with modern async/await API
 
   /**
    * Batch load operations for efficient data retrieval
@@ -2374,23 +2045,15 @@ class SecureStorageService {
   async deleteAllUserData(userId) {
     try {
       // Delete all user-related data
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql('DELETE FROM passports WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM personal_info WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM fund_items WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM travel_history WHERE user_id = ?', [userId]);
-          tx.executeSql('DELETE FROM migrations WHERE user_id = ?', [userId]);
-        }, 
-        (error) => {
-          console.error('Failed to delete user data:', error);
-          reject(error);
-        },
-        () => {
-          this.logAudit('DELETE_ALL', 'all_tables', userId).catch(console.error);
-          resolve();
-        });
+      await this.modernDb.withTransactionAsync(async () => {
+        await this.modernDb.runAsync('DELETE FROM passports WHERE user_id = ?', [userId]);
+        await this.modernDb.runAsync('DELETE FROM personal_info WHERE user_id = ?', [userId]);
+        await this.modernDb.runAsync('DELETE FROM fund_items WHERE user_id = ?', [userId]);
+        await this.modernDb.runAsync('DELETE FROM travel_history WHERE user_id = ?', [userId]);
+        await this.modernDb.runAsync('DELETE FROM migrations WHERE user_id = ?', [userId]);
       });
+      
+      await this.logAudit('DELETE_ALL', 'all_tables', userId);
     } catch (error) {
       console.error('Failed to delete user data:', error);
       throw error;
@@ -2519,7 +2182,7 @@ class SecureStorageService {
       };
 
       // Check if indexes exist
-      const indexes = await this.db.getAllAsync(
+      const indexes = await this.modernDb.getAllAsync(
         `SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'`
       );
 
@@ -2552,7 +2215,7 @@ class SecureStorageService {
 
       for (const testQuery of testQueries) {
         try {
-          const plan = await this.db.getAllAsync(
+          const plan = await this.modernDb.getAllAsync(
             `EXPLAIN QUERY PLAN ${testQuery.query}`,
             testQuery.params
           );
@@ -2611,7 +2274,7 @@ class SecureStorageService {
       };
 
       // Get all indexes
-      const indexes = await this.db.getAllAsync(
+      const indexes = await this.modernDb.getAllAsync(
         `SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'index'`
       );
 
@@ -2623,7 +2286,7 @@ class SecureStorageService {
       
       for (const table of tables) {
         try {
-          const result = await this.db.getFirstAsync(
+          const result = await this.modernDb.getFirstAsync(
             `SELECT COUNT(*) as count FROM ${table}`
           );
           stats.tableStats[table] = {
@@ -2648,39 +2311,29 @@ class SecureStorageService {
    * WARNING: This will delete all data!
    */
   async resetDatabase() {
-    return new Promise((resolve, reject) => {
+    try {
       console.log('Resetting database - dropping all tables...');
       
-      this.db.transaction(
-        tx => {
-          // Drop all tables
-          tx.executeSql('DROP TABLE IF EXISTS passports');
-          tx.executeSql('DROP TABLE IF EXISTS personal_info');
-          tx.executeSql('DROP TABLE IF EXISTS funding_proof');
-          tx.executeSql('DROP TABLE IF EXISTS travel_history');
-          tx.executeSql('DROP TABLE IF EXISTS audit_log');
-          tx.executeSql('DROP TABLE IF EXISTS settings');
-          
-          console.log('All tables dropped');
-        },
-        error => {
-          console.error('Failed to drop tables:', error);
-          reject(error);
-        },
-        async () => {
-          console.log('Recreating tables...');
-          try {
-            // Recreate tables
-            await this.createTables();
-            console.log('Database reset complete');
-            resolve();
-          } catch (error) {
-            console.error('Failed to recreate tables:', error);
-            reject(error);
-          }
-        }
-      );
-    });
+      await this.modernDb.withTransactionAsync(async () => {
+        // Drop all tables
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS passports');
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS personal_info');
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS funding_proof');
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS travel_history');
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS audit_log');
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS settings');
+        
+        console.log('All tables dropped');
+      });
+
+      console.log('Recreating tables...');
+      // Recreate tables
+      await this.createTables();
+      console.log('Database reset complete');
+    } catch (error) {
+      console.error('Failed to reset database:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2688,26 +2341,16 @@ class SecureStorageService {
     * This is a one-time cleanup method for existing installations
     */
   async cleanupLegacyFundingProofTable() {
-    return new Promise((resolve, reject) => {
+    try {
       console.log('Cleaning up legacy funding_proof table...');
 
-      this.db.transaction(
-        tx => {
-          // Drop the legacy table if it exists
-          tx.executeSql('DROP TABLE IF EXISTS funding_proof', [], () => {
-            console.log('✅ Legacy funding_proof table removed successfully');
-          });
-        },
-        error => {
-          console.error('❌ Failed to cleanup funding_proof table:', error);
-          reject(error);
-        },
-        () => {
-          console.log('✅ Legacy funding_proof cleanup completed');
-          resolve();
-        }
-      );
-    });
+      await this.modernDb.execAsync('DROP TABLE IF EXISTS funding_proof');
+      console.log('✅ Legacy funding_proof table removed successfully');
+      console.log('✅ Legacy funding_proof cleanup completed');
+    } catch (error) {
+      console.error('❌ Failed to cleanup funding_proof table:', error);
+      throw error;
+    }
   }
 
   // ============================================================================
@@ -2721,46 +2364,33 @@ class SecureStorageService {
    * @returns {Promise<Object|null>} - Entry info data or null
    */
   async getEntryInfo(userId, destinationId = null) {
-    return new Promise((resolve, reject) => {
-      try {
-        let query = `
-          SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
-          FROM entry_info ei
-          LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
-          WHERE ei.user_id = ?
-        `;
-        let params = [userId];
+    try {
+      let query = `
+        SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+        FROM entry_info ei
+        LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+        WHERE ei.user_id = ?
+      `;
+      let params = [userId];
 
-        if (destinationId) {
-          query += ' AND ei.destination_id = ?';
-          params.push(destinationId);
-        }
-
-        query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
-
-        this.db.transaction(tx => {
-          tx.executeSql(
-            query,
-            params,
-            (_, result) => {
-              if (result.rows.length > 0) {
-                const row = result.rows.item(0);
-                resolve(this.deserializeEntryInfo(row));
-              } else {
-                resolve(null);
-              }
-            },
-            (_, error) => {
-              console.error('Failed to get entry info:', error);
-              reject(error);
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get entry info:', error);
-        reject(error);
+      if (destinationId) {
+        query += ' AND ei.destination_id = ?';
+        params.push(destinationId);
       }
-    });
+
+      query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
+
+      const row = await this.modernDb.getFirstAsync(query, params);
+      
+      if (row) {
+        return this.deserializeEntryInfo(row);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to get entry info:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2770,46 +2400,33 @@ class SecureStorageService {
    * @returns {Promise<Object|null>} - Entry info data or null
    */
   async getEntryInfoByDestination(destinationId, tripId = null) {
-    return new Promise((resolve, reject) => {
-      try {
-        let query = `
-          SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
-          FROM entry_info ei
-          LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
-          WHERE ei.destination_id = ?
-        `;
-        let params = [destinationId];
+    try {
+      let query = `
+        SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+        FROM entry_info ei
+        LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+        WHERE ei.destination_id = ?
+      `;
+      let params = [destinationId];
 
-        if (tripId) {
-          query += ' AND ei.trip_id = ?';
-          params.push(tripId);
-        }
-
-        query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
-
-        this.db.transaction(tx => {
-          tx.executeSql(
-            query,
-            params,
-            (_, result) => {
-              if (result.rows.length > 0) {
-                const row = result.rows.item(0);
-                resolve(this.deserializeEntryInfo(row));
-              } else {
-                resolve(null);
-              }
-            },
-            (_, error) => {
-              console.error('Failed to get entry info by destination:', error);
-              reject(error);
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get entry info by destination:', error);
-        reject(error);
+      if (tripId) {
+        query += ' AND ei.trip_id = ?';
+        params.push(tripId);
       }
-    });
+
+      query += ' GROUP BY ei.id ORDER BY ei.created_at DESC LIMIT 1';
+
+      const row = await this.modernDb.getFirstAsync(query, params);
+      
+      if (row) {
+        return this.deserializeEntryInfo(row);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to get entry info by destination:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2818,38 +2435,25 @@ class SecureStorageService {
    * @returns {Promise<Array>} - Array of entry info data
    */
   async getAllEntryInfosForUser(userId) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `
-              SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
-              FROM entry_info ei
-              LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
-              WHERE ei.user_id = ?
-              GROUP BY ei.id
-              ORDER BY ei.last_updated_at DESC
-            `,
-            [userId],
-            (_, result) => {
-              const entryInfos = [];
-              for (let i = 0; i < result.rows.length; i++) {
-                const row = result.rows.item(i);
-                entryInfos.push(this.deserializeEntryInfo(row));
-              }
-              resolve(entryInfos);
-            },
-            (_, error) => {
-              console.error('Failed to get all entry infos for user:', error);
-              reject(error);
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get all entry infos for user:', error);
-        reject(error);
-      }
-    });
+    try {
+      const rows = await this.modernDb.getAllAsync(
+        `
+          SELECT ei.*, GROUP_CONCAT(DISTINCT eifi.fund_item_id) AS fund_item_ids
+          FROM entry_info ei
+          LEFT JOIN entry_info_fund_items eifi ON eifi.entry_info_id = ei.id
+          WHERE ei.user_id = ?
+          GROUP BY ei.id
+          ORDER BY ei.last_updated_at DESC
+        `,
+        [userId]
+      );
+
+      const entryInfos = rows.map(row => this.deserializeEntryInfo(row));
+      return entryInfos;
+    } catch (error) {
+      console.error('Failed to get all entry infos for user:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2865,89 +2469,64 @@ class SecureStorageService {
       throw initError;
     }
 
-    return new Promise((resolve, reject) => {
-      try {
-        const serialized = this.serializeEntryInfo(entryInfoData);
-        const fundItemIds = this.extractFundItemIds(entryInfoData);
-        let insertResult = null;
-        const linkedAt = new Date().toISOString();
+    try {
+      const serialized = this.serializeEntryInfo(entryInfoData);
+      const fundItemIds = this.extractFundItemIds(entryInfoData);
+      const linkedAt = new Date().toISOString();
 
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              `INSERT OR REPLACE INTO entry_info (
-                id, user_id, passport_id, personal_info_id, destination_id, trip_id, status, 
-                completion_metrics, last_updated_at, created_at,
-                arrival_date, departure_date, travel_purpose,
-                flight_number, accommodation
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                serialized.id,
-                serialized.user_id,
-                serialized.passport_id,
-                serialized.personal_info_id,
-                serialized.destination_id,
-                serialized.trip_id,
-                serialized.status,
-                serialized.completion_metrics,
-                serialized.last_updated_at,
-                serialized.created_at,
-                serialized.arrival_date,
-                serialized.departure_date,
-                serialized.travel_purpose,
-                serialized.flight_number,
-                serialized.accommodation
-              ],
-              (_, result) => {
-                insertResult = result;
-              },
-              (_, error) => {
-                console.error('Failed to save entry info:', error);
-                return false;
-              }
-            );
+      let insertResult = null;
 
-            tx.executeSql(
-              'DELETE FROM entry_info_fund_items WHERE entry_info_id = ?',
-              [serialized.id],
-              () => {},
-              (_, error) => {
-                console.error('Failed to clear entry info fund item links:', error);
-                return false;
-              }
-            );
-
-            fundItemIds.forEach(fundItemId => {
-              tx.executeSql(
-                `INSERT OR REPLACE INTO entry_info_fund_items (
-                  entry_info_id, fund_item_id, user_id, linked_at
-                ) VALUES (?, ?, ?, ?)`,
-                [serialized.id, fundItemId, serialized.user_id, linkedAt],
-                () => {},
-                (_, error) => {
-                  console.error('Failed to link fund item to entry info:', error);
-                  return false;
-                }
-              );
-            });
-          },
-          error => {
-            console.error('Failed to save entry info transaction:', error);
-            reject(error);
-          },
-          () => {
-            resolve({
-              id: serialized.id,
-              insertId: insertResult?.insertId,
-              rowsAffected: insertResult?.rowsAffected ?? 0
-            });
-          }
+      await this.modernDb.withTransactionAsync(async () => {
+        insertResult = await this.modernDb.runAsync(
+          `INSERT OR REPLACE INTO entry_info (
+            id, user_id, passport_id, personal_info_id, destination_id, trip_id, status, 
+            completion_metrics, last_updated_at, created_at,
+            arrival_date, departure_date, travel_purpose,
+            flight_number, accommodation
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            serialized.id,
+            serialized.user_id,
+            serialized.passport_id,
+            serialized.personal_info_id,
+            serialized.destination_id,
+            serialized.trip_id,
+            serialized.status,
+            serialized.completion_metrics,
+            serialized.last_updated_at,
+            serialized.created_at,
+            serialized.arrival_date,
+            serialized.departure_date,
+            serialized.travel_purpose,
+            serialized.flight_number,
+            serialized.accommodation
+          ]
         );
-      } catch (error) {
-        console.error('Failed to save entry info:', error);
-        reject(error);
-      }
-    });
+
+        await this.modernDb.runAsync(
+          'DELETE FROM entry_info_fund_items WHERE entry_info_id = ?',
+          [serialized.id]
+        );
+
+        for (const fundItemId of fundItemIds) {
+          await this.modernDb.runAsync(
+            `INSERT OR REPLACE INTO entry_info_fund_items (
+              entry_info_id, fund_item_id, user_id, linked_at
+            ) VALUES (?, ?, ?, ?)`,
+            [serialized.id, fundItemId, serialized.user_id, linkedAt]
+          );
+        }
+      });
+
+      return {
+        id: serialized.id,
+        insertId: insertResult?.lastInsertRowId,
+        rowsAffected: insertResult?.changes ?? 0
+      };
+    } catch (error) {
+      console.error('Failed to save entry info:', error);
+      throw error;
+    }
   }
 
   /**
@@ -2961,45 +2540,35 @@ class SecureStorageService {
 
       const serialized = this.serializeEntryPack(entryPackData);
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `INSERT OR REPLACE INTO entry_packs (
-              id, entry_info_id, user_id, destination_id, trip_id, status,
-              tdac_submission, submission_history, documents, display_status,
-              created_at, updated_at, archived_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              serialized.id,
-              serialized.entry_info_id,
-              serialized.user_id,
-              serialized.destination_id,
-              serialized.trip_id,
-              serialized.status,
-              serialized.tdac_submission,
-              serialized.submission_history,
-              serialized.documents,
-              serialized.display_status,
-              serialized.created_at,
-              serialized.updated_at,
-              serialized.archived_at
-            ],
-            (_, result) => {
-              resolve({
-                success: true,
-                id: serialized.id,
-                insertId: result.insertId,
-                rowsAffected: result.rowsAffected
-              });
-            },
-            (_, error) => {
-              console.error('Failed to save entry pack:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO entry_packs (
+          id, entry_info_id, user_id, destination_id, trip_id, status,
+          tdac_submission, submission_history, documents, display_status,
+          created_at, updated_at, archived_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          serialized.id,
+          serialized.entry_info_id,
+          serialized.user_id,
+          serialized.destination_id,
+          serialized.trip_id,
+          serialized.status,
+          serialized.tdac_submission,
+          serialized.submission_history,
+          serialized.documents,
+          serialized.display_status,
+          serialized.created_at,
+          serialized.updated_at,
+          serialized.archived_at
+        ]
+      );
+
+      return {
+        success: true,
+        id: serialized.id,
+        insertId: result.lastInsertRowId,
+        rowsAffected: result.changes
+      };
     } catch (error) {
       console.error('Failed to save entry pack:', error);
       throw error;
@@ -3015,26 +2584,16 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM entry_packs WHERE id = ? LIMIT 1',
-            [entryPackId],
-            (_, result) => {
-              if (result.rows.length > 0) {
-                resolve(this.deserializeEntryPack(result.rows.item(0)));
-              } else {
-                resolve(null);
-              }
-            },
-            (_, error) => {
-              console.error('Failed to get entry pack:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM entry_packs WHERE id = ? LIMIT 1',
+        [entryPackId]
+      );
+
+      if (result) {
+        return this.deserializeEntryPack(result);
+      } else {
+        return null;
+      }
     } catch (error) {
       console.error('Failed to get entry pack:', error);
       throw error;
@@ -3050,26 +2609,13 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM entry_packs WHERE user_id = ? ORDER BY created_at DESC',
-            [userId],
-            (_, result) => {
-              const packs = [];
-              for (let i = 0; i < result.rows.length; i++) {
-                packs.push(this.deserializeEntryPack(result.rows.item(i)));
-              }
-              resolve(packs);
-            },
-            (_, error) => {
-              console.error('Failed to load entry packs by user ID:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM entry_packs WHERE user_id = ? ORDER BY created_at DESC',
+        [userId]
+      );
+
+      const packs = rows.map(row => this.deserializeEntryPack(row));
+      return packs;
     } catch (error) {
       console.error('Failed to load entry packs by user ID:', error);
       throw error;
@@ -3085,25 +2631,15 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'DELETE FROM entry_packs WHERE id = ?',
-            [entryPackId],
-            (_, result) => {
-              resolve({
-                success: true,
-                rowsAffected: result.rowsAffected
-              });
-            },
-            (_, error) => {
-              console.error('Failed to delete entry pack:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM entry_packs WHERE id = ?',
+        [entryPackId]
+      );
+
+      return {
+        success: true,
+        rowsAffected: result.changes
+      };
     } catch (error) {
       console.error('Failed to delete entry pack:', error);
       throw error;
@@ -3116,31 +2652,18 @@ class SecureStorageService {
    * @returns {Promise<Array>} - Array of entry pack data
    */
   async getEntryPacksByEntryInfoId(entryInfoId) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            'SELECT * FROM entry_packs WHERE entry_info_id = ? ORDER BY created_at DESC',
-            [entryInfoId],
-            (_, result) => {
-              const packs = [];
-              for (let i = 0; i < result.rows.length; i++) {
-                const row = result.rows.item(i);
-                packs.push(this.deserializeEntryPack(row));
-              }
-              resolve(packs);
-            },
-            (_, error) => {
-              console.error('Failed to get entry packs by entry info ID:', error);
-              reject(error);
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get entry packs by entry info ID:', error);
-        reject(error);
-      }
-    });
+    try {
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM entry_packs WHERE entry_info_id = ? ORDER BY created_at DESC',
+        [entryInfoId]
+      );
+
+      const packs = rows.map(row => this.deserializeEntryPack(row));
+      return packs;
+    } catch (error) {
+      console.error('Failed to get entry packs by entry info ID:', error);
+      throw error;
+    }
   }
 
   /**
@@ -3156,49 +2679,36 @@ class SecureStorageService {
       throw initError;
     }
 
-    return new Promise((resolve, reject) => {
-      try {
-        this.db.transaction(tx => {
-          tx.executeSql(
-            `
-              SELECT fi.*, eifi.linked_at
-              FROM entry_info_fund_items eifi
-              JOIN fund_items fi ON fi.id = eifi.fund_item_id
-              WHERE eifi.entry_info_id = ?
-              ORDER BY eifi.linked_at DESC
-            `,
-            [entryInfoId],
-            (_, result) => {
-              const items = [];
-              for (let i = 0; i < result.rows.length; i++) {
-                const row = result.rows.item(i);
-                items.push({
-                  id: row.id,
-                  userId: row.user_id,
-                  type: row.type,
-                  amount: row.amount,
-                  currency: row.currency,
-                  details: row.details,
-                  photoUri: row.photo_uri,
-                  createdAt: row.created_at,
-                  updatedAt: row.updated_at,
-                  linkedAt: row.linked_at
-                });
-              }
-              resolve(items);
-            },
-            (_, error) => {
-              console.error('Failed to load fund items for entry info:', error);
-              reject(error);
-              return false;
-            }
-          );
-        });
-      } catch (error) {
-        console.error('Failed to get fund items for entry info:', error);
-        reject(error);
-      }
-    });
+    try {
+      const rows = await this.modernDb.getAllAsync(
+        `
+          SELECT fi.*, eifi.linked_at
+          FROM entry_info_fund_items eifi
+          JOIN fund_items fi ON fi.id = eifi.fund_item_id
+          WHERE eifi.entry_info_id = ?
+          ORDER BY eifi.linked_at DESC
+        `,
+        [entryInfoId]
+      );
+
+      const items = rows.map(row => ({
+        id: row.id,
+        userId: row.user_id,
+        type: row.type,
+        amount: row.amount,
+        currency: row.currency,
+        details: row.details,
+        photoUri: row.photo_uri,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        linkedAt: row.linked_at
+      }));
+      
+      return items;
+    } catch (error) {
+      console.error('Failed to get fund items for entry info:', error);
+      throw error;
+    }
   }
 
   /**
@@ -3391,60 +2901,45 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            // Insert or replace TDAC submission
-            tx.executeSql(
-              `INSERT OR REPLACE INTO tdac_submissions (
-                id, user_id, entry_pack_id, destination_id, trip_id,
-                arr_card_no, qr_uri, pdf_path, submitted_at, submission_method,
-                status, api_response, processing_time, retry_count, error_details,
-                is_superseded, superseded_at, superseded_reason, superseded_by,
-                created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                submissionData.id,
-                submissionData.userId,
-                submissionData.entryPackId,
-                submissionData.destinationId,
-                submissionData.tripId,
-                submissionData.arrCardNo,
-                submissionData.qrUri,
-                submissionData.pdfPath,
-                submissionData.submittedAt,
-                submissionData.submissionMethod,
-                submissionData.status,
-                JSON.stringify(submissionData.apiResponse || null),
-                submissionData.processingTime,
-                submissionData.retryCount || 0,
-                JSON.stringify(submissionData.errorDetails || null),
-                submissionData.isSuperseded ? 1 : 0,
-                submissionData.supersededAt,
-                submissionData.supersededReason,
-                submissionData.supersededBy,
-                submissionData.createdAt,
-                submissionData.updatedAt
-              ],
-              (_, result) => {
-                console.log('TDAC submission metadata saved:', {
-                  id: submissionData.id,
-                  insertId: result.insertId
-                });
-                resolve({ success: true, id: submissionData.id });
-              },
-              (_, error) => {
-                console.error('Failed to save TDAC submission metadata:', error);
-                reject(error);
-              }
-            );
-          },
-          error => {
-            console.error('Transaction failed:', error);
-            reject(error);
-          }
-        );
+      const result = await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO tdac_submissions (
+          id, user_id, entry_pack_id, destination_id, trip_id,
+          arr_card_no, qr_uri, pdf_path, submitted_at, submission_method,
+          status, api_response, processing_time, retry_count, error_details,
+          is_superseded, superseded_at, superseded_reason, superseded_by,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          submissionData.id,
+          submissionData.userId,
+          submissionData.entryPackId,
+          submissionData.destinationId,
+          submissionData.tripId,
+          submissionData.arrCardNo,
+          submissionData.qrUri,
+          submissionData.pdfPath,
+          submissionData.submittedAt,
+          submissionData.submissionMethod,
+          submissionData.status,
+          JSON.stringify(submissionData.apiResponse || null),
+          submissionData.processingTime,
+          submissionData.retryCount || 0,
+          JSON.stringify(submissionData.errorDetails || null),
+          submissionData.isSuperseded ? 1 : 0,
+          submissionData.supersededAt,
+          submissionData.supersededReason,
+          submissionData.supersededBy,
+          submissionData.createdAt,
+          submissionData.updatedAt
+        ]
+      );
+
+      console.log('TDAC submission metadata saved:', {
+        id: submissionData.id,
+        insertId: result.lastInsertRowId
       });
+      
+      return { success: true, id: submissionData.id };
     } catch (error) {
       console.error('Failed to save TDAC submission metadata:', error);
       throw error;
@@ -3460,29 +2955,17 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              'SELECT * FROM tdac_submissions WHERE id = ?',
-              [submissionId],
-              (_, { rows }) => {
-                if (rows.length > 0) {
-                  const submission = this.deserializeTDACSubmission(rows.item(0));
-                  resolve(submission);
-                } else {
-                  resolve(null);
-                }
-              },
-              (_, error) => {
-                console.error('Failed to get TDAC submission:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
-      });
+      const row = await this.modernDb.getFirstAsync(
+        'SELECT * FROM tdac_submissions WHERE id = ?',
+        [submissionId]
+      );
+
+      if (row) {
+        const submission = this.deserializeTDACSubmission(row);
+        return submission;
+      } else {
+        return null;
+      }
     } catch (error) {
       console.error('Failed to get TDAC submission:', error);
       throw error;
@@ -3499,61 +2982,42 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        let query = 'SELECT * FROM tdac_submissions WHERE user_id = ?';
-        const params = [userId];
+      let query = 'SELECT * FROM tdac_submissions WHERE user_id = ?';
+      const params = [userId];
 
-        // Apply filters
-        if (filters.status) {
-          query += ' AND status = ?';
-          params.push(filters.status);
-        }
+      // Apply filters
+      if (filters.status) {
+        query += ' AND status = ?';
+        params.push(filters.status);
+      }
 
-        if (filters.destinationId) {
-          query += ' AND destination_id = ?';
-          params.push(filters.destinationId);
-        }
+      if (filters.destinationId) {
+        query += ' AND destination_id = ?';
+        params.push(filters.destinationId);
+      }
 
-        if (filters.entryPackId) {
-          query += ' AND entry_pack_id = ?';
-          params.push(filters.entryPackId);
-        }
+      if (filters.entryPackId) {
+        query += ' AND entry_pack_id = ?';
+        params.push(filters.entryPackId);
+      }
 
-        if (filters.isSuperseded !== undefined) {
-          query += ' AND is_superseded = ?';
-          params.push(filters.isSuperseded ? 1 : 0);
-        }
+      if (filters.isSuperseded !== undefined) {
+        query += ' AND is_superseded = ?';
+        params.push(filters.isSuperseded ? 1 : 0);
+      }
 
-        // Order by submission date (newest first)
-        query += ' ORDER BY submitted_at DESC';
+      // Order by submission date (newest first)
+      query += ' ORDER BY submitted_at DESC';
 
-        // Apply limit if specified
-        if (filters.limit) {
-          query += ' LIMIT ?';
-          params.push(filters.limit);
-        }
+      // Apply limit if specified
+      if (filters.limit) {
+        query += ' LIMIT ?';
+        params.push(filters.limit);
+      }
 
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              query,
-              params,
-              (_, { rows }) => {
-                const submissions = [];
-                for (let i = 0; i < rows.length; i++) {
-                  submissions.push(this.deserializeTDACSubmission(rows.item(i)));
-                }
-                resolve(submissions);
-              },
-              (_, error) => {
-                console.error('Failed to get TDAC submissions by user ID:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
-      });
+      const rows = await this.modernDb.getAllAsync(query, params);
+      const submissions = rows.map(row => this.deserializeTDACSubmission(row));
+      return submissions;
     } catch (error) {
       console.error('Failed to get TDAC submissions by user ID:', error);
       throw error;
@@ -3569,28 +3033,13 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              'SELECT * FROM tdac_submissions WHERE entry_pack_id = ? ORDER BY submitted_at DESC',
-              [entryPackId],
-              (_, { rows }) => {
-                const submissions = [];
-                for (let i = 0; i < rows.length; i++) {
-                  submissions.push(this.deserializeTDACSubmission(rows.item(i)));
-                }
-                resolve(submissions);
-              },
-              (_, error) => {
-                console.error('Failed to get TDAC submissions by entry pack ID:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
-      });
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM tdac_submissions WHERE entry_pack_id = ? ORDER BY submitted_at DESC',
+        [entryPackId]
+      );
+
+      const submissions = rows.map(row => this.deserializeTDACSubmission(row));
+      return submissions;
     } catch (error) {
       console.error('Failed to get TDAC submissions by entry pack ID:', error);
       throw error;
@@ -3606,44 +3055,33 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              `UPDATE tdac_submissions SET
-                status = ?, api_response = ?, processing_time = ?, retry_count = ?,
-                error_details = ?, is_superseded = ?, superseded_at = ?,
-                superseded_reason = ?, superseded_by = ?, updated_at = ?
-              WHERE id = ?`,
-              [
-                submissionData.status,
-                JSON.stringify(submissionData.apiResponse || null),
-                submissionData.processingTime,
-                submissionData.retryCount || 0,
-                JSON.stringify(submissionData.errorDetails || null),
-                submissionData.isSuperseded ? 1 : 0,
-                submissionData.supersededAt,
-                submissionData.supersededReason,
-                submissionData.supersededBy,
-                submissionData.updatedAt || new Date().toISOString(),
-                submissionData.id
-              ],
-              (_, result) => {
-                console.log('TDAC submission updated:', {
-                  id: submissionData.id,
-                  rowsAffected: result.rowsAffected
-                });
-                resolve({ success: true, rowsAffected: result.rowsAffected });
-              },
-              (_, error) => {
-                console.error('Failed to update TDAC submission:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
+      const result = await this.modernDb.runAsync(
+        `UPDATE tdac_submissions SET
+          status = ?, api_response = ?, processing_time = ?, retry_count = ?,
+          error_details = ?, is_superseded = ?, superseded_at = ?,
+          superseded_reason = ?, superseded_by = ?, updated_at = ?
+        WHERE id = ?`,
+        [
+          submissionData.status,
+          JSON.stringify(submissionData.apiResponse || null),
+          submissionData.processingTime,
+          submissionData.retryCount || 0,
+          JSON.stringify(submissionData.errorDetails || null),
+          submissionData.isSuperseded ? 1 : 0,
+          submissionData.supersededAt,
+          submissionData.supersededReason,
+          submissionData.supersededBy,
+          submissionData.updatedAt || new Date().toISOString(),
+          submissionData.id
+        ]
+      );
+
+      console.log('TDAC submission updated:', {
+        id: submissionData.id,
+        rowsAffected: result.changes
       });
+      
+      return { success: true, rowsAffected: result.changes };
     } catch (error) {
       console.error('Failed to update TDAC submission:', error);
       throw error;
@@ -3659,28 +3097,17 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              'DELETE FROM tdac_submissions WHERE id = ?',
-              [submissionId],
-              (_, result) => {
-                console.log('TDAC submission deleted:', {
-                  id: submissionId,
-                  rowsAffected: result.rowsAffected
-                });
-                resolve({ success: true, rowsAffected: result.rowsAffected });
-              },
-              (_, error) => {
-                console.error('Failed to delete TDAC submission:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM tdac_submissions WHERE id = ?',
+        [submissionId]
+      );
+
+      console.log('TDAC submission deleted:', {
+        id: submissionId,
+        rowsAffected: result.changes
       });
+      
+      return { success: true, rowsAffected: result.changes };
     } catch (error) {
       console.error('Failed to delete TDAC submission:', error);
       throw error;
@@ -3730,43 +3157,32 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              `INSERT OR REPLACE INTO audit_events (
-                id, event_type, timestamp, snapshot_id, entry_pack_id, user_id,
-                metadata, system_info, immutable, version, created_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                auditEvent.id,
-                auditEvent.eventType,
-                auditEvent.timestamp,
-                auditEvent.snapshotId,
-                auditEvent.entryPackId,
-                auditEvent.userId,
-                JSON.stringify(auditEvent.metadata || {}),
-                JSON.stringify(auditEvent.systemInfo || {}),
-                auditEvent.immutable ? 1 : 0,
-                auditEvent.version || 1,
-                new Date().toISOString()
-              ],
-              (_, result) => {
-                console.log('Audit event saved:', {
-                  id: auditEvent.id,
-                  insertId: result.insertId
-                });
-                resolve({ success: true, id: auditEvent.id });
-              },
-              (_, error) => {
-                console.error('Failed to save audit event:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
+      const result = await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO audit_events (
+          id, event_type, timestamp, snapshot_id, entry_pack_id, user_id,
+          metadata, system_info, immutable, version, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          auditEvent.id,
+          auditEvent.eventType,
+          auditEvent.timestamp,
+          auditEvent.snapshotId,
+          auditEvent.entryPackId,
+          auditEvent.userId,
+          JSON.stringify(auditEvent.metadata || {}),
+          JSON.stringify(auditEvent.systemInfo || {}),
+          auditEvent.immutable ? 1 : 0,
+          auditEvent.version || 1,
+          new Date().toISOString()
+        ]
+      );
+
+      console.log('Audit event saved:', {
+        id: auditEvent.id,
+        insertId: result.lastInsertRowId
       });
+      
+      return { success: true, id: auditEvent.id };
     } catch (error) {
       console.error('Failed to save audit event:', error);
       throw error;
@@ -3783,61 +3199,42 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        let query = 'SELECT * FROM audit_events WHERE snapshot_id = ?';
-        const params = [snapshotId];
+      let query = 'SELECT * FROM audit_events WHERE snapshot_id = ?';
+      const params = [snapshotId];
 
-        // Apply filters
-        if (options.eventType) {
-          query += ' AND event_type = ?';
-          params.push(options.eventType);
+      // Apply filters
+      if (options.eventType) {
+        query += ' AND event_type = ?';
+        params.push(options.eventType);
+      }
+
+      if (options.fromDate) {
+        query += ' AND timestamp >= ?';
+        params.push(options.fromDate);
+      }
+
+      if (options.toDate) {
+        query += ' AND timestamp <= ?';
+        params.push(options.toDate);
+      }
+
+      // Order by timestamp
+      query += ' ORDER BY timestamp ASC';
+
+      // Apply limit if specified
+      if (options.limit) {
+        query += ' LIMIT ?';
+        params.push(options.limit);
+        
+        if (options.offset) {
+          query += ' OFFSET ?';
+          params.push(options.offset);
         }
+      }
 
-        if (options.fromDate) {
-          query += ' AND timestamp >= ?';
-          params.push(options.fromDate);
-        }
-
-        if (options.toDate) {
-          query += ' AND timestamp <= ?';
-          params.push(options.toDate);
-        }
-
-        // Order by timestamp
-        query += ' ORDER BY timestamp ASC';
-
-        // Apply limit if specified
-        if (options.limit) {
-          query += ' LIMIT ?';
-          params.push(options.limit);
-          
-          if (options.offset) {
-            query += ' OFFSET ?';
-            params.push(options.offset);
-          }
-        }
-
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              query,
-              params,
-              (_, { rows }) => {
-                const events = [];
-                for (let i = 0; i < rows.length; i++) {
-                  events.push(this.deserializeAuditEvent(rows.item(i)));
-                }
-                resolve(events);
-              },
-              (_, error) => {
-                console.error('Failed to get audit events by snapshot ID:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
-      });
+      const rows = await this.modernDb.getAllAsync(query, params);
+      const events = rows.map(row => this.deserializeAuditEvent(row));
+      return events;
     } catch (error) {
       console.error('Failed to get audit events by snapshot ID:', error);
       throw error;
@@ -3854,61 +3251,42 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        let query = 'SELECT * FROM audit_events WHERE user_id = ?';
-        const params = [userId];
+      let query = 'SELECT * FROM audit_events WHERE user_id = ?';
+      const params = [userId];
 
-        // Apply filters similar to getAuditEventsBySnapshotId
-        if (options.eventType) {
-          query += ' AND event_type = ?';
-          params.push(options.eventType);
+      // Apply filters similar to getAuditEventsBySnapshotId
+      if (options.eventType) {
+        query += ' AND event_type = ?';
+        params.push(options.eventType);
+      }
+
+      if (options.fromDate) {
+        query += ' AND timestamp >= ?';
+        params.push(options.fromDate);
+      }
+
+      if (options.toDate) {
+        query += ' AND timestamp <= ?';
+        params.push(options.toDate);
+      }
+
+      // Order by timestamp (newest first for user queries)
+      query += ' ORDER BY timestamp DESC';
+
+      // Apply limit
+      if (options.limit) {
+        query += ' LIMIT ?';
+        params.push(options.limit);
+        
+        if (options.offset) {
+          query += ' OFFSET ?';
+          params.push(options.offset);
         }
+      }
 
-        if (options.fromDate) {
-          query += ' AND timestamp >= ?';
-          params.push(options.fromDate);
-        }
-
-        if (options.toDate) {
-          query += ' AND timestamp <= ?';
-          params.push(options.toDate);
-        }
-
-        // Order by timestamp (newest first for user queries)
-        query += ' ORDER BY timestamp DESC';
-
-        // Apply limit
-        if (options.limit) {
-          query += ' LIMIT ?';
-          params.push(options.limit);
-          
-          if (options.offset) {
-            query += ' OFFSET ?';
-            params.push(options.offset);
-          }
-        }
-
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              query,
-              params,
-              (_, { rows }) => {
-                const events = [];
-                for (let i = 0; i < rows.length; i++) {
-                  events.push(this.deserializeAuditEvent(rows.item(i)));
-                }
-                resolve(events);
-              },
-              (_, error) => {
-                console.error('Failed to get audit events by user ID:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
-      });
+      const rows = await this.modernDb.getAllAsync(query, params);
+      const events = rows.map(row => this.deserializeAuditEvent(row));
+      return events;
     } catch (error) {
       console.error('Failed to get audit events by user ID:', error);
       throw error;
@@ -3924,28 +3302,17 @@ class SecureStorageService {
     try {
       await this.ensureInitialized();
 
-      return new Promise((resolve, reject) => {
-        this.db.transaction(
-          tx => {
-            tx.executeSql(
-              'DELETE FROM audit_events WHERE snapshot_id = ?',
-              [snapshotId],
-              (_, result) => {
-                console.log('Audit events deleted:', {
-                  snapshotId,
-                  rowsAffected: result.rowsAffected
-                });
-                resolve({ success: true, rowsAffected: result.rowsAffected });
-              },
-              (_, error) => {
-                console.error('Failed to delete audit events:', error);
-                reject(error);
-              }
-            );
-          },
-          error => reject(error)
-        );
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM audit_events WHERE snapshot_id = ?',
+        [snapshotId]
+      );
+
+      console.log('Audit events deleted:', {
+        snapshotId,
+        rowsAffected: result.changes
       });
+      
+      return { success: true, rowsAffected: result.changes };
     } catch (error) {
       console.error('Failed to delete audit events:', error);
       throw error;
@@ -4078,9 +3445,9 @@ class SecureStorageService {
    */
   async close() {
     try {
-      if (this.db) {
-        await this.db.closeAsync();
-        this.db = null;
+      if (this.modernDb) {
+        await this.modernDb.closeAsync();
+        this.modernDb = null;
       }
       if (this.ENCRYPTION_ENABLED) {
         await this.encryption.clearKeys();

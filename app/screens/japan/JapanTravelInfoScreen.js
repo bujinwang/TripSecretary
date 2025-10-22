@@ -67,7 +67,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   // Default arrival date: tomorrow's date (to ensure it's always in the future for validation)
   const getDefaultArrivalDate = () => {
     const date = new Date();
-    date.setDate(date.getDate() + 1); // Tomorrow's date to ensure it's always in the future
+    date.setDate(date.getDate() + 1); // Tomorrow's date to ensure it's always in the future for validation
     const defaultDate = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     console.log('📅 Default arrival date for Japan:', defaultDate);
     return defaultDate;
@@ -248,7 +248,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const userId = passport?.id || 'default_user';
+        const userId = passport?.id || 'user_001';
         
         console.log('JapanTravelInfoScreen: Loading data for userId:', userId);
         
@@ -389,7 +389,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   // Save data to PassportDataService
   const saveDataToSecureStorage = async () => {
     try {
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       console.log('=== SAVING DATA TO SECURE STORAGE (JAPAN) ===');
       console.log('userId:', userId);
       console.log('Passport data:', { passportNo, fullName, nationality, dob, expiryDate });
@@ -492,7 +492,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       
       // Navigate to ResultScreen with Japan context
       navigation.navigate('ResultScreen', {
-        userId: passport?.id || 'default_user',
+        userId: passport?.id || 'user_001',
         destination: 'japan',
         context: 'manual_entry_guide'
       });
@@ -522,7 +522,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemUpdate = async (updatedItem) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       const items = await PassportDataService.getFundItems(userId);
       console.log('Refreshed fund items after update:', items);
       setFunds(items || []);
@@ -536,7 +536,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemDelete = async (fundItemId) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       const items = await PassportDataService.getFundItems(userId);
       console.log('Refreshed fund items after delete:', items);
       setFunds(items || []);
@@ -592,7 +592,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemCreate = async (newItem) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'default_user';
+      const userId = passport?.id || 'user_001';
       const items = await PassportDataService.getFundItems(userId);
       console.log('Refreshed fund items after create:', items);
       setFunds(items || []);

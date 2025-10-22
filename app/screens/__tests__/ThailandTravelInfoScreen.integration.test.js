@@ -41,7 +41,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI',
           dateOfBirth: '1988-01-22',
@@ -53,7 +53,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         },
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           phoneNumber: '+86 13812345678',
           email: 'test@example.com',
           occupation: 'Engineer',
@@ -62,11 +62,11 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         },
         fundingProof: {
           id: 'funding-1',
-          userId: 'default_user',
+          userId: 'user_001',
           cashAmount: '10000 THB',
           bankCards: 'Visa ****1234'
         },
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -79,7 +79,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
 
       // Verify passport data is loaded - service was called
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('default_user');
+        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('user_001');
       }, { timeout: 3000 });
     });
 
@@ -88,7 +88,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       const { queryByDisplayValue } = render(
@@ -106,11 +106,11 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
     });
 
     it('should trigger migration on first load if needed', async () => {
-      PassportDataService.getAllUserData.mockResolvedValue({
+      PassportDataSerevice.getAllUserData.mockResolvedValue({
         passport: null,
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       PassportDataService.migrateFromAsyncStorage.mockResolvedValue({
@@ -161,13 +161,13 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -203,11 +203,11 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         passport: null,
         personalInfo: {
           id: 'personal-1',
-          userId: 'default_user',
+          userId: 'user_001',
           email: 'old@example.com'
         },
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -233,10 +233,10 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         personalInfo: null,
         fundingProof: {
           id: 'funding-1',
-          userId: 'default_user',
+          userId: 'user_001',
           cashAmount: '10000 THB'
         },
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -261,12 +261,12 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
@@ -303,13 +303,13 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       const initialData = {
         passport: {
           id: 'passport-1',
-          userId: 'default_user',
+          userId: 'user_001',
           passportNumber: 'E12345678',
           fullName: 'ZHANG, WEI'
         },
         personalInfo: null,
         fundingProof: null,
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       const updatedData = {

@@ -31,8 +31,9 @@ class GDPRComplianceService {
    */
   async ensureExportDirectory() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.EXPORT_DIR);
-      if (!dirInfo.exists) {
+      const exportDir = new FileSystem.Directory(this.EXPORT_DIR);
+      const dirExists = await exportDir.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(this.EXPORT_DIR, { intermediates: true });
       }
     } catch (error) {

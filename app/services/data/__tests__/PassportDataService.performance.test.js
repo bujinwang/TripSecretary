@@ -67,7 +67,7 @@ describe('PassportDataService - Performance Tests', () => {
       expect(duration).toBeLessThan(100);
     });
 
-    it('should load funding proof within 100ms', async () => {
+    /*it('should load funding proof within 100ms', async () => {
       const mockFundingProof = {
         id: 'funding-1',
         userId: testUserId,
@@ -85,7 +85,7 @@ describe('PassportDataService - Performance Tests', () => {
 
       expect(result).toEqual(mockFundingProof);
       expect(duration).toBeLessThan(100);
-    });
+    });*/
 
     it('should load all user data within 200ms using batch load', async () => {
       const mockData = {
@@ -156,32 +156,28 @@ describe('PassportDataService - Performance Tests', () => {
     it('should maintain cache performance with multiple data types', async () => {
       const mockPassport = { id: 'passport-1', userId: testUserId };
       const mockPersonalInfo = { id: 'personal-1', userId: testUserId };
-      const mockFundingProof = { id: 'funding-1', userId: testUserId };
 
       Passport.load.mockResolvedValue(mockPassport);
       PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
-      FundingProof.load.mockResolvedValue(mockFundingProof);
 
       // Load all data types once
       await PassportDataService.getPassport(testUserId);
       await PassportDataService.getPersonalInfo(testUserId);
-      await PassportDataService.getFundingProof(testUserId);
 
       // Read multiple times
       const startTime = Date.now();
       for (let i = 0; i < 10; i++) {
         await PassportDataService.getPassport(testUserId);
         await PassportDataService.getPersonalInfo(testUserId);
-        await PassportDataService.getFundingProof(testUserId);
       }
       const duration = Date.now() - startTime;
 
-      // 30 cached reads should be very fast
+      // 20 cached reads should be very fast
       expect(duration).toBeLessThan(100);
 
       const stats = PassportDataService.getCacheStats();
-      expect(stats.hits).toBe(30);
-      expect(stats.misses).toBe(3);
+      expect(stats.hits).toBe(20);
+      expect(stats.misses).toBe(2);
     });
   });
 
@@ -296,7 +292,6 @@ describe('PassportDataService - Performance Tests', () => {
       const mockData = {
         passport: { id: 'passport-1', userId: testUserId },
         personalInfo: { id: 'personal-1', userId: testUserId },
-        fundingProof: { id: 'funding-1', userId: testUserId }
       };
 
       // Mock batch load (fast)
@@ -313,10 +308,6 @@ describe('PassportDataService - Performance Tests', () => {
       PersonalInfo.load.mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 30));
         return mockData.personalInfo;
-      });
-      FundingProof.load.mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 30));
-        return mockData.fundingProof;
       });
 
       // Test batch load
@@ -350,11 +341,6 @@ describe('PassportDataService - Performance Tests', () => {
           userId: testUserId,
           email: 'test@example.com'
         },
-        fundingProof: {
-          id: 'funding-1',
-          userId: testUserId,
-          cashAmount: '10000 THB'
-        }
       };
 
       SecureStorageService.batchLoad.mockResolvedValue(currentData);
@@ -363,14 +349,12 @@ describe('PassportDataService - Performance Tests', () => {
         return [
           { type: 'passport', id: 'passport-1' },
           { type: 'personalInfo', id: 'personal-1' },
-          { type: 'fundingProof', id: 'funding-1' }
         ];
       });
 
       const updates = {
         passport: { fullName: 'ZHANG, WEI' },
         personalInfo: { phoneNumber: '+86 13812345678' },
-        fundingProof: { bankCards: 'Visa ****1234' }
       };
 
       const startTime = Date.now();
@@ -408,7 +392,6 @@ describe('PassportDataService - Performance Tests', () => {
       for (let i = 0; i < 100; i++) {
         PassportDataService.cache.passport.set(`user-${i}`, { id: `passport-${i}` });
         PassportDataService.cache.personalInfo.set(`user-${i}`, { id: `personal-${i}` });
-        PassportDataService.cache.fundingProof.set(`user-${i}`, { id: `funding-${i}` });
       }
 
       const startTime = Date.now();
@@ -417,7 +400,6 @@ describe('PassportDataService - Performance Tests', () => {
 
       expect(PassportDataService.cache.passport.size).toBe(0);
       expect(PassportDataService.cache.personalInfo.size).toBe(0);
-      expect(PassportDataService.cache.fundingProof.size).toBe(0);
       expect(duration).toBeLessThan(10);
     });
   });

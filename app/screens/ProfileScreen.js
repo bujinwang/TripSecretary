@@ -89,8 +89,8 @@ const ProfileScreen = ({ navigation, route }) => {
   useEffect(() => {
     const loadSavedData = async () => {
       try {
-        // Get userId (for now using 'default_user', in production this would come from auth)
-        const userId = 'default_user';
+        // Get userId (for now using 'user_001', in production this would come from auth)
+        const userId = 'user_001';
         
         // Initialize PassportDataService (ensures database is ready)
         try {
@@ -185,7 +185,7 @@ const ProfileScreen = ({ navigation, route }) => {
     useCallback(() => {
       const loadFundItems = async () => {
         try {
-          const userId = 'default_user';
+          const userId = 'user_001';
           // Invalidate cache first to ensure fresh data when screen comes into focus
           PassportDataService.invalidateCache('fundItems', userId);
           const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
@@ -437,7 +437,7 @@ const ProfileScreen = ({ navigation, route }) => {
     try {
       // For now, we'll export a sample entry pack
       // In a real implementation, you'd get the actual entry pack ID from the user's data
-      const userId = 'default_user';
+      const userId = 'user_001';
       
       // Check if user has any entry packs
       const userData = await PassportDataService.getAllUserData(userId);
@@ -613,7 +613,7 @@ const ProfileScreen = ({ navigation, route }) => {
     
     // Save to PassportDataService
     try {
-      const userId = 'default_user';
+      const userId = 'user_001';
       const passport = await PassportDataService.getPassport(userId);
       if (passport && passport.id) {
         await PassportDataService.updatePassport(passport.id, {
@@ -645,14 +645,14 @@ const ProfileScreen = ({ navigation, route }) => {
           return (
             <TouchableOpacity
               key={option.value}
-              style={[
+              style={[ 
                 styles.genderOption,
                 isActive && styles.genderOptionActive,
               ]}
               onPress={() => handleGenderSelect(option.value)}
             >
               <Text
-                style={[
+                style={[ 
                   styles.genderOptionText,
                   isActive && styles.genderOptionTextActive,
                 ]}
@@ -682,7 +682,7 @@ const ProfileScreen = ({ navigation, route }) => {
   // Validate date of birth
   const validateDateOfBirth = (dateStr) => {
     // Check if date is in correct format (YYYY-MM-DD)
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateStr)) {
       return { valid: false, error: '请输入完整日期 (YYYY-MM-DD)' };
     }
 
@@ -753,7 +753,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
     setEditValue(value);
 
-    const userId = 'default_user';
+    const userId = 'user_001';
 
     // Auto-save after user stops typing (debounce)
     setTimeout(async () => {
@@ -860,7 +860,7 @@ const ProfileScreen = ({ navigation, route }) => {
           
           // Save to PassportDataService
           try {
-            const userId = 'default_user';
+            const userId = 'user_001';
             const passport = await PassportDataService.getPassport(userId);
             if (passport && passport.id) {
               await PassportDataService.updatePassport(passport.id, {
@@ -883,7 +883,7 @@ const ProfileScreen = ({ navigation, route }) => {
       return;
     }
 
-    const userId = 'default_user';
+    const userId = 'user_001';
 
     try {
       if (editingContext.type === 'personal') {
@@ -982,7 +982,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleFundItemUpdate = async (updatedItem) => {
     try {
       // Invalidate cache first to ensure fresh data
-      const userId = 'default_user';
+      const userId = 'user_001';
       PassportDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
@@ -999,7 +999,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleFundItemDelete = async (fundItemId) => {
     try {
       // Invalidate cache first to ensure fresh data
-      const userId = 'default_user';
+      const userId = 'user_001';
       PassportDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
@@ -1069,7 +1069,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const handleFundItemCreate = async (newItem) => {
     try {
       // Invalidate cache first to ensure fresh data
-      const userId = 'default_user';
+      const userId = 'user_001';
       PassportDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
@@ -1139,7 +1139,7 @@ const ProfileScreen = ({ navigation, route }) => {
               <View style={styles.sectionHeaderText}>
                 <View style={styles.sectionTitleRow}>
                   <Text style={styles.personalInfoLabel}>{personalTitle}</Text>
-                  <Text style={[
+                  <Text style={[ 
                     styles.fieldCount,
                     personalFieldsCount.filled === personalFieldsCount.total 
                       ? styles.fieldCountComplete 
@@ -1180,7 +1180,7 @@ const ProfileScreen = ({ navigation, route }) => {
                       </View>
                       <View style={styles.infoValueWrap}>
                         <Text
-                          style={[
+                          style={[ 
                             styles.infoValue,
                             !value && styles.infoPlaceholder,
                           ]}
@@ -1219,7 +1219,7 @@ const ProfileScreen = ({ navigation, route }) => {
               <View style={styles.sectionHeaderText}>
                 <View style={styles.sectionTitleRow}>
                   <Text style={styles.fundingTitle}>{fundingTitle}</Text>
-                  <Text style={[
+                  <Text style={[ 
                     styles.fieldCount,
                     fundingFieldsCount.filled === fundingFieldsCount.total 
                       ? styles.fieldCountComplete 
@@ -1396,7 +1396,7 @@ const ProfileScreen = ({ navigation, route }) => {
                   <Text style={styles.personalInfoLabel}>
                     {t('profile.passport.title', { defaultValue: 'My Passport' })}
                   </Text>
-                  <Text style={[
+                  <Text style={[ 
                     styles.fieldCount,
                     passportFieldsCount.filled === passportFieldsCount.total 
                       ? styles.fieldCountComplete 
@@ -1615,7 +1615,7 @@ const ProfileScreen = ({ navigation, route }) => {
                     value={editValue}
                     onChangeText={handleDateInputChange}
                     placeholder={editingContext?.placeholder}
-                    style={[
+                    style={[ 
                       styles.modalInput,
                       editingContext?.multiline && styles.modalInputMultiline,
                       validationError && styles.modalInputError,
@@ -1665,7 +1665,7 @@ const ProfileScreen = ({ navigation, route }) => {
                   value={editValue}
                   onChangeText={handleAutoSave}
                   placeholder={editingContext?.placeholder}
-                  style={[
+                  style={[ 
                     styles.modalInput,
                     editingContext?.multiline && styles.modalInputMultiline,
                   ]}
@@ -1698,14 +1698,14 @@ const ProfileScreen = ({ navigation, route }) => {
                 {editingContext?.fieldIndex !== null && editingContext !== null && (
                   <View style={styles.modalNavigation}>
                     <TouchableOpacity
-                      style={[
+                      style={[ 
                         styles.modalNavButton,
                         editingContext?.fieldIndex === 0 && styles.modalNavButtonDisabled
                       ]}
                       onPress={() => handleNavigateField('prev')}
                       disabled={editingContext?.fieldIndex === 0}
                     >
-                      <Text style={[
+                      <Text style={[ 
                         styles.modalNavButtonText,
                         editingContext?.fieldIndex === 0 && styles.modalNavButtonTextDisabled
                       ]}>
@@ -1713,7 +1713,7 @@ const ProfileScreen = ({ navigation, route }) => {
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[
+                      style={[ 
                         styles.modalNavButton,
                         (() => {
                           const fields = (editingContext?.type === 'personal' || editingContext?.type === 'nationality-selector') 
@@ -1730,7 +1730,7 @@ const ProfileScreen = ({ navigation, route }) => {
                         return editingContext?.fieldIndex === fields.length - 1;
                       })()}
                     >
-                      <Text style={[
+                      <Text style={[ 
                         styles.modalNavButtonText,
                         (() => {
                           const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
@@ -1796,13 +1796,13 @@ const ProfileScreen = ({ navigation, route }) => {
               {getLanguageOptions(t).map((option) => (
                 <TouchableOpacity
                   key={option.code}
-                  style={[
+                  style={[ 
                     styles.languageOption,
                     language === option.code && styles.languageOptionSelected
                   ]}
                   onPress={() => handleLanguageChange(option.code)}
                 >
-                  <Text style={[
+                  <Text style={[ 
                     styles.languageOptionText,
                     language === option.code && styles.languageOptionTextSelected
                   ]}>
@@ -2009,11 +2009,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   },
   fundingIcon: {
     fontSize: 28,
-    marginRight: spacing.md,
+    marginRight: spacing.sm,
   },
   fundingTitle: {
     ...typography.body2,
@@ -2022,12 +2022,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   fundingTip: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.small,
+    backgroundColor: '#E3F2FD', // Light blue background
+    borderRadius: borderRadius.medium,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.primary,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: '#90CAF9', // Light blue border
   },
   fundingTipHeader: {
     flexDirection: 'row',
@@ -2043,387 +2043,33 @@ const styles = StyleSheet.create({
   },
   fundingTipTitle: {
     ...typography.body1,
-    fontWeight: '600',
-    color: colors.primary,
+    fontWeight: 'bold',
+    color: '#0D47A1', // Dark blue text
   },
   fundingTipSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...typography.body2,
+    color: '#1565C0', // Medium blue text
     marginTop: 2,
   },
   fundingTipDescription: {
     ...typography.caption,
-    color: colors.textSecondary,
+    color: '#1E88E5', // Lighter blue text
     lineHeight: 18,
   },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.small,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  actionRowText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  fundingFooterNote: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    lineHeight: 18,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlayDark,
-  },
-  modalWrapper: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  modalTitle: {
-    ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  modalSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  modalInput: {
-    ...typography.body1,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.small,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    minHeight: 44,
-    backgroundColor: colors.white,
-  },
-  modalInputError: {
-    borderColor: colors.error,
-    borderWidth: 2,
-  },
-  modalInputMultiline: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
-  validationError: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-    marginBottom: spacing.xs,
-  },
-  dateHint: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  modalActions: {
-    flexDirection: 'column',
-    marginTop: spacing.lg,
-  },
-  modalNavigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  modalNavButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: borderRadius.small,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    marginHorizontal: spacing.xs,
-    backgroundColor: colors.white,
-  },
-  modalNavButtonDisabled: {
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  modalNavButtonText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  modalNavButtonTextDisabled: {
-    color: colors.textDisabled,
-  },
-  modalDoneButton: {
-    width: '100%',
-    borderRadius: borderRadius.small,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-  },
-  modalDoneText: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  modalSecondaryButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.small,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    marginRight: spacing.sm,
-    backgroundColor: colors.white,
-  },
-  modalSecondaryText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-  },
-  modalPrimaryButton: {
-    flex: 1,
-    borderRadius: borderRadius.small,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-  },
-  modalPrimaryText: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  nationalitySelector: {
-    marginHorizontal: 0,
-    marginBottom: 0,
-  },
-  passportNameInput: {
-    marginHorizontal: 0,
-    marginBottom: 0,
-  },
-  genderOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: spacing.md,
-  },
-  genderOption: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.medium,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  genderOptionActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  genderOptionText: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  genderOptionTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-
-  // Update Passport Button Styles
-  updatePassportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    marginTop: spacing.md,
+  fundingList: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
-  },
-  updatePassportText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  updatePassportArrow: {
-    ...typography.h3,
-    color: colors.primary,
-    marginLeft: spacing.xs,
-  },
-
-  vipCard: {
-    margin: spacing.md,
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.medium,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  vipContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  vipIcon: {
-    fontSize: 32,
-    marginRight: spacing.sm,
-  },
-  vipInfo: {
-    flex: 1,
-  },
-  vipTitle: {
-    ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  vipSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  vipButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.small,
-  },
-  vipButtonText: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  vipArrow: {
-    ...typography.h3,
-    color: colors.white,
-    marginLeft: spacing.xs,
-  },
-  section: {
     marginTop: spacing.md,
   },
-  divider: {
-    paddingHorizontal: spacing.md,
-    marginVertical: spacing.sm,
-  },
-  dividerLine: {
-    height: 8,
-    backgroundColor: colors.background,
-  },
-  sectionTitle: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  menuIcon: {
-    fontSize: 24,
-    marginRight: spacing.md,
-  },
-  menuInfo: {
-    flex: 1,
-  },
-  menuTitle: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  menuSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  badge: {
-    marginRight: spacing.sm,
-  },
-  badgeText: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
-  menuArrow: {
-    ...typography.h2,
-    color: colors.textDisabled,
-  },
-  logoutButton: {
-    margin: spacing.md,
-    marginTop: spacing.xl,
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.medium,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  logoutText: {
-    ...typography.body1,
-    color: colors.error,
-  },
-  version: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.md,
-    marginBottom: spacing.xxl,
-  },
-
-  // Draft Saved Notification
-  draftNotification: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.success,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.sm,
-    borderRadius: borderRadius.small,
-  },
-  draftNotificationIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
-  },
-  draftNotificationText: {
-    ...typography.body2,
-    color: colors.white,
-    fontWeight: '600',
-  },
-
-  
-  // Empty state styles
   emptyState: {
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.md,
+    paddingVertical: spacing.lg,
   },
   emptyStateText: {
     ...typography.body1,
     color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
+    fontStyle: 'italic',
   },
-  
-  // Fund item styles
   fundItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2438,96 +2084,363 @@ const styles = StyleSheet.create({
   },
   fundItemType: {
     ...typography.body2,
+    fontWeight: 'bold',
     color: colors.text,
-    fontWeight: '600',
-    marginBottom: spacing.xs / 2,
   },
   fundItemValue: {
-    ...typography.body1,
+    ...typography.caption,
     color: colors.textSecondary,
   },
-  
-  // Add Fund Item Button styles
+
   addFundItemButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.small,
-    borderWidth: 1,
+    padding: spacing.md,
+    backgroundColor: colors.white,
+    borderWidth: 2,
     borderColor: colors.primary,
+    borderRadius: borderRadius.medium,
+    borderStyle: 'dashed',
+    marginTop: spacing.md,
   },
   addFundItemIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
+    fontSize: 18,
+    marginRight: spacing.xs,
   },
   addFundItemText: {
     ...typography.body1,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-
-  // Language Selector Modal styles
-  languageModal: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-    maxHeight: '70%',
+  updateButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.medium,
+    alignItems: 'center',
+    marginTop: spacing.md,
   },
-  languageModalHeader: {
+  updatePassportButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  updatePassportText: {
+    ...typography.body2,
+    color: colors.secondary,
+  },
+  updatePassportArrow: {
+    ...typography.body2,
+    color: colors.secondary,
+    marginLeft: spacing.xs,
+  },
+  fundingFooterNote: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    marginTop: spacing.md,
+  },
+  vipCard: {
+    backgroundColor: colors.black,
+    borderRadius: borderRadius.lg,
+    margin: spacing.md,
+    padding: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  vipContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  vipIcon: {
+    fontSize: 32,
+    marginRight: spacing.md,
+  },
+  vipInfo: {
+    flex: 1
+  },
+  vipTitle: {
+    ...typography.h3,
+    color: colors.white,
+  },
+  vipSubtitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  vipButton: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  vipButtonText: {
+    ...typography.body1,
+    color: '#FFD700', // Gold color
+    fontWeight: 'bold',
+  },
+  vipArrow: {
+    ...typography.body1,
+    color: '#FFD700', // Gold color
+    marginLeft: spacing.xs,
+  },
+  section: {
+    marginBottom: spacing.sm,
+  },
+  divider: {
     paddingHorizontal: spacing.md,
+    height: 30,
+    justifyContent: 'center',
+  },
+  dividerLine: {
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+  },
+  menuIcon: {
+    fontSize: 24,
+    marginRight: spacing.md
+  },
+  menuInfo: {
+    flex: 1,
+  },
+  menuTitle: {
+    ...typography.body1,
+    color: colors.text,
+  },
+  menuSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  badge: {
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.small,
+    paddingHorizontal: spacing.xs,
+  },
+  badgeText: {
+    ...typography.caption,
+    color: colors.white,
+  },
+  menuArrow: {
+    ...typography.h3,
+    color: colors.textTertiary,
+    marginLeft: spacing.sm
+  },
+  logoutButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.lg,
+  },
+  logoutText: {
+    ...typography.body1,
+    color: colors.error,
+  },
+  version: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    marginVertical: spacing.md
+  },
+  draftNotification: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    right: 20, 
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    zIndex: 100
+  },
+  draftNotificationIcon: {
+    fontSize: 16,
+    marginRight: 8
+  },
+  draftNotificationText: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    padding: spacing.lg,
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    ...typography.h3,
+    marginBottom: spacing.xs,
+  },
+  modalSubtitle: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    ...typography.body1,
+    marginBottom: spacing.sm,
+  },
+  modalInputMultiline: {
+    height: 100,
+  },
+  modalInputError: {
+    borderColor: colors.error,
+  },
+  passportNameInput: {
+    borderWidth: 0,
+    padding: 0,
+    marginTop: -spacing.sm
+  },
+  nationalitySelector: { 
+
+  },
+  dateHint: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  validationError: {
+    color: colors.error,
+    ...typography.caption,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  genderOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md
+  },
+  genderOption: {
+    flex: 1,
+    padding: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center'
+  },
+  genderOptionActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  genderOptionText: {
+    ...typography.body1,
+    color: colors.text
+  },
+  genderOptionTextActive: {
+    color: colors.white
+  },
+  modalActions: {
+    marginTop: spacing.md
+  },
+  modalNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm
+  },
+  modalNavButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  modalNavButtonDisabled: {
+    opacity: 0.4,
+  },
+  modalNavButtonText: {
+    ...typography.body1,
+    color: colors.secondary,
+    fontWeight: 'bold'
+  },
+  modalNavButtonTextDisabled: {
+    color: colors.textDisabled
+  },
+  modalDoneButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  modalDoneText: {
+    ...typography.h3,
+    color: colors.white
+  },
+  languageModal: {
+    backgroundColor: colors.white,
+    padding: spacing.md,
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
+  },
+  languageModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border
   },
   languageModalTitle: {
-    ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
+    ...typography.h3,
   },
   languageModalClose: {
     padding: spacing.xs,
   },
   languageModalCloseText: {
-    ...typography.h3,
-    color: colors.textSecondary,
+    fontSize: 24,
+    color: colors.textSecondary
   },
   languageOptions: {
-    paddingTop: spacing.sm,
+    marginTop: spacing.sm,
+    maxHeight: 300
   },
   languageOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   languageOptionSelected: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primaryLight
   },
   languageOptionText: {
     ...typography.body1,
-    color: colors.text,
   },
   languageOptionTextSelected: {
-    color: colors.primary,
-    fontWeight: '600',
+    fontWeight: 'bold', 
+    color: colors.primary
   },
   languageOptionCheck: {
-    ...typography.body1,
+    ...typography.body1, 
     color: colors.primary,
-    fontWeight: '600',
-  },
+    fontWeight: 'bold'
+  }
 });
 
 export default ProfileScreen;

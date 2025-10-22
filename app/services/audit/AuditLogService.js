@@ -19,8 +19,9 @@ class AuditLogService {
    */
   async initializeStorage() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.auditStorageDir);
-      if (!dirInfo.exists) {
+      const auditDir = new FileSystem.Directory(this.auditStorageDir);
+      const dirExists = await auditDir.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(this.auditStorageDir, { intermediates: true });
         console.log('Audit log storage directory created:', this.auditStorageDir);
       }

@@ -48,8 +48,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
     PassportDataService.getAllUserData = jest.fn().mockResolvedValue({
       passport: null,
       personalInfo: null,
-      fundingProof: null,
-      userId: 'default_user'
+      userId: 'user_001'
     });
     PassportDataService.getFundItems = jest.fn().mockResolvedValue([]);
     PassportDataService.migrateFromAsyncStorage = jest.fn().mockResolvedValue({ migrated: false });
@@ -131,8 +130,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
         type: 'CASH',
         amount: 1000,
         currency: 'USD',
-        details: 'Test cash',
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       const { getByLabelText } = render(
@@ -250,8 +248,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
         type: 'CASH',
         amount: 5000,
         currency: 'USD',
-        details: 'New cash item',
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.getFundItems
@@ -271,7 +268,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       });
 
       // Verify getFundItems is called to refresh after creation
-      expect(PassportDataService.getFundItems).toHaveBeenCalledWith('default_user');
+      expect(PassportDataService.getFundItems).toHaveBeenCalledWith('user_001');
     });
 
     it('should display empty state when no fund items exist', async () => {
@@ -415,7 +412,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
         amount: 1000,
         currency: 'USD',
         details: 'Test',
-        userId: 'default_user'
+        userId: 'user_001'
       });
 
       // This test verifies the service method is available
@@ -429,7 +426,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
         amount: 1000,
         currency: 'USD',
         details: 'Test',
-        userId: 'default_user'
+        userId: 'user_001'
       };
 
       PassportDataService.saveFundItem = jest.fn().mockResolvedValue(newItem);

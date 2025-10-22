@@ -33,8 +33,9 @@ class DataImportService {
       await this.ensureDirectoryExists(this.importDirectory);
 
       // Validate file exists
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (!fileInfo.exists) {
+      const importFile = new FileSystem.File(filePath);
+      const fileExists = await importFile.exists();
+      if (!fileExists) {
         throw new Error(`Import file not found: ${filePath}`);
       }
 
@@ -618,8 +619,9 @@ class DataImportService {
    */
   async ensureDirectoryExists(dirPath) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(dirPath);
+      const dirExists = await directory.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }

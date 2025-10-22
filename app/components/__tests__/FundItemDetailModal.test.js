@@ -287,7 +287,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
             amount: 6000,
             currency: 'USD'
           }),
-          'default_user'
+          'user_001'
         );
         expect(mockOnUpdate).toHaveBeenCalledWith(updatedItem);
       });
@@ -448,7 +448,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
       await waitFor(() => {
         expect(PassportDataService.deleteFundItem).toHaveBeenCalledWith(
           'fund-1',
-          'default_user'
+          'user_001'
         );
         expect(mockOnDelete).toHaveBeenCalledWith('fund-1');
         expect(mockOnClose).toHaveBeenCalled();

@@ -9,6 +9,13 @@
  * - Handle notification preferences and user settings
  */
 
+import NotificationPreferencesService from '../NotificationPreferencesService';
+import EntryPackService from '../../entryPack/EntryPackService';
+import NotificationCoordinator from '../NotificationCoordinator';
+import WindowOpenNotificationService from '../WindowOpenNotificationService';
+import UrgentReminderNotificationService from '../UrgentReminderNotificationService';
+import DeadlineNotificationService from '../DeadlineNotificationService';
+
 // Mock expo-notifications before importing anything else
 jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: jest.fn(),
@@ -23,35 +30,15 @@ jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
+jest.mock('../NotificationPreferencesService');
+jest.mock('../../entryPack/EntryPackService');
+jest.mock('../NotificationCoordinator');
+jest.mock('../WindowOpenNotificationService');
+jest.mock('../UrgentReminderNotificationService');
+jest.mock('../DeadlineNotificationService');
+
 // Mock the notification services to avoid Expo dependencies
-const mockNotificationCoordinator = {
-  initialize: jest.fn(),
-  scheduleWindowOpenNotification: jest.fn(),
-  scheduleUrgentReminderNotification: jest.fn(),
-  scheduleDeadlineNotification: jest.fn(),
-  handleArrivalDateChange: jest.fn(),
-  autoCancelIfSubmitted: jest.fn(),
-  autoCancelUrgentReminderIfSubmitted: jest.fn(),
-  autoCancelDeadlineIfSubmitted: jest.fn(),
-  getNotificationStatus: jest.fn(),
-  cleanupExpiredNotifications: jest.fn(),
-  clearAllNotificationsForUser: jest.fn(),
-};
 
-const mockNotificationPreferencesService = {
-  getPreference: jest.fn(),
-  isNotificationTypeEnabled: jest.fn(),
-  loadPreferences: jest.fn(),
-  getDefaultPreferences: jest.fn(),
-  clearCache: jest.fn(),
-};
-
-const mockEntryPackService = {
-  createOrUpdatePack: jest.fn(),
-  getByEntryInfoId: jest.fn(),
-  scheduleNotificationsForEntryPack: jest.fn(),
-  autoCancelWindowOpenNotification: jest.fn(),
-};
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -71,10 +58,10 @@ describe('NotificationIntegration', () => {
     jest.clearAllMocks();
     
     // Reset notification preferences to defaults
-    mockNotificationPreferencesService.clearCache.mockClear();
+    NotificationPreferencesService.clearCache.mockClear();
     
     // Mock default preferences
-    mockNotificationPreferencesService.getPreference.mockImplementation((path, defaultValue) => {
+    NotificationPreferencesService.getPreference.mockImplementation((path, defaultValue) => {
       const preferences = {
         'enabled': true,
         'types.submissionWindow': true,
@@ -87,10 +74,10 @@ describe('NotificationIntegration', () => {
       return Promise.resolve(preferences[path] ?? defaultValue);
     });
     
-    mockNotificationPreferencesService.isNotificationTypeEnabled.mockResolvedValue(true);
+    NotificationPreferencesService.isNotificationTypeEnabled.mockResolvedValue(true);
     
     // Mock default preferences object
-    mockNotificationPreferencesService.getDefaultPreferences.mockReturnValue({
+    NotificationPreferencesService.getDefaultPreferences.mockReturnValue({
       enabled: true,
       types: {
         submissionWindow: true,
@@ -103,6 +90,60 @@ describe('NotificationIntegration', () => {
         maxUrgentCount: 3,
       }
     });
+
+    // Mock NotificationCoordinator methods
+    NotificationCoordinator.scheduleWindowOpenNotification.mockResolvedValue('window_notif_123');
+    NotificationCoordinator.scheduleUrgentReminderNotification.mockResolvedValue('urgent_notif_123');
+    NotificationCoordinator.scheduleDeadlineNotification.mockResolvedValue(['deadline_notif_123']);
+    NotificationCoordinator.handleArrivalDateChange.mockResolvedValue({
+      windowOpen: { success: true, notificationId: 'window_123' },
+      urgentReminder: { success: true, notificationId: 'urgent_123' },
+      deadline: { success: true, notificationIds: ['deadline_123'] }
+    });
+    NotificationCoordinator.getNotificationStatus.mockResolvedValue({
+      entryPackId: 'mockEntryPackId',
+      windowOpen: { isScheduled: true, notificationId: 'window_123' },
+      urgentReminder: { isScheduled: true, notificationId: 'urgent_123' },
+      deadline: { isScheduled: true, notificationIds: ['deadline_123', 'deadline_124'] },
+      checkedAt: new Date().toISOString()
+    });
+    NotificationCoordinator.cleanupExpiredNotifications.mockResolvedValue({
+      windowOpenCleaned: 2,
+      urgentReminderCleaned: 1,
+      deadlineCleaned: 3,
+      totalCleaned: 6
+    });
+    NotificationCoordinator.clearAllNotificationsForUser.mockResolvedValue({
+      windowOpenCancelled: 1,
+      urgentReminderCancelled: 2,
+      deadlineCancelled: 3,
+      totalCancelled: 6
+    });
+
+    // Mock EntryPackService methods
+    EntryPackService.createOrUpdatePack.mockResolvedValue({
+      id: 'mockEntryPackId',
+      userId: 'mockUserId',
+      status: 'in_progress',
+      hasValidTDACSubmission: () => false,
+    });
+    EntryPackService.getByEntryInfoId.mockResolvedValue(null);
+    EntryPackService.scheduleNotificationsForEntryPack.mockResolvedValue(true);
+    EntryPackService.autoCancelWindowOpenNotification.mockResolvedValue(true);
+
+    // Mock WindowOpenNotificationService methods
+    WindowOpenNotificationService.autoCancelIfSubmitted.mockResolvedValue(true);
+    WindowOpenNotificationService.isNotificationScheduled.mockResolvedValue(true);
+
+    // Mock UrgentReminderNotificationService methods
+    UrgentReminderNotificationService.autoCancelIfSubmitted.mockResolvedValue(true);
+    UrgentReminderNotificationService.isReminderScheduled.mockResolvedValue(true);
+    UrgentReminderNotificationService.scheduleUrgentReminder.mockResolvedValue('urgent_123');
+
+    // Mock DeadlineNotificationService methods
+    DeadlineNotificationService.autoCancelIfSubmitted.mockResolvedValue(true);
+    DeadlineNotificationService.areNotificationsScheduled.mockResolvedValue(true);
+    DeadlineNotificationService.scheduleDeadlineNotification.mockResolvedValue(['deadline_123']);
   });
 
   describe('EntryPackService Lifecycle Integration', () => {

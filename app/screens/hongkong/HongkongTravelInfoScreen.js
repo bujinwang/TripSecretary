@@ -82,7 +82,7 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
   
   // Memoize userId to prevent unnecessary re-renders
-  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
+  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);

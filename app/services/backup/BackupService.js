@@ -176,7 +176,8 @@ class BackupService {
       });
 
       // Update metadata with final file info
-      const fileInfo = await FileSystem.getInfoAsync(backupFilePath);
+      const backupFile = new FileSystem.File(backupFilePath);
+      const fileInfo = await backupFile.getInfo();
       backupMetadata.filename = backupFilename;
       backupMetadata.filePath = backupFilePath;
       backupMetadata.fileSize = fileInfo.size;
@@ -223,8 +224,9 @@ class BackupService {
    */
   async listBackups() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.backupDirectory);
-      if (!dirInfo.exists) {
+      const backupDir = new FileSystem.Directory(this.backupDirectory);
+      const dirExists = await backupDir.exists();
+      if (!dirExists) {
         return [];
       }
 
@@ -239,7 +241,8 @@ class BackupService {
             
             if (metadata) {
               const filePath = this.backupDirectory + filename;
-              const fileInfo = await FileSystem.getInfoAsync(filePath);
+              const backupFile = new FileSystem.File(filePath);
+              const fileInfo = await backupFile.getInfo();
               
               backups.push({
                 backupId,
@@ -283,7 +286,8 @@ class BackupService {
         throw new Error(`Backup not found: ${backupId}`);
       }
 
-      const fileInfo = await FileSystem.getInfoAsync(metadata.filePath);
+      const backupFile = new FileSystem.File(metadata.filePath);
+      const fileInfo = await backupFile.getInfo();
       
       return {
         ...metadata,
@@ -313,8 +317,9 @@ class BackupService {
 
       // Delete backup file
       if (metadata.filePath) {
-        const fileInfo = await FileSystem.getInfoAsync(metadata.filePath);
-        if (fileInfo.exists) {
+        const backupFile = new FileSystem.File(metadata.filePath);
+        const fileExists = await backupFile.exists();
+        if (fileExists) {
           await FileSystem.deleteAsync(metadata.filePath);
           console.log('Deleted backup file:', metadata.filename);
         }
@@ -680,8 +685,9 @@ class BackupService {
    */
   async listCloudBackups() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.cloudBackupDirectory);
-      if (!dirInfo.exists) {
+      const cloudBackupDir = new FileSystem.Directory(this.cloudBackupDirectory);
+      const dirExists = await cloudBackupDir.exists();
+      if (!dirExists) {
         return [];
       }
 
@@ -696,7 +702,8 @@ class BackupService {
             
             if (metadata) {
               const filePath = this.cloudBackupDirectory + filename;
-              const fileInfo = await FileSystem.getInfoAsync(filePath);
+              const cloudFile = new FileSystem.File(filePath);
+              const fileInfo = await cloudFile.getInfo();
               
               cloudBackups.push({
                 cloudBackupId,
@@ -747,9 +754,10 @@ class BackupService {
 
       // Check if encrypted backup file exists locally
       const encryptedFilePath = metadata.cloudFilePath;
-      const fileInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      const encryptedFile = new FileSystem.File(encryptedFilePath);
+      const fileExists = await encryptedFile.exists();
       
-      if (!fileInfo.exists) {
+      if (!fileExists) {
         throw new Error('Encrypted backup file not found locally. Please download from cloud first.');
       }
 
@@ -1869,8 +1877,9 @@ class BackupService {
    */
   async ensureDirectoryExists(dirPath) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(dirPath);
+      const dirExists = await directory.exists();
+      if (!dirExists) {
         await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }

@@ -279,7 +279,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   }, [totalCompletionPercent]);
 
   // Memoize userId to prevent unnecessary re-renders
-  const userId = useMemo(() => passport?.id || 'default_user', [passport?.id]);
+  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
   useEffect(() => {
     const loadSavedData = async () => {
