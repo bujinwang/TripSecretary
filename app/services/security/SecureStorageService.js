@@ -2121,74 +2121,226 @@ class SecureStorageService {
   }
 
   /**
-   * Save travel information (trip-specific draft data)
-   * @param {Object} travelData - Travel info data
-   * @returns {Promise<Object>} - Save result
-   */
-  async saveTravelInfo(travelData) {
-    try {
-      console.log('=== SAVING TRAVEL INFO TO DB ===');
-      console.log('travelData.departureDepartureDate:', travelData.departureDepartureDate);
-      console.log('All travelData keys:', Object.keys(travelData));
-      
-      const now = new Date().toISOString();
-      const id = travelData.id || this.generateId();
+    * Save travel information (trip-specific draft data)
+    * @param {Object} travelData - Travel info data
+    * @returns {Promise<Object>} - Save result
+    */
+   async saveTravelInfo(travelData) {
+     const maxRetries = 3;
+     let lastError = null;
 
-      const result = await this.modernDb.runAsync(
-        `INSERT OR REPLACE INTO travel_info (
-          id, user_id, destination,
-          travel_purpose, recent_stay_country, boarding_country, visa_number,
-          arrival_flight_number, arrival_departure_airport,
-          arrival_departure_date,
-          arrival_arrival_airport, arrival_arrival_date,
-          departure_flight_number, departure_departure_airport,
-          departure_departure_date,
-          departure_arrival_airport, departure_arrival_date,
-          accommodation_type, province, district, sub_district, postal_code,
-          hotel_name, hotel_address, accommodation_phone, length_of_stay,
-          is_transit_passenger, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          travelData.userId,
-          travelData.destination,
-          travelData.travelPurpose,
-          travelData.recentStayCountry,
-          travelData.boardingCountry,
-          travelData.visaNumber,
-          travelData.arrivalFlightNumber,
-          travelData.arrivalDepartureAirport,
-          travelData.arrivalDepartureDate,
-          travelData.arrivalArrivalAirport,
-          travelData.arrivalArrivalDate,
-          travelData.departureFlightNumber,
-          travelData.departureDepartureAirport,
-          travelData.departureDepartureDate,
-          travelData.departureArrivalAirport,
-          travelData.departureArrivalDate,
-          travelData.accommodationType,
-          travelData.province,
-          travelData.district,
-          travelData.subDistrict,
-          travelData.postalCode,
-          travelData.hotelName,
-          travelData.hotelAddress,
-          travelData.accommodationPhone,
-          travelData.lengthOfStay,
-          travelData.isTransitPassenger ? 1 : 0,
-          travelData.status || 'draft',
-          travelData.createdAt || now,
-          now
-        ]
-      );
+     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+       try {
+         console.log(`=== SAVING TRAVEL INFO TO DB (Attempt ${attempt}/${maxRetries}) ===`);
+         console.log('travelData.departureDepartureDate:', travelData.departureDepartureDate);
+         console.log('All travelData keys:', Object.keys(travelData));
 
-      await this.logAudit('INSERT', 'travel_info', id);
-      return { id, result };
-    } catch (error) {
-      console.error('Failed to save travel info:', error);
-      throw error;
-    }
-  }
+         // Validate data before saving
+         this.validateTravelInfoData(travelData);
+
+         const now = new Date().toISOString();
+         const id = travelData.id || this.generateId();
+
+         const result = await this.modernDb.runAsync(
+           `INSERT OR REPLACE INTO travel_info (
+             id, user_id, destination,
+             travel_purpose, recent_stay_country, boarding_country, visa_number,
+             arrival_flight_number, arrival_departure_airport,
+             arrival_departure_date,
+             arrival_arrival_airport, arrival_arrival_date,
+             departure_flight_number, departure_departure_airport,
+             departure_departure_date,
+             departure_arrival_airport, departure_arrival_date,
+             accommodation_type, province, district, sub_district, postal_code,
+             hotel_name, hotel_address, accommodation_phone, length_of_stay,
+             is_transit_passenger, status, created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           [
+             id,
+             travelData.userId,
+             travelData.destination,
+             travelData.travelPurpose,
+             travelData.recentStayCountry,
+             travelData.boardingCountry,
+             travelData.visaNumber,
+             travelData.arrivalFlightNumber,
+             travelData.arrivalDepartureAirport,
+             travelData.arrivalDepartureDate,
+             travelData.arrivalArrivalAirport,
+             travelData.arrivalArrivalDate,
+             travelData.departureFlightNumber,
+             travelData.departureDepartureAirport,
+             travelData.departureDepartureDate,
+             travelData.departureArrivalAirport,
+             travelData.departureArrivalDate,
+             travelData.accommodationType,
+             travelData.province,
+             travelData.district,
+             travelData.subDistrict,
+             travelData.postalCode,
+             travelData.hotelName,
+             travelData.hotelAddress,
+             travelData.accommodationPhone,
+             travelData.lengthOfStay,
+             travelData.isTransitPassenger ? 1 : 0,
+             travelData.status || 'draft',
+             travelData.createdAt || now,
+             now
+           ]
+         );
+
+         await this.logAudit('INSERT', 'travel_info', id);
+         console.log(`✅ Travel info saved successfully on attempt ${attempt}`);
+         return { id, result };
+       } catch (error) {
+         lastError = error;
+         console.error(`❌ Failed to save travel info on attempt ${attempt}:`, error);
+
+         // Check if it's a SQLite internal error
+         if (error.code === 'ERR_INTERNAL_SQLITE_ERROR') {
+           console.error('SQLite internal error detected. This may indicate database corruption or invalid data.');
+
+           // If this is the last attempt, provide recovery suggestions
+           if (attempt === maxRetries) {
+             console.error('All retry attempts failed. Suggesting recovery steps:');
+             console.error('1. Try restarting the app');
+             console.error('2. Clear app data and reinitialize');
+             console.error('3. Check device storage space');
+             console.error('4. Contact support if issue persists');
+
+             // Attempt to recover by clearing the travel_info table for this user
+             try {
+               console.log('Attempting recovery: Clearing existing travel info for user');
+               await this.modernDb.runAsync(
+                 'DELETE FROM travel_info WHERE user_id = ? AND destination = ?',
+                 [travelData.userId, travelData.destination]
+               );
+               console.log('Recovery: Cleared existing travel info. Retrying save...');
+
+               // Retry once more after clearing
+               const recoveryResult = await this.modernDb.runAsync(
+                 `INSERT OR REPLACE INTO travel_info (
+                   id, user_id, destination,
+                   travel_purpose, recent_stay_country, boarding_country, visa_number,
+                   arrival_flight_number, arrival_departure_airport,
+                   arrival_departure_date,
+                   arrival_arrival_airport, arrival_arrival_date,
+                   departure_flight_number, departure_departure_airport,
+                   departure_departure_date,
+                   departure_arrival_airport, departure_arrival_date,
+                   accommodation_type, province, district, sub_district, postal_code,
+                   hotel_name, hotel_address, accommodation_phone, length_of_stay,
+                   is_transit_passenger, status, created_at, updated_at
+                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 [
+                   id,
+                   travelData.userId,
+                   travelData.destination,
+                   travelData.travelPurpose,
+                   travelData.recentStayCountry,
+                   travelData.boardingCountry,
+                   travelData.visaNumber,
+                   travelData.arrivalFlightNumber,
+                   travelData.arrivalDepartureAirport,
+                   travelData.arrivalDepartureDate,
+                   travelData.arrivalArrivalAirport,
+                   travelData.arrivalArrivalDate,
+                   travelData.departureFlightNumber,
+                   travelData.departureDepartureAirport,
+                   travelData.departureDepartureDate,
+                   travelData.departureArrivalAirport,
+                   travelData.departureArrivalDate,
+                   travelData.accommodationType,
+                   travelData.province,
+                   travelData.district,
+                   travelData.subDistrict,
+                   travelData.postalCode,
+                   travelData.hotelName,
+                   travelData.hotelAddress,
+                   travelData.accommodationPhone,
+                   travelData.lengthOfStay,
+                   travelData.isTransitPassenger ? 1 : 0,
+                   travelData.status || 'draft',
+                   travelData.createdAt || now,
+                   now
+                 ]
+               );
+
+               await this.logAudit('INSERT', 'travel_info', id);
+               console.log('✅ Recovery successful: Travel info saved after clearing existing data');
+               return { id, result: recoveryResult };
+             } catch (recoveryError) {
+               console.error('❌ Recovery failed:', recoveryError);
+             }
+           }
+
+           // Wait before retrying (exponential backoff)
+           const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+           console.log(`Waiting ${delay}ms before retry...`);
+           await new Promise(resolve => setTimeout(resolve, delay));
+         } else {
+           // Non-SQLite error, don't retry
+           throw error;
+         }
+       }
+     }
+
+     // All retries failed
+     console.error('All retry attempts failed for travel info save');
+     throw lastError;
+   }
+
+   /**
+    * Validate travel info data before saving
+    * @param {Object} travelData - Travel info data to validate
+    */
+   validateTravelInfoData(travelData) {
+     if (!travelData || typeof travelData !== 'object') {
+       throw new Error('Invalid travel data: must be an object');
+     }
+
+     if (!travelData.userId || typeof travelData.userId !== 'string') {
+       throw new Error('Invalid travel data: userId is required and must be a string');
+     }
+
+     if (!travelData.destination || typeof travelData.destination !== 'string') {
+       throw new Error('Invalid travel data: destination is required and must be a string');
+     }
+
+     // Validate date fields if present
+     const dateFields = [
+       'arrivalDepartureDate', 'arrivalArrivalDate',
+       'departureDepartureDate', 'departureArrivalDate'
+     ];
+
+     for (const field of dateFields) {
+       if (travelData[field] && !this.isValidDateString(travelData[field])) {
+         throw new Error(`Invalid travel data: ${field} must be a valid date string (YYYY-MM-DD)`);
+       }
+     }
+
+     // Validate boolean fields
+     if (travelData.isTransitPassenger !== undefined && typeof travelData.isTransitPassenger !== 'boolean') {
+       throw new Error('Invalid travel data: isTransitPassenger must be a boolean');
+     }
+
+     console.log('✅ Travel info data validation passed');
+   }
+
+   /**
+    * Check if a string is a valid date in YYYY-MM-DD format
+    * @param {string} dateString - Date string to validate
+    * @returns {boolean} - True if valid
+    */
+   isValidDateString(dateString) {
+     if (typeof dateString !== 'string') return false;
+
+     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+     if (!dateRegex.test(dateString)) return false;
+
+     const date = new Date(dateString);
+     return !isNaN(date.getTime());
+   }
 
   /**
    * Get travel information for a user

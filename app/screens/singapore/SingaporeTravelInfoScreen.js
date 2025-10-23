@@ -29,6 +29,9 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
+import { useTravelInfoForm } from '../../utils/TravelInfoFormUtils';
+import InputWithUserTracking from '../../components/InputWithUserTracking';
+import TravelInfoFormSection from '../../components/TravelInfoFormSection';
 import apiClient from '../../services/api';
 
 // Import secure data models and services
@@ -193,8 +196,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState(null);
 
-  // Travel Info State
-  const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
+  // Travel Info State - Initialize with empty values (no hard-coded defaults)
+  const [travelPurpose, setTravelPurpose] = useState('');
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
   const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
@@ -203,7 +206,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
   const [departureDepartureDate, setDepartureDepartureDate] = useState('');
   const [isTransitPassenger, setIsTransitPassenger] = useState(false);
-  const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
+  const [accommodationType, setAccommodationType] = useState(''); // 住宿类型 - no default
   const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
   const [province, setProvince] = useState(''); // 省
   const [district, setDistrict] = useState(''); // 区（地区）
@@ -230,120 +233,86 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   const [completionMetrics, setCompletionMetrics] = useState(null);
   const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
 
-  // Count filled fields for each section
-  const getFieldCount = (section) => {
-    let filled = 0;
-    let total = 0;
+  // Travel info form utilities with user interaction tracking
+  const travelInfoForm = useTravelInfoForm('singapore');
 
-    switch (section) {
-      case 'passport':
-        const passportFields = [fullName, nationality, passportNo, dob, expiryDate];
-        total = passportFields.length;
-        filled = passportFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
-
-      case 'personal':
-        const personalFields = [occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, sex];
-        total = personalFields.length;
-        filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
-
-    case 'funds':
-      // For funds, show actual count with minimum requirement of 1
-      const fundItemCount = funds.length;
-      if (fundItemCount === 0) {
-        // No funds added yet - show requirement
-        total = 1;
-        filled = 0;
-      } else {
-        // Show actual count of fund items
-        total = fundItemCount;
-        filled = fundItemCount; // All added items are considered complete
-      }
-      break;
-
-      case 'travel':
-        // Singapore requires both arrival and departure flight info
-        // For travel purpose, if "OTHER" is selected, check if custom purpose is filled
-        const purposeFilled = travelPurpose === 'OTHER'
-          ? (customTravelPurpose && customTravelPurpose.trim() !== '')
-          : (travelPurpose && travelPurpose.trim() !== '');
-
-        const travelFields = [
-          purposeFilled,
-          boardingCountry,
-          arrivalFlightNumber, arrivalArrivalDate,
-          departureFlightNumber, departureDepartureDate
-        ];
-
-        // Only include accommodation fields if not a transit passenger
-        if (!isTransitPassenger) {
-          // For accommodation type, if "OTHER" is selected, check if custom type is filled
-          const accommodationTypeFilled = accommodationType === 'OTHER'
-            ? (customAccommodationType && customAccommodationType.trim() !== '')
-            : (accommodationType && accommodationType.trim() !== '');
-
-          // Different fields based on accommodation type
-          const isHotelType = accommodationType === 'HOTEL';
-          const accommodationFields = isHotelType
-            ? [accommodationTypeFilled, province, hotelAddress]
-            : [accommodationTypeFilled, province, district, subDistrict, postalCode, hotelAddress];
-
-          travelFields.push(...accommodationFields);
-        }
-
-        total = travelFields.length;
-        filled = travelFields.filter(field => {
-          if (typeof field === 'boolean') return field;
-          return field && field.toString().trim() !== '';
-        }).length;
-        break;
+  // Migration function to mark existing data as user-modified
+  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+    if (!userData || !travelInfoForm.isInitialized) {
+      return;
     }
 
-    return { filled, total };
+    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE (SINGAPORE) ===');
+    await travelInfoForm.initializeWithExistingData(userData);
+  }, [travelInfoForm]);
+
+  // Handle user interaction with tracking-enabled inputs
+  const handleUserInteraction = useCallback((fieldName, value) => {
+    // Use the travel info form utility to handle user interaction
+    travelInfoForm.handleUserInteraction(fieldName, value);
+    
+    // Update the appropriate state based on field name
+    switch (fieldName) {
+      case 'travelPurpose':
+        setTravelPurpose(value);
+        if (value !== 'OTHER') {
+          setCustomTravelPurpose('');
+        }
+        break;
+      case 'accommodationType':
+        setAccommodationType(value);
+        if (value !== 'OTHER') {
+          setCustomAccommodationType('');
+        }
+        break;
+      case 'boardingCountry':
+        setBoardingCountry(value);
+        break;
+      default:
+        console.warn(`Unknown field for user interaction: ${fieldName}`);
+    }
+    
+    // Trigger debounced save
+    debouncedSaveData();
+  }, [travelInfoForm]);
+
+  // Count filled fields for each section using TravelInfoFormUtils
+  const getFieldCount = (section) => {
+    // Build all fields object for the utility
+    const allFields = {
+      // Passport fields
+      fullName, nationality, passportNo, dob, expiryDate, sex,
+      // Personal fields
+      occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
+      // Travel fields
+      travelPurpose, customTravelPurpose, boardingCountry, arrivalFlightNumber, arrivalArrivalDate,
+      departureFlightNumber, departureDepartureDate, isTransitPassenger, accommodationType,
+      customAccommodationType, province, district, subDistrict, postalCode, hotelAddress,
+      // Funds
+      funds
+    };
+
+    return travelInfoForm.getFieldCount(section, allFields);
   };
 
-  // Calculate completion metrics using EntryCompletionCalculator
+  // Calculate completion metrics using TravelInfoFormUtils
   const calculateCompletionMetrics = () => {
     try {
-      const entryInfo = {
-        passport: {
-          passportNumber: passportNo,
-          fullName: fullName,
-          nationality: nationality,
-          dateOfBirth: dob,
-          expiryDate: expiryDate,
-          gender: sex
-        },
-        personalInfo: {
-          occupation: occupation,
-          provinceCity: cityOfResidence,
-          countryRegion: residentCountry,
-          phoneNumber: phoneNumber,
-          email: email,
-          gender: sex,
-          phoneCode: phoneCode
-        },
-        funds: funds,
-        travel: {
-          travelPurpose: travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose,
-          arrivalDate: arrivalArrivalDate,
-          departureDate: departureDepartureDate,
-          arrivalFlightNumber: arrivalFlightNumber,
-          departureFlightNumber: departureFlightNumber,
-          boardingCountry: boardingCountry,
-          accommodation: hotelAddress,
-          accommodationType: accommodationType === 'OTHER' ? customAccommodationType : accommodationType,
-          province: province,
-          district: district,
-          subDistrict: subDistrict,
-          postalCode: postalCode,
-          hotelAddress: hotelAddress,
-          isTransitPassenger: isTransitPassenger
-        }
+      // Build all fields object for the utility
+      const allFields = {
+        // Passport fields
+        passportNo, fullName, nationality, dob, expiryDate, sex,
+        // Personal fields
+        occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
+        // Travel fields
+        travelPurpose, customTravelPurpose, boardingCountry, arrivalFlightNumber, arrivalArrivalDate,
+        departureFlightNumber, departureDepartureDate, isTransitPassenger, accommodationType,
+        customAccommodationType, province, district, subDistrict, postalCode, hotelAddress,
+        // Funds
+        funds
       };
 
-      const summary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
+      const summary = travelInfoForm.calculateCompletionMetrics(allFields);
       setCompletionMetrics(summary.metrics);
       setTotalCompletionPercent(summary.totalPercent);
 
@@ -485,6 +454,29 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         console.log('userData.passport.dateOfBirth:', userData?.passport?.dateOfBirth);
         console.log('userData.personalInfo:', userData?.personalInfo);
 
+        // Load travel info and add to userData for migration
+        try {
+          const destinationId = destination?.id || 'singapore';
+          const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          if (travelInfo) {
+            userData.travelInfo = travelInfo;
+          }
+        } catch (travelInfoError) {
+          console.log('Failed to load travel info for migration:', travelInfoError);
+        }
+
+        // Wait for interaction tracker to be initialized before migration
+        if (travelInfoForm.isInitialized) {
+          await migrateExistingDataToInteractionState(userData);
+        } else {
+          // If not initialized yet, wait a bit and try again
+          setTimeout(async () => {
+            if (travelInfoForm.isInitialized) {
+              await migrateExistingDataToInteractionState(userData);
+            }
+          }, 100);
+        }
+
         // Passport Info - prioritize centralized data, fallback to route params
         const passportInfo = userData?.passport;
         if (passportInfo) {
@@ -580,7 +572,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
 
             // Check if travel purpose is a predefined option
             const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
-            const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
+            const loadedPurpose = travelInfo.travelPurpose || '';
             if (predefinedPurposes.includes(loadedPurpose)) {
               setTravelPurpose(loadedPurpose);
               setCustomTravelPurpose('');
@@ -602,7 +594,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
             const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
-            const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
+            const loadedAccommodationType = travelInfo.accommodationType || '';
             if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
               setAccommodationType(loadedAccommodationType);
               setCustomAccommodationType('');
@@ -664,6 +656,21 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
           const userData = await PassportDataService.getAllUserData(userId);
 
           if (userData) {
+            // Load travel info and add to userData for migration
+            try {
+              const destinationId = destination?.id || 'singapore';
+              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              if (travelInfo) {
+                userData.travelInfo = travelInfo;
+              }
+            } catch (travelInfoError) {
+              console.log('Failed to load travel info for migration on focus:', travelInfoError);
+            }
+
+            // Perform backward compatibility migration on focus reload
+            if (travelInfoForm.isInitialized) {
+              await migrateExistingDataToInteractionState(userData);
+            }
             // Update passport data if available
             const passportInfo = userData.passport;
             if (passportInfo) {
@@ -708,7 +715,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
 
                 // Update travel info state
                 const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
-                const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
+                const loadedPurpose = travelInfo.travelPurpose || '';
                 if (predefinedPurposes.includes(loadedPurpose)) {
                   setTravelPurpose(loadedPurpose);
                   setCustomTravelPurpose('');
@@ -726,7 +733,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
 
                 // Load accommodation type
                 const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
-                const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
+                const loadedAccommodationType = travelInfo.accommodationType || '';
                 if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
                   setAccommodationType(loadedAccommodationType);
                   setCustomAccommodationType('');
@@ -948,9 +955,12 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   // Function to validate and save field data on blur
   const handleFieldBlur = async (fieldName, fieldValue) => {
     try {
-      console.log('=== HANDLE FIELD BLUR ===');
+      console.log('=== HANDLE FIELD BLUR (SINGAPORE) ===');
       console.log('Field:', fieldName);
       console.log('Value:', fieldValue);
+      
+      // Mark field as user-modified for interaction tracking
+      travelInfoForm.handleUserInteraction(fieldName, fieldValue);
 
       // Track last edited field for session state
       setLastEditedField(fieldName);
@@ -1292,7 +1302,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   // Save all data to secure storage with optional field overrides
   const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     try {
-      console.log('=== SAVING DATA TO SECURE STORAGE WITH OVERRIDES ===');
+      console.log('=== SAVING DATA TO SECURE STORAGE WITH OVERRIDES (SINGAPORE) ===');
       console.log('userId:', userId);
       console.log('fieldOverrides:', fieldOverrides);
 
@@ -1301,26 +1311,64 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
       };
 
+      // Build all fields object for filtering
+      const allFields = {
+        // Passport fields
+        passportNo: getCurrentValue('passportNo', passportNo),
+        fullName: getCurrentValue('fullName', fullName),
+        nationality: getCurrentValue('nationality', nationality),
+        dob: getCurrentValue('dob', dob),
+        expiryDate: getCurrentValue('expiryDate', expiryDate),
+        sex: getCurrentValue('sex', sex),
+        // Personal fields
+        occupation: getCurrentValue('occupation', occupation),
+        cityOfResidence: getCurrentValue('cityOfResidence', cityOfResidence),
+        residentCountry: getCurrentValue('residentCountry', residentCountry),
+        phoneCode: getCurrentValue('phoneCode', phoneCode),
+        phoneNumber: getCurrentValue('phoneNumber', phoneNumber),
+        email: getCurrentValue('email', email),
+        // Travel fields
+        travelPurpose: getCurrentValue('travelPurpose', travelPurpose),
+        customTravelPurpose: getCurrentValue('customTravelPurpose', customTravelPurpose),
+        boardingCountry: getCurrentValue('boardingCountry', boardingCountry),
+        arrivalFlightNumber: getCurrentValue('arrivalFlightNumber', arrivalFlightNumber),
+        arrivalArrivalDate: getCurrentValue('arrivalArrivalDate', arrivalArrivalDate),
+        departureFlightNumber: getCurrentValue('departureFlightNumber', departureFlightNumber),
+        departureDepartureDate: getCurrentValue('departureDepartureDate', departureDepartureDate),
+        isTransitPassenger: getCurrentValue('isTransitPassenger', isTransitPassenger),
+        accommodationType: getCurrentValue('accommodationType', accommodationType),
+        customAccommodationType: getCurrentValue('customAccommodationType', customAccommodationType),
+        province: getCurrentValue('province', province),
+        district: getCurrentValue('district', district),
+        subDistrict: getCurrentValue('subDistrict', subDistrict),
+        postalCode: getCurrentValue('postalCode', postalCode),
+        hotelAddress: getCurrentValue('hotelAddress', hotelAddress),
+        visaNumber: getCurrentValue('visaNumber', visaNumber)
+      };
+
+      // Filter fields based on user interaction
+      const fieldsToSave = travelInfoForm.filterFieldsForSave(allFields);
+      console.log('Fields to save after filtering:', fieldsToSave);
+      console.log('Total fields to save:', Object.keys(fieldsToSave).length);
+
       // Get existing passport first to ensure we're updating the right one
       const existingPassport = await PassportDataService.getPassport(userId);
       console.log('Existing passport:', existingPassport);
 
-      // Save passport data - only include non-empty fields
+      // Save passport data - only include user-modified fields
       const passportUpdates = {};
-      if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
-      if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
-      if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
+      if (fieldsToSave.passportNo && fieldsToSave.passportNo.trim()) passportUpdates.passportNumber = fieldsToSave.passportNo;
+      if (fieldsToSave.fullName && fieldsToSave.fullName.trim()) passportUpdates.fullName = fieldsToSave.fullName;
+      if (fieldsToSave.nationality && fieldsToSave.nationality.trim()) passportUpdates.nationality = fieldsToSave.nationality;
       
-      const currentDob = getCurrentValue('dob', dob);
-      if (currentDob && currentDob.trim()) {
-        console.log('=== DOB SAVING DEBUG WITH OVERRIDE ===');
-        console.log('dob value being saved:', currentDob);
-        passportUpdates.dateOfBirth = currentDob;
+      if (fieldsToSave.dob && fieldsToSave.dob.trim()) {
+        console.log('=== DOB SAVING DEBUG WITH FILTERING ===');
+        console.log('dob value being saved:', fieldsToSave.dob);
+        passportUpdates.dateOfBirth = fieldsToSave.dob;
       }
       
-      const currentExpiryDate = getCurrentValue('expiryDate', expiryDate);
-      if (currentExpiryDate && currentExpiryDate.trim()) passportUpdates.expiryDate = currentExpiryDate;
-      if (sex && sex.trim()) passportUpdates.gender = sex;
+      if (fieldsToSave.expiryDate && fieldsToSave.expiryDate.trim()) passportUpdates.expiryDate = fieldsToSave.expiryDate;
+      if (fieldsToSave.sex && fieldsToSave.sex.trim()) passportUpdates.gender = fieldsToSave.sex;
 
       if (Object.keys(passportUpdates).length > 0) {
         console.log('Saving passport updates:', passportUpdates);
@@ -1341,15 +1389,15 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         }
       }
 
-      // Save personal info data - only include non-empty fields
+      // Save personal info data - only include user-modified fields
       const personalInfoUpdates = {};
-      if (phoneCode && phoneCode.trim()) personalInfoUpdates.phoneCode = phoneCode;
-      if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-      if (email && email.trim()) personalInfoUpdates.email = email;
-      if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-      if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-      if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
-      if (sex && sex.trim()) personalInfoUpdates.gender = sex;
+      if (fieldsToSave.phoneCode && fieldsToSave.phoneCode.trim()) personalInfoUpdates.phoneCode = fieldsToSave.phoneCode;
+      if (fieldsToSave.phoneNumber && fieldsToSave.phoneNumber.trim()) personalInfoUpdates.phoneNumber = fieldsToSave.phoneNumber;
+      if (fieldsToSave.email && fieldsToSave.email.trim()) personalInfoUpdates.email = fieldsToSave.email;
+      if (fieldsToSave.occupation && fieldsToSave.occupation.trim()) personalInfoUpdates.occupation = fieldsToSave.occupation;
+      if (fieldsToSave.cityOfResidence && fieldsToSave.cityOfResidence.trim()) personalInfoUpdates.provinceCity = fieldsToSave.cityOfResidence;
+      if (fieldsToSave.residentCountry && fieldsToSave.residentCountry.trim()) personalInfoUpdates.countryRegion = fieldsToSave.residentCountry;
+      if (fieldsToSave.sex && fieldsToSave.sex.trim()) personalInfoUpdates.gender = fieldsToSave.sex;
 
       if (Object.keys(personalInfoUpdates).length > 0) {
         console.log('Saving personal info updates:', personalInfoUpdates);
@@ -1360,74 +1408,59 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         setPersonalInfoData(savedPersonalInfo);
       }
 
-      // Save travel info data - only include non-empty fields
+      // Save travel info data - only include user-modified fields
       const travelInfoUpdates = {};
       // If "OTHER" is selected, use custom purpose; otherwise use selected purpose
-      const finalTravelPurpose = travelPurpose === 'OTHER' && customTravelPurpose.trim() 
-        ? customTravelPurpose.trim() 
-        : travelPurpose;
+      const finalTravelPurpose = fieldsToSave.travelPurpose === 'OTHER' && fieldsToSave.customTravelPurpose && fieldsToSave.customTravelPurpose.trim() 
+        ? fieldsToSave.customTravelPurpose.trim() 
+        : fieldsToSave.travelPurpose;
       if (finalTravelPurpose && finalTravelPurpose.trim()) travelInfoUpdates.travelPurpose = finalTravelPurpose;
-      if (boardingCountry && boardingCountry.trim()) travelInfoUpdates.boardingCountry = boardingCountry;
-      if (visaNumber && visaNumber.trim()) travelInfoUpdates.visaNumber = visaNumber.trim();
-      if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
+      if (fieldsToSave.boardingCountry && fieldsToSave.boardingCountry.trim()) travelInfoUpdates.boardingCountry = fieldsToSave.boardingCountry;
+      if (fieldsToSave.visaNumber && fieldsToSave.visaNumber.trim()) travelInfoUpdates.visaNumber = fieldsToSave.visaNumber.trim();
+      if (fieldsToSave.arrivalFlightNumber && fieldsToSave.arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = fieldsToSave.arrivalFlightNumber;
       
-      const currentArrivalDate = getCurrentValue('arrivalArrivalDate', arrivalArrivalDate);
-      if (currentArrivalDate && currentArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = currentArrivalDate;
+      if (fieldsToSave.arrivalArrivalDate && fieldsToSave.arrivalArrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = fieldsToSave.arrivalArrivalDate;
       
-      if (departureFlightNumber && departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
+      if (fieldsToSave.departureFlightNumber && fieldsToSave.departureFlightNumber.trim()) travelInfoUpdates.departureFlightNumber = fieldsToSave.departureFlightNumber;
       
-      const currentDepartureDate = getCurrentValue('departureDepartureDate', departureDepartureDate);
-      if (currentDepartureDate && currentDepartureDate.trim()) {
-        console.log('=== ADDING DEPARTURE DATE TO UPDATES WITH OVERRIDE ===');
-        console.log('departureDepartureDate value:', currentDepartureDate);
-        travelInfoUpdates.departureDepartureDate = currentDepartureDate;
+      if (fieldsToSave.departureDepartureDate && fieldsToSave.departureDepartureDate.trim()) {
+        console.log('=== ADDING DEPARTURE DATE TO UPDATES WITH FILTERING ===');
+        console.log('departureDepartureDate value:', fieldsToSave.departureDepartureDate);
+        travelInfoUpdates.departureDepartureDate = fieldsToSave.departureDepartureDate;
       } else {
-        console.log('=== DEPARTURE DATE NOT ADDED WITH OVERRIDE ===');
-        console.log('departureDepartureDate value:', currentDepartureDate);
-        console.log('departureDepartureDate type:', typeof currentDepartureDate);
+        console.log('=== DEPARTURE DATE NOT ADDED WITH FILTERING ===');
+        console.log('departureDepartureDate value:', fieldsToSave.departureDepartureDate);
+        console.log('departureDepartureDate type:', typeof fieldsToSave.departureDepartureDate);
       }
       
-      const currentIsTransitPassenger = getCurrentValue('isTransitPassenger', isTransitPassenger);
-      console.log('=== TRANSIT PASSENGER SAVE DEBUG ===');
-      console.log('isTransitPassenger (original):', isTransitPassenger);
-      console.log('isTransitPassenger (current):', currentIsTransitPassenger);
+      console.log('=== TRANSIT PASSENGER SAVE DEBUG WITH FILTERING ===');
+      console.log('isTransitPassenger (filtered):', fieldsToSave.isTransitPassenger);
       
-      travelInfoUpdates.isTransitPassenger = currentIsTransitPassenger;
-      // Save accommodation type - if "OTHER" is selected, use custom type
-      if (!currentIsTransitPassenger) {
-        const currentAccommodationType = getCurrentValue('accommodationType', accommodationType);
-        const currentCustomAccommodationType = getCurrentValue('customAccommodationType', customAccommodationType);
-        
-        const finalAccommodationType = currentAccommodationType === 'OTHER' && currentCustomAccommodationType && currentCustomAccommodationType.trim()
-          ? currentCustomAccommodationType.trim()
-          : currentAccommodationType;
+      if (fieldsToSave.isTransitPassenger !== undefined) travelInfoUpdates.isTransitPassenger = fieldsToSave.isTransitPassenger;
+      // Save accommodation type - if "OTHER" is selected, use custom type (only user-modified fields)
+      if (!fieldsToSave.isTransitPassenger) {
+        const finalAccommodationType = fieldsToSave.accommodationType === 'OTHER' && fieldsToSave.customAccommodationType && fieldsToSave.customAccommodationType.trim()
+          ? fieldsToSave.customAccommodationType.trim()
+          : fieldsToSave.accommodationType;
           
-        console.log('=== ACCOMMODATION TYPE SAVE DEBUG WITH OVERRIDE ===');
-        console.log('accommodationType (original):', accommodationType);
-        console.log('accommodationType (current):', currentAccommodationType);
-        console.log('customAccommodationType (original):', customAccommodationType);
-        console.log('customAccommodationType (current):', currentCustomAccommodationType);
+        console.log('=== ACCOMMODATION TYPE SAVE DEBUG WITH FILTERING ===');
+        console.log('accommodationType (filtered):', fieldsToSave.accommodationType);
+        console.log('customAccommodationType (filtered):', fieldsToSave.customAccommodationType);
         console.log('finalAccommodationType:', finalAccommodationType);
-        console.log('isTransitPassenger (original):', isTransitPassenger);
-        console.log('isTransitPassenger (current):', currentIsTransitPassenger);
+        console.log('isTransitPassenger (filtered):', fieldsToSave.isTransitPassenger);
         
         if (finalAccommodationType && finalAccommodationType.trim()) {
           console.log('Adding accommodation type to updates:', finalAccommodationType);
           travelInfoUpdates.accommodationType = finalAccommodationType;
         } else {
-          console.log('Accommodation type not added - empty or invalid');
+          console.log('Accommodation type not added - not user-modified or empty');
         }
-        const currentProvince = getCurrentValue('province', province);
-        const currentDistrict = getCurrentValue('district', district);
-        const currentSubDistrict = getCurrentValue('subDistrict', subDistrict);
-        const currentPostalCode = getCurrentValue('postalCode', postalCode);
-        const currentHotelAddress = getCurrentValue('hotelAddress', hotelAddress);
         
-        if (currentProvince && currentProvince.trim()) travelInfoUpdates.province = currentProvince;
-        if (currentDistrict && currentDistrict.trim()) travelInfoUpdates.district = currentDistrict;
-        if (currentSubDistrict && currentSubDistrict.trim()) travelInfoUpdates.subDistrict = currentSubDistrict;
-        if (currentPostalCode && currentPostalCode.trim()) travelInfoUpdates.postalCode = currentPostalCode;
-        if (currentHotelAddress && currentHotelAddress.trim()) travelInfoUpdates.hotelAddress = currentHotelAddress;
+        if (fieldsToSave.province && fieldsToSave.province.trim()) travelInfoUpdates.province = fieldsToSave.province;
+        if (fieldsToSave.district && fieldsToSave.district.trim()) travelInfoUpdates.district = fieldsToSave.district;
+        if (fieldsToSave.subDistrict && fieldsToSave.subDistrict.trim()) travelInfoUpdates.subDistrict = fieldsToSave.subDistrict;
+        if (fieldsToSave.postalCode && fieldsToSave.postalCode.trim()) travelInfoUpdates.postalCode = fieldsToSave.postalCode;
+        if (fieldsToSave.hotelAddress && fieldsToSave.hotelAddress.trim()) travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
       }
 
       if (Object.keys(travelInfoUpdates).length > 0) {

@@ -1778,83 +1778,112 @@ class PassportDataService {
   }
 
   /**
-   * Update travel info data
-   * Merges updates without overwriting existing non-empty fields
-   * 
-   * @param {string} userId - User ID
-   * @param {string} destination - Destination
-   * @param {Object} updates - Fields to update
-   * @returns {Promise<Object>} - Updated travel info
-   */
-  static async updateTravelInfo(userId, destination, updates) {
-    try {
-      console.log('Updating travel info for user:', userId, 'destination:', destination);
-      
-      // Get existing travel info
-      const existing = await this.getTravelInfo(userId, destination);
-      
-      if (!existing) {
-        // No existing data, create new
-        const newTravelInfo = await this.saveTravelInfo(userId, { ...updates, destination });
-        
-        // Handle arrival date change for new travel info (support legacy and new field names)
-        const createdArrivalDate = (updates.arrivalArrivalDate ?? updates.arrivalDate) || null;
-        if (createdArrivalDate) {
-          await this.handleArrivalDateChange(userId, destination, null, createdArrivalDate);
-        }
-        
-        return newTravelInfo;
-      }
+    * Update travel info data
+    * Merges updates without overwriting existing non-empty fields
+    *
+    * @param {string} userId - User ID
+    * @param {string} destination - Destination
+    * @param {Object} updates - Fields to update
+    * @returns {Promise<Object>} - Updated travel info
+    */
+   static async updateTravelInfo(userId, destination, updates) {
+     try {
+       console.log('Updating travel info for user:', userId, 'destination:', destination);
 
-      // Capture existing arrival date using both legacy and new field names
-      const oldArrivalDate = existing.arrivalArrivalDate || existing.arrivalDate || null;
+       // Get existing travel info
+       const existing = await this.getTravelInfo(userId, destination);
 
-      // Filter out empty values from updates
-      const nonEmptyUpdates = {};
-      for (const [key, value] of Object.entries(updates)) {
-        if (value !== null && value !== undefined) {
-          if (typeof value === 'string') {
-            if (value.trim().length > 0) {
-              nonEmptyUpdates[key] = value;
-            }
-          } else {
-            nonEmptyUpdates[key] = value;
-          }
-        }
-      }
+       if (!existing) {
+         // No existing data, create new
+         const newTravelInfo = await this.saveTravelInfo(userId, { ...updates, destination });
 
-      // Merge with existing data
-      const merged = { ...existing, ...nonEmptyUpdates };
-      await SecureStorageService.saveTravelInfo(merged);
-      
-      // Determine if arrival date changed (supporting legacy and new field names)
-      const updatedArrivalDate =
-        nonEmptyUpdates.arrivalArrivalDate ??
-        nonEmptyUpdates.arrivalDate ??
-        undefined;
-      const arrivalDateChanged =
-        updatedArrivalDate !== undefined && updatedArrivalDate !== oldArrivalDate;
+         // Handle arrival date change for new travel info (support legacy and new field names)
+         const createdArrivalDate = (updates.arrivalArrivalDate ?? updates.arrivalDate) || null;
+         if (createdArrivalDate) {
+           await this.handleArrivalDateChange(userId, destination, null, createdArrivalDate);
+         }
 
-      // Handle arrival date change if it occurred
-      if (arrivalDateChanged) {
-        await this.handleArrivalDateChange(userId, destination, oldArrivalDate, updatedArrivalDate);
-      }
+         return newTravelInfo;
+       }
 
-      const updatedFields = Object.keys(nonEmptyUpdates);
-      if (updatedFields.length > 0) {
-        this.triggerDataChangeEvent('travel', userId, {
-          updatedFields,
-          destination,
-        });
-      }
-      
-      console.log('Travel info updated successfully');
-      return merged;
-    } catch (error) {
-      console.error('Failed to update travel info:', error);
-      throw error;
-    }
-  }
+       // Capture existing arrival date using both legacy and new field names
+       const oldArrivalDate = existing.arrivalArrivalDate || existing.arrivalDate || null;
+
+       // Filter out empty values from updates
+       const nonEmptyUpdates = {};
+       for (const [key, value] of Object.entries(updates)) {
+         if (value !== null && value !== undefined) {
+           if (typeof value === 'string') {
+             if (value.trim().length > 0) {
+               nonEmptyUpdates[key] = value;
+             }
+           } else {
+             nonEmptyUpdates[key] = value;
+           }
+         }
+       }
+
+       // Merge with existing data
+       const merged = { ...existing, ...nonEmptyUpdates };
+       await SecureStorageService.saveTravelInfo(merged);
+
+       // Determine if arrival date changed (supporting legacy and new field names)
+       const updatedArrivalDate =
+         nonEmptyUpdates.arrivalArrivalDate ??
+         nonEmptyUpdates.arrivalDate ??
+         undefined;
+       const arrivalDateChanged =
+         updatedArrivalDate !== undefined && updatedArrivalDate !== oldArrivalDate;
+
+       // Handle arrival date change if it occurred
+       if (arrivalDateChanged) {
+         await this.handleArrivalDateChange(userId, destination, oldArrivalDate, updatedArrivalDate);
+       }
+
+       const updatedFields = Object.keys(nonEmptyUpdates);
+       if (updatedFields.length > 0) {
+         this.triggerDataChangeEvent('travel', userId, {
+           updatedFields,
+           destination,
+         });
+       }
+
+       console.log('Travel info updated successfully');
+       return merged;
+     } catch (error) {
+       console.error('Failed to update travel info:', error);
+       throw error;
+     }
+   }
+
+  /**
+    * Clear travel info for a user and destination
+    * Used for recovery from SQLite errors
+    *
+    * @param {string} userId - User ID
+    * @param {string} destination - Destination
+    * @returns {Promise<boolean>} - Success status
+    */
+   static async clearTravelInfo(userId, destination) {
+     try {
+       console.log('Clearing travel info for user:', userId, 'destination:', destination);
+
+       // Delete travel info from database
+       await SecureStorageService.modernDb.runAsync(
+         'DELETE FROM travel_info WHERE user_id = ? AND destination = ?',
+         [userId, destination]
+       );
+
+       // Invalidate cache
+       this.invalidateCache('travel', `${userId}_${destination}`);
+
+       console.log('Travel info cleared successfully');
+       return true;
+     } catch (error) {
+       console.error('Failed to clear travel info:', error);
+       throw error;
+     }
+   }
 
   /**
    * Handle arrival date change - trigger notification scheduling
