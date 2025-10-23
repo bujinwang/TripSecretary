@@ -11,19 +11,8 @@ import SecureStorageService from '../../security/SecureStorageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock dependencies
-jest.mock('../../../models/Passport', () => {
-  const actualPassport = jest.requireActual('../../../models/Passport');
-  return {
-    __esModule: true,
-    default: jest.fn(() => ({})),
-    loadPrimary: jest.fn(),
-  };
-});
-jest.mock('../../../models/PersonalInfo', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({})),
-  loadDefault: jest.fn(),
-}));
+
+
 // FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');
@@ -35,6 +24,10 @@ describe('PassportDataService - CRUD Operations', () => {
     jest.clearAllMocks();
     PassportDataService.clearCache();
     PassportDataService.resetCacheStats();
+    Passport.load = jest.fn();
+    Passport.loadPrimary = jest.fn();
+    PersonalInfo.load = jest.fn();
+    PersonalInfo.loadDefault = jest.fn();
   });
 
   describe('CREATE Operations', () => {
@@ -57,23 +50,15 @@ describe('PassportDataService - CRUD Operations', () => {
           ...passportData
         };
 
-        const mockPassportInstance = {
-          ...savedPassport,
-          save: jest.fn().mockResolvedValue(true)
-        };
-
-        Passport.mockImplementation(() => mockPassportInstance);
-        Passport.load.mockResolvedValue(savedPassport);
+        const saveSpy = jest.spyOn(Passport.prototype, 'save').mockResolvedValue(true);
 
         const result = await PassportDataService.savePassport(passportData, testUserId);
 
-        expect(Passport).toHaveBeenCalledWith(expect.objectContaining({
-          ...passportData,
-          userId: testUserId
-        }));
-        expect(mockPassportInstance.save).toHaveBeenCalled();
+        expect(saveSpy).toHaveBeenCalled();
         expect(result.userId).toEqual(testUserId);
         expect(result.passportNumber).toEqual(passportData.passportNumber);
+
+        saveSpy.mockRestore();
       });
 
       it('should throw error when userId is missing', async () => {
@@ -94,14 +79,8 @@ describe('PassportDataService - CRUD Operations', () => {
           nationality: 'CHN'
         };
 
-        const mockPassportInstance = {
-          id: 'passport-1',
-          userId: testUserId,
-          save: jest.fn().mockResolvedValue(true)
-        };
-
-        Passport.mockImplementation(() => mockPassportInstance);
-        Passport.load.mockResolvedValue(mockPassportInstance);
+        const saveSpy = jest.spyOn(Passport.prototype, 'save').mockResolvedValue(true);
+        Passport.load.mockResolvedValue(new Passport(passportData));
 
         // Pre-populate cache
         PassportDataService.cache.passport.set(testUserId, { old: 'data' });
@@ -111,6 +90,8 @@ describe('PassportDataService - CRUD Operations', () => {
         // Cache should be invalidated
         const stats = PassportDataService.getCacheStats();
         expect(stats.invalidations).toBeGreaterThan(0);
+
+        saveSpy.mockRestore();
       });
     });
 
@@ -131,23 +112,15 @@ describe('PassportDataService - CRUD Operations', () => {
           ...personalData
         };
 
-        const mockPersonalInfoInstance = {
-          ...savedPersonalInfo,
-          save: jest.fn().mockResolvedValue(true)
-        };
-
-        PersonalInfo.mockImplementation(() => mockPersonalInfoInstance);
-        PersonalInfo.load.mockResolvedValue(savedPersonalInfo);
+        const saveSpy = jest.spyOn(PersonalInfo.prototype, 'save').mockResolvedValue(true);
 
         const result = await PassportDataService.savePersonalInfo(personalData, testUserId);
 
-        expect(PersonalInfo).toHaveBeenCalledWith(expect.objectContaining({
-          ...personalData,
-          userId: testUserId
-        }));
-        expect(mockPersonalInfoInstance.save).toHaveBeenCalled();
+        expect(saveSpy).toHaveBeenCalled();
         expect(result.userId).toEqual(testUserId);
         expect(result.email).toEqual(personalData.email);
+
+        saveSpy.mockRestore();
       });
     });
 
@@ -359,11 +332,8 @@ describe('PassportDataService - CRUD Operations', () => {
     });
 
     it('should handle validation errors', async () => {
-      const mockPassportInstance = {
-        save: jest.fn().mockRejectedValue(new Error('Validation failed'))
-      };
-
-      Passport.mockImplementation(() => mockPassportInstance);
+      const mockPassportInstance = new Passport();
+      mockPassportInstance.save = jest.fn().mockRejectedValue(new Error('Validation failed'));
 
       await expect(
         PassportDataService.savePassport({ passportNumber: '' }, testUserId)

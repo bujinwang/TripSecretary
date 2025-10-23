@@ -1071,13 +1071,17 @@ class TDACAPIService {
     const purposeId = purposeRow?.key || this.getPurposeId(traveler.purpose);
     const cityResName = dyn.stateRow?.value || this.normalizeInput(traveler.cityResidence);
     const provinceName = dyn.provinceRow?.value || this.normalizeInput(traveler.province);
-    const districtName = dyn.districtRow?.value || this.normalizeInput(traveler.district);
-    const subDistrictName = dyn.subDistrictRow?.value || this.normalizeInput(traveler.subDistrict);
-    
+
+    // For hotels, district/subDistrict/postCode are not required
+    const isHotelType = traveler.accommodationType === 'HOTEL';
+    const districtName = isHotelType ? '' : (dyn.districtRow?.value || this.normalizeInput(traveler.district));
+    const subDistrictName = isHotelType ? '' : (dyn.subDistrictRow?.value || this.normalizeInput(traveler.subDistrict));
+
     console.log('🔍 Dynamic data check:');
     console.log('   provinceRow:', dyn.provinceRow);
     console.log('   provinceName used:', provinceName);
-    const postalCode = dyn.districtRow?.code || traveler.postCode || '';
+    console.log('   isHotelType:', isHotelType);
+    const postalCode = isHotelType ? '' : (dyn.districtRow?.code || traveler.postCode || '');
     const tranModeId = traveler.tranModeId || this.getTranModeId(traveler.travelMode);
     const hasDeparture = !!departureDate;
     const deptTranModeId = hasDeparture
@@ -1142,9 +1146,10 @@ class TDACAPIService {
         accTypeId: this.getAccommodationId(traveler.accommodationType),
         accProvinceId: dyn.provinceRow?.key || this.getProvinceId(traveler.province),
         accProvinceDesc: provinceName,
-        accDistrictId: dyn.districtRow?.key || this.getDistrictId(traveler.district),
+        // For hotels, these fields should be empty
+        accDistrictId: isHotelType ? '' : (dyn.districtRow?.key || this.getDistrictId(traveler.district)),
         accDistrictDesc: districtName,
-        accSubDistrictId: dyn.subDistrictRow?.key || this.getSubDistrictId(traveler.subDistrict),
+        accSubDistrictId: isHotelType ? '' : (dyn.subDistrictRow?.key || this.getSubDistrictId(traveler.subDistrict)),
         accSubDistrictDesc: subDistrictName,
         accPostCode: postalCode,
         accAddress: (traveler.address || '').toUpperCase(),

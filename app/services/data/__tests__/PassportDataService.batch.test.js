@@ -7,13 +7,12 @@ import PassportDataService from '../PassportDataService';
 import SecureStorageService from '../../security/SecureStorageService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
-// FundingProof model removed - use FundItem instead
+
 
 // Mock dependencies
 jest.mock('../../security/SecureStorageService');
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
-// FundingProof mock removed
 
 describe('PassportDataService - Batch Operations', () => {
   const testUserId = 'test_user_123';
@@ -53,8 +52,7 @@ describe('PassportDataService - Batch Operations', () => {
       // Mock batchLoad
       SecureStorageService.batchLoad.mockResolvedValue({
         passport: mockPassport,
-        personalInfo: mockPersonalInfo
-        // fundingProof removed
+
       });
 
       const result = await PassportDataService.getAllUserData(testUserId);
@@ -83,7 +81,7 @@ describe('PassportDataService - Batch Operations', () => {
       // Mock individual load methods
       Passport.load.mockResolvedValue(mockPassport);
       PersonalInfo.load.mockResolvedValue(null);
-      FundingProof.load.mockResolvedValue(null);
+      
 
       const result = await PassportDataService.getAllUserData(testUserId, {
         useBatchLoad: false
@@ -111,7 +109,7 @@ describe('PassportDataService - Batch Operations', () => {
       SecureStorageService.batchLoad.mockResolvedValue({
         passport: mockPassport,
         personalInfo: null
-        // fundingProof removed
+
       });
 
       await PassportDataService.getAllUserData(testUserId);
@@ -147,11 +145,6 @@ describe('PassportDataService - Batch Operations', () => {
           phoneNumber: '+86 123456789',
           email: 'old@example.com'
         },
-        fundingProof: {
-          id: 'funding_1',
-          userId: testUserId,
-          cashAmount: '10000 THB'
-        }
       };
 
       const updates = {
@@ -160,9 +153,6 @@ describe('PassportDataService - Batch Operations', () => {
         },
         personalInfo: {
           email: 'new@example.com'
-        },
-        fundingProof: {
-          cashAmount: '20000 THB'
         }
       };
 
@@ -195,12 +185,7 @@ describe('PassportDataService - Batch Operations', () => {
               phoneNumber: '+86 123456789'
             })
           }),
-          expect.objectContaining({
-            type: 'fundingProof',
-            data: expect.objectContaining({
-              cashAmount: '20000 THB'
-            })
-          })
+
         ])
       );
 
@@ -218,9 +203,7 @@ describe('PassportDataService - Batch Operations', () => {
         personalInfo: {
           id: 'personal_1',
           userId: testUserId,
-          email: 'test@example.com'
-        },
-        fundingProof: null
+
       };
 
       const updates = {
@@ -338,9 +321,7 @@ describe('PassportDataService - Batch Operations', () => {
           email: 'test@example.com',
           phoneNumber: '+86 123456789'
         },
-        fundingProof: {
-          cashAmount: '10000 THB'
-        }
+
       };
 
       SecureStorageService.batchSave.mockResolvedValue([
@@ -352,7 +333,7 @@ describe('PassportDataService - Batch Operations', () => {
       // Mock individual getters for reload
       Passport.load.mockResolvedValue({ ...userData.passport, id: 'passport_1' });
       PersonalInfo.load.mockResolvedValue({ ...userData.personalInfo, id: 'personal_1' });
-      FundingProof.load.mockResolvedValue({ ...userData.fundingProof, id: 'funding_1' });
+
 
       await PassportDataService.saveAllUserData(userData, testUserId);
 
@@ -361,7 +342,7 @@ describe('PassportDataService - Batch Operations', () => {
         expect.arrayContaining([
           expect.objectContaining({ type: 'passport' }),
           expect.objectContaining({ type: 'personalInfo' }),
-          expect.objectContaining({ type: 'fundingProof' })
+
         ])
       );
     });
@@ -395,7 +376,7 @@ describe('PassportDataService - Batch Operations', () => {
       const mockData = {
         passport: { id: 'p1', userId: testUserId },
         personalInfo: { id: 'pi1', userId: testUserId },
-        fundingProof: { id: 'f1', userId: testUserId }
+
       };
 
       // Mock batch load (fast)
@@ -413,10 +394,7 @@ describe('PassportDataService - Batch Operations', () => {
         await new Promise(resolve => setTimeout(resolve, 10));
         return mockData.personalInfo;
       });
-      FundingProof.load.mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
-        return mockData.fundingProof;
-      });
+
 
       // Test batch loading
       const batchStart = Date.now();

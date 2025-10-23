@@ -796,6 +796,9 @@ const ResultScreen = ({ navigation, route }) => {
                     // 泰国显示选择界面，其他国家打开网址
                     if (isThailand) {
                       // 映射字段供两个版本使用
+                      const accommodationType = travelInfo?.accommodationType || 'HOTEL';
+                      const isHotelType = accommodationType === 'HOTEL';
+
                       const tdacTravelInfo = {
                         // Personal Information In Passport
                         familyName: passport?.familyName || passport?.lastName || '',
@@ -803,7 +806,7 @@ const ResultScreen = ({ navigation, route }) => {
                         middleName: passport?.middleName || '',
                         passportNo: passport?.passportNo || passport?.passportNumber || '',
                         nationality: passport?.nationality || 'CHN',
-                        
+
                         // Personal Information
                         birthDate: passport?.birthDate || passport?.dateOfBirth || '',
                         occupation: passport?.occupation || 'ENGINEER',
@@ -813,10 +816,10 @@ const ResultScreen = ({ navigation, route }) => {
                         phoneCode: passport?.phoneCode || '86',
                         phoneNo: passport?.phoneNo || passport?.phone || '',
                         visaNo: passport?.visaNo || '',
-                        
+
                         // Contact
                         email: passport?.email || '',
-                        
+
                         // Trip Information
                         arrivalDate: travelInfo?.arrivalDate || '',
                         departureDate: travelInfo?.departureDate || null,
@@ -825,15 +828,18 @@ const ResultScreen = ({ navigation, route }) => {
                         travelMode: travelInfo?.travelMode || 'AIR',
                         flightNo: travelInfo?.flightNumber || travelInfo?.flightNo || '',
                         tranModeId: '',
-                        
+
                         // Accommodation
-                        accommodationType: travelInfo?.accommodationType || 'HOTEL',
-                        province: travelInfo?.province || 'BANGKOK',
-                        district: travelInfo?.district || 'BANG_BON',
-                        subDistrict: travelInfo?.subDistrict || 'BANG_BON_NUEA',
-                        postCode: travelInfo?.postCode || '10150',
+                        accommodationType: accommodationType,
+                        province: travelInfo?.province || '',
+                        // Only include district, subDistrict, and postCode for non-hotel accommodations
+                        ...(isHotelType ? {} : {
+                          district: travelInfo?.district || '',
+                          subDistrict: travelInfo?.subDistrict || '',
+                          postCode: travelInfo?.postCode || '',
+                        }),
                         address: travelInfo?.hotelAddress || travelInfo?.hotelName || '',
-                        
+
                         // Token
                         cloudflareToken: 'auto',
                       };

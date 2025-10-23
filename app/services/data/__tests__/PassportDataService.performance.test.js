@@ -10,8 +10,8 @@ import PersonalInfo from '../../../models/PersonalInfo';
 import SecureStorageService from '../../security/SecureStorageService';
 
 // Mock dependencies
-jest.mock('../../../models/Passport');
-jest.mock('../../../models/PersonalInfo');
+
+
 // FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 
@@ -22,6 +22,10 @@ describe('PassportDataService - Performance Tests', () => {
     jest.clearAllMocks();
     PassportDataService.clearCache();
     PassportDataService.resetCacheStats();
+    Passport.load = jest.fn().mockResolvedValue({ userId: testUserId });
+    Passport.loadPrimary = jest.fn().mockResolvedValue({ userId: testUserId });
+    PersonalInfo.load = jest.fn().mockResolvedValue({ userId: testUserId });
+    PersonalInfo.loadDefault = jest.fn().mockResolvedValue({ userId: testUserId });
   });
 
   describe('Data Load Time Performance', () => {

@@ -248,6 +248,7 @@ class ThailandTravelerContextBuilder {
       middleName: nameInfo.middleName || '',
       passportNo: passport?.passportNumber || '',
       nationality: ThailandTravelerContextBuilder.getNationalityId(passport?.nationality) || passport?.nationality || '',
+      nationalityDesc: passport?.nationality || '', // Plain text nationality for language detection
       
       // Personal Information (from user's personal info)
       birthDate: ThailandTravelerContextBuilder.formatDateForTDAC(passport?.dateOfBirth),
@@ -885,7 +886,7 @@ class ThailandTravelerContextBuilder {
     }
     
     // Check for very short addresses (likely incomplete)
-    if (lowerAddress.length < 10) {
+    if (lowerAddress.length < 5) {
       return true;
     }
     

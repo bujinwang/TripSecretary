@@ -803,6 +803,9 @@ class PassportDataService {
    * @returns {Promise<Passport>} - Saved passport instance
    */
   static async savePassport(passportData, userId, options = {}) {
+    if (!userId) {
+      throw new Error('userId is required');
+    }
     try {
       console.log('=== PASSPORT DATA SERVICE DEBUG ===');
       console.log('PassportDataService.savePassport called');

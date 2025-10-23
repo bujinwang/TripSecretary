@@ -32,8 +32,38 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const TDACWebViewScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport: rawPassport, destination, travelInfo } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+
+  // Support both old format (passport, destination, travelInfo) and new format (travelerInfo)
+  const params = route.params || {};
+  const travelerInfo = params.travelerInfo || {};
+
+  // Convert travelerInfo to expected format
+  const passport = params.passport
+    ? PassportDataService.toSerializablePassport(params.passport)
+    : {
+        passportNo: travelerInfo.passportNo,
+        nameEn: travelerInfo.familyName && travelerInfo.firstName
+          ? `${travelerInfo.firstName} ${travelerInfo.familyName}`.trim()
+          : travelerInfo.nameEn || '',
+        name: travelerInfo.nameEn || '',
+        birthDate: travelerInfo.birthDate || travelerInfo.bdDate || '',
+        gender: travelerInfo.gender || 'Male',
+        nationality: travelerInfo.nationalityDesc || travelerInfo.nationality || 'China'
+      };
+
+  const travelInfo = params.travelInfo || {
+    flightNumber: travelerInfo.flightNo || '',
+    arrivalDate: travelerInfo.arrDate || travelerInfo.arrivalDate || '',
+    travelPurpose: travelerInfo.traPurposeId || travelerInfo.purpose || 'Tourism',
+    departureCountry: travelerInfo.countryBoardDesc || 'China',
+    occupation: travelerInfo.occupation || 'Tourist',
+    province: travelerInfo.accProvinceDesc || 'Bangkok',
+    contactPhone: travelerInfo.phoneNo || '13800138000',
+    hotelAddress: travelerInfo.accAddress || ''
+  };
+
+  const destination = params.destination;
+
   const [showHelper, setShowHelper] = useState(false); // 控制浮动助手显示
   const [copiedField, setCopiedField] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,17 +71,87 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   const [showVisualMask, setShowVisualMask] = useState(false);
   const [qrCodeData, setQrCodeData] = useState(null); // 存储QR码数据
   const [showQrCode, setShowQrCode] = useState(false); // 显示QR码模态框
+  const [selectedLanguage, setSelectedLanguage] = useState(null); // Track selected language
+  const [languageSelectionTriggered, setLanguageSelectionTriggered] = useState(false);
 
   // Data comparison state for DEV mode
   const [showDataComparison, setShowDataComparison] = useState(__DEV__ ? false : false);
   const [comparisonData, setComparisonData] = useState(null);
   const webViewRef = useRef(null);
 
-  // 解析姓名
+  // Debug: Log received data
+  React.useEffect(() => {
+    console.log('📦 TDACWebViewScreen received data:', {
+      hasTravelerInfo: !!travelerInfo && Object.keys(travelerInfo).length > 0,
+      travelerInfo: travelerInfo,
+      hasPassport: !!passport,
+      passport: passport,
+      hasTravelInfo: !!travelInfo,
+      travelInfo: travelInfo,
+      hasDestination: !!destination,
+      destination: destination
+    });
+  }, []);
+
+  // 解析姓名 - Parse name into family, middle, and first name
+  // Uses same logic as ThailandTravelerContextBuilder.parseFullName()
   const nameEn = passport?.nameEn || passport?.name || '';
-  const nameParts = nameEn.split(' ');
-  const firstName = nameParts[0] || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
+  const cleanedName = nameEn.trim().replace(/\s+/g, ' ');
+
+  let familyName, middleName, firstName;
+
+  // Try comma-separated format first (e.g., "WANG, BAOBAO" or "ZHANG, WEI MING")
+  if (cleanedName.includes(',')) {
+    const parts = cleanedName.split(',').map(part => part.trim());
+    if (parts.length >= 2) {
+      familyName = parts[0].replace(/,+$/, '').trim(); // Remove trailing commas
+      const givenNames = parts[1].split(' ').filter(name => name.length > 0);
+
+      if (givenNames.length === 2) {
+        // Two given names: treat first as middle, second as first
+        middleName = givenNames[0];
+        firstName = givenNames[1];
+      } else {
+        // Single given name: no middle name
+        middleName = '';
+        firstName = givenNames[0] || '';
+      }
+    } else {
+      familyName = '';
+      middleName = '';
+      firstName = '';
+    }
+  } else {
+    // Space-separated format (e.g., "LI A MAO" or "WANG BAOBAO")
+    const spaceParts = cleanedName.split(/\s+/);
+
+    if (spaceParts.length === 3) {
+      // Three parts: Family Middle First
+      familyName = spaceParts[0].replace(/,+$/, '').trim();
+      middleName = spaceParts[1].replace(/,+$/, '').trim();
+      firstName = spaceParts[2].replace(/,+$/, '').trim();
+    } else if (spaceParts.length === 2) {
+      // Two parts: Family First (no middle name)
+      familyName = spaceParts[0].replace(/,+$/, '').trim();
+      middleName = '';
+      firstName = spaceParts[1].replace(/,+$/, '').trim();
+    } else if (spaceParts.length > 3) {
+      // More than three parts: First is family, second is middle, rest is first
+      familyName = spaceParts[0].replace(/,+$/, '').trim();
+      middleName = spaceParts[1].replace(/,+$/, '').trim();
+      firstName = spaceParts.slice(2).join(' ').replace(/,+$/, '').trim();
+    } else {
+      // Single name - treat as first name
+      familyName = '';
+      middleName = '';
+      firstName = cleanedName.replace(/,+$/, '').trim();
+    }
+  }
+
+  // Fallback to travelerInfo if available
+  firstName = firstName || travelerInfo.firstName || '';
+  const lastName = familyName || travelerInfo.familyName || '';
+  middleName = middleName || travelerInfo.middleName || '';
 
   const copyToClipboard = (text, fieldName) => {
     Clipboard.setString(text);
@@ -175,6 +275,522 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     }
   };
 
+  // Detect preferred language based on traveler's nationality
+  const getPreferredLanguage = () => {
+    // Use decrypted nationality from travelerInfo first, fallback to passport nationality
+    const nationality = travelerInfo?.nationalityDesc || passport?.nationalityDesc || 'CHN';
+    const nationalityUpper = nationality.toUpperCase().trim();
+
+    console.log('🌐 Detecting language for nationality:', nationality);
+
+    // Map nationality codes (CHN, JPN, etc.) OR country names to TDAC language options
+    // Chinese variants
+    if (nationalityUpper === 'CHN' || nationalityUpper === 'CN' ||
+        nationalityUpper.includes('CHINA') || nationalityUpper.includes('CHINESE') ||
+        nationalityUpper.includes('中国')) {
+      return '中文';
+    }
+    // Japanese variants
+    else if (nationalityUpper === 'JPN' || nationalityUpper === 'JP' ||
+             nationalityUpper.includes('JAPAN') || nationalityUpper.includes('JAPANESE') ||
+             nationalityUpper.includes('日本')) {
+      return '日本語';
+    }
+    // Korean variants
+    else if (nationalityUpper === 'KOR' || nationalityUpper === 'KR' ||
+             nationalityUpper.includes('KOREA') || nationalityUpper.includes('KOREAN') ||
+             nationalityUpper.includes('韩国') || nationalityUpper.includes('한국')) {
+      return '한국어';
+    }
+    // Russian variants
+    else if (nationalityUpper === 'RUS' || nationalityUpper === 'RU' ||
+             nationalityUpper.includes('RUSSIA') || nationalityUpper.includes('RUSSIAN') ||
+             nationalityUpper.includes('俄罗斯')) {
+      return 'Русский';
+    }
+
+    // Default to English for all other nationalities
+    return 'English';
+  };
+
+  // Auto-select language after Cloudflare verification
+  const autoSelectLanguage = () => {
+    const preferredLanguage = getPreferredLanguage();
+
+    const jsCode = `
+      (function() {
+        try {
+          // Notify React Native that the script has started
+          window.ReactNativeWebView?.postMessage(JSON.stringify({
+            type: 'debug_log',
+            message: '🚀 Language selection script started'
+          }));
+
+          if (window.languageSelected) {
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '⚠️ Language already selected, skipping'
+            }));
+            return; // Already selected
+          }
+
+          const preferredLang = '${preferredLanguage}';
+          window.ReactNativeWebView?.postMessage(JSON.stringify({
+            type: 'debug_log',
+            message: '🌐 Auto-selecting language: ' + preferredLang
+          }));
+          console.log('🌐 Auto-selecting language:', preferredLang);
+
+          // Step 1: Try to find and open the language dropdown first
+          // The language dropdown is typically in the top-right corner of the page
+          let dropdownOpened = false;
+
+          // Strategy 1: Look for language selector in header/toolbar (most common location)
+          const headerLanguageSelectors = document.querySelectorAll(
+            'header button, header div[role="button"], ' +
+            'mat-toolbar button, mat-toolbar div[role="button"], ' +
+            '.toolbar button, .toolbar div[role="button"], ' +
+            'nav button, nav div[role="button"]'
+          );
+
+          window.ReactNativeWebView?.postMessage(JSON.stringify({
+            type: 'debug_log',
+            message: '🔍 Found ' + headerLanguageSelectors.length + ' header elements'
+          }));
+          console.log('🔍 Found', headerLanguageSelectors.length, 'header elements');
+
+          for (let trigger of headerLanguageSelectors) {
+            const text = (trigger.textContent || trigger.innerText || '').trim();
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '  📝 Checking: ' + text.substring(0, 50)
+            }));
+            console.log('  📝 Checking header element:', text.substring(0, 50));
+
+            // Check if this is the language selector (contains flag emoji or language name)
+            if (text.includes('English') || text.includes('中文') || text.includes('日本語') ||
+                text.includes('한국어') || text.includes('Русский')) {
+
+              // Additional check: should be relatively short text (just the language name)
+              if (text.length < 30) {
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '🔽 Opening dropdown: ' + text
+                }));
+                console.log('🔽 Opening language dropdown (header):', text);
+                trigger.click();
+                dropdownOpened = true;
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '✅ Clicked dropdown trigger'
+                }));
+                console.log('✅ Clicked language dropdown trigger');
+                break;
+              } else {
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '⚠️ Text too long (' + text.length + ' chars)'
+                }));
+                console.log('⚠️ Text too long (', text.length, 'chars), skipping');
+              }
+            }
+          }
+
+          // Strategy 2: If not found in header, search more broadly
+          if (!dropdownOpened) {
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '⚠️ Not found in header, searching broadly...'
+            }));
+            console.log('⚠️ Not found in header, searching more broadly...');
+            const allLanguageSelectors = document.querySelectorAll(
+              'button[class*="language"], button[class*="Language"], button[class*="lang"], ' +
+              'div[class*="language"], div[class*="Language"], div[class*="lang"], ' +
+              '[role="button"][class*="lang"], mat-select, .mat-select'
+            );
+
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '🔍 Found ' + allLanguageSelectors.length + ' language-related elements'
+            }));
+            console.log('🔍 Found', allLanguageSelectors.length, 'language-related elements');
+
+            for (let trigger of allLanguageSelectors) {
+              const text = (trigger.textContent || trigger.innerText || '').trim();
+              console.log('  📝 Checking element:', text.substring(0, 50));
+
+              if ((text.includes('English') || text.includes('中文') || text.includes('日本語') ||
+                   text.includes('한국어') || text.includes('Русский')) && text.length < 30) {
+
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '🔽 Opening dropdown (general): ' + text
+                }));
+                console.log('🔽 Opening language dropdown (general):', text);
+                trigger.click();
+                dropdownOpened = true;
+                console.log('✅ Clicked language dropdown trigger');
+                break;
+              }
+            }
+          }
+
+          // Strategy 3: Search ALL elements on the page (most aggressive)
+          if (!dropdownOpened) {
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '⚠️ Still not found, searching ALL elements...'
+            }));
+
+            // Get all clickable elements
+            const allElements = document.querySelectorAll('button, a, div, span');
+            let candidateCount = 0;
+
+            for (let el of allElements) {
+              const text = (el.textContent || el.innerText || '').trim();
+
+              // Look for elements that ONLY contain a language name (very specific)
+              if (text === 'English' || text === '中文' || text === '日本語' ||
+                  text === '한국어' || text === 'Русский' ||
+                  text.match(/^🇬🇧\\s*English$/) || text.match(/^🇨🇳\\s*中文$/)) {
+
+                candidateCount++;
+                const rect = el.getBoundingClientRect();
+                const isVisible = rect.width > 0 && rect.height > 0;
+
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '  📍 Candidate #' + candidateCount + ': "' + text + '" (visible: ' + isVisible + ')'
+                }));
+
+                if (isVisible) {
+                  window.ReactNativeWebView?.postMessage(JSON.stringify({
+                    type: 'debug_log',
+                    message: '🔽 Clicking element: ' + text
+                  }));
+                  el.click();
+                  dropdownOpened = true;
+                  break;
+                }
+              }
+            }
+
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '📊 Found ' + candidateCount + ' candidate elements total'
+            }));
+          }
+
+          if (!dropdownOpened) {
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '❌ Could not find language dropdown trigger!'
+            }));
+            console.error('❌ Could not find language dropdown trigger!');
+          }
+
+          // Step 2: After opening dropdown (or if no dropdown needed), select the language
+          setTimeout(() => {
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '🎯 Looking for language option: ' + preferredLang
+            }));
+            console.log('🎯 Looking for language option:', preferredLang);
+
+            // Look for language options in the dropdown or page
+            const languageButtons = document.querySelectorAll(
+              'button, a, div[role="button"], .language-option, mat-option, .mat-option, ' +
+              '[class*="lang"], [class*="Language"]'
+            );
+
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '🔍 Found ' + languageButtons.length + ' potential language buttons'
+            }));
+            console.log('🔍 Found', languageButtons.length, 'potential language buttons');
+            let foundCount = 0;
+
+            for (let btn of languageButtons) {
+              const text = (btn.textContent || btn.innerText || '').trim();
+
+              // Skip if text is too long (likely a container with all options)
+              // Individual language options should be short (< 20 chars)
+              if (text.length > 20) {
+                continue;
+              }
+
+              // Match the preferred language - EXACT or with flag emoji
+              let isMatch = false;
+              if (preferredLang === 'English' && (text === 'English' || text.match(/^🇬🇧\\s*English$/))) {
+                isMatch = true;
+              } else if (preferredLang === '中文' && (text === '中文' || text.match(/^🇨🇳\\s*中文$/))) {
+                isMatch = true;
+              } else if (preferredLang === '日本語' && (text === '日本語' || text.match(/^🇯🇵\\s*日本語$/))) {
+                isMatch = true;
+              } else if (preferredLang === '한국어' && (text === '한국어' || text.match(/^🇰🇷\\s*한국어$/))) {
+                isMatch = true;
+              } else if (preferredLang === 'Русский' && (text === 'Русский' || text.match(/^🇷🇺\\s*Русский$/))) {
+                isMatch = true;
+              } else if (text === preferredLang) {
+                isMatch = true;
+              }
+
+              if (isMatch) {
+                foundCount++;
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '✅ Match #' + foundCount + ': "' + text + '"'
+                }));
+                console.log('✅ Found matching language option #' + foundCount + ':', text);
+
+                // Check if button is visible and not the dropdown trigger itself
+                const rect = btn.getBoundingClientRect();
+                const isVisible = rect.width > 0 && rect.height > 0;
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '  📏 Visible: ' + isVisible + ' (w:' + rect.width + ' h:' + rect.height + ')'
+                }));
+                console.log('  📏 Visibility:', isVisible, '(width:', rect.width, 'height:', rect.height + ')');
+
+                if (isVisible) {
+                  window.ReactNativeWebView?.postMessage(JSON.stringify({
+                    type: 'debug_log',
+                    message: '  ✅ Visible! Selecting it...'
+                  }));
+                  console.log('  ✅ This option is visible, selecting it!');
+                  btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                  setTimeout(() => {
+                    window.ReactNativeWebView?.postMessage(JSON.stringify({
+                      type: 'debug_log',
+                      message: '  🖱️ Clicking: ' + text
+                    }));
+                    console.log('  🖱️ Clicking language option...');
+                    btn.click();
+                    window.languageSelected = true;
+
+                    window.ReactNativeWebView?.postMessage(JSON.stringify({
+                      type: 'language_selected',
+                      language: preferredLang
+                    }));
+
+                    console.log('✅ Language selected:', preferredLang);
+
+                    // After language selection, trigger Arrival Card click
+                    window.ReactNativeWebView?.postMessage(JSON.stringify({
+                      type: 'trigger_arrival_card_click'
+                    }));
+                  }, 500);
+
+                  break;
+                } else {
+                  window.ReactNativeWebView?.postMessage(JSON.stringify({
+                    type: 'debug_log',
+                    message: '  ⚠️ Not visible, continuing...'
+                  }));
+                  console.log('  ⚠️ This option is not visible, continuing search...');
+                }
+              }
+            }
+
+            if (foundCount === 0) {
+              window.ReactNativeWebView?.postMessage(JSON.stringify({
+                type: 'debug_log',
+                message: '❌ No match found for: ' + preferredLang
+              }));
+              console.error('❌ Could not find any language option matching:', preferredLang);
+            } else {
+              window.ReactNativeWebView?.postMessage(JSON.stringify({
+                type: 'debug_log',
+                message: '📊 Total matches found: ' + foundCount
+              }));
+            }
+          }, dropdownOpened ? 800 : 200); // Wait longer if we opened a dropdown
+
+        } catch(e) {
+          console.error('Language selection error:', e);
+        }
+      })();
+    `;
+
+    webViewRef.current?.injectJavaScript(jsCode);
+  };
+
+  // Auto-click Arrival Card button
+  const autoClickArrivalCard = () => {
+    const jsCode = `
+      (function() {
+        try {
+          if (window.arrivalCardClicked) {
+            console.log('⚠️ Arrival Card already clicked, skipping');
+            return;
+          }
+
+          console.log('🔍 Looking for Arrival Card button...');
+          window.ReactNativeWebView?.postMessage(JSON.stringify({
+            type: 'debug_log',
+            message: '🔍 Looking for Arrival Card button...'
+          }));
+
+          // Wait for page to load after language selection
+          setTimeout(() => {
+            // Multiple strategies to find Arrival Card button
+            let arrivalCardBtn = null;
+
+            // Strategy 1: Look for all clickable elements
+            const allElements = document.querySelectorAll('button, a, div, span, mat-card, [class*="card"], [class*="Card"], [role="button"]');
+
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '🔍 Scanning ' + allElements.length + ' elements for Arrival Card...'
+            }));
+
+            let candidateCount = 0;
+            let bestMatch = null;
+            let bestMatchScore = 0;
+
+            for (let el of allElements) {
+              const text = (el.textContent || el.innerText || '').trim();
+
+              // Skip large containers (likely containing entire page content)
+              // Individual buttons should have very concise text (< 80 chars)
+              if (text.length > 80) {
+                continue;
+              }
+
+              // Match arrival card in multiple languages
+              let isArrivalCard = false;
+              let matchScore = 0;
+
+              // English patterns - prioritize exact matches
+              if (text === 'Arrival Card') {
+                isArrivalCard = true;
+                matchScore = 100; // Exact match
+              } else if (text.match(/^Arrival\\s*Card$/i)) {
+                isArrivalCard = true;
+                matchScore = 90;
+              } else if (text.includes('Arrival Card')) {
+                isArrivalCard = true;
+                matchScore = 50;
+              }
+
+              // Chinese patterns (中文) - prioritize exact matches
+              if (text === '入境卡') {
+                isArrivalCard = true;
+                matchScore = 100; // Exact match
+              } else if (text.match(/^入境卡$/)) {
+                isArrivalCard = true;
+                matchScore = 90;
+              } else if (text.includes('入境卡') && !text.includes('更新')) {
+                // Include if it contains "入境卡" but NOT "更新" (update)
+                isArrivalCard = true;
+                matchScore = 60;
+              } else if (text.includes('入境卡')) {
+                isArrivalCard = true;
+                matchScore = 40;
+              }
+
+              // Japanese patterns (日本語)
+              if (text === 'アライバルカード' || text === '入国カード') {
+                isArrivalCard = true;
+                matchScore = 100;
+              } else if (text.includes('アライバルカード') || text.includes('入国カード')) {
+                isArrivalCard = true;
+                matchScore = 50;
+              }
+
+              // Korean patterns (한국어)
+              if (text === '입국카드' || text === '도착카드') {
+                isArrivalCard = true;
+                matchScore = 100;
+              } else if (text.includes('입국카드') || text.includes('도착카드')) {
+                isArrivalCard = true;
+                matchScore = 50;
+              }
+
+              // Russian patterns (Русский)
+              if (text === 'Карта прибытия') {
+                isArrivalCard = true;
+                matchScore = 100;
+              } else if (text.includes('Карта прибытия')) {
+                isArrivalCard = true;
+                matchScore = 50;
+              }
+
+              if (isArrivalCard) {
+                candidateCount++;
+                const rect = el.getBoundingClientRect();
+                const isVisible = rect.width > 0 && rect.height > 0;
+
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'debug_log',
+                  message: '  📍 Candidate #' + candidateCount + ': "' + text.substring(0, 50) + '..." (score: ' + matchScore + ', visible: ' + isVisible + ')'
+                }));
+
+                // Keep track of the best match (highest score + visible)
+                if (isVisible && matchScore > bestMatchScore) {
+                  bestMatch = el;
+                  bestMatchScore = matchScore;
+                  window.ReactNativeWebView?.postMessage(JSON.stringify({
+                    type: 'debug_log',
+                    message: '    🎯 New best match! Score: ' + matchScore
+                  }));
+                }
+              }
+            }
+
+            // Use the best match found
+            if (bestMatch) {
+              arrivalCardBtn = bestMatch;
+              const text = (bestMatch.textContent || bestMatch.innerText || '').trim();
+              console.log('✅ Found Arrival Card button:', text);
+              window.ReactNativeWebView?.postMessage(JSON.stringify({
+                type: 'debug_log',
+                message: '✅ Best match (score ' + bestMatchScore + '): ' + text.substring(0, 80)
+              }));
+            }
+
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'debug_log',
+              message: '📊 Found ' + candidateCount + ' arrival card candidates'
+            }));
+
+            if (arrivalCardBtn) {
+              console.log('📍 Scrolling to Arrival Card button');
+              arrivalCardBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+              setTimeout(() => {
+                console.log('🖱️ Clicking Arrival Card button');
+                arrivalCardBtn.click();
+                window.arrivalCardClicked = true;
+                window.needAutoFill = true;
+
+                window.ReactNativeWebView?.postMessage(JSON.stringify({
+                  type: 'arrival_card_clicked'
+                }));
+
+                console.log('✅ Arrival Card clicked successfully');
+              }, 800);
+            } else {
+              console.warn('⚠️ Could not find Arrival Card button');
+              window.ReactNativeWebView?.postMessage(JSON.stringify({
+                type: 'debug_log',
+                message: '❌ Could not find Arrival Card button'
+              }));
+              window.ReactNativeWebView?.postMessage(JSON.stringify({
+                type: 'arrival_card_not_found'
+              }));
+            }
+          }, 2000); // Wait 2 seconds for page to fully load after language selection
+        } catch(e) {
+          console.error('❌ Arrival Card click error:', e);
+        }
+      })();
+    `;
+
+    webViewRef.current?.injectJavaScript(jsCode);
+  };
+
   // 检测Cloudflare验证框 - 增强版，支持视觉遮罩
   const checkCloudflareChallenge = () => {
     const jsCode = `
@@ -201,6 +817,11 @@ const TDACWebViewScreen = ({ navigation, route }) => {
                             (!document.body.innerHTML.includes('Verify you are human') &&
                              window.hadCloudflare === true);
 
+          // 检测是否在语言选择页面
+          const hasLanguageSelection = document.body.innerHTML.includes('English') &&
+                                       document.body.innerHTML.includes('日本語') &&
+                                       (document.body.innerHTML.includes('中文') || document.body.innerHTML.includes('한국어'));
+
           // 检测是否在Arrival Card选择页面
           const hasArrivalCard = document.body.innerHTML.includes('Arrival Card') &&
                                 (document.body.innerHTML.includes('Provide your Thailand') ||
@@ -219,6 +840,19 @@ const TDACWebViewScreen = ({ navigation, route }) => {
               show: false,
               mask: false
             }));
+
+            // Trigger language selection after verification
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'trigger_language_selection'
+            }));
+          }
+
+          // 如果在语言选择页面，触发自动选择
+          if (hasLanguageSelection && !window.languageSelected) {
+            console.log('🌐 检测到语言选择页面');
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'trigger_language_selection'
+            }));
           }
 
           // 如果在Arrival Card页面但没有Cloudflare，说明验证成功
@@ -231,45 +865,9 @@ const TDACWebViewScreen = ({ navigation, route }) => {
             }));
           }
 
-          // 如果验证成功且在Arrival Card页面，尝试自动点击
-          if (hasSuccess && !window.arrivalCardClicked && hasArrivalCard) {
-            console.log('✅ Cloudflare验证成功且在Arrival Card页面，尝试自动点击');
-
-            setTimeout(() => {
-              // 多种方式查找"Arrival Card"按钮
-              let arrivalCardBtn = null;
-
-              // 方式1: 查找所有可点击元素
-              const allElements = document.querySelectorAll('button, a, div, span, mat-card, [class*="card"], [class*="Card"]');
-
-              for (let el of allElements) {
-                const text = (el.textContent || el.innerText || '').trim();
-                if (text.match(/arrival\s*card/i) ||
-                    text.includes('Arrival Card') ||
-                    text.includes('arrival card')) {
-                  const rect = el.getBoundingClientRect();
-                  const isVisible = rect.width > 0 && rect.height > 0;
-                  if (isVisible) {
-                    arrivalCardBtn = el;
-                    break;
-                  }
-                }
-              }
-
-              if (arrivalCardBtn) {
-                arrivalCardBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => {
-                  arrivalCardBtn.click();
-                  window.arrivalCardClicked = true;
-                  window.needAutoFill = true;
-
-                  window.ReactNativeWebView?.postMessage(JSON.stringify({
-                    type: 'arrival_card_clicked'
-                  }));
-                }, 500);
-              }
-            }, 1500);
-          }
+          // NOTE: Removed duplicate arrival card auto-click logic
+          // Arrival card should only be clicked AFTER language selection completes
+          // The proper flow is: Cloudflare → Language Selection → Arrival Card Click
 
           // 只在验证未成功时发送提示框显示状态
           if (!hasSuccess && !hasArrivalCard) {
@@ -332,7 +930,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
   // Compare entry data with TDAC submission data
   const compareEntryDataWithTDAC = React.useCallback(() => {
-    if (!__DEV__ || !debugMode) return;
+    if (!__DEV__) return;
 
     try {
       // Get original entry data
@@ -358,26 +956,11 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
       setComparisonData(comparison);
 
-      if (debugMode) {
-        addDebugLog(
-          'validation',
-          'Data comparison completed - check comparison modal for details',
-          {
-            totalFields: Object.keys(comparison.fieldMappings).length,
-            validationPassed: comparison.validationResults.overall,
-            summary: comparison.summary
-          }
-        );
-      }
-
       console.log('🔍 Data Comparison Generated:', comparison);
     } catch (error) {
       console.error('❌ Data comparison failed:', error);
-      if (debugMode) {
-        addDebugLog('error', 'Data comparison failed', { error: error.message });
-      }
     }
-  }, [passport, destination, travelInfo, formFields, debugMode, addDebugLog]);
+  }, [passport, destination, travelInfo, formFields]);
 
   // Generate what would be submitted to TDAC API
   const generateTDACSubmissionPayload = React.useCallback(() => {
@@ -393,6 +976,9 @@ const TDACWebViewScreen = ({ navigation, route }) => {
         switch (fieldName) {
           case 'firstName':
             personalInfo.firstName = value.toUpperCase();
+            break;
+          case 'middleName':
+            personalInfo.middleName = value ? value.toUpperCase() : '';
             break;
           case 'lastName':
             personalInfo.familyName = value.toUpperCase();
@@ -452,8 +1038,8 @@ const TDACWebViewScreen = ({ navigation, route }) => {
           ...personalInfo,
           countryResDesc: 'CHINA',
           cityRes: 'BEIJING',
-          visaNo: '',
-          middleName: ''
+          visaNo: ''
+          // middleName is now handled in the switch statement above
         },
         tripInfo: {
           ...tripInfo,
@@ -818,26 +1404,196 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     webViewRef.current?.injectJavaScript(jsCode);
   };
 
+  // 🛑 显示WebView自动填充确认对话框
+  const showWebViewFillConfirmation = () => {
+    return new Promise((resolve) => {
+      const personalFields = formFields.filter(f => f.section === 'personal');
+      const tripFields = formFields.filter(f => f.section === 'trip');
+      const accommodationFields = formFields.filter(f => f.section === 'accommodation');
+
+      const confirmationMessage = `
+🔍 即将自动填充的信息：
+
+👤 护照信息 (${personalFields.length}个字段):
+${personalFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+✈️ 旅行信息 (${tripFields.length}个字段):
+${tripFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+🏨 住宿信息 (${accommodationFields.length}个字段):
+${accommodationFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
+
+⚠️ 重要提醒：
+• 信息将自动填入TDAC网站
+• 填充后请仔细检查准确性
+• 确认无误后再提交
+• 避免多次提交被封禁
+      `.trim();
+
+      Alert.alert(
+        '🛑 确认自动填充',
+        confirmationMessage,
+        [
+          {
+            text: '❌ 取消',
+            style: 'cancel',
+            onPress: () => {
+              console.log('🛑 用户取消了自动填充');
+              resolve(false);
+            }
+          },
+          {
+            text: '📋 查看字段详情',
+            onPress: () => {
+              showWebViewFieldDetails(resolve);
+            }
+          },
+          {
+            text: '✅ 开始填充',
+            style: 'default',
+            onPress: () => {
+              console.log('✅ 用户确认开始自动填充');
+              resolve(true);
+            }
+          }
+        ],
+        { cancelable: false }
+      );
+    });
+  };
+
+  // 显示WebView字段详情
+  const showWebViewFieldDetails = (resolve) => {
+    const fieldDetails = `
+🔍 TDAC 网站字段映射详情：
+
+📋 字段查找策略：
+每个字段将尝试以下方式查找：
+1. formcontrolname="字段名"
+2. ng-reflect-name="字段名"
+3. name="字段名"
+4. placeholder包含"字段标签"
+5. label文本包含"字段中文名"
+
+📊 具体字段映射：
+${formFields.map((field, index) => `
+${index + 1}. ${field.labelCn} (${field.label})
+   值: "${field.value}"
+   搜索: [${field.searchTerms.join(', ')}]
+   目标: ${field.field}`).join('\n')}
+
+🔧 填充机制：
+• 智能重试：最多15次尝试
+• 事件触发：input, change, blur等
+• Angular支持：兼容Angular表单
+• 单选按钮：自动选择匹配项
+
+⚠️ 填充完成后会自动：
+• 滚动到页面底部
+• 查找Continue按钮
+• 提示用户检查并提交
+    `.trim();
+
+    Alert.alert(
+      '📋 字段映射详情',
+      fieldDetails,
+      [
+        {
+          text: '❌ 取消填充',
+          style: 'cancel',
+          onPress: () => {
+            console.log('🛑 用户在查看详情后取消了填充');
+            resolve(false);
+          }
+        },
+        {
+          text: '✅ 确认无误，开始填充',
+          style: 'default',
+          onPress: () => {
+            console.log('✅ 用户在查看详情后确认填充');
+            resolve(true);
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+  };
+
   // 自动填充所有字段 - 智能批量填充（带详细日志和手动确认）
   const autoFillAll = async () => {
     try {
+      // 验证必要数据是否存在
+      if (!passport || !passport.passportNo) {
+        Alert.alert(
+          '❌ 缺少护照数据',
+          '无法自动填充，护照信息不完整。\n\n请返回上一页面确认护照数据已正确加载。',
+          [{ text: '好的' }]
+        );
+        return;
+      }
+
+      if (!travelInfo) {
+        Alert.alert(
+          '⚠️ 缺少旅行信息',
+          '部分字段可能无法填充，因为旅行信息不完整。\n\n是否继续？',
+          [
+            { text: '取消', style: 'cancel' },
+            { text: '继续', onPress: () => proceedWithAutoFill() }
+          ]
+        );
+        return;
+      }
+
+      await proceedWithAutoFill();
+    } catch (error) {
+      console.error('❌ 自动填充失败:', error);
+      Alert.alert(
+        '❌ 自动填充失败',
+        '无法执行自动填充，请使用手动复制方式。\n\n错误信息: ' + error.message,
+        [{ text: '好的' }]
+      );
+    }
+  };
+
+  const proceedWithAutoFill = async () => {
+    try {
       // 🔍 记录详细的填充信息
       await TDACSubmissionLogger.logWebViewFill(formFields);
-      
+
       // 🛑 显示手动确认对话框
       const shouldProceed = await showWebViewFillConfirmation();
-      
+
       if (!shouldProceed) {
         console.log('❌ 用户取消了自动填充');
         return;
       }
-      
+
       console.log('✅ 用户确认自动填充，开始执行...');
-      
-      const allFields = formFields.map(field => ({
-        value: field.value,
-        searchTerms: field.searchTerms || [field.label]
-      }));
+
+      // Filter out fields with undefined or empty values
+      const allFields = formFields
+        .filter(field => {
+          const hasValue = field.value !== undefined && field.value !== null && field.value !== '';
+          if (!hasValue) {
+            console.warn(`⚠️ Skipping field ${field.label} - value is ${field.value}`);
+          }
+          return hasValue;
+        })
+        .map(field => ({
+          value: String(field.value), // Ensure value is string
+          searchTerms: field.searchTerms || [field.label]
+        }));
+
+      if (allFields.length === 0) {
+        Alert.alert(
+          '❌ 没有可填充的数据',
+          '所有字段的值都为空，无法执行自动填充。\n\n请检查护照和旅行信息是否正确加载。',
+          [{ text: '好的' }]
+        );
+        return;
+      }
+
+      console.log(`📝 准备填充 ${allFields.length} 个字段`);
 
     const jsCode = `
       (function() {
@@ -1010,17 +1766,25 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       field: 'lastName',
       searchTerms: ['familyName', 'lastName', 'surname', 'Family Name', 'family_name', 'last_name']
     },
-    { 
-      section: 'personal', 
-      label: 'First Name', 
-      labelCn: '名', 
-      value: firstName, 
+    {
+      section: 'personal',
+      label: 'First Name',
+      labelCn: '名',
+      value: firstName,
       field: 'firstName',
       searchTerms: ['firstName', 'givenName', 'First Name', 'first_name', 'given_name']
     },
-    { 
-      section: 'personal', 
-      label: 'Passport Number', 
+    {
+      section: 'personal',
+      label: 'Middle Name',
+      labelCn: '中间名',
+      value: middleName,
+      field: 'middleName',
+      searchTerms: ['middleName', 'Middle Name', 'middle_name', 'secondName']
+    },
+    {
+      section: 'personal',
+      label: 'Passport Number',
       labelCn: '护照号', 
       value: passport?.passportNo, 
       field: 'passportNo',
@@ -1226,11 +1990,35 @@ const TDACWebViewScreen = ({ navigation, route }) => {
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data);
-            if (data.type === 'cloudflare_detected') {
+            if (data.type === 'debug_log') {
+              console.log('[WebView]', data.message);
+            } else if (data.type === 'cloudflare_detected') {
               setShowCloudflareReminder(data.show);
               setShowVisualMask(data.mask || false);
+            } else if (data.type === 'trigger_language_selection' && !languageSelectionTriggered) {
+              console.log('🌐 触发语言自动选择');
+              setLanguageSelectionTriggered(true);
+              // Delay to let page render language options
+              setTimeout(() => {
+                autoSelectLanguage();
+              }, 1000);
+            } else if (data.type === 'language_selected') {
+              console.log('✅ 语言已选择:', data.language);
+              setSelectedLanguage(data.language);
+              // Auto-hide after 3 seconds
+              setTimeout(() => {
+                setSelectedLanguage(null);
+              }, 3000);
+            } else if (data.type === 'trigger_arrival_card_click') {
+              console.log('🎯 触发Arrival Card自动点击');
+              // Delay to let language selection page transition complete
+              setTimeout(() => {
+                autoClickArrivalCard();
+              }, 1500);
             } else if (data.type === 'arrival_card_clicked') {
               console.log('✅ 已自动点击Arrival Card按钮');
+            } else if (data.type === 'arrival_card_not_found') {
+              console.warn('⚠️ 未找到Arrival Card按钮');
             } else if (data.type === 'trigger_auto_fill') {
               console.log('🤖 触发自动填充');
               // 延迟1秒让页面完全加载后再填充
@@ -1340,6 +2128,20 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       {showCloudflareReminder && !showVisualMask && (
         <View style={styles.backgroundBlur}>
           <View style={styles.blurOverlay} />
+        </View>
+      )}
+
+      {/* Language Selection Notification */}
+      {selectedLanguage && (
+        <View style={styles.languageNotification}>
+          <View style={styles.languageNotificationContent}>
+            <Text style={styles.languageNotificationIcon}>🌐</Text>
+            <View style={styles.languageNotificationTextContainer}>
+              <Text style={styles.languageNotificationTitle}>语言已自动选择</Text>
+              <Text style={styles.languageNotificationLanguage}>{selectedLanguage}</Text>
+            </View>
+            <Text style={styles.languageNotificationCheck}>✓</Text>
+          </View>
         </View>
       )}
 
@@ -1616,7 +2418,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
                   style={styles.comparisonRefreshButton}
                   onPress={() => {
                     compareEntryDataWithTDAC();
-                    addDebugLog('validation', 'Data comparison refreshed');
+                    console.log('🔄 Data comparison refreshed');
                   }}
                 >
                   <Text style={styles.comparisonRefreshButtonText}>🔄 Refresh Comparison</Text>
@@ -2346,127 +3148,55 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: '#4CAF50',
   },
+
+  // Language Selection Notification Styles
+  languageNotification: {
+    position: 'absolute',
+    top: 100,
+    left: '50%',
+    transform: [{ translateX: -150 }],
+    width: 300,
+    zIndex: 25,
+    elevation: 25,
+  },
+  languageNotificationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 16,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 15,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  languageNotificationIcon: {
+    fontSize: 28,
+    marginRight: spacing.sm,
+  },
+  languageNotificationTextContainer: {
+    flex: 1,
+  },
+  languageNotificationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
+    marginBottom: 2,
+  },
+  languageNotificationLanguage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
+  languageNotificationCheck: {
+    fontSize: 24,
+    color: colors.white,
+    marginLeft: spacing.sm,
+  },
 });
-
-
-
-/**
- * 🛑 显示WebView自动填充确认对话框
- */
-const showWebViewFillConfirmation = () => {
-  return new Promise((resolve) => {
-    const personalFields = formFields.filter(f => f.section === 'personal');
-    const tripFields = formFields.filter(f => f.section === 'trip');
-    const accommodationFields = formFields.filter(f => f.section === 'accommodation');
-    
-    const confirmationMessage = `
-🔍 即将自动填充的信息：
-
-👤 护照信息 (${personalFields.length}个字段):
-${personalFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
-
-✈️ 旅行信息 (${tripFields.length}个字段):
-${tripFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
-
-🏨 住宿信息 (${accommodationFields.length}个字段):
-${accommodationFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
-
-⚠️ 重要提醒：
-• 信息将自动填入TDAC网站
-• 填充后请仔细检查准确性
-• 确认无误后再提交
-• 避免多次提交被封禁
-    `.trim();
-
-    Alert.alert(
-      '🛑 确认自动填充',
-      confirmationMessage,
-      [
-        {
-          text: '❌ 取消',
-          style: 'cancel',
-          onPress: () => {
-            console.log('🛑 用户取消了自动填充');
-            resolve(false);
-          }
-        },
-        {
-          text: '📋 查看字段详情',
-          onPress: () => {
-            showWebViewFieldDetails(resolve);
-          }
-        },
-        {
-          text: '✅ 开始填充',
-          style: 'default',
-          onPress: () => {
-            console.log('✅ 用户确认开始自动填充');
-            resolve(true);
-          }
-        }
-      ],
-      { cancelable: false }
-    );
-  });
-};
-
-/**
- * 显示WebView字段详情
- */
-const showWebViewFieldDetails = (resolve) => {
-  const fieldDetails = `
-🔍 TDAC 网站字段映射详情：
-
-📋 字段查找策略：
-每个字段将尝试以下方式查找：
-1. formcontrolname="${field.field}"
-2. ng-reflect-name="${field.field}"
-3. name="${field.field}"
-4. placeholder包含"${field.label}"
-5. label文本包含"${field.labelCn}"
-
-📊 具体字段映射：
-${formFields.map((field, index) => `
-${index + 1}. ${field.labelCn} (${field.label})
-   值: "${field.value}"
-   搜索: [${field.searchTerms.join(', ')}]
-   目标: ${field.field}`).join('\n')}
-
-🔧 填充机制：
-• 智能重试：最多15次尝试
-• 事件触发：input, change, blur等
-• Angular支持：兼容Angular表单
-• 单选按钮：自动选择匹配项
-
-⚠️ 填充完成后会自动：
-• 滚动到页面底部
-• 查找Continue按钮
-• 提示用户检查并提交
-  `.trim();
-
-  Alert.alert(
-    '📋 字段映射详情',
-    fieldDetails,
-    [
-      {
-        text: '❌ 取消填充',
-        style: 'cancel',
-        onPress: () => {
-          console.log('🛑 用户在查看详情后取消了填充');
-          resolve(false);
-        }
-      },
-      {
-        text: '✅ 确认无误，开始填充',
-        style: 'default',
-        onPress: () => {
-          console.log('✅ 用户在查看详情后确认填充');
-          resolve(true);
-        }
-      }
-    ],
-    { cancelable: false }
-  );
-};
 
 export default TDACWebViewScreen;

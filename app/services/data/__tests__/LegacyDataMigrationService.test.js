@@ -23,7 +23,7 @@ jest.mock('../../../services/snapshot/SnapshotService', () => ({
   }
 }));
 
-jest.mock('../../../services/entryPack/EntryPackService', () => ({
+jest.mock('../../entryPack/EntryPackService', () => ({
   default: {
     getHistoricalPacksForUser: jest.fn(),
   }
