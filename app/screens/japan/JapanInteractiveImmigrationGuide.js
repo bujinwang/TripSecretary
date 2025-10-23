@@ -13,7 +13,7 @@ import {
 import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
-import { EntryPackService } from '../../services/entryPack/EntryPackService';
+import EntryInfoService from '../../services/EntryInfoService';
 
 const JapanInteractiveImmigrationGuide = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -98,9 +98,15 @@ const JapanInteractiveImmigrationGuide = ({ navigation, route }) => {
       try {
         Vibration.vibrate(120);
 
-        // Mark entry pack as completed in immigration guide
+        // Mark entry info as completed in immigration guide
         if (entryPackId) {
-          await EntryPackService.markImmigrationCompleted(entryPackId);
+          await EntryInfoService.updateEntryInfo(entryPackId, {
+            display_status: JSON.stringify({
+              immigration_completed: true,
+              completed_at: new Date().toISOString(),
+              completed_by: 'interactive_guide'
+            })
+          });
         }
 
         Alert.alert(

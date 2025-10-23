@@ -14,8 +14,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import EntryPackHistoryScreen from '../screens/EntryPackHistoryScreen';
 import ThailandTravelInfoScreen from '../screens/thailand/ThailandTravelInfoScreen';
-import EntryPackDetailScreen from '../screens/thailand/EntryPackDetailScreen';
-import EntryPackService from '../services/entryPack/EntryPackService';
+import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
+import EntryInfoService from '../services/EntryInfoService';
 import PassportDataService from '../services/data/PassportDataService';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import LazyLoadingHelper from '../utils/LazyLoadingHelper';
@@ -39,16 +39,16 @@ const TestNavigator = ({ initialRouteName = 'Home', initialParams = {} }) => (
         name="ThailandTravelInfo" 
         component={ThailandTravelInfoScreen}
       />
-      <Stack.Screen 
-        name="EntryPackDetail" 
-        component={EntryPackDetailScreen}
+      <Stack.Screen
+        name="EntryInfoDetail"
+        component={EntryInfoDetailScreen}
       />
     </Stack.Navigator>
   </NavigationContainer>
 );
 
 // Mock services
-jest.mock('../services/entryPack/EntryPackService');
+jest.mock('../services/EntryInfoService');
 jest.mock('../services/data/PassportDataService');
 jest.mock('../services/snapshot/SnapshotService');
 jest.mock('../services/data/LegacyDataMigrationService');
@@ -69,7 +69,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
       expiryDate: '2025-12-31'
     });
     
-    EntryPackService.getHomeScreenData.mockResolvedValue({
+    EntryInfoService.getHomeScreenData.mockResolvedValue({
       submittedEntryPacks: [],
       inProgressDestinations: [],
       summary: {
@@ -129,7 +129,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
         }
       };
       
-      EntryPackService.getHomeScreenData.mockResolvedValue(largeEntryPackData);
+      EntryInfoService.getHomeScreenData.mockResolvedValue(largeEntryPackData);
       
       const startTime = performance.now();
       
@@ -328,7 +328,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
       // Simulate concurrent loading of multiple data sources
       const promises = [
         PassportDataService.initialize('test_user'),
-        EntryPackService.getHomeScreenData('test_user'),
+        EntryInfoService.getHomeScreenData('test_user'),
         PassportDataService.getPrimaryPassport('test_user')
       ];
       
@@ -388,7 +388,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
   describe('Error Handling Performance', () => {
     it('should handle errors without significant performance impact', async () => {
       // Mock service to throw error
-      EntryPackService.getHomeScreenData.mockRejectedValue(new Error('Network error'));
+      EntryInfoService.getHomeScreenData.mockRejectedValue(new Error('Network error'));
       
       const startTime = performance.now();
       

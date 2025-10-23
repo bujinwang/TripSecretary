@@ -20,7 +20,7 @@ import { typography } from '../theme/typography';
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
-const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
+const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) => {
   const [qrError, setQrError] = useState(false);
 
   if (!tdacSubmission) {
@@ -30,10 +30,10 @@ const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
   const {
     arrCardNo,
     qrUri,
-    pdfPath,
+    pdfUrl,
     submittedAt,
     submissionMethod,
-  } = tdacSubmission;
+  } = digitalArrivalCard;
 
   const formatSubmissionMethod = (method) => {
     switch (method) {
@@ -186,7 +186,7 @@ const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>泰国入境卡 (TDAC)</Text>
+        <Text style={styles.title}>数字入境卡 (DAC)</Text>
         {!isReadOnly && (
           <View style={styles.statusBadge}>
             <Text style={styles.statusText}>已提交</Text>
@@ -270,7 +270,7 @@ const TDACInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
         {isReadOnly && (
           <View style={styles.readOnlyNotice}>
             <Text style={styles.readOnlyText}>
-              📖 这是历史记录中的TDAC信息
+              📖 这是历史记录中的数字入境卡信息
             </Text>
           </View>
         )}
@@ -444,4 +444,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TDACInfoCard;
+export default DigitalArrivalCardInfoCard;

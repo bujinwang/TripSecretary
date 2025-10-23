@@ -25,7 +25,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 // Removed mockTDACData dependency - using pure user data
 import { colors } from '../../theme';
-import EntryPackService from '../../services/entryPack/EntryPackService';
+import EntryInfoService from '../../services/EntryInfoService';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};
@@ -171,26 +171,29 @@ const TDACAPIScreen = ({ navigation, route }) => {
         // Save QR code
         await saveQRCode(result.arrCardNo, result.pdfBlob, result);
         
-        // Create or update entry pack with TDAC submission
+        // Create or update digital arrival card with TDAC submission
         try {
           const tdacSubmission = {
             arrCardNo: result.arrCardNo,
             qrUri: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
             pdfPath: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
             submittedAt: new Date().toISOString(),
-            submissionMethod: 'api'
+            submissionMethod: 'api',
+            cardType: 'TDAC',
+            status: 'success'
           };
-          
+
           // Find entry info ID - for now use a placeholder, this should be passed from navigation params
           const entryInfoId = params.entryInfoId || 'thailand_entry_info';
-          
-          await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
-            submissionMethod: 'api'
+
+          await EntryInfoService.updateEntryInfo(entryInfoId, {
+            documents: JSON.stringify([tdacSubmission]),
+            displayStatus: JSON.stringify({ tdacSubmitted: true, submissionMethod: 'api' })
           });
-          
-          console.log('✅ Entry pack created/updated successfully');
-        } catch (entryPackError) {
-          console.error('❌ Failed to create entry pack:', entryPackError);
+
+          console.log('✅ Entry info updated successfully');
+        } catch (entryInfoError) {
+          console.error('❌ Failed to update entry info:', entryInfoError);
           // Don't block user flow - show warning but continue
           Alert.alert(
             '⚠️ 注意',

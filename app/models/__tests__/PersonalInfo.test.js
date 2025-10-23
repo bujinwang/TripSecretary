@@ -19,12 +19,17 @@ describe('PersonalInfo Model', () => {
       const mockData = {
         id: 'personal_123',
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         phoneNumber: '+86 123 4567 8900',
         email: 'test@example.com',
         homeAddress: '123 Main St',
         occupation: 'Engineer',
         provinceCity: 'Shanghai',
         countryRegion: 'CHN',
+        phoneCode: '+86',
+        gender: 'Male',
+        isDefault: 1, // NEW: Schema v2.0 field
+        label: 'China', // NEW: Schema v2.0 field
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z'
       };
@@ -59,22 +64,25 @@ describe('PersonalInfo Model', () => {
       ).rejects.toThrow('Storage error');
     });
 
-    it('should be equivalent to calling load()', async () => {
+    it('should be equivalent to calling loadDefault()', async () => {
       const mockData = {
         id: 'personal_123',
         userId: 'user_123',
-        email: 'test@example.com'
+        passportId: 'passport_123', // NEW: Schema v2.0 field
+        email: 'test@example.com',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Hong Kong' // NEW: Schema v2.0 field
       };
 
       SecureStorageService.getPersonalInfo.mockResolvedValue(mockData);
 
       const resultFromGetByUserId = await PersonalInfo.getByUserId('user_123');
-      
-      // Clear mock and call load
+
+      // Clear mock and call loadDefault
       jest.clearAllMocks();
       SecureStorageService.getPersonalInfo.mockResolvedValue(mockData);
-      
-      const resultFromLoad = await PersonalInfo.load('user_123');
+
+      const resultFromLoad = await PersonalInfo.loadDefault('user_123');
 
       expect(resultFromGetByUserId.id).toBe(resultFromLoad.id);
       expect(resultFromGetByUserId.userId).toBe(resultFromLoad.userId);
@@ -87,12 +95,17 @@ describe('PersonalInfo Model', () => {
       // Create a PersonalInfo instance with existing data
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         phoneNumber: '+86 123 4567 8900',
         email: 'existing@example.com',
         homeAddress: '123 Main St',
         occupation: 'Engineer',
         provinceCity: 'Shanghai',
-        countryRegion: 'CHN'
+        countryRegion: 'CHN',
+        phoneCode: '+86',
+        gender: 'Male',
+        isDefault: 1, // NEW: Schema v2.0 field
+        label: 'China' // NEW: Schema v2.0 field
       });
 
       // Mock the save operation
@@ -124,7 +137,10 @@ describe('PersonalInfo Model', () => {
       const personalInfo = new PersonalInfo({
         id: originalId,
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         email: 'test@example.com',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test', // NEW: Schema v2.0 field
         createdAt: originalCreatedAt
       });
 
@@ -144,7 +160,10 @@ describe('PersonalInfo Model', () => {
     it('should update updatedAt timestamp', async () => {
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         email: 'test@example.com',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test', // NEW: Schema v2.0 field
         updatedAt: '2024-01-01T00:00:00Z'
       });
 
@@ -165,8 +184,11 @@ describe('PersonalInfo Model', () => {
     it('should validate merged data when skipValidation is false', async () => {
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         email: 'valid@example.com',
-        phoneNumber: '+86 123 4567 8900'
+        phoneNumber: '+86 123 4567 8900',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test' // NEW: Schema v2.0 field
       });
 
       SecureStorageService.savePersonalInfo.mockResolvedValue({ success: true });
@@ -182,8 +204,11 @@ describe('PersonalInfo Model', () => {
     it('should skip validation when skipValidation is true', async () => {
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
+        passportId: 'passport_123', // NEW: Schema v2.0 field
         email: '', // Invalid - no contact method
-        phoneNumber: ''
+        phoneNumber: '',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test' // NEW: Schema v2.0 field
       });
 
       SecureStorageService.savePersonalInfo.mockResolvedValue({ success: true });
@@ -199,7 +224,10 @@ describe('PersonalInfo Model', () => {
     it('should handle errors gracefully', async () => {
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
-        email: 'test@example.com'
+        passportId: 'passport_123', // NEW: Schema v2.0 field
+        email: 'test@example.com',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test' // NEW: Schema v2.0 field
       });
 
       SecureStorageService.savePersonalInfo.mockRejectedValue(
@@ -217,7 +245,10 @@ describe('PersonalInfo Model', () => {
       // Simulate progressive filling where user fills form step by step
       const personalInfo = new PersonalInfo({
         userId: 'user_123',
-        email: 'user@example.com'
+        passportId: 'passport_123', // NEW: Schema v2.0 field
+        email: 'user@example.com',
+        isDefault: 0, // NEW: Schema v2.0 field
+        label: 'Test' // NEW: Schema v2.0 field
       });
 
       SecureStorageService.savePersonalInfo.mockResolvedValue({ success: true });
@@ -252,6 +283,61 @@ describe('PersonalInfo Model', () => {
       expect(personalInfo.occupation).toBe('Engineer');
       expect(personalInfo.provinceCity).toBe('Shanghai');
       expect(personalInfo.countryRegion).toBe('CHN');
+    });
+  });
+
+  describe('Schema v2.0 fields', () => {
+    it('should handle passportId field correctly', () => {
+      const personalInfo = new PersonalInfo({
+        userId: 'user_123',
+        passportId: 'passport_456',
+        email: 'test@example.com',
+        isDefault: 0,
+        label: 'Test Passport'
+      });
+
+      expect(personalInfo.passportId).toBe('passport_456');
+      expect(personalInfo.isDefault).toBe(0);
+      expect(personalInfo.label).toBe('Test Passport');
+    });
+
+    it('should handle isDefault field correctly', () => {
+      const personalInfo = new PersonalInfo({
+        userId: 'user_123',
+        email: 'test@example.com',
+        isDefault: 1,
+        label: 'Default Profile'
+      });
+
+      expect(personalInfo.isDefault).toBe(1);
+      expect(personalInfo.label).toBe('Default Profile');
+    });
+
+    it('should handle label field correctly', () => {
+      const personalInfo = new PersonalInfo({
+        userId: 'user_123',
+        email: 'test@example.com',
+        isDefault: 0,
+        label: 'Work Profile'
+      });
+
+      expect(personalInfo.label).toBe('Work Profile');
+    });
+
+    it('should include new fields in export data', () => {
+      const personalInfo = new PersonalInfo({
+        userId: 'user_123',
+        passportId: 'passport_123',
+        email: 'test@example.com',
+        isDefault: 1,
+        label: 'China Profile'
+      });
+
+      const exportData = personalInfo.exportData();
+
+      expect(exportData.passportId).toBe('passport_123');
+      expect(exportData.isDefault).toBe(1);
+      expect(exportData.label).toBe('China Profile');
     });
   });
 });

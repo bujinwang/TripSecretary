@@ -1,11 +1,12 @@
 /**
  * EntryInfo Model - Progressive Entry Information Flow
  * Extends EntryData with completion tracking, status management, and progressive filling support
- * 
+ *
  * Requirements: 1.4, 2.1-2.6, 4.1-4.6
  */
 
 import EntryData from './EntryData';
+import SecureStorageService from '../services/security/SecureStorageService';
 
 class EntryInfo extends EntryData {
   constructor(data = {}) {
@@ -25,18 +26,18 @@ class EntryInfo extends EntryData {
     // Timestamp tracking
     this.lastUpdatedAt = data.lastUpdatedAt || new Date().toISOString();
     
-    // Trip and destination context
-    this.tripId = data.tripId || this.generateTripId();
+    // Documents and display status (NEW in v2.0)
+    this.documents = data.documents || null; // JSON string or object
+    this.displayStatus = data.displayStatus || null; // JSON string or object
+
+    // Travel info reference (NEW in v2.0)
+    this.travelInfoId = data.travelInfoId || null; // Link to travel_info table
+
+    // Destination context
     this.destinationId = data.destinationId || null;
   }
 
-  /**
-   * Generate unique trip ID
-   * @returns {string} - Unique trip ID
-   */
-  generateTripId() {
-    return `trip_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
+
 
   /**
    * Update completion metrics based on current data
@@ -87,15 +88,15 @@ class EntryInfo extends EntryData {
     };
 
     // Travel completion (6 required fields)
-    const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'accommodation'];
+    const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'hotelName'];
     const travelComplete = travelFields.filter(field => {
-      const value = travel[field] || this[field];
+      const value = travel[field];
       return value && (typeof value === 'string' ? value.trim() : true);
     }).length;
     this.completionMetrics.travel = {
       complete: travelComplete,
-      total: 5,
-      state: travelComplete === 5 ? 'complete' : travelComplete > 0 ? 'partial' : 'missing'
+      total: 6,
+      state: travelComplete === 6 ? 'complete' : travelComplete > 0 ? 'partial' : 'missing'
     };
 
     // Update timestamp
@@ -154,7 +155,7 @@ class EntryInfo extends EntryData {
 
     // Travel missing fields
     if (this.completionMetrics.travel.state !== 'complete') {
-      const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'accommodation'];
+      const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'hotelName'];
       missing.travel = travelFields.filter(field => !this.hasValidField('travel', field));
     }
 
@@ -210,20 +211,12 @@ class EntryInfo extends EntryData {
 
   /**
    * Mark as submitted
-   * @param {Object} tdacSubmission - TDAC submission metadata
+   * @param {Object} submissionMetadata - Submission metadata (e.g., from digital_arrival_cards)
    */
-  markAsSubmitted(tdacSubmission = {}) {
-    this.updateStatus('submitted', 'TDAC submission successful');
-    this.submissionDate = new Date().toISOString();
-    
-    // Store TDAC submission metadata
-    this.tdacSubmission = {
-      arrCardNo: tdacSubmission.arrCardNo,
-      qrUri: tdacSubmission.qrUri,
-      pdfPath: tdacSubmission.pdfPath,
-      submittedAt: this.submissionDate,
-      submissionMethod: tdacSubmission.submissionMethod || 'api'
-    };
+  markAsSubmitted(submissionMetadata = {}) {
+    this.updateStatus('submitted', 'Submission successful');
+    // No longer storing submission details directly in EntryInfo
+    // These are now managed in the digital_arrival_cards table
   }
 
   /**
@@ -294,13 +287,26 @@ class EntryInfo extends EntryData {
     try {
       // Always allow saving for progressive filling (skip validation by default)
       const saveOptions = { skipValidation: true, ...options };
-      
+
       // Update timestamp
       this.lastUpdatedAt = new Date().toISOString();
-      
-      // Call parent save method
-      const result = await super.save(saveOptions);
-      
+
+      // Save to secure storage with Schema v2.0 fields
+      const result = await SecureStorageService.saveEntryInfo({
+        id: this.id,
+        userId: this.userId,
+        passportId: this.passportId,
+        personalInfoId: this.personalInfoId,
+        travelInfoId: this.travelInfoId, // NEW: Schema v2.0 field
+        destinationId: this.destinationId,
+        status: this.status,
+        completionMetrics: JSON.stringify(this.completionMetrics),
+        documents: this.documents, // NEW: Schema v2.0 field
+        displayStatus: this.displayStatus, // NEW: Schema v2.0 field
+        lastUpdatedAt: this.lastUpdatedAt,
+        createdAt: this.createdAt || new Date().toISOString()
+      });
+
       return {
         ...result,
         completionPercent: this.getTotalCompletionPercent(),
@@ -320,15 +326,22 @@ class EntryInfo extends EntryData {
    */
   static async load(id) {
     try {
-      // Load base entry data
-      const entryData = await EntryData.load(id);
-      
+      // Load from secure storage with Schema v2.0 fields
+      const data = await SecureStorageService.getEntryInfo(id);
+
+      if (!data) {
+        return null;
+      }
+
       // Convert to EntryInfo
       const entryInfo = new EntryInfo({
-        ...entryData,
-        id: entryData.id
+        ...data,
+        completionMetrics: data.completionMetrics ? JSON.parse(data.completionMetrics) : {},
+        documents: data.documents,
+        displayStatus: data.displayStatus,
+        travelInfoId: data.travelInfoId // NEW: Schema v2.0 field
       });
-      
+
       return entryInfo;
     } catch (error) {
       console.error('Failed to load EntryInfo:', error);
@@ -347,9 +360,10 @@ class EntryInfo extends EntryData {
     const entryInfo = new EntryInfo({
       userId,
       destinationId,
+      travelInfoId: inputData.travelInfoId || null, // NEW: Include travel info reference
       ...inputData
     });
-    
+
     return entryInfo;
   }
 
@@ -359,21 +373,67 @@ class EntryInfo extends EntryData {
    */
   getSummary() {
     const baseSummary = super.getSummary();
-    
+
     return {
       ...baseSummary,
       completionPercent: this.getTotalCompletionPercent(),
       completionMetrics: this.completionMetrics,
       status: this.status,
-      displayStatus: this.getDisplayStatus(),
+      displayStatus: this.displayStatus, // Use the stored displayStatus
+      documents: this.documents, // Include documents
+      travelInfoId: this.travelInfoId, // Include travel info reference
       isReady: this.isReadyForSubmission(),
       canBeEdited: this.canBeEdited(),
       requiresResubmission: this.requiresResubmission(),
       missingFields: this.getMissingFields(),
       lastUpdatedAt: this.lastUpdatedAt,
-      tripId: this.tripId,
       destinationId: this.destinationId
     };
+  }
+
+  /**
+   * Get the latest successful DigitalArrivalCard for a specific card type
+   * @param {string} cardType - Card type (e.g., 'TDAC', 'MDAC', 'SDAC', 'HKDAC')
+   * @returns {Promise<DigitalArrivalCard|null>} - Latest successful DAC or null
+   */
+  async getLatestDigitalArrivalCard(cardType) {
+    try {
+      const DigitalArrivalCard = (await import('./DigitalArrivalCard')).default;
+      return await DigitalArrivalCard.getLatestSuccessful(this.id, cardType);
+    } catch (error) {
+      console.error('Failed to get latest DigitalArrivalCard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all DigitalArrivalCards for this entry info
+   * @returns {Promise<Array<DigitalArrivalCard>>} - Array of DAC instances
+   */
+  async getAllDigitalArrivalCards() {
+    try {
+      const DigitalArrivalCard = (await import('./DigitalArrivalCard')).default;
+      const results = await DigitalArrivalCard.getByEntryInfoId(this.id);
+      return results || []; // Return empty array if results is undefined
+    } catch (error) {
+      console.error('Failed to get DigitalArrivalCards:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the latest DigitalArrivalCard for a specific card type
+   * @param {string} cardType - Card type (e.g., 'TDAC', 'MDAC', 'SDAC', 'HKDAC')
+   * @returns {Promise<DigitalArrivalCard|null>} - Latest DAC for the type or null
+   */
+  async getLatestDigitalArrivalCardByType(cardType) {
+    try {
+      const DigitalArrivalCard = (await import('./DigitalArrivalCard')).default;
+      return await DigitalArrivalCard.getLatestSuccessful(this.id, cardType);
+    } catch (error) {
+      console.error('Failed to get latest DigitalArrivalCard by type:', error);
+      throw error;
+    }
   }
 
   /**
@@ -383,19 +443,20 @@ class EntryInfo extends EntryData {
   async exportData() {
     try {
       const baseExport = await super.exportData();
-      
+
       return {
         ...baseExport,
         progressiveEntryFlow: {
           completionMetrics: this.completionMetrics,
           status: this.status,
           lastUpdatedAt: this.lastUpdatedAt,
-          tripId: this.tripId,
           destinationId: this.destinationId,
           passportId: this.passportId,
           personalInfoId: this.personalInfoId,
+          travelInfoId: this.travelInfoId, // NEW: Include travel info reference
           fundItemIds: [...this.fundItemIds],
-          tdacSubmission: this.tdacSubmission
+          documents: this.documents,
+          displayStatus: this.displayStatus
         }
       };
     } catch (error) {

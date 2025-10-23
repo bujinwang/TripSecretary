@@ -16,7 +16,7 @@ import {
   ResultScreen,
   HistoryScreen,
   ProfileScreen,
-  EntryPackHistoryScreen,
+  EntryInfoHistoryScreen,
   PresentToCustomsScreen,
   CopyWriteModeScreen,
   AirportArrivalScreen,
@@ -76,7 +76,7 @@ import {
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
-import EntryPackDetailScreen from '../screens/thailand/EntryPackDetailScreen';
+import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
 
 import { colors } from '../theme';
 
@@ -545,8 +545,8 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
-          name="EntryPackDetail"
-          component={EntryPackDetailScreen}
+          name="EntryInfoDetail"
+          component={EntryInfoDetailScreen}
           options={{
             headerShown: false,
           }}
@@ -560,8 +560,8 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
-          name="EntryPackHistory"
-          component={EntryPackHistoryScreen}
+          name="EntryInfoHistory"
+          component={EntryInfoHistoryScreen}
           options={{
             headerShown: false,
           }}

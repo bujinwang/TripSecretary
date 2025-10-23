@@ -24,7 +24,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
-import EntryPackService from '../../services/entryPack/EntryPackService';
+import EntryInfoService from '../../services/EntryInfoService';
 import PassportDataService from '../../services/data/PassportDataService';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 
@@ -92,26 +92,29 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
       console.log('✅ Recent submission flag set for EntryPackService');
       
-      // Create or update entry pack with TDAC submission
+      // Create or update digital arrival card with TDAC submission
       try {
         const tdacSubmission = {
           arrCardNo: cardNo,
           qrUri: qrData.src,
           pdfPath: qrData.src,
           submittedAt: new Date().toISOString(),
-          submissionMethod: 'webview'
+          submissionMethod: 'webview',
+          cardType: 'TDAC',
+          status: 'success'
         };
-        
+
         // Find entry info ID - for now use a placeholder, this should be passed from navigation params
         const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
-        
-        await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
-          submissionMethod: 'webview'
+
+        await EntryInfoService.updateEntryInfo(entryInfoId, {
+          documents: JSON.stringify([tdacSubmission]),
+          displayStatus: JSON.stringify({ tdacSubmitted: true, submissionMethod: 'webview' })
         });
-        
-        console.log('✅ Entry pack created/updated successfully via WebView');
-      } catch (entryPackError) {
-        console.error('❌ Failed to create entry pack:', entryPackError);
+
+        console.log('✅ Entry info updated successfully via WebView');
+      } catch (entryInfoError) {
+        console.error('❌ Failed to update entry info:', entryInfoError);
         // Don't block user flow - continue with QR code saving
       }
       

@@ -1,5 +1,5 @@
 
-export { default as EntryPackDetailScreen } from './EntryPackDetailScreen';
+export { default as EntryInfoDetailScreen } from './EntryInfoDetailScreen';
 export { default as ImmigrationOfficerViewScreen } from './ImmigrationOfficerViewScreen';
 export { default as PIKGuideScreen } from './PIKGuideScreen';
 export { default as TDACAPIInterceptScreen } from './TDACAPIInterceptScreen';

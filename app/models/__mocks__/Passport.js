@@ -17,7 +17,7 @@ const Passport = jest.fn().mockImplementation((data) => {
 });
 
 Passport.load = jest.fn().mockImplementation(async (id) => {
-  return new Passport({ id });
+  return new Passport({ id, passportNumber: 'P98765432', fullName: 'TANAKA, YUKI', nationality: 'JPN', dateOfBirth: '1985-05-20', expiryDate: '2028-06-30' });
 });
 
 export default Passport;

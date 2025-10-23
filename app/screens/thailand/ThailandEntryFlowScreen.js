@@ -15,6 +15,7 @@ import {
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
+import PassportPicker from '../../components/PassportPicker';
 
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
@@ -40,6 +41,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [resubmissionWarning, setResubmissionWarning] = useState(null);
   const [entryPackStatus, setEntryPackStatus] = useState(null);
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
+  
+  // Passport selection state
+  const [selectedPassport, setSelectedPassport] = useState(null);
+  const [userId, setUserId] = useState(null);
 
 
 
@@ -84,10 +89,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       setIsLoading(true);
       
       // Get user ID from route params or use default
-      const userId = passportParam?.id || 'user_001';
+      const currentUserId = passportParam?.id || 'user_001';
+      setUserId(currentUserId);
       
       // Initialize PassportDataService
-      await PassportDataService.initialize(userId);
+      await PassportDataService.initialize(currentUserId);
       
       // Load all user data
       const allUserData = await PassportDataService.getAllUserData(userId);
@@ -186,9 +192,9 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       
       setCategories(categoryData);
 
-      // Check for entry pack and resubmission warnings (non-blocking)
-      loadEntryPackStatus(userId).catch(error => {
-        console.log('Entry pack status check failed, continuing without it:', error);
+      // Check for entry info and resubmission warnings (non-blocking)
+      loadEntryInfoStatus(userId).catch(error => {
+        console.log('Entry info status check failed, continuing without it:', error);
       });
       
     } catch (error) {
@@ -246,63 +252,66 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  const loadEntryPackStatus = async (userId) => {
+  const loadEntryInfoStatus = async (userId) => {
     try {
-      // Try to load EntryPackService, but don't fail if it doesn't exist
-      let EntryPackService;
-      try {
-        EntryPackService = require('../../services/entryPack/EntryPackService').default;
-      } catch (requireError) {
-        console.log('EntryPackService not available, skipping entry pack status check');
+      // Use EntryInfoService to check for entry info with DAC submissions
+      const EntryInfoService = require('../../services/EntryInfoService').default;
+
+      if (!EntryInfoService || typeof EntryInfoService.getAllEntryInfos !== 'function') {
+        console.log('EntryInfoService methods not available, skipping entry info status check');
         setEntryPackStatus(null);
         setShowSupersededStatus(false);
         setResubmissionWarning(null);
         return;
       }
 
-      if (!EntryPackService || typeof EntryPackService.getActivePacksForUser !== 'function') {
-        console.log('EntryPackService methods not available, skipping entry pack status check');
-        setEntryPackStatus(null);
-        setShowSupersededStatus(false);
-        setResubmissionWarning(null);
-        return;
-      }
+      const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
 
-      const activeEntryPacks = await EntryPackService.getActivePacksForUser(userId);
-      
-      // Find entry pack for Thailand
+      // Find entry info for Thailand
       const destinationId = route.params?.destination?.id || 'thailand';
-      const thailandEntryPack = activeEntryPacks?.find(pack => 
-        pack.destinationId === destinationId || pack.destinationId === 'thailand'
+      const thailandEntryInfo = allEntryInfos?.find(info =>
+        info.destinationId === destinationId || info.destinationId === 'thailand'
       );
 
-      if (thailandEntryPack) {
-        setEntryPackStatus(thailandEntryPack.status);
-        setShowSupersededStatus(thailandEntryPack.status === 'superseded');
+      if (thailandEntryInfo) {
+        // Check if this entry info has a successful DAC submission
+        const latestDAC = await EntryInfoService.getLatestSuccessfulDigitalArrivalCard(thailandEntryInfo.id, 'TDAC');
 
-        // Check for pending resubmission warnings
-        try {
-          const warning = PassportDataService.getResubmissionWarning(thailandEntryPack.id);
-          if (warning) {
-            setResubmissionWarning(warning);
+        if (latestDAC) {
+          // Has successful DAC - consider it "submitted"
+          setEntryPackStatus('submitted');
+          setShowSupersededStatus(latestDAC.status === 'superseded');
+
+          // Check for pending resubmission warnings
+          try {
+            const warning = PassportDataService.getResubmissionWarning(thailandEntryInfo.id);
+            if (warning) {
+              setResubmissionWarning(warning);
+            }
+          } catch (warningError) {
+            console.log('Resubmission warning check failed:', warningError);
           }
-        } catch (warningError) {
-          console.log('Resubmission warning check failed:', warningError);
-        }
 
-        console.log('Entry pack status loaded:', {
-          entryPackId: thailandEntryPack.id,
-          status: thailandEntryPack.status,
-          hasWarning: !!resubmissionWarning
-        });
+          console.log('Entry info status loaded:', {
+            entryInfoId: thailandEntryInfo.id,
+            hasDAC: !!latestDAC,
+            dacStatus: latestDAC.status,
+            hasWarning: !!resubmissionWarning
+          });
+        } else {
+          // No successful DAC - consider it "in_progress"
+          setEntryPackStatus('in_progress');
+          setShowSupersededStatus(false);
+          setResubmissionWarning(null);
+        }
       } else {
         setEntryPackStatus(null);
         setShowSupersededStatus(false);
         setResubmissionWarning(null);
       }
     } catch (error) {
-      console.error('Failed to load entry pack status:', error);
-      // Don't let entry pack status loading failure block the main UI
+      console.error('Failed to load entry info status:', error);
+      // Don't let entry info status loading failure block the main UI
       setEntryPackStatus(null);
       setShowSupersededStatus(false);
       setResubmissionWarning(null);
@@ -381,6 +390,13 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       passport: passportParam,
       destination: route.params?.destination,
     });
+  };
+
+  const handlePassportSelect = (passport) => {
+    console.log('Passport selected:', passport);
+    setSelectedPassport(passport);
+    // Reload data with the new passport selection
+    loadData();
   };
 
   const handlePrimaryAction = async () => {
@@ -478,8 +494,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         }
         break;
       case 'view_entry_pack':
-        // Navigate to entry pack detail screen
-        handlePreviewEntryCard();
+        // Navigate to entry info detail screen
+        navigation.navigate('EntryInfoDetail', {
+          entryInfoId: route.params?.entryInfoId,
+        });
         break;
       case 'resubmit_tdac':
         // Handle resubmission - navigate to edit screen first
@@ -799,6 +817,18 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           />
         }
       >
+        {/* Passport Selection */}
+        {userId && (
+          <View style={styles.passportSection}>
+            <PassportPicker
+              userId={userId}
+              selectedPassportId={selectedPassport?.id}
+              onPassportSelect={handlePassportSelect}
+              style={styles.passportPicker}
+            />
+          </View>
+        )}
+
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
           <Text style={styles.title}>
@@ -853,6 +883,25 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingBottom: spacing.lg,
+  },
+  passportSection: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  passportPicker: {
+    marginVertical: 0,
   },
   titleSection: {
     alignItems: 'center',

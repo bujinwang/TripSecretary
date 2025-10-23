@@ -15,7 +15,8 @@ import NotificationService from './NotificationService';
 import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EntryPackService from '../entryPack/EntryPackService';
+import EntryInfoService from '../EntryInfoService';
+import PassportDataService from '../data/PassportDataService';
 
 class DeadlineNotificationService {
   constructor() {
@@ -255,31 +256,40 @@ class DeadlineNotificationService {
 
   /**
    * Check if deadline notification should be sent (verify submission status)
-   * @param {string} entryPackId - Entry pack ID
+   * @param {string} entryInfoId - Entry info ID
    * @returns {Promise<boolean>} Whether notification should be sent
    */
-  async shouldSendDeadlineNotification(entryPackId) {
+  async shouldSendDeadlineNotification(entryInfoId) {
     try {
-      // Check if entry pack exists and is not submitted
-      const entryPack = await EntryPackService.getEntryPack(entryPackId);
-      if (!entryPack) {
-        console.log(`Entry pack ${entryPackId} not found, not sending deadline notification`);
+      // Check if entry info exists and is not submitted
+      const entryInfo = await PassportDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
+      if (!entryInfo || entryInfo.id !== entryInfoId) {
+        console.log(`Entry info ${entryInfoId} not found, not sending deadline notification`);
         return false;
       }
 
-      // Check if TDAC is already submitted
-      if (entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo) {
-        console.log(`TDAC already submitted for entry pack ${entryPackId}, not sending deadline notification`);
+      // Check if DAC is already submitted
+      const digitalArrivalCards = await PassportDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+      const hasSuccessfulSubmission = digitalArrivalCards.some(dac => dac.status === 'success');
+
+      if (hasSuccessfulSubmission) {
+        console.log(`DAC already submitted for entry info ${entryInfoId}, not sending deadline notification`);
         return false;
       }
 
       // Check if it's actually the arrival day
       const now = new Date();
-      const arrivalDate = new Date(entryPack.arrivalDate);
+      const travel = await PassportDataService.getTravelInfo('current_user', 'thailand');
+      if (!travel || !travel.arrivalDate) {
+        console.log(`No arrival date found for entry info ${entryInfoId}, not sending deadline notification`);
+        return false;
+      }
+
+      const arrivalDate = new Date(travel.arrivalDate);
       const isArrivalDay = now.toDateString() === arrivalDate.toDateString();
-      
+
       if (!isArrivalDay) {
-        console.log(`Not arrival day for entry pack ${entryPackId}, not sending deadline notification`);
+        console.log(`Not arrival day for entry info ${entryInfoId}, not sending deadline notification`);
         return false;
       }
 

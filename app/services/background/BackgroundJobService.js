@@ -1,19 +1,19 @@
 /**
  * BackgroundJobService - Handles background tasks for the progressive entry flow
- * 
+ *
  * Features:
- * - Automatic entry pack archival
- * - Expired entry pack detection
+ * - Automatic entry info archival
+ * - Expired entry info detection
  * - Periodic cleanup tasks
  * - Notification scheduling for archival events
- * 
+ *
  * Requirements: 14.1-14.5, 16.1-16.5
  */
 
-import EntryPackService from '../entryPack/EntryPackService';
 import NotificationCoordinator from '../notification/NotificationCoordinator';
 import NotificationPreferencesService from '../notification/NotificationPreferencesService';
 import PassportDataService from '../data/PassportDataService';
+import EntryInfoService from '../EntryInfoService';
 
 class BackgroundJobService {
   constructor() {
@@ -95,14 +95,14 @@ class BackgroundJobService {
       this.lastCheckTime = new Date().toISOString();
       this.stats.totalChecks++;
       
-      // Get all users with active entry packs
-      const users = await this.getAllUsersWithActiveEntryPacks();
+      // Get all users with active entry infos
+      const users = await this.getAllUsersWithActiveEntryInfos();
       
       let totalArchivedCount = 0;
       
       for (const userId of users) {
         try {
-          const archivedCount = await this.checkAndArchiveExpiredPacksForUser(userId);
+          const archivedCount = await this.checkAndArchiveExpiredInfosForUser(userId);
           totalArchivedCount += archivedCount;
         } catch (error) {
           console.error(`Failed to check expired packs for user ${userId}:`, error);
@@ -129,83 +129,87 @@ class BackgroundJobService {
   }
 
   /**
-   * Get all users with active entry packs
+   * Get all users with active entry infos
    * @returns {Promise<Array<string>>} Array of user IDs
    */
-  async getAllUsersWithActiveEntryPacks() {
+  async getAllUsersWithActiveEntryInfos() {
     try {
       // In a real implementation, this would query the database for all users
       // For now, we'll use a placeholder approach
-      
+
       // TODO: Implement proper user enumeration from storage
       // This is a simplified approach for the current implementation
       const knownUsers = ['user_001']; // Default user for demo
-      
+
       return knownUsers;
     } catch (error) {
-      console.error('Failed to get users with active entry packs:', error);
+      console.error('Failed to get users with active entry infos:', error);
       return [];
     }
   }
 
   /**
-   * Check and archive expired entry packs for a specific user
+   * Check and archive expired entry infos for a specific user
    * @param {string} userId - User ID
-   * @returns {Promise<number>} Number of entry packs archived
+   * @returns {Promise<number>} Number of entry infos archived
    */
-  async checkAndArchiveExpiredPacksForUser(userId) {
+  async checkAndArchiveExpiredInfosForUser(userId) {
     try {
-      console.log(`Checking expired entry packs for user: ${userId}`);
+      console.log(`Checking expired entry infos for user: ${userId}`);
       
       // Initialize user data service
       await PassportDataService.initialize(userId);
       
-      // Get active entry packs for user
-      const activeEntryPacks = await EntryPackService.getActivePacksForUser(userId);
+      // Get active entry infos for user
+      const activeEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
       
-      if (!activeEntryPacks.length) {
-        console.log(`No active entry packs found for user ${userId}`);
+      if (!activeEntryInfos.length) {
+        console.log(`No active entry infos found for user ${userId}`);
         return 0;
       }
-      
+
       let archivedCount = 0;
       const now = new Date();
-      
-      for (const entryPack of activeEntryPacks) {
+
+      for (const entryInfo of activeEntryInfos) {
         try {
-          // Check if entry pack should be archived
-          const shouldArchive = await this.shouldArchiveEntryPack(entryPack, now);
-          
+          // Check if entry info should be archived
+          const shouldArchive = await this.shouldArchiveEntryInfo(entryInfo, now);
+
           if (shouldArchive.archive) {
-            console.log(`Archiving expired entry pack: ${entryPack.id}`, {
+            console.log(`Archiving expired entry info: ${entryInfo.id}`, {
               reason: shouldArchive.reason,
               arrivalDate: shouldArchive.arrivalDate,
               expiryTime: shouldArchive.expiryTime
             });
-            
-            // Archive the entry pack
-            await EntryPackService.archive(entryPack.id, 'auto', {
-              triggeredBy: 'background_job',
-              autoArchive: true,
-              reason: shouldArchive.reason,
-              metadata: {
-                arrivalDate: shouldArchive.arrivalDate,
-                expiryTime: shouldArchive.expiryTime,
-                checkTime: now.toISOString()
-              }
+
+            // Archive the entry info
+            await EntryInfoService.updateEntryInfo(entryInfo.id, {
+              displayStatus: JSON.stringify({
+                archived: true,
+                archivedAt: now.toISOString(),
+                reason: shouldArchive.reason,
+                triggeredBy: 'background_job',
+                autoArchive: true,
+                metadata: {
+                  arrivalDate: shouldArchive.arrivalDate,
+                  expiryTime: shouldArchive.expiryTime,
+                  checkTime: now.toISOString()
+                }
+              })
             });
-            
+
             // Send archival notification if enabled
-            await this.sendArchivalNotification(userId, entryPack, shouldArchive);
-            
+            await this.sendArchivalNotification(userId, entryInfo, shouldArchive);
+
             archivedCount++;
           }
         } catch (error) {
-          console.error(`Failed to process entry pack ${entryPack.id}:`, error);
+          console.error(`Failed to process entry info ${entryInfo.id}:`, error);
         }
       }
       
-      console.log(`Archived ${archivedCount} entry packs for user ${userId}`);
+      console.log(`Archived ${archivedCount} entry infos for user ${userId}`);
       return archivedCount;
       
     } catch (error) {
@@ -215,26 +219,22 @@ class BackgroundJobService {
   }
 
   /**
-   * Determine if an entry pack should be archived
-   * @param {Object} entryPack - Entry pack instance
+   * Determine if an entry info should be archived
+   * @param {Object} entryInfo - Entry info instance
    * @param {Date} now - Current time
    * @returns {Promise<Object>} Archival decision
    */
-  async shouldArchiveEntryPack(entryPack, now) {
+  async shouldArchiveEntryInfo(entryInfo, now) {
     try {
-      // Load entry info to get arrival date
-      const EntryInfo = require('../../models/EntryInfo').default;
-      const entryInfo = await EntryInfo.load(entryPack.entryInfoId);
-      
       if (!entryInfo || !entryInfo.arrivalDate) {
         return { archive: false, reason: 'No arrival date set' };
       }
-      
+
       const arrivalDate = new Date(entryInfo.arrivalDate);
-      
+
       // Check if arrival date + 24 hours has passed
       const expiryTime = new Date(arrivalDate.getTime() + (24 * 60 * 60 * 1000));
-      
+
       if (now > expiryTime) {
         return {
           archive: true,
@@ -244,17 +244,17 @@ class BackgroundJobService {
           hoursOverdue: Math.floor((now.getTime() - expiryTime.getTime()) / (1000 * 60 * 60))
         };
       }
-      
-      return { 
-        archive: false, 
+
+      return {
+        archive: false,
         reason: 'Not yet expired',
         arrivalDate: arrivalDate.toISOString(),
         expiryTime: expiryTime.toISOString(),
         hoursRemaining: Math.floor((expiryTime.getTime() - now.getTime()) / (1000 * 60 * 60))
       };
-      
+
     } catch (error) {
-      console.error('Failed to determine if entry pack should be archived:', error);
+      console.error('Failed to determine if entry info should be archived:', error);
       return { archive: false, reason: `Error: ${error.message}` };
     }
   }
@@ -262,26 +262,26 @@ class BackgroundJobService {
   /**
    * Send archival notification to user
    * @param {string} userId - User ID
-   * @param {Object} entryPack - Entry pack instance
+   * @param {Object} entryInfo - Entry info instance
    * @param {Object} archivalInfo - Archival information
    */
-  async sendArchivalNotification(userId, entryPack, archivalInfo) {
+  async sendArchivalNotification(userId, entryInfo, archivalInfo) {
     try {
       // Check if archival notifications are enabled
       const notificationsEnabled = await NotificationPreferencesService.isNotificationTypeEnabled('archival');
-      
+
       if (!notificationsEnabled) {
         console.log('Archival notifications disabled, skipping notification');
         return;
       }
-      
+
       // Get destination name for notification
-      const destinationName = this.getDestinationDisplayName(entryPack.destinationId);
-      
+      const destinationName = this.getDestinationDisplayName(entryInfo.destinationId);
+
       // Schedule archival notification
       await NotificationCoordinator.scheduleArchivalNotification(
         userId,
-        entryPack.id,
+        entryInfo.id,
         destinationName,
         {
           reason: archivalInfo.reason,
@@ -289,13 +289,13 @@ class BackgroundJobService {
           hoursOverdue: archivalInfo.hoursOverdue
         }
       );
-      
+
       console.log('Archival notification scheduled:', {
         userId,
-        entryPackId: entryPack.id,
+        entryInfoId: entryInfo.id,
         destination: destinationName
       });
-      
+
     } catch (error) {
       console.error('Failed to send archival notification:', error);
       // Don't throw - notification failure shouldn't break archival process
@@ -337,15 +337,15 @@ class BackgroundJobService {
       
       if (userId) {
         // Check specific user
-        totalArchivedCount = await this.checkAndArchiveExpiredPacksForUser(userId);
+        totalArchivedCount = await this.checkAndArchiveExpiredInfosForUser(userId);
         usersChecked = 1;
       } else {
         // Check all users
-        const users = await this.getAllUsersWithActiveEntryPacks();
+        const users = await this.getAllUsersWithActiveEntryInfos();
         usersChecked = users.length;
         
         for (const user of users) {
-          const archivedCount = await this.checkAndArchiveExpiredPacksForUser(user);
+          const archivedCount = await this.checkAndArchiveExpiredInfosForUser(user);
           totalArchivedCount += archivedCount;
         }
       }

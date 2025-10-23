@@ -91,13 +91,22 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         if (fromImmigrationGuide && entryPackId && !entryPack) {
           setDataLoading(true);
           try {
-            const EntryPackService = require('../../services/entryPack/EntryPackService').EntryPackService;
+            const EntryInfoService = require('../../services/EntryInfoService').default;
             const PassportDataService = require('../../services/data/PassportDataService').default;
-            
-            const loadedEntryPack = await EntryPackService.load(entryPackId);
+
+            const loadedEntryInfo = await EntryInfoService.getEntryInfoById(entryPackId);
             const loadedPassportData = await PassportDataService.getPassportInfo();
             const loadedTravelData = await PassportDataService.getTravelInfo();
             const loadedFundData = await PassportDataService.getFundItems();
+
+            // Convert entry info to entry pack format for compatibility
+            const loadedEntryPack = loadedEntryInfo ? {
+              id: loadedEntryInfo.id,
+              qrCodeUri: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.qrUri,
+              arrCardNo: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.arrCardNo,
+              submittedAt: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.submittedAt,
+              status: loadedEntryInfo.displayStatus?.tdacSubmitted ? 'submitted' : 'in_progress'
+            } : null;
             
             setEntryPack(loadedEntryPack);
             setPassportData(loadedPassportData);

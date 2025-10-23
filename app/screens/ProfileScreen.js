@@ -296,10 +296,10 @@ const ProfileScreen = ({ navigation, route }) => {
         section: t('profile.sections.myServices', { defaultValue: 'My Services' }),
         items: [
           {
-            id: 'entryPackHistory',
+            id: 'entryInfoHistory',
             icon: '📋',
-            title: t('profile.menu.entryPackHistory.title', { defaultValue: 'Entry Pack History' }),
-            subtitle: t('profile.menu.entryPackHistory.subtitle', { defaultValue: 'View completed trips and archived entry packs' }),
+            title: t('profile.menu.entryInfoHistory.title', { defaultValue: 'Entry Info History' }),
+            subtitle: t('profile.menu.entryInfoHistory.subtitle', { defaultValue: 'View completed trips and archived entry info' }),
           },
           {
             id: 'backup',
@@ -395,8 +395,8 @@ const ProfileScreen = ({ navigation, route }) => {
       navigation.navigate('NotificationSettings');
     } else if (itemId === 'notificationLogs') {
       navigation.navigate('NotificationLog');
-    } else if (itemId === 'entryPackHistory') {
-      navigation.navigate('EntryPackHistory');
+    } else if (itemId === 'entryInfoHistory') {
+      navigation.navigate('EntryInfoHistory');
     } else if (itemId === 'exportData') {
       handleExportData();
     } else if (itemId === 'notificationTest') {

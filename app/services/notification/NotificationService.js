@@ -263,8 +263,8 @@ class NotificationService {
 
       case 'view':
         // Navigate to appropriate view screen
-        if (data.entryPackId) {
-          this.handleDeepLink('entryPack/detail', data);
+        if (data.entryPackId || data.entryInfoId) {
+          this.handleDeepLink('entryInfo/detail', data);
         } else {
           this.handleDeepLink('thailand/entryFlow', data);
         }
@@ -282,20 +282,20 @@ class NotificationService {
 
       case 'guide':
         // Navigate to immigration guide
-        if (data.entryPackId) {
-          this.handleDeepLink('entryPack/detail', { 
-            ...data, 
-            showGuide: true 
+        if (data.entryPackId || data.entryInfoId) {
+          this.handleDeepLink('entryInfo/detail', {
+            ...data,
+            showGuide: true
           });
         }
         break;
 
       case 'itinerary':
-        // Navigate to itinerary view (could be part of entry pack detail)
-        if (data.entryPackId) {
-          this.handleDeepLink('entryPack/detail', { 
-            ...data, 
-            showItinerary: true 
+        // Navigate to itinerary view (could be part of entry info detail)
+        if (data.entryPackId || data.entryInfoId) {
+          this.handleDeepLink('entryInfo/detail', {
+            ...data,
+            showItinerary: true
           });
         }
         break;
@@ -303,6 +303,13 @@ class NotificationService {
       case 'archive':
         // Handle archive action
         await this.handleArchiveAction(data);
+        break;
+
+      case 'view_entry_pack':
+        // Navigate to entry info detail (legacy compatibility)
+        if (data.entryPackId || data.entryInfoId) {
+          this.handleDeepLink('entryInfo/detail', { entryInfoId: data.entryPackId || data.entryInfoId });
+        }
         break;
 
       case 'cleanup':
@@ -328,10 +335,17 @@ class NotificationService {
 
       case 'viewBackup':
         // Navigate to backup settings
-        this.handleDeepLink('profile/settings', { 
-          ...data, 
-          settingsSection: 'backup' 
+        this.handleDeepLink('profile/settings', {
+          ...data,
+          settingsSection: 'backup'
         });
+        break;
+
+      case 'view_entry_pack':
+        // Navigate to entry info detail (legacy compatibility)
+        if (data.entryPackId || data.entryInfoId) {
+          this.handleDeepLink('entryInfo/detail', { entryInfoId: data.entryPackId || data.entryInfoId });
+        }
         break;
 
       case 'ignore':
@@ -378,13 +392,18 @@ class NotificationService {
           throw new Error('Archive action failed');
         }
       } else {
-        // Fallback to direct EntryPackService if no userId provided
-        const { EntryPackService } = await import('../entryPack/EntryPackService');
-        
-        await EntryPackService.archive(data.entryPackId, 'user_action_from_notification');
-        console.log('Entry pack archived from notification action:', data.entryPackId);
-        
-        // Navigate to history to show the archived pack
+        // Fallback to direct EntryInfoService if no userId provided
+        const EntryInfoService = await import('../EntryInfoService');
+
+        // For schema v2.0, we need to update the entry info status instead of archiving
+        // Since EntryPackService is removed, we'll use EntryInfoService
+        await EntryInfoService.default.updateEntryInfoStatus(data.entryInfoId || data.entryPackId, 'archived', {
+          reason: 'user_action_from_notification',
+          archivedAt: new Date().toISOString()
+        });
+        console.log('Entry info archived from notification action:', data.entryInfoId || data.entryPackId);
+
+        // Navigate to history to show the archived entry info
         this.handleDeepLink('history', data);
       }
     } catch (error) {
@@ -1051,14 +1070,16 @@ class NotificationService {
           break;
 
         case 'entryPack/detail':
-          if (data.entryPackId) {
-            navigation.navigate('EntryPackDetail', {
-              entryPackId: data.entryPackId,
+        case 'entryInfo/detail':
+          const entryInfoId = data.entryPackId || data.entryInfoId;
+          if (entryInfoId) {
+            navigation.navigate('EntryInfoDetail', {
+              entryInfoId: entryInfoId,
               fromNotification: true,
               notificationData: data
             });
           } else {
-            console.warn('Entry pack ID missing for entryPack/detail deep link');
+            console.warn('Entry info ID missing for entryInfo/detail deep link');
           }
           break;
 

@@ -9,7 +9,7 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
-import EntryPack from '../../models/EntryPack';
+import EntryInfo from '../../models/EntryInfo';
 import PassportDataService from '../data/PassportDataService';
 import DataExportService from '../export/DataExportService';
 import SecureStorageService from '../security/SecureStorageService';
@@ -130,15 +130,15 @@ class BackupService {
       
       console.log('Creating backup:', backupId);
 
-      // Collect all entry pack IDs
-      const entryPackIds = await this.getAllEntryPackIds();
+      // Collect all entry info IDs
+      const entryInfoIds = await this.getAllEntryInfoIds();
       
-      if (entryPackIds.length === 0) {
-        console.log('No entry packs to backup');
+      if (entryInfoIds.length === 0) {
+        console.log('No entry infos to backup');
         return {
           success: true,
           backupId,
-          entryPackCount: 0,
+          entryInfoCount: 0,
           message: 'No data to backup'
         };
       }
@@ -149,14 +149,14 @@ class BackupService {
         createdAt: Date.now(),
         timestamp,
         type: options.type || 'manual',
-        entryPackCount: entryPackIds.length,
+        entryInfoCount: entryInfoIds.length,
         includePhotos: options.includePhotos !== false,
         appVersion: '1.0.0', // TODO: Get from app config
         deviceInfo: await this.getDeviceInfo()
       };
 
-      // Export all entry packs using DataExportService
-      const exportResult = await DataExportService.exportMultipleEntryPacks(entryPackIds, 'json', {
+      // Export all entry infos using DataExportService
+      const exportResult = await DataExportService.exportMultipleEntryInfos(entryInfoIds, 'json', {
         includePhotos: options.includePhotos,
         includeMetadata: true,
         onProgress: options.onProgress
@@ -191,14 +191,14 @@ class BackupService {
         backupId,
         createdAt: backupMetadata.createdAt,
         type: backupMetadata.type,
-        entryPackCount: backupMetadata.entryPackCount
+        entryInfoCount: backupMetadata.entryInfoCount
       }));
 
       console.log('Backup created successfully:', {
         backupId,
         filename: backupFilename,
         fileSize: fileInfo.size,
-        entryPackCount: entryPackIds.length
+        entryInfoCount: entryInfoIds.length
       });
 
       return {
@@ -207,7 +207,7 @@ class BackupService {
         filename: backupFilename,
         filePath: backupFilePath,
         fileSize: fileInfo.size,
-        entryPackCount: entryPackIds.length,
+        entryInfoCount: entryInfoIds.length,
         createdAt: backupMetadata.createdAt,
         metadata: backupMetadata
       };
@@ -715,7 +715,7 @@ class BackupService {
                 uploadedAt: metadata.uploadedAt,
                 syncStatus: metadata.syncStatus,
                 cloudProvider: metadata.cloudProvider,
-                entryPackCount: metadata.entryPackCount,
+                entryInfoCount: metadata.entryInfoCount,
                 encrypted: metadata.encrypted
               });
             }
@@ -812,9 +812,9 @@ class BackupService {
       for (const backup of pendingBackups) {
         try {
           const metadata = await this.loadCloudBackupMetadata(backup.cloudBackupId);
-          
+
           let uploadResult = { success: false };
-          
+
           if (metadata.cloudProvider === 'icloud' && Platform.OS === 'ios') {
             uploadResult = await this.uploadToiCloud(backup.filePath, metadata);
           } else if (metadata.cloudProvider === 'googledrive') {
@@ -826,7 +826,7 @@ class BackupService {
           metadata.uploadedAt = uploadResult.success ? Date.now() : null;
           metadata.lastSyncAttempt = Date.now();
           metadata.syncError = uploadResult.success ? null : uploadResult.error;
-          
+
           await this.saveCloudBackupMetadata(backup.cloudBackupId, metadata);
 
           if (uploadResult.success) {
@@ -1430,24 +1430,24 @@ class BackupService {
       const parsedData = JSON.parse(backupData);
 
       // Extract preview information
-      const entryPacks = parsedData.entryPacks || [];
+      const entryInfos = parsedData.entryInfos || [];
       const preview = {
         backupId,
         backupType,
         createdAt: metadata.createdAt,
-        entryPackCount: entryPacks.length,
+        entryInfoCount: entryInfos.length,
         totalSize: metadata.fileSize,
-        
-        entryPacks: entryPacks.map(pack => ({
-          id: pack.id,
-          destinationId: pack.destinationId,
-          status: pack.status,
-          createdAt: pack.createdAt,
-          arrivalDate: pack.travel?.arrivalDate,
-          departureDate: pack.travel?.departureDate,
-          hasPhotos: (pack.funds || []).some(fund => fund.photoUri),
-          photoCount: (pack.funds || []).filter(fund => fund.photoUri).length,
-          tdacSubmitted: !!pack.tdacSubmission
+
+        entryInfos: entryInfos.map(info => ({
+          id: info.id,
+          destinationId: info.destinationId,
+          status: info.displayStatus?.status,
+          createdAt: info.createdAt,
+          arrivalDate: info.travel?.arrivalDate,
+          departureDate: info.travel?.departureDate,
+          hasPhotos: (info.funds || []).some(fund => fund.photoUri),
+          photoCount: (info.funds || []).filter(fund => fund.photoUri).length,
+          dacSubmitted: (info.digitalArrivalCards || []).some(dac => dac.status === 'success')
         })),
 
         metadata: {
@@ -1533,35 +1533,35 @@ class BackupService {
         return { success: true, validation: validationResult };
       }
 
-      // Validate entry pack count
-      const actualCount = previewResult.preview.entryPackCount;
-      const expectedCount = metadata.entryPackCount;
-      
+      // Validate entry info count
+      const actualCount = previewResult.preview.entryInfoCount;
+      const expectedCount = metadata.entryInfoCount;
+
       if (actualCount !== expectedCount) {
-        validationResult.warnings.push(`Entry pack count mismatch: expected ${expectedCount}, actual ${actualCount}`);
+        validationResult.warnings.push(`Entry info count mismatch: expected ${expectedCount}, actual ${actualCount}`);
       }
 
-      // Check for required fields in each entry pack
-      const entryPacks = previewResult.preview.entryPacks;
+      // Check for required fields in each entry info
+      const entryInfos = previewResult.preview.entryInfos;
       let missingFieldsCount = 0;
-      
-      entryPacks.forEach((pack, index) => {
-        if (!pack.id || !pack.destinationId) {
+
+      entryInfos.forEach((info, index) => {
+        if (!info.id || !info.destinationId) {
           missingFieldsCount++;
         }
       });
 
       if (missingFieldsCount > 0) {
-        validationResult.warnings.push(`${missingFieldsCount} entry packs have missing required fields`);
+        validationResult.warnings.push(`${missingFieldsCount} entry infos have missing required fields`);
       }
 
       // Set validation result
       validationResult.isValid = validationResult.errors.length === 0;
       validationResult.details = {
         fileSize: fileInfo.size,
-        entryPackCount: actualCount,
-        hasPhotos: entryPacks.some(pack => pack.hasPhotos),
-        totalPhotos: entryPacks.reduce((sum, pack) => sum + pack.photoCount, 0),
+        entryInfoCount: actualCount,
+        hasPhotos: entryInfos.some(info => info.hasPhotos),
+        totalPhotos: entryInfos.reduce((sum, info) => sum + info.photoCount, 0),
         appVersion: metadata.appVersion,
         createdAt: metadata.createdAt
       };
@@ -1759,16 +1759,16 @@ class BackupService {
   }
 
   /**
-   * Get all entry pack IDs
-   * @returns {Promise<Array>} - Array of entry pack IDs
+   * Get all entry info IDs
+   * @returns {Promise<Array>} - Array of entry info IDs
    */
-  async getAllEntryPackIds() {
+  async getAllEntryInfoIds() {
     try {
       // This would typically query the database or storage
       // For now, return empty array as placeholder
       return [];
     } catch (error) {
-      console.error('Failed to get entry pack IDs:', error);
+      console.error('Failed to get entry info IDs:', error);
       return [];
     }
   }

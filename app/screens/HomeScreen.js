@@ -20,7 +20,7 @@ import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
 import PassportDataService from '../services/data/PassportDataService';
-import EntryPackService from '../services/entryPack/EntryPackService';
+import EntryInfoService from '../services/EntryInfoService';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
@@ -265,7 +265,7 @@ const HomeScreen = ({ navigation }) => {
       await PassportDataService.initialize(userId);
       
       // Load home screen data with multi-destination support
-      const homeScreenData = await EntryPackService.getHomeScreenData(userId);
+      const homeScreenData = await EntryInfoService.getHomeScreenData(userId);
       
       console.log('Multi-destination data loaded:', {
         submittedPacks: homeScreenData.submittedEntryPacks.length,
@@ -522,7 +522,7 @@ const HomeScreen = ({ navigation }) => {
           key={pack.id}
           style={[styles.historyCard, styles.entryPackCard]}
           pressable
-          onPress={() => navigation.navigate('EntryPackDetail', { entryPackId: pack.id })}
+          onPress={() => navigation.navigate('EntryInfoDetail', { entryInfoId: pack.id })}
         >
           <View style={styles.entryPackItem}>
             <View style={styles.entryPackLeft}>
@@ -715,7 +715,7 @@ const HomeScreen = ({ navigation }) => {
                 break;
               case 'view_entry_pack':
                 if (data) {
-                  navigation.navigate('EntryPackDetail', { entryPackId: data.id });
+                  navigation.navigate('EntryInfoDetail', { entryInfoId: data.id });
                 }
                 break;
               default:
@@ -740,7 +740,7 @@ const HomeScreen = ({ navigation }) => {
           onTripPress={(trip) => {
             // Handle trip press based on trip type
             if (trip.type === 'active' || trip.type === 'inProgress') {
-              navigation.navigate('EntryPackDetail', { entryPackId: trip.id || 'default' });
+              navigation.navigate('EntryInfoDetail', { entryInfoId: trip.id || 'default' });
             } else {
               // Handle upcoming trip navigation
               console.log('Navigate to trip planning for:', trip.destination);

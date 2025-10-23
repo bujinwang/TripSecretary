@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { colors } from '../../theme';
 // Removed mockTDACData dependency - using pure user data
-import EntryPackService from '../../services/entryPack/EntryPackService';
+import EntryInfoService from '../../services/EntryInfoService';
 import SnapshotService from '../../services/snapshot/SnapshotService';
 import PassportDataService from '../../services/data/PassportDataService';
 import TDACValidationService from '../../services/validation/TDACValidationService';
@@ -84,26 +84,31 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 
       // Find or create entry info ID (placeholder - would need actual implementation)
       const entryInfoId = await findOrCreateEntryInfoId(travelerInfo);
-      
-      if (entryInfoId) {
-        // Create or update entry pack
-        const entryPack = await EntryPackService.createOrUpdatePack(
-          entryInfoId,
-          tdacSubmission,
-          { submissionMethod: tdacSubmission.submissionMethod }
-        );
 
-        console.log('✅ Entry pack created/updated:', {
-          entryPackId: entryPack.id,
+      if (entryInfoId) {
+        // Create or update digital arrival card
+        const digitalArrivalCard = await PassportDataService.saveDigitalArrivalCard({
+          entryInfoId: entryInfoId,
+          cardType: 'TDAC', // Default to TDAC, can be extended for other types
           arrCardNo: tdacSubmission.arrCardNo,
-          status: entryPack.status
+          qrUri: tdacSubmission.qrUri,
+          pdfUrl: tdacSubmission.pdfPath,
+          submittedAt: tdacSubmission.submittedAt,
+          submissionMethod: tdacSubmission.submissionMethod,
+          status: 'success'
+        });
+
+        console.log('✅ Digital arrival card created/updated:', {
+          cardId: digitalArrivalCard.id,
+          arrCardNo: tdacSubmission.arrCardNo,
+          status: digitalArrivalCard.status
         });
 
         // Task 4.2: Record submission history
-        await recordSubmissionHistory(entryPack.id, submissionHistoryEntry);
+        await recordSubmissionHistory(digitalArrivalCard.id, submissionHistoryEntry);
 
-        // Task 4.3: Create entry pack snapshot immediately after creating entry pack
-        await createEntryPackSnapshot(entryPack.id, 'submission', {
+        // Task 4.3: Create entry info snapshot immediately after creating digital arrival card
+        await createEntryInfoSnapshot(entryInfoId, 'submission', {
           appVersion: '1.0.0', // Would get from app config
           deviceInfo: 'mobile', // Would get from device info
           creationMethod: 'auto',
@@ -122,7 +127,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
       
       // Enhanced error handling with retry mechanisms and user-friendly reporting
       const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
-        operation: 'entry_pack_creation',
+        operation: 'digital_arrival_card_creation',
         submissionMethod: tdacSubmission.submissionMethod,
         arrCardNo: tdacSubmission.arrCardNo,
         userAgent: 'TDACSelectionScreen'
@@ -177,8 +182,8 @@ const TDACSelectionScreen = ({ navigation, route }) => {
           suggestions: errorResult.suggestions
         };
         
-        await AsyncStorage.setItem('entry_pack_creation_failures', JSON.stringify(failureLog));
-        console.log('📝 Enhanced entry pack creation failure logged:', errorResult.errorId);
+        await AsyncStorage.setItem('digital_arrival_card_creation_failures', JSON.stringify(failureLog));
+        console.log('📝 Enhanced digital arrival card creation failure logged:', errorResult.errorId);
       } catch (logError) {
         console.error('❌ Failed to log entry pack creation failure:', logError);
       }
@@ -277,103 +282,103 @@ const TDACSelectionScreen = ({ navigation, route }) => {
   };
 
   /**
-   * Task 4.2: Record submission history to submissionHistory array
-   */
-  const recordSubmissionHistory = async (entryPackId, submissionHistoryEntry) => {
-    try {
-      // This would integrate with EntryPack model to append to submissionHistory array
-      console.log('📝 Recording submission history:', {
-        entryPackId,
-        entry: submissionHistoryEntry
-      });
-      
-      // For now, just log - actual implementation would update EntryPack.submissionHistory
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to record submission history:', error);
-      return false;
-    }
-  };
+    * Task 4.2: Record submission history to submissionHistory array
+    */
+   const recordSubmissionHistory = async (digitalArrivalCardId, submissionHistoryEntry) => {
+     try {
+       // This would integrate with DigitalArrivalCard model to append to submissionHistory array
+       console.log('📝 Recording submission history:', {
+         digitalArrivalCardId,
+         entry: submissionHistoryEntry
+       });
+
+       // For now, just log - actual implementation would update DigitalArrivalCard.submissionHistory
+       return true;
+     } catch (error) {
+       console.error('❌ Failed to record submission history:', error);
+       return false;
+     }
+   };
 
   /**
-   * Task 4.3: Create entry pack snapshot
-   * Creates immutable snapshot of entry pack data after successful TDAC submission
-   */
-  const createEntryPackSnapshot = async (entryPackId, reason = 'submission', metadata = {}) => {
-    try {
-      console.log('📸 Creating entry pack snapshot:', {
-        entryPackId,
-        reason,
-        metadata
-      });
+    * Task 4.3: Create entry info snapshot
+    * Creates immutable snapshot of entry info data after successful TDAC submission
+    */
+   const createEntryInfoSnapshot = async (entryInfoId, reason = 'submission', metadata = {}) => {
+     try {
+       console.log('📸 Creating entry info snapshot:', {
+         entryInfoId,
+         reason,
+         metadata
+       });
 
-      // Optional: Display snapshot creation progress
-      // This could be a toast or loading indicator
-      // For now, we'll just log the progress
+       // Optional: Display snapshot creation progress
+       // This could be a toast or loading indicator
+       // For now, we'll just log the progress
 
-      console.log('📸 Starting snapshot creation process...');
+       console.log('📸 Starting snapshot creation process...');
 
-      // Call SnapshotService to create snapshot
-      const snapshot = await SnapshotService.createSnapshot(entryPackId, reason, metadata);
+       // Call SnapshotService to create snapshot
+       const snapshot = await SnapshotService.createSnapshot(entryInfoId, reason, metadata);
 
-      if (snapshot) {
-        console.log('✅ Entry pack snapshot created successfully:', {
-          snapshotId: snapshot.snapshotId,
-          entryPackId: entryPackId,
-          reason: reason,
-          photoCount: snapshot.getPhotoCount(),
-          createdAt: snapshot.createdAt
-        });
+       if (snapshot) {
+         console.log('✅ Entry info snapshot created successfully:', {
+           snapshotId: snapshot.snapshotId,
+           entryInfoId: entryInfoId,
+           reason: reason,
+           photoCount: snapshot.getPhotoCount(),
+           createdAt: snapshot.createdAt
+         });
 
-        // Optional: Display success notification
-        // Toast.show({
-        //   type: 'success',
-        //   text1: 'Entry Pack Saved',
-        //   text2: 'Your travel documents have been securely archived.',
-        //   position: 'bottom',
-        //   visibilityTime: 3000,
-        // });
+         // Optional: Display success notification
+         // Toast.show({
+         //   type: 'success',
+         //   text1: 'Entry Info Saved',
+         //   text2: 'Your travel documents have been securely archived.',
+         //   position: 'bottom',
+         //   visibilityTime: 3000,
+         // });
 
-        return snapshot;
-      } else {
-        throw new Error('Snapshot creation returned null');
-      }
+         return snapshot;
+       } else {
+         throw new Error('Snapshot creation returned null');
+       }
 
-    } catch (error) {
-      console.error('❌ Failed to create entry pack snapshot:', error);
-      
-      // Task 4.3: Handle snapshot creation failure gracefully
-      // Don't block the user flow, but log the error for debugging
-      
-      try {
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        const failureLog = {
-          timestamp: new Date().toISOString(),
-          entryPackId,
-          reason,
-          error: error.message,
-          stack: error.stack,
-          metadata
-        };
-        
-        await AsyncStorage.setItem('snapshot_creation_failures', JSON.stringify(failureLog));
-        console.log('📝 Snapshot creation failure logged');
-      } catch (logError) {
-        console.error('❌ Failed to log snapshot creation failure:', logError);
-      }
+     } catch (error) {
+       console.error('❌ Failed to create entry info snapshot:', error);
 
-      // Optional: Display non-blocking warning
-      // Toast.show({
-      //   type: 'info',
-      //   text1: 'Archive Warning',
-      //   text2: 'Documents saved but archival incomplete. Your TDAC is still valid.',
-      //   position: 'bottom',
-      //   visibilityTime: 4000,
-      // });
+       // Task 4.3: Handle snapshot creation failure gracefully
+       // Don't block the user flow, but log the error for debugging
 
-      return null;
-    }
-  };
+       try {
+         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+         const failureLog = {
+           timestamp: new Date().toISOString(),
+           entryInfoId,
+           reason,
+           error: error.message,
+           stack: error.stack,
+           metadata
+         };
+
+         await AsyncStorage.setItem('snapshot_creation_failures', JSON.stringify(failureLog));
+         console.log('📝 Snapshot creation failure logged');
+       } catch (logError) {
+         console.error('❌ Failed to log snapshot creation failure:', logError);
+       }
+
+       // Optional: Display non-blocking warning
+       // Toast.show({
+       //   type: 'info',
+       //   text1: 'Archive Warning',
+       //   text2: 'Documents saved but archival incomplete. Your TDAC is still valid.',
+       //   position: 'bottom',
+       //   visibilityTime: 4000,
+       // });
+
+       return null;
+     }
+   };
 
   /**
    * Find or create entry info ID for the traveler

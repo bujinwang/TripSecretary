@@ -15,7 +15,7 @@ import NotificationService from './NotificationService';
 import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EntryPackService from '../entryPack/EntryPackService';
+import EntryInfoService from '../EntryInfoService';
 
 class ExpiryWarningNotificationService {
   constructor() {
@@ -276,31 +276,31 @@ class ExpiryWarningNotificationService {
 
   /**
    * Check if expiry warning notification should be sent
-   * @param {string} entryPackId - Entry pack ID
+   * @param {string} entryInfoId - Entry info ID
    * @param {boolean} isPreExpiry - Whether this is a pre-expiry warning
    * @returns {Promise<boolean>} Whether notification should be sent
    */
-  async shouldSendExpiryWarning(entryPackId, isPreExpiry = false) {
+  async shouldSendExpiryWarning(entryInfoId, isPreExpiry = false) {
     try {
-      // Check if entry pack exists and is in a state that can expire
-      const EntryPack = require('../../models/EntryPack').default;
-      const entryPack = await EntryPack.load(entryPackId);
-      
-      if (!entryPack) {
-        console.log(`Entry pack ${entryPackId} not found, not sending expiry warning`);
+      // Check if entry info exists and is in a state that can expire
+      const EntryInfo = require('../../models/EntryInfo').default;
+      const entryInfo = await EntryInfo.load(entryInfoId);
+
+      if (!entryInfo) {
+        console.log(`Entry info ${entryInfoId} not found, not sending expiry warning`);
         return false;
       }
 
-      // Only send expiry warnings for submitted entry packs
-      if (entryPack.status !== 'submitted') {
-        console.log(`Entry pack ${entryPackId} status is ${entryPack.status}, not sending expiry warning`);
+      // Only send expiry warnings for submitted entry infos
+      if (entryInfo.displayStatus?.status !== 'submitted') {
+        console.log(`Entry info ${entryInfoId} status is ${entryInfo.displayStatus?.status}, not sending expiry warning`);
         return false;
       }
 
-      // Check if entry pack is already expired or completed
+      // Check if entry info is already expired or completed
       const completedStatuses = ['completed', 'archived', 'cancelled'];
-      if (completedStatuses.includes(entryPack.status)) {
-        console.log(`Entry pack ${entryPackId} is already ${entryPack.status}, not sending expiry warning`);
+      if (completedStatuses.includes(entryInfo.displayStatus?.status)) {
+        console.log(`Entry info ${entryInfoId} is already ${entryInfo.displayStatus?.status}, not sending expiry warning`);
         return false;
       }
 
@@ -314,14 +314,15 @@ class ExpiryWarningNotificationService {
 
   /**
    * Handle "Archive" action from expiry notification
-   * @param {string} entryPackId - Entry pack ID
+   * @param {string} entryInfoId - Entry info ID
    * @param {string} userId - User ID
    * @returns {Promise<boolean>} Whether archival was successful
    */
-  async handleArchiveAction(entryPackId, userId) {
+  async handleArchiveAction(entryInfoId, userId) {
     try {
-      // Archive the entry pack
-      const archivedPack = await EntryPackService.archive(entryPackId, 'expired', {
+      // Archive the entry info (update status to archived)
+      const success = await EntryInfoService.default.updateEntryInfoStatus(entryInfoId, 'archived', {
+        reason: 'expired',
         triggeredBy: 'notification_action',
         metadata: {
           archivedVia: 'expiry_notification',
@@ -329,11 +330,11 @@ class ExpiryWarningNotificationService {
         }
       });
 
-      if (archivedPack) {
+      if (success) {
         // Cancel any remaining expiry warning notifications
-        await this.cancelExpiryWarningNotifications(entryPackId);
-        
-        console.log(`Entry pack ${entryPackId} archived via expiry notification action`);
+        await this.cancelExpiryWarningNotifications(entryInfoId);
+
+        console.log(`Entry info ${entryInfoId} archived via expiry notification action`);
         return true;
       }
 

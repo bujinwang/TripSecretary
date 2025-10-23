@@ -33,7 +33,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 // Removed mockTDACData dependency - using pure user data
 import { colors } from '../../theme';
-import EntryPackService from '../../services/entryPack/EntryPackService';
+import EntryInfoService from '../../services/EntryInfoService';
 import TDACValidationService from '../../services/validation/TDACValidationService';
 import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
@@ -404,26 +404,29 @@ const TDACHybridScreen = ({ navigation, route }) => {
         await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
         console.log('✅ Recent submission flag set for EntryPackService');
         
-        // Create or update entry pack with TDAC submission
+        // Create or update digital arrival card with TDAC submission
         try {
           const tdacSubmission = {
             arrCardNo: result.arrCardNo,
             qrUri: fileUri,
             pdfPath: fileUri,
             submittedAt: result.submittedAt,
-            submissionMethod: 'hybrid'
+            submissionMethod: 'hybrid',
+            cardType: 'TDAC',
+            status: 'success'
           };
-          
+
           // Find entry info ID - for now use a placeholder, this should be passed from navigation params
           const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
-          
-          await EntryPackService.createOrUpdatePack(entryInfoId, tdacSubmission, {
-            submissionMethod: 'hybrid'
+
+          await EntryInfoService.updateEntryInfo(entryInfoId, {
+            documents: JSON.stringify([tdacSubmission]),
+            displayStatus: JSON.stringify({ tdacSubmitted: true, submissionMethod: 'hybrid' })
           });
-          
-          console.log('✅ Entry pack created/updated successfully via Hybrid');
-        } catch (entryPackError) {
-          console.error('❌ Failed to create entry pack:', entryPackError);
+
+          console.log('✅ Entry info updated successfully via Hybrid');
+        } catch (entryInfoError) {
+          console.error('❌ Failed to update entry info:', entryInfoError);
           // Don't block user flow - continue with file saving
         }
         

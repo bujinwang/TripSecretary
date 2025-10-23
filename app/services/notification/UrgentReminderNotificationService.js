@@ -15,7 +15,6 @@ import NotificationService from './NotificationService';
 import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EntryPackService from '../entryPack/EntryPackService';
 import PassportDataService from '../data/PassportDataService';
 
 class UrgentReminderNotificationService {
@@ -212,28 +211,31 @@ class UrgentReminderNotificationService {
 
   /**
    * Check if urgent reminder should be sent (verify submission status)
-   * @param {string} entryPackId - Entry pack ID
+   * @param {string} entryInfoId - Entry info ID
    * @returns {Promise<boolean>} Whether reminder should be sent
    */
-  async shouldSendUrgentReminder(entryPackId) {
+  async shouldSendUrgentReminder(entryInfoId) {
     try {
-      // Check if entry pack exists and is not submitted
-      const entryPack = await EntryPackService.getEntryPack(entryPackId);
-      if (!entryPack) {
-        console.log(`Entry pack ${entryPackId} not found, not sending urgent reminder`);
+      // Check if entry info exists and is not submitted
+      const entryInfo = await PassportDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
+      if (!entryInfo || entryInfo.id !== entryInfoId) {
+        console.log(`Entry info ${entryInfoId} not found, not sending urgent reminder`);
         return false;
       }
 
-      // Check if TDAC is already submitted
-      if (entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo) {
-        console.log(`TDAC already submitted for entry pack ${entryPackId}, not sending urgent reminder`);
+      // Check if DAC is already submitted
+      const digitalArrivalCards = await PassportDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+      const hasSuccessfulSubmission = digitalArrivalCards.some(dac => dac.status === 'success');
+
+      if (hasSuccessfulSubmission) {
+        console.log(`DAC already submitted for entry info ${entryInfoId}, not sending urgent reminder`);
         return false;
       }
 
       // Check frequency control
-      const canSend = await this.checkFrequencyControl(entryPackId);
+      const canSend = await this.checkFrequencyControl(entryInfoId);
       if (!canSend) {
-        console.log(`Frequency control prevents sending urgent reminder for entry pack ${entryPackId}`);
+        console.log(`Frequency control prevents sending urgent reminder for entry info ${entryInfoId}`);
         return false;
       }
 

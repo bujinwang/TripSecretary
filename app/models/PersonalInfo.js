@@ -11,6 +11,7 @@ class PersonalInfo {
   constructor(data = {}) {
     this.id = data.id || PersonalInfo.generateId();
     this.userId = data.userId;
+    this.passportId = data.passportId || null; // NEW: Optional link to passport
     this.phoneNumber = data.phoneNumber; // 🔴 ENCRYPTED
     this.email = data.email; // 🔴 ENCRYPTED
     this.homeAddress = data.homeAddress; // 🔴 ENCRYPTED
@@ -19,6 +20,8 @@ class PersonalInfo {
     this.countryRegion = data.countryRegion; // 🟢 PLAINTEXT (not sensitive)
     this.phoneCode = data.phoneCode; // 🟢 PLAINTEXT (not sensitive)
     this.gender = data.gender; // 🟢 PLAINTEXT (not sensitive)
+    this.isDefault = data.isDefault || 0; // NEW: default personal info for user
+    this.label = data.label || null; // NEW: Label for personal info (e.g., "China", "Hong Kong")
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = data.updatedAt || new Date().toISOString();
   }
@@ -173,6 +176,7 @@ class PersonalInfo {
       const result = await SecureStorageService.savePersonalInfo({
         id: this.id,
         userId: this.userId,
+        passportId: this.passportId, // NEW
         phoneNumber: this.phoneNumber,
         email: this.email,
         homeAddress: this.homeAddress,
@@ -181,6 +185,8 @@ class PersonalInfo {
         countryRegion: this.countryRegion,
         phoneCode: this.phoneCode,
         gender: this.gender,
+        isDefault: this.isDefault, // NEW
+        label: this.label, // NEW
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
       });
@@ -193,34 +199,50 @@ class PersonalInfo {
   }
 
   /**
-    * Load personal information from secure storage
-    * @param {string} userId - User ID
-    * @returns {Promise<PersonalInfo>} - PersonalInfo instance
-    */
-   static async load(userId) {
-     try {
-       console.log('=== PERSONAL INFO LOAD DEBUG ===');
-       console.log('PersonalInfo.load called with userId:', userId);
-       console.log('Type of userId:', typeof userId);
+     * Load personal information from secure storage
+     * @param {string} userId - User ID
+     * @returns {Promise<PersonalInfo>} - PersonalInfo instance
+     */
+    static async loadDefault(userId) {
+      try {
+        console.log('=== PERSONAL INFO LOAD DEBUG ===');
+        console.log('PersonalInfo.loadDefault called with userId:', userId);
+        console.log('Type of userId:', typeof userId);
 
-       const data = await SecureStorageService.getPersonalInfo(userId);
-       console.log('SecureStorageService.getPersonalInfo result:', data);
+        const data = await SecureStorageService.getPersonalInfo(userId); // This will return the default personal info
+        console.log('SecureStorageService.getPersonalInfo result:', data);
 
-       if (!data) {
-         console.log('No personal info data found in database for userId:', userId);
-         return null;
-       }
+        if (!data) {
+          console.log('No default personal info data found in database for userId:', userId);
+          return null;
+        }
 
-       console.log('Personal info data found, creating instance...');
-       const personalInfo = new PersonalInfo(data);
-       console.log('PersonalInfo instance created with id:', personalInfo.id);
-       return personalInfo;
-     } catch (error) {
-       console.error('Failed to load personal info:', error);
-       console.error('Error details:', error.message, error.stack);
-       throw error;
-     }
-   }
+        console.log('Default personal info data found, creating instance...');
+        const personalInfo = new PersonalInfo(data);
+        console.log('PersonalInfo instance created with id:', personalInfo.id);
+        return personalInfo;
+      } catch (error) {
+        console.error('Failed to load default personal info:', error);
+        console.error('Error details:', error.message, error.stack);
+        throw error;
+      }
+    }
+
+  /**
+   * Load personal information by ID from secure storage
+   * @param {string} personalInfoId - Personal info ID
+   * @returns {Promise<PersonalInfo>} - PersonalInfo instance
+   */
+  static async load(personalInfoId) {
+    try {
+      const data = await SecureStorageService.getPersonalInfoById(personalInfoId);
+      if (!data) return null;
+      return new PersonalInfo(data);
+    } catch (error) {
+      console.error('Failed to load personal info by ID:', error);
+      throw error;
+    }
+  }
 
   /**
    * Get personal information by user ID
@@ -229,7 +251,7 @@ class PersonalInfo {
    * @returns {Promise<PersonalInfo>} - PersonalInfo instance
    */
   static async getByUserId(userId) {
-    return await PersonalInfo.load(userId);
+    return await PersonalInfo.loadDefault(userId);
   }
 
   /**
@@ -269,53 +291,89 @@ class PersonalInfo {
    * @param {boolean} options.skipValidation - Skip validation for progressive filling
    * @returns {Promise<Object>} - Update result
    */
-  async mergeUpdates(updates, options = {}) {
-    try {
-      // Filter out empty/null/undefined values from updates
-      const nonEmptyUpdates = {};
-      
-      for (const [key, value] of Object.entries(updates)) {
-        // Skip metadata fields that shouldn't be updated
-        if (key === 'id' || key === 'createdAt') {
-          continue;
-        }
-        
-        // Only include non-empty values
-        // Empty means: null, undefined, empty string, or whitespace-only string
-        if (value !== null && value !== undefined) {
-          if (typeof value === 'string') {
-            // For strings, only include if not empty or whitespace-only
-            if (value.trim().length > 0) {
-              nonEmptyUpdates[key] = value;
-            }
-          } else {
-            // For non-strings, include as-is
-            nonEmptyUpdates[key] = value;
-          }
-        }
-      }
+   async mergeUpdates(updates, options = {}) {
+     try {
+       console.log('=== 🔍 PERSONAL INFO MERGE UPDATES DEBUG ===');
+       console.log('mergeUpdates called with:');
+       console.log('- updates:', JSON.stringify(updates, null, 2));
+       console.log('- options:', options);
 
-      // Update timestamp
-      this.updatedAt = new Date().toISOString();
+       console.log('Current PersonalInfo state before merge:');
+       console.log('- phoneNumber:', this.phoneNumber);
+       console.log('- email:', this.email);
+       console.log('- occupation:', this.occupation);
+       console.log('- provinceCity:', this.provinceCity);
+       console.log('- countryRegion:', this.countryRegion);
+       console.log('- phoneCode:', this.phoneCode);
+       console.log('- gender:', this.gender);
 
-      // Merge non-empty updates into current instance
-      Object.assign(this, nonEmptyUpdates);
+       // Filter out empty/null/undefined values from updates
+       const nonEmptyUpdates = {};
 
-      // Validate merged data (unless skipped for progressive filling)
-      if (!options.skipValidation) {
-        const validation = this.validate();
-        if (!validation.isValid) {
-          throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
-        }
-      }
+       for (const [key, value] of Object.entries(updates)) {
+         // Skip metadata fields that shouldn't be updated
+         if (key === 'id' || key === 'createdAt') {
+           continue;
+         }
 
-      // Save merged data
-      return await this.save(options);
-    } catch (error) {
-      console.error('Failed to merge personal info updates:', error);
-      throw error;
-    }
-  }
+         // Only include non-empty values
+         // Empty means: null, undefined, empty string, or whitespace-only string
+         if (value !== null && value !== undefined) {
+           if (typeof value === 'string') {
+             // For strings, only include if not empty or whitespace-only
+             if (value.trim().length > 0) {
+               nonEmptyUpdates[key] = value;
+               console.log(`✅ Including field ${key}: "${value}"`);
+             } else {
+               console.log(`❌ Skipping field ${key}: empty string`);
+             }
+           } else {
+             // For non-strings, include as-is
+             nonEmptyUpdates[key] = value;
+             console.log(`✅ Including field ${key}:`, value);
+           }
+         } else {
+           console.log(`❌ Skipping field ${key}: null/undefined`);
+         }
+       }
+
+       console.log('Non-empty updates to apply:', JSON.stringify(nonEmptyUpdates, null, 2));
+
+       // Update timestamp
+       this.updatedAt = new Date().toISOString();
+
+       // Merge non-empty updates into current instance
+       Object.assign(this, nonEmptyUpdates);
+
+       console.log('PersonalInfo state after merge:');
+       console.log('- phoneNumber:', this.phoneNumber);
+       console.log('- email:', this.email);
+       console.log('- occupation:', this.occupation);
+       console.log('- provinceCity:', this.provinceCity);
+       console.log('- countryRegion:', this.countryRegion);
+       console.log('- phoneCode:', this.phoneCode);
+       console.log('- gender:', this.gender);
+
+       // Validate merged data (unless skipped for progressive filling)
+       if (!options.skipValidation) {
+         const validation = this.validate();
+         if (!validation.isValid) {
+           throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+         }
+       }
+
+       // Save merged data
+       console.log('About to save merged data...');
+       const saveResult = await this.save(options);
+       console.log('✅ Personal info merge and save completed successfully');
+
+       return saveResult;
+     } catch (error) {
+       console.error('❌ Failed to merge personal info updates:', error);
+       console.error('Error details:', error.message, error.stack);
+       throw error;
+     }
+   }
 
   /**
    * Get personal info summary (safe for logging)
@@ -342,6 +400,7 @@ class PersonalInfo {
   exportData() {
     return {
       id: this.id,
+      passportId: this.passportId, // NEW: Schema v2.0 field
       phoneNumber: this.phoneNumber, // Will be decrypted by storage service
       email: this.email,
       homeAddress: this.homeAddress,
@@ -350,6 +409,8 @@ class PersonalInfo {
       countryRegion: this.countryRegion,
       phoneCode: this.phoneCode,
       gender: this.gender,
+      isDefault: this.isDefault, // NEW: Schema v2.0 field
+      label: this.label, // NEW: Schema v2.0 field
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       metadata: {
@@ -369,6 +430,7 @@ class PersonalInfo {
   static fromUserInput(inputData, userId) {
     return new PersonalInfo({
       userId,
+      passportId: inputData.passportId,
       phoneNumber: inputData.phoneNumber,
       email: inputData.email,
       homeAddress: inputData.homeAddress,
@@ -376,7 +438,9 @@ class PersonalInfo {
       provinceCity: inputData.provinceCity,
       countryRegion: inputData.countryRegion,
       phoneCode: inputData.phoneCode,
-      gender: inputData.gender
+      gender: inputData.gender,
+      isDefault: inputData.isDefault,
+      label: inputData.label
     });
   }
 

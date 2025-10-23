@@ -55,17 +55,20 @@ class SecureStorageService {
 
       // Open SQLite database using modern API
       console.log('Opening database:', this.DB_NAME);
-      
+
       this.modernDb = await openDatabaseAsync(this.DB_NAME);
 
-      // Create tables if they don't exist
+      // Run database migrations FIRST to handle existing databases
+      await this.runMigrations();
+
+      // Create tables if they don't exist (after migration)
       await this.createTables();
 
       // Clean up legacy funding_proof table if it exists (one-time operation)
       await this.cleanupLegacyFundingProofTable();
 
-      // Run database migrations if needed
-      await this.runMigrations();
+      // Clean up obsolete Schema v1.0 tables (one-time operation)
+      await this.cleanupObsoleteTables();
 
       // Ensure backup directory exists
       await this.ensureBackupDirectory();
@@ -90,11 +93,27 @@ class SecureStorageService {
 
   /**
    * Create database tables for secure data storage
+   * Schema Version: 2.0 (Simplified)
+   * Date: 2025-10-22
+   *
+   * Changes in v2.0:
+  
+   * - Removed trip_id field (single country per entry)
+   * - Added passport_countries table
+   * - Replaced tdac_submissions with generic digital_arrival_cards
+   * - Added is_primary to passports
+   * - Added passport_id, is_default, label to personal_info
+   * - Added travel_info_id, documents, display_status to entry_info
+   * - Added database triggers for data integrity
    */
   async createTables() {
     try {
       // Execute all DDL statements in a single transaction for better performance
       await this.modernDb.withTransactionAsync(async () => {
+        // ========================================
+        // Core Tables
+        // ========================================
+
         // Users table (local reference for foreign keys)
         await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS users (
@@ -106,7 +125,7 @@ class SecureStorageService {
           )
         `);
 
-        // Passport data table
+        // Passports table (with is_primary field)
         await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS passports (
             id TEXT PRIMARY KEY,
@@ -120,16 +139,33 @@ class SecureStorageService {
             issue_date TEXT,
             issue_place TEXT,
             photo_uri TEXT,
+            is_primary INTEGER DEFAULT 0,
             created_at TEXT,
-            updated_at TEXT
+            updated_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
           )
         `);
 
-        // Personal information table
+        // Passport-Countries mapping (NEW in v2.0)
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS passport_countries (
+            passport_id TEXT NOT NULL,
+            country_code TEXT NOT NULL,
+            visa_required INTEGER DEFAULT 0,
+            max_stay_days INTEGER,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (passport_id, country_code),
+            FOREIGN KEY (passport_id) REFERENCES passports(id) ON DELETE CASCADE
+          )
+        `);
+
+        // Personal information table (with passport_id, is_default, label)
         await this.modernDb.execAsync(`
           CREATE TABLE IF NOT EXISTS personal_info (
             id TEXT PRIMARY KEY,
             user_id TEXT,
+            passport_id TEXT,
             encrypted_phone_number TEXT,
             encrypted_email TEXT,
             encrypted_home_address TEXT,
@@ -138,24 +174,12 @@ class SecureStorageService {
             country_region TEXT,
             phone_code TEXT,
             gender TEXT,
-            created_at TEXT,
-            updated_at TEXT
-          )
-        `);
-
-        // New individual fund items table
-        await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS fund_items (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            type TEXT NOT NULL,
-            amount TEXT,
-            currency TEXT,
-            details TEXT,
-            photo_uri TEXT,
+            is_default INTEGER DEFAULT 0,
+            label TEXT,
             created_at TEXT,
             updated_at TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (passport_id) REFERENCES passports(id) ON DELETE SET NULL
           )
         `);
 
@@ -165,7 +189,7 @@ class SecureStorageService {
             id TEXT PRIMARY KEY,
             user_id TEXT,
             destination TEXT,
-            travel_purpose TEXT,
+            travel_purpose TEXT DEFAULT 'HOLIDAY',
             recent_stay_country TEXT,
             boarding_country TEXT,
             visa_number TEXT,
@@ -183,7 +207,7 @@ class SecureStorageService {
             departure_arrival_airport TEXT,
             departure_arrival_date TEXT,
             departure_arrival_time TEXT,
-            accommodation_type TEXT,
+            accommodation_type TEXT DEFAULT 'HOTEL',
             province TEXT,
             district TEXT,
             sub_district TEXT,
@@ -193,11 +217,104 @@ class SecureStorageService {
             accommodation_phone TEXT,
             length_of_stay TEXT,
             is_transit_passenger INTEGER DEFAULT 0,
-            status TEXT,
+            status TEXT DEFAULT 'draft',
             created_at TEXT,
-            updated_at TEXT
+            updated_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
           )
         `);
+
+        // Fund items table
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS fund_items (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            type TEXT NOT NULL,
+            amount TEXT,
+            currency TEXT,
+            details TEXT,
+            photo_uri TEXT,
+            created_at TEXT,
+            updated_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+          )
+        `);
+
+        // ========================================
+        // Entry Management Tables
+        // ========================================
+
+        // Entry info table (with travel_info_id, documents, display_status)
+        
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS entry_info (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            passport_id TEXT NOT NULL,
+            personal_info_id TEXT,
+            travel_info_id TEXT,
+            destination_id TEXT,
+            status TEXT DEFAULT 'incomplete',
+            completion_metrics TEXT,
+            documents TEXT,
+            display_status TEXT,
+            last_updated_at TEXT,
+            created_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (passport_id) REFERENCES passports(id),
+            FOREIGN KEY (personal_info_id) REFERENCES personal_info(id),
+            FOREIGN KEY (travel_info_id) REFERENCES travel_info(id)
+          )
+        `);
+
+        // Entry info to fund items mapping table
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS entry_info_fund_items (
+            entry_info_id TEXT NOT NULL,
+            fund_item_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (entry_info_id, fund_item_id),
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+            FOREIGN KEY (fund_item_id) REFERENCES fund_items(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // Digital Arrival Cards table (generic - replaces tdac_submissions)
+        
+        await this.modernDb.execAsync(`
+          CREATE TABLE IF NOT EXISTS digital_arrival_cards (
+            id TEXT PRIMARY KEY,
+            entry_info_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            card_type TEXT NOT NULL,
+            destination_id TEXT,
+            arr_card_no TEXT,
+            qr_uri TEXT,
+            pdf_url TEXT,
+            submitted_at TEXT NOT NULL,
+            submission_method TEXT DEFAULT 'api',
+            status TEXT DEFAULT 'success',
+            api_response TEXT,
+            processing_time INTEGER,
+            retry_count INTEGER DEFAULT 0,
+            error_details TEXT,
+            is_superseded INTEGER DEFAULT 0,
+            superseded_at TEXT,
+            superseded_by TEXT,
+            superseded_reason TEXT,
+            version INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+
+        // ========================================
+        // Legacy/Utility Tables
+        // ========================================
 
         // Travel history table (non-sensitive data)
         await this.modernDb.execAsync(`
@@ -243,170 +360,125 @@ class SecureStorageService {
           )
         `);
 
-        // Entry info table (Progressive Entry Flow)
+        // ========================================
+        // Database Triggers
+        // ========================================
+
+        // Trigger: Ensure only one primary passport per user (UPDATE)
         await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS entry_info (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            passport_id TEXT,
-            personal_info_id TEXT,
-            destination_id TEXT,
-            trip_id TEXT,
-            status TEXT DEFAULT 'incomplete',
-            completion_metrics TEXT,
-            last_updated_at TEXT,
-            created_at TEXT,
-            arrival_date TEXT,
-            departure_date TEXT,
-            travel_purpose TEXT,
-            flight_number TEXT,
-            accommodation TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (passport_id) REFERENCES passports(id),
-            FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
-          )
+          CREATE TRIGGER IF NOT EXISTS ensure_one_primary_passport
+          BEFORE UPDATE OF is_primary ON passports
+          WHEN NEW.is_primary = 1
+          BEGIN
+            UPDATE passports
+            SET is_primary = 0
+            WHERE user_id = NEW.user_id AND id != NEW.id;
+          END;
         `);
 
-        // Entry packs table (Progressive Entry Flow)
+        // Trigger: Ensure only one primary passport per user (INSERT)
         await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS entry_packs (
-            id TEXT PRIMARY KEY,
-            entry_info_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            destination_id TEXT,
-            trip_id TEXT,
-            status TEXT DEFAULT 'in_progress',
-            tdac_submission TEXT,
-            submission_history TEXT,
-            documents TEXT,
-            display_status TEXT,
-            created_at TEXT,
-            updated_at TEXT,
-            archived_at TEXT,
-            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
+          CREATE TRIGGER IF NOT EXISTS ensure_one_primary_passport_insert
+          BEFORE INSERT ON passports
+          WHEN NEW.is_primary = 1
+          BEGIN
+            UPDATE passports
+            SET is_primary = 0
+            WHERE user_id = NEW.user_id;
+          END;
         `);
 
-        // Entry info to fund items mapping table
+        // Trigger: Ensure only one default personal_info per user (UPDATE)
         await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS entry_info_fund_items (
-            entry_info_id TEXT NOT NULL,
-            fund_item_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (entry_info_id, fund_item_id),
-            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
-            FOREIGN KEY (fund_item_id) REFERENCES fund_items(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
+          CREATE TRIGGER IF NOT EXISTS ensure_one_default_personal_info
+          BEFORE UPDATE OF is_default ON personal_info
+          WHEN NEW.is_default = 1
+          BEGIN
+            UPDATE personal_info
+            SET is_default = 0
+            WHERE user_id = NEW.user_id AND id != NEW.id;
+          END;
         `);
 
-        // TDAC submissions table (Progressive Entry Flow)
+        // Trigger: Ensure only one default personal_info per user (INSERT)
         await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS tdac_submissions (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            entry_pack_id TEXT,
-            destination_id TEXT,
-            trip_id TEXT,
-            arr_card_no TEXT NOT NULL,
-            qr_uri TEXT,
-            pdf_path TEXT,
-            submitted_at TEXT NOT NULL,
-            submission_method TEXT DEFAULT 'api',
-            status TEXT DEFAULT 'success',
-            api_response TEXT,
-            processing_time INTEGER,
-            retry_count INTEGER DEFAULT 0,
-            error_details TEXT,
-            is_superseded INTEGER DEFAULT 0,
-            superseded_at TEXT,
-            superseded_reason TEXT,
-            superseded_by TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id)
-          )
+          CREATE TRIGGER IF NOT EXISTS ensure_one_default_personal_info_insert
+          BEFORE INSERT ON personal_info
+          WHEN NEW.is_default = 1
+          BEGIN
+            UPDATE personal_info
+            SET is_default = 0
+            WHERE user_id = NEW.user_id;
+          END;
         `);
 
-        // Entry pack snapshots table (Progressive Entry Flow)
+        // Trigger: Mark previous DAC submissions as superseded
         await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS entry_pack_snapshots (
-            id TEXT PRIMARY KEY,
-            entry_pack_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            destination_id TEXT,
-            trip_id TEXT,
-            status TEXT NOT NULL,
-            snapshot_reason TEXT,
-            creation_method TEXT DEFAULT 'auto',
-            data_file_path TEXT,
-            photo_manifest TEXT,
-            completeness_indicator TEXT,
-            app_version TEXT,
-            device_info TEXT,
-            created_at TEXT NOT NULL,
-            version INTEGER DEFAULT 1,
-            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
+          CREATE TRIGGER IF NOT EXISTS mark_previous_dac_superseded
+          AFTER INSERT ON digital_arrival_cards
+          WHEN NEW.status = 'success' AND NEW.is_superseded = 0
+          BEGIN
+            UPDATE digital_arrival_cards
+            SET
+              is_superseded = 1,
+              superseded_at = CURRENT_TIMESTAMP,
+              superseded_by = NEW.id,
+              superseded_reason = 'Replaced by newer successful submission'
+            WHERE
+              entry_info_id = NEW.entry_info_id
+              AND card_type = NEW.card_type
+              AND id != NEW.id
+              AND is_superseded = 0;
+          END;
         `);
 
-        // Audit events table (Progressive Entry Flow)
-        await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS audit_events (
-            id TEXT PRIMARY KEY,
-            event_type TEXT NOT NULL,
-            timestamp TEXT NOT NULL,
-            snapshot_id TEXT,
-            entry_pack_id TEXT,
-            user_id TEXT,
-            metadata TEXT,
-            system_info TEXT,
-            immutable INTEGER DEFAULT 1,
-            version INTEGER DEFAULT 1,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (snapshot_id) REFERENCES entry_pack_snapshots(id),
-            FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
-        `);
+        // ========================================
+        // Indexes
+        // ========================================
 
-        // Create all indexes
         await this.modernDb.execAsync(`
-          CREATE INDEX IF NOT EXISTS idx_fund_items_user_id ON fund_items(user_id);
-          CREATE INDEX IF NOT EXISTS idx_passports_user_id ON passports(user_id);
-          CREATE INDEX IF NOT EXISTS idx_personal_info_user_id ON personal_info(user_id);
-          CREATE INDEX IF NOT EXISTS idx_travel_info_user_id ON travel_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_passports_user ON passports(user_id);
+          CREATE INDEX IF NOT EXISTS idx_passports_primary ON passports(user_id, is_primary);
+          CREATE INDEX IF NOT EXISTS idx_passports_nationality ON passports(encrypted_nationality);
+
+          CREATE INDEX IF NOT EXISTS idx_passport_countries_passport ON passport_countries(passport_id);
+          CREATE INDEX IF NOT EXISTS idx_passport_countries_country ON passport_countries(country_code);
+
+          CREATE INDEX IF NOT EXISTS idx_personal_info_user ON personal_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_personal_info_passport ON personal_info(passport_id);
+          CREATE INDEX IF NOT EXISTS idx_personal_info_default ON personal_info(user_id, is_default);
+          CREATE INDEX IF NOT EXISTS idx_personal_info_country ON personal_info(user_id, country_region);
+
+          CREATE INDEX IF NOT EXISTS idx_travel_info_user ON travel_info(user_id);
           CREATE INDEX IF NOT EXISTS idx_travel_info_destination ON travel_info(user_id, destination);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_user_id ON entry_info(user_id);
+
+          CREATE INDEX IF NOT EXISTS idx_fund_items_user ON fund_items(user_id);
+          CREATE INDEX IF NOT EXISTS idx_fund_items_type ON fund_items(user_id, type);
+
+          CREATE INDEX IF NOT EXISTS idx_entry_info_user ON entry_info(user_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_passport ON entry_info(passport_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_personal ON entry_info(personal_info_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_travel ON entry_info(travel_info_id);
           CREATE INDEX IF NOT EXISTS idx_entry_info_destination ON entry_info(user_id, destination_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id ON entry_info(passport_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id ON entry_info(personal_info_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_packs_user_id ON entry_packs(user_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info_id ON entry_packs(entry_info_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id ON entry_info_fund_items(entry_info_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id ON entry_info_fund_items(fund_item_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id ON entry_info_fund_items(user_id);
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_user_id ON tdac_submissions(user_id);
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_entry_pack_id ON tdac_submissions(entry_pack_id);
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_arr_card_no ON tdac_submissions(arr_card_no);
-          CREATE INDEX IF NOT EXISTS idx_tdac_submissions_status ON tdac_submissions(user_id, status);
-          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_user_id ON entry_pack_snapshots(user_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_entry_pack_id ON entry_pack_snapshots(entry_pack_id);
-          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_status ON entry_pack_snapshots(user_id, status);
-          CREATE INDEX IF NOT EXISTS idx_entry_pack_snapshots_created_at ON entry_pack_snapshots(created_at);
-          CREATE INDEX IF NOT EXISTS idx_audit_events_snapshot_id ON audit_events(snapshot_id);
-          CREATE INDEX IF NOT EXISTS idx_audit_events_user_id ON audit_events(user_id);
-          CREATE INDEX IF NOT EXISTS idx_audit_events_timestamp ON audit_events(timestamp);
-          CREATE INDEX IF NOT EXISTS idx_audit_events_type_timestamp ON audit_events(event_type, timestamp);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_status ON entry_info(user_id, status);
+
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry ON entry_info_fund_items(entry_info_id);
+          CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund ON entry_info_fund_items(fund_item_id);
+
+          CREATE INDEX IF NOT EXISTS idx_dac_entry_info ON digital_arrival_cards(entry_info_id);
+          CREATE INDEX IF NOT EXISTS idx_dac_user ON digital_arrival_cards(user_id);
+          CREATE INDEX IF NOT EXISTS idx_dac_card_type ON digital_arrival_cards(card_type);
+          CREATE INDEX IF NOT EXISTS idx_dac_status ON digital_arrival_cards(user_id, status);
+          CREATE INDEX IF NOT EXISTS idx_dac_superseded ON digital_arrival_cards(entry_info_id, card_type, is_superseded);
+          CREATE INDEX IF NOT EXISTS idx_dac_arr_card_no ON digital_arrival_cards(arr_card_no);
+          CREATE INDEX IF NOT EXISTS idx_dac_latest ON digital_arrival_cards(entry_info_id, card_type, is_superseded, status);
         `);
 
       });
+
+      console.log('✅ Database schema v2.0 created successfully');
     } catch (error) {
-      console.error('Failed to create tables:', error);
+      console.error('❌ Failed to create tables:', error);
       throw error;
     }
   }
@@ -420,11 +492,11 @@ class SecureStorageService {
       const currentVersion = await this.getSetting('db_version');
 
       console.log('Checking database migrations. Current version:', currentVersion, 'Target version:', this.DB_VERSION);
-      
+
       // Always run migrations to ensure schema is up to date
       // This handles cases where database was created before migration system
       console.log('Running database migrations...');
-      
+
       // Migration 1: Add gender and user_id to all tables
       await this.addPassportFields();
       // Migration 2: Ensure travel_info has boarding_country column
@@ -437,13 +509,15 @@ class SecureStorageService {
       await this.addPersonalInfoPhoneCodeColumn();
       // Migration 5: Update entry_info schema for passport/personal references
       await this.migrateEntryInfoTable();
-      
+      // Migration 6: Add schema v2.0 columns (is_primary, passport_id, is_default, label, etc.)
+      await this.addSchemaV2Columns();
+
       // Update version if needed
       if (!currentVersion || currentVersion !== this.DB_VERSION) {
         await this.setSetting('db_version', this.DB_VERSION);
         console.log('Database version updated to', this.DB_VERSION);
       }
-      
+
       console.log('Database migrations completed successfully');
     } catch (error) {
       console.error('Migration error:', error);
@@ -476,6 +550,16 @@ class SecureStorageService {
           console.log('Added user_id column to passports table');
         } catch (error) {
           console.error('Failed to add user_id column:', error);
+        }
+      }
+
+      if (!passportColumnNames.includes('is_primary')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE passports ADD COLUMN is_primary INTEGER DEFAULT 0`);
+          console.log('Added is_primary column to passports table');
+        } catch (error) {
+          // Column might already exist or table might not exist yet
+          console.log('ℹ️ is_primary column check for passports table:', error.message.includes('already exists') ? 'already exists' : 'skipped');
         }
       }
 
@@ -617,7 +701,6 @@ class SecureStorageService {
             passport_id TEXT,
             personal_info_id TEXT,
             destination_id TEXT,
-            trip_id TEXT,
             status TEXT DEFAULT 'incomplete',
             completion_metrics TEXT,
             last_updated_at TEXT,
@@ -637,12 +720,12 @@ class SecureStorageService {
         await this.modernDb.execAsync(`
           INSERT INTO entry_info_migrating (
             id, user_id, passport_id, personal_info_id, destination_id,
-            trip_id, status, completion_metrics, last_updated_at, created_at,
+            status, completion_metrics, last_updated_at, created_at,
             arrival_date, departure_date, travel_purpose, flight_number, accommodation
           )
           SELECT
             id, user_id, NULL, NULL, destination_id,
-            trip_id, status, completion_metrics, last_updated_at, created_at,
+            status, completion_metrics, last_updated_at, created_at,
             arrival_date, departure_date, travel_purpose, flight_number, accommodation
           FROM entry_info
         `);
@@ -683,12 +766,12 @@ class SecureStorageService {
 
       // Create basic indexes
       await this.modernDb.execAsync(`
-        CREATE INDEX IF NOT EXISTS idx_entry_info_user_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_user_id
         ON entry_info(user_id)
       `);
 
       await this.modernDb.execAsync(`
-        CREATE INDEX IF NOT EXISTS idx_entry_info_destination 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_destination
         ON entry_info(user_id, destination_id)
       `);
 
@@ -713,22 +796,22 @@ class SecureStorageService {
 
       // Create indexes for the columns (whether they existed or were just added)
       await this.modernDb.execAsync(`
-        CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_passport_id
         ON entry_info(passport_id)
       `);
 
       await this.modernDb.execAsync(`
-        CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_personal_info_id
         ON entry_info(personal_info_id)
       `);
 
       // Create indexes for join table
       await this.modernDb.execAsync(`
-        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry_info_id
         ON entry_info_fund_items(entry_info_id);
-        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund_item_id
         ON entry_info_fund_items(fund_item_id);
-        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id 
+        CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_user_id
         ON entry_info_fund_items(user_id);
       `);
     } catch (error) {
@@ -736,6 +819,293 @@ class SecureStorageService {
       // Don't throw - allow app to continue
     }
   }
+
+  /**
+   * Add schema v2.0 columns to existing tables
+   * Migration 6: Add missing columns for schema v2.0
+   */
+  async addSchemaV2Columns() {
+    try {
+      console.log('Adding schema v2.0 columns...');
+
+      // Add is_primary column to passports table
+      const passportColumns = await this.modernDb.getAllAsync(`PRAGMA table_info(passports)`);
+      const passportColumnNames = passportColumns.map(col => col.name);
+
+      if (!passportColumnNames.includes('is_primary')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE passports ADD COLUMN is_primary INTEGER DEFAULT 0`);
+          console.log('✅ Added is_primary column to passports table');
+        } catch (error) {
+          // Column might already exist or table might not exist yet
+          console.log('ℹ️ is_primary column check for passports table:', error.message.includes('already exists') ? 'already exists' : 'skipped');
+        }
+      }
+
+      // Add missing columns to personal_info table
+      const personalColumns = await this.modernDb.getAllAsync(`PRAGMA table_info(personal_info)`);
+      const personalColumnNames = personalColumns.map(col => col.name);
+
+      if (!personalColumnNames.includes('passport_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN passport_id TEXT`);
+          console.log('✅ Added passport_id column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add passport_id column to personal_info:', error);
+        }
+      }
+
+      if (!personalColumnNames.includes('is_default')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN is_default INTEGER DEFAULT 0`);
+          console.log('✅ Added is_default column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add is_default column to personal_info:', error);
+        }
+      }
+
+      if (!personalColumnNames.includes('label')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE personal_info ADD COLUMN label TEXT`);
+          console.log('✅ Added label column to personal_info table');
+        } catch (error) {
+          console.error('Failed to add label column to personal_info:', error);
+        }
+      }
+
+      // Add missing columns to entry_info table
+      const entryColumns = await this.modernDb.getAllAsync(`PRAGMA table_info(entry_info)`);
+      const entryColumnNames = entryColumns.map(col => col.name);
+
+      if (!entryColumnNames.includes('travel_info_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info ADD COLUMN travel_info_id TEXT`);
+          console.log('✅ Added travel_info_id column to entry_info table');
+        } catch (error) {
+          console.error('Failed to add travel_info_id column to entry_info:', error);
+        }
+      }
+
+      if (!entryColumnNames.includes('documents')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info ADD COLUMN documents TEXT`);
+          console.log('✅ Added documents column to entry_info table');
+        } catch (error) {
+          console.error('Failed to add documents column to entry_info:', error);
+        }
+      }
+
+      if (!entryColumnNames.includes('display_status')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info ADD COLUMN display_status TEXT`);
+          console.log('✅ Added display_status column to entry_info table');
+        } catch (error) {
+          console.error('Failed to add display_status column to entry_info:', error);
+        }
+      }
+
+      // Remove trip_id column from entry_info if it exists (schema v2.0 removes this)
+      if (entryColumnNames.includes('trip_id')) {
+        try {
+          await this.modernDb.execAsync(`ALTER TABLE entry_info DROP COLUMN trip_id`);
+          console.log('✅ Removed trip_id column from entry_info table');
+        } catch (error) {
+          console.error('Failed to remove trip_id column from entry_info:', error);
+        }
+      }
+
+      // Create new tables if they don't exist
+      await this.createNewV2Tables();
+
+      console.log('✅ Schema v2.0 column migration completed');
+    } catch (error) {
+      console.error('Failed to add schema v2.0 columns:', error);
+      // Don't throw - allow app to continue
+    }
+  }
+
+  /**
+   * Create new tables for schema v2.0
+   */
+  async createNewV2Tables() {
+    try {
+      // Check if passport_countries table exists
+      const tables = await this.modernDb.getAllAsync(`SELECT name FROM sqlite_master WHERE type='table'`);
+      const tableNames = tables.map(t => t.name);
+
+      if (!tableNames.includes('passport_countries')) {
+        await this.modernDb.execAsync(`
+          CREATE TABLE passport_countries (
+            passport_id TEXT NOT NULL,
+            country_code TEXT NOT NULL,
+            visa_required INTEGER DEFAULT 0,
+            max_stay_days INTEGER,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (passport_id, country_code),
+            FOREIGN KEY (passport_id) REFERENCES passports(id) ON DELETE CASCADE
+          )
+        `);
+        console.log('✅ Created passport_countries table');
+      }
+
+      if (!tableNames.includes('digital_arrival_cards')) {
+        await this.modernDb.execAsync(`
+          CREATE TABLE digital_arrival_cards (
+            id TEXT PRIMARY KEY,
+            entry_info_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            card_type TEXT NOT NULL,
+            destination_id TEXT,
+            arr_card_no TEXT,
+            qr_uri TEXT,
+            pdf_url TEXT,
+            submitted_at TEXT NOT NULL,
+            submission_method TEXT DEFAULT 'api',
+            status TEXT DEFAULT 'success',
+            api_response TEXT,
+            processing_time INTEGER,
+            retry_count INTEGER DEFAULT 0,
+            error_details TEXT,
+            is_superseded INTEGER DEFAULT 0,
+            superseded_at TEXT,
+            superseded_by TEXT,
+            superseded_reason TEXT,
+            version INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `);
+        console.log('✅ Created digital_arrival_cards table');
+      }
+
+      // Create triggers for schema v2.0
+      await this.createV2Triggers();
+
+      // Create indexes for schema v2.0
+      await this.createV2Indexes();
+
+    } catch (error) {
+      console.error('Failed to create new v2.0 tables:', error);
+      // Don't throw - allow app to continue
+    }
+  }
+
+  /**
+   * Create triggers for schema v2.0
+   */
+  async createV2Triggers() {
+    try {
+      // Trigger: Ensure only one primary passport per user (UPDATE)
+      await this.modernDb.execAsync(`
+        CREATE TRIGGER IF NOT EXISTS ensure_one_primary_passport
+        BEFORE UPDATE OF is_primary ON passports
+        WHEN NEW.is_primary = 1
+        BEGIN
+          UPDATE passports
+          SET is_primary = 0
+          WHERE user_id = NEW.user_id AND id != NEW.id;
+        END;
+      `);
+
+      // Trigger: Ensure only one primary passport per user (INSERT)
+      await this.modernDb.execAsync(`
+        CREATE TRIGGER IF NOT EXISTS ensure_one_primary_passport_insert
+        BEFORE INSERT ON passports
+        WHEN NEW.is_primary = 1
+        BEGIN
+          UPDATE passports
+          SET is_primary = 0
+          WHERE user_id = NEW.user_id;
+        END;
+      `);
+
+      // Trigger: Ensure only one default personal_info per user (UPDATE)
+      await this.modernDb.execAsync(`
+        CREATE TRIGGER IF NOT EXISTS ensure_one_default_personal_info
+        BEFORE UPDATE OF is_default ON personal_info
+        WHEN NEW.is_default = 1
+        BEGIN
+          UPDATE personal_info
+          SET is_default = 0
+          WHERE user_id = NEW.user_id AND id != NEW.id;
+        END;
+      `);
+
+      // Trigger: Ensure only one default personal_info per user (INSERT)
+      await this.modernDb.execAsync(`
+        CREATE TRIGGER IF NOT EXISTS ensure_one_default_personal_info_insert
+        BEFORE INSERT ON personal_info
+        WHEN NEW.is_default = 1
+        BEGIN
+          UPDATE personal_info
+          SET is_default = 0
+          WHERE user_id = NEW.user_id;
+        END;
+      `);
+
+      // Trigger: Mark previous DAC submissions as superseded
+      await this.modernDb.execAsync(`
+        CREATE TRIGGER IF NOT EXISTS mark_previous_dac_superseded
+        AFTER INSERT ON digital_arrival_cards
+        WHEN NEW.status = 'success' AND NEW.is_superseded = 0
+        BEGIN
+          UPDATE digital_arrival_cards
+          SET
+            is_superseded = 1,
+            superseded_at = CURRENT_TIMESTAMP,
+            superseded_by = NEW.id,
+            superseded_reason = 'Replaced by newer successful submission'
+          WHERE
+            entry_info_id = NEW.entry_info_id
+            AND card_type = NEW.card_type
+            AND id != NEW.id
+            AND is_superseded = 0;
+        END;
+      `);
+
+      console.log('✅ Created schema v2.0 triggers');
+    } catch (error) {
+      console.error('Failed to create v2.0 triggers:', error);
+    }
+  }
+
+  /**
+   * Create indexes for schema v2.0
+   */
+  async createV2Indexes() {
+    try {
+      await this.modernDb.execAsync(`
+        CREATE INDEX IF NOT EXISTS idx_passports_primary ON passports(user_id, is_primary);
+        CREATE INDEX IF NOT EXISTS idx_passports_nationality ON passports(encrypted_nationality);
+
+        CREATE INDEX IF NOT EXISTS idx_passport_countries_passport ON passport_countries(passport_id);
+        CREATE INDEX IF NOT EXISTS idx_passport_countries_country ON passport_countries(country_code);
+
+        CREATE INDEX IF NOT EXISTS idx_personal_info_default ON personal_info(user_id, is_default);
+        CREATE INDEX IF NOT EXISTS idx_personal_info_country ON personal_info(user_id, country_region);
+
+        CREATE INDEX IF NOT EXISTS idx_entry_info_travel ON entry_info(travel_info_id);
+        CREATE INDEX IF NOT EXISTS idx_entry_info_status ON entry_info(user_id, status);
+
+        CREATE INDEX IF NOT EXISTS idx_dac_entry_info ON digital_arrival_cards(entry_info_id);
+        CREATE INDEX IF NOT EXISTS idx_dac_user ON digital_arrival_cards(user_id);
+        CREATE INDEX IF NOT EXISTS idx_dac_card_type ON digital_arrival_cards(card_type);
+        CREATE INDEX IF NOT EXISTS idx_dac_status ON digital_arrival_cards(user_id, status);
+        CREATE INDEX IF NOT EXISTS idx_dac_superseded ON digital_arrival_cards(entry_info_id, card_type, is_superseded);
+        CREATE INDEX IF NOT EXISTS idx_dac_arr_card_no ON digital_arrival_cards(arr_card_no);
+        CREATE INDEX IF NOT EXISTS idx_dac_latest ON digital_arrival_cards(entry_info_id, card_type, is_superseded, status);
+      `);
+
+      console.log('✅ Created schema v2.0 indexes');
+    } catch (error) {
+      console.error('Failed to create v2.0 indexes:', error);
+    }
+  }
+
+
 
   /**
    * Get backup directory path
@@ -805,9 +1175,10 @@ class SecureStorageService {
           issue_date,
           issue_place,
           photo_uri,
+          is_primary,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           passportId,
           passportData.userId,
@@ -820,16 +1191,102 @@ class SecureStorageService {
           passportData.issueDate,
           passportData.issuePlace,
           passportData.photoUri,
+          passportData.isPrimary ? 1 : 0,
           passportData.createdAt || now,
           now
         ]
       );
+
+      // Seed passport-countries data for this passport
+      await this.seedPassportCountries(passportId, encryptedData.nationality);
 
       await this.logAudit('INSERT', 'passports', passportId);
       return { id: passportId };
     } catch (error) {
       console.error('Failed to save passport:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Seed passport-countries data for a specific passport
+   * Based on cloudflare-backend/src/db/seed-passport-countries.sql
+   * @param {string} passportId - Passport ID
+   * @param {string} nationality - Nationality code (e.g., 'CHN', 'HKG', 'MAC')
+   */
+  async seedPassportCountries(passportId, nationality) {
+    try {
+      // Country data mapping: {countryCode: [visaRequired, maxStayDays, notes]}
+      const countryData = {
+        'CHN': {
+          'THA': [0, 30, 'Visa-free for tourism, 30 days'],
+          'JPN': [1, 90, 'Visa required, max 90 days per stay'],
+          'SGP': [0, 4, 'Visa-free transit for 96 hours with onward ticket'],
+          'MYS': [0, 30, 'Visa-free for tourism, 30 days'],
+          'KOR': [1, 90, 'Visa required for most visits'],
+          'VNM': [1, 90, 'E-visa available, up to 90 days'],
+          'USA': [1, 180, 'B1/B2 visa required, typically 6 months'],
+          'CAN': [1, 180, 'Visitor visa required, typically 6 months'],
+          'AUS': [1, 90, 'ETA/eVisitor required, typically 90 days'],
+          'GBR': [1, 180, 'Visa required, typically 6 months'],
+          'FRA': [1, 90, 'Schengen visa required, 90 days per 180 days'],
+          'DEU': [1, 90, 'Schengen visa required, 90 days per 180 days']
+        },
+        'HKG': {
+          'THA': [0, 30, 'Visa-free for tourism, 30 days'],
+          'JPN': [0, 90, 'Visa-free, 90 days'],
+          'SGP': [0, 30, 'Visa-free, 30 days'],
+          'MYS': [0, 30, 'Visa-free, 30 days'],
+          'KOR': [0, 90, 'Visa-free, 90 days'],
+          'VNM': [0, 30, 'Visa-free, 30 days'],
+          'USA': [0, 90, 'ESTA required, 90 days'],
+          'CAN': [0, 180, 'eTA required, typically 6 months'],
+          'AUS': [0, 90, 'ETA required, 90 days'],
+          'GBR': [0, 180, 'Visa-free, 6 months'],
+          'FRA': [0, 90, 'Visa-free (Schengen), 90 days per 180 days'],
+          'DEU': [0, 90, 'Visa-free (Schengen), 90 days per 180 days']
+        },
+        'MAC': {
+          'THA': [0, 30, 'Visa-free for tourism, 30 days'],
+          'JPN': [0, 90, 'Visa-free, 90 days'],
+          'SGP': [0, 30, 'Visa-free, 30 days'],
+          'MYS': [0, 30, 'Visa-free, 30 days'],
+          'KOR': [0, 90, 'Visa-free, 90 days'],
+          'VNM': [0, 30, 'Visa-free, 30 days'],
+          'USA': [0, 90, 'ESTA required, 90 days'],
+          'CAN': [0, 180, 'eTA required, typically 6 months'],
+          'AUS': [0, 90, 'ETA required, 90 days'],
+          'GBR': [0, 180, 'Visa-free, 6 months'],
+          'FRA': [0, 90, 'Visa-free (Schengen), 90 days per 180 days'],
+          'DEU': [0, 90, 'Visa-free (Schengen), 90 days per 180 days']
+        }
+      };
+
+      const countries = countryData[nationality];
+      if (!countries) {
+        console.log(`No seed data for nationality: ${nationality}`);
+        return;
+      }
+
+      // Insert country data for this passport
+      for (const [countryCode, [visaRequired, maxStayDays, notes]] of Object.entries(countries)) {
+        await this.modernDb.runAsync(
+          `INSERT OR IGNORE INTO passport_countries (
+            passport_id,
+            country_code,
+            visa_required,
+            max_stay_days,
+            notes,
+            created_at
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+          [passportId, countryCode, visaRequired, maxStayDays, notes, new Date().toISOString()]
+        );
+      }
+
+      console.log(`✅ Seeded ${Object.keys(countries).length} countries for passport ${passportId} (${nationality})`);
+    } catch (error) {
+      console.error('Failed to seed passport countries:', error);
+      // Don't throw - seeding failure shouldn't block passport creation
     }
   }
 
@@ -876,6 +1333,7 @@ class SecureStorageService {
         issueDate: result.issue_date,
         issuePlace: result.issue_place,
         photoUri: result.photo_uri,
+        isPrimary: result.is_primary === 1,
         createdAt: result.created_at,
         updatedAt: result.updated_at
       };
@@ -910,35 +1368,41 @@ class SecureStorageService {
       const id = personalData.id || this.generateId();
 
       await this.modernDb.runAsync(
-        `INSERT OR REPLACE INTO personal_info (
-          id,
-          user_id,
-          encrypted_phone_number,
-          encrypted_email,
-          encrypted_home_address,
-          occupation,
-          province_city,
-          country_region,
-          phone_code,
-          gender,
-          created_at,
-          updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          personalData.userId,
-          encryptedData.phone_number,
-          encryptedData.email,
-          encryptedData.home_address,
-          personalData.occupation,
-          personalData.provinceCity,
-          personalData.countryRegion,
-          personalData.phoneCode,
-          personalData.gender,
-          personalData.createdAt || now,
-          now
-        ]
-      );
+         `INSERT OR REPLACE INTO personal_info (
+           id,
+           user_id,
+           passport_id,
+           encrypted_phone_number,
+           encrypted_email,
+           encrypted_home_address,
+           occupation,
+           province_city,
+           country_region,
+           phone_code,
+           gender,
+           is_default,
+           label,
+           created_at,
+           updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         [
+           id,
+           personalData.userId,
+           personalData.passportId || null,
+           encryptedData.phone_number,
+           encryptedData.email,
+           encryptedData.home_address,
+           personalData.occupation,
+           personalData.provinceCity,
+           personalData.countryRegion,
+           personalData.phoneCode,
+           personalData.gender,
+           personalData.isDefault ? 1 : 0,
+           personalData.label || null,
+           personalData.createdAt || now,
+           now
+         ]
+       );
 
       await this.logAudit('INSERT', 'personal_info', id);
       return { id };
@@ -991,6 +1455,7 @@ class SecureStorageService {
        const personalInfo = {
          id: result.id,
          userId: result.user_id,
+         passportId: result.passport_id,
          phoneNumber: decryptedFields.phone_number,
          email: decryptedFields.email,
          homeAddress: decryptedFields.home_address,
@@ -999,6 +1464,8 @@ class SecureStorageService {
          countryRegion: result.country_region,
          phoneCode: result.phone_code,
          gender: result.gender,
+         isDefault: result.is_default === 1,
+         label: result.label,
          createdAt: result.created_at,
          updatedAt: result.updated_at
        };
@@ -1051,6 +1518,7 @@ class SecureStorageService {
       const personalInfo = {
         id: result.id,
         userId: result.user_id,
+        passportId: result.passport_id,
         phoneNumber: decryptedFields.phone_number,
         email: decryptedFields.email,
         homeAddress: decryptedFields.home_address,
@@ -1059,6 +1527,8 @@ class SecureStorageService {
         countryRegion: result.country_region,
         phoneCode: result.phone_code,
         gender: result.gender,
+        isDefault: result.is_default === 1,
+        label: result.label,
         createdAt: result.created_at,
         updatedAt: result.updated_at
       };
@@ -1239,6 +1709,419 @@ class SecureStorageService {
   }
 
   /**
+   * Delete fund item by ID
+   * @param {string} id - Fund item ID
+   * @returns {Promise<boolean>} - Success status
+   */
+  async deleteFundItem(id) {
+    try {
+      console.log('=== SECURE STORAGE: DELETE FUND ITEM ===');
+      
+      // Ensure database is initialized
+      await this.ensureInitialized();
+      console.log('Deleting fund item:', id);
+
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM fund_items WHERE id = ?',
+        [id]
+      );
+
+      console.log('✅ Fund item deleted, rows affected:', result.changes);
+      await this.logAudit('DELETE', 'fund_items', id);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('SecureStorageService.deleteFundItem failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all EntryInfo records for a user.
+   * @param {string} userId - The ID of the user.
+   * @returns {Promise<Array>} - An array of EntryInfo data.
+   */
+  async getAllEntryInfos(userId) {
+    try {
+      await this.ensureInitialized();
+
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM entry_info WHERE user_id = ? ORDER BY created_at DESC',
+        [userId]
+      );
+
+      return rows.map(result => ({
+        id: result.id,
+        userId: result.user_id,
+        passportId: result.passport_id,
+        personalInfoId: result.personal_info_id,
+        travelInfoId: result.travel_info_id,
+        destinationId: result.destination_id,
+        status: result.status,
+        completionMetrics: result.completion_metrics ? JSON.parse(result.completion_metrics) : null,
+        documents: result.documents ? JSON.parse(result.documents) : null,
+        displayStatus: result.display_status ? JSON.parse(result.display_status) : null,
+        lastUpdatedAt: result.last_updated_at,
+        createdAt: result.created_at,
+      }));
+    } catch (error) {
+      console.error('Failed to get all EntryInfos:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single EntryInfo record by its ID.
+   * @param {string} id - The ID of the EntryInfo record.
+   * @returns {Promise<Object|null>} - An EntryInfo data object or null if not found.
+   */
+  async getEntryInfo(id) {
+    try {
+      await this.ensureInitialized();
+
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM entry_info WHERE id = ? LIMIT 1',
+        [id]
+      );
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+        id: result.id,
+        userId: result.user_id,
+        passportId: result.passport_id,
+        personalInfoId: result.personal_info_id,
+        travelInfoId: result.travel_info_id,
+        destinationId: result.destination_id,
+        status: result.status,
+        completionMetrics: result.completion_metrics ? JSON.parse(result.completion_metrics) : null,
+        documents: result.documents ? JSON.parse(result.documents) : null,
+        displayStatus: result.display_status ? JSON.parse(result.display_status) : null,
+        lastUpdatedAt: result.last_updated_at,
+        createdAt: result.created_at,
+      };
+    } catch (error) {
+      console.error('Failed to get EntryInfo by ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an EntryInfo record by its ID.
+   * @param {string} id - The ID of the EntryInfo record to delete.
+   * @returns {Promise<boolean>} - True if deleted successfully, false otherwise.
+   */
+  async deleteEntryInfo(id) {
+    try {
+      await this.ensureInitialized();
+
+      const result = await this.modernDb.runAsync(
+        'DELETE FROM entry_info WHERE id = ?',
+        [id]
+      );
+
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Failed to delete EntryInfo:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save DigitalArrivalCard data securely
+   * @param {Object} dacData - DigitalArrivalCard information
+   * @returns {Promise<Object>} - Save result
+   */
+  async saveDigitalArrivalCard(dacData) {
+    try {
+      await this.ensureInitialized();
+
+      const now = new Date().toISOString();
+      const id = dacData.id || this.generateId();
+
+      await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO digital_arrival_cards (
+          id, entry_info_id, user_id, card_type, destination_id, arr_card_no,
+          qr_uri, pdf_url, submitted_at, submission_method, status,
+          api_response, processing_time, retry_count, error_details,
+          is_superseded, superseded_at, superseded_by, superseded_reason,
+          version, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ,
+        [
+          id,
+          dacData.entryInfoId,
+          dacData.userId,
+          dacData.cardType,
+          dacData.destinationId,
+          dacData.arrCardNo,
+          dacData.qrUri,
+          dacData.pdfUrl,
+          dacData.submittedAt,
+          dacData.submissionMethod,
+          dacData.status,
+          dacData.apiResponse,
+          dacData.processingTime,
+          dacData.retryCount,
+          dacData.errorDetails,
+          dacData.isSuperseded ? 1 : 0,
+          dacData.supersededAt,
+          dacData.supersededBy,
+          dacData.supersededReason,
+          dacData.version,
+          dacData.createdAt || now,
+          now
+        ]
+      );
+
+      await this.logAudit('INSERT', 'digital_arrival_cards', id);
+      return { id };
+    } catch (error) {
+      console.error('Failed to save DigitalArrivalCard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get DigitalArrivalCard by ID
+   * @param {string} id - DigitalArrivalCard ID
+   * @returns {Promise<Object|null>} - DigitalArrivalCard data or null
+   */
+  async getDigitalArrivalCard(id) {
+    try {
+      await this.ensureInitialized();
+
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM digital_arrival_cards WHERE id = ? LIMIT 1',
+        [id]
+      );
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+        id: result.id,
+        entryInfoId: result.entry_info_id,
+        userId: result.user_id,
+        cardType: result.card_type,
+        destinationId: result.destination_id,
+        arrCardNo: result.arr_card_no,
+        qrUri: result.qr_uri,
+        pdfUrl: result.pdf_url,
+        submittedAt: result.submitted_at,
+        submissionMethod: result.submission_method,
+        status: result.status,
+        apiResponse: result.api_response,
+        processingTime: result.processing_time,
+        retryCount: result.retry_count,
+        errorDetails: result.error_details,
+        isSuperseded: result.is_superseded === 1,
+        supersededAt: result.superseded_at,
+        supersededBy: result.superseded_by,
+        supersededReason: result.superseded_reason,
+        version: result.version,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+      };
+    } catch (error) {
+      console.error('Failed to get DigitalArrivalCard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all DigitalArrivalCards for a given entryInfoId
+   * @param {string} entryInfoId - EntryInfo ID
+   * @returns {Promise<Array>} - Array of DigitalArrivalCard data
+   */
+  async getDigitalArrivalCardsByEntryInfoId(entryInfoId) {
+    try {
+      await this.ensureInitialized();
+
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM digital_arrival_cards WHERE entry_info_id = ? ORDER BY created_at DESC',
+        [entryInfoId]
+      );
+
+      return rows.map(result => ({
+        id: result.id,
+        entryInfoId: result.entry_info_id,
+        userId: result.user_id,
+        cardType: result.card_type,
+        destinationId: result.destination_id,
+        arrCardNo: result.arr_card_no,
+        qrUri: result.qr_uri,
+        pdfUrl: result.pdf_url,
+        submittedAt: result.submitted_at,
+        submissionMethod: result.submission_method,
+        status: result.status,
+        apiResponse: result.api_response,
+        processingTime: result.processing_time,
+        retryCount: result.retry_count,
+        errorDetails: result.error_details,
+        isSuperseded: result.is_superseded === 1,
+        supersededAt: result.superseded_at,
+        supersededBy: result.superseded_by,
+        supersededReason: result.superseded_reason,
+        version: result.version,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+      }));
+    } catch (error) {
+      console.error('Failed to get DigitalArrivalCards by entryInfoId:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the latest successful DigitalArrivalCard for a given entryInfoId and cardType
+   * @param {string} entryInfoId - EntryInfo ID
+   * @param {string} cardType - Card type (e.g., 'TDAC')
+   * @returns {Promise<Object|null>} - Latest successful DigitalArrivalCard data or null
+   */
+  async getLatestSuccessfulDigitalArrivalCard(entryInfoId, cardType) {
+    try {
+      await this.ensureInitialized();
+
+      const result = await this.modernDb.getFirstAsync(
+        `SELECT * FROM digital_arrival_cards
+         WHERE entry_info_id = ? AND card_type = ? AND is_superseded = 0 AND status = 'success'
+         ORDER BY submitted_at DESC LIMIT 1`,
+        [entryInfoId, cardType]
+      );
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+        id: result.id,
+        entryInfoId: result.entry_info_id,
+        userId: result.user_id,
+        cardType: result.card_type,
+        destinationId: result.destination_id,
+        arrCardNo: result.arr_card_no,
+        qrUri: result.qr_uri,
+        pdfUrl: result.pdf_url,
+        submittedAt: result.submitted_at,
+        submissionMethod: result.submission_method,
+        status: result.status,
+        apiResponse: result.api_response,
+        processingTime: result.processing_time,
+        retryCount: result.retry_count,
+        errorDetails: result.error_details,
+        isSuperseded: result.is_superseded === 1,
+        supersededAt: result.superseded_at,
+        supersededBy: result.superseded_by,
+        supersededReason: result.superseded_reason,
+        version: result.version,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+      };
+    } catch (error) {
+      console.error('Failed to get latest successful DigitalArrivalCard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save PassportCountry data.
+   * @param {Object} passportCountryData - PassportCountry information.
+   * @returns {Promise<Object>} - Save result.
+   */
+  async savePassportCountry(passportCountryData) {
+    try {
+      await this.ensureInitialized();
+
+      const now = new Date().toISOString();
+
+      await this.modernDb.runAsync(
+        `INSERT OR REPLACE INTO passport_countries (
+          passport_id, country_code, visa_required, max_stay_days, notes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`
+        ,
+        [
+          passportCountryData.passportId,
+          passportCountryData.countryCode,
+          passportCountryData.visaRequired ? 1 : 0,
+          passportCountryData.maxStayDays,
+          passportCountryData.notes,
+          passportCountryData.createdAt || now,
+        ]
+      );
+
+      await this.logAudit('INSERT', 'passport_countries', `${passportCountryData.passportId}-${passportCountryData.countryCode}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to save PassportCountry:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get PassportCountry by passportId and countryCode.
+   * @param {string} passportId - The ID of the passport.
+   * @param {string} countryCode - The country code.
+   * @returns {Promise<Object|null>} - PassportCountry data or null.
+   */
+  async getPassportCountry(passportId, countryCode) {
+    try {
+      await this.ensureInitialized();
+
+      const result = await this.modernDb.getFirstAsync(
+        'SELECT * FROM passport_countries WHERE passport_id = ? AND country_code = ? LIMIT 1',
+        [passportId, countryCode]
+      );
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+        passportId: result.passport_id,
+        countryCode: result.country_code,
+        visaRequired: result.visa_required === 1,
+        maxStayDays: result.max_stay_days,
+        notes: result.notes,
+        createdAt: result.created_at,
+      };
+    } catch (error) {
+      console.error('Failed to get PassportCountry:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all PassportCountry records for a given passportId.
+   * @param {string} passportId - The ID of the passport.
+   * @returns {Promise<Array>} - Array of PassportCountry data.
+   */
+  async getPassportCountriesByPassportId(passportId) {
+    try {
+      await this.ensureInitialized();
+
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM passport_countries WHERE passport_id = ? ORDER BY country_code ASC',
+        [passportId]
+      );
+
+      return rows.map(result => ({
+        passportId: result.passport_id,
+        countryCode: result.country_code,
+        visaRequired: result.visa_required === 1,
+        maxStayDays: result.max_stay_days,
+        notes: result.notes,
+        createdAt: result.created_at,
+      }));
+    } catch (error) {
+      console.error('Failed to get PassportCountries by passportId:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Save travel information (trip-specific draft data)
    * @param {Object} travelData - Travel info data
    * @returns {Promise<Object>} - Save result
@@ -1384,6 +2267,61 @@ class SecureStorageService {
   }
 
   /**
+   * Get travel information by ID
+   * @param {string} id - Travel info ID
+   * @returns {Promise<Object>} - Travel info data
+   */
+  async getTravelInfoById(id) {
+    try {
+      const result = await this.modernDb.getFirstAsync('SELECT * FROM travel_info WHERE id = ?', [id]);
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+        id: result.id,
+        userId: result.user_id,
+        destination: result.destination,
+        travelPurpose: result.travel_purpose,
+        recentStayCountry: result.recent_stay_country,
+        boardingCountry: result.boarding_country,
+        visaNumber: result.visa_number,
+        arrivalFlightNumber: result.arrival_flight_number,
+        arrivalDepartureAirport: result.arrival_departure_airport,
+        arrivalDepartureDate: result.arrival_departure_date,
+        arrivalDepartureTime: result.arrival_departure_time,
+        arrivalArrivalAirport: result.arrival_arrival_airport,
+        arrivalArrivalDate: result.arrival_arrival_date,
+        arrivalArrivalTime: result.arrival_arrival_time,
+        departureFlightNumber: result.departure_flight_number,
+        departureDepartureAirport: result.departure_departure_airport,
+        departureDepartureDate: result.departure_departure_date,
+        departureDepartureTime: result.departure_departure_time,
+        departureArrivalAirport: result.departure_arrival_airport,
+        departureArrivalDate: result.departure_arrival_date,
+        departureArrivalTime: result.departure_arrival_time,
+        accommodationType: result.accommodation_type,
+        province: result.province,
+        district: result.district,
+        subDistrict: result.sub_district,
+        postalCode: result.postal_code,
+        hotelName: result.hotel_name,
+        hotelAddress: result.hotel_address,
+        accommodationPhone: result.accommodation_phone,
+        lengthOfStay: result.length_of_stay,
+        isTransitPassenger: result.is_transit_passenger === 1,
+        status: result.status,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at
+      };
+    } catch (error) {
+      console.error('Failed to get travel info by id:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Save travel history (non-sensitive data)
    * @param {Object} travelData - Travel history data
    */
@@ -1485,6 +2423,7 @@ class SecureStorageService {
         issueDate: result.issue_date,
         issuePlace: result.issue_place,
         photoUri: result.photo_uri,
+        isPrimary: result.is_primary === 1,
         createdAt: result.created_at,
         updatedAt: result.updated_at
       };
@@ -1492,6 +2431,65 @@ class SecureStorageService {
       return passport;
     } catch (error) {
       console.error('Failed to get user passport:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all passports for a user (for passport selection)
+   * @param {string} userId - User ID
+   * @returns {Array} - Array of passport objects
+   */
+  async getAllUserPassports(userId) {
+    try {
+      const results = await this.modernDb.getAllAsync(
+        'SELECT * FROM passports WHERE user_id = ? ORDER BY updated_at DESC',
+        [userId]
+      );
+
+      if (!results || results.length === 0) {
+        return [];
+      }
+
+      const passports = [];
+      for (const result of results) {
+        // TODO: Re-enable encryption before production release
+        const decryptedFields = this.ENCRYPTION_ENABLED
+          ? await this.encryption.decryptFields({
+              passport_number: result.encrypted_passport_number,
+              full_name: result.encrypted_full_name,
+              date_of_birth: result.encrypted_date_of_birth,
+              nationality: result.encrypted_nationality
+            })
+          : {
+              passport_number: result.encrypted_passport_number,
+              full_name: result.encrypted_full_name,
+              date_of_birth: result.encrypted_date_of_birth,
+              nationality: result.encrypted_nationality
+            };
+
+        const passport = {
+          id: result.id,
+          userId: result.user_id,
+          passportNumber: decryptedFields.passport_number,
+          fullName: decryptedFields.full_name,
+          dateOfBirth: decryptedFields.date_of_birth,
+          nationality: decryptedFields.nationality,
+          gender: result.gender,
+          expiryDate: result.expiry_date,
+          issueDate: result.issue_date,
+          issuePlace: result.issue_place,
+          photoUri: result.photo_uri,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at
+        };
+
+        passports.push(passport);
+      }
+
+      return passports;
+    } catch (error) {
+      console.error('Failed to get all user passports:', error);
       throw error;
     }
   }
@@ -1735,16 +2733,17 @@ class SecureStorageService {
                 type: 'personalInfo',
                 id,
                 sql: `INSERT OR REPLACE INTO personal_info (
-                  id, user_id, encrypted_phone_number, encrypted_email,
+                  id, user_id, passport_id, encrypted_phone_number, encrypted_email,
                   encrypted_home_address, occupation, province_city,
-                  country_region, phone_code, gender, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  country_region, phone_code, gender, is_default, label, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 params: [
-                  id, op.data.userId,
+                  id, op.data.userId, op.data.passportId || null,
                   encryptedData.phone_number, encryptedData.email,
                   encryptedData.home_address, op.data.occupation,
                   op.data.provinceCity, op.data.countryRegion,
                   op.data.phoneCode, op.data.gender,
+                  op.data.isDefault ? 1 : 0, op.data.label || null,
                   op.data.createdAt || now, now
                 ]
               };
@@ -1939,6 +2938,7 @@ class SecureStorageService {
             results.personalInfo = {
               id: result.id,
               userId: result.user_id,
+              passportId: result.passport_id,
               phoneNumber: decryptedFields.phone_number,
               email: decryptedFields.email,
               homeAddress: decryptedFields.home_address,
@@ -1947,6 +2947,8 @@ class SecureStorageService {
               countryRegion: result.country_region,
               phoneCode: result.phone_code,
               gender: result.gender,
+              isDefault: result.is_default === 1,
+              label: result.label,
               createdAt: result.created_at,
               updatedAt: result.updated_at
             };
@@ -2307,34 +3309,137 @@ class SecureStorageService {
   }
 
   /**
-   * Reset database - drop and recreate all tables with fresh schema
-   * WARNING: This will delete all data!
-   */
-  async resetDatabase() {
-    try {
-      console.log('Resetting database - dropping all tables...');
-      
-      await this.modernDb.withTransactionAsync(async () => {
-        // Drop all tables
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS passports');
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS personal_info');
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS funding_proof');
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS travel_history');
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS audit_log');
-        await this.modernDb.execAsync('DROP TABLE IF EXISTS settings');
-        
-        console.log('All tables dropped');
-      });
+    * Reset database - drop and recreate all tables with fresh schema
+    * WARNING: This will delete all data!
+    */
+   async resetDatabase() {
+     try {
+       console.log('Resetting database - dropping all tables...');
 
-      console.log('Recreating tables...');
-      // Recreate tables
-      await this.createTables();
-      console.log('Database reset complete');
-    } catch (error) {
-      console.error('Failed to reset database:', error);
-      throw error;
-    }
-  }
+       await this.modernDb.withTransactionAsync(async () => {
+         // Drop all tables
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS passports');
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS personal_info');
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS funding_proof');
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS travel_history');
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS audit_log');
+         await this.modernDb.execAsync('DROP TABLE IF EXISTS settings');
+
+         console.log('All tables dropped');
+       });
+
+       console.log('Recreating tables...');
+       // Recreate tables
+       await this.createTables();
+       console.log('Database reset complete');
+     } catch (error) {
+       console.error('Failed to reset database:', error);
+       throw error;
+     }
+   }
+
+  /**
+    * Truncate all user data tables - clears data while preserving schema
+    * This is safer than resetDatabase() as it keeps triggers and indexes
+    * @param {boolean} createBackup - Whether to create a backup before truncating
+    * @returns {Promise<Object>} - Truncation results
+    */
+   async truncateAllUserData(createBackup = true) {
+     try {
+       console.log('🗑️ Starting truncation of all user data tables...');
+
+       // Create backup if requested
+       if (createBackup) {
+         console.log('📦 Creating backup before truncation...');
+         try {
+           await this.createBackup('pre_truncation_backup');
+           console.log('✅ Backup created successfully');
+         } catch (backupError) {
+           console.warn('⚠️ Backup creation failed, continuing with truncation:', backupError.message);
+         }
+       }
+
+       const tablesToTruncate = [
+         'audit_log',
+         'digital_arrival_cards',
+         'entry_info',
+         'entry_info_fund_items',
+         'fund_items',
+         'passport_countries',
+         'passports',
+         'personal_info',
+         'travel_history',
+         'travel_info',
+         'users'
+       ];
+
+       const results = {
+         truncated: [],
+         errors: [],
+         rowCounts: {}
+       };
+
+       await this.modernDb.withTransactionAsync(async () => {
+         for (const tableName of tablesToTruncate) {
+           try {
+             // Get row count before truncation
+             const countResult = await this.modernDb.getFirstAsync(`SELECT COUNT(*) as count FROM ${tableName}`);
+             const rowCount = countResult ? countResult.count : 0;
+             results.rowCounts[tableName] = rowCount;
+
+             console.log(`📊 ${tableName}: ${rowCount} rows to truncate`);
+
+             // Truncate the table (DELETE FROM is safer than TRUNCATE in SQLite)
+             await this.modernDb.runAsync(`DELETE FROM ${tableName}`);
+
+             // Verify truncation
+             const verifyResult = await this.modernDb.getFirstAsync(`SELECT COUNT(*) as count FROM ${tableName}`);
+             const remainingCount = verifyResult ? verifyResult.count : 0;
+
+             if (remainingCount === 0) {
+               results.truncated.push(tableName);
+               console.log(`✅ ${tableName} truncated successfully (${rowCount} rows deleted)`);
+             } else {
+               throw new Error(`Truncation verification failed for ${tableName}: ${remainingCount} rows remaining`);
+             }
+
+           } catch (error) {
+             console.error(`❌ Failed to truncate ${tableName}:`, error);
+             results.errors.push({ table: tableName, error: error.message });
+           }
+         }
+       });
+
+       // Reset settings and migrations tables as well
+       try {
+         await this.modernDb.runAsync('DELETE FROM settings');
+         await this.modernDb.runAsync('DELETE FROM migrations');
+         console.log('✅ Settings and migrations tables cleared');
+       } catch (error) {
+         console.warn('⚠️ Failed to clear settings/migrations:', error.message);
+       }
+
+       // Log the truncation operation
+       await this.logAudit('TRUNCATE_ALL', 'all_user_tables', 'system', {
+         tablesTruncated: results.truncated.length,
+         totalErrors: results.errors.length,
+         rowCounts: results.rowCounts
+       });
+
+       console.log('🗑️ Truncation completed!');
+       console.log(`✅ Successfully truncated: ${results.truncated.length} tables`);
+       if (results.errors.length > 0) {
+         console.warn(`⚠️ Errors during truncation: ${results.errors.length} tables`);
+         results.errors.forEach(err => console.warn(`  - ${err.table}: ${err.error}`));
+       }
+
+       return results;
+
+     } catch (error) {
+       console.error('❌ Failed to truncate all user data:', error);
+       throw error;
+     }
+   }
 
   /**
     * Clean up legacy funding_proof table from existing databases
@@ -2350,6 +3455,63 @@ class SecureStorageService {
     } catch (error) {
       console.error('❌ Failed to cleanup funding_proof table:', error);
       throw error;
+    }
+  }
+
+  /**
+    * Clean up obsolete tables from Schema v1.0 that are no longer needed
+    * This removes tables that were replaced in Schema v2.0
+    */
+  async cleanupObsoleteTables() {
+    try {
+      console.log('🧹 Starting cleanup of obsolete Schema v1.0 tables...');
+
+      // Check if cleanup has already been done
+      const cleanupDone = await this.getSetting('obsolete_tables_cleaned');
+      if (cleanupDone === 'true') {
+        console.log('ℹ️ Obsolete tables cleanup already completed');
+        return;
+      }
+
+      await this.modernDb.withTransactionAsync(async () => {
+        // Remove obsolete tables (all are empty, so safe to drop)
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS entry_packs');
+        console.log('✅ Removed obsolete entry_packs table');
+
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS tdac_submissions');
+        console.log('✅ Removed obsolete tdac_submissions table');
+
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS entry_pack_snapshots');
+        console.log('✅ Removed obsolete entry_pack_snapshots table');
+
+        await this.modernDb.execAsync('DROP TABLE IF EXISTS audit_events');
+        console.log('✅ Removed obsolete audit_events table');
+
+        // Remove any indexes that were associated with these tables
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_packs_user_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_packs_destination_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_packs_status');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_packs_trip_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_tdac_submissions_user_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_tdac_submissions_entry_pack_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_tdac_submissions_status');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_tdac_submissions_submitted_at');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_pack_snapshots_entry_pack_id');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_entry_pack_snapshots_created_at');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_audit_events_table_name');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_audit_events_timestamp');
+        await this.modernDb.execAsync('DROP INDEX IF EXISTS idx_audit_events_record_id');
+
+        console.log('✅ Removed obsolete indexes');
+      });
+
+      // Mark cleanup as completed
+      await this.setSetting('obsolete_tables_cleaned', 'true');
+      console.log('✅ Schema v1.0 obsolete tables cleanup completed successfully');
+
+    } catch (error) {
+      console.error('❌ Failed to cleanup obsolete tables:', error);
+      // Don't throw - cleanup failure shouldn't break the app
     }
   }
 
@@ -2478,30 +3640,25 @@ class SecureStorageService {
 
       await this.modernDb.withTransactionAsync(async () => {
         insertResult = await this.modernDb.runAsync(
-          `INSERT OR REPLACE INTO entry_info (
-            id, user_id, passport_id, personal_info_id, destination_id, trip_id, status, 
-            completion_metrics, last_updated_at, created_at,
-            arrival_date, departure_date, travel_purpose,
-            flight_number, accommodation
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            serialized.id,
-            serialized.user_id,
-            serialized.passport_id,
-            serialized.personal_info_id,
-            serialized.destination_id,
-            serialized.trip_id,
-            serialized.status,
-            serialized.completion_metrics,
-            serialized.last_updated_at,
-            serialized.created_at,
-            serialized.arrival_date,
-            serialized.departure_date,
-            serialized.travel_purpose,
-            serialized.flight_number,
-            serialized.accommodation
-          ]
-        );
+           `INSERT OR REPLACE INTO entry_info (
+             id, user_id, passport_id, personal_info_id, travel_info_id, destination_id, status,
+             completion_metrics, documents, display_status, last_updated_at, created_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           [
+             serialized.id,
+             serialized.user_id,
+             serialized.passport_id,
+             serialized.personal_info_id,
+             serialized.travel_info_id,
+             serialized.destination_id,
+             serialized.status,
+             serialized.completion_metrics,
+             serialized.documents,
+             serialized.display_status,
+             serialized.last_updated_at,
+             serialized.created_at
+           ]
+         );
 
         await this.modernDb.runAsync(
           'DELETE FROM entry_info_fund_items WHERE entry_info_id = ?',
@@ -2529,142 +3686,7 @@ class SecureStorageService {
     }
   }
 
-  /**
-   * Save entry pack
-   * @param {Object} entryPackData - Entry pack model or plain object
-   * @returns {Promise<Object>} - Save result
-   */
-  async saveEntryPack(entryPackData) {
-    try {
-      await this.ensureInitialized();
-
-      const serialized = this.serializeEntryPack(entryPackData);
-
-      const result = await this.modernDb.runAsync(
-        `INSERT OR REPLACE INTO entry_packs (
-          id, entry_info_id, user_id, destination_id, trip_id, status,
-          tdac_submission, submission_history, documents, display_status,
-          created_at, updated_at, archived_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          serialized.id,
-          serialized.entry_info_id,
-          serialized.user_id,
-          serialized.destination_id,
-          serialized.trip_id,
-          serialized.status,
-          serialized.tdac_submission,
-          serialized.submission_history,
-          serialized.documents,
-          serialized.display_status,
-          serialized.created_at,
-          serialized.updated_at,
-          serialized.archived_at
-        ]
-      );
-
-      return {
-        success: true,
-        id: serialized.id,
-        insertId: result.lastInsertRowId,
-        rowsAffected: result.changes
-      };
-    } catch (error) {
-      console.error('Failed to save entry pack:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get entry pack by ID
-   * @param {string} entryPackId - Entry pack ID
-   * @returns {Promise<Object|null>} - Entry pack data or null
-   */
-  async getEntryPack(entryPackId) {
-    try {
-      await this.ensureInitialized();
-
-      const result = await this.modernDb.getFirstAsync(
-        'SELECT * FROM entry_packs WHERE id = ? LIMIT 1',
-        [entryPackId]
-      );
-
-      if (result) {
-        return this.deserializeEntryPack(result);
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error('Failed to get entry pack:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get entry packs by user ID
-   * @param {string} userId - User ID
-   * @returns {Promise<Array>} - Array of entry pack data
-   */
-  async getEntryPacksByUserId(userId) {
-    try {
-      await this.ensureInitialized();
-
-      const rows = await this.modernDb.getAllAsync(
-        'SELECT * FROM entry_packs WHERE user_id = ? ORDER BY created_at DESC',
-        [userId]
-      );
-
-      const packs = rows.map(row => this.deserializeEntryPack(row));
-      return packs;
-    } catch (error) {
-      console.error('Failed to load entry packs by user ID:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete entry pack
-   * @param {string} entryPackId - Entry pack ID
-   * @returns {Promise<Object>} - Delete result
-   */
-  async deleteEntryPack(entryPackId) {
-    try {
-      await this.ensureInitialized();
-
-      const result = await this.modernDb.runAsync(
-        'DELETE FROM entry_packs WHERE id = ?',
-        [entryPackId]
-      );
-
-      return {
-        success: true,
-        rowsAffected: result.changes
-      };
-    } catch (error) {
-      console.error('Failed to delete entry pack:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get entry packs by entry info ID
-   * @param {string} entryInfoId - Entry info ID
-   * @returns {Promise<Array>} - Array of entry pack data
-   */
-  async getEntryPacksByEntryInfoId(entryInfoId) {
-    try {
-      const rows = await this.modernDb.getAllAsync(
-        'SELECT * FROM entry_packs WHERE entry_info_id = ? ORDER BY created_at DESC',
-        [entryInfoId]
-      );
-
-      const packs = rows.map(row => this.deserializeEntryPack(row));
-      return packs;
-    } catch (error) {
-      console.error('Failed to get entry packs by entry info ID:', error);
-      throw error;
-    }
-  }
+  
 
   /**
    * Retrieve fund items associated with an entry info record
@@ -2789,7 +3811,7 @@ class SecureStorageService {
   }
 
   /**
-   * Serialize entry info for database storage
+   * Serialize entry info for database storage (v2.0 schema)
    * @param {Object} entryInfo - Entry info data
    * @returns {Object} - Serialized data
    */
@@ -2797,50 +3819,21 @@ class SecureStorageService {
     return {
       id: entryInfo.id || this.generateId(),
       user_id: entryInfo.userId,
-      passport_id: entryInfo.passportId || null,
+      passport_id: entryInfo.passportId,
       personal_info_id: entryInfo.personalInfoId || null,
+      travel_info_id: entryInfo.travelInfoId || null,
       destination_id: entryInfo.destinationId,
-      trip_id: entryInfo.tripId,
       status: entryInfo.status || 'incomplete',
       completion_metrics: JSON.stringify(entryInfo.completionMetrics || {}),
+      documents: JSON.stringify(entryInfo.documents || null),
+      display_status: JSON.stringify(entryInfo.displayStatus || null),
       last_updated_at: entryInfo.lastUpdatedAt || new Date().toISOString(),
-      created_at: entryInfo.createdAt || new Date().toISOString(),
-      arrival_date: entryInfo.arrivalDate,
-      departure_date: entryInfo.departureDate,
-      travel_purpose: entryInfo.travelPurpose,
-      flight_number: entryInfo.flightNumber,
-      accommodation: entryInfo.accommodation
+      created_at: entryInfo.createdAt || new Date().toISOString()
     };
   }
 
   /**
-   * Serialize entry pack for database storage
-   * @param {Object} entryPack - Entry pack data
-   * @returns {Object} - Serialized data
-   */
-  serializeEntryPack(entryPack) {
-    const createdAt = entryPack.createdAt || new Date().toISOString();
-    const updatedAt = entryPack.updatedAt || new Date().toISOString();
-
-    return {
-      id: entryPack.id || this.generateId(),
-      entry_info_id: entryPack.entryInfoId,
-      user_id: entryPack.userId,
-      destination_id: entryPack.destinationId,
-      trip_id: entryPack.tripId,
-      status: entryPack.status || 'in_progress',
-      tdac_submission: JSON.stringify(entryPack.tdacSubmission || null),
-      submission_history: JSON.stringify(entryPack.submissionHistory || []),
-      documents: JSON.stringify(entryPack.documents || {}),
-      display_status: JSON.stringify(entryPack.displayStatus || {}),
-      created_at: createdAt,
-      updated_at: updatedAt,
-      archived_at: entryPack.archivedAt || null
-    };
-  }
-
-  /**
-   * Deserialize entry info from database
+   * Deserialize entry info from database (v2.0 schema)
    * @param {Object} row - Database row
    * @returns {Object} - Deserialized entry info
    */
@@ -2850,139 +3843,116 @@ class SecureStorageService {
       userId: row.user_id,
       passportId: row.passport_id,
       personalInfoId: row.personal_info_id,
+      travelInfoId: row.travel_info_id,
       destinationId: row.destination_id,
-      tripId: row.trip_id,
       status: row.status,
       completionMetrics: this.safeJsonParse(row.completion_metrics, {}),
+      documents: this.safeJsonParse(row.documents, null),
+      displayStatus: this.safeJsonParse(row.display_status, null),
       lastUpdatedAt: row.last_updated_at,
-      createdAt: row.created_at,
-      arrivalDate: row.arrival_date,
-      departureDate: row.departure_date,
-      travelPurpose: row.travel_purpose,
-      flightNumber: row.flight_number,
-      accommodation: row.accommodation,
-      tdacSubmission: this.safeJsonParse(row.tdac_submission, null),
-      fundItemIds: this.parseFundItemIds(row.fund_item_ids)
+      createdAt: row.created_at
     };
   }
 
-  /**
-   * Deserialize entry pack from database
-   * @param {Object} row - Database row
-   * @returns {Object} - Deserialized entry pack
-   */
-  deserializeEntryPack(row) {
-    return {
-      id: row.id,
-      entryInfoId: row.entry_info_id,
-      userId: row.user_id,
-      destinationId: row.destination_id,
-      tripId: row.trip_id,
-      status: row.status,
-      tdacSubmission: this.safeJsonParse(row.tdac_submission, null),
-      submissionHistory: this.safeJsonParse(row.submission_history, []),
-      documents: this.safeJsonParse(row.documents, {}),
-      displayStatus: this.safeJsonParse(row.display_status, {}),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      archivedAt: row.archived_at
-    };
-  }
+
 
   // ===== TDAC SUBMISSION METADATA METHODS =====
   // Requirements: 10.1-10.6, 19.1-19.5
 
   /**
-   * Save TDAC submission metadata
-   * @param {Object} submissionData - TDAC submission data
+   * Save digital arrival card (v2.0 schema)
+   * @param {Object} cardData - Digital arrival card data
    * @returns {Promise<Object>} - Save result
    */
-  async saveTDACSubmissionMetadata(submissionData) {
+  async saveDigitalArrivalCard(cardData) {
     try {
       await this.ensureInitialized();
 
       const result = await this.modernDb.runAsync(
-        `INSERT OR REPLACE INTO tdac_submissions (
-          id, user_id, entry_pack_id, destination_id, trip_id,
-          arr_card_no, qr_uri, pdf_path, submitted_at, submission_method,
+        `INSERT OR REPLACE INTO digital_arrival_cards (
+          id, entry_info_id, user_id, card_type, destination_id,
+          arr_card_no, qr_uri, pdf_url, submitted_at, submission_method,
           status, api_response, processing_time, retry_count, error_details,
           is_superseded, superseded_at, superseded_reason, superseded_by,
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          version, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          submissionData.id,
-          submissionData.userId,
-          submissionData.entryPackId,
-          submissionData.destinationId,
-          submissionData.tripId,
-          submissionData.arrCardNo,
-          submissionData.qrUri,
-          submissionData.pdfPath,
-          submissionData.submittedAt,
-          submissionData.submissionMethod,
-          submissionData.status,
-          JSON.stringify(submissionData.apiResponse || null),
-          submissionData.processingTime,
-          submissionData.retryCount || 0,
-          JSON.stringify(submissionData.errorDetails || null),
-          submissionData.isSuperseded ? 1 : 0,
-          submissionData.supersededAt,
-          submissionData.supersededReason,
-          submissionData.supersededBy,
-          submissionData.createdAt,
-          submissionData.updatedAt
+          cardData.id,
+          cardData.entryInfoId,
+          cardData.userId,
+          cardData.cardType || 'TDAC',
+          cardData.destinationId,
+          cardData.arrCardNo,
+          cardData.qrUri,
+          cardData.pdfUrl,
+          cardData.submittedAt,
+          cardData.submissionMethod || 'api',
+          cardData.status || 'success',
+          JSON.stringify(cardData.apiResponse || null),
+          cardData.processingTime,
+          cardData.retryCount || 0,
+          JSON.stringify(cardData.errorDetails || null),
+          cardData.isSuperseded ? 1 : 0,
+          cardData.supersededAt,
+          cardData.supersededReason,
+          cardData.supersededBy,
+          cardData.version || 1,
+          cardData.createdAt,
+          cardData.updatedAt
         ]
       );
 
-      console.log('TDAC submission metadata saved:', {
-        id: submissionData.id,
+      console.log('Digital arrival card saved:', {
+        id: cardData.id,
+        entryInfoId: cardData.entryInfoId,
+        cardType: cardData.cardType || 'TDAC',
         insertId: result.lastInsertRowId
       });
       
-      return { success: true, id: submissionData.id };
+      return { success: true, id: cardData.id };
     } catch (error) {
-      console.error('Failed to save TDAC submission metadata:', error);
+      console.error('Failed to save digital arrival card:', error);
       throw error;
     }
   }
 
   /**
-   * Get TDAC submission by ID
-   * @param {string} submissionId - Submission ID
-   * @returns {Promise<Object|null>} - TDAC submission or null
+   * Get digital arrival card by ID (v2.0 schema)
+   * @param {string} cardId - Card ID
+   * @returns {Promise<Object|null>} - Digital arrival card or null
    */
-  async getTDACSubmission(submissionId) {
+  async getDigitalArrivalCard(cardId) {
     try {
       await this.ensureInitialized();
 
       const row = await this.modernDb.getFirstAsync(
-        'SELECT * FROM tdac_submissions WHERE id = ?',
-        [submissionId]
+        'SELECT * FROM digital_arrival_cards WHERE id = ?',
+        [cardId]
       );
 
       if (row) {
-        const submission = this.deserializeTDACSubmission(row);
-        return submission;
+        const card = this.deserializeDigitalArrivalCard(row);
+        return card;
       } else {
         return null;
       }
     } catch (error) {
-      console.error('Failed to get TDAC submission:', error);
+      console.error('Failed to get digital arrival card:', error);
       throw error;
     }
   }
 
   /**
-   * Get TDAC submissions by user ID
+   * Get digital arrival cards by user ID (v2.0 schema)
    * @param {string} userId - User ID
    * @param {Object} filters - Filter options
-   * @returns {Promise<Array>} - Array of TDAC submissions
+   * @returns {Promise<Array>} - Array of digital arrival cards
    */
-  async getTDACSubmissionsByUserId(userId, filters = {}) {
+  async getDigitalArrivalCardsByUserId(userId, filters = {}) {
     try {
       await this.ensureInitialized();
 
-      let query = 'SELECT * FROM tdac_submissions WHERE user_id = ?';
+      let query = 'SELECT * FROM digital_arrival_cards WHERE user_id = ?';
       const params = [userId];
 
       // Apply filters
@@ -2996,9 +3966,14 @@ class SecureStorageService {
         params.push(filters.destinationId);
       }
 
-      if (filters.entryPackId) {
-        query += ' AND entry_pack_id = ?';
-        params.push(filters.entryPackId);
+      if (filters.entryInfoId) {
+        query += ' AND entry_info_id = ?';
+        params.push(filters.entryInfoId);
+      }
+
+      if (filters.cardType) {
+        query += ' AND card_type = ?';
+        params.push(filters.cardType);
       }
 
       if (filters.isSuperseded !== undefined) {
@@ -3016,119 +3991,120 @@ class SecureStorageService {
       }
 
       const rows = await this.modernDb.getAllAsync(query, params);
-      const submissions = rows.map(row => this.deserializeTDACSubmission(row));
-      return submissions;
+      const cards = rows.map(row => this.deserializeDigitalArrivalCard(row));
+      return cards;
     } catch (error) {
-      console.error('Failed to get TDAC submissions by user ID:', error);
+      console.error('Failed to get digital arrival cards by user ID:', error);
       throw error;
     }
   }
 
   /**
-   * Get TDAC submissions by entry pack ID
-   * @param {string} entryPackId - Entry pack ID
-   * @returns {Promise<Array>} - Array of TDAC submissions
+   * Get digital arrival cards by entry info ID (v2.0 schema)
+   * @param {string} entryInfoId - Entry info ID
+   * @returns {Promise<Array>} - Array of digital arrival cards
    */
-  async getTDACSubmissionsByEntryPackId(entryPackId) {
+  async getDigitalArrivalCardsByEntryInfoId(entryInfoId) {
     try {
       await this.ensureInitialized();
 
       const rows = await this.modernDb.getAllAsync(
-        'SELECT * FROM tdac_submissions WHERE entry_pack_id = ? ORDER BY submitted_at DESC',
-        [entryPackId]
+        'SELECT * FROM digital_arrival_cards WHERE entry_info_id = ? ORDER BY submitted_at DESC',
+        [entryInfoId]
       );
 
-      const submissions = rows.map(row => this.deserializeTDACSubmission(row));
-      return submissions;
+      const cards = rows.map(row => this.deserializeDigitalArrivalCard(row));
+      return cards;
     } catch (error) {
-      console.error('Failed to get TDAC submissions by entry pack ID:', error);
+      console.error('Failed to get digital arrival cards by entry info ID:', error);
       throw error;
     }
   }
 
   /**
-   * Update TDAC submission
-   * @param {Object} submissionData - Updated submission data
+   * Update digital arrival card (v2.0 schema)
+   * @param {Object} cardData - Updated card data
    * @returns {Promise<Object>} - Update result
    */
-  async updateTDACSubmission(submissionData) {
+  async updateDigitalArrivalCard(cardData) {
     try {
       await this.ensureInitialized();
 
       const result = await this.modernDb.runAsync(
-        `UPDATE tdac_submissions SET
+        `UPDATE digital_arrival_cards SET
           status = ?, api_response = ?, processing_time = ?, retry_count = ?,
           error_details = ?, is_superseded = ?, superseded_at = ?,
-          superseded_reason = ?, superseded_by = ?, updated_at = ?
+          superseded_reason = ?, superseded_by = ?, version = ?, updated_at = ?
         WHERE id = ?`,
         [
-          submissionData.status,
-          JSON.stringify(submissionData.apiResponse || null),
-          submissionData.processingTime,
-          submissionData.retryCount || 0,
-          JSON.stringify(submissionData.errorDetails || null),
-          submissionData.isSuperseded ? 1 : 0,
-          submissionData.supersededAt,
-          submissionData.supersededReason,
-          submissionData.supersededBy,
-          submissionData.updatedAt || new Date().toISOString(),
-          submissionData.id
+          cardData.status,
+          JSON.stringify(cardData.apiResponse || null),
+          cardData.processingTime,
+          cardData.retryCount || 0,
+          JSON.stringify(cardData.errorDetails || null),
+          cardData.isSuperseded ? 1 : 0,
+          cardData.supersededAt,
+          cardData.supersededReason,
+          cardData.supersededBy,
+          cardData.version || 1,
+          cardData.updatedAt || new Date().toISOString(),
+          cardData.id
         ]
       );
 
-      console.log('TDAC submission updated:', {
-        id: submissionData.id,
+      console.log('Digital arrival card updated:', {
+        id: cardData.id,
         rowsAffected: result.changes
       });
       
       return { success: true, rowsAffected: result.changes };
     } catch (error) {
-      console.error('Failed to update TDAC submission:', error);
+      console.error('Failed to update digital arrival card:', error);
       throw error;
     }
   }
 
   /**
-   * Delete TDAC submission
-   * @param {string} submissionId - Submission ID
+   * Delete digital arrival card (v2.0 schema)
+   * @param {string} cardId - Card ID
    * @returns {Promise<Object>} - Delete result
    */
-  async deleteTDACSubmission(submissionId) {
+  async deleteDigitalArrivalCard(cardId) {
     try {
       await this.ensureInitialized();
 
       const result = await this.modernDb.runAsync(
-        'DELETE FROM tdac_submissions WHERE id = ?',
-        [submissionId]
+        'DELETE FROM digital_arrival_cards WHERE id = ?',
+        [cardId]
       );
 
-      console.log('TDAC submission deleted:', {
-        id: submissionId,
+      console.log('Digital arrival card deleted:', {
+        id: cardId,
         rowsAffected: result.changes
       });
       
       return { success: true, rowsAffected: result.changes };
     } catch (error) {
-      console.error('Failed to delete TDAC submission:', error);
+      console.error('Failed to delete digital arrival card:', error);
       throw error;
     }
   }
 
   /**
-   * Deserialize TDAC submission from database
+   * Deserialize digital arrival card from database (v2.0 schema)
    * @param {Object} row - Database row
-   * @returns {Object} - Deserialized TDAC submission
+   * @returns {Object} - Deserialized digital arrival card
    */
-  deserializeTDACSubmission(row) {
+  deserializeDigitalArrivalCard(row) {
     return {
       id: row.id,
+      entryInfoId: row.entry_info_id,
       userId: row.user_id,
-      entryPackId: row.entry_pack_id,
+      cardType: row.card_type,
       destinationId: row.destination_id,
-      tripId: row.trip_id,
       arrCardNo: row.arr_card_no,
       qrUri: row.qr_uri,
-      pdfPath: row.pdf_path,
+      pdfUrl: row.pdf_url,
       submittedAt: row.submitted_at,
       submissionMethod: row.submission_method,
       status: row.status,
@@ -3140,205 +4116,12 @@ class SecureStorageService {
       supersededAt: row.superseded_at,
       supersededReason: row.superseded_reason,
       supersededBy: row.superseded_by,
+      version: row.version || 1,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
   }
 
-  // ===== AUDIT LOG METHODS =====
-  // Requirements: 28.1-28.5
-
-  /**
-   * Save audit event
-   * @param {Object} auditEvent - Audit event to save
-   * @returns {Promise<Object>} - Save result
-   */
-  async saveAuditEvent(auditEvent) {
-    try {
-      await this.ensureInitialized();
-
-      const result = await this.modernDb.runAsync(
-        `INSERT OR REPLACE INTO audit_events (
-          id, event_type, timestamp, snapshot_id, entry_pack_id, user_id,
-          metadata, system_info, immutable, version, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          auditEvent.id,
-          auditEvent.eventType,
-          auditEvent.timestamp,
-          auditEvent.snapshotId,
-          auditEvent.entryPackId,
-          auditEvent.userId,
-          JSON.stringify(auditEvent.metadata || {}),
-          JSON.stringify(auditEvent.systemInfo || {}),
-          auditEvent.immutable ? 1 : 0,
-          auditEvent.version || 1,
-          new Date().toISOString()
-        ]
-      );
-
-      console.log('Audit event saved:', {
-        id: auditEvent.id,
-        insertId: result.lastInsertRowId
-      });
-      
-      return { success: true, id: auditEvent.id };
-    } catch (error) {
-      console.error('Failed to save audit event:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get audit events by snapshot ID
-   * @param {string} snapshotId - Snapshot ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} - Array of audit events
-   */
-  async getAuditEventsBySnapshotId(snapshotId, options = {}) {
-    try {
-      await this.ensureInitialized();
-
-      let query = 'SELECT * FROM audit_events WHERE snapshot_id = ?';
-      const params = [snapshotId];
-
-      // Apply filters
-      if (options.eventType) {
-        query += ' AND event_type = ?';
-        params.push(options.eventType);
-      }
-
-      if (options.fromDate) {
-        query += ' AND timestamp >= ?';
-        params.push(options.fromDate);
-      }
-
-      if (options.toDate) {
-        query += ' AND timestamp <= ?';
-        params.push(options.toDate);
-      }
-
-      // Order by timestamp
-      query += ' ORDER BY timestamp ASC';
-
-      // Apply limit if specified
-      if (options.limit) {
-        query += ' LIMIT ?';
-        params.push(options.limit);
-        
-        if (options.offset) {
-          query += ' OFFSET ?';
-          params.push(options.offset);
-        }
-      }
-
-      const rows = await this.modernDb.getAllAsync(query, params);
-      const events = rows.map(row => this.deserializeAuditEvent(row));
-      return events;
-    } catch (error) {
-      console.error('Failed to get audit events by snapshot ID:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get audit events by user ID
-   * @param {string} userId - User ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} - Array of audit events
-   */
-  async getAuditEventsByUserId(userId, options = {}) {
-    try {
-      await this.ensureInitialized();
-
-      let query = 'SELECT * FROM audit_events WHERE user_id = ?';
-      const params = [userId];
-
-      // Apply filters similar to getAuditEventsBySnapshotId
-      if (options.eventType) {
-        query += ' AND event_type = ?';
-        params.push(options.eventType);
-      }
-
-      if (options.fromDate) {
-        query += ' AND timestamp >= ?';
-        params.push(options.fromDate);
-      }
-
-      if (options.toDate) {
-        query += ' AND timestamp <= ?';
-        params.push(options.toDate);
-      }
-
-      // Order by timestamp (newest first for user queries)
-      query += ' ORDER BY timestamp DESC';
-
-      // Apply limit
-      if (options.limit) {
-        query += ' LIMIT ?';
-        params.push(options.limit);
-        
-        if (options.offset) {
-          query += ' OFFSET ?';
-          params.push(options.offset);
-        }
-      }
-
-      const rows = await this.modernDb.getAllAsync(query, params);
-      const events = rows.map(row => this.deserializeAuditEvent(row));
-      return events;
-    } catch (error) {
-      console.error('Failed to get audit events by user ID:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete audit events (for GDPR compliance)
-   * @param {string} snapshotId - Snapshot ID
-   * @returns {Promise<Object>} - Delete result
-   */
-  async deleteAuditEvents(snapshotId) {
-    try {
-      await this.ensureInitialized();
-
-      const result = await this.modernDb.runAsync(
-        'DELETE FROM audit_events WHERE snapshot_id = ?',
-        [snapshotId]
-      );
-
-      console.log('Audit events deleted:', {
-        snapshotId,
-        rowsAffected: result.changes
-      });
-      
-      return { success: true, rowsAffected: result.changes };
-    } catch (error) {
-      console.error('Failed to delete audit events:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Deserialize audit event from database
-   * @param {Object} row - Database row
-   * @returns {Object} - Deserialized audit event
-   */
-  deserializeAuditEvent(row) {
-    return {
-      id: row.id,
-      eventType: row.event_type,
-      timestamp: row.timestamp,
-      snapshotId: row.snapshot_id,
-      entryPackId: row.entry_pack_id,
-      userId: row.user_id,
-      metadata: this.safeJsonParse(row.metadata, {}),
-      systemInfo: this.safeJsonParse(row.system_info, {}),
-      immutable: row.immutable === 1,
-      version: row.version,
-      createdAt: row.created_at
-    };
-  }
 
   // Data Encryption Methods (Requirements: 19.1-19.5)
 

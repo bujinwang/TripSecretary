@@ -9,6 +9,8 @@ import SecureStorageService from '../services/security/SecureStorageService';
 import Passport from './Passport';
 import PersonalInfo from './PersonalInfo';
 
+import TravelInfo from './TravelInfo';
+
 class EntryData {
   constructor(data = {}) {
     this.id = data.id || this.generateId();
@@ -19,12 +21,7 @@ class EntryData {
     this.personalInfoId = data.personalInfoId;
 
     // Travel-specific information
-    this.destination = data.destination; // 🟢 PLAINTEXT (not sensitive)
-    this.purpose = data.purpose; // 🟢 PLAINTEXT (not sensitive)
-    this.arrivalDate = data.arrivalDate; // 🟢 PLAINTEXT (not sensitive)
-    this.departureDate = data.departureDate; // 🟢 PLAINTEXT (not sensitive)
-    this.flightNumber = data.flightNumber; // 🟢 PLAINTEXT (not sensitive)
-    this.accommodation = data.accommodation; // 🟡 MODERATE (may contain address)
+    this.travelInfoId = data.travelInfoId;
 
     // Funding proof (encrypted)
     this.fundingProof = data.fundingProof || {}; // 🔴 ENCRYPTED object
@@ -61,35 +58,8 @@ class EntryData {
       errors.push('Passport information is required');
     }
 
-    if (!this.destination || !this.destination.id) {
-      errors.push('Destination is required');
-    }
-
-    if (!this.arrivalDate) {
-      errors.push('Arrival date is required');
-    }
-
-    // Date validations
-    if (this.arrivalDate && !this.isValidDate(this.arrivalDate)) {
-      errors.push('Invalid arrival date format');
-    }
-
-    if (this.departureDate && !this.isValidDate(this.departureDate)) {
-      errors.push('Invalid departure date format');
-    }
-
-    // Date logic validations
-    if (this.arrivalDate && this.departureDate) {
-      const arrival = new Date(this.arrivalDate);
-      const departure = new Date(this.departureDate);
-      if (departure <= arrival) {
-        errors.push('Departure date must be after arrival date');
-      }
-    }
-
-    // Flight number validation (if provided)
-    if (this.flightNumber && !this.isValidFlightNumber(this.flightNumber)) {
-      errors.push('Invalid flight number format');
+    if (!this.travelInfoId) {
+      errors.push('Travel information is required');
     }
 
     // Funding proof validation
@@ -129,94 +99,7 @@ class EntryData {
     return errors;
   }
 
-  /**
-   * Validate date format (YYYY-MM-DD)
-   * @param {string} dateStr - Date string
-   * @returns {boolean} - Is valid date
-   */
-  isValidDate(dateStr) {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateStr)) return false;
 
-    const date = new Date(dateStr);
-    return date instanceof Date && !isNaN(date);
-  }
-
-  /**
-   * Validate flight number format
-   * @param {string} flightNumber - Flight number
-   * @returns {boolean} - Is valid format
-   */
-  isValidFlightNumber(flightNumber) {
-    // Basic flight number validation: airline code (2-3 letters) + number (1-4 digits)
-    const flightRegex = /^[A-Z]{2,3}\d{1,4}$/i;
-    return flightRegex.test(flightNumber.replace(/\s/g, ''));
-  }
-
-  /**
-   * Validate cash amount format
-   * @param {string} amount - Cash amount string
-   * @returns {boolean} - Is valid format
-   */
-  isValidCashAmount(amount) {
-    // Allow formats like: "10000 THB", "¥2000", "$500", "10,000 THB equivalent"
-    const amountRegex = /^[\d,]+\s*(?:THB|USD|CNY|¥|\$|equivalent).*$/i;
-    return amountRegex.test(amount);
-  }
-
-  /**
-   * Check if entry data is ready for submission
-   * @returns {boolean} - Is ready
-   */
-  isReadyForSubmission() {
-    const validation = this.validate();
-    return validation.isValid && this.status === 'draft';
-  }
-
-  /**
-   * Mark as submitted
-   */
-  markAsSubmitted() {
-    this.status = 'submitted';
-    this.submissionDate = new Date().toISOString();
-    this.lastModified = new Date().toISOString();
-  }
-
-  /**
-   * Get duration of stay in days
-   * @returns {number} - Duration in days
-   */
-  getStayDuration() {
-    if (!this.arrivalDate || !this.departureDate) return null;
-
-    const arrival = new Date(this.arrivalDate);
-    const departure = new Date(this.departureDate);
-    const diffTime = departure - arrival;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  /**
-   * Check if travel dates are in the future
-   * @returns {boolean} - Is upcoming travel
-   */
-  isUpcomingTravel() {
-    if (!this.arrivalDate) return false;
-    const arrival = new Date(this.arrivalDate);
-    const now = new Date();
-    return arrival > now;
-  }
-
-  /**
-   * Get days until arrival
-   * @returns {number} - Days until arrival (negative if past)
-   */
-  getDaysUntilArrival() {
-    if (!this.arrivalDate) return null;
-    const arrival = new Date(this.arrivalDate);
-    const now = new Date();
-    const diffTime = arrival - now;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
 
   /**
    * Save entry data (funding proof only, other data is referenced)
@@ -304,12 +187,6 @@ class EntryData {
         id: this.id,
         userId: this.userId,
         status: this.status,
-        destination: this.destination,
-        purpose: this.purpose,
-        arrivalDate: this.arrivalDate,
-        departureDate: this.departureDate,
-        flightNumber: this.flightNumber,
-        accommodation: this.accommodation,
         immigrationNotes: this.immigrationNotes,
         specialRequirements: this.specialRequirements,
         fundingProof: this.fundingProof,
@@ -320,14 +197,18 @@ class EntryData {
 
         // Metadata
         metadata: {
-          stayDuration: this.getStayDuration(),
-          isUpcomingTravel: this.isUpcomingTravel(),
-          daysUntilArrival: this.getDaysUntilArrival(),
           isReadyForSubmission: this.isReadyForSubmission()
         }
       };
 
       // Load related data if IDs are available
+      if (this.travelInfoId) {
+        try {
+          completeData.travelInfo = await TravelInfo.load(this.travelInfoId);
+        } catch (error) {
+          console.warn('Failed to load travel info:', error);
+        }
+      }
       if (this.passportId) {
         try {
           completeData.passport = await Passport.load(this.passportId);
@@ -363,12 +244,6 @@ class EntryData {
         id: this.id,
         exportDate: new Date().toISOString(),
         entryData: {
-          destination: completeData.destination,
-          purpose: completeData.purpose,
-          arrivalDate: completeData.arrivalDate,
-          departureDate: completeData.departureDate,
-          flightNumber: completeData.flightNumber,
-          accommodation: completeData.accommodation,
           immigrationNotes: completeData.immigrationNotes,
           specialRequirements: completeData.specialRequirements,
           status: completeData.status,
@@ -376,6 +251,7 @@ class EntryData {
           generatedAt: completeData.generatedAt,
           lastModified: completeData.lastModified
         },
+        travelInfo: completeData.travelInfo?.exportData(),
         passport: completeData.passport?.exportData(),
         personalInfo: completeData.personalInfo?.exportData(),
         fundingProof: completeData.fundingProof,
@@ -394,14 +270,7 @@ class EntryData {
   getSummary() {
     return {
       id: this.id,
-      destination: this.destination?.name || 'Unknown',
-      arrivalDate: this.arrivalDate,
-      departureDate: this.departureDate,
-      flightNumber: this.flightNumber,
       status: this.status,
-      stayDuration: this.getStayDuration(),
-      isUpcomingTravel: this.isUpcomingTravel(),
-      daysUntilArrival: this.getDaysUntilArrival(),
       generatedAt: this.generatedAt,
       lastModified: this.lastModified
     };
@@ -415,32 +284,19 @@ class EntryData {
    * @param {string} personalInfoId - Personal info ID
    * @returns {EntryData} - EntryData instance
    */
-  static fromUserInput(inputData, userId, passportId = null, personalInfoId = null) {
+  static fromUserInput(inputData, userId, passportId = null, personalInfoId = null, travelInfoId = null) {
     return new EntryData({
       userId,
       passportId,
       personalInfoId,
-      destination: inputData.destination,
-      purpose: inputData.purpose,
-      arrivalDate: inputData.arrivalDate,
-      departureDate: inputData.departureDate,
-      flightNumber: inputData.flightNumber,
-      accommodation: inputData.accommodation,
+      travelInfoId,
       fundingProof: inputData.fundingProof || {},
       immigrationNotes: inputData.immigrationNotes,
       specialRequirements: inputData.specialRequirements
     });
   }
 
-  /**
-   * Get display title for entry data
-   * @returns {string} - Display title
-   */
-  getDisplayTitle() {
-    const destination = this.destination?.name || 'Unknown Destination';
-    const date = this.arrivalDate || 'No Date';
-    return `${destination} - ${date}`;
-  }
+
 }
 
 export default EntryData;

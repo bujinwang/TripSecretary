@@ -1,7 +1,7 @@
 /**
- * SnapshotService - Service for managing entry pack snapshots
- * Creates and manages immutable historical records of entry packs
- * 
+ * SnapshotService - Service for managing entry info snapshots
+ * Creates and manages immutable historical records of entry info
+ *
  * Requirements: 11.1-11.7, 14.1-14.5, 15.1-15.7, 19.1-19.5
  */
 
@@ -65,37 +65,37 @@ class SnapshotService {
   }
 
   /**
-   * Create snapshot from entry pack
-   * @param {string} entryPackId - Entry pack ID
+   * Create snapshot from entry info
+   * @param {string} entryInfoId - Entry info ID
    * @param {string} reason - Snapshot creation reason ('completed', 'expired', 'cancelled', 'manual_archive')
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<EntryPackSnapshot>} - Created snapshot
    */
-  async createSnapshot(entryPackId, reason = 'completed', metadata = {}) {
+  async createSnapshot(entryInfoId, reason = 'completed', metadata = {}) {
     await this.ensureInitialized();
-    
+
     try {
       console.log('Creating snapshot:', {
-        entryPackId,
+        entryInfoId,
         reason,
         metadata
       });
 
-      // Load complete entry pack data
-      const entryPackData = await this.loadCompleteEntryPackData(entryPackId);
-      if (!entryPackData) {
-        throw new Error(`Entry pack not found: ${entryPackId}`);
+      // Load complete entry info data
+      const entryInfoData = await this.loadCompleteEntryInfoData(entryInfoId);
+      if (!entryInfoData) {
+        throw new Error(`Entry info not found: ${entryInfoId}`);
       }
 
       // Create snapshot instance
-      const snapshot = EntryPackSnapshot.createFromEntryPack(entryPackData, reason, {
+      const snapshot = EntryPackSnapshot.createFromEntryPack(entryInfoData, reason, {
         appVersion: metadata.appVersion || '1.0.0',
         deviceInfo: metadata.deviceInfo || 'unknown',
         creationMethod: metadata.creationMethod || 'auto'
       });
 
       // Copy photos to snapshot storage
-      const photoManifest = await this.copyPhotosToSnapshotStorage(entryPackData.funds || [], snapshot.snapshotId);
+      const photoManifest = await this.copyPhotosToSnapshotStorage(entryInfoData.funds || [], snapshot.snapshotId);
 
       // Encrypt photos if encryption is enabled
       let encryptedPhotos = photoManifest;
@@ -122,10 +122,10 @@ class SnapshotService {
         try {
           const snapshotData = snapshot.exportData();
           const encryptionResult = await this.encryptionService.encryptSnapshotData(snapshotData, snapshot.snapshotId);
-          
+
           // Update snapshot with encryption info
           snapshot.setEncryptionInfo(encryptionResult);
-          
+
           console.log('Snapshot data encrypted:', {
             snapshotId: snapshot.snapshotId,
             encrypted: encryptionResult.encrypted,
@@ -143,13 +143,13 @@ class SnapshotService {
       // Record audit log
       await this.recordAuditEvent(snapshot.snapshotId, 'created', {
         reason,
-        entryPackId,
+        entryInfoId,
         creationMethod: metadata.creationMethod || 'auto'
       });
 
       console.log('Snapshot created successfully:', {
         snapshotId: snapshot.snapshotId,
-        entryPackId,
+        entryInfoId,
         reason,
         photoCount: snapshot.getPhotoCount()
       });
@@ -162,34 +162,30 @@ class SnapshotService {
   }
 
   /**
-   * Load complete entry pack data with all related information
-   * @param {string} entryPackId - Entry pack ID
-   * @returns {Promise<Object>} - Complete entry pack data
+   * Load complete entry info data with all related information
+   * @param {string} entryInfoId - Entry info ID
+   * @returns {Promise<Object>} - Complete entry info data
    */
-  async loadCompleteEntryPackData(entryPackId) {
+  async loadCompleteEntryInfoData(entryInfoId) {
     try {
-      // Load entry pack
-      const EntryPack = require('../../models/EntryPack').default;
-      const entryPack = await EntryPack.load(entryPackId);
-      if (!entryPack) {
+      // Load entry info
+      const EntryInfo = require('../../models/EntryInfo').default;
+      const entryInfo = await EntryInfo.load(entryInfoId);
+      if (!entryInfo) {
         return null;
       }
 
-      // Load related entry info
-      const EntryInfo = require('../../models/EntryInfo').default;
-      const entryInfo = await EntryInfo.load(entryPack.entryInfoId);
-
       // Load complete data from entry info
-      const completeData = entryInfo ? await entryInfo.getCompleteData() : {};
+      const completeData = await entryInfo.getCompleteData();
 
       // Load funds separately using PassportDataService
       let funds = [];
-      if (entryPack.userId) {
+      if (entryInfo.userId) {
         try {
           const PassportDataService = require('../data/PassportDataService').default;
-          funds = await PassportDataService.getFundItems(entryPack.userId) || [];
+          funds = await PassportDataService.getFundItems(entryInfo.userId) || [];
           console.log('Loaded funds for snapshot:', {
-            userId: entryPack.userId,
+            userId: entryInfo.userId,
             fundCount: funds.length
           });
         } catch (fundError) {
@@ -199,15 +195,15 @@ class SnapshotService {
 
       // Load travel info separately if not in completeData
       let travel = completeData.travel || {};
-      if (entryPack.userId && entryPack.destinationId && (!travel || Object.keys(travel).length === 0)) {
+      if (entryInfo.userId && entryInfo.destinationId && (!travel || Object.keys(travel).length === 0)) {
         try {
           const PassportDataService = require('../data/PassportDataService').default;
-          const travelInfo = await PassportDataService.getTravelInfo(entryPack.userId, entryPack.destinationId);
+          const travelInfo = await PassportDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
           if (travelInfo) {
             travel = travelInfo;
             console.log('Loaded travel info for snapshot:', {
-              userId: entryPack.userId,
-              destinationId: entryPack.destinationId
+              userId: entryInfo.userId,
+              destinationId: entryInfo.destinationId
             });
           }
         } catch (travelError) {
@@ -217,14 +213,14 @@ class SnapshotService {
 
       // Combine all data
       return {
-        ...entryPack.exportData(),
+        ...entryInfo.exportData(),
         passport: completeData.passport,
         personalInfo: completeData.personalInfo,
         funds: funds,
         travel: travel
       };
     } catch (error) {
-      console.error('Failed to load complete entry pack data:', error);
+      console.error('Failed to load complete entry info data:', error);
       return null;
     }
   }

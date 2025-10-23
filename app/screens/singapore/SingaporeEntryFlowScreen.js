@@ -204,8 +204,8 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
 
       setCategories(categoryData);
 
-      // Check for entry pack and resubmission warnings
-      await loadEntryPackStatus(userId);
+      // Check for entry info and resubmission warnings
+      await loadEntryInfoStatus(userId);
 
     } catch (error) {
       console.error('Failed to load entry flow data:', error);
@@ -225,40 +225,65 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  const loadEntryPackStatus = async (userId) => {
+  const loadEntryInfoStatus = async (userId) => {
     try {
-      // Get entry pack for this destination
-      const EntryPackService = require('../../services/entryPack/EntryPackService').default;
-      const activeEntryPacks = await EntryPackService.getActivePacksForUser(userId);
+      // Use EntryInfoService to check for entry info with DAC submissions
+      const EntryInfoService = require('../../services/EntryInfoService').default;
 
-      // Find entry pack for Singapore
-        const destinationId = route.params?.destination?.id || 'singapore';
-      const singaporeEntryPack = activeEntryPacks.find(pack =>
-        pack.destinationId === destinationId || pack.destinationId === 'singapore'
+      if (!EntryInfoService || typeof EntryInfoService.getAllEntryInfos !== 'function') {
+        console.log('EntryInfoService methods not available, skipping entry info status check');
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setResubmissionWarning(null);
+        return;
+      }
+
+      const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
+
+      // Find entry info for Singapore
+      const destinationId = route.params?.destination?.id || 'singapore';
+      const singaporeEntryInfo = allEntryInfos?.find(info =>
+        info.destinationId === destinationId || info.destinationId === 'singapore'
       );
 
-      if (singaporeEntryPack) {
-        setEntryPackStatus(singaporeEntryPack.status);
-        setShowSupersededStatus(singaporeEntryPack.status === 'superseded');
+      if (singaporeEntryInfo) {
+        // Check if this entry info has a successful DAC submission
+        const latestDAC = await EntryInfoService.getLatestSuccessfulDigitalArrivalCard(singaporeEntryInfo.id, 'SGAC');
 
-        // Check for pending resubmission warnings
-        const warning = PassportDataService.getResubmissionWarning(singaporeEntryPack.id);
-        if (warning) {
-          setResubmissionWarning(warning);
+        if (latestDAC) {
+          // Has successful DAC - consider it "submitted"
+          setEntryPackStatus('submitted');
+          setShowSupersededStatus(latestDAC.status === 'superseded');
+
+          // Check for pending resubmission warnings
+          try {
+            const warning = PassportDataService.getResubmissionWarning(singaporeEntryInfo.id);
+            if (warning) {
+              setResubmissionWarning(warning);
+            }
+          } catch (warningError) {
+            console.log('Resubmission warning check failed:', warningError);
+          }
+
+          console.log('Entry info status loaded:', {
+            entryInfoId: singaporeEntryInfo.id,
+            hasDAC: !!latestDAC,
+            dacStatus: latestDAC.status,
+            hasWarning: !!resubmissionWarning
+          });
+        } else {
+          // No successful DAC - consider it "in_progress"
+          setEntryPackStatus('in_progress');
+          setShowSupersededStatus(false);
+          setResubmissionWarning(null);
         }
-
-        console.log('Entry pack status loaded:', {
-          entryPackId: singaporeEntryPack.id,
-          status: singaporeEntryPack.status,
-          hasWarning: !!warning
-        });
       } else {
         setEntryPackStatus(null);
         setShowSupersededStatus(false);
         setResubmissionWarning(null);
       }
     } catch (error) {
-      console.error('Failed to load entry pack status:', error);
+      console.error('Failed to load entry info status:', error);
     }
   };
 

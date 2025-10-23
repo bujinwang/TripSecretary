@@ -1,15 +1,14 @@
 /**
- * DataExportService - Service for exporting entry pack data
+ * DataExportService - Service for exporting entry info data
  * Supports JSON, PDF, and image export formats
- * 
+ *
  * Requirements: 21.1-21.5
  */
 
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
-import EntryPack from '../../models/EntryPack';
-import EntryPackSnapshot from '../../models/EntryPackSnapshot';
+import EntryInfo from '../../models/EntryInfo';
 import PassportDataService from '../data/PassportDataService';
 import BiometricAuthService from '../security/BiometricAuthService';
 
@@ -20,53 +19,82 @@ class DataExportService {
   }
 
   /**
-   * Export entry pack in specified format
-   * @param {string} entryPackId - Entry pack ID
-   * @param {string} format - Export format ('json', 'pdf', 'image')
-   * @param {Object} options - Export options
-   * @returns {Promise<Object>} - Export result with file path and sharing options
-   */
-  async exportEntryPack(entryPackId, format = 'json', options = {}) {
-    try {
-      console.log('Exporting entry pack:', {
-        entryPackId,
-        format,
-        options
-      });
+    * Export entry info in specified format
+    * @param {string} entryInfoId - Entry info ID
+    * @param {string} format - Export format ('json', 'pdf', 'image')
+    * @param {Object} options - Export options
+    * @returns {Promise<Object>} - Export result with file path and sharing options
+    */
+   async exportEntryInfo(entryInfoId, format = 'json', options = {}) {
+     try {
+       console.log('Exporting entry info:', {
+         entryInfoId,
+         format,
+         options
+       });
 
-      // Authenticate user for data export
-      const authResult = await BiometricAuthService.authenticateForDataExport(format);
-      if (!authResult.success && !authResult.skipped) {
-        return {
-          success: false,
-          error: authResult.error || 'Authentication required for data export',
-          requiresAuth: true
-        };
-      }
+       // Authenticate user for data export
+       const authResult = await BiometricAuthService.authenticateForDataExport(format);
+       if (!authResult.success && !authResult.skipped) {
+         return {
+           success: false,
+           error: authResult.error || 'Authentication required for data export',
+           requiresAuth: true
+         };
+       }
 
-      // Ensure export directory exists
-      await this.ensureDirectoryExists(this.exportDirectory);
+       // Ensure export directory exists
+       await this.ensureDirectoryExists(this.exportDirectory);
 
-      // Load entry pack data
-      const entryPack = await EntryPack.load(entryPackId);
-      if (!entryPack) {
-        throw new Error(`Entry pack not found: ${entryPackId}`);
-      }
+       // Load entry info data
+       const entryInfo = await EntryInfo.load(entryInfoId);
+       if (!entryInfo) {
+         throw new Error(`Entry info not found: ${entryInfoId}`);
+       }
 
-      // Load complete data
-      const completeData = await this.loadCompleteEntryPackData(entryPack);
+       // Load complete data
+       const completeData = await this.loadCompleteEntryInfoData(entryInfo);
 
       // Export based on format
-      switch (format.toLowerCase()) {
-        case 'json':
-          return await this.exportAsJSON(completeData, options);
-        case 'pdf':
-          return await this.exportAsPDF(completeData, options);
-        case 'image':
-          return await this.exportAsImage(completeData, options);
-        default:
-          throw new Error(`Unsupported export format: ${format}`);
-      }
+       switch (format.toLowerCase()) {
+         case 'json':
+           return await this.exportAsJSON(completeData, options);
+         case 'pdf':
+           return await this.exportAsPDF(completeData, options);
+         case 'image':
+           return await this.exportAsImage(completeData, options);
+         default:
+           throw new Error(`Unsupported export format: ${format}`);
+       }
+     } catch (error) {
+       console.error('Failed to export entry info:', error);
+       throw error;
+     }
+   }
+
+   /**
+    * Export entry pack in specified format (backward compatibility)
+    * @param {string} entryPackId - Entry pack ID (converted to entry info ID)
+    * @param {string} format - Export format ('json', 'pdf', 'image')
+    * @param {Object} options - Export options
+    * @returns {Promise<Object>} - Export result with file path and sharing options
+    */
+   async exportEntryPack(entryPackId, format = 'json', options = {}) {
+     try {
+       console.log('Exporting entry pack (legacy):', {
+         entryPackId,
+         format,
+         options
+       });
+
+       // For backward compatibility, try to find entry info by ID
+       // In v2.0, entry packs are replaced by entry info
+       const entryInfo = await EntryInfo.load(entryPackId);
+       if (!entryInfo) {
+         throw new Error(`Entry info not found for legacy entry pack ID: ${entryPackId}`);
+       }
+
+       return await this.exportEntryInfo(entryInfo.id, format, options);
     } catch (error) {
       console.error('Failed to export entry pack:', error);
       throw error;
@@ -82,47 +110,48 @@ class DataExportService {
   async exportAsJSON(completeData, options = {}) {
     try {
       console.log('Exporting as JSON:', {
-        entryPackId: completeData.entryPack.id,
+        entryInfoId: completeData.entryInfo.id,
         includeMetadata: options.includeMetadata !== false,
         includePhotos: options.includePhotos !== false
       });
 
       // Build export data structure
-      const exportData = {
-        exportInfo: {
-          exportedAt: new Date().toISOString(),
-          exportVersion: '1.0',
-          exportFormat: 'json',
-          appVersion: '1.0.0', // TODO: Get from app config
-          exportOptions: options
-        },
-        entryPack: completeData.entryPack.exportData(),
-        entryInfo: completeData.entryInfo ? completeData.entryInfo.exportData() : null,
-        passport: completeData.passport || null,
-        personalInfo: completeData.personalInfo || null,
-        funds: completeData.funds || [],
-        travel: completeData.travel || null
-      };
+       const exportData = {
+         exportInfo: {
+           exportedAt: new Date().toISOString(),
+           exportVersion: '2.0',
+           exportFormat: 'json',
+           appVersion: '1.0.0', // TODO: Get from app config
+           exportOptions: options
+         },
+         entryInfo: completeData.entryInfo.exportData(),
+         passport: completeData.passport || null,
+         personalInfo: completeData.personalInfo || null,
+         funds: completeData.funds || [],
+         travel: completeData.travel || null,
+         digitalArrivalCards: completeData.digitalArrivalCards || []
+       };
 
-      // Include submission history if requested
-      if (options.includeSubmissionHistory !== false) {
-        exportData.submissionHistory = completeData.entryPack.submissionHistory || [];
-      }
+       // Include submission history if requested (from DACs)
+       if (options.includeSubmissionHistory !== false) {
+         exportData.submissionHistory = completeData.digitalArrivalCards || [];
+       }
 
-      // Include metadata if requested
-      if (options.includeMetadata !== false) {
-        exportData.metadata = {
-          totalSubmissionAttempts: completeData.entryPack.getSubmissionAttemptCount(),
-          failedSubmissionAttempts: completeData.entryPack.getFailedSubmissionCount(),
-          hasValidTDACSubmission: completeData.entryPack.hasValidTDACSubmission(),
-          completionStatus: completeData.entryPack.displayStatus,
-          exportStats: {
-            fundItemCount: (completeData.funds || []).length,
-            photoCount: (completeData.funds || []).filter(f => f.photoUri).length,
-            dataSize: JSON.stringify(exportData).length
-          }
-        };
-      }
+       // Include metadata if requested
+       if (options.includeMetadata !== false) {
+         exportData.metadata = {
+           totalSubmissionAttempts: (completeData.digitalArrivalCards || []).length,
+           failedSubmissionAttempts: (completeData.digitalArrivalCards || []).filter(dac => dac.status === 'failed').length,
+           hasValidTDACSubmission: (completeData.digitalArrivalCards || []).some(dac => dac.status === 'success'),
+           completionStatus: completeData.entryInfo.displayStatus,
+           exportStats: {
+             fundItemCount: (completeData.funds || []).length,
+             photoCount: (completeData.funds || []).filter(f => f.photoUri).length,
+             dacCount: (completeData.digitalArrivalCards || []).length,
+             dataSize: JSON.stringify(exportData).length
+           }
+         };
+       }
 
       // Include photo data if requested
       if (options.includePhotos !== false) {
@@ -131,8 +160,8 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(completeData.entryPack.destinationId);
-      const filename = `entry-pack-${destinationName}-${timestamp}.json`;
+      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId);
+      const filename = `entry-info-${destinationName}-${timestamp}.json`;
       const filePath = this.exportDirectory + filename;
 
       // Write JSON file
@@ -176,7 +205,7 @@ class DataExportService {
   async exportAsPDF(completeData, options = {}) {
     try {
       console.log('Exporting as PDF:', {
-        entryPackId: completeData.entryPack.id,
+        entryInfoId: completeData.entryInfo.id,
         includeQRCode: options.includeQRCode !== false,
         includeFunds: options.includeFunds !== false
       });
@@ -186,8 +215,8 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(completeData.entryPack.destinationId);
-      const filename = `entry-pack-${destinationName}-${timestamp}.pdf`;
+      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId);
+      const filename = `entry-info-${destinationName}-${timestamp}.pdf`;
       const filePath = this.exportDirectory + filename;
 
       // Generate PDF using expo-print
@@ -242,13 +271,13 @@ class DataExportService {
   async exportAsImage(completeData, options = {}) {
     try {
       console.log('Exporting as image:', {
-        entryPackId: completeData.entryPack.id,
+        entryInfoId: completeData.entryInfo.id,
         exportType: options.type || 'summary',
         includeQR: options.includeQR !== false
       });
 
       const exportType = options.type || 'summary';
-      
+
       switch (exportType) {
         case 'qr':
           return await this.exportQRCodeImage(completeData, options);
@@ -264,22 +293,22 @@ class DataExportService {
   }
 
   /**
-   * Export multiple entry packs (batch export)
-   * @param {Array} entryPackIds - Array of entry pack IDs
-   * @param {string} format - Export format
-   * @param {Object} options - Export options
-   * @returns {Promise<Object>} - Batch export result
-   */
-  async exportMultipleEntryPacks(entryPackIds, format = 'json', options = {}) {
+    * Export multiple entry infos (batch export)
+    * @param {Array} entryInfoIds - Array of entry info IDs
+    * @param {string} format - Export format
+    * @param {Object} options - Export options
+    * @returns {Promise<Object>} - Batch export result
+    */
+   async exportMultipleEntryInfos(entryInfoIds, format = 'json', options = {}) {
     try {
       console.log('Starting batch export:', {
-        entryPackCount: entryPackIds.length,
+        entryInfoCount: entryInfoIds.length,
         format,
         options
       });
 
-      if (!entryPackIds || entryPackIds.length === 0) {
-        throw new Error('No entry packs provided for batch export');
+      if (!entryInfoIds || entryInfoIds.length === 0) {
+        throw new Error('No entry infos provided for batch export');
       }
 
       // Ensure temp directory exists for batch processing
@@ -290,24 +319,24 @@ class DataExportService {
       const exportResults = [];
       let completedCount = 0;
 
-      // Export each entry pack individually
-      for (const entryPackId of entryPackIds) {
+      // Export each entry info individually
+      for (const entryInfoId of entryInfoIds) {
         try {
           progressCallback({
             current: completedCount,
-            total: entryPackIds.length,
+            total: entryInfoIds.length,
             status: 'exporting',
-            currentEntryPack: entryPackId
+            currentEntryInfo: entryInfoId
           });
 
-          const result = await this.exportEntryPack(entryPackId, format, {
+          const result = await this.exportEntryInfo(entryInfoId, format, {
             ...options,
             // Override directory to use temp for batch processing
             outputDirectory: this.tempDirectory
           });
 
           exportResults.push({
-            entryPackId,
+            entryInfoId,
             success: true,
             result
           });
@@ -315,15 +344,15 @@ class DataExportService {
           completedCount++;
           progressCallback({
             current: completedCount,
-            total: entryPackIds.length,
+            total: entryInfoIds.length,
             status: 'exported',
-            currentEntryPack: entryPackId
+            currentEntryInfo: entryInfoId
           });
 
         } catch (error) {
-          console.error(`Failed to export entry pack ${entryPackId}:`, error);
+          console.error(`Failed to export entry info ${entryInfoId}:`, error);
           exportResults.push({
-            entryPackId,
+            entryInfoId,
             success: false,
             error: error.message
           });
@@ -334,7 +363,7 @@ class DataExportService {
       // Create ZIP package
       progressCallback({
         current: completedCount,
-        total: entryPackIds.length,
+        total: entryInfoIds.length,
         status: 'packaging'
       });
 
@@ -345,12 +374,12 @@ class DataExportService {
 
       progressCallback({
         current: completedCount,
-        total: entryPackIds.length,
+        total: entryInfoIds.length,
         status: 'completed'
       });
 
       console.log('Batch export completed:', {
-        totalEntryPacks: entryPackIds.length,
+        totalEntryInfos: entryInfoIds.length,
         successfulExports: exportResults.filter(r => r.success).length,
         failedExports: exportResults.filter(r => !r.success).length,
         zipFile: zipResult.filename
@@ -359,7 +388,7 @@ class DataExportService {
       return {
         success: true,
         format: 'zip',
-        batchSize: entryPackIds.length,
+        batchSize: entryInfoIds.length,
         successfulExports: exportResults.filter(r => r.success).length,
         failedExports: exportResults.filter(r => !r.success).length,
         exportResults,
@@ -381,35 +410,36 @@ class DataExportService {
    */
   async exportQRCodeImage(completeData, options = {}) {
     try {
-      const { entryPack } = completeData;
-      const tdacSubmission = entryPack.getLatestSuccessfulSubmission();
-      
-      if (!tdacSubmission) {
-        throw new Error('No TDAC submission available for export');
+      const { entryInfo, digitalArrivalCards } = completeData;
+      const latestDAC = digitalArrivalCards && digitalArrivalCards.length > 0 ?
+        digitalArrivalCards.find(dac => dac.status === 'success') : null;
+
+      if (!latestDAC) {
+        throw new Error('No successful digital arrival card available for export');
       }
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(entryPack.destinationId);
+      const destinationName = this.getDestinationName(entryInfo.destinationId);
       const filename = `qr-code-${destinationName}-${timestamp}.jpg`;
       const filePath = this.exportDirectory + filename;
 
       let exportedFromSource = null;
 
       // Try to export QR code from available sources
-      if (tdacSubmission.qrUri) {
+      if (latestDAC.qrUri) {
         // QR code image is available
         try {
-          if (tdacSubmission.qrUri.startsWith('file://') || tdacSubmission.qrUri.startsWith('/')) {
+          if (latestDAC.qrUri.startsWith('file://') || latestDAC.qrUri.startsWith('/')) {
             // Local file - copy it
             await FileSystem.copyAsync({
-              from: tdacSubmission.qrUri,
+              from: latestDAC.qrUri,
               to: filePath
             });
             exportedFromSource = 'qr_image';
           } else {
             // Remote URL - download it
-            const downloadResult = await FileSystem.downloadAsync(tdacSubmission.qrUri, filePath);
+            const downloadResult = await FileSystem.downloadAsync(latestDAC.qrUri, filePath);
             if (downloadResult.status !== 200) {
               throw new Error(`Failed to download QR code: ${downloadResult.status}`);
             }
@@ -422,9 +452,9 @@ class DataExportService {
       }
 
       // If QR image export failed or not available, try to extract from PDF
-      if (!exportedFromSource && tdacSubmission.pdfPath) {
+      if (!exportedFromSource && latestDAC.pdfPath) {
         try {
-          const pdfExportResult = await this.extractQRFromPDF(tdacSubmission.pdfPath, filePath);
+          const pdfExportResult = await this.extractQRFromPDF(latestDAC.pdfPath, filePath);
           if (pdfExportResult.success) {
             exportedFromSource = 'pdf_extraction';
           }
@@ -435,7 +465,7 @@ class DataExportService {
 
       // If both methods failed, generate a placeholder image with entry card info
       if (!exportedFromSource) {
-        await this.generateQRPlaceholderImage(tdacSubmission, filePath);
+        await this.generateQRPlaceholderImage(latestDAC, filePath);
         exportedFromSource = 'placeholder';
       }
 
@@ -458,9 +488,10 @@ class DataExportService {
         fileSize: fileInfo.size,
         source: exportedFromSource,
         qrData: {
-          arrCardNo: tdacSubmission.arrCardNo,
-          submittedAt: tdacSubmission.submittedAt,
-          submissionMethod: tdacSubmission.submissionMethod
+          arrCardNo: latestDAC.arrCardNo,
+          submittedAt: latestDAC.submittedAt,
+          submissionMethod: latestDAC.submissionMethod,
+          cardType: latestDAC.cardType
         },
         sharingOptions: await this.getSharingOptions(filePath, 'image/jpeg')
       };
@@ -478,14 +509,14 @@ class DataExportService {
    */
   async exportSummaryImage(completeData, options = {}) {
     try {
-      const { entryPack, passport, personalInfo, travel } = completeData;
-      
+      const { entryInfo, passport, personalInfo, travel } = completeData;
+
       // Generate HTML content for the summary image
       const htmlContent = await this.generateSummaryImageHTML(completeData, options);
-      
+
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(entryPack.destinationId);
+      const destinationName = this.getDestinationName(entryInfo.destinationId);
       const filename = `entry-summary-${destinationName}-${timestamp}.jpg`;
       const filePath = this.exportDirectory + filename;
 
@@ -626,14 +657,15 @@ class DataExportService {
 
   /**
    * Generate summary image data using SVG-to-base64 approach
-   * @param {Object} completeData - Complete entry pack data
+   * @param {Object} completeData - Complete entry info data
    * @param {Object} options - Export options
    * @returns {Promise<Object>} - Image data
    */
   async generateSummaryImageData(completeData, options = {}) {
     try {
-      const { entryPack, passport, personalInfo, travel } = completeData;
-      const tdacSubmission = entryPack.getLatestSuccessfulSubmission();
+      const { entryInfo, passport, personalInfo, travel, digitalArrivalCards } = completeData;
+      const latestDAC = digitalArrivalCards && digitalArrivalCards.length > 0 ?
+        digitalArrivalCards.find(dac => dac.status === 'success') : null;
       
       // Format data for display
       const formatDate = (dateStr) => {
@@ -649,12 +681,12 @@ class DataExportService {
         }
       };
 
-      const destinationName = this.getDestinationName(entryPack.destinationId).toUpperCase();
+      const destinationName = this.getDestinationName(entryInfo.destinationId).toUpperCase();
       const passengerName = passport?.fullName || 'Not provided';
       const passportNumber = passport?.passportNumber || 'Not provided';
       const arrivalDate = formatDate(travel?.arrivalDate);
-      const arrCardNo = tdacSubmission?.arrCardNo || 'Not submitted';
-      const submissionStatus = tdacSubmission ? 'Submitted' : 'Not submitted';
+      const arrCardNo = latestDAC?.arrCardNo || 'Not submitted';
+      const submissionStatus = latestDAC ? 'Submitted' : 'Not submitted';
 
       // Create SVG content
       const svgContent = `
@@ -731,15 +763,16 @@ class DataExportService {
 
   /**
    * Generate HTML content for summary image (alternative approach)
-   * @param {Object} completeData - Complete entry pack data
+   * @param {Object} completeData - Complete entry info data
    * @param {Object} options - Export options
    * @returns {Promise<string>} - HTML content
    */
   async generateSummaryImageHTML(completeData, options = {}) {
     try {
-      const { entryPack, passport, personalInfo, travel } = completeData;
-      const tdacSubmission = entryPack.getLatestSuccessfulSubmission();
-      
+      const { entryInfo, passport, personalInfo, travel, digitalArrivalCards } = completeData;
+      const latestDAC = digitalArrivalCards && digitalArrivalCards.length > 0 ?
+        digitalArrivalCards.find(dac => dac.status === 'success') : null;
+
       const formatDate = (dateStr) => {
         if (!dateStr) return 'Not set';
         try {
@@ -835,19 +868,19 @@ class DataExportService {
           <div class="container">
             <div class="header">
               <h1 class="title">Travel Entry Pack</h1>
-              <div class="destination">${this.getDestinationName(entryPack.destinationId).toUpperCase()}</div>
+              <div class="destination">${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</div>
             </div>
 
             <div class="section">
               <div class="section-title">Status</div>
               <div class="info-row">
                 <span class="label">Status:</span>
-                <span class="status">${tdacSubmission ? 'Submitted' : 'Not submitted'}</span>
+                <span class="status">${latestDAC ? 'Submitted' : 'Not submitted'}</span>
               </div>
-              ${tdacSubmission ? `
+              ${latestDAC ? `
                 <div class="info-row">
                   <span class="label">Entry Card:</span>
-                  <span class="value">${tdacSubmission.arrCardNo || 'N/A'}</span>
+                  <span class="value">${latestDAC.arrCardNo || 'N/A'}</span>
                 </div>
               ` : ''}
             </div>
@@ -903,16 +936,17 @@ class DataExportService {
 
   /**
    * Generate HTML content for PDF export
-   * @param {Object} completeData - Complete entry pack data
+   * @param {Object} completeData - Complete entry info data
    * @param {Object} options - Export options
    * @returns {Promise<string>} - HTML content
    */
   async generatePDFHTML(completeData, options = {}) {
     try {
-      const { entryPack, passport, personalInfo, funds, travel } = completeData;
-      
-      // Get TDAC submission data
-      const tdacSubmission = entryPack.getLatestSuccessfulSubmission();
+      const { entryInfo, passport, personalInfo, funds, travel, digitalArrivalCards } = completeData;
+
+      // Get latest successful DAC
+      const latestDAC = digitalArrivalCards && digitalArrivalCards.length > 0 ?
+        digitalArrivalCards.find(dac => dac.status === 'success') : null;
       
       // Format dates
       const formatDate = (dateStr) => {
@@ -935,15 +969,15 @@ class DataExportService {
       };
 
       // Generate QR code section
-      const qrCodeSection = tdacSubmission && options.includeQRCode !== false ? `
+      const qrCodeSection = latestDAC && options.includeQRCode !== false ? `
         <div class="section qr-section">
-          <h2>Thailand Entry Card (TDAC)</h2>
+          <h2>Digital Arrival Card (${latestDAC.cardType || 'TDAC'})</h2>
           <div class="qr-container">
             <div class="qr-placeholder">
-              <p><strong>Entry Card Number:</strong> ${tdacSubmission.arrCardNo || 'N/A'}</p>
-              <p><strong>Submitted:</strong> ${formatDate(tdacSubmission.submittedAt)}</p>
-              <p><strong>Method:</strong> ${tdacSubmission.submissionMethod || 'Unknown'}</p>
-              <p class="qr-note">QR Code: ${tdacSubmission.qrUri ? 'Available in digital format' : 'Not available'}</p>
+              <p><strong>Entry Card Number:</strong> ${latestDAC.arrCardNo || 'N/A'}</p>
+              <p><strong>Submitted:</strong> ${formatDate(latestDAC.submittedAt)}</p>
+              <p><strong>Method:</strong> ${latestDAC.submissionMethod || 'Unknown'}</p>
+              <p class="qr-note">QR Code: ${latestDAC.qrUri ? 'Available in digital format' : 'Not available'}</p>
             </div>
           </div>
         </div>
@@ -1084,7 +1118,7 @@ class DataExportService {
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>Entry Pack Export - ${this.getDestinationName(entryPack.destinationId).toUpperCase()}</title>
+          <title>Entry Info Export - ${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</title>
           <style>
             ${this.getPDFStyles()}
           </style>
@@ -1093,11 +1127,11 @@ class DataExportService {
           <div class="container">
             <div class="header">
               <h1>Travel Entry Pack</h1>
-              <div class="destination">${this.getDestinationName(entryPack.destinationId).toUpperCase()}</div>
+              <div class="destination">${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</div>
               <div class="export-info">
                 <p>Exported on: ${formatDate(new Date().toISOString())}</p>
-                <p>Entry Pack ID: ${entryPack.id}</p>
-                <p>Status: ${entryPack.displayStatus?.status || 'Unknown'}</p>
+                <p>Entry Info ID: ${entryInfo.id}</p>
+                <p>Status: ${entryInfo.displayStatus?.status || 'Unknown'}</p>
               </div>
             </div>
 
@@ -1362,45 +1396,40 @@ class DataExportService {
   }
 
   /**
-   * Load complete entry pack data including all related information
-   * @param {EntryPack} entryPack - Entry pack instance
-   * @returns {Promise<Object>} - Complete data object
-   */
-  async loadCompleteEntryPackData(entryPack) {
-    try {
-      // Load entry info
-      const entryInfo = entryPack.entryInfoId ? 
-        await PassportDataService.getEntryInfo(entryPack.entryInfoId) : null;
+    * Load complete entry info data including all related information
+    * @param {EntryInfo} entryInfo - Entry info instance
+    * @returns {Promise<Object>} - Complete data object
+    */
+   async loadCompleteEntryInfoData(entryInfo) {
+     try {
+       // Load passport data
+       const passport = await PassportDataService.getPassport(entryInfo.userId);
 
-      // Load passport data
-      const passport = entryInfo ? 
-        await PassportDataService.getPassport(entryInfo.userId) : null;
+       // Load personal info
+       const personalInfo = await PassportDataService.getPersonalInfo(entryInfo.userId);
 
-      // Load personal info
-      const personalInfo = entryInfo ? 
-        await PassportDataService.getPersonalInfo(entryInfo.userId) : null;
+       // Load funds data
+       const funds = await PassportDataService.getFunds(entryInfo.userId);
 
-      // Load funds data
-      const funds = entryInfo ? 
-        await PassportDataService.getFunds(entryInfo.userId) : [];
+       // Load travel info
+       const travel = await PassportDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
 
-      // Load travel info
-      const travel = entryInfo ? 
-        await PassportDataService.getTravelInfo(entryInfo.userId, entryPack.destinationId) : null;
+       // Load digital arrival cards
+       const digitalArrivalCards = await PassportDataService.getDigitalArrivalCardsByEntryInfoId(entryInfo.id);
 
-      return {
-        entryPack,
-        entryInfo,
-        passport,
-        personalInfo,
-        funds,
-        travel
-      };
-    } catch (error) {
-      console.error('Failed to load complete entry pack data:', error);
-      throw error;
-    }
-  }
+       return {
+         entryInfo,
+         passport,
+         personalInfo,
+         funds,
+         travel,
+         digitalArrivalCards
+       };
+     } catch (error) {
+       console.error('Failed to load complete entry info data:', error);
+       throw error;
+     }
+   }
 
   /**
    * Export photo data with base64 encoding
@@ -1760,14 +1789,14 @@ class DataExportService {
         exportInfo: {
           createdAt: new Date().toISOString(),
           format,
-          totalEntryPacks: exportResults.length,
+          totalEntryInfos: exportResults.length,
           successfulExports: successfulExports.length,
           failedExports: exportResults.filter(r => !r.success).length,
           exportVersion: '1.0'
         },
-        entryPacks: [],
+        entryInfos: [],
         failures: exportResults.filter(r => !r.success).map(r => ({
-          entryPackId: r.entryPackId,
+          entryInfoId: r.entryInfoId,
           error: r.error
         }))
       };
@@ -1781,17 +1810,17 @@ class DataExportService {
               encoding: FileSystem.EncodingType.UTF8
             });
 
-            archiveData.entryPacks.push({
-              entryPackId: result.entryPackId,
+            archiveData.entryInfos.push({
+              entryInfoId: result.entryInfoId,
               filename: result.result.filename,
               format: result.result.format,
               fileSize: result.result.fileSize,
               content: format === 'json' ? JSON.parse(fileContent) : fileContent
             });
           } catch (error) {
-            console.error(`Failed to read export file for ${result.entryPackId}:`, error);
+            console.error(`Failed to read export file for ${result.entryInfoId}:`, error);
             archiveData.failures.push({
-              entryPackId: result.entryPackId,
+              entryInfoId: result.entryInfoId,
               error: `Failed to read export file: ${error.message}`
             });
           }
@@ -1850,23 +1879,23 @@ class DataExportService {
 
   /**
    * Get batch export progress information
-   * @param {Array} entryPackIds - Array of entry pack IDs to export
+   * @param {Array} entryInfoIds - Array of entry info IDs to export
    * @returns {Promise<Object>} - Progress estimation
    */
-  async getBatchExportEstimate(entryPackIds) {
+  async getBatchExportEstimate(entryInfoIds) {
     try {
       let totalEstimatedSize = 0;
-      const entryPackInfo = [];
+      const entryInfoInfo = [];
 
-      for (const entryPackId of entryPackIds) {
+      for (const entryInfoId of entryInfoIds) {
         try {
-          const entryPack = await EntryPack.load(entryPackId);
-          if (entryPack) {
-            const completeData = await this.loadCompleteEntryPackData(entryPack);
-            
+          const entryInfo = await EntryInfo.load(entryInfoId);
+          if (entryInfo) {
+            const completeData = await this.loadCompleteEntryInfoData(entryInfo);
+
             // Estimate size based on data complexity
             let estimatedSize = 50000; // Base size in bytes (50KB)
-            
+
             // Add size for funds with photos
             if (completeData.funds) {
               estimatedSize += completeData.funds.length * 10000; // 10KB per fund item
@@ -1874,9 +1903,9 @@ class DataExportService {
               estimatedSize += fundsWithPhotos.length * 500000; // 500KB per photo
             }
 
-            entryPackInfo.push({
-              entryPackId,
-              destination: this.getDestinationName(entryPack.destinationId),
+            entryInfoInfo.push({
+              entryInfoId,
+              destination: this.getDestinationName(entryInfo.destinationId),
               estimatedSize,
               hasPhotos: completeData.funds ? completeData.funds.some(f => f.photoUri) : false
             });
@@ -1884,9 +1913,9 @@ class DataExportService {
             totalEstimatedSize += estimatedSize;
           }
         } catch (error) {
-          console.warn(`Failed to estimate size for entry pack ${entryPackId}:`, error);
-          entryPackInfo.push({
-            entryPackId,
+          console.warn(`Failed to estimate size for entry info ${entryInfoId}:`, error);
+          entryInfoInfo.push({
+            entryInfoId,
             destination: 'Unknown',
             estimatedSize: 50000,
             hasPhotos: false,
@@ -1897,20 +1926,20 @@ class DataExportService {
       }
 
       return {
-        totalEntryPacks: entryPackIds.length,
+        totalEntryInfos: entryInfoIds.length,
         totalEstimatedSize,
-        estimatedDuration: Math.max(entryPackIds.length * 2, 10), // At least 10 seconds, 2 seconds per pack
-        entryPackInfo,
-        recommendations: this.getBatchExportRecommendations(totalEstimatedSize, entryPackIds.length)
+        estimatedDuration: Math.max(entryInfoIds.length * 2, 10), // At least 10 seconds, 2 seconds per pack
+        entryInfoInfo,
+        recommendations: this.getBatchExportRecommendations(totalEstimatedSize, entryInfoIds.length)
       };
 
     } catch (error) {
       console.error('Failed to get batch export estimate:', error);
       return {
-        totalEntryPacks: entryPackIds.length,
-        totalEstimatedSize: entryPackIds.length * 50000,
-        estimatedDuration: entryPackIds.length * 2,
-        entryPackInfo: [],
+        totalEntryInfos: entryInfoIds.length,
+        totalEstimatedSize: entryInfoIds.length * 50000,
+        estimatedDuration: entryInfoIds.length * 2,
+        entryInfoInfo: [],
         error: error.message
       };
     }
@@ -1919,18 +1948,18 @@ class DataExportService {
   /**
    * Get recommendations for batch export
    * @param {number} totalSize - Total estimated size in bytes
-   * @param {number} entryPackCount - Number of entry packs
+   * @param {number} entryInfoCount - Number of entry infos
    * @returns {Array} - Array of recommendation strings
    */
-  getBatchExportRecommendations(totalSize, entryPackCount) {
+  getBatchExportRecommendations(totalSize, entryInfoCount) {
     const recommendations = [];
 
     if (totalSize > 100 * 1024 * 1024) { // > 100MB
       recommendations.push('Large export size detected. Consider exporting in smaller batches.');
     }
 
-    if (entryPackCount > 10) {
-      recommendations.push('Large number of entry packs. Export may take several minutes.');
+    if (entryInfoCount > 10) {
+      recommendations.push('Large number of entry infos. Export may take several minutes.');
     }
 
     if (totalSize > 50 * 1024 * 1024) { // > 50MB

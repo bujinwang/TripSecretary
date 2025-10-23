@@ -21,7 +21,7 @@ class Passport {
     this.issueDate = data.issueDate; // 🟢 PLAINTEXT (not sensitive)
     this.issuePlace = data.issuePlace; // 🟢 PLAINTEXT (not sensitive)
     this.photoUri = data.photoUri; // 🟢 PLAINTEXT (file reference)
-    this.isPrimary = data.isPrimary || false; // 🟢 PLAINTEXT (primary passport flag)
+    this.isPrimary = data.isPrimary || 0; // NEW: Primary passport indicator
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = data.updatedAt || new Date().toISOString();
   }
@@ -409,21 +409,22 @@ class Passport {
   }
 
   /**
-   * Get user's primary passport
-   * @param {string} userId - User ID
-   * @returns {Promise<Passport>} - Primary passport instance
+   * Load the primary passport for a user from secure storage.
+   * @param {string} userId - User ID.
+   * @returns {Promise<Passport|null>} - Primary Passport instance or null.
    */
-  static async getPrimaryPassport(userId) {
+  static async loadPrimary(userId) {
     try {
       const data = await SecureStorageService.getUserPassport(userId);
       if (!data) return null;
-
       return new Passport(data);
     } catch (error) {
-      console.error('Failed to get primary passport:', error);
+      console.error('Failed to load primary passport:', error);
       throw error;
     }
   }
+
+
 
   /**
    * List all passports for a user
@@ -442,38 +443,7 @@ class Passport {
     }
   }
 
-  /**
-   * Set this passport as the primary passport for the user
-   * @returns {Promise<boolean>} - Success status
-   */
-  async setAsPrimary() {
-    try {
-      if (!this.userId) {
-        throw new Error('Cannot set as primary: userId is not set');
-      }
 
-      // Get all user passports
-      const allPassports = await Passport.listPassports(this.userId);
-
-      // Update all passports: set this one as primary, others as non-primary
-      for (const passport of allPassports) {
-        if (passport.id === this.id) {
-          passport.isPrimary = true;
-        } else {
-          passport.isPrimary = false;
-        }
-        await passport.save({ skipValidation: true });
-      }
-
-      // Update this instance
-      this.isPrimary = true;
-
-      return true;
-    } catch (error) {
-      console.error('Failed to set as primary passport:', error);
-      throw error;
-    }
-  }
 
   /**
    * Delete passport from storage
@@ -565,6 +535,19 @@ class Passport {
       return `${this.fullName} (${this.passportNumber})`;
     }
     return this.passportNumber || 'Unnamed Passport';
+  }
+
+  /**
+   * Set this passport as the primary passport for the user
+   * @returns {Promise<Object>} - Save result
+   */
+  async setAsPrimary() {
+    if (!this.userId) {
+      throw new Error('Cannot set as primary: userId is not set');
+    }
+
+    this.isPrimary = 1; // Use 1 for true in SQLite
+    return await this.save({ skipValidation: true });
   }
 }
 

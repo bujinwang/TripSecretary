@@ -1,0 +1,442 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for data/thailandProvinces.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">data</a> thailandProvinces.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/19</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/11</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/6</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/13</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * Thailand Provinces (77 provinces)
+ * Source: Official Thailand administrative divisions
+ */
+&nbsp;
+export const thailandProvinces = <span class="cstat-no" title="statement not covered" >[</span>
+  { code: 'AMNAT_CHAROEN', name: 'Amnat Charoen', nameTh: 'อำนาจเจริญ', nameZh: '安纳乍能府' },
+  { code: 'ANG_THONG', name: 'Ang Thong', nameTh: 'อ่างทอง', nameZh: '红统府' },
+  { code: 'BANGKOK', name: 'Bangkok', nameTh: 'กรุงเทพมหานคร', nameZh: '曼谷' },
+  { code: 'BUENG_KAN', name: 'Bueng Kan', nameTh: 'บึงกาฬ', nameZh: '汶干府' },
+  { code: 'BURI_RAM', name: 'Buri Ram', nameTh: 'บุรีรัมย์', nameZh: '武里南府' },
+  { code: 'CHACHOENGSAO', name: 'Chachoengsao', nameTh: 'ฉะเชิงเทรา', nameZh: '北柳府' },
+  { code: 'CHAI_NAT', name: 'Chai Nat', nameTh: 'ชัยนาท', nameZh: '猜纳府' },
+  { code: 'CHAIYAPHUM', name: 'Chaiyaphum', nameTh: 'ชัยภูมิ', nameZh: '猜也奔府' },
+  { code: 'CHANTHABURI', name: 'Chanthaburi', nameTh: 'จันทบุรี', nameZh: '尖竹汶府' },
+  { code: 'CHIANG_MAI', name: 'Chiang Mai', nameTh: 'เชียงใหม่', nameZh: '清迈府' },
+  { code: 'CHIANG_RAI', name: 'Chiang Rai', nameTh: 'เชียงราย', nameZh: '清莱府' },
+  { code: 'CHON_BURI', name: 'Chon Buri', nameTh: 'ชลบุรี', nameZh: '春武里府' },
+  { code: 'CHUMPHON', name: 'Chumphon', nameTh: 'ชุมพร', nameZh: '春蓬府' },
+  { code: 'KALASIN', name: 'Kalasin', nameTh: 'กาฬสินธุ์', nameZh: '加拉信府' },
+  { code: 'KAMPHAENG_PHET', name: 'Kamphaeng Phet', nameTh: 'กำแพงเพชร', nameZh: '甘烹碧府' },
+  { code: 'KANCHANABURI', name: 'Kanchanaburi', nameTh: 'กาญจนบุรี', nameZh: '北碧府' },
+  { code: 'KHON_KAEN', name: 'Khon Kaen', nameTh: 'ขอนแก่น', nameZh: '孔敬府' },
+  { code: 'KRABI', name: 'Krabi', nameTh: 'กระบี่', nameZh: '甲米府' },
+  { code: 'LAMPANG', name: 'Lampang', nameTh: 'ลำปาง', nameZh: '南邦府' },
+  { code: 'LAMPHUN', name: 'Lamphun', nameTh: 'ลำพูน', nameZh: '南奔府' },
+  { code: 'LOEI', name: 'Loei', nameTh: 'เลย', nameZh: '黎府' },
+  { code: 'LOP_BURI', name: 'Lop Buri', nameTh: 'ลพบุรี', nameZh: '华富里府' },
+  { code: 'MAE_HONG_SON', name: 'Mae Hong Son', nameTh: 'แม่ฮ่องสอน', nameZh: '夜丰颂府' },
+  { code: 'MAHA_SARAKHAM', name: 'Maha Sarakham', nameTh: 'มหาสารคาม', nameZh: '玛哈沙拉堪府' },
+  { code: 'MUKDAHAN', name: 'Mukdahan', nameTh: 'มุกดาหาร', nameZh: '穆达汉府' },
+  { code: 'NAKHON_NAYOK', name: 'Nakhon Nayok', nameTh: 'นครนายก', nameZh: '那空那育府' },
+  { code: 'NAKHON_PATHOM', name: 'Nakhon Pathom', nameTh: 'นครปฐม', nameZh: '佛统府' },
+  { code: 'NAKHON_PHANOM', name: 'Nakhon Phanom', nameTh: 'นครพนม', nameZh: '那空帕农府' },
+  { code: 'NAKHON_RATCHASIMA', name: 'Nakhon Ratchasima', nameTh: 'นครราชสีมา', nameZh: '呵叻府' },
+  { code: 'NAKHON_SAWAN', name: 'Nakhon Sawan', nameTh: 'นครสวรรค์', nameZh: '那空沙旺府' },
+  { code: 'NAKHON_SI_THAMMARAT', name: 'Nakhon Si Thammarat', nameTh: 'นครศรีธรรมราช', nameZh: '洛坤府' },
+  { code: 'NAN', name: 'Nan', nameTh: 'น่าน', nameZh: '难府' },
+  { code: 'NARATHIWAT', name: 'Narathiwat', nameTh: 'นราธิวาส', nameZh: '那拉提瓦府' },
+  { code: 'NONG_BUA_LAM_PHU', name: 'Nong Bua Lam Phu', nameTh: 'หนองบัวลำภู', nameZh: '农磨兰普府' },
+  { code: 'NONG_KHAI', name: 'Nong Khai', nameTh: 'หนองคาย', nameZh: '廊开府' },
+  { code: 'NONTHABURI', name: 'Nonthaburi', nameTh: 'นนทบุรี', nameZh: '暖武里府' },
+  { code: 'PATHUM_THANI', name: 'Pathum Thani', nameTh: 'ปทุมธานี', nameZh: '巴吞他尼府' },
+  { code: 'PATTANI', name: 'Pattani', nameTh: 'ปัตตานี', nameZh: '北大年府' },
+  { code: 'PHANG_NGA', name: 'Phang Nga', nameTh: 'พังงา', nameZh: '攀牙府' },
+  { code: 'PHATTHALUNG', name: 'Phatthalung', nameTh: 'พัทลุง', nameZh: '博他仑府' },
+  { code: 'PHAYAO', name: 'Phayao', nameTh: 'พะเยา', nameZh: '帕尧府' },
+  { code: 'PHETCHABUN', name: 'Phetchabun', nameTh: 'เพชรบูรณ์', nameZh: '碧差汶府' },
+  { code: 'PHETCHABURI', name: 'Phetchaburi', nameTh: 'เพชรบุรี', nameZh: '碧武里府' },
+  { code: 'PHICHIT', name: 'Phichit', nameTh: 'พิจิตร', nameZh: '披集府' },
+  { code: 'PHITSANULOK', name: 'Phitsanulok', nameTh: 'พิษณุโลก', nameZh: '彭世洛府' },
+  { code: 'PHRA_NAKHON_SI_AYUTTHAYA', name: 'Phra Nakhon Si Ayutthaya', nameTh: 'พระนครศรีอยุธยา', nameZh: '大城府' },
+  { code: 'PHRAE', name: 'Phrae', nameTh: 'แพร่', nameZh: '帕府' },
+  { code: 'PHUKET', name: 'Phuket', nameTh: 'ภูเก็ต', nameZh: '普吉府' },
+  { code: 'PRACHIN_BURI', name: 'Prachin Buri', nameTh: 'ปราจีนบุรี', nameZh: '巴真府' },
+  { code: 'PRACHUAP_KHIRI_KHAN', name: 'Prachuap Khiri Khan', nameTh: 'ประจวบคีรีขันธ์', nameZh: '巴蜀府' },
+  { code: 'RANONG', name: 'Ranong', nameTh: 'ระนอง', nameZh: '拉廊府' },
+  { code: 'RATCHABURI', name: 'Ratchaburi', nameTh: 'ราชบุรี', nameZh: '叻丕府' },
+  { code: 'RAYONG', name: 'Rayong', nameTh: 'ระยอง', nameZh: '罗勇府' },
+  { code: 'ROI_ET', name: 'Roi Et', nameTh: 'ร้อยเอ็ด', nameZh: '黎逸府' },
+  { code: 'SA_KAEO', name: 'Sa Kaeo', nameTh: 'สระแก้ว', nameZh: '沙缴府' },
+  { code: 'SAKON_NAKHON', name: 'Sakon Nakhon', nameTh: 'สกลนคร', nameZh: '色军府' },
+  { code: 'SAMUT_PRAKAN', name: 'Samut Prakan', nameTh: 'สมุทรปราการ', nameZh: '北榄府' },
+  { code: 'SAMUT_SAKHON', name: 'Samut Sakhon', nameTh: 'สมุทรสาคร', nameZh: '龙仔厝府' },
+  { code: 'SAMUT_SONGKHRAM', name: 'Samut Songkhram', nameTh: 'สมุทรสงคราม', nameZh: '夜功府' },
+  { code: 'SARABURI', name: 'Saraburi', nameTh: 'สระบุรี', nameZh: '沙拉武里府' },
+  { code: 'SATUN', name: 'Satun', nameTh: 'สตูล', nameZh: '沙敦府' },
+  { code: 'SING_BURI', name: 'Sing Buri', nameTh: 'สิงห์บุรี', nameZh: '信武里府' },
+  { code: 'SI_SA_KET', name: 'Si Sa Ket', nameTh: 'ศรีสะเกษ', nameZh: '四色菊府' },
+  { code: 'SONGKHLA', name: 'Songkhla', nameTh: 'สงขลา', nameZh: '宋卡府' },
+  { code: 'SUKHOTHAI', name: 'Sukhothai', nameTh: 'สุโขทัย', nameZh: '素可泰府' },
+  { code: 'SUPHAN_BURI', name: 'Suphan Buri', nameTh: 'สุพรรณบุรี', nameZh: '素攀府' },
+  { code: 'SURAT_THANI', name: 'Surat Thani', nameTh: 'สุราษฎร์ธานี', nameZh: '素叻府' },
+  { code: 'SURIN', name: 'Surin', nameTh: 'สุรินทร์', nameZh: '素林府' },
+  { code: 'TAK', name: 'Tak', nameTh: 'ตาก', nameZh: '达府' },
+  { code: 'TRANG', name: 'Trang', nameTh: 'ตรัง', nameZh: '董里府' },
+  { code: 'TRAT', name: 'Trat', nameTh: 'ตราด', nameZh: '桐艾府' },
+  { code: 'UBON_RATCHATHANI', name: 'Ubon Ratchathani', nameTh: 'อุบลราชธานี', nameZh: '乌汶府' },
+  { code: 'UDON_THANI', name: 'Udon Thani', nameTh: 'อุดรธานี', nameZh: '乌隆府' },
+  { code: 'UTHAI_THANI', name: 'Uthai Thani', nameTh: 'อุทัยธานี', nameZh: '乌泰他尼府' },
+  { code: 'UTTARADIT', name: 'Uttaradit', nameTh: 'อุตรดิตถ์', nameZh: '程逸府' },
+  { code: 'YALA', name: 'Yala', nameTh: 'ยะลา', nameZh: '也拉府' },
+  { code: 'YASOTHON', name: 'Yasothon', nameTh: 'ยโสธร', nameZh: '益梭通府' },
+];
+&nbsp;
+/**
+ * Get province display name by code
+ * @param {string} code - Province code
+ * @param {string} locale - Locale ('en', 'zh', 'th')
+ * @returns {string} - Display name
+ */
+export const getProvinceDisplayName = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(c</span>ode, locale = <span class="branch-0 cbranch-no" title="branch not covered" >'en')</span> =&gt; {</span>
+  const province = <span class="cstat-no" title="statement not covered" >thailandProvinces.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.code === code)</span>;</span>
+<span class="cstat-no" title="statement not covered" >  if (!province) <span class="cstat-no" title="statement not covered" >return code;</span></span>
+  
+<span class="cstat-no" title="statement not covered" >  if (locale === 'zh') <span class="cstat-no" title="statement not covered" >return `${province.name} - ${province.nameZh}`;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (locale === 'th') <span class="cstat-no" title="statement not covered" >return province.nameTh;</span></span>
+<span class="cstat-no" title="statement not covered" >  return province.name;</span>
+};
+&nbsp;
+/**
+ * Get province display name with both English and Chinese
+ * @param {string} code - Province code
+ * @returns {string} - Display name (English - Chinese)
+ */
+export const getProvinceDisplayNameBilingual = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(c</span>ode) =&gt; {</span>
+  const province = <span class="cstat-no" title="statement not covered" >thailandProvinces.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.code === code)</span>;</span>
+<span class="cstat-no" title="statement not covered" >  return province ? `${province.name} - ${province.nameZh}` : code;</span>
+};
+&nbsp;
+/**
+ * Get province code by display name
+ * @param {string} displayName - Province display name (English)
+ * @returns {string} - Province code
+ */
+export const getProvinceCode = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(d</span>isplayName) =&gt; {</span>
+  const province = <span class="cstat-no" title="statement not covered" >thailandProvinces.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.name === displayName)</span>;</span>
+<span class="cstat-no" title="statement not covered" >  return province ? province.code : displayName;</span>
+};
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2025-10-22T22:28:06.246Z
+            </div>
+        <script src="../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
+    </body>
+</html>
+    

@@ -11,28 +11,40 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Passport table
 CREATE TABLE IF NOT EXISTS passports (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL,
-  type TEXT NOT NULL,
-  passport_no TEXT NOT NULL,
-  name TEXT NOT NULL,
-  name_en TEXT,
-  gender TEXT,
-  birth_date TEXT,
+  passport_number TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  date_of_birth TEXT,
   nationality TEXT,
-  issue_date TEXT,
+  gender TEXT,
   expiry_date TEXT,
+  issue_date TEXT,
   issue_place TEXT,
-  ocr_data TEXT,
+  photo_uri TEXT,
+  is_primary INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Passport-Countries mapping (NEW)
+CREATE TABLE IF NOT EXISTS passport_countries (
+  passport_id TEXT NOT NULL,
+  country_code TEXT NOT NULL,
+  visa_required INTEGER DEFAULT 0,
+  max_stay_days INTEGER,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (passport_id, country_code),
+  FOREIGN KEY (passport_id) REFERENCES passports(id) ON DELETE CASCADE
 );
 
 -- Generation records table
 CREATE TABLE IF NOT EXISTS generations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  passport_id INTEGER NOT NULL,
+  passport_id TEXT NOT NULL,
   destination_id TEXT NOT NULL,
   destination_name TEXT NOT NULL,
   flight_number TEXT,
@@ -86,41 +98,32 @@ CREATE TABLE IF NOT EXISTS fund_items (
 CREATE TABLE IF NOT EXISTS entry_info (
   id TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL,
-  passport_id INTEGER,
+  passport_id TEXT NOT NULL,
   personal_info_id TEXT,
-  destination_id TEXT,
-  trip_id TEXT,
+  travel_info_id TEXT,
+  destination_id TEXT,           -- Country code for fast filtering (e.g., 'THA', 'JPN')
+
+  -- Status: incomplete, ready, submitted, superseded, completed, expired, archived
   status TEXT DEFAULT 'incomplete',
+
+  -- Completion tracking (JSON)
   completion_metrics TEXT,
+
+  -- Documents (after DAC submission) - JSON
+  -- {qrCodeImage: 'path', pdfDocument: 'path', entryCardImage: 'path'}
+  documents TEXT,
+
+  -- Display status (for UI) - JSON
+  -- {completionPercent: 80, categoryStates: {...}, ctaState: 'enabled', showQR: true}
+  display_status TEXT,
+
   last_updated_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  arrival_date TEXT,
-  departure_date TEXT,
-  travel_purpose TEXT,
-  flight_number TEXT,
-  accommodation TEXT,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (passport_id) REFERENCES passports(id),
-  FOREIGN KEY (personal_info_id) REFERENCES personal_info(id)
-);
 
--- Entry packs table
-CREATE TABLE IF NOT EXISTS entry_packs (
-  id TEXT PRIMARY KEY,
-  entry_info_id TEXT NOT NULL,
-  user_id INTEGER NOT NULL,
-  destination_id TEXT,
-  trip_id TEXT,
-  status TEXT DEFAULT 'in_progress',
-  tdac_submission TEXT,
-  submission_history TEXT,
-  documents TEXT,
-  display_status TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  archived_at DATETIME,
-  FOREIGN KEY (entry_info_id) REFERENCES entry_info(id),
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (passport_id) REFERENCES passports(id),
+  FOREIGN KEY (personal_info_id) REFERENCES personal_info(id),
+  FOREIGN KEY (travel_info_id) REFERENCES travel_info(id)
 );
 
 -- Entry info ⇄ fund items mapping
@@ -131,35 +134,52 @@ CREATE TABLE IF NOT EXISTS entry_info_fund_items (
   linked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (entry_info_id, fund_item_id),
   FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
-  FOREIGN KEY (fund_item_id) REFERENCES fund_items(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- TDAC submissions table
-CREATE TABLE IF NOT EXISTS tdac_submissions (
+-- Digital Arrival Cards table (generic for all card types)
+-- Links directly to entry_info (no entry_packs table needed)
+CREATE TABLE IF NOT EXISTS digital_arrival_cards (
   id TEXT PRIMARY KEY,
+  entry_info_id TEXT NOT NULL,
   user_id INTEGER NOT NULL,
-  entry_pack_id TEXT,
-  destination_id TEXT,
-  trip_id TEXT,
-  arr_card_no TEXT NOT NULL,
+
+  -- Card type
+  card_type TEXT NOT NULL,                 -- 'TDAC', 'MDAC', 'SDAC', 'HKDAC'
+  destination_id TEXT,                     -- Denormalized for fast lookup
+
+  -- Submission data
+  arr_card_no TEXT,
   qr_uri TEXT,
   pdf_url TEXT,
+
+  -- Submission metadata
   submitted_at DATETIME NOT NULL,
   submission_method TEXT DEFAULT 'api',
   status TEXT DEFAULT 'success',
+
+  -- Response data
   api_response TEXT,
   processing_time INTEGER,
+
+  -- Retry tracking
   retry_count INTEGER DEFAULT 0,
   error_details TEXT,
+
+  -- Superseded tracking
   is_superseded INTEGER DEFAULT 0,
   superseded_at DATETIME,
-  superseded_reason TEXT,
   superseded_by TEXT,
+  superseded_reason TEXT,
+
+  -- Version tracking
+  version INTEGER DEFAULT 1,
+
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (entry_pack_id) REFERENCES entry_packs(id)
+
+  FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Indexes
@@ -172,11 +192,5 @@ CREATE INDEX IF NOT EXISTS idx_entry_info_user ON entry_info(user_id);
 CREATE INDEX IF NOT EXISTS idx_entry_info_destination ON entry_info(user_id, destination_id);
 CREATE INDEX IF NOT EXISTS idx_entry_info_passport ON entry_info(passport_id);
 CREATE INDEX IF NOT EXISTS idx_entry_info_personal ON entry_info(personal_info_id);
-CREATE INDEX IF NOT EXISTS idx_entry_packs_user ON entry_packs(user_id);
-CREATE INDEX IF NOT EXISTS idx_entry_packs_entry_info ON entry_packs(entry_info_id);
 CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_entry ON entry_info_fund_items(entry_info_id);
 CREATE INDEX IF NOT EXISTS idx_entry_info_fund_items_fund ON entry_info_fund_items(fund_item_id);
-CREATE INDEX IF NOT EXISTS idx_tdac_submissions_user ON tdac_submissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_tdac_submissions_entry_pack ON tdac_submissions(entry_pack_id);
-CREATE INDEX IF NOT EXISTS idx_tdac_submissions_status ON tdac_submissions(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_tdac_submissions_arr_card ON tdac_submissions(arr_card_no);

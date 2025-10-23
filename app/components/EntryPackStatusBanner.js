@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
-const EntryPackStatusBanner = ({ 
+const EntryInfoStatusBanner = ({ 
   status, 
   submissionDate, 
   arrivalDate, 
@@ -42,7 +42,7 @@ const EntryPackStatusBanner = ({
           textColor: colors.surface,
           icon: '📁',
           title: 'เก็บถาวรแล้ว / Archived',
-          description: 'ชุดข้อมูลถูกเก็บไว้ในประวัติ / Entry pack archived',
+          description: 'ข้อมูลถูกเก็บไว้ในประวัติ / Entry info archived',
         };
       case 'completed':
         return {
@@ -67,7 +67,7 @@ const EntryPackStatusBanner = ({
           textColor: colors.surface,
           icon: '⏳',
           title: 'กำลังดำเนินการ / In Progress',
-          description: 'กำลังเตรียมชุดข้อมูลเข้าเมือง / Entry pack preparing',
+          description: 'กำลังเตรียมข้อมูลเข้าเมือง / Entry info preparing',
         };
     }
   };
@@ -150,7 +150,7 @@ const EntryPackStatusBanner = ({
       {isReadOnly && (
         <View style={styles.readOnlyIndicator}>
           <Text style={[styles.readOnlyText, { color: statusConfig.textColor }]}>
-            📖 ประวัติ - อ่านอย่างเดียว / History - Read Only
+            📖 ประวัติ - อ่านอย่างเดียว / Entry Info - Read Only
           </Text>
         </View>
       )}
@@ -219,4 +219,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EntryPackStatusBanner;
+export default EntryInfoStatusBanner;

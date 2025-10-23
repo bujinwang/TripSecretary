@@ -1,12 +1,11 @@
 /**
- * DataImportService - Service for importing entry pack data
+ * DataImportService - Service for importing entry info data
  * Supports JSON import, conflict resolution, and batch import
- * 
+ *
  * Requirements: 22.1-22.5
  */
 
 import * as FileSystem from 'expo-file-system';
-import EntryPack from '../../models/EntryPack';
 import EntryInfo from '../../models/EntryInfo';
 import PassportDataService from '../data/PassportDataService';
 
@@ -17,17 +16,17 @@ class DataImportService {
   }
 
   /**
-   * Import entry pack from file
-   * @param {string} filePath - Path to import file
-   * @param {Object} options - Import options
-   * @returns {Promise<Object>} - Import result
-   */
-  async importEntryPack(filePath, options = {}) {
-    try {
-      console.log('Starting entry pack import:', {
-        filePath,
-        options
-      });
+    * Import entry info from file
+    * @param {string} filePath - Path to import file
+    * @param {Object} options - Import options
+    * @returns {Promise<Object>} - Import result
+    */
+   async importEntryInfo(filePath, options = {}) {
+     try {
+       console.log('Starting entry info import:', {
+         filePath,
+         options
+       });
 
       // Ensure import directory exists
       await this.ensureDirectoryExists(this.importDirectory);
@@ -109,7 +108,7 @@ class DataImportService {
 
       console.log('JSON import completed:', {
         success: importResult.success,
-        entryPacksImported: importResult.entryPacksImported,
+        entryInfosImported: importResult.entryInfosImported,
         photosRestored: importResult.photosRestored
       });
 
@@ -151,6 +150,8 @@ class DataImportService {
         throw new Error('Invalid batch export archive: missing entryPacks array');
       }
 
+      // Note: archiveData.entryPacks contains the old format, but we convert to entryInfo format
+
       const importResults = [];
       const progressCallback = options.onProgress || (() => {});
       let processedCount = 0;
@@ -166,10 +167,10 @@ class DataImportService {
           });
 
           // Convert archive entry pack data to import format
+          // Note: In v2.0, entryPack data is migrated to entryInfo
           const importData = {
             exportInfo: archiveData.exportInfo,
-            entryPack: entryPackData.content.entryPack,
-            entryInfo: entryPackData.content.entryInfo,
+            entryInfo: entryPackData.content.entryInfo || entryPackData.content.entryPack, // Use entryInfo if available, fallback to entryPack
             passport: entryPackData.content.passport,
             personalInfo: entryPackData.content.personalInfo,
             funds: entryPackData.content.funds,
@@ -218,7 +219,7 @@ class DataImportService {
       const failedImports = importResults.filter(r => !r.success);
 
       console.log('Batch import completed:', {
-        totalEntryPacks: archiveData.entryPacks.length,
+        totalEntryInfos: archiveData.entryPacks.length,
         successfulImports: successfulImports.length,
         failedImports: failedImports.length
       });
@@ -226,7 +227,7 @@ class DataImportService {
       return {
         success: true,
         batchImport: true,
-        totalEntryPacks: archiveData.entryPacks.length,
+        totalEntryInfos: archiveData.entryPacks.length,
         successfulImports: successfulImports.length,
         failedImports: failedImports.length,
         importResults,
@@ -270,15 +271,15 @@ class DataImportService {
         }
       }
 
-      // Check entry pack data
-      if (!importData.entryPack) {
-        errors.push('Missing entry pack data');
+      // Check entry info data
+      if (!importData.entryInfo) {
+        errors.push('Missing entry info data');
       } else {
-        if (!importData.entryPack.id) {
-          errors.push('Entry pack missing ID');
+        if (!importData.entryInfo.id) {
+          errors.push('Entry info missing ID');
         }
-        if (!importData.entryPack.destinationId) {
-          errors.push('Entry pack missing destination ID');
+        if (!importData.entryInfo.destinationId) {
+          errors.push('Entry info missing destination ID');
         }
       }
 
@@ -380,16 +381,16 @@ class DataImportService {
     try {
       const conflicts = [];
 
-      // Check if entry pack with same ID already exists
-      if (importData.entryPack && importData.entryPack.id) {
-        const existingEntryPack = await EntryPack.load(importData.entryPack.id);
-        if (existingEntryPack) {
+      // Check if entry info with same ID already exists
+      if (importData.entryInfo && importData.entryInfo.id) {
+        const existingEntryInfo = await EntryInfo.load(importData.entryInfo.id);
+        if (existingEntryInfo) {
           conflicts.push({
-            type: 'entry_pack_exists',
-            entryPackId: importData.entryPack.id,
-            message: `Entry pack with ID ${importData.entryPack.id} already exists`,
-            existingData: existingEntryPack.exportData(),
-            importData: importData.entryPack,
+            type: 'entry_info_exists',
+            entryInfoId: importData.entryInfo.id,
+            message: `Entry info with ID ${importData.entryInfo.id} already exists`,
+            existingData: existingEntryInfo.exportData(),
+            importData: importData.entryInfo,
             resolutionOptions: ['overwrite', 'keep_both', 'skip']
           });
         }
@@ -455,22 +456,22 @@ class DataImportService {
     try {
       const importResult = {
         success: false,
-        entryPacksImported: 0,
+        entryInfosImported: 0,
         photosRestored: 0,
         conflicts: [],
         errors: [],
         warnings: [],
-        importedEntryPackId: null,
+        importedEntryInfoId: null,
         importedAt: new Date().toISOString()
       };
 
       // Generate new IDs if needed to avoid conflicts
-      const shouldGenerateNewIds = options.conflictResolutions?.entry_pack_exists === 'keep_both' ||
+      const shouldGenerateNewIds = options.conflictResolutions?.entry_info_exists === 'keep_both' ||
                                    options.batchImport;
 
-      let entryPackId = importData.entryPack.id;
+      let entryInfoId = importData.entryInfo.id;
       if (shouldGenerateNewIds) {
-        entryPackId = this.generateUniqueId();
+        entryInfoId = this.generateUniqueId();
       }
 
       // Import passport data
@@ -530,40 +531,27 @@ class DataImportService {
         }
       }
 
-      // Import entry pack
-      if (importData.entryPack) {
-        try {
-          const entryPackData = { ...importData.entryPack };
-          entryPackData.id = entryPackId;
-          entryPackData.importedAt = importResult.importedAt;
-          entryPackData.originalId = importData.entryPack.id;
-
-          const entryPack = new EntryPack(entryPackData);
-          await entryPack.save();
-          
-          importResult.entryPacksImported = 1;
-          importResult.importedEntryPackId = entryPackId;
-          console.log(`Imported entry pack: ${entryPackId}`);
-        } catch (error) {
-          importResult.errors.push(`Failed to import entry pack: ${error.message}`);
-        }
-      }
-
-      // Import entry info if available
+      // Import entry info
       if (importData.entryInfo) {
         try {
           const entryInfoData = { ...importData.entryInfo };
-          if (shouldGenerateNewIds) {
-            entryInfoData.id = this.generateUniqueId();
-          }
+          entryInfoData.id = entryInfoId;
+          entryInfoData.importedAt = importResult.importedAt;
+          entryInfoData.originalId = importData.entryInfo.id;
 
           const entryInfo = new EntryInfo(entryInfoData);
           await entryInfo.save();
-          console.log(`Imported entry info: ${entryInfoData.id}`);
+
+          importResult.entryInfosImported = 1;
+          importResult.importedEntryInfoId = entryInfoId;
+          console.log(`Imported entry info: ${entryInfoId}`);
         } catch (error) {
           importResult.errors.push(`Failed to import entry info: ${error.message}`);
         }
       }
+
+      // Import entry info (already handled above)
+      // The entry info is now imported as the primary data instead of entry pack
 
       importResult.success = importResult.errors.length === 0;
       importResult.warnings = this.getImportWarnings(importData);
