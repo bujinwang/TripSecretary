@@ -162,6 +162,7 @@
       "message": "Vos informations d'entrée ont été mises à jour, et vous devez soumettre à nouveau la carte d'entrée pour assurer la précision des informations."
     },
     "immigrationOfficer": {
+      "title": "Vue de l'agent d'immigration",
       "authentication": {
         "title": "Authentification Requise",
         "message": "Pour protéger votre vie privée, une authentification est requise pour entrer en mode présentation",

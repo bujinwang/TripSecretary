@@ -40,6 +40,7 @@ import apiClient from '../../services/api';
 import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
 import EntryData from '../../models/EntryData';
+import EntryInfo from '../../models/EntryInfo';
 import PassportDataService from '../../services/data/PassportDataService';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -263,6 +264,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [selectedFundItem, setSelectedFundItem] = useState(null);
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState(null);
+
+  // Entry Info State - for tracking the entry pack
+  const [entryInfoId, setEntryInfoId] = useState(null);
+  const [entryInfoInitialized, setEntryInfoInitialized] = useState(false);
 
   // Travel Info State - with smart defaults
   const smartDefaults = getSmartDefaults();
@@ -496,135 +501,75 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Calculate completion metrics using FieldStateManager
   const calculateCompletionMetrics = () => {
     try {
-      // Build interaction state for FieldStateManager
-      const interactionState = {};
-      const allFieldNames = [
-        'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
-        'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
-        'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
-        'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
-        'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
-        'subDistrict', 'postalCode', 'hotelAddress'
-      ];
+      const passportCount = getFieldCount('passport');
+      const personalCount = getFieldCount('personal');
+      const fundsCount = getFieldCount('funds');
+      const travelCount = getFieldCount('travel');
 
-      allFieldNames.forEach(fieldName => {
-        interactionState[fieldName] = {
-          isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-          lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-          initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
-        };
-      });
+      const passportComplete = passportCount.filled >= passportCount.total;
+      const personalComplete = personalCount.filled >= personalCount.total;
+      const fundsComplete = fundsCount.filled >= fundsCount.total;
+      const travelComplete = travelCount.filled >= travelCount.total;
 
-      // Build all fields object for FieldStateManager
-      const allFields = {
-        // Passport fields
-        passportNo: passportNo,
-        fullName: fullName,
-        nationality: nationality,
-        dob: dob,
-        expiryDate: expiryDate,
-        sex: sex,
-        // Personal info fields
-        phoneCode: phoneCode,
-        phoneNumber: phoneNumber,
-        email: email,
-        occupation: occupation,
-        cityOfResidence: cityOfResidence,
-        residentCountry: residentCountry,
-        // Travel info fields
-        travelPurpose: travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose,
-        boardingCountry: boardingCountry,
-        recentStayCountry: recentStayCountry,
-        visaNumber: visaNumber,
-        arrivalFlightNumber: arrivalFlightNumber,
-        arrivalArrivalDate: arrivalArrivalDate,
-        departureFlightNumber: departureFlightNumber,
-        departureDepartureDate: departureDepartureDate,
-        isTransitPassenger: isTransitPassenger,
-        accommodationType: accommodationType === 'OTHER' ? customAccommodationType : accommodationType,
-        province: province,
-        district: district,
-        subDistrict: subDistrict,
-        postalCode: postalCode,
-        hotelAddress: hotelAddress
-      };
-
-      // Define field configuration for Thailand travel info
-      const fieldConfig = {
-        requiredFields: [
-          'fullName', 'nationality', 'passportNo', 'dob', 'expiryDate', 'sex',
-          'occupation', 'cityOfResidence', 'residentCountry', 'phoneNumber', 'email',
-          'travelPurpose', 'boardingCountry', 'arrivalFlightNumber', 'arrivalArrivalDate',
-          'departureFlightNumber', 'departureDepartureDate'
-        ],
-        optionalFields: [
-          'phoneCode', 'recentStayCountry', 'visaNumber', 'accommodationType', 
-          'province', 'district', 'subDistrict', 'postalCode', 'hotelAddress'
-        ],
-        fieldWeights: {
-          // Passport fields have higher weight
-          fullName: 2, nationality: 2, passportNo: 2, dob: 2, expiryDate: 2, sex: 2,
-          // Personal info fields
-          occupation: 1, cityOfResidence: 1, residentCountry: 1, phoneNumber: 1, email: 1,
-          // Travel info fields
-          travelPurpose: 2, boardingCountry: 2, arrivalFlightNumber: 2, arrivalArrivalDate: 2,
-          departureFlightNumber: 2, departureDepartureDate: 2
-        }
-      };
-
-      // Use FieldStateManager to get completion metrics
-      const metrics = FieldStateManager.getCompletionMetrics(allFields, interactionState, fieldConfig);
-      
-      // Add funds completion (not tracked by interaction state)
-      const fundItemCount = funds.length;
-      const fundsComplete = fundItemCount > 0;
-      
-      // Calculate overall completion including funds
-      const totalSections = 4; // passport, personal, travel, funds
       const completedSections = [
-        metrics.requiredCompletionPercentage >= 80, // passport + personal + travel required fields
-        fundsComplete
+        passportComplete,
+        personalComplete,
+        fundsComplete,
+        travelComplete,
       ].filter(Boolean).length;
-      
-      const totalPercent = Math.round((completedSections / totalSections) * 100);
 
-      // Create summary object compatible with existing code
+      const totalSections = 4;
+      const totalPercent =
+        totalSections > 0
+          ? Math.round((completedSections / totalSections) * 100)
+          : 0;
+
       const summary = {
         totalPercent: totalPercent,
         metrics: {
           passport: {
-            completed: metrics.requiredFieldsCompleted,
-            total: metrics.requiredFields,
-            percentage: metrics.requiredCompletionPercentage
+            completed: passportCount.filled,
+            total: passportCount.total,
+            percentage:
+              passportCount.total > 0
+                ? Math.round((passportCount.filled / passportCount.total) * 100)
+                : 0,
           },
           personal: {
-            completed: metrics.requiredFieldsCompleted,
-            total: metrics.requiredFields,
-            percentage: metrics.requiredCompletionPercentage
+            completed: personalCount.filled,
+            total: personalCount.total,
+            percentage:
+              personalCount.total > 0
+                ? Math.round((personalCount.filled / personalCount.total) * 100)
+                : 0,
           },
           travel: {
-            completed: metrics.requiredFieldsCompleted,
-            total: metrics.requiredFields,
-            percentage: metrics.requiredCompletionPercentage
+            completed: travelCount.filled,
+            total: travelCount.total,
+            percentage:
+              travelCount.total > 0
+                ? Math.round((travelCount.filled / travelCount.total) * 100)
+                : 0,
           },
           funds: {
-            completed: fundItemCount,
-            total: Math.max(1, fundItemCount),
-            percentage: fundsComplete ? 100 : 0
+            completed: fundsCount.filled,
+            total: fundsCount.total,
+            percentage:
+              fundsCount.total > 0
+                ? Math.round((fundsCount.filled / fundsCount.total) * 100)
+                : 0,
           },
-          userModifiedFields: metrics.userModifiedFields
         },
-        isReady: totalPercent >= 80
+        isReady: totalPercent === 100,
       };
 
       setCompletionMetrics(summary.metrics);
       setTotalCompletionPercent(summary.totalPercent);
-      
-      console.log('=== COMPLETION METRICS WITH INTERACTION TRACKING ===');
-      console.log('User modified fields:', metrics.userModifiedFields);
+
+      console.log('=== COMPLETION METRICS RECALCULATED ===');
       console.log('Total completion:', summary.totalPercent + '%');
       console.log('Metrics:', summary.metrics);
-      
+
       return summary;
     } catch (error) {
       console.error('Failed to calculate completion metrics:', error);
@@ -1125,6 +1070,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Initialize entry_info when screen loads and data is ready
+  useEffect(() => {
+    if (!isLoading && !entryInfoInitialized) {
+      // Initialize entry_info even if passport data doesn't exist yet
+      // The entry_info will be updated with passport/personal info IDs when data is saved
+      initializeEntryInfo();
+    }
+  }, [isLoading, entryInfoInitialized, initializeEntryInfo]);
 
   // Session state management functions
   const getSessionStateKey = () => {
@@ -1741,7 +1695,9 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
       isTransitPassenger, accommodationType, customAccommodationType, province, district,
-      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination
+      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+      // Entry info tracking
+      entryInfoId, passportData, personalInfoData, funds
     } = currentState;
 
     // Helper function to get current value with overrides
@@ -1964,6 +1920,56 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
       saveResults.travelInfo.success = true; // No data to save counts as success
     }
 
+    // Save entry_info with linked fund items if entry_info is initialized
+    if (entryInfoId) {
+      try {
+        console.log('📦 Updating entry info with fund items...');
+
+        // Get the latest passport and personal info from database
+        // This ensures we have the correct IDs even if they were just created
+        const latestPassport = await PassportDataService.getPassport(userId);
+        const latestPersonalInfo = await PassportDataService.getPersonalInfo(userId);
+
+        // Get travel_info_id if it was just saved
+        const destinationId = destination?.id || 'thailand';
+        const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+
+        const entryInfoUpdateData = {
+          id: entryInfoId,
+          userId,
+          passportId: latestPassport?.id || null,
+          personalInfoId: latestPersonalInfo?.id || null,
+          travelInfoId: travelInfo?.id || null,
+          destinationId,
+          status: 'incomplete', // Will be updated to 'ready' when all fields are complete
+          fundItemIds: funds.map(f => f.id), // Link all current fund items
+          lastUpdatedAt: new Date().toISOString()
+        };
+
+        console.log('Entry info update data:', {
+          entryInfoId,
+          passportId: latestPassport?.id,
+          personalInfoId: latestPersonalInfo?.id,
+          travelInfoId: travelInfo?.id,
+          fundItemCount: funds.length,
+          fundItemIds: funds.map(f => f.id)
+        });
+
+        await PassportDataService.saveEntryInfo(entryInfoUpdateData, userId);
+        console.log('✅ Entry info updated successfully with fund items');
+        saveResults.entryInfo = { success: true, error: null };
+      } catch (entryInfoError) {
+        console.error('❌ Failed to save entry info:', entryInfoError);
+        console.error('Error details:', entryInfoError.message, entryInfoError.stack);
+        saveResults.entryInfo = { success: false, error: entryInfoError };
+        saveErrors.push({ section: 'entryInfo', error: entryInfoError });
+        // Don't fail the entire save operation if entry_info update fails
+      }
+    } else {
+      console.log('⚠️ Skipping entry info save - entry info not initialized');
+      console.log('  - entryInfoId:', entryInfoId);
+    }
+
     return { success: true };
   } catch (error) {
     console.error('Save operation failed:', error);
@@ -2030,7 +2036,9 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
       isTransitPassenger, accommodationType, customAccommodationType, province, district,
-      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination
+      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+      // Entry info tracking
+      entryInfoId, passportData, personalInfoData, funds
     };
 
     // Perform the save operation using the helper method
@@ -2071,7 +2079,9 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
                    travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
                    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
                    isTransitPassenger, accommodationType, customAccommodationType, province, district,
-                   subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination
+                   subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+                   // Entry info tracking
+                   entryInfoId, passportData, personalInfoData, funds
                  };
   
                  // Retry the save operation once
@@ -2139,6 +2149,63 @@ const normalizeFundItem = useCallback((item) => ({
     }
   }, [userId, normalizeFundItem]);
 
+  /**
+   * Initialize or load entry_info for this user and destination
+   * Creates entry_info on first visit to ensure data is properly tracked
+   */
+  const initializeEntryInfo = useCallback(async () => {
+    try {
+      if (entryInfoInitialized) {
+        console.log('Entry info already initialized');
+        return;
+      }
+
+      const destinationId = destination?.id || 'thailand';
+      console.log('🔍 Initializing entry info for destination:', destinationId);
+
+      // Try to find existing entry_info for this user and destination
+      const existingEntryInfos = await PassportDataService.getAllEntryInfosForUser(userId);
+      const existingEntryInfo = existingEntryInfos?.find(
+        entry => entry.destinationId === destinationId
+      );
+
+      if (existingEntryInfo) {
+        console.log('✅ Found existing entry info:', existingEntryInfo.id);
+        setEntryInfoId(existingEntryInfo.id);
+        setEntryInfoInitialized(true);
+        return existingEntryInfo.id;
+      }
+
+      // Create new entry_info if none exists
+      console.log('📝 Creating new entry info for user:', userId);
+      const entryInfoData = {
+        userId,
+        destinationId,
+        status: 'incomplete',
+        completionMetrics: {
+          passport: { complete: 0, total: 5, state: 'missing' },
+          personalInfo: { complete: 0, total: 6, state: 'missing' },
+          funds: { complete: 0, total: 1, state: 'missing' },
+          travel: { complete: 0, total: 6, state: 'missing' }
+        },
+        fundItemIds: [], // Will be updated when saving
+        lastUpdatedAt: new Date().toISOString()
+      };
+
+      const savedEntryInfo = await PassportDataService.saveEntryInfo(entryInfoData, userId);
+      console.log('✅ Created new entry info:', savedEntryInfo.id);
+
+      setEntryInfoId(savedEntryInfo.id);
+      setEntryInfoInitialized(true);
+      return savedEntryInfo.id;
+    } catch (error) {
+      console.error('❌ Failed to initialize entry info:', error);
+      console.error('Error details:', error.message, error.stack);
+      // Don't throw - allow the app to continue even if entry_info creation fails
+      return null;
+    }
+  }, [userId, destination, entryInfoInitialized]);
+
   const addFund = (type) => {
     setNewFundItemType(type);
     setIsCreatingFundItem(true);
@@ -2166,6 +2233,11 @@ const normalizeFundItem = useCallback((item) => ({
         setSelectedFundItem(normalizeFundItem(updatedItem));
       }
       await refreshFundItems({ forceRefresh: true });
+
+      // Trigger save to update entry_info with new fund item associations
+      console.log('💾 Triggering save after fund item update...');
+      await DebouncedSave.flushPendingSave('thailand_travel_info');
+      debouncedSaveData();
     } catch (error) {
       console.error('Failed to update fund item state:', error);
     }
@@ -2174,6 +2246,11 @@ const normalizeFundItem = useCallback((item) => ({
   const handleFundItemCreate = async () => {
     try {
       await refreshFundItems({ forceRefresh: true });
+
+      // Trigger save to update entry_info with new fund item
+      console.log('💾 Triggering save after fund item creation...');
+      await DebouncedSave.flushPendingSave('thailand_travel_info');
+      debouncedSaveData();
     } catch (error) {
       console.error('Failed to refresh fund items after creation:', error);
     } finally {
@@ -2185,6 +2262,11 @@ const normalizeFundItem = useCallback((item) => ({
     try {
       setFunds((prev) => prev.filter((fund) => fund.id !== id));
       await refreshFundItems({ forceRefresh: true });
+
+      // Trigger save to update entry_info after fund item deletion
+      console.log('💾 Triggering save after fund item deletion...');
+      await DebouncedSave.flushPendingSave('thailand_travel_info');
+      debouncedSaveData();
     } catch (error) {
       console.error('Failed to refresh fund items after deletion:', error);
     } finally {
@@ -2253,7 +2335,11 @@ if (typeof window !== 'undefined') {
 
   const handleContinue = async () => {
     await handleNavigationWithSave(
-      () => navigation.navigate('ThailandEntryFlow', { passport, destination }),
+      () => navigation.navigate('ThailandEntryFlow', {
+        passport,
+        destination,
+        entryInfoId: entryInfoId // Pass entryInfoId for viewing entry pack details
+      }),
       'continue'
     );
   };
@@ -3609,8 +3695,12 @@ if (typeof window !== 'undefined') {
           {/* Encouraging Progress Messages */}
           {totalCompletionPercent < 100 && (
             <Text style={styles.encouragingHint}>
-              {totalCompletionPercent < 30
+              {totalCompletionPercent < 20
                 ? '🌟 第一步，从介绍自己开始吧！'
+                : totalCompletionPercent < 40
+                ? '好的开始！泰国欢迎你 🌺'
+                : totalCompletionPercent < 60
+                ? '继续我的泰国准备之旅 🏖️'
                 : '🚀 快要完成了，你的泰国之旅近在咫尺！'
               }
             </Text>
@@ -3625,7 +3715,9 @@ if (typeof window !== 'undefined') {
                 ? '👤 填写个人信息，让泰国更了解你'
                 : totalCompletionPercent < 75
                 ? '💰 展示你的资金证明，泰国想确保你玩得开心'
-                : '✈️ 最后一步，分享你的旅行计划吧！'
+                : totalCompletionPercent < 100
+                ? '✈️ 最后一步，分享你的旅行计划吧！'
+                : ''
               }
             </Text>
           )}

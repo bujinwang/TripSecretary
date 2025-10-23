@@ -157,17 +157,18 @@
       "ignore": "Änderungen Ignorieren",
       "viewDetails": "Details Anzeigen"
     },
-    "superseded": {
-      "resubmitHint": "Informationen aktualisiert, erneute Einreichung erforderlich",
-      "message": "Ihre Einreiseinformationen wurden aktualisiert, und Sie müssen die Einreisekarte erneut einreichen, um die Genauigkeit der Informationen zu gewährleisten."
-    },
-    "immigrationOfficer": {
-      "authentication": {
-        "title": "Authentifizierung Erforderlich",
-        "message": "Zum Schutz Ihrer Privatsphäre ist eine Authentifizierung erforderlich, um den Präsentationsmodus zu betreten",
-        "authenticate": "Authentifizieren",
-        "cancel": "Abbrechen"
+      "superseded": {
+        "resubmitHint": "Information updated, resubmission required",
+        "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
       },
+      "immigrationOfficer": {
+        "title": "Ansicht für Einwanderungsbeamte",
+        "authentication": {
+          "title": "Authentication Required",
+          "message": "To protect your privacy, authentication is required to enter presentation mode",
+          "authenticate": "Authenticate",
+          "cancel": "Cancel"
+        },
       "presentation": {
         "exitTitle": "Präsentationsmodus Verlassen",
         "exitMessage": "Sind Sie sicher, dass Sie den Präsentationsmodus verlassen möchten?",

@@ -13,7 +13,7 @@ import TravelInfo from './TravelInfo';
 
 class EntryData {
   constructor(data = {}) {
-    this.id = data.id || this.generateId();
+    this.id = data.id || EntryData.generateId();
     this.userId = data.userId;
 
     // Core data references

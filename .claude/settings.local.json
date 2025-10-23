@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm test:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(chmod:*)",
+      "Bash(node scripts/check-fund-photo.js:*)"
     ],
     "deny": [],
     "ask": []

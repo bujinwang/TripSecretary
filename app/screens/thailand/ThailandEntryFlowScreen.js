@@ -15,7 +15,6 @@ import {
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
-import PassportPicker from '../../components/PassportPicker';
 
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
@@ -43,7 +42,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
   
   // Passport selection state
-  const [selectedPassport, setSelectedPassport] = useState(null);
   const [userId, setUserId] = useState(null);
 
 
@@ -87,24 +85,24 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get user ID from route params or use default
       const currentUserId = passportParam?.id || 'user_001';
       setUserId(currentUserId);
-      
+
       // Initialize PassportDataService
       await PassportDataService.initialize(currentUserId);
-      
-      // Load all user data
-      const allUserData = await PassportDataService.getAllUserData(userId);
+
+      // Load all user data - use currentUserId directly instead of userId state
+      const allUserData = await PassportDataService.getAllUserData(currentUserId);
       console.log('Loaded user data for completion calculation:', allUserData);
-      
-      // Load fund items
-      const fundItems = await PassportDataService.getFundItems(userId);
-      
-      // Load travel info for Thailand
+
+      // Load fund items - use currentUserId directly
+      const fundItems = await PassportDataService.getFundItems(currentUserId);
+
+      // Load travel info for Thailand - use currentUserId directly
       const destinationId = route.params?.destination?.id || 'thailand';
-      const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+      const travelInfo = await PassportDataService.getTravelInfo(currentUserId, destinationId);
       
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
@@ -185,8 +183,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       
       setCategories(categoryData);
 
-      // Check for entry info and resubmission warnings (non-blocking)
-      loadEntryInfoStatus(userId).catch(error => {
+      // Check for entry info and resubmission warnings (non-blocking) - use currentUserId directly
+      loadEntryInfoStatus(currentUserId).catch(error => {
         console.log('Entry info status check failed, continuing without it:', error);
       });
       
@@ -385,12 +383,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
-  const handlePassportSelect = (passport) => {
-    console.log('Passport selected:', passport);
-    setSelectedPassport(passport);
-    // Reload data with the new passport selection
-    loadData();
-  };
 
   const handlePrimaryAction = async () => {
     const buttonState = getPrimaryButtonState();
@@ -487,10 +479,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         }
         break;
       case 'view_entry_pack':
-        // Navigate to entry info detail screen
-        navigation.navigate('EntryInfoDetail', {
-          entryInfoId: route.params?.entryInfoId,
-        });
+        // Navigate to entry pack preview screen (not detail, as it's not submitted yet)
+        handlePreviewEntryCard();
         break;
       case 'resubmit_tdac':
         // Handle resubmission - navigate to edit screen first
@@ -810,17 +800,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           />
         }
       >
-        {/* Passport Selection */}
-        {userId && (
-          <View style={styles.passportSection}>
-            <PassportPicker
-              userId={userId}
-              selectedPassportId={selectedPassport?.id}
-              onPassportSelect={handlePassportSelect}
-              style={styles.passportPicker}
-            />
-          </View>
-        )}
 
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇭</Text>
@@ -877,25 +856,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: spacing.lg,
   },
-  passportSection: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  passportPicker: {
-    marginVertical: 0,
-  },
+
   titleSection: {
     alignItems: 'center',
     paddingVertical: spacing.md,

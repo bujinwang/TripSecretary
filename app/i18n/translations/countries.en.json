@@ -189,18 +189,18 @@
       "ignore": "Ignore Changes",
       "viewDetails": "View Details"
     },
-    "superseded": {
-      "resubmitHint": "Information updated, resubmission required",
-      "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
-    },
-    "immigrationOfficer": {
-      "authentication": {
-        "title": "Authentication Required",
-        "message": "To protect your privacy, authentication is required to enter presentation mode",
-        "authenticate": "Authenticate",
-        "cancel": "Cancel"
-      },
-      "presentation": {
+          "superseded": {
+            "resubmitHint": "Information updated, resubmission required",
+            "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
+          },
+          "immigrationOfficer": {
+            "title": "Immigration Officer View",
+            "authentication": {
+              "title": "Authentication Required",
+              "message": "To protect your privacy, authentication is required to enter presentation mode",
+              "authenticate": "Authenticate",
+              "cancel": "Cancel"
+            },      "presentation": {
         "exitTitle": "Exit Presentation Mode",
         "exitMessage": "Are you sure you want to exit presentation mode?",
         "exit": "Exit",

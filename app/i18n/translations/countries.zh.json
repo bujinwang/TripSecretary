@@ -247,6 +247,7 @@
       "message": "您的入境信息已更新，需要重新提交入境卡以确保信息准确。"
     },
     "immigrationOfficer": {
+      "title": "移民官视角",
       "authentication": {
         "title": "身份验证",
         "message": "为了保护您的隐私，需要验证身份才能进入展示模式",

@@ -164,17 +164,18 @@
       "ignore": "Ignorar Cambios",
       "viewDetails": "Ver Detalles"
     },
-    "superseded": {
-      "resubmitHint": "Información actualizada, reenvío requerido",
-      "message": "Su información de entrada ha sido actualizada, y necesita reenviar la tarjeta de entrada para asegurar la precisión de la información."
-    },
-    "immigrationOfficer": {
-      "authentication": {
-        "title": "Autenticación Requerida",
-        "message": "Para proteger su privacidad, se requiere autenticación para entrar al modo de presentación",
-        "authenticate": "Autenticar",
-        "cancel": "Cancelar"
+      "superseded": {
+        "resubmitHint": "Information updated, resubmission required",
+        "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
       },
+      "immigrationOfficer": {
+        "title": "Vista de Oficial de Inmigración",
+        "authentication": {
+          "title": "Authentication Required",
+          "message": "To protect your privacy, authentication is required to enter presentation mode",
+          "authenticate": "Authenticate",
+          "cancel": "Cancel"
+        },
       "presentation": {
         "exitTitle": "Salir del Modo de Presentación",
         "exitMessage": "¿Está seguro de que desea salir del modo de presentación?",

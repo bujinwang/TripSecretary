@@ -201,18 +201,19 @@ const FundItemDetailModal = ({
         console.log('[FundItemDetailModal] Initializing create mode:', {
           createItemType,
         });
-        
+
         setMode('edit'); // Start in edit mode for creation
         setError(null);
         setValidationErrors({ amount: '', currency: '' });
         setEditedAmount('');
         setEditedCurrency('THB');
         setEditedDescription('');
+        setPendingPhotoUri(null); // Reset pending photo
         // Reset photo view transforms
         photoScale.setValue(1);
         photoTranslateX.setValue(0);
         photoTranslateY.setValue(0);
-        
+
         console.log('[FundItemDetailModal] Create mode initialized successfully');
       } catch (err) {
         console.error('[FundItemDetailModal] Error initializing create mode:', {
@@ -220,8 +221,8 @@ const FundItemDetailModal = ({
           stack: err.stack,
           createItemType,
         });
-        setError(t('fundItem.errors.loadFailed', { 
-          defaultValue: 'Failed to initialize create mode' 
+        setError(t('fundItem.errors.loadFailed', {
+          defaultValue: 'Failed to initialize create mode'
         }));
       }
     }
@@ -420,13 +421,13 @@ const FundItemDetailModal = ({
       if (isCreateMode) {
         // Create new fund item
         const shouldUpdateAmount = isAmountBasedType(itemType);
-        
+
         const fundData = {
           type: createItemType,
           amount: shouldUpdateAmount ? parseFloat(editedAmount) : null,
           currency: shouldUpdateAmount ? editedCurrency.toUpperCase() : null,
           details: editedDescription,
-          photoUri: null, // No photo on initial creation
+          photoUri: pendingPhotoUri, // Include the pending photo if one was selected
         };
 
         console.log('[FundItemDetailModal] Prepared fund data for creation:', {
@@ -834,15 +835,16 @@ const FundItemDetailModal = ({
       }
 
       if (isCreateMode) {
-        // In create mode, just store the photo URI temporarily
+        // In create mode, store the photo URI temporarily
         // It will be saved when the user saves the fund item
-        console.log('[FundItemDetailModal] Storing photo for new fund item');
-        // We can't update fundItem directly in create mode, so we'll need to handle this differently
-        // For now, just show a message that photo will be saved with the item
+        console.log('[FundItemDetailModal] Storing photo for new fund item:', photoUri);
+        setPendingPhotoUri(photoUri);
+
+        // Show success message
         Alert.alert(
           t('fundItem.success.photoSelected', { defaultValue: 'Photo Selected' }),
-          t('fundItem.success.photoSelectedMessage', { 
-            defaultValue: 'Photo will be saved when you create the fund item.' 
+          t('fundItem.success.photoSelectedMessage', {
+            defaultValue: 'Photo will be saved when you create the fund item.'
           })
         );
       } else {
@@ -865,14 +867,18 @@ const FundItemDetailModal = ({
         console.log('[FundItemDetailModal] Saving fund item with new photo...', {
           fundItemId: fundData.id,
           userId,
+          photoUri: fundData.photoUri?.substring(0, 100),
+          photoUriLength: fundData.photoUri?.length,
         });
-        
+
         // Save the updated fund item
         const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
-        
+
         console.log('[FundItemDetailModal] Fund item photo updated successfully:', {
           fundItemId: updatedFundItem.id,
           hasPhoto: !!updatedFundItem.photoUri,
+          photoUri: updatedFundItem.photoUri?.substring(0, 100),
+          photoUriLength: updatedFundItem.photoUri?.length,
         });
         
         // Call onUpdate callback if provided
@@ -1151,21 +1157,21 @@ const FundItemDetailModal = ({
           <Text style={styles.fieldLabel}>
             {t('fundItem.detail.photo', { defaultValue: 'Photo' })}
           </Text>
-          {!isCreateMode && (fundItem?.photoUri || fundItem?.photo) ? (
+          {(isCreateMode && pendingPhotoUri) || (!isCreateMode && (fundItem?.photoUri || fundItem?.photo)) ? (
             <View style={styles.photoContainer}>
               <TouchableOpacity
                 onPress={handlePhotoPress}
                 activeOpacity={0.8}
                 accessibilityRole="imagebutton"
-                accessibilityLabel={t('fundItem.accessibility.photoPreview', { 
-                  defaultValue: 'Fund item photo preview' 
+                accessibilityLabel={t('fundItem.accessibility.photoPreview', {
+                  defaultValue: 'Fund item photo preview'
                 })}
-                accessibilityHint={t('fundItem.accessibility.photoPreviewHint', { 
-                  defaultValue: 'Double tap to view full size photo' 
+                accessibilityHint={t('fundItem.accessibility.photoPreviewHint', {
+                  defaultValue: 'Double tap to view full size photo'
                 })}
               >
                 <Image
-                  source={{ uri: fundItem.photoUri || fundItem.photo }}
+                  source={{ uri: isCreateMode ? pendingPhotoUri : (fundItem.photoUri || fundItem.photo) }}
                   style={styles.photoThumbnail}
                   resizeMode="cover"
                   accessible={false}
@@ -1179,8 +1185,8 @@ const FundItemDetailModal = ({
                 style={styles.photoButton}
                 disabled={loading}
                 accessibilityLabel={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
-                accessibilityHint={t('fundItem.accessibility.replacePhotoHint', { 
-                  defaultValue: 'Opens options to take a new photo or choose from library' 
+                accessibilityHint={t('fundItem.accessibility.replacePhotoHint', {
+                  defaultValue: 'Opens options to take a new photo or choose from library'
                 })}
               />
             </View>
@@ -1189,7 +1195,7 @@ const FundItemDetailModal = ({
               <View style={styles.noPhotoContainer}>
                 <Text style={styles.noPhotoIcon}>📷</Text>
                 <Text style={styles.noPhotoText}>
-                  {isCreateMode 
+                  {isCreateMode
                     ? t('fundItem.detail.noPhotoCreate', { defaultValue: 'Add a photo (optional)' })
                     : t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })
                   }
@@ -1203,8 +1209,8 @@ const FundItemDetailModal = ({
                 style={styles.photoButton}
                 disabled={loading}
                 accessibilityLabel={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
-                accessibilityHint={t('fundItem.accessibility.addPhotoHint', { 
-                  defaultValue: 'Opens options to take a photo or choose from library' 
+                accessibilityHint={t('fundItem.accessibility.addPhotoHint', {
+                  defaultValue: 'Opens options to take a photo or choose from library'
                 })}
               />
             </View>

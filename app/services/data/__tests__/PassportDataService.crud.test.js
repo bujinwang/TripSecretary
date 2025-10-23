@@ -11,8 +11,19 @@ import SecureStorageService from '../../security/SecureStorageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock dependencies
-jest.mock('../../../models/Passport');
-jest.mock('../../../models/PersonalInfo');
+jest.mock('../../../models/Passport', () => {
+  const actualPassport = jest.requireActual('../../../models/Passport');
+  return {
+    __esModule: true,
+    default: jest.fn(() => ({})),
+    loadPrimary: jest.fn(),
+  };
+});
+jest.mock('../../../models/PersonalInfo', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({})),
+  loadDefault: jest.fn(),
+}));
 // FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');

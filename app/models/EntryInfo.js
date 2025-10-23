@@ -35,6 +35,8 @@ class EntryInfo extends EntryData {
 
     // Destination context
     this.destinationId = data.destinationId || null;
+
+    this.fundItemIds = new Set(data.fundItemIds || []);
   }
 
 
@@ -304,7 +306,8 @@ class EntryInfo extends EntryData {
         documents: this.documents, // NEW: Schema v2.0 field
         displayStatus: this.displayStatus, // NEW: Schema v2.0 field
         lastUpdatedAt: this.lastUpdatedAt,
-        createdAt: this.createdAt || new Date().toISOString()
+        createdAt: this.createdAt || new Date().toISOString(),
+        fundItemIds: Array.from(this.fundItemIds) // Ensure fundItemIds are passed for saving
       });
 
       return {

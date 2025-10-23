@@ -82,10 +82,11 @@ class WindowOpenNotificationService {
           ...options,
           data: {
             entryPackId,
+            entryInfoId: entryPackId, // Also include as entryInfoId for compatibility
             userId,
             destination,
             arrivalDate: arrivalDate.toISOString(),
-            deepLink: `thailand/entryFlow?entryPackId=${entryPackId}`,
+            deepLink: 'entryInfo/detail', // Navigate to entry info detail screen, not entry flow
             notificationType: 'windowOpen'
           }
         }
