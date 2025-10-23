@@ -116,11 +116,11 @@ class JapanDataValidator {
         fieldStatus.occupation = false;
       }
 
-      // Gender validation
-      if (personalInfo.gender && !['Male', 'Female', 'Undefined'].includes(personalInfo.gender)) {
-        errors.push('Invalid gender value');
-        fieldStatus.gender = false;
-      }
+      // Gender validation - removed from personalInfo, validated in passport instead
+      // if (personalInfo.gender && !['Male', 'Female', 'Undefined'].includes(personalInfo.gender)) {
+      //   errors.push('Invalid gender value');
+      //   fieldStatus.gender = false;
+      // }
     }
 
     const filledCount = Object.values(fieldStatus).filter(Boolean).length;

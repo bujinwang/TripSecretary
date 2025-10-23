@@ -535,9 +535,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         // Personal Info - load from centralized data
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          // Gender field mapping
-          const loadedSex = personalInfo.gender || passportInfo?.gender || passport?.sex || sex || 'Male';
-          setSex(loadedSex);
+          // Load personal info (gender removed - using passport only)
+          // const loadedSex = personalInfo.gender || passportInfo?.gender || passport?.sex || sex || 'Male';
 
           setOccupation(personalInfo.occupation || '');
           setCityOfResidence(personalInfo.provinceCity || '');
@@ -684,7 +683,6 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             // Update personal info if available
             const personalInfo = userData.personalInfo;
             if (personalInfo) {
-              setSex(personalInfo.gender || passportInfo?.gender || passport?.sex || sex);
               setOccupation(personalInfo.occupation || occupation);
               setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
               setResidentCountry(personalInfo.countryRegion || residentCountry);
@@ -693,6 +691,9 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
               setPhoneCode(personalInfo.phoneCode || phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
               setPersonalInfoData(personalInfo);
             }
+            
+            // Gender - load from passport only (single source of truth)
+            setSex(passportInfo?.gender || passport?.sex || passport?.gender || sex);
 
             await refreshFundItems({ forceRefresh: true });
 
@@ -2156,8 +2157,8 @@ const normalizeFundItem = useCallback((item) => ({
          </CollapsibleSection>
 
         <CollapsibleSection
-          title="📞 联系方式"
-          subtitle="新加坡怎么找到你"
+          title="� 个人信息"
+          subtitle="新加坡需要了解你的基本信息"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
@@ -2165,7 +2166,7 @@ const normalizeFundItem = useCallback((item) => ({
            <InputWithValidation 
              label="职业" 
              value={occupation} 
-             onChangeText={setOccupation} 
+             onChangeText={(text) => setOccupation(text.toUpperCase())} 
              onBlur={() => handleFieldBlur('occupation', occupation)} 
              helpText="请输入您的职业 (请使用英文)" 
              error={!!errors.occupation} 
@@ -2174,9 +2175,9 @@ const normalizeFundItem = useCallback((item) => ({
              warningMessage={warnings.occupation}
              fieldName="occupation"
              lastEditedField={lastEditedField}
-             autoCapitalize="words" 
+             autoCapitalize="characters" 
            />
-           <Input label="居住城市" value={cityOfResidence} onChangeText={setCityOfResidence} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="words" />
+           <Input label="居住城市" value={cityOfResidence} onChangeText={(text) => setCityOfResidence(text.toUpperCase())} onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)} helpText="请输入您居住的城市 (请使用英文)" error={!!errors.cityOfResidence} errorMessage={errors.cityOfResidence} autoCapitalize="characters" />
            <NationalitySelector
              label="居住国家"
              value={residentCountry}
@@ -2765,7 +2766,7 @@ const normalizeFundItem = useCallback((item) => ({
               {totalCompletionPercent < 25
                 ? '💡 从护照信息开始，告诉新加坡你是谁'
                 : totalCompletionPercent < 50
-                ? '📞 添加联系方式，这样新加坡就能找到你了'
+                ? '� 填加写个人信息，让新加坡更了解你'
                 : totalCompletionPercent < 75
                 ? '💰 展示你的资金证明，新加坡想确保你玩得开心'
                 : '✈️ 最后一步，分享你的旅行计划吧！'

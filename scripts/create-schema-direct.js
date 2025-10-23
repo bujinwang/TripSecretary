@@ -132,7 +132,6 @@ async function createSchemaDirect() {
             province_city TEXT,
             country_region TEXT,
             phone_code TEXT,
-            gender TEXT,
             is_default INTEGER DEFAULT 0,
             label TEXT,
             created_at TEXT,

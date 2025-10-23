@@ -211,18 +211,13 @@ class EntryCompletionCalculator {
    * @returns {Object} - Personal info completion metrics
    */
   calculatePersonalInfoCompletion(personalInfo = {}, passport = {}) {
+    // Gender removed from personalInfo - use passport only (single source of truth)
     const genderValueRaw =
-      (typeof personalInfo.gender === 'string' && personalInfo.gender.trim())
-        ? personalInfo.gender
-        : (typeof personalInfo.sex === 'string' && personalInfo.sex.trim())
-          ? personalInfo.sex
-          : (typeof personalInfo.genderCode === 'string' && personalInfo.genderCode.trim())
-            ? personalInfo.genderCode
-            : (typeof passport.gender === 'string' && passport.gender.trim())
-              ? passport.gender
-              : (typeof passport.sex === 'string' && passport.sex.trim())
-                ? passport.sex
-                : '';
+      (typeof passport.gender === 'string' && passport.gender.trim())
+        ? passport.gender
+        : (typeof passport.sex === 'string' && passport.sex.trim())
+          ? passport.sex
+          : '';
     const genderValue = typeof genderValueRaw === 'string' ? genderValueRaw.trim() : '';
 
     const requiredFields = [

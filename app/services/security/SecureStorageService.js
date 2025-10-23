@@ -196,17 +196,13 @@ class SecureStorageService {
             arrival_flight_number TEXT,
             arrival_departure_airport TEXT,
             arrival_departure_date TEXT,
-            arrival_departure_time TEXT,
             arrival_arrival_airport TEXT,
             arrival_arrival_date TEXT,
-            arrival_arrival_time TEXT,
             departure_flight_number TEXT,
             departure_departure_airport TEXT,
             departure_departure_date TEXT,
-            departure_departure_time TEXT,
             departure_arrival_airport TEXT,
             departure_arrival_date TEXT,
-            departure_arrival_time TEXT,
             accommodation_type TEXT DEFAULT 'HOTEL',
             province TEXT,
             district TEXT,
@@ -511,6 +507,9 @@ class SecureStorageService {
       await this.migrateEntryInfoTable();
       // Migration 6: Add schema v2.0 columns (is_primary, passport_id, is_default, label, etc.)
       await this.addSchemaV2Columns();
+
+      // Migration 7: Clean up unused time fields from travel_info table
+      await this.migrateTravelInfoSchema();
 
       // Update version if needed
       if (!currentVersion || currentVersion !== this.DB_VERSION) {
@@ -2140,15 +2139,15 @@ class SecureStorageService {
           id, user_id, destination,
           travel_purpose, recent_stay_country, boarding_country, visa_number,
           arrival_flight_number, arrival_departure_airport,
-          arrival_departure_date, arrival_departure_time,
-          arrival_arrival_airport, arrival_arrival_date, arrival_arrival_time,
+          arrival_departure_date,
+          arrival_arrival_airport, arrival_arrival_date,
           departure_flight_number, departure_departure_airport,
-          departure_departure_date, departure_departure_time,
-          departure_arrival_airport, departure_arrival_date, departure_arrival_time,
+          departure_departure_date,
+          departure_arrival_airport, departure_arrival_date,
           accommodation_type, province, district, sub_district, postal_code,
-          hotel_name, hotel_address, accommodation_phone, length_of_stay, 
+          hotel_name, hotel_address, accommodation_phone, length_of_stay,
           is_transit_passenger, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           travelData.userId,
@@ -2160,17 +2159,13 @@ class SecureStorageService {
           travelData.arrivalFlightNumber,
           travelData.arrivalDepartureAirport,
           travelData.arrivalDepartureDate,
-          travelData.arrivalDepartureTime,
           travelData.arrivalArrivalAirport,
           travelData.arrivalArrivalDate,
-          travelData.arrivalArrivalTime,
           travelData.departureFlightNumber,
           travelData.departureDepartureAirport,
           travelData.departureDepartureDate,
-          travelData.departureDepartureTime,
           travelData.departureArrivalAirport,
           travelData.departureArrivalDate,
-          travelData.departureArrivalTime,
           travelData.accommodationType,
           travelData.province,
           travelData.district,
@@ -2230,17 +2225,13 @@ class SecureStorageService {
         arrivalFlightNumber: result.arrival_flight_number,
         arrivalDepartureAirport: result.arrival_departure_airport,
         arrivalDepartureDate: result.arrival_departure_date,
-        arrivalDepartureTime: result.arrival_departure_time,
         arrivalArrivalAirport: result.arrival_arrival_airport,
         arrivalArrivalDate: result.arrival_arrival_date,
-        arrivalArrivalTime: result.arrival_arrival_time,
         departureFlightNumber: result.departure_flight_number,
         departureDepartureAirport: result.departure_departure_airport,
         departureDepartureDate: result.departure_departure_date,
-        departureDepartureTime: result.departure_departure_time,
         departureArrivalAirport: result.departure_arrival_airport,
         departureArrivalDate: result.departure_arrival_date,
-        departureArrivalTime: result.departure_arrival_time,
         accommodationType: result.accommodation_type,
         province: result.province,
         district: result.district,
@@ -2290,17 +2281,13 @@ class SecureStorageService {
         arrivalFlightNumber: result.arrival_flight_number,
         arrivalDepartureAirport: result.arrival_departure_airport,
         arrivalDepartureDate: result.arrival_departure_date,
-        arrivalDepartureTime: result.arrival_departure_time,
         arrivalArrivalAirport: result.arrival_arrival_airport,
         arrivalArrivalDate: result.arrival_arrival_date,
-        arrivalArrivalTime: result.arrival_arrival_time,
         departureFlightNumber: result.departure_flight_number,
         departureDepartureAirport: result.departure_departure_airport,
         departureDepartureDate: result.departure_departure_date,
-        departureDepartureTime: result.departure_departure_time,
         departureArrivalAirport: result.departure_arrival_airport,
         departureArrivalDate: result.departure_arrival_date,
-        departureArrivalTime: result.departure_arrival_time,
         accommodationType: result.accommodation_type,
         province: result.province,
         district: result.district,
@@ -3459,10 +3446,143 @@ class SecureStorageService {
   }
 
   /**
+   * Migrate travel_info table to remove unused time fields
+   * This removes the unused time columns from existing databases
+   */
+  async migrateTravelInfoSchema() {
+    try {
+      console.log('🔄 Checking travel_info schema migration...');
+
+      // Check if migration is needed
+      const columns = await this.modernDb.getAllAsync(`PRAGMA table_info(travel_info)`);
+      const columnNames = columns.map(col => col.name);
+
+      const unusedFields = [
+        'arrival_departure_time',
+        'arrival_arrival_time',
+        'departure_departure_time',
+        'departure_arrival_time'
+      ];
+
+      const hasUnusedFields = unusedFields.some(field => columnNames.includes(field));
+
+      if (!hasUnusedFields) {
+        console.log('ℹ️ Travel info schema already clean');
+        return;
+      }
+
+      console.log('📦 Creating backup before travel_info migration...');
+
+      // Create backup
+      const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, '');
+      const backupTableName = `travel_info_backup_${timestamp}`;
+
+      await this.modernDb.execAsync(
+        'CREATE TABLE ' + backupTableName + ' AS SELECT * FROM travel_info'
+      );
+
+      console.log(`✅ Backup created: ${backupTableName}`);
+
+      // Store backup info
+      await this.setSetting(`travel_info_backup_${timestamp}`, backupTableName);
+
+      // Perform migration
+      console.log('🔄 Migrating travel_info table...');
+
+      await this.modernDb.withTransactionAsync(async () => {
+        // Create new table without unused time fields
+        await this.modernDb.execAsync(
+          `CREATE TABLE travel_info_new (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            destination TEXT,
+            travel_purpose TEXT DEFAULT 'HOLIDAY',
+            recent_stay_country TEXT,
+            boarding_country TEXT,
+            visa_number TEXT,
+            arrival_flight_number TEXT,
+            arrival_departure_airport TEXT,
+            arrival_departure_date TEXT,
+            arrival_arrival_airport TEXT,
+            arrival_arrival_date TEXT,
+            departure_flight_number TEXT,
+            departure_departure_airport TEXT,
+            departure_departure_date TEXT,
+            departure_arrival_airport TEXT,
+            departure_arrival_date TEXT,
+            accommodation_type TEXT DEFAULT 'HOTEL',
+            province TEXT,
+            district TEXT,
+            sub_district TEXT,
+            postal_code TEXT,
+            hotel_name TEXT,
+            hotel_address TEXT,
+            accommodation_phone TEXT,
+            length_of_stay TEXT,
+            is_transit_passenger INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'draft',
+            created_at TEXT,
+            updated_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+          )`
+        );
+
+        // Copy data from old table to new table (excluding unused time fields)
+        await this.modernDb.execAsync(
+          `INSERT INTO travel_info_new (
+            id, user_id, destination, travel_purpose, recent_stay_country,
+            boarding_country, visa_number, arrival_flight_number,
+            arrival_departure_airport, arrival_departure_date,
+            arrival_arrival_airport, arrival_arrival_date,
+            departure_flight_number, departure_departure_airport,
+            departure_departure_date, departure_arrival_airport,
+            departure_arrival_date, accommodation_type, province, district,
+            sub_district, postal_code, hotel_name, hotel_address,
+            accommodation_phone, length_of_stay, is_transit_passenger,
+            status, created_at, updated_at
+          )
+          SELECT
+            id, user_id, destination, travel_purpose, recent_stay_country,
+            boarding_country, visa_number, arrival_flight_number,
+            arrival_departure_airport, arrival_departure_date,
+            arrival_arrival_airport, arrival_arrival_date,
+            departure_flight_number, departure_departure_airport,
+            departure_departure_date, departure_arrival_airport,
+            departure_arrival_date, accommodation_type, province, district,
+            sub_district, postal_code, hotel_name, hotel_address,
+            accommodation_phone, length_of_stay, is_transit_passenger,
+            status, created_at, updated_at
+          FROM travel_info`
+        );
+
+        // Drop old table
+        await this.modernDb.execAsync('DROP TABLE travel_info');
+
+        // Rename new table
+        await this.modernDb.execAsync('ALTER TABLE travel_info_new RENAME TO travel_info');
+
+        // Recreate indexes
+        await this.modernDb.execAsync(
+          'CREATE INDEX IF NOT EXISTS idx_travel_info_user ON travel_info(user_id)'
+        );
+        await this.modernDb.execAsync(
+          'CREATE INDEX IF NOT EXISTS idx_travel_info_destination ON travel_info(user_id, destination)'
+        );
+
+        console.log('✅ Travel info schema migration completed');
+      });
+
+    } catch (error) {
+      console.error('❌ Travel info schema migration failed:', error);
+      // Don't throw - migration failure shouldn't break the app
+    }
+  }
+
+  /**
     * Clean up obsolete tables from Schema v1.0 that are no longer needed
     * This removes tables that were replaced in Schema v2.0
     */
-  async cleanupObsoleteTables() {
+   async cleanupObsoleteTables() {
     try {
       console.log('🧹 Starting cleanup of obsolete Schema v1.0 tables...');
 
@@ -4237,6 +4357,39 @@ class SecureStorageService {
       }
     } catch (error) {
       console.error('Failed to close secure storage:', error);
+    }
+  }
+
+  /**
+   * Ensure a user record exists in the users table
+   * Creates the user if it doesn't exist
+   * @param {string} userId - User ID to ensure exists
+   * @returns {Promise<void>}
+   */
+  async ensureUser(userId) {
+    try {
+      await this.ensureInitialized();
+
+      // Check if user already exists
+      const existingUser = await this.modernDb.getFirstAsync(
+        'SELECT id FROM users WHERE id = ?',
+        [userId]
+      );
+
+      if (!existingUser) {
+        // Create the user record
+        const now = new Date().toISOString();
+        await this.modernDb.runAsync(
+          'INSERT INTO users (id, created_at, updated_at) VALUES (?, ?, ?)',
+          [userId, now, now]
+        );
+        console.log(`✅ Created user record for: ${userId}`);
+      } else {
+        console.log(`✅ User record already exists for: ${userId}`);
+      }
+    } catch (error) {
+      console.error('Failed to ensure user exists:', error);
+      throw error;
     }
   }
 }

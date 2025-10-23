@@ -214,6 +214,9 @@ class PassportDataService {
        // Initialize SecureStorageService (ensures database schema exists)
        try {
          await SecureStorageService.initialize(userId);
+         
+         // Ensure user record exists in the database
+         await SecureStorageService.ensureUser(userId);
        } catch (initError) {
          console.error('SecureStorageService initialization failed:', initError);
          // If initialization fails due to schema issues, mark as initialized anyway
@@ -1064,7 +1067,7 @@ class PassportDataService {
         console.log('- provinceCity:', personalInfo.provinceCity);
         console.log('- countryRegion:', personalInfo.countryRegion);
         console.log('- phoneCode:', personalInfo.phoneCode);
-        console.log('- gender:', personalInfo.gender);
+        // console.log('- gender:', personalInfo.gender); // gender removed from personalInfo
 
         // Apply updates using mergeUpdates to avoid overwriting existing data with empty values
         // This is important for progressive data filling where fields are filled incrementally
@@ -1081,7 +1084,7 @@ class PassportDataService {
         console.log('- provinceCity:', personalInfo.provinceCity);
         console.log('- countryRegion:', personalInfo.countryRegion);
         console.log('- phoneCode:', personalInfo.phoneCode);
-        console.log('- gender:', personalInfo.gender);
+        // console.log('- gender:', personalInfo.gender); // gender removed from personalInfo
 
         // Invalidate cache
         if (personalInfo.userId) {

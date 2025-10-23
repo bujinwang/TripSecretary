@@ -402,13 +402,14 @@ export const PersonalInfoCategory = {
       placeholder: 'e.g., zhang.wei@example.com'
     },
     {
-      name: 'gender',
-      label: 'Gender',
-      labelKey: 'personalInfo.gender',
-      type: 'required',
+      // NOTE: Gender field removed from personalInfo - handled by passport model
+      name: 'gender_removed',
+      label: 'Gender (Removed)',
+      labelKey: 'personalInfo.gender_removed',
+      type: 'optional',
       inputType: 'select',
       validator: FieldValidators.gender,
-      helpText: 'Select your gender',
+      helpText: 'Gender is now handled by passport data',
       options: [
         { value: 'male', label: 'Male', labelKey: 'common.male' },
         { value: 'female', label: 'Female', labelKey: 'common.female' }

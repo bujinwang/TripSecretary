@@ -30,19 +30,15 @@ class TravelInfo {
     this.arrivalFlightNumber = data.arrivalFlightNumber || '';
     this.arrivalDepartureAirport = data.arrivalDepartureAirport || '';
     this.arrivalDepartureDate = data.arrivalDepartureDate || '';
-    this.arrivalDepartureTime = data.arrivalDepartureTime || '';
     this.arrivalArrivalAirport = data.arrivalArrivalAirport || '';
     this.arrivalArrivalDate = data.arrivalArrivalDate || '';
-    this.arrivalArrivalTime = data.arrivalArrivalTime || '';
-    
+
     // Departure Flight Information (离开泰国机票)
     this.departureFlightNumber = data.departureFlightNumber || '';
     this.departureDepartureAirport = data.departureDepartureAirport || '';
     this.departureDepartureDate = data.departureDepartureDate || '';
-    this.departureDepartureTime = data.departureDepartureTime || '';
     this.departureArrivalAirport = data.departureArrivalAirport || '';
     this.departureArrivalDate = data.departureArrivalDate || '';
-    this.departureArrivalTime = data.departureArrivalTime || '';
     
     // Accommodation Information
     this.isTransitPassenger = data.isTransitPassenger || false; // Transit passenger flag
@@ -105,19 +101,7 @@ class TravelInfo {
       }
     });
 
-    // Validate times if provided
-    const timeFields = [
-      { field: this.arrivalDepartureTime, name: 'Arrival departure time' },
-      { field: this.arrivalArrivalTime, name: 'Arrival arrival time' },
-      { field: this.departureDepartureTime, name: 'Departure departure time' },
-      { field: this.departureArrivalTime, name: 'Departure arrival time' }
-    ];
-
-    timeFields.forEach(({ field, name }) => {
-      if (field && !this.isValidTime(field)) {
-        errors.push(`Invalid ${name} format (expected HH:MM)`);
-      }
-    });
+    // Time fields removed from schema - no validation needed
 
     return {
       isValid: errors.length === 0,
@@ -138,15 +122,7 @@ class TravelInfo {
     return date instanceof Date && !isNaN(date);
   }
 
-  /**
-   * Validate time format (HH:MM)
-   * @param {string} timeStr - Time string
-   * @returns {boolean} - Is valid time
-   */
-  isValidTime(timeStr) {
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    return timeRegex.test(timeStr);
-  }
+  // Time validation removed - time fields no longer in schema
 
   /**
    * Validate flight number format
@@ -179,17 +155,13 @@ class TravelInfo {
       this.arrivalFlightNumber,
       this.arrivalDepartureAirport,
       this.arrivalDepartureDate,
-      this.arrivalDepartureTime,
       this.arrivalArrivalAirport,
       this.arrivalArrivalDate,
-      this.arrivalArrivalTime,
       this.departureFlightNumber,
       this.departureDepartureAirport,
       this.departureDepartureDate,
-      this.departureDepartureTime,
       this.departureArrivalAirport,
       this.departureArrivalDate,
-      this.departureArrivalTime,
       this.hotelName,
       this.hotelAddress
     ];
@@ -206,17 +178,13 @@ class TravelInfo {
       this.arrivalFlightNumber,
       this.arrivalDepartureAirport,
       this.arrivalDepartureDate,
-      this.arrivalDepartureTime,
       this.arrivalArrivalAirport,
       this.arrivalArrivalDate,
-      this.arrivalArrivalTime,
       this.departureFlightNumber,
       this.departureDepartureAirport,
       this.departureDepartureDate,
-      this.departureDepartureTime,
       this.departureArrivalAirport,
       this.departureArrivalDate,
-      this.departureArrivalTime,
       this.hotelName,
       this.hotelAddress
     ];
@@ -259,17 +227,13 @@ class TravelInfo {
         arrivalFlightNumber: this.arrivalFlightNumber,
         arrivalDepartureAirport: this.arrivalDepartureAirport,
         arrivalDepartureDate: this.arrivalDepartureDate,
-        arrivalDepartureTime: this.arrivalDepartureTime,
         arrivalArrivalAirport: this.arrivalArrivalAirport,
         arrivalArrivalDate: this.arrivalArrivalDate,
-        arrivalArrivalTime: this.arrivalArrivalTime,
         departureFlightNumber: this.departureFlightNumber,
         departureDepartureAirport: this.departureDepartureAirport,
         departureDepartureDate: this.departureDepartureDate,
-        departureDepartureTime: this.departureDepartureTime,
         departureArrivalAirport: this.departureArrivalAirport,
         departureArrivalDate: this.departureArrivalDate,
-        departureArrivalTime: this.departureArrivalTime,
         isTransitPassenger: this.isTransitPassenger,
         accommodationType: this.accommodationType,
         province: this.province,
@@ -426,19 +390,15 @@ class TravelInfo {
         flightNumber: this.arrivalFlightNumber,
         departureAirport: this.arrivalDepartureAirport,
         departureDate: this.arrivalDepartureDate,
-        departureTime: this.arrivalDepartureTime,
         arrivalAirport: this.arrivalArrivalAirport,
-        arrivalDate: this.arrivalArrivalDate,
-        arrivalTime: this.arrivalArrivalTime
+        arrivalDate: this.arrivalArrivalDate
       },
       departureFlight: {
         flightNumber: this.departureFlightNumber,
         departureAirport: this.departureDepartureAirport,
         departureDate: this.departureDepartureDate,
-        departureTime: this.departureDepartureTime,
         arrivalAirport: this.departureArrivalAirport,
-        arrivalDate: this.departureArrivalDate,
-        arrivalTime: this.departureArrivalTime
+        arrivalDate: this.departureArrivalDate
       },
       accommodation: {
         hotelName: this.hotelName,

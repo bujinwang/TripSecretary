@@ -14,7 +14,7 @@
       "viewTitle": "历史记录 - 只读",
       "legacyBadge": "这是旧版本的历史记录",
       "incompleteNotice": "此入境包未完成提交",
-      "completenessIndicator": "护照 {{passport}}, 个人信息 {{personal}}, 资金 {{funds}}, 旅行信息 {{travel}}"
+      "completenessIndicator": "护照 {{passport}}, 护照信息 {{personal}}, 资金 {{funds}}, 旅行信息 {{travel}}"
     },
     "history": {
       "title": "历史记录",
@@ -219,7 +219,7 @@
     },
     "categories": {
       "passport": "护照信息",
-      "personal": "个人信息",
+      "personal": "护照信息",
       "funds": "资金证明",
       "travel": "旅行信息",
       "fieldsComplete": "{{filled}}/{{total}} 字段已完成"
@@ -735,7 +735,7 @@
     "travelInfo": {
       "sections": {
         "passport": "护照信息",
-        "personal": "个人信息",
+        "personal": "护照信息",
         "travel": "旅行信息"
       }
     },
@@ -833,7 +833,7 @@
           "title": "⚠️ 入境须知",
           "items": [
             "• 入台证有效期容易忽略：有效期3个月，必须在有效期内入境",
-            "• 电子入境卡信息复杂：个人信息、航班详情、住宿信息均需填写",
+            "• 电子入境卡信息复杂：护照信息、航班详情、住宿信息均需填写",
             "• 邮箱验证码环节：验证码有时效限制，邮件延迟可能导致填表中断",
             "• 证件准备繁琐：入台证、护照、往返机票、住宿、资金证明缺一不可",
             "• 移民官可能面谈：目的不明确或证件不齐全可能被详细询问"

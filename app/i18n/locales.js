@@ -999,12 +999,12 @@ const baseTranslations = {
             descriptionZh: '抵达前72小时内提交',
             tips: [
               'Prepare passport, flight info, Thailand address',
-              'Fill in English personal information',
+              'Fill in English passport information',
               'Save QR code to phone gallery'
             ],
             tipsZh: [
               '准备护照、航班信息、泰国地址',
-              '填写英文个人信息',
+              '填写英文护照信息',
               '保存QR码到手机相册'
             ]
           },
@@ -2651,7 +2651,7 @@ const baseTranslations = {
         loading: '加载中...',
         sections: {
           passport: '护照信息',
-          personal: '个人信息',
+          personal: '护照信息',
           funds: '资金证明',
           travel: '旅行信息',
         },
@@ -3237,12 +3237,12 @@ const baseTranslations = {
             descriptionZh: '抵达前72小时内提交',
             tips: [
               '准备护照、航班信息、泰国地址',
-              '填写英文个人信息',
+              '填写英文护照信息',
               '保存QR码到手机相册'
             ],
             tipsZh: [
               '准备护照、航班信息、泰国地址',
-              '填写英文个人信息',
+              '填写英文护照信息',
               '保存QR码到手机相册'
             ]
           },
@@ -3415,7 +3415,7 @@ const baseTranslations = {
         completionHint: '完成所有信息后可提交入境卡。',
         sections: {
           passport: '护照信息',
-          personal: '个人信息',
+          personal: '护照信息',
           funds: '资金证明',
           travel: '行程信息',
           accommodation: '住宿信息',
@@ -3658,9 +3658,9 @@ const baseTranslations = {
         notFilled: '未填写',
       },
       personal: {
-        title: '个人信息',
+        title: '护照信息',
         subtitle: '更新通关资料',
-        collapsedHint: '点击展开查看个人信息',
+        collapsedHint: '点击展开查看护照信息',
         fields: {
           dateOfBirth: {
             title: '出生日期',
@@ -3924,7 +3924,7 @@ const baseTranslations = {
           action: '下一步：海关申报表',
           formPreviewTitle: '📋 入境卡样本',
           formPlaceholderText: '黑色入境卡',
-          formPlaceholderHint: '包含个人信息、护照号码、\\n航班信息、住宿地址等',
+          formPlaceholderHint: '包含护照信息、护照号码、\\n航班信息、住宿地址等',
           viewFormButton: '对照填写入境表',
         },
         step3: {

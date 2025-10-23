@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
 import SecureStorageService from '../../services/security/SecureStorageService';
@@ -30,6 +31,9 @@ import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
+import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
+import SuggestionProviders from '../../utils/SuggestionProviders';
+import FieldStateManager from '../../utils/FieldStateManager';
 import apiClient from '../../services/api';
 
 // Import secure data models and services
@@ -262,17 +266,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // Travel Info State - with smart defaults
   const smartDefaults = getSmartDefaults();
-  const [travelPurpose, setTravelPurpose] = useState('HOLIDAY');
+  const [travelPurpose, setTravelPurpose] = useState('');
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
   const [recentStayCountry, setRecentStayCountry] = useState('');
-  const [boardingCountry, setBoardingCountry] = useState(smartDefaults.boardingCountry); // 登机国家或地区
+  const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
   const [arrivalArrivalDate, setArrivalArrivalDate] = useState(smartDefaults.arrivalDate);
   const [previousArrivalDate, setPreviousArrivalDate] = useState('');
   const [departureFlightNumber, setDepartureFlightNumber] = useState('');
   const [departureDepartureDate, setDepartureDepartureDate] = useState(smartDefaults.departureDate);
   const [isTransitPassenger, setIsTransitPassenger] = useState(false);
-  const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
+  const [accommodationType, setAccommodationType] = useState(''); // 住宿类型
   const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
   const [province, setProvince] = useState(''); // 省
   const [district, setDistrict] = useState(''); // 区（地区）
@@ -299,124 +303,327 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [completionMetrics, setCompletionMetrics] = useState(null);
   const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
 
-  // Count filled fields for each section
+  // User interaction tracking
+  const userInteractionTracker = useUserInteractionTracker('thailand_travel_info');
+
+  // Migration function to mark existing data as user-modified
+  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+    if (!userData || !userInteractionTracker.isInitialized) {
+      return;
+    }
+
+    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
+    
+    const existingDataToMigrate = {};
+
+    // Migrate passport data
+    if (userData.passport) {
+      const passport = userData.passport;
+      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
+      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
+      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
+      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
+      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
+      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+    }
+
+    // Migrate personal info data
+    if (userData.personalInfo) {
+      const personalInfo = userData.personalInfo;
+      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
+      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
+      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
+      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+    }
+
+    // Migrate travel info data
+    if (userData.travelInfo) {
+      const travelInfo = userData.travelInfo;
+      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
+      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
+      if (travelInfo.recentStayCountry) existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
+      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
+      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
+      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
+      if (travelInfo.province) existingDataToMigrate.province = travelInfo.province;
+      if (travelInfo.district) existingDataToMigrate.district = travelInfo.district;
+      if (travelInfo.subDistrict) existingDataToMigrate.subDistrict = travelInfo.subDistrict;
+      if (travelInfo.postalCode) existingDataToMigrate.postalCode = travelInfo.postalCode;
+      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
+      if (travelInfo.visaNumber) existingDataToMigrate.visaNumber = travelInfo.visaNumber;
+      if (travelInfo.isTransitPassenger !== undefined) existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
+    }
+
+    console.log('Data to migrate:', existingDataToMigrate);
+    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
+
+    if (Object.keys(existingDataToMigrate).length > 0) {
+      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      console.log('✅ Migration completed - existing data marked as user-modified');
+    } else {
+      console.log('⚠️ No existing data found to migrate');
+    }
+  }, [userInteractionTracker]);
+
+  // Count filled fields for each section using FieldStateManager
   const getFieldCount = (section) => {
-    let filled = 0;
-    let total = 0;
+    // Build interaction state for FieldStateManager
+    const interactionState = {};
+    const allFieldNames = [
+      'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
+      'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
+      'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
+      'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
+      'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
+      'subDistrict', 'postalCode', 'hotelAddress'
+    ];
+
+    allFieldNames.forEach(fieldName => {
+      interactionState[fieldName] = {
+        isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
+        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+      };
+    });
 
     switch (section) {
       case 'passport':
-        const passportFields = [fullName, nationality, passportNo, dob, expiryDate];
-        total = passportFields.length;
-        filled = passportFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
+        const passportFields = {
+          fullName: fullName,
+          nationality: nationality,
+          passportNo: passportNo,
+          dob: dob,
+          expiryDate: expiryDate,
+          sex: sex
+        };
+        
+        const passportFieldCount = FieldStateManager.getFieldCount(
+          passportFields,
+          interactionState,
+          Object.keys(passportFields)
+        );
+        
+        return {
+          filled: passportFieldCount.totalWithValues,
+          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
+        };
       
       case 'personal':
-        const personalFields = [occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email, sex];
-        total = personalFields.length;
-        filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
+        const personalFields = {
+          occupation: occupation,
+          cityOfResidence: cityOfResidence,
+          residentCountry: residentCountry,
+          phoneCode: phoneCode,
+          phoneNumber: phoneNumber,
+          email: email
+        };
+        
+        const personalFieldCount = FieldStateManager.getFieldCount(
+          personalFields,
+          interactionState,
+          Object.keys(personalFields)
+        );
+        
+        return {
+          filled: personalFieldCount.totalWithValues,
+          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
+        };
       
-    case 'funds':
-      // For funds, show actual count with minimum requirement of 1
-      const fundItemCount = funds.length;
-      if (fundItemCount === 0) {
-        // No funds added yet - show requirement
-        total = 1;
-        filled = 0;
-      } else {
-        // Show actual count of fund items
-        total = fundItemCount;
-        filled = fundItemCount; // All added items are considered complete
-      }
-      break;
+      case 'funds':
+        // For funds, show actual count with minimum requirement of 1
+        // Funds are not tracked by interaction state, so use existing logic
+        const fundItemCount = funds.length;
+        if (fundItemCount === 0) {
+          return { filled: 0, total: 1 };
+        } else {
+          return { filled: fundItemCount, total: fundItemCount };
+        }
       
       case 'travel':
-        // Thailand requires both arrival and departure flight info
-        // For travel purpose, if "OTHER" is selected, check if custom purpose is filled
+        // Build travel fields with proper handling of custom values
         const purposeFilled = travelPurpose === 'OTHER' 
           ? (customTravelPurpose && customTravelPurpose.trim() !== '')
           : (travelPurpose && travelPurpose.trim() !== '');
         
-        const travelFields = [
-          purposeFilled,
-          recentStayCountry,
-          boardingCountry,
-          arrivalFlightNumber, arrivalArrivalDate,
-          departureFlightNumber, departureDepartureDate
-        ];
-        
+        const accommodationTypeFilled = accommodationType === 'OTHER'
+          ? (customAccommodationType && customAccommodationType.trim() !== '')
+          : (accommodationType && accommodationType.trim() !== '');
+
+        const travelFields = {
+          travelPurpose: purposeFilled ? (travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose) : '',
+          recentStayCountry: recentStayCountry,
+          boardingCountry: boardingCountry,
+          arrivalFlightNumber: arrivalFlightNumber,
+          arrivalArrivalDate: arrivalArrivalDate,
+          departureFlightNumber: departureFlightNumber,
+          departureDepartureDate: departureDepartureDate
+        };
+
         // Only include accommodation fields if not a transit passenger
         if (!isTransitPassenger) {
-          // For accommodation type, if "OTHER" is selected, check if custom type is filled
-          const accommodationTypeFilled = accommodationType === 'OTHER'
-            ? (customAccommodationType && customAccommodationType.trim() !== '')
-            : (accommodationType && accommodationType.trim() !== '');
+          travelFields.accommodationType = accommodationTypeFilled ? (accommodationType === 'OTHER' ? customAccommodationType : accommodationType) : '';
+          travelFields.province = province;
+          travelFields.hotelAddress = hotelAddress;
           
           // Different fields based on accommodation type
           const isHotelType = accommodationType === 'HOTEL';
-          const accommodationFields = isHotelType
-            ? [accommodationTypeFilled, province, hotelAddress]
-            : [accommodationTypeFilled, province, district, subDistrict, postalCode, hotelAddress];
-          
-          travelFields.push(...accommodationFields);
+          if (!isHotelType) {
+            travelFields.district = district;
+            travelFields.subDistrict = subDistrict;
+            travelFields.postalCode = postalCode;
+          }
         }
         
-        total = travelFields.length;
-        filled = travelFields.filter(field => {
-          if (typeof field === 'boolean') return field;
-          return field && field.toString().trim() !== '';
-        }).length;
-        break;
+        const travelFieldCount = FieldStateManager.getFieldCount(
+          travelFields,
+          interactionState,
+          Object.keys(travelFields)
+        );
+        
+        return {
+          filled: travelFieldCount.totalWithValues,
+          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+        };
     }
 
-    return { filled, total };
+    return { filled: 0, total: 0 };
   };
 
-  // Calculate completion metrics using EntryCompletionCalculator
+  // Calculate completion metrics using FieldStateManager
   const calculateCompletionMetrics = () => {
     try {
-      const entryInfo = {
-        passport: {
-          passportNumber: passportNo,
-          fullName: fullName,
-          nationality: nationality,
-          dateOfBirth: dob,
-          expiryDate: expiryDate,
-          gender: sex
-        },
-        personalInfo: {
-          occupation: occupation,
-          provinceCity: cityOfResidence,
-          countryRegion: residentCountry,
-          phoneNumber: phoneNumber,
-          email: email,
-          gender: sex,
-          phoneCode: phoneCode
-        },
-        funds: funds,
-        travel: {
-          travelPurpose: travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose,
-          arrivalDate: arrivalArrivalDate,
-          departureDate: departureDepartureDate,
-          arrivalFlightNumber: arrivalFlightNumber,
-          departureFlightNumber: departureFlightNumber,
-          recentStayCountry: recentStayCountry,
-          boardingCountry: boardingCountry,
-          accommodation: hotelAddress,
-          accommodationType: accommodationType === 'OTHER' ? customAccommodationType : accommodationType,
-          province: province,
-          district: district,
-          subDistrict: subDistrict,
-          postalCode: postalCode,
-          hotelAddress: hotelAddress,
-          isTransitPassenger: isTransitPassenger
+      // Build interaction state for FieldStateManager
+      const interactionState = {};
+      const allFieldNames = [
+        'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
+        'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
+        'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
+        'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
+        'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
+        'subDistrict', 'postalCode', 'hotelAddress'
+      ];
+
+      allFieldNames.forEach(fieldName => {
+        interactionState[fieldName] = {
+          isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
+          lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+          initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+        };
+      });
+
+      // Build all fields object for FieldStateManager
+      const allFields = {
+        // Passport fields
+        passportNo: passportNo,
+        fullName: fullName,
+        nationality: nationality,
+        dob: dob,
+        expiryDate: expiryDate,
+        sex: sex,
+        // Personal info fields
+        phoneCode: phoneCode,
+        phoneNumber: phoneNumber,
+        email: email,
+        occupation: occupation,
+        cityOfResidence: cityOfResidence,
+        residentCountry: residentCountry,
+        // Travel info fields
+        travelPurpose: travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose,
+        boardingCountry: boardingCountry,
+        recentStayCountry: recentStayCountry,
+        visaNumber: visaNumber,
+        arrivalFlightNumber: arrivalFlightNumber,
+        arrivalArrivalDate: arrivalArrivalDate,
+        departureFlightNumber: departureFlightNumber,
+        departureDepartureDate: departureDepartureDate,
+        isTransitPassenger: isTransitPassenger,
+        accommodationType: accommodationType === 'OTHER' ? customAccommodationType : accommodationType,
+        province: province,
+        district: district,
+        subDistrict: subDistrict,
+        postalCode: postalCode,
+        hotelAddress: hotelAddress
+      };
+
+      // Define field configuration for Thailand travel info
+      const fieldConfig = {
+        requiredFields: [
+          'fullName', 'nationality', 'passportNo', 'dob', 'expiryDate', 'sex',
+          'occupation', 'cityOfResidence', 'residentCountry', 'phoneNumber', 'email',
+          'travelPurpose', 'boardingCountry', 'arrivalFlightNumber', 'arrivalArrivalDate',
+          'departureFlightNumber', 'departureDepartureDate'
+        ],
+        optionalFields: [
+          'phoneCode', 'recentStayCountry', 'visaNumber', 'accommodationType', 
+          'province', 'district', 'subDistrict', 'postalCode', 'hotelAddress'
+        ],
+        fieldWeights: {
+          // Passport fields have higher weight
+          fullName: 2, nationality: 2, passportNo: 2, dob: 2, expiryDate: 2, sex: 2,
+          // Personal info fields
+          occupation: 1, cityOfResidence: 1, residentCountry: 1, phoneNumber: 1, email: 1,
+          // Travel info fields
+          travelPurpose: 2, boardingCountry: 2, arrivalFlightNumber: 2, arrivalArrivalDate: 2,
+          departureFlightNumber: 2, departureDepartureDate: 2
         }
       };
 
-      const summary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
+      // Use FieldStateManager to get completion metrics
+      const metrics = FieldStateManager.getCompletionMetrics(allFields, interactionState, fieldConfig);
+      
+      // Add funds completion (not tracked by interaction state)
+      const fundItemCount = funds.length;
+      const fundsComplete = fundItemCount > 0;
+      
+      // Calculate overall completion including funds
+      const totalSections = 4; // passport, personal, travel, funds
+      const completedSections = [
+        metrics.requiredCompletionPercentage >= 80, // passport + personal + travel required fields
+        fundsComplete
+      ].filter(Boolean).length;
+      
+      const totalPercent = Math.round((completedSections / totalSections) * 100);
+
+      // Create summary object compatible with existing code
+      const summary = {
+        totalPercent: totalPercent,
+        metrics: {
+          passport: {
+            completed: metrics.requiredFieldsCompleted,
+            total: metrics.requiredFields,
+            percentage: metrics.requiredCompletionPercentage
+          },
+          personal: {
+            completed: metrics.requiredFieldsCompleted,
+            total: metrics.requiredFields,
+            percentage: metrics.requiredCompletionPercentage
+          },
+          travel: {
+            completed: metrics.requiredFieldsCompleted,
+            total: metrics.requiredFields,
+            percentage: metrics.requiredCompletionPercentage
+          },
+          funds: {
+            completed: fundItemCount,
+            total: Math.max(1, fundItemCount),
+            percentage: fundsComplete ? 100 : 0
+          },
+          userModifiedFields: metrics.userModifiedFields
+        },
+        isReady: totalPercent >= 80
+      };
+
       setCompletionMetrics(summary.metrics);
       setTotalCompletionPercent(summary.totalPercent);
+      
+      console.log('=== COMPLETION METRICS WITH INTERACTION TRACKING ===');
+      console.log('User modified fields:', metrics.userModifiedFields);
+      console.log('Total completion:', summary.totalPercent + '%');
+      console.log('Metrics:', summary.metrics);
       
       return summary;
     } catch (error) {
@@ -557,6 +764,29 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         console.log('userData.passport.dateOfBirth:', userData?.passport?.dateOfBirth);
         console.log('userData.personalInfo:', userData?.personalInfo);
 
+        // Load travel info and add to userData for migration
+        try {
+          const destinationId = destination?.id || 'thailand';
+          const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          if (travelInfo) {
+            userData.travelInfo = travelInfo;
+          }
+        } catch (travelInfoError) {
+          console.log('Failed to load travel info for migration:', travelInfoError);
+        }
+
+        // Wait for interaction tracker to be initialized before migration
+        if (userInteractionTracker.isInitialized) {
+          await migrateExistingDataToInteractionState(userData);
+        } else {
+          // If not initialized yet, wait a bit and try again
+          setTimeout(async () => {
+            if (userInteractionTracker.isInitialized) {
+              await migrateExistingDataToInteractionState(userData);
+            }
+          }, 100);
+        }
+
         // Passport Info - prioritize centralized data, fallback to route params
         const passportInfo = userData?.passport;
         if (passportInfo) {
@@ -607,39 +837,24 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         // Personal Info - load from centralized data
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          console.log('=== 🔍 LOADING PERSONAL INFO FROM DATABASE ===');
-          console.log('Personal info data:', JSON.stringify(personalInfo, null, 2));
-
-          // Gender field mapping
-          const loadedSex = personalInfo.gender || passportInfo?.gender || passport?.sex || sex || 'Male';
-          setSex(loadedSex);
-
           setOccupation(personalInfo.occupation || '');
           setCityOfResidence(personalInfo.provinceCity || '');
           setResidentCountry(personalInfo.countryRegion || '');
           setPhoneNumber(personalInfo.phoneNumber || '');
           setEmail(personalInfo.email || '');
-
+          
           // Set phone code based on resident country or nationality
           setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-
+          
           // Store personal info data model instance
           setPersonalInfoData(personalInfo);
-
-          console.log('✅ Personal info loaded and state updated:');
-          console.log('- occupation:', personalInfo.occupation);
-          console.log('- provinceCity:', personalInfo.provinceCity);
-          console.log('- countryRegion:', personalInfo.countryRegion);
-          console.log('- phoneNumber:', personalInfo.phoneNumber);
-          console.log('- email:', personalInfo.email);
-          console.log('- phoneCode:', personalInfo.phoneCode);
-          console.log('- gender:', personalInfo.gender);
         } else {
-          console.log('⚠️ No personal info found in database, using fallback values');
-          // Fallback to passport data for gender
-          setSex(passport?.sex || 'Male');
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
+
+        // Gender - load from passport only (single source of truth)
+        const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || sex || 'Male';
+        setSex(loadedSex);
 
         await refreshFundItems();
 
@@ -705,6 +920,25 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             setHotelAddress(travelInfo.hotelAddress || '');
             
             console.log('Travel info loaded and state updated');
+            
+            // Initialize user interaction tracker with loaded travel info
+            userInteractionTracker.initializeWithExistingData({
+              travelPurpose: travelInfo.travelPurpose,
+              boardingCountry: travelInfo.boardingCountry,
+              accommodationType: travelInfo.accommodationType,
+              recentStayCountry: travelInfo.recentStayCountry,
+              arrivalFlightNumber: travelInfo.arrivalFlightNumber,
+              arrivalArrivalDate: travelInfo.arrivalArrivalDate,
+              departureFlightNumber: travelInfo.departureFlightNumber,
+              departureDepartureDate: travelInfo.departureDepartureDate,
+              province: travelInfo.province,
+              district: travelInfo.district,
+              subDistrict: travelInfo.subDistrict,
+              postalCode: travelInfo.postalCode,
+              hotelAddress: travelInfo.hotelAddress,
+              customTravelPurpose: travelInfo.travelPurpose && !predefinedPurposes.includes(travelInfo.travelPurpose) ? travelInfo.travelPurpose : '',
+              customAccommodationType: travelInfo.accommodationType && !predefinedAccommodationTypes.includes(travelInfo.accommodationType) ? travelInfo.accommodationType : ''
+            });
           } else {
             console.log('No saved travel info found');
           }
@@ -751,6 +985,21 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           const userData = await PassportDataService.getAllUserData(userId);
 
           if (userData) {
+            // Load travel info and add to userData for migration
+            try {
+              const destinationId = destination?.id || 'thailand';
+              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              if (travelInfo) {
+                userData.travelInfo = travelInfo;
+              }
+            } catch (travelInfoError) {
+              console.log('Failed to load travel info for migration on focus:', travelInfoError);
+            }
+
+            // Perform backward compatibility migration on focus reload
+            if (userInteractionTracker.isInitialized) {
+              await migrateExistingDataToInteractionState(userData);
+            }
             // Update passport data if available
             const passportInfo = userData.passport;
             if (passportInfo) {
@@ -770,7 +1019,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             // Update personal info if available
             const personalInfo = userData.personalInfo;
             if (personalInfo) {
-              setSex(personalInfo.gender || passportInfo?.gender || passport?.sex || sex);
               setOccupation(personalInfo.occupation || occupation);
               setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
               setResidentCountry(personalInfo.countryRegion || residentCountry);
@@ -779,6 +1027,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               setPhoneCode(personalInfo.phoneCode || phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
               setPersonalInfoData(personalInfo);
             }
+            
+            // Gender - load from passport only (single source of truth)
+            setSex(passportInfo?.gender || passport?.sex || passport?.gender || sex);
 
             await refreshFundItems({ forceRefresh: true });
 
@@ -1026,408 +1277,454 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
 
-  // Create debounced save function
+  // Create debounced save function with error handling
   const debouncedSaveData = DebouncedSave.debouncedSave(
     'thailand_travel_info',
     async () => {
       await saveDataToSecureStorage();
       setLastEditedAt(new Date());
     },
-    300
+    300,
+    {
+      maxRetries: 3,
+      retryDelay: 1000,
+      onError: (error, retryCount) => {
+        console.error(`Save failed after ${retryCount} retries:`, error);
+        // Could show user notification here
+        Alert.alert(
+          '保存失败',
+          `数据保存失败，已重试 ${retryCount} 次。请检查网络连接或稍后再试。`,
+          [
+            { text: '稍后重试', style: 'cancel' },
+            { 
+              text: '立即重试', 
+              onPress: () => DebouncedSave.retrySave('thailand_travel_info').catch(console.error)
+            }
+          ]
+        );
+      },
+      onRetry: (error, retryCount, maxRetries) => {
+        console.warn(`Save retry ${retryCount}/${maxRetries}:`, error.message);
+        // Could show retry indicator in UI
+      }
+    }
   );
 
-  
-// Enhanced field blur with validation logging
-const handleFieldBlur = async (fieldName, fieldValue) => {
-  try {
-    console.log('=== 🔍 FIELD BLUR DEBUG ===');
-    console.log('Field:', fieldName);
-    console.log('Value:', fieldValue);
-    console.log('Type:', typeof fieldValue);
-    console.log('Length:', fieldValue?.length);
-
-    // Check if this field should be saved
-    const shouldSaveField = fieldValue !== null && fieldValue !== undefined &&
-                           (typeof fieldValue !== 'string' || fieldValue.trim().length > 0);
-
-    console.log('Should save field:', shouldSaveField);
-
-    // Track last edited field for session state
-    setLastEditedField(fieldName);
-
-    // Brief highlight animation for last edited field
-    if (fieldName) {
-      // Clear any existing highlight timeout
-      if (window.highlightTimeout) {
-        clearTimeout(window.highlightTimeout);
-      }
-
-      // Set highlight timeout to clear after 2 seconds
-      window.highlightTimeout = setTimeout(() => {
-        setLastEditedField(null);
-      }, 2000);
-    }
-
-    // Enhanced validation using SoftValidation utility
-    let isValid = true;
-    let errorMessage = '';
-    let isWarning = false;
-    let helpMessage = '';
-
-    // Comprehensive validation rules for each field
+  // Handle user interaction with tracking-enabled inputs
+  const handleUserInteraction = useCallback((fieldName, value) => {
+    // Mark field as user-modified
+    userInteractionTracker.markFieldAsModified(fieldName, value);
+    
+    // Update the appropriate state based on field name
     switch (fieldName) {
-      case 'fullName':
-        if (fieldValue && fieldValue.trim()) {
-          // Check for Chinese characters (not allowed in passport names)
-          if (/[一-鿿]/.test(fieldValue)) {
-            isValid = false;
-            errorMessage = 'Please use English letters only (no Chinese characters)';
-          }
-          // Check for proper format (Last, First or LAST, FIRST)
-          else if (!/^[A-Za-zs,.-]+$/.test(fieldValue)) {
-            isValid = false;
-            errorMessage = 'Name should contain only letters, spaces, commas, periods, and hyphens';
-          }
-          // Check minimum length
-          else if (fieldValue.trim().length < 2) {
-            isValid = false;
-            errorMessage = 'Name must be at least 2 characters long';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Full name is required';
+      case 'travelPurpose':
+        setTravelPurpose(value);
+        if (value !== 'OTHER') {
+          setCustomTravelPurpose('');
         }
         break;
-
-      case 'passportNo':
-        if (fieldValue && fieldValue.trim()) {
-          // Remove spaces and validate format
-          const cleanPassport = fieldValue.replace(/s/g, '');
-          if (!/^[A-Z0-9]{6,12}$/i.test(cleanPassport)) {
-            isValid = false;
-            errorMessage = 'Passport number must be 6-12 letters and numbers';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Passport number is required';
+      case 'accommodationType':
+        setAccommodationType(value);
+        if (value !== 'OTHER') {
+          setCustomAccommodationType('');
         }
         break;
-
-      case 'visaNumber':
-        if (fieldValue && fieldValue.trim()) {
-          if (!/^[A-Za-z0-9]{5,15}$/.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Visa number must be 5-15 letters or numbers';
-          }
-        }
-        // Visa number is optional, so no warning for empty value
+      case 'boardingCountry':
+        setBoardingCountry(value);
         break;
+      default:
+        console.warn(`Unknown field for user interaction: ${fieldName}`);
+    }
+    
+    // Trigger debounced save
+    debouncedSaveData();
+  }, [userInteractionTracker, debouncedSaveData]);
 
-      case 'dob':
-      case 'expiryDate':
-      case 'arrivalArrivalDate':
-      case 'departureDepartureDate':
-        if (fieldValue && fieldValue.trim()) {
-          // Validate date format
-          if (!/^d{4}-d{2}-d{2}$/.test(fieldValue)) {
-            isValid = false;
-            errorMessage = 'Date must be in YYYY-MM-DD format';
-          } else {
-            // Validate actual date
-            const date = new Date(fieldValue);
-            if (isNaN(date.getTime())) {
+  const handleFieldBlur = async (fieldName, fieldValue) => {
+    try {
+      console.log('=== HANDLE FIELD BLUR ===');
+      console.log('Field:', fieldName);
+      console.log('Value:', fieldValue);
+      
+      // Mark field as user-modified for interaction tracking
+      userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
+      
+      // Track last edited field for session state
+      setLastEditedField(fieldName);
+      
+      // Brief highlight animation for last edited field
+      if (fieldName) {
+        // Clear any existing highlight timeout
+        if (window.highlightTimeout) {
+          clearTimeout(window.highlightTimeout);
+        }
+        
+        // Set highlight timeout to clear after 2 seconds
+        window.highlightTimeout = setTimeout(() => {
+          setLastEditedField(null);
+        }, 2000);
+      }
+      
+      // Enhanced validation using SoftValidation utility
+      let isValid = true;
+      let errorMessage = '';
+      let isWarning = false;
+
+      // Comprehensive validation rules for each field
+      switch (fieldName) {
+        case 'fullName':
+          if (fieldValue && fieldValue.trim()) {
+            // Check for Chinese characters (not allowed in passport names)
+            if (/[\u4e00-\u9fff]/.test(fieldValue)) {
               isValid = false;
-              errorMessage = 'Please enter a valid date';
-            } else {
-              // Additional date-specific validations
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
+              errorMessage = 'Please use English letters only (no Chinese characters)';
+            }
+            // Check for proper format (Last, First or LAST, FIRST)
+            else if (!/^[A-Za-z\s,.-]+$/.test(fieldValue)) {
+              isValid = false;
+              errorMessage = 'Name should contain only letters, spaces, commas, periods, and hyphens';
+            }
+            // Check minimum length
+            else if (fieldValue.trim().length < 2) {
+              isValid = false;
+              errorMessage = 'Name must be at least 2 characters long';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = 'Full name is required';
+          }
+          break;
 
-              if (fieldName === 'dob') {
-                // Birth date should be in the past and reasonable
-                if (date >= today) {
-                  isValid = false;
-                  errorMessage = 'Birth date must be in the past';
-                } else if (date < new Date('1900-01-01')) {
-                  isValid = false;
-                  errorMessage = 'Please enter a valid birth date';
-                }
-              } else if (fieldName === 'expiryDate') {
-                // Passport expiry should be in the future
-                if (date <= today) {
-                  isValid = false;
-                  errorMessage = 'Passport expiry date must be in the future';
-                }
-              } else if (fieldName === 'arrivalArrivalDate') {
-                // Arrival date should be in the future (or today)
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                if (date < yesterday) {
-                  isValid = false;
-                  errorMessage = 'Arrival date should not be in the past';
-                }
-              } else if (fieldName === 'departureDepartureDate') {
-                // Departure date should be after arrival date
-                if (arrivalArrivalDate && date <= new Date(arrivalArrivalDate)) {
-                  isValid = false;
-                  errorMessage = 'Departure date must be after arrival date';
+        case 'passportNo':
+          if (fieldValue && fieldValue.trim()) {
+            // Remove spaces and validate format
+            const cleanPassport = fieldValue.replace(/\s/g, '');
+            if (!/^[A-Z0-9]{6,12}$/i.test(cleanPassport)) {
+              isValid = false;
+              errorMessage = 'Passport number must be 6-12 letters and numbers';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = 'Passport number is required';
+          }
+          break;
+
+        case 'visaNumber':
+          if (fieldValue && fieldValue.trim()) {
+            if (!/^[A-Za-z0-9]{5,15}$/.test(fieldValue.trim())) {
+              isValid = false;
+              errorMessage = 'Visa number must be 5-15 letters or numbers';
+            }
+          }
+          // Visa number is optional, so no warning for empty value
+          break;
+
+        case 'dob':
+        case 'expiryDate':
+        case 'arrivalArrivalDate':
+        case 'departureDepartureDate':
+          if (fieldValue && fieldValue.trim()) {
+            // Validate date format
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(fieldValue)) {
+              isValid = false;
+              errorMessage = 'Date must be in YYYY-MM-DD format';
+            } else {
+              // Validate actual date
+              const date = new Date(fieldValue);
+              if (isNaN(date.getTime())) {
+                isValid = false;
+                errorMessage = 'Please enter a valid date';
+              } else {
+                // Additional date-specific validations
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (fieldName === 'dob') {
+                  // Birth date should be in the past and reasonable
+                  if (date >= today) {
+                    isValid = false;
+                    errorMessage = 'Birth date must be in the past';
+                  } else if (date < new Date('1900-01-01')) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid birth date';
+                  }
+                } else if (fieldName === 'expiryDate') {
+                  // Passport expiry should be in the future
+                  if (date <= today) {
+                    isValid = false;
+                    errorMessage = 'Passport expiry date must be in the future';
+                  }
+                } else if (fieldName === 'arrivalArrivalDate') {
+                  // Arrival date should be in the future (or today)
+                  const yesterday = new Date(today);
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  if (date < yesterday) {
+                    isValid = false;
+                    errorMessage = 'Arrival date should not be in the past';
+                  }
+                } else if (fieldName === 'departureDepartureDate') {
+                  // Departure date should be after arrival date
+                  if (arrivalArrivalDate && date <= new Date(arrivalArrivalDate)) {
+                    isValid = false;
+                    errorMessage = 'Departure date must be after arrival date';
+                  }
                 }
               }
             }
+          } else if (['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate'].includes(fieldName)) {
+            isWarning = true;
+            errorMessage = `${fieldName === 'dob' ? 'Birth date' : 
+                           fieldName === 'expiryDate' ? 'Passport expiry date' :
+                           fieldName === 'arrivalArrivalDate' ? 'Arrival date' : 'Departure date'} is required`;
           }
-        } else if (['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate'].includes(fieldName)) {
-          isWarning = true;
-          errorMessage = `${fieldName === 'dob' ? 'Birth date' :
-                         fieldName === 'expiryDate' ? 'Passport expiry date' :
-                         fieldName === 'arrivalArrivalDate' ? 'Arrival date' : 'Departure date'} is required`;
-        }
-        break;
+          break;
 
-      case 'email':
-        if (fieldValue && fieldValue.trim()) {
-          // Enhanced email validation
-          const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-          if (!emailRegex.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Please enter a valid email address';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Email address is required';
-        }
-        break;
-
-      case 'phoneNumber':
-        if (fieldValue && fieldValue.trim()) {
-          // Remove all non-digit characters except + for validation
-          const cleanPhone = fieldValue.replace(/[^\d+]/g, '');
-          if (cleanPhone.length < 7) {
-            isValid = false;
-            errorMessage = 'Phone number must be at least 7 digits';
-          } else if (cleanPhone.length > 15) {
-            isValid = false;
-            errorMessage = 'Phone number must be no more than 15 digits';
-          } else if (!/^[\+]?[\d\s\-()]{7,}$/.test(fieldValue)) {
-            isValid = false;
-            errorMessage = 'Phone number contains invalid characters';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Phone number is required';
-        }
-        break;
-
-      case 'phoneCode':
-        if (fieldValue && fieldValue.trim()) {
-          if (!/^\+\d{1,4}$/.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Country code must start with + followed by 1-4 digits';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Country code is required';
-        }
-        break;
-
-      case 'occupation':
-        if (fieldValue && fieldValue.trim()) {
-          // Check for English characters only
-          if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Please use English letters only';
-          } else if (fieldValue.trim().length < 2) {
-            isValid = false;
-            errorMessage = 'Must be at least 2 characters long';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = 'Occupation is required';
-        }
-        break;
-
-      case 'cityOfResidence':
-        if (fieldValue && fieldValue.trim()) {
-          const trimmedValue = fieldValue.trim();
-
-          if (!/^[A-Za-z\s\-.]+$/.test(trimmedValue)) {
-            isValid = false;
-            errorMessage = 'Please use English letters only';
-          } else if (trimmedValue.length < 2) {
-            isValid = false;
-            errorMessage = 'Must be at least 2 characters long';
-          } else if (residentCountry === 'CHN') {
-            const provinceMatch = findChinaProvince(trimmedValue);
-            if (!provinceMatch) {
-              isValid = false;
-              errorMessage = 'For China, please enter a province name (e.g., Anhui, Guangdong)';
-            } else if (provinceMatch.displayName !== cityOfResidence) {
-              setCityOfResidence(provinceMatch.displayName);
-            }
-          }
-        } else {
-          isWarning = true;
-          errorMessage = residentCountry === 'CHN'
-            ? 'Province is required for China'
-            : 'Province or city is required';
-        }
-        break;
-
-      case 'recentStayCountry':
-        if (fieldValue && fieldValue.trim()) {
-          // Ensure ISO code format
-          if (!/^[A-Za-z]{3}$/.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Please select a valid country or territory';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = '过去14天停留国家或地区是必填信息';
-        }
-        break;
-
-      case 'arrivalFlightNumber':
-      case 'departureFlightNumber':
-        if (fieldValue && fieldValue.trim()) {
-          // Flight number format validation (e.g., TG123, CX456)
-          if (!/^[A-Z]{2,3}\d{1,4}[A-Z]?$/i.test(fieldValue.trim())) {
-            isValid = false;
-            errorMessage = 'Flight number format: 2-3 letters + 1-4 digits (e.g., TG123)';
-          }
-        } else {
-          isWarning = true;
-          errorMessage = `${fieldName === 'arrivalFlightNumber' ? 'Arrival' : 'Departure'} flight number is required`;
-        }
-        break;
-
-      case 'customTravelPurpose':
-        if (travelPurpose === 'OTHER') {
+        case 'email':
           if (fieldValue && fieldValue.trim()) {
+            // Enhanced email validation
+            const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            if (!emailRegex.test(fieldValue.trim())) {
+              isValid = false;
+              errorMessage = 'Please enter a valid email address';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = 'Email address is required';
+          }
+          break;
+
+        case 'phoneNumber':
+          if (fieldValue && fieldValue.trim()) {
+            // Remove all non-digit characters except + for validation
+            const cleanPhone = fieldValue.replace(/[^\d+]/g, '');
+            if (cleanPhone.length < 7) {
+              isValid = false;
+              errorMessage = 'Phone number must be at least 7 digits';
+            } else if (cleanPhone.length > 15) {
+              isValid = false;
+              errorMessage = 'Phone number must be no more than 15 digits';
+            } else if (!/^[\+]?[\d\s\-()]{7,}$/.test(fieldValue)) {
+              isValid = false;
+              errorMessage = 'Phone number contains invalid characters';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = 'Phone number is required';
+          }
+          break;
+
+        case 'phoneCode':
+          if (fieldValue && fieldValue.trim()) {
+            if (!/^\+\d{1,4}$/.test(fieldValue.trim())) {
+              isValid = false;
+              errorMessage = 'Country code must start with + followed by 1-4 digits';
+            }
+          } else {
+            isWarning = true;
+            errorMessage = 'Country code is required';
+          }
+          break;
+
+        case 'occupation':
+          if (fieldValue && fieldValue.trim()) {
+            // Check for English characters only
             if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
               isValid = false;
               errorMessage = 'Please use English letters only';
-            } else if (fieldValue.trim().length < 3) {
+            } else if (fieldValue.trim().length < 2) {
               isValid = false;
-              errorMessage = 'Travel purpose must be at least 3 characters';
+              errorMessage = 'Must be at least 2 characters long';
             }
           } else {
             isWarning = true;
-            errorMessage = 'Please specify your travel purpose';
+            errorMessage = 'Occupation is required';
           }
-        }
-        break;
+          break;
 
-      case 'customAccommodationType':
-        if (accommodationType === 'OTHER') {
+        case 'cityOfResidence':
           if (fieldValue && fieldValue.trim()) {
-            if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
+            const trimmedValue = fieldValue.trim();
+            
+            if (!/^[A-Za-z\s\-.]+$/.test(trimmedValue)) {
               isValid = false;
               errorMessage = 'Please use English letters only';
-            } else if (fieldValue.trim().length < 3) {
+            } else if (trimmedValue.length < 2) {
               isValid = false;
-              errorMessage = 'Accommodation type must be at least 3 characters';
+              errorMessage = 'Must be at least 2 characters long';
+            } else if (residentCountry === 'CHN') {
+              const provinceMatch = findChinaProvince(trimmedValue);
+              if (!provinceMatch) {
+                isValid = false;
+                errorMessage = 'For China, please enter a province name (e.g., Anhui, Guangdong)';
+              } else if (provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
+                setCityOfResidence(provinceMatch.displayName.toUpperCase());
+              }
             }
           } else {
             isWarning = true;
-            errorMessage = 'Please specify your accommodation type';
+            errorMessage = residentCountry === 'CHN'
+              ? 'Province is required for China'
+              : 'Province or city is required';
           }
-        }
-        break;
+          break;
 
-      case 'hotelAddress':
-        if (!isTransitPassenger) {
+        case 'recentStayCountry':
           if (fieldValue && fieldValue.trim()) {
-            if (fieldValue.trim().length < 10) {
+            // Ensure ISO code format
+            if (!/^[A-Za-z]{3}$/.test(fieldValue.trim())) {
               isValid = false;
-              errorMessage = 'Address must be at least 10 characters long';
+              errorMessage = 'Please select a valid country or territory';
             }
           } else {
             isWarning = true;
-            errorMessage = 'Address is required';
+            errorMessage = '过去14天停留国家或地区是必填信息';
           }
-        }
-        break;
+          break;
 
-      case 'district':
-      case 'subDistrict':
-        if (!isTransitPassenger && accommodationType !== 'HOTEL') {
+        case 'arrivalFlightNumber':
+        case 'departureFlightNumber':
           if (fieldValue && fieldValue.trim()) {
-            if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
+            // Flight number format validation (e.g., TG123, CX456)
+            if (!/^[A-Z]{2,3}\d{1,4}[A-Z]?$/i.test(fieldValue.trim())) {
               isValid = false;
-              errorMessage = 'Please use English letters only';
+              errorMessage = 'Flight number format: 2-3 letters + 1-4 digits (e.g., TG123)';
             }
           } else {
             isWarning = true;
-            errorMessage = `${fieldName === 'district' ? 'District' : 'Sub-district'} is required`;
+            errorMessage = `${fieldName === 'arrivalFlightNumber' ? 'Arrival' : 'Departure'} flight number is required`;
           }
-        }
-        break;
+          break;
 
-      case 'postalCode':
-        if (!isTransitPassenger && accommodationType !== 'HOTEL') {
-          if (fieldValue && fieldValue.trim()) {
-            if (!/^\d{5}$/.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Postal code must be 5 digits';
+        case 'customTravelPurpose':
+          if (travelPurpose === 'OTHER') {
+            if (fieldValue && fieldValue.trim()) {
+              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
+                isValid = false;
+                errorMessage = 'Please use English letters only';
+              } else if (fieldValue.trim().length < 3) {
+                isValid = false;
+                errorMessage = 'Travel purpose must be at least 3 characters';
+              }
+            } else {
+              isWarning = true;
+              errorMessage = 'Please specify your travel purpose';
             }
-          } else {
-            isWarning = true;
-            errorMessage = 'Postal code is required';
           }
-        }
-        break;
+          break;
 
-      default:
-        // For any other fields, just check if they're not empty when required
-        if (!fieldValue || !fieldValue.toString().trim()) {
-          isWarning = true;
-          errorMessage = 'This field is required';
-        }
-        break;
-    }
+        case 'customAccommodationType':
+          if (accommodationType === 'OTHER') {
+            if (fieldValue && fieldValue.trim()) {
+              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
+                isValid = false;
+                errorMessage = 'Please use English letters only';
+              } else if (fieldValue.trim().length < 3) {
+                isValid = false;
+                errorMessage = 'Accommodation type must be at least 3 characters';
+              }
+            } else {
+              isWarning = true;
+              errorMessage = 'Please specify your accommodation type';
+            }
+          }
+          break;
 
-    console.log('Validation result:', isValid ? (isWarning ? 'WARNING' : 'VALID') : 'ERROR');
-    if (!isValid || isWarning) {
-      console.log('Message:', errorMessage);
-    }
+        case 'hotelAddress':
+          if (!isTransitPassenger) {
+            if (fieldValue && fieldValue.trim()) {
+              if (fieldValue.trim().length < 10) {
+                isValid = false;
+                errorMessage = 'Address must be at least 10 characters long';
+              }
+            } else {
+              isWarning = true;
+              errorMessage = 'Address is required';
+            }
+          }
+          break;
 
-    // Update errors and warnings state
-    setErrors(prev => ({
-      ...prev,
-      [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
-    }));
+        case 'district':
+        case 'subDistrict':
+          if (!isTransitPassenger && accommodationType !== 'HOTEL') {
+            if (fieldValue && fieldValue.trim()) {
+              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
+                isValid = false;
+                errorMessage = 'Please use English letters only';
+              }
+            } else {
+              isWarning = true;
+              errorMessage = `${fieldName === 'district' ? 'District' : 'Sub-district'} is required`;
+            }
+          }
+          break;
 
-    setWarnings(prev => ({
-      ...prev,
-      [fieldName]: isWarning ? errorMessage : ''
-    }));
+        case 'postalCode':
+          if (!isTransitPassenger && accommodationType !== 'HOTEL') {
+            if (fieldValue && fieldValue.trim()) {
+              if (!/^\d{5}$/.test(fieldValue.trim())) {
+                isValid = false;
+                errorMessage = 'Postal code must be 5 digits';
+              }
+            } else {
+              isWarning = true;
+              errorMessage = 'Postal code is required';
+            }
+          }
+          break;
 
-    // Save data if valid (including warnings) using debounced save
-    if (isValid) {
-      console.log('Validation passed, triggering debounced save...');
-      try {
-        // For date fields, we need to pass the new value directly to avoid React state delay
-        const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
-        if (immediateSaveFields.includes(fieldName)) {
-          console.log('Immediate-save field detected, saving with new value:', fieldValue);
-          // Save immediately with the new value to avoid React state delay
-          await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
-          setLastEditedAt(new Date());
-        } else {
-          debouncedSaveData();
-        }
-      } catch (saveError) {
-        console.error('Failed to trigger debounced save:', saveError);
-        // Don't show error to user for debounced saves, as they will retry automatically
+        default:
+          // For any other fields, just check if they're not empty when required
+          if (!fieldValue || !fieldValue.toString().trim()) {
+            isWarning = true;
+            errorMessage = 'This field is required';
+          }
+          break;
       }
-    } else {
-      console.log('Skipping save due to validation error');
-    }
 
-  } catch (error) {
-    console.error('Failed to validate and save field:', error);
-    console.error('Error stack:', error.stack);
-    // Don't show error to user for field validation, as it's non-critical
-  }
+      console.log('Validation result:', isValid ? (isWarning ? 'WARNING' : 'VALID') : 'ERROR');
+      if (!isValid || isWarning) {
+        console.log('Message:', errorMessage);
+      }
+
+      // Update errors and warnings state
+      setErrors(prev => ({
+        ...prev,
+        [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
+      }));
+      
+      setWarnings(prev => ({
+        ...prev,
+        [fieldName]: isWarning ? errorMessage : ''
+      }));
+
+      // Save data if valid (including warnings) using debounced save
+      if (isValid) {
+        console.log('Validation passed, triggering debounced save...');
+        try {
+          // For date fields, we need to pass the new value directly to avoid React state delay
+          const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
+          if (immediateSaveFields.includes(fieldName)) {
+            console.log('Immediate-save field detected, saving with new value:', fieldValue);
+            // Save immediately with the new value to avoid React state delay
+            await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
+            setLastEditedAt(new Date());
+          } else {
+            debouncedSaveData();
+          }
+        } catch (saveError) {
+          console.error('Failed to trigger debounced save:', saveError);
+          // Don't show error to user for debounced saves, as they will retry automatically
+        }
+      } else {
+        console.log('Skipping save due to validation error');
+      }
+
+    } catch (error) {
+      console.error('Failed to validate and save field:', error);
+      console.error('Error stack:', error.stack);
+      // Don't show error to user for field validation, as it's non-critical
+    }
+  };
 
   // Re-validate residence field whenever the selected country changes
   useEffect(() => {
@@ -1435,52 +1732,90 @@ const handleFieldBlur = async (fieldName, fieldValue) => {
     handleFieldBlur('cityOfResidence', cityOfResidence);
   }, [residentCountry]);
 
-  
-// Enhanced debug logging for personal info saving
+// Enhanced debug logging for personal info saving with user interaction filtering
 const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
+  const saveErrors = [];
+  const saveResults = {
+    passport: { success: false, error: null },
+    personalInfo: { success: false, error: null },
+    travelInfo: { success: false, error: null }
+  };
+
   try {
     const userId = passport?.id || 'user_001';
-    console.log('=== 🔍 PERSONAL INFO SAVE DEBUG ===');
-    console.log('userId:', userId);
-    console.log('fieldOverrides:', fieldOverrides);
+  console.log('=== 🔍 PERSONAL INFO SAVE DEBUG WITH INTERACTION FILTERING ===');
+  console.log('userId:', userId);
+  console.log('fieldOverrides:', fieldOverrides);
 
-    // Log current UI state values
-    console.log('Current UI state:');
-    console.log('- phoneCode:', phoneCode);
-    console.log('- phoneNumber:', phoneNumber);
-    console.log('- email:', email);
-    console.log('- occupation:', occupation);
-    console.log('- cityOfResidence:', cityOfResidence);
-    console.log('- residentCountry:', residentCountry);
-    console.log('- sex:', sex);
+  // Get current interaction state
+  const interactionState = {};
+  const allFieldNames = [
+    'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
+    'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
+    'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
+    'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
+    'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
+    'subDistrict', 'postalCode', 'hotelAddress'
+  ];
 
-    // Get current values with overrides applied
-    const getCurrentValue = (fieldName, currentValue) => {
-      return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
+  // Build interaction state for FieldStateManager
+  allFieldNames.forEach(fieldName => {
+    interactionState[fieldName] = {
+      isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
+      lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+      initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
     };
+  });
 
-    // Get existing passport first to ensure we're updating the right one
-    const existingPassport = await PassportDataService.getPassport(userId);
-    console.log('Existing passport:', existingPassport);
+  console.log('User interaction state:', interactionState);
+  console.log('Modified fields:', userInteractionTracker.getModifiedFields());
 
-    // Save passport data - only include non-empty fields
-    const passportUpdates = {};
-    if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
-    if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
-    if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
+  // Log current UI state values
+  console.log('Current UI state:');
+  console.log('- phoneCode:', phoneCode);
+  console.log('- phoneNumber:', phoneNumber);
+  console.log('- email:', email);
+  console.log('- occupation:', occupation);
+  console.log('- cityOfResidence:', cityOfResidence);
+  console.log('- residentCountry:', residentCountry);
+  console.log('- sex:', sex);
 
-    const currentDob = getCurrentValue('dob', dob);
-    if (currentDob && currentDob.trim()) {
-      console.log('=== DOB SAVING DEBUG WITH OVERRIDE ===');
-      console.log('dob value being saved:', currentDob);
-      passportUpdates.dateOfBirth = currentDob;
+  // Get current values with overrides applied
+  const getCurrentValue = (fieldName, currentValue) => {
+    return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
+  };
+
+  // Get existing passport first to ensure we're updating the right one
+  const existingPassport = await PassportDataService.getPassport(userId);
+  console.log('Existing passport:', existingPassport);
+
+  // Save passport data - filter based on user interaction
+  const allPassportFields = {
+    passportNumber: getCurrentValue('passportNo', passportNo),
+    fullName: getCurrentValue('fullName', fullName),
+    nationality: getCurrentValue('nationality', nationality),
+    dateOfBirth: getCurrentValue('dob', dob),
+    expiryDate: getCurrentValue('expiryDate', expiryDate),
+    gender: getCurrentValue('sex', sex)
+  };
+
+  // Use FieldStateManager to filter only user-modified fields
+  const passportUpdates = FieldStateManager.filterSaveableFields(
+    allPassportFields,
+    interactionState,
+    {
+      preserveExisting: true, // Preserve existing data for backward compatibility
+      alwaysSaveFields: [] // No fields are always saved for passport
     }
+  );
 
-    const currentExpiryDate = getCurrentValue('expiryDate', expiryDate);
-    if (currentExpiryDate && currentExpiryDate.trim()) passportUpdates.expiryDate = currentExpiryDate;
-    if (sex && sex.trim()) passportUpdates.gender = sex;
+  console.log('=== PASSPORT FIELD FILTERING ===');
+  console.log('All passport fields:', allPassportFields);
+  console.log('Filtered passport updates:', passportUpdates);
+  console.log('Fields that will be saved:', Object.keys(passportUpdates));
 
-    if (Object.keys(passportUpdates).length > 0) {
+  if (Object.keys(passportUpdates).length > 0) {
+    try {
       console.log('Saving passport updates:', passportUpdates);
       if (existingPassport && existingPassport.id) {
         console.log('Updating existing passport with ID:', existingPassport.id);
@@ -1489,6 +1824,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
         // Update passportData state to track the correct passport ID
         setPassportData(updated);
+        saveResults.passport.success = true;
       } else {
         console.log('Creating new passport for userId:', userId);
         const saved = await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
@@ -1496,69 +1832,239 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
         // Update passportData state to track the new passport ID
         setPassportData(saved);
+        saveResults.passport.success = true;
       }
+    } catch (passportError) {
+      console.error('Failed to save passport data:', passportError);
+      saveResults.passport.error = passportError;
+      saveErrors.push({ section: 'passport', error: passportError });
+      
+      // Don't throw immediately - try to save other sections
     }
+  } else {
+    saveResults.passport.success = true; // No data to save counts as success
+  }
 
-    // Save personal info data - only include non-empty fields
-    const personalInfoUpdates = {};
-    if (phoneCode && phoneCode.trim()) personalInfoUpdates.phoneCode = phoneCode;
-    if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-    if (email && email.trim()) personalInfoUpdates.email = email;
-    if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-    if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-    if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
-    if (sex && sex.trim()) personalInfoUpdates.gender = sex;
+  // Save personal info data - filter based on user interaction
+  const allPersonalInfoFields = {
+    phoneCode: getCurrentValue('phoneCode', phoneCode),
+    phoneNumber: getCurrentValue('phoneNumber', phoneNumber),
+    email: getCurrentValue('email', email),
+    occupation: getCurrentValue('occupation', occupation),
+    provinceCity: getCurrentValue('cityOfResidence', cityOfResidence),
+    countryRegion: getCurrentValue('residentCountry', residentCountry)
+    // NOTE: gender removed from personalInfo - stored in passport only
+  };
 
-    console.log('=== 🔍 PERSONAL INFO UPDATES DEBUG ===');
-    console.log('personalInfoUpdates object:', personalInfoUpdates);
-    console.log('Number of fields to update:', Object.keys(personalInfoUpdates).length);
+  // Use FieldStateManager to filter only user-modified fields
+  const personalInfoUpdates = FieldStateManager.filterSaveableFields(
+    allPersonalInfoFields,
+    interactionState,
+    {
+      preserveExisting: true, // Preserve existing data for backward compatibility
+      alwaysSaveFields: [] // No fields are always saved for personal info
+    }
+  );
 
-    // Enhanced validation - also check if fields have meaningful content
-    const hasValidData = Object.keys(personalInfoUpdates).length > 0;
+  console.log('=== PERSONAL INFO FIELD FILTERING ===');
+  console.log('All personal info fields:', allPersonalInfoFields);
+  console.log('Filtered personal info updates:', personalInfoUpdates);
+  console.log('Fields that will be saved:', Object.keys(personalInfoUpdates));
 
-    if (hasValidData) {
+  console.log('=== 🔍 PERSONAL INFO UPDATES DEBUG ===');
+  console.log('personalInfoUpdates object:', personalInfoUpdates);
+  console.log('Number of fields to update:', Object.keys(personalInfoUpdates).length);
+
+  // Enhanced validation - check if there are user-modified fields to save
+  const hasValidData = Object.keys(personalInfoUpdates).length > 0;
+
+  if (hasValidData) {
+    try {
       console.log('Saving personal info updates:', personalInfoUpdates);
-      try {
-        const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-        console.log('✅ Personal info saved successfully');
+      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+      console.log('✅ Personal info saved successfully');
 
-        // Update personalInfoData state
-        setPersonalInfoData(savedPersonalInfo);
+      // Update personalInfoData state
+      setPersonalInfoData(savedPersonalInfo);
+      saveResults.personalInfo.success = true;
 
-        // Verify the save worked
-        console.log('=== 🔍 SAVE VERIFICATION ===');
-        const verifyData = await PassportDataService.getPersonalInfo(userId);
-        console.log('Verification - loaded from database:', verifyData);
+      // Verify the save worked
+      console.log('=== 🔍 SAVE VERIFICATION ===');
+      const verifyData = await PassportDataService.getPersonalInfo(userId);
+      console.log('Verification - loaded from database:', verifyData);
 
-        if (verifyData) {
-          console.log('✅ Save verification successful');
-        } else {
-          console.error('❌ Save verification failed - no data returned');
-        }
+      if (verifyData) {
+        console.log('✅ Save verification successful');
+      } else {
+        console.error('❌ Save verification failed - no data returned');
+        // This is a warning, not a failure
+      }
 
-      } catch (saveError) {
-        console.error('❌ Failed to save personal info:', saveError);
-        console.error('Error details:', saveError.message, saveError.stack);
+    } catch (saveError) {
+      console.error('❌ Failed to save personal info:', saveError);
+      console.error('Error details:', saveError.message, saveError.stack);
+      saveResults.personalInfo.error = saveError;
+      saveErrors.push({ section: 'personalInfo', error: saveError });
+      
+      // Don't throw immediately - try to save other sections
+    }
+  } else {
+    console.log('⚠️ No personal info fields to save - all fields are empty or invalid');
+    saveResults.personalInfo.success = true; // No data to save counts as success
+
+    // Log which fields are empty for debugging
+    console.log('Empty field analysis:');
+    console.log('- phoneCode:', phoneCode, 'Valid:', !!(phoneCode && phoneCode.trim()));
+    console.log('- phoneNumber:', phoneNumber, 'Valid:', !!(phoneNumber && phoneNumber.trim()));
+    console.log('- email:', email, 'Valid:', !!(email && email.trim()));
+    console.log('- occupation:', occupation, 'Valid:', !!(occupation && occupation.trim()));
+    console.log('- cityOfResidence:', cityOfResidence, 'Valid:', !!(cityOfResidence && cityOfResidence.trim()));
+    console.log('- residentCountry:', residentCountry, 'Valid:', !!(residentCountry && residentCountry.trim()));
+    console.log('- sex:', sex, 'Valid:', !!(sex && sex.trim()));
+  }
+
+  // Save travel info data - filter based on user interaction
+  const destinationId = destination?.id || 'thailand';
+  
+  // Get current values with overrides applied for travel info
+  const currentTravelPurpose = getCurrentValue('travelPurpose', travelPurpose);
+  const currentCustomTravelPurpose = getCurrentValue('customTravelPurpose', customTravelPurpose);
+  const currentBoardingCountry = getCurrentValue('boardingCountry', boardingCountry);
+  const currentRecentStayCountry = getCurrentValue('recentStayCountry', recentStayCountry);
+  const currentVisaNumber = getCurrentValue('visaNumber', visaNumber);
+  const currentArrivalFlightNumber = getCurrentValue('arrivalFlightNumber', arrivalFlightNumber);
+  const currentArrivalArrivalDate = getCurrentValue('arrivalArrivalDate', arrivalArrivalDate);
+  const currentDepartureFlightNumber = getCurrentValue('departureFlightNumber', departureFlightNumber);
+  const currentDepartureDepartureDate = getCurrentValue('departureDepartureDate', departureDepartureDate);
+  const currentIsTransitPassenger = getCurrentValue('isTransitPassenger', isTransitPassenger);
+  const currentAccommodationType = getCurrentValue('accommodationType', accommodationType);
+  const currentCustomAccommodationType = getCurrentValue('customAccommodationType', customAccommodationType);
+  const currentProvince = getCurrentValue('province', province);
+  const currentDistrict = getCurrentValue('district', district);
+  const currentSubDistrict = getCurrentValue('subDistrict', subDistrict);
+  const currentPostalCode = getCurrentValue('postalCode', postalCode);
+  const currentHotelAddress = getCurrentValue('hotelAddress', hotelAddress);
+
+  // Build travel purpose (handle custom purpose)
+  const finalTravelPurpose = currentTravelPurpose === 'OTHER' ? currentCustomTravelPurpose : currentTravelPurpose;
+  
+  // Build accommodation type (handle custom type)
+  const finalAccommodationType = currentAccommodationType === 'OTHER' ? currentCustomAccommodationType : currentAccommodationType;
+
+  const allTravelInfoFields = {
+    travelPurpose: finalTravelPurpose,
+    boardingCountry: currentBoardingCountry,
+    recentStayCountry: currentRecentStayCountry,
+    visaNumber: currentVisaNumber,
+    arrivalFlightNumber: currentArrivalFlightNumber,
+    arrivalArrivalDate: currentArrivalArrivalDate,
+    departureFlightNumber: currentDepartureFlightNumber,
+    departureDepartureDate: currentDepartureDepartureDate,
+    isTransitPassenger: currentIsTransitPassenger,
+    accommodationType: finalAccommodationType,
+    province: currentProvince,
+    district: currentDistrict,
+    subDistrict: currentSubDistrict,
+    postalCode: currentPostalCode,
+    hotelAddress: currentHotelAddress
+  };
+
+  // Use FieldStateManager to filter only user-modified fields
+  const travelInfoUpdates = FieldStateManager.filterSaveableFields(
+    allTravelInfoFields,
+    interactionState,
+    {
+      preserveExisting: true, // Preserve existing data for backward compatibility
+      alwaysSaveFields: [] // No fields are always saved for travel info
+    }
+  );
+
+  console.log('=== TRAVEL INFO FIELD FILTERING ===');
+  console.log('All travel info fields:', allTravelInfoFields);
+  console.log('Filtered travel info updates:', travelInfoUpdates);
+  console.log('Fields that will be saved:', Object.keys(travelInfoUpdates));
+
+  console.log('=== 🔍 TRAVEL INFO UPDATES DEBUG ===');
+  console.log('destinationId:', destinationId);
+  console.log('travelInfoUpdates object:', travelInfoUpdates);
+  console.log('Number of fields to update:', Object.keys(travelInfoUpdates).length);
+
+  // Save travel info if there are fields to update
+  if (Object.keys(travelInfoUpdates).length > 0) {
+    try {
+      console.log('Saving travel info updates:', travelInfoUpdates);
+      // Add destination to the travel data object
+      const travelDataWithDestination = {
+        ...travelInfoUpdates,
+        destination: destinationId
+      };
+      
+      const savedTravelInfo = await PassportDataService.saveTravelInfo(userId, travelDataWithDestination);
+      console.log('✅ Travel info saved successfully');
+      saveResults.travelInfo.success = true;
+
+      // Verify the save worked
+      console.log('=== 🔍 TRAVEL INFO SAVE VERIFICATION ===');
+      const verifyTravelData = await PassportDataService.getTravelInfo(userId, destinationId);
+      console.log('Verification - loaded travel info from database:', verifyTravelData);
+
+      if (verifyTravelData) {
+        console.log('✅ Travel info save verification successful');
+      } else {
+        console.error('❌ Travel info save verification failed - no data returned');
+        // This is a warning, not a failure
+      }
+
+    } catch (travelSaveError) {
+      console.error('❌ Failed to save travel info:', travelSaveError);
+      console.error('Error details:', travelSaveError.message, travelSaveError.stack);
+      saveResults.travelInfo.error = travelSaveError;
+      saveErrors.push({ section: 'travelInfo', error: travelSaveError });
+      
+      // Don't throw immediately - continue to error handling
+    }
+  } else {
+    console.log('⚠️ No travel info fields to save - all fields are empty or invalid');
+    saveResults.travelInfo.success = true; // No data to save counts as success
+  }
+
+    // Handle partial save failures
+    if (saveErrors.length > 0) {
+      console.error('=== SAVE OPERATION COMPLETED WITH ERRORS ===');
+      console.error('Save results:', saveResults);
+      console.error('Errors encountered:', saveErrors);
+      
+      // Determine if this is a complete failure or partial success
+      const successfulSaves = Object.values(saveResults).filter(result => result.success).length;
+      const totalSaves = Object.keys(saveResults).length;
+      
+      if (successfulSaves === 0) {
+        // Complete failure - throw error to trigger retry
+        const firstError = saveErrors[0];
+        throw new Error(`Complete save failure: ${firstError.error.message}`);
+      } else {
+        // Partial success - log warning but don't throw
+        console.warn(`Partial save success: ${successfulSaves}/${totalSaves} sections saved successfully`);
+        
+        // Preserve interaction state for failed sections to prevent data loss
+        saveErrors.forEach(({ section, error }) => {
+          console.warn(`Failed to save ${section}, interaction state preserved:`, error.message);
+        });
       }
     } else {
-      console.log('⚠️ No personal info fields to save - all fields are empty or invalid');
+      console.log('✅ All save operations completed successfully');
+    }
 
-      // Log which fields are empty for debugging
-      console.log('Empty field analysis:');
-      console.log('- phoneCode:', phoneCode, 'Valid:', !!(phoneCode && phoneCode.trim()));
-      console.log('- phoneNumber:', phoneNumber, 'Valid:', !!(phoneNumber && phoneNumber.trim()));
-      console.log('- email:', email, 'Valid:', !!(email && email.trim()));
-      console.log('- occupation:', occupation, 'Valid:', !!(occupation && occupation.trim()));
-      console.log('- cityOfResidence:', cityOfResidence, 'Valid:', !!(cityOfResidence && cityOfResidence.trim()));
-      console.log('- residentCountry:', residentCountry, 'Valid:', !!(residentCountry && residentCountry.trim()));
-      console.log('- sex:', sex, 'Valid:', !!(sex && sex.trim()));
-    }
-      } catch (error) {
-        console.error('Failed to save data to secure storage:', error);
-        throw error; // Re-throw to allow caller to handle
-      }
-    }
-  };
+  } catch (error) {
+    console.error('Failed to save data to secure storage:', error);
+    
+    // Preserve interaction state on complete failure
+    console.warn('Preserving interaction state due to save failure');
+    
+    throw error; // Re-throw to allow caller to handle
+  }
+};
+
 
   // Save all data to secure storage
   const saveDataToSecureStorage = async () => {
@@ -1638,6 +2144,58 @@ const normalizeFundItem = useCallback((item) => ({
     }
   };
 
+// Test function to verify personal info data flow
+const testPersonalInfoDataFlow = async () => {
+  console.log('=== 🧪 TESTING PERSONAL INFO DATA FLOW ===');
+
+  // Test current UI state
+  console.log('Current UI state:');
+  console.log('- phoneCode:', phoneCode, 'Length:', phoneCode?.length);
+  console.log('- phoneNumber:', phoneNumber, 'Length:', phoneNumber?.length);
+  console.log('- email:', email, 'Length:', email?.length);
+  console.log('- occupation:', occupation, 'Length:', occupation?.length);
+  console.log('- cityOfResidence:', cityOfResidence, 'Length:', cityOfResidence?.length);
+  console.log('- residentCountry:', residentCountry, 'Length:', residentCountry?.length);
+  console.log('- sex:', sex, 'Length:', sex?.length);
+
+  // Test data preparation
+  const personalInfoUpdates = {};
+  if (phoneCode && phoneCode.trim()) personalInfoUpdates.phoneCode = phoneCode;
+  if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
+  if (email && email.trim()) personalInfoUpdates.email = email;
+  if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
+  if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
+  if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
+  // NOTE: gender removed from personalInfo - stored in passport only
+
+  console.log('Prepared personalInfoUpdates:', personalInfoUpdates);
+  console.log('Number of fields that would be saved:', Object.keys(personalInfoUpdates).length);
+
+  // Test the save process
+  if (Object.keys(personalInfoUpdates).length > 0) {
+    try {
+      console.log('Attempting to save personal info...');
+      const userId = passport?.id || 'user_001';
+      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+      console.log('✅ Personal info saved successfully:', savedPersonalInfo);
+
+      // Verify in database
+      const verifyData = await PassportDataService.getPersonalInfo(userId);
+      console.log('✅ Verification - loaded from database:', verifyData);
+
+    } catch (error) {
+      console.error('❌ Failed to save personal info:', error);
+      console.error('Error details:', error.message, error.stack);
+    }
+  } else {
+    console.log('⚠️ No fields to save - all fields are empty or invalid');
+  }
+};
+
+// Make test function available globally for debugging
+if (typeof window !== 'undefined') {
+  window.testPersonalInfoDataFlow = testPersonalInfoDataFlow;
+}
 
   const validate = () => {
     // Disable all required checks to support progressive entry info filling
@@ -2061,10 +2619,16 @@ const normalizeFundItem = useCallback((item) => ({
                 styles.optionButton,
                 isActive && styles.optionButtonActive,
               ]}
-              onPress={() => {
-                setSex(option.value);
-                // Trigger debounced save after gender selection
-                debouncedSaveData();
+              onPress={async () => {
+                const newSex = option.value;
+                setSex(newSex);
+                // Save immediately to ensure gender is saved without requiring other field interaction
+                try {
+                  await saveDataToSecureStorageWithOverride({ sex: newSex });
+                  setLastEditedAt(new Date());
+                } catch (error) {
+                  console.error('Failed to save gender:', error);
+                }
               }}
             >
               <Text
@@ -2082,7 +2646,6 @@ const normalizeFundItem = useCallback((item) => ({
     );
   };
 
-  // Main component render
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -2157,7 +2720,7 @@ const normalizeFundItem = useCallback((item) => ({
             <View style={[styles.progressStep, totalCompletionPercent >= 25 && styles.progressStepActive]}>
               <Text style={styles.stepIcon}>👤</Text>
               <Text style={[styles.stepText, totalCompletionPercent >= 25 && styles.stepTextActive]}>
-                个人信息 {totalCompletionPercent >= 25 ? '✓' : ''}
+                护照信息 {totalCompletionPercent >= 25 ? '✓' : ''}
               </Text>
             </View>
             <View style={[styles.progressStep, totalCompletionPercent >= 50 && styles.progressStepActive]}>
@@ -2231,7 +2794,7 @@ const normalizeFundItem = useCallback((item) => ({
 
         {/* Enhanced Personal Information Section */}
         <CollapsibleSection
-          title="👤 个人信息"
+          title="👤 护照信息"
           subtitle="泰国海关需要核实你的身份"
           onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
@@ -2332,21 +2895,25 @@ const normalizeFundItem = useCallback((item) => ({
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
            />
+           <View style={styles.fieldContainer}>
+             <Text style={styles.fieldLabel}>性别</Text>
+             {renderGenderOptions()}
+           </View>
          </CollapsibleSection>
 
-        {/* Enhanced Contact Information Section */}
+        {/* Enhanced Personal Information Section */}
         <CollapsibleSection
-          title="📞 联系方式"
-          subtitle="泰国海关可能需要联系你"
+          title="👤 个人信息"
+          subtitle="泰国需要了解你的基本信息"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
-          {/* Border Crossing Context for Contact Info */}
+          {/* Border Crossing Context for Personal Info */}
           <View style={styles.sectionIntro}>
             <Text style={styles.sectionIntroIcon}>📱</Text>
             <Text style={styles.sectionIntroText}>
-              如果海关有疑问，他们可能会打电话给你。提供常用的手机号码和邮箱，确保能联系到你。
+              提供你的基本个人信息，包括职业、居住地和联系方式，以便泰国海关了解你的情况。
             </Text>
           </View>
            <InputWithValidation
@@ -2355,7 +2922,7 @@ const normalizeFundItem = useCallback((item) => ({
              onChangeText={(text) => {
                console.log('=== 🔍 OCCUPATION INPUT CHANGE ===');
                console.log('New occupation value:', text);
-               setOccupation(text);
+               setOccupation(text.toUpperCase());
              }}
              onBlur={() => handleFieldBlur('occupation', occupation)}
              helpText="填写你的工作职位，例如：软件工程师、学生、退休人员等（用英文）"
@@ -2365,7 +2932,7 @@ const normalizeFundItem = useCallback((item) => ({
              warningMessage={warnings.occupation}
              fieldName="occupation"
              lastEditedField={lastEditedField}
-             autoCapitalize="words"
+             autoCapitalize="characters"
            />
            <InputWithValidation
              label={cityOfResidenceLabel}
@@ -2373,7 +2940,7 @@ const normalizeFundItem = useCallback((item) => ({
              onChangeText={(text) => {
                console.log('=== 🔍 CITY OF RESIDENCE INPUT CHANGE ===');
                console.log('New city of residence value:', text);
-               setCityOfResidence(text);
+               setCityOfResidence(text.toUpperCase());
              }}
              onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
              helpText={cityOfResidenceHelpText}
@@ -2383,7 +2950,7 @@ const normalizeFundItem = useCallback((item) => ({
              warningMessage={warnings.cityOfResidence}
              fieldName="cityOfResidence"
              lastEditedField={lastEditedField}
-             autoCapitalize="words"
+             autoCapitalize="characters"
              placeholder={cityOfResidencePlaceholder}
            />
            <NationalitySelector
@@ -2437,21 +3004,17 @@ const normalizeFundItem = useCallback((item) => ({
                console.log('New email value:', text);
                setEmail(text);
              }}
-             onBlur={() => handleFieldBlur('email', email)}
-             keyboardType="email-address"
-             helpText="请输入您的电子邮箱地址"
-             error={!!errors.email}
+             onBlur={() => handleFieldBlur('email', email)} 
+             keyboardType="email-address" 
+             helpText="请输入您的电子邮箱地址" 
+             error={!!errors.email} 
              errorMessage={errors.email}
              warning={!!warnings.email}
              warningMessage={warnings.email}
              fieldName="email"
              lastEditedField={lastEditedField}
-             testID="email-input"
+             testID="email-input" 
            />
-           <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>性别</Text>
-             {renderGenderOptions()}
-           </View>
          </CollapsibleSection>
 
         {/* Enhanced Funds Section */}
@@ -2590,64 +3153,36 @@ const normalizeFundItem = useCallback((item) => ({
               海关想知道你为什么来泰国、何时来、何时走、在哪里住。这有助于他们确认你是合法游客。
             </Text>
           </View>
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>为什么来泰国？</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️', tip: '最受欢迎的选择！' },
-                { value: 'MEETING', label: '会议', icon: '👔', tip: '商务会议或活动' },
-                { value: 'SPORTS', label: '体育活动', icon: '⚽', tip: '运动或比赛' },
-                { value: 'BUSINESS', label: '商务', icon: '💼', tip: '商务考察或工作' },
-                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁', tip: '公司奖励旅行' },
-                { value: 'CONVENTION', label: '会展', icon: '🎪', tip: '参加会议或展览' },
-                { value: 'EDUCATION', label: '教育', icon: '📚', tip: '学习或培训' },
-                { value: 'EMPLOYMENT', label: '就业', icon: '💻', tip: '工作签证' },
-                { value: 'EXHIBITION', label: '展览', icon: '🎨', tip: '参观展览或展会' },
-                { value: 'MEDICAL', label: '医疗', icon: '🏥', tip: '医疗旅游或治疗' },
-                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
-              ].map((option) => {
-                const isActive = travelPurpose === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={() => {
-                      setTravelPurpose(option.value);
-                      if (option.value !== 'OTHER') {
-                        setCustomTravelPurpose('');
-                      }
-                      // Trigger debounced save after purpose selection
-                      debouncedSaveData();
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {travelPurpose === 'OTHER' && (
-              <Input
-                label="请输入旅行目的"
-                value={customTravelPurpose}
-                onChangeText={setCustomTravelPurpose}
-                onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
-                placeholder="请输入您的旅行目的"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
-          </View>
+          <InputWithUserTracking
+            fieldName="travelPurpose"
+            label="为什么来泰国？"
+            value={travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose}
+            onChangeText={(text) => {
+              if (text === 'OTHER' || !['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'].includes(text)) {
+                setTravelPurpose('OTHER');
+                setCustomTravelPurpose(text);
+              } else {
+                setTravelPurpose(text);
+                setCustomTravelPurpose('');
+              }
+            }}
+            onUserInteraction={handleUserInteraction}
+            onBlur={() => handleFieldBlur('travelPurpose', travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose)}
+            showSuggestions={true}
+            suggestions={SuggestionProviders.getTravelPurposeSuggestions({
+              destination: 'TH',
+              nationality: passport?.nationality,
+              previousPurposes: userInteractionTracker.getModifiedFields().includes('travelPurpose') ? [travelPurpose] : []
+            })}
+            placeholder="请选择或输入旅行目的"
+            suggestionPlaceholder={SuggestionProviders.getSuggestionPlaceholder('travelPurpose', {
+              destination: 'TH',
+              nationality: passport?.nationality
+            })}
+            helpText="选择最符合您此次旅行的目的"
+            error={!!errors.travelPurpose}
+            errorMessage={errors.travelPurpose}
+          />
 
           <NationalitySelector
             label="过去14天停留国家或地区"
@@ -2667,13 +3202,24 @@ const normalizeFundItem = useCallback((item) => ({
                   <Text style={styles.scanText}>扫描</Text>
               </TouchableOpacity>
           </View>
-          <NationalitySelector
+          <InputWithUserTracking
+            fieldName="boardingCountry"
             label="登机国家或地区"
             value={boardingCountry}
-            onValueChange={(code) => {
-              setBoardingCountry(code);
-              debouncedSaveData(); // Trigger debounced save when boarding country changes
-            }}
+            onChangeText={setBoardingCountry}
+            onUserInteraction={handleUserInteraction}
+            onBlur={() => handleFieldBlur('boardingCountry', boardingCountry)}
+            showSuggestions={true}
+            suggestions={SuggestionProviders.getBoardingCountrySuggestions({
+              passportNationality: passport?.nationality,
+              destination: 'TH',
+              previousBoardingCountries: userInteractionTracker.getModifiedFields().includes('boardingCountry') ? [boardingCountry] : []
+            })}
+            placeholder="请选择或输入登机国家"
+            suggestionPlaceholder={SuggestionProviders.getSuggestionPlaceholder('boardingCountry', {
+              passportNationality: passport?.nationality,
+              destination: 'TH'
+            })}
             helpText="请选择您登机的国家或地区"
             error={!!errors.boardingCountry}
             errorMessage={errors.boardingCountry}
@@ -2799,73 +3345,36 @@ const normalizeFundItem = useCallback((item) => ({
           </TouchableOpacity>
 
           {!isTransitPassenger && (
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>住在哪里？</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOTEL', label: '酒店', icon: '🏨', tip: '最常见的选择' },
-                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠', tip: '经济实惠，交朋友' },
-                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡', tip: '体验当地生活' },
-                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥', tip: '住在朋友家' },
-                { value: 'APARTMENT', label: '公寓', icon: '🏢', tip: '短期租住民宿' },
-                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
-              ].map((option) => {
-                const isActive = accommodationType === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={async () => {
-                      console.log('=== ACCOMMODATION TYPE SELECTED ===');
-                      console.log('Selected option:', option.value);
-                      console.log('Previous accommodationType:', accommodationType);
-                      
-                      setAccommodationType(option.value);
-                      if (option.value !== 'OTHER') {
-                        setCustomAccommodationType('');
-                      }
-                      
-                      console.log('Saving immediately with new accommodation type...');
-                      // Save immediately with the new value to avoid React state delay
-                      try {
-                        await saveDataToSecureStorageWithOverride({ 
-                          accommodationType: option.value,
-                          customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
-                        });
-                        setLastEditedAt(new Date());
-                      } catch (error) {
-                        console.error('Failed to save accommodation type:', error);
-                      }
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {accommodationType === 'OTHER' && (
-              <Input
-                label="请输入住宿类型"
-                value={customAccommodationType}
-                onChangeText={setCustomAccommodationType}
-                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-                placeholder="请输入您的住宿类型"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
-          </View>
+          <InputWithUserTracking
+            fieldName="accommodationType"
+            label="住在哪里？"
+            value={accommodationType === 'OTHER' ? customAccommodationType : accommodationType}
+            onChangeText={(text) => {
+              if (text === 'OTHER' || !['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'].includes(text)) {
+                setAccommodationType('OTHER');
+                setCustomAccommodationType(text);
+              } else {
+                setAccommodationType(text);
+                setCustomAccommodationType('');
+              }
+            }}
+            onUserInteraction={handleUserInteraction}
+            onBlur={() => handleFieldBlur('accommodationType', accommodationType === 'OTHER' ? customAccommodationType : accommodationType)}
+            showSuggestions={true}
+            suggestions={SuggestionProviders.getAccommodationTypeSuggestions({
+              destination: 'TH',
+              travelPurpose: travelPurpose,
+              previousAccommodations: userInteractionTracker.getModifiedFields().includes('accommodationType') ? [accommodationType] : []
+            })}
+            placeholder="请选择或输入住宿类型"
+            suggestionPlaceholder={SuggestionProviders.getSuggestionPlaceholder('accommodationType', {
+              destination: 'TH',
+              travelPurpose: travelPurpose
+            })}
+            helpText="选择您在泰国的住宿类型"
+            error={!!errors.accommodationType}
+            errorMessage={errors.accommodationType}
+          />
           )}
           
           {!isTransitPassenger && (
@@ -3012,7 +3521,7 @@ const normalizeFundItem = useCallback((item) => ({
               {totalCompletionPercent < 25
                 ? '💡 从护照信息开始，告诉泰国你是谁'
                 : totalCompletionPercent < 50
-                ? '📞 添加联系方式，这样泰国就能找到你了'
+                ? '👤 填写个人信息，让泰国更了解你'
                 : totalCompletionPercent < 75
                 ? '💰 展示你的资金证明，泰国想确保你玩得开心'
                 : '✈️ 最后一步，分享你的旅行计划吧！'
@@ -3821,56 +4330,3 @@ const styles = StyleSheet.create({
  });
 
 export default ThailandTravelInfoScreen;
-
-// Test function to verify personal info data flow
-const testPersonalInfoDataFlow = async () => {
-  console.log('=== 🧪 TESTING PERSONAL INFO DATA FLOW ===');
-
-  // Test current UI state
-  console.log('Current UI state:');
-  console.log('- phoneCode:', phoneCode, 'Length:', phoneCode?.length);
-  console.log('- phoneNumber:', phoneNumber, 'Length:', phoneNumber?.length);
-  console.log('- email:', email, 'Length:', email?.length);
-  console.log('- occupation:', occupation, 'Length:', occupation?.length);
-  console.log('- cityOfResidence:', cityOfResidence, 'Length:', cityOfResidence?.length);
-  console.log('- residentCountry:', residentCountry, 'Length:', residentCountry?.length);
-  console.log('- sex:', sex, 'Length:', sex?.length);
-
-  // Test data preparation
-  const personalInfoUpdates = {};
-  if (phoneCode && phoneCode.trim()) personalInfoUpdates.phoneCode = phoneCode;
-  if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-  if (email && email.trim()) personalInfoUpdates.email = email;
-  if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-  if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-  if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
-  if (sex && sex.trim()) personalInfoUpdates.gender = sex;
-
-  console.log('Prepared personalInfoUpdates:', personalInfoUpdates);
-  console.log('Number of fields that would be saved:', Object.keys(personalInfoUpdates).length);
-
-  // Test the save process
-  if (Object.keys(personalInfoUpdates).length > 0) {
-    try {
-      console.log('Attempting to save personal info...');
-      const userId = passport?.id || 'user_001';
-      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-      console.log('✅ Personal info saved successfully:', savedPersonalInfo);
-
-      // Verify in database
-      const verifyData = await PassportDataService.getPersonalInfo(userId);
-      console.log('✅ Verification - loaded from database:', verifyData);
-
-    } catch (error) {
-      console.error('❌ Failed to save personal info:', error);
-      console.error('Error details:', error.message, error.stack);
-    }
-  } else {
-    console.log('⚠️ No fields to save - all fields are empty or invalid');
-  }
-};
-
-// Make test function available globally for debugging
-if (typeof window !== 'undefined') {
-  window.testPersonalInfoDataFlow = testPersonalInfoDataFlow;
-}

@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS personal_info (
   -- Personal Details
   occupation TEXT,
   phone_code TEXT,
-  gender TEXT,
+  -- NOTE: gender field removed - use passports.gender instead (single source of truth)
 
   -- Selection Mechanism
   is_default INTEGER DEFAULT 0,
@@ -428,7 +428,7 @@ user_id (INT) FK
 passport_id (TEXT) FK ✨ NULLABLE - Optional link
 phone_number, email, home_address
 country_region, province_city
-occupation, phone_code, gender
+occupation, phone_code
 is_default (INT) ✨ NEW - Only one per user
 label (TEXT) ✨ NEW - e.g., "China", "Hong Kong"
 ```

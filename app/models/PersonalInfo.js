@@ -19,7 +19,7 @@ class PersonalInfo {
     this.provinceCity = data.provinceCity; // 🟢 PLAINTEXT (not sensitive)
     this.countryRegion = data.countryRegion; // 🟢 PLAINTEXT (not sensitive)
     this.phoneCode = data.phoneCode; // 🟢 PLAINTEXT (not sensitive)
-    this.gender = data.gender; // 🟢 PLAINTEXT (not sensitive)
+    // NOTE: gender field removed - use passport.gender instead (single source of truth)
     this.isDefault = data.isDefault || 0; // NEW: default personal info for user
     this.label = data.label || null; // NEW: Label for personal info (e.g., "China", "Hong Kong")
     this.createdAt = data.createdAt || new Date().toISOString();
@@ -184,7 +184,7 @@ class PersonalInfo {
         provinceCity: this.provinceCity,
         countryRegion: this.countryRegion,
         phoneCode: this.phoneCode,
-        gender: this.gender,
+        // NOTE: gender field removed - use passport.gender instead
         isDefault: this.isDefault, // NEW
         label: this.label, // NEW
         createdAt: this.createdAt,
@@ -408,7 +408,7 @@ class PersonalInfo {
       provinceCity: this.provinceCity,
       countryRegion: this.countryRegion,
       phoneCode: this.phoneCode,
-      gender: this.gender,
+      // NOTE: gender field removed - use passport.gender instead
       isDefault: this.isDefault, // NEW: Schema v2.0 field
       label: this.label, // NEW: Schema v2.0 field
       createdAt: this.createdAt,
@@ -438,7 +438,7 @@ class PersonalInfo {
       provinceCity: inputData.provinceCity,
       countryRegion: inputData.countryRegion,
       phoneCode: inputData.phoneCode,
-      gender: inputData.gender,
+      // NOTE: gender field removed - use passport.gender instead
       isDefault: inputData.isDefault,
       label: inputData.label
     });

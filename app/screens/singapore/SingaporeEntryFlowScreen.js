@@ -123,15 +123,8 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
       const personalInfoFromStore = allUserData.personalInfo || {};
       const normalizedPersonalInfo = { ...personalInfoFromStore };
 
-      if (!normalizedPersonalInfo.gender || !normalizedPersonalInfo.gender.trim()) {
-        if (passportInfo.gender && passportInfo.gender.trim()) {
-          normalizedPersonalInfo.gender = passportInfo.gender.trim();
-        } else if (passportParam?.gender && passportParam.gender.trim()) {
-          normalizedPersonalInfo.gender = passportParam.gender.trim();
-        } else if (passportParam?.sex && passportParam.sex.trim()) {
-          normalizedPersonalInfo.gender = passportParam.sex.trim();
-        }
-      }
+      // Gender removed from personalInfo - use passport data directly
+      // Gender normalization logic removed - handled by passport model
 
       const entryInfo = {
         passport: passportInfo,

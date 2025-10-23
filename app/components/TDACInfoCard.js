@@ -5,11 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Image,
   Dimensions,
   Share,
   Platform,
 } from 'react-native';
+import OptimizedImage from './OptimizedImage';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 // QR code is displayed as an image from URI
@@ -204,10 +204,13 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
       <View style={styles.qrContainer}>
         {qrUri && !qrError ? (
           <View style={styles.qrWrapper}>
-            <Image
-              source={{ uri: qrUri }}
+            <OptimizedImage
+              uri={qrUri}
               style={styles.qrCode}
               resizeMode="contain"
+              loadingText="Loading QR code..."
+              errorText="QR码加载失败"
+              placeholder="📱"
               onError={() => setQrError(true)}
             />
           </View>

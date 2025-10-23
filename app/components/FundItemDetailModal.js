@@ -21,6 +21,7 @@ import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import Button from './Button';
 import Input from './Input';
+import OptimizedImage from './OptimizedImage';
 
 const FundItemDetailModal = ({
   visible,
@@ -754,8 +755,9 @@ const FundItemDetailModal = ({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
-        base64: true,
+        quality: 0.7, // Slightly reduced for faster loading
+        base64: false, // Disable base64 for better performance
+        exif: false, // Disable EXIF data for smaller file size
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -785,8 +787,9 @@ const FundItemDetailModal = ({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
-        base64: true,
+        quality: 0.7, // Slightly reduced for faster loading
+        base64: false, // Disable base64 for better performance
+        exif: false, // Disable EXIF data for smaller file size
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -822,11 +825,7 @@ const FundItemDetailModal = ({
 
       // Convert to base64 data URI
       let photoUri;
-      if (asset.base64) {
-        // Image picker already provided base64
-        photoUri = `data:image/jpeg;base64,${asset.base64}`;
-        console.log('[FundItemDetailModal] Using base64 photo data');
-      } else if (asset.uri) {
+      if (asset.uri) {
         // Fallback to URI if base64 not available
         photoUri = asset.uri;
         console.log('[FundItemDetailModal] Using photo URI:', asset.uri);
@@ -1431,17 +1430,12 @@ const FundItemDetailModal = ({
                   defaultValue: 'Double tap to view full size photo' 
                 })}
               >
-                <Image
-                  source={{ uri: fundItem.photoUri || fundItem.photo }}
+                <OptimizedImage
+                  uri={fundItem.photoUri || fundItem.photo}
                   style={styles.photoThumbnail}
                   resizeMode="cover"
-                  accessible={false}
-                  onError={(error) => {
-                    console.error('[FundItemDetailModal] Image load error:', error.nativeEvent);
-                  }}
-                  onLoad={() => {
-                    console.log('[FundItemDetailModal] Image loaded successfully');
-                  }}
+                  loadingText="Loading photo..."
+                  errorText="Failed to load photo"
                 />
                 <Text style={styles.photoHint}>
                   {t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}

@@ -545,7 +545,7 @@ const ResultScreen = ({ navigation, route }) => {
 
         {/* Personal Information Section */}
         <View style={styles.japanInfoSection}>
-          <Text style={styles.japanSectionTitle}>个人信息 Personal Information</Text>
+          <Text style={styles.japanSectionTitle}>护照信息 Personal Information</Text>
           <View style={styles.japanInfoGrid}>
             <View style={styles.japanInfoRow}>
               <Text style={styles.japanInfoLabel}>职业 Occupation</Text>

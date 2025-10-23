@@ -310,10 +310,10 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           setPhoneCode(autoPhoneCode);
           setPhoneNumber(personalInfo.phoneNumber || '');
           setEmail(personalInfo.email || '');
-          // Load gender from personal info, fallback to passport data
-          setGender(personalInfo.gender || passportData?.gender || '');
-        } else if (passportData?.gender) {
-          // If no personal info but passport has gender, use it
+        }
+        
+        // Gender - load from passport only (single source of truth)
+        if (passportData?.gender) {
           setGender(passportData.gender);
         }
 

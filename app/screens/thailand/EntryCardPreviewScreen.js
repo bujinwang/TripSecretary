@@ -56,15 +56,8 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
       const personalInfoFromStore = allUserData.personalInfo || {};
       const normalizedPersonalInfo = { ...personalInfoFromStore };
 
-      if (!normalizedPersonalInfo.gender || !normalizedPersonalInfo.gender.trim()) {
-        if (passportInfo.gender && passportInfo.gender.trim()) {
-          normalizedPersonalInfo.gender = passportInfo.gender.trim();
-        } else if (passportParam?.gender && passportParam.gender.trim()) {
-          normalizedPersonalInfo.gender = passportParam.gender.trim();
-        } else if (passportParam?.sex && passportParam.sex.trim()) {
-          normalizedPersonalInfo.gender = passportParam.sex.trim();
-        }
-      }
+      // Gender removed from personalInfo - use passport data directly
+      // Gender normalization logic removed - handled by passport model
 
       const entryInfo = {
         passport: passportInfo,
@@ -83,7 +76,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
           familyName: passportInfo.familyName || personalInfoFromStore.familyName || '',
           firstName: passportInfo.firstName || personalInfoFromStore.firstName || '',
           passportNo: passportInfo.passportNo || '',
-          gender: normalizedPersonalInfo.gender || passportInfo.gender || '',
+          gender: passportInfo.gender || passportParam?.gender || passportParam?.sex || '',
           birthDate: passportInfo.birthDate || {},
           nationality: passportInfo.nationality || 'CHN',
           phoneNo: personalInfoFromStore.phoneNo || '',
@@ -176,7 +169,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
 
               {/* Personal Information Section */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>👤 个人信息</Text>
+                <Text style={styles.sectionTitle}>👤 护照信息</Text>
                 <View style={styles.infoRow}>
                   <Text style={styles.label}>姓名：</Text>
                   <Text style={styles.value}>

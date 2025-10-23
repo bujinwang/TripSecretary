@@ -88,7 +88,7 @@ const TDACGuideScreen = ({ navigation, route }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.stepNumber}>1</Text>
-            <Text style={styles.sectionTitle}>个人信息 Personal Information</Text>
+            <Text style={styles.sectionTitle}>护照信息 Personal Information</Text>
           </View>
 
           {renderCopyField('Family Name (姓)', lastName, 'lastName')}

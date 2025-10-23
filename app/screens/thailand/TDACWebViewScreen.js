@@ -413,7 +413,8 @@ const TDACWebViewScreen = ({ navigation, route }) => {
             personalInfo.bdDateDay = value.padStart(2, '0');
             break;
           case 'gender':
-            personalInfo.gender = value.toUpperCase();
+            // NOTE: gender removed from personalInfo - stored in passport only
+            // personalInfo.gender = value.toUpperCase();
             break;
           case 'occupation':
             personalInfo.occupation = value.toUpperCase();
@@ -2361,7 +2362,7 @@ const showWebViewFillConfirmation = () => {
     const confirmationMessage = `
 🔍 即将自动填充的信息：
 
-👤 个人信息 (${personalFields.length}个字段):
+👤 护照信息 (${personalFields.length}个字段):
 ${personalFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
 
 ✈️ 旅行信息 (${tripFields.length}个字段):
