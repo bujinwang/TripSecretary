@@ -16,7 +16,7 @@ import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryInfoService from '../EntryInfoService';
-import PassportDataService from '../data/PassportDataService';
+import UserDataService from '../data/UserDataService';
 
 class DeadlineNotificationService {
   constructor() {
@@ -262,14 +262,14 @@ class DeadlineNotificationService {
   async shouldSendDeadlineNotification(entryInfoId) {
     try {
       // Check if entry info exists and is not submitted
-      const entryInfo = await PassportDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
+      const entryInfo = await UserDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
       if (!entryInfo || entryInfo.id !== entryInfoId) {
         console.log(`Entry info ${entryInfoId} not found, not sending deadline notification`);
         return false;
       }
 
       // Check if DAC is already submitted
-      const digitalArrivalCards = await PassportDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+      const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
       const hasSuccessfulSubmission = digitalArrivalCards.some(dac => dac.status === 'success');
 
       if (hasSuccessfulSubmission) {
@@ -279,7 +279,7 @@ class DeadlineNotificationService {
 
       // Check if it's actually the arrival day
       const now = new Date();
-      const travel = await PassportDataService.getTravelInfo('current_user', 'thailand');
+      const travel = await UserDataService.getTravelInfo('current_user', 'thailand');
       if (!travel || !travel.arrivalDate) {
         console.log(`No arrival date found for entry info ${entryInfoId}, not sending deadline notification`);
         return false;

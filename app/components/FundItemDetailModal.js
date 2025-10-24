@@ -415,8 +415,8 @@ const FundItemDetailModal = ({
     setError(null);
 
     try {
-      // Import PassportDataService
-      const PassportDataService = require('../services/data/PassportDataService').default;
+      // Import UserDataService
+      const UserDataService = require('../services/data/UserDataService').default;
       
       if (isCreateMode) {
         // Create new fund item
@@ -439,9 +439,9 @@ const FundItemDetailModal = ({
         // Get userId - use default for new items
         const userId = 'user_001';
         
-        // Create the new fund item using PassportDataService
-        console.log('[FundItemDetailModal] Calling PassportDataService.saveFundItem for creation...');
-        const newFundItem = await PassportDataService.saveFundItem(fundData, userId);
+        // Create the new fund item using UserDataService
+        console.log('[FundItemDetailModal] Calling UserDataService.saveFundItem for creation...');
+        const newFundItem = await UserDataService.saveFundItem(fundData, userId);
         
         console.log('[FundItemDetailModal] Fund item created successfully:', {
           fundItemId: newFundItem.id,
@@ -479,9 +479,9 @@ const FundItemDetailModal = ({
         // Get userId from fundItem or use default
         const userId = fundItem.userId || 'user_001';
         
-        // Save the updated fund item using PassportDataService
-        console.log('[FundItemDetailModal] Calling PassportDataService.saveFundItem...');
-        const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
+        // Save the updated fund item using UserDataService
+        console.log('[FundItemDetailModal] Calling UserDataService.saveFundItem...');
+        const updatedFundItem = await UserDataService.saveFundItem(fundData, userId);
         
         console.log('[FundItemDetailModal] Fund item updated successfully:', {
           fundItemId: updatedFundItem.id,
@@ -552,19 +552,19 @@ const FundItemDetailModal = ({
             setError(null);
 
             try {
-              // Import PassportDataService
-              const PassportDataService = require('../services/data/PassportDataService').default;
+              // Import UserDataService
+              const UserDataService = require('../services/data/UserDataService').default;
               
               // Get userId from fundItem or use default
               const userId = fundItem.userId || 'user_001';
               
-              console.log('[FundItemDetailModal] Calling PassportDataService.deleteFundItem...', {
+              console.log('[FundItemDetailModal] Calling UserDataService.deleteFundItem...', {
                 fundItemId: fundItem.id,
                 userId,
               });
               
-              // Delete the fund item using PassportDataService
-              await PassportDataService.deleteFundItem(fundItem.id, userId);
+              // Delete the fund item using UserDataService
+              await UserDataService.deleteFundItem(fundItem.id, userId);
               
               console.log('[FundItemDetailModal] Fund item deleted successfully:', {
                 fundItemId: fundItem.id,
@@ -848,8 +848,8 @@ const FundItemDetailModal = ({
           })
         );
       } else {
-        // Import PassportDataService
-        const PassportDataService = require('../services/data/PassportDataService').default;
+        // Import UserDataService
+        const UserDataService = require('../services/data/UserDataService').default;
         
         // Update fund item with new photo
         const fundData = {
@@ -872,7 +872,7 @@ const FundItemDetailModal = ({
         });
 
         // Save the updated fund item
-        const updatedFundItem = await PassportDataService.saveFundItem(fundData, userId);
+        const updatedFundItem = await UserDataService.saveFundItem(fundData, userId);
 
         console.log('[FundItemDetailModal] Fund item photo updated successfully:', {
           fundItemId: updatedFundItem.id,

@@ -5,8 +5,8 @@
 
 import EntryCompletionCalculator from '../EntryCompletionCalculator';
 
-// Mock PassportDataService
-jest.mock('../../services/data/PassportDataService', () => ({
+// Mock UserDataService
+jest.mock('../../services/data/UserDataService', () => ({
   default: {
     getAllEntryInfosForUser: jest.fn(),
     getEntryInfoByDestination: jest.fn(),
@@ -118,10 +118,10 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
 
   describe('switchDestinationContext', () => {
     it('should switch between destinations and preserve progress', async () => {
-      const PassportDataService = require('../../services/data/PassportDataService').default;
+      const UserDataService = require('../../services/data/UserDataService').default;
       
       // Mock entry info for both destinations
-      PassportDataService.getEntryInfoByDestination
+      UserDataService.getEntryInfoByDestination
         .mockResolvedValueOnce({
           passport: { passportNumber: 'E12345678', fullName: 'John Doe' },
           personalInfo: { occupation: 'Engineer' },
@@ -144,8 +144,8 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const PassportDataService = require('../../services/data/PassportDataService').default;
-      PassportDataService.getEntryInfoByDestination.mockRejectedValue(new Error('Database error'));
+      const UserDataService = require('../../services/data/UserDataService').default;
+      UserDataService.getEntryInfoByDestination.mockRejectedValue(new Error('Database error'));
 
       const result = await calculator.switchDestinationContext('th', 'jp', 'user_001');
 
@@ -158,10 +158,10 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
 
   describe('getHomeScreenCompletionData', () => {
     it('should return home screen data with categorized destinations', async () => {
-      const PassportDataService = require('../../services/data/PassportDataService').default;
+      const UserDataService = require('../../services/data/UserDataService').default;
       
       // Mock destinations with progress
-      PassportDataService.getAllEntryInfosForUser.mockResolvedValue([
+      UserDataService.getAllEntryInfosForUser.mockResolvedValue([
         {
           destinationId: 'th',
           passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01' },
@@ -181,7 +181,7 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       ]);
 
       // Mock multi-destination progress
-      PassportDataService.getEntryInfoByDestination
+      UserDataService.getEntryInfoByDestination
         .mockResolvedValueOnce(null) // th
         .mockResolvedValueOnce(null) // jp
         .mockResolvedValueOnce(null) // sg

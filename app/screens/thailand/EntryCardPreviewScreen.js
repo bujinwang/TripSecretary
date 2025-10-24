@@ -15,7 +15,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import { useLocale } from '../../i18n/LocaleContext';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import { colors, typography, spacing } from '../../theme';
 
@@ -24,7 +24,7 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [previewData, setPreviewData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
-  const passportParam = PassportDataService.toSerializablePassport(route.params?.passport);
+  const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
 
   // Load user data and prepare preview
   useEffect(() => {
@@ -38,18 +38,18 @@ const EntryCardPreviewScreen = ({ navigation, route }) => {
       // Get user ID from route params or use default
       const userId = passportParam?.id || 'user_001';
 
-      // Initialize PassportDataService
-      await PassportDataService.initialize(userId);
+      // Initialize UserDataService
+      await UserDataService.initialize(userId);
 
       // Load all user data
-      const allUserData = await PassportDataService.getAllUserData(userId);
+      const allUserData = await UserDataService.getAllUserData(userId);
 
       // Load fund items
-      const fundItems = await PassportDataService.getFundItems(userId);
+      const fundItems = await UserDataService.getFundItems(userId);
 
       // Load travel info for Thailand
       const destinationId = route.params?.destination?.id || 'thailand';
-      const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
       // Prepare entry info for preview
       const passportInfo = allUserData.passport || {};

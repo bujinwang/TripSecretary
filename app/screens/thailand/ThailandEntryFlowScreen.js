@@ -21,13 +21,13 @@ import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const passportParam = PassportDataService.toSerializablePassport(route.params?.passport);
+  const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
   
   // Completion state - calculated from real user data
   const [completionPercent, setCompletionPercent] = useState(0);
@@ -66,7 +66,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
   const setupDataChangeListener = () => {
     // Add listener for data changes and resubmission warnings
-    dataChangeUnsubscribe = PassportDataService.addDataChangeListener((event) => {
+    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
       console.log('Data change event received in ThailandEntryFlowScreen:', event);
       
       if (event.type === 'RESUBMISSION_WARNING') {
@@ -90,19 +90,19 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const currentUserId = passportParam?.id || 'user_001';
       setUserId(currentUserId);
 
-      // Initialize PassportDataService
-      await PassportDataService.initialize(currentUserId);
+      // Initialize UserDataService
+      await UserDataService.initialize(currentUserId);
 
       // Load all user data - use currentUserId directly instead of userId state
-      const allUserData = await PassportDataService.getAllUserData(currentUserId);
+      const allUserData = await UserDataService.getAllUserData(currentUserId);
       console.log('Loaded user data for completion calculation:', allUserData);
 
       // Load fund items - use currentUserId directly
-      const fundItems = await PassportDataService.getFundItems(currentUserId);
+      const fundItems = await UserDataService.getFundItems(currentUserId);
 
       // Load travel info for Thailand - use currentUserId directly
       const destinationId = route.params?.destination?.id || 'thailand';
-      const travelInfo = await PassportDataService.getTravelInfo(currentUserId, destinationId);
+      const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
       
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
@@ -275,7 +275,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
           // Check for pending resubmission warnings
           try {
-            const warning = PassportDataService.getResubmissionWarning(thailandEntryInfo.id);
+            const warning = UserDataService.getResubmissionWarning(thailandEntryInfo.id);
             if (warning) {
               setResubmissionWarning(warning);
             }
@@ -313,7 +313,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     try {
       if (action === 'resubmit') {
         // Mark entry pack as superseded and navigate to edit
-        await PassportDataService.markEntryPackAsSuperseded(warning.entryPackId, {
+        await UserDataService.markEntryPackAsSuperseded(warning.entryPackId, {
           changedFields: warning.diffResult.changedFields,
           changeReason: 'user_confirmed_resubmission'
         });
@@ -330,7 +330,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         });
       } else if (action === 'ignore') {
         // Clear the warning but don't mark as superseded
-        PassportDataService.clearResubmissionWarning(warning.entryPackId);
+        UserDataService.clearResubmissionWarning(warning.entryPackId);
         setResubmissionWarning(null);
       }
     } catch (error) {

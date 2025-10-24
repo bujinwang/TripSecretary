@@ -38,7 +38,7 @@ import apiClient from '../../services/api';
 import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
 import EntryData from '../../models/EntryData';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -161,7 +161,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   
   // Memoize passport to prevent infinite re-renders
   const passport = useMemo(() => {
-    return PassportDataService.toSerializablePassport(rawPassport);
+    return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
   
   // Memoize userId to prevent unnecessary re-renders
@@ -424,7 +424,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       setSex('Male');
 
       // Clear cache
-      PassportDataService.clearCache();
+      UserDataService.clearCache();
 
       alert('User data cleared successfully');
     } catch (error) {
@@ -439,15 +439,18 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       try {
         setIsLoading(true);
 
-        // Initialize PassportDataService and trigger migration if needed
+        // Initialize UserDataService and trigger migration if needed
         try {
-          await PassportDataService.initialize(userId);
+          await UserDataService.initialize(userId);
         } catch (initError) {
-          // Initialization failed, continue with route params
+          console.error('Failed to initialize UserDataService:', initError);
+          console.error('Error details:', initError.message, initError.stack);
+          // Log the error but re-throw it to prevent further operations
+          throw initError;
         }
 
         // Load all user data from centralized service
-        const userData = await PassportDataService.getAllUserData(userId);
+        const userData = await UserDataService.getAllUserData(userId);
         console.log('=== LOADED USER DATA ===');
         console.log('userData:', userData);
         console.log('userData.passport:', userData?.passport);
@@ -457,7 +460,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         // Load travel info and add to userData for migration
         try {
           const destinationId = destination?.id || 'singapore';
-          const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
           if (travelInfo) {
             userData.travelInfo = travelInfo;
           }
@@ -554,13 +557,13 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
           // Use destination.id for consistent lookup (not affected by localization)
           const destinationId = destination?.id || 'singapore';
           console.log('Loading travel info for destination:', destinationId);
-          let travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
           // Fallback: try loading with localized name if id lookup fails
           // This handles data saved before the fix
           if (!travelInfo && destination?.name) {
             console.log('Trying fallback with destination name:', destination.name);
-            travelInfo = await PassportDataService.getTravelInfo(userId, destination.name);
+            travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
           }
 
           if (travelInfo) {
@@ -652,14 +655,14 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       const reloadData = async () => {
         try {
 
-          // Reload data from PassportDataService
-          const userData = await PassportDataService.getAllUserData(userId);
+          // Reload data from UserDataService
+          const userData = await UserDataService.getAllUserData(userId);
 
           if (userData) {
             // Load travel info and add to userData for migration
             try {
               const destinationId = destination?.id || 'singapore';
-              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
               if (travelInfo) {
                 userData.travelInfo = travelInfo;
               }
@@ -707,7 +710,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             // Reload travel info data as well
             try {
               const destinationId = destination?.id || 'singapore';
-              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
               if (travelInfo) {
                 console.log('=== RELOADING TRAVEL INFO ON FOCUS ===');
@@ -1352,7 +1355,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       console.log('Total fields to save:', Object.keys(fieldsToSave).length);
 
       // Get existing passport first to ensure we're updating the right one
-      const existingPassport = await PassportDataService.getPassport(userId);
+      const existingPassport = await UserDataService.getPassport(userId);
       console.log('Existing passport:', existingPassport);
 
       // Save passport data - only include user-modified fields
@@ -1374,14 +1377,14 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         console.log('Saving passport updates:', passportUpdates);
         if (existingPassport && existingPassport.id) {
           console.log('Updating existing passport with ID:', existingPassport.id);
-          const updated = await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+          const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
           console.log('Passport data updated successfully');
           
           // Update passportData state to track the correct passport ID
           setPassportData(updated);
         } else {
           console.log('Creating new passport for userId:', userId);
-          const saved = await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+          const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
           console.log('Passport data saved successfully');
           
           // Update passportData state to track the new passport ID
@@ -1401,7 +1404,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
 
       if (Object.keys(personalInfoUpdates).length > 0) {
         console.log('Saving personal info updates:', personalInfoUpdates);
-        const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+        const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
         console.log('Personal info saved successfully');
         
         // Update personalInfoData state
@@ -1468,13 +1471,13 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         try {
           // Use destination.id for consistent lookup (not affected by localization)
           const destinationId = destination?.id || 'singapore';
-          console.log('Calling PassportDataService.updateTravelInfo with:', { userId, destinationId });
-          const savedTravelInfo = await PassportDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
+          console.log('Calling UserDataService.updateTravelInfo with:', { userId, destinationId });
+          const savedTravelInfo = await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
           console.log('Travel info saved successfully:', savedTravelInfo);
           
           // Check if arrival date changed and handle notifications
           if (travelInfoUpdates.arrivalArrivalDate && travelInfoUpdates.arrivalArrivalDate !== previousArrivalDate) {
-            console.log('Arrival date changed; PassportDataService will handle notification updates');
+            console.log('Arrival date changed; UserDataService will handle notification updates');
             setPreviousArrivalDate(travelInfoUpdates.arrivalArrivalDate);
           }
         } catch (travelInfoError) {
@@ -1507,7 +1510,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const refreshFundItems = useCallback(async (options = {}) => {
     try {
-      const fundItems = await PassportDataService.getFundItems(userId, options);
+      const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
       setFunds(normalized);
     } catch (error) {

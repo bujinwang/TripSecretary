@@ -46,7 +46,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     };
 
     // Get existing passport first to ensure we're updating the right one
-    const existingPassport = await PassportDataService.getPassport(userId);
+    const existingPassport = await UserDataService.getPassport(userId);
     console.log('Existing passport:', existingPassport);
 
     // Save passport data - only include non-empty fields
@@ -70,14 +70,14 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
       console.log('Saving passport updates:', passportUpdates);
       if (existingPassport && existingPassport.id) {
         console.log('Updating existing passport with ID:', existingPassport.id);
-        const updated = await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+        const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
         console.log('Passport data updated successfully');
 
         // Update passportData state to track the correct passport ID
         setPassportData(updated);
       } else {
         console.log('Creating new passport for userId:', userId);
-        const saved = await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+        const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
         console.log('Passport data saved successfully');
 
         // Update passportData state to track the new passport ID
@@ -101,7 +101,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
     if (Object.keys(personalInfoUpdates).length > 0) {
       console.log('Saving personal info updates:', personalInfoUpdates);
-      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+      const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
       console.log('Personal info saved successfully');
 
       // Update personalInfoData state
@@ -558,11 +558,11 @@ const testPersonalInfoDataFlow = async () => {
     try {
       console.log('Attempting to save personal info...');
       const userId = passport?.id || 'user_001';
-      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+      const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
       console.log('✅ Personal info saved successfully:', savedPersonalInfo);
 
       // Verify in database
-      const verifyData = await PassportDataService.getPersonalInfo(userId);
+      const verifyData = await UserDataService.getPersonalInfo(userId);
       console.log('✅ Verification - loaded from database:', verifyData);
 
     } catch (error) {

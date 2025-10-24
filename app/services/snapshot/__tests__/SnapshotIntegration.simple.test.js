@@ -10,7 +10,7 @@ import SnapshotService from '../SnapshotService';
 
 // Mock dependencies
 jest.mock('../../security/SecureStorageService');
-jest.mock('../../data/PassportDataService');
+jest.mock('../../data/UserDataService');
 jest.mock('expo-file-system');
 
 describe('SnapshotIntegration - Core Functionality', () => {

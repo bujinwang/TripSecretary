@@ -4,7 +4,7 @@
  * Test User Creation Fix
  *
  * This script tests if the user_001 record is properly created
- * when PassportDataService is initialized.
+ * when UserDataService is initialized.
  *
  * Usage: node scripts/test-user-creation.js
  */

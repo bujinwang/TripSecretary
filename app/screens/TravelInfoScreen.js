@@ -19,7 +19,7 @@ import { colors, typography, spacing, borderRadius } from '../theme';
 import { checkDuplicate, getTimeUntilArrival } from '../utils/generationHistory';
 import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 const YES_VALUE = '是';
 const NO_VALUE = '否';
@@ -57,7 +57,7 @@ const TravelInfoScreen = ({ navigation, route }) => {
     generationId: editingGenerationId,
     fromHistory = false,
   } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
 
   const normalizeYesNo = (value, fallback = NO_VALUE) => {
     if (value === YES_VALUE || value === NO_VALUE) return value;

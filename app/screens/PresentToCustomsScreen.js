@@ -11,11 +11,11 @@ import {
 import { colors, typography, spacing } from '../theme';
 import { translateField, getDestinationLanguage, DESTINATION_LANGUAGES } from '../utils/translations';
 import BackButton from '../components/BackButton';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 const PresentToCustomsScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const { width, height } = useWindowDimensions();
   
   const destLang = getDestinationLanguage(destination?.id);

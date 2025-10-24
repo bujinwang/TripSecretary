@@ -15,7 +15,7 @@ import {
 import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const japanEntryCardSample = require('../../../assets/forms/japan-entry-card-sample.jpg');
 const japanCustomsSample = require('../../../assets/forms/japan-customs-declaration.jpg');
@@ -24,7 +24,7 @@ const japanBiometricSample = require('../../../assets/forms/japan-biometric-scan
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { passport: rawPassport, destination, travelInfo, currentStep: initialStep = 0 } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isFormSampleVisible, setFormSampleVisible] = useState(false);
   const [isCustomsSampleVisible, setCustomsSampleVisible] = useState(false);

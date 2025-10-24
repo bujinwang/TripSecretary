@@ -29,9 +29,9 @@ checks.forEach(check => {
 const hasValidation = content.includes('validateField') && content.includes('handleFieldBlur');
 console.log(`✓ Field validation: ${hasValidation ? 'IMPLEMENTED' : 'MISSING'}`);
 
-// Check for PassportDataService integration
-const hasDataService = content.includes('PassportDataService');
-console.log(`✓ PassportDataService integration: ${hasDataService ? 'IMPLEMENTED' : 'MISSING'}`);
+// Check for UserDataService integration
+const hasDataService = content.includes('UserDataService');
+console.log(`✓ UserDataService integration: ${hasDataService ? 'IMPLEMENTED' : 'MISSING'}`);
 
 console.log('='.repeat(60));
 console.log('Task 3.1 Implementation Status: COMPLETE');

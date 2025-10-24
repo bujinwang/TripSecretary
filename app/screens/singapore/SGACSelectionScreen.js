@@ -19,13 +19,13 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import SingaporeEntryGuideService from '../../services/entryGuide/SingaporeEntryGuideService';
 
 const SGACSelectionScreen = ({ navigation, route }) => {
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const userId = passport?.id || 'user_001';
 
   const [isLoading, setIsLoading] = useState(false);
@@ -70,13 +70,13 @@ const SGACSelectionScreen = ({ navigation, route }) => {
     try {
       setIsLoading(true);
 
-      // Initialize PassportDataService
-      await PassportDataService.initialize(userId);
+      // Initialize UserDataService
+      await UserDataService.initialize(userId);
 
       // Load all user data
-      const allUserData = await PassportDataService.getAllUserData(userId);
-      const fundItems = await PassportDataService.getFundItems(userId);
-      const travelInfo = await PassportDataService.getTravelInfo(userId, destination?.id || 'singapore');
+      const allUserData = await UserDataService.getAllUserData(userId);
+      const fundItems = await UserDataService.getFundItems(userId);
+      const travelInfo = await UserDataService.getTravelInfo(userId, destination?.id || 'singapore');
 
       const entryInfo = {
         passport: allUserData.passport || {},

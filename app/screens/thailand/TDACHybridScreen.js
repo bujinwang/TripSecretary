@@ -42,39 +42,7 @@ import DigitalArrivalCard from '../../models/DigitalArrivalCard';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
-  
-  // Log incoming data for debugging
-  console.log('🔍 TDACHybridScreen received travelerInfo:', {
-    hasData: Object.keys(rawTravelerInfo).length > 0,
-    keys: Object.keys(rawTravelerInfo),
-    passportNo: rawTravelerInfo.passportNo,
-    familyName: rawTravelerInfo.familyName,
-    firstName: rawTravelerInfo.firstName,
-    arrivalDate: rawTravelerInfo.arrivalDate,
-    email: rawTravelerInfo.email,
-    flightNo: rawTravelerInfo.flightNo,
-    tranModeId: rawTravelerInfo.tranModeId // Add this to debug logging
-  });
-  
-
-  
-  // Use pure user data directly - no mock data fallbacks
   const travelerInfo = rawTravelerInfo;
-  
-  // Log user data for debugging
-  console.log('🔍 Using pure user data:', {
-    passportNo: travelerInfo.passportNo,
-    familyName: travelerInfo.familyName,
-    firstName: travelerInfo.firstName,
-    arrivalDate: travelerInfo.arrivalDate,
-    departureDate: travelerInfo.departureDate,
-    email: travelerInfo.email,
-    flightNo: travelerInfo.flightNo,
-    departureFlightNo: travelerInfo.departureFlightNo,
-    departureFlightNumber: travelerInfo.departureFlightNumber,
-    tranModeId: travelerInfo.tranModeId,
-    departureTransportModeId: travelerInfo.departureTransportModeId
-  });
   
   const webViewRef = useRef(null);
   const [stage, setStage] = useState('loading'); // loading, extracting, submitting, success, error
@@ -91,13 +59,10 @@ const TDACHybridScreen = ({ navigation, route }) => {
   const handleWebViewMessage = async (event) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      console.log('📨 WebView message:', message.type);
 
       switch (message.type) {
         case 'CLOUDFLARE_INTERCEPTION_READY':
-          console.log('✅ Cloudflare interception ready');
           setProgress('正在等待Cloudflare验证...');
-          // Show WebView for user to complete Cloudflare challenge
           setTimeout(() => {
             setShowCloudflare(true);
             setProgress('请点击"我不是机器人"复选框');
@@ -105,40 +70,29 @@ const TDACHybridScreen = ({ navigation, route }) => {
           break;
 
         case 'CLOUDFLARE_TOKEN_EXTRACTED':
-          console.log('🎉 Token extracted!');
-          console.log('📝 Token length:', message.tokenLength || message.token?.length);
-          console.log('🔑 Token method:', message.method);
-          console.log('🔑 Token preview:', message.token?.substring(0, 50) + '...');
-          
           setCloudflareToken(message.token);
-          setShowCloudflare(false); // Hide WebView
+          setShowCloudflare(false);
           setStage('submitting');
           setProgress('Token获取成功，正在提交...');
-          
-          // Stop WebView loading
+
           if (webViewRef.current) {
             webViewRef.current.stopLoading();
           }
-          
-          // Submit via API
+
           await submitWithAPI(message.token);
           break;
 
         case 'CLOUDFLARE_TOKEN_NOT_READY':
-          console.log('⏳ Token not ready yet');
           break;
 
         case 'CLOUDFLARE_TOKEN_POLLING':
-          // Progress update during polling
           const remainingSeconds = Math.ceil((message.maxPolls - message.pollCount) * 0.5);
-          console.log('⏳ Polling for token... (' + message.pollCount + '/' + message.maxPolls + ', ' + remainingSeconds + 's remaining)');
           if (showCloudflare) {
             setProgress('等待验证完成... (还剩 ' + remainingSeconds + ' 秒)');
           }
           break;
 
         case 'CLOUDFLARE_TOKEN_TIMEOUT':
-          console.log('⏰ Token extraction timeout after', message.pollCount, 'polls');
           setStage('error');
           setProgress('验证超时');
           setShowCloudflare(false);
@@ -148,8 +102,8 @@ const TDACHybridScreen = ({ navigation, route }) => {
             [
               { text: '重试', onPress: () => navigation.replace('TDACHybrid', { travelerInfo }) },
               { text: '返回', onPress: () => navigation.goBack() },
-              { 
-                text: '使用WebView版本', 
+              {
+                text: '使用WebView版本',
                 onPress: () => {
                   navigation.replace('TDACWebView', { travelerInfo });
                 }
@@ -159,7 +113,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
           break;
       }
     } catch (error) {
-      console.error('❌ Message parse error:', error);
+      console.error('Message parse error:', error);
     }
   };
 
@@ -170,32 +124,25 @@ const TDACHybridScreen = ({ navigation, route }) => {
     try {
       // Validate token
       if (!token || token.length < 100) {
-        console.error('❌ Invalid Cloudflare token:', token);
         throw new Error('Invalid Cloudflare token: too short or empty');
       }
-      
-      console.log('✅ Valid token received, length:', token.length);
-      console.log('   Token preview:', token.substring(0, 50) + '...' + token.substring(token.length - 20));
-      
+
       setProgress('步骤 1/9: 验证数据完整性...');
-      
+
       // FINAL VALIDATION: Ensure all required TDAC fields are present
       const TDACValidationService = require('../../services/validation/TDACValidationService').default;
       const validationResult = TDACValidationService.validateTravelerData(travelerInfo);
-      
+
       if (!validationResult.isValid) {
-        console.error('❌ Final TDAC validation failed:', validationResult.errors);
         throw new Error('数据验证失败：' + validationResult.errors.join(', '));
       }
-      
-      console.log('✅ Final TDAC validation passed');
+
       setProgress('步骤 2/9: 初始化...');
-      
+
       // Prepare traveler data
       const resolvedTranModeId =
         (travelerInfo.tranModeId && travelerInfo.tranModeId.trim()) ||
         ThailandTravelerContextBuilder.getTransportModeId(travelerInfo);
-      console.log('✈️ Resolved tranModeId for submission:', resolvedTranModeId);
 
       const travelerData = {
         cloudflareToken: token,

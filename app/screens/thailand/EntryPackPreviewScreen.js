@@ -11,11 +11,11 @@ import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const EntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
 
   const handleClose = () => {
     navigation.goBack();

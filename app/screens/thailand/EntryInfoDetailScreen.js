@@ -17,7 +17,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MediaLibrary from 'expo-media-library';
 import EntryInfoService from '../../services/EntryInfoService';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import DigitalArrivalCard from '../../models/DigitalArrivalCard';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
 import EntryPackStatusBanner from '../../components/EntryPackStatusBanner';
@@ -574,9 +574,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
 
     try {
       // Load passport and travel data for presentation mode
-      const passportData = await PassportDataService.getPassportInfo();
-      const travelData = await PassportDataService.getTravelInfo();
-      const fundData = await PassportDataService.getFundItems();
+      const passportData = await UserDataService.getPassportInfo();
+      const travelData = await UserDataService.getTravelInfo();
+      const fundData = await UserDataService.getFundItems();
 
       navigation.navigate('ImmigrationOfficerView', {
         entryInfo: entryInfo,

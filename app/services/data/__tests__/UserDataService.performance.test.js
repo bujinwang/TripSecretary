@@ -1,9 +1,9 @@
 /**
- * PassportDataService Performance Tests
+ * UserDataService Performance Tests
  * Tests for data load times, concurrent access, and cache effectiveness
  */
 
-import PassportDataService from '../PassportDataService';
+import UserDataService from '../UserDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
 // FundingProof removed - performance tests updated
@@ -15,13 +15,13 @@ import SecureStorageService from '../../security/SecureStorageService';
 // FundingProof mock removed
 jest.mock('../../security/SecureStorageService');
 
-describe('PassportDataService - Performance Tests', () => {
+describe('UserDataService - Performance Tests', () => {
   const testUserId = 'test-user-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    PassportDataService.clearCache();
-    PassportDataService.resetCacheStats();
+    UserDataService.clearCache();
+    UserDataService.resetCacheStats();
     Passport.load = jest.fn().mockResolvedValue({ userId: testUserId });
     Passport.loadPrimary = jest.fn().mockResolvedValue({ userId: testUserId });
     PersonalInfo.load = jest.fn().mockResolvedValue({ userId: testUserId });
@@ -44,7 +44,7 @@ describe('PassportDataService - Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      const result = await PassportDataService.getPassport(testUserId);
+      const result = await UserDataService.getPassport(testUserId);
       const duration = Date.now() - startTime;
 
       expect(result).toEqual(mockPassport);
@@ -64,7 +64,7 @@ describe('PassportDataService - Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      const result = await PassportDataService.getPersonalInfo(testUserId);
+      const result = await UserDataService.getPersonalInfo(testUserId);
       const duration = Date.now() - startTime;
 
       expect(result).toEqual(mockPersonalInfo);
@@ -84,7 +84,7 @@ describe('PassportDataService - Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      const result = await PassportDataService.getFundingProof(testUserId);
+      const result = await UserDataService.getFundingProof(testUserId);
       const duration = Date.now() - startTime;
 
       expect(result).toEqual(mockFundingProof);
@@ -104,7 +104,7 @@ describe('PassportDataService - Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      const result = await PassportDataService.getAllUserData(testUserId);
+      const result = await UserDataService.getAllUserData(testUserId);
       const duration = Date.now() - startTime;
 
       expect(result.passport).toBeDefined();
@@ -125,11 +125,11 @@ describe('PassportDataService - Performance Tests', () => {
       Passport.load.mockResolvedValue(mockPassport);
 
       // First load - populate cache
-      await PassportDataService.getPassport(testUserId);
+      await UserDataService.getPassport(testUserId);
 
       // Second load - from cache
       const startTime = Date.now();
-      const result = await PassportDataService.getPassport(testUserId);
+      const result = await UserDataService.getPassport(testUserId);
       const duration = Date.now() - startTime;
 
       expect(result).toEqual(mockPassport);
@@ -146,12 +146,12 @@ describe('PassportDataService - Performance Tests', () => {
       Passport.load.mockResolvedValue(mockPassport);
 
       // Simulate typical usage: 1 load, 9 reads
-      await PassportDataService.getPassport(testUserId); // miss
+      await UserDataService.getPassport(testUserId); // miss
       for (let i = 0; i < 9; i++) {
-        await PassportDataService.getPassport(testUserId); // hits
+        await UserDataService.getPassport(testUserId); // hits
       }
 
-      const stats = PassportDataService.getCacheStats();
+      const stats = UserDataService.getCacheStats();
       expect(stats.hitRate).toBeGreaterThanOrEqual(80);
       expect(stats.hits).toBe(9);
       expect(stats.misses).toBe(1);
@@ -165,21 +165,21 @@ describe('PassportDataService - Performance Tests', () => {
       PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
 
       // Load all data types once
-      await PassportDataService.getPassport(testUserId);
-      await PassportDataService.getPersonalInfo(testUserId);
+      await UserDataService.getPassport(testUserId);
+      await UserDataService.getPersonalInfo(testUserId);
 
       // Read multiple times
       const startTime = Date.now();
       for (let i = 0; i < 10; i++) {
-        await PassportDataService.getPassport(testUserId);
-        await PassportDataService.getPersonalInfo(testUserId);
+        await UserDataService.getPassport(testUserId);
+        await UserDataService.getPersonalInfo(testUserId);
       }
       const duration = Date.now() - startTime;
 
       // 20 cached reads should be very fast
       expect(duration).toBeLessThan(100);
 
-      const stats = PassportDataService.getCacheStats();
+      const stats = UserDataService.getCacheStats();
       expect(stats.hits).toBe(20);
       expect(stats.misses).toBe(2);
     });
@@ -200,7 +200,7 @@ describe('PassportDataService - Performance Tests', () => {
 
       const startTime = Date.now();
       const promises = Array(10).fill(null).map(() =>
-        PassportDataService.getPassport(testUserId)
+        UserDataService.getPassport(testUserId)
       );
       const results = await Promise.all(promises);
       const duration = Date.now() - startTime;
@@ -224,7 +224,7 @@ describe('PassportDataService - Performance Tests', () => {
       Passport.load.mockResolvedValue(mockPassport);
 
       const promises = Array(100).fill(null).map(() =>
-        PassportDataService.getPassport(testUserId)
+        UserDataService.getPassport(testUserId)
       );
 
       const results = await Promise.all(promises);
@@ -245,14 +245,14 @@ describe('PassportDataService - Performance Tests', () => {
       };
 
       Passport.load.mockResolvedValue(mockPassport);
-      PassportDataService.updatePassport = jest.fn().mockResolvedValue();
+      UserDataService.updatePassport = jest.fn().mockResolvedValue();
 
       const reads = Array(5).fill(null).map(() =>
-        PassportDataService.getPassport(testUserId)
+        UserDataService.getPassport(testUserId)
       );
 
       const writes = Array(5).fill(null).map((_, i) =>
-        PassportDataService.updatePassport('passport-1', {
+        UserDataService.updatePassport('passport-1', {
           fullName: `ZHANG, WEI ${i}`
         })
       );
@@ -276,7 +276,7 @@ describe('PassportDataService - Performance Tests', () => {
 
       const startTime = Date.now();
       const promises = users.map(userId =>
-        PassportDataService.getPassport(userId)
+        UserDataService.getPassport(userId)
       );
       const results = await Promise.all(promises);
       const duration = Date.now() - startTime;
@@ -316,15 +316,15 @@ describe('PassportDataService - Performance Tests', () => {
 
       // Test batch load
       const batchStart = Date.now();
-      await PassportDataService.getAllUserData(testUserId, { useBatchLoad: true });
+      await UserDataService.getAllUserData(testUserId, { useBatchLoad: true });
       const batchDuration = Date.now() - batchStart;
 
       // Clear cache
-      PassportDataService.clearCache();
+      UserDataService.clearCache();
 
       // Test parallel load
       const parallelStart = Date.now();
-      await PassportDataService.getAllUserData(testUserId, { useBatchLoad: false });
+      await UserDataService.getAllUserData(testUserId, { useBatchLoad: false });
       const parallelDuration = Date.now() - parallelStart;
 
       console.log(`Batch load: ${batchDuration}ms, Parallel load: ${parallelDuration}ms`);
@@ -362,7 +362,7 @@ describe('PassportDataService - Performance Tests', () => {
       };
 
       const startTime = Date.now();
-      await PassportDataService.batchUpdate(testUserId, updates);
+      await UserDataService.batchUpdate(testUserId, updates);
       const duration = Date.now() - startTime;
 
       // Should complete efficiently
@@ -382,28 +382,28 @@ describe('PassportDataService - Performance Tests', () => {
 
       // Perform many operations
       for (let i = 0; i < 100; i++) {
-        await PassportDataService.getPassport(testUserId);
-        PassportDataService.invalidateCache('passport', testUserId);
+        await UserDataService.getPassport(testUserId);
+        UserDataService.invalidateCache('passport', testUserId);
       }
 
       // Cache should not grow unbounded
-      const cacheSize = PassportDataService.cache.passport.size;
+      const cacheSize = UserDataService.cache.passport.size;
       expect(cacheSize).toBeLessThanOrEqual(10);
     });
 
     it('should clear cache efficiently', () => {
       // Populate cache with multiple users
       for (let i = 0; i < 100; i++) {
-        PassportDataService.cache.passport.set(`user-${i}`, { id: `passport-${i}` });
-        PassportDataService.cache.personalInfo.set(`user-${i}`, { id: `personal-${i}` });
+        UserDataService.cache.passport.set(`user-${i}`, { id: `passport-${i}` });
+        UserDataService.cache.personalInfo.set(`user-${i}`, { id: `personal-${i}` });
       }
 
       const startTime = Date.now();
-      PassportDataService.clearCache();
+      UserDataService.clearCache();
       const duration = Date.now() - startTime;
 
-      expect(PassportDataService.cache.passport.size).toBe(0);
-      expect(PassportDataService.cache.personalInfo.size).toBe(0);
+      expect(UserDataService.cache.passport.size).toBe(0);
+      expect(UserDataService.cache.personalInfo.size).toBe(0);
       expect(duration).toBeLessThan(10);
     });
   });
@@ -419,14 +419,14 @@ describe('PassportDataService - Performance Tests', () => {
       Passport.load.mockResolvedValue(mockPassport);
 
       // Generate activity
-      await PassportDataService.getPassport(testUserId); // miss
-      await PassportDataService.getPassport(testUserId); // hit
-      await PassportDataService.getPassport(testUserId); // hit
-      PassportDataService.invalidateCache('passport', testUserId);
-      await PassportDataService.getPassport(testUserId); // miss
-      await PassportDataService.getPassport(testUserId); // hit
+      await UserDataService.getPassport(testUserId); // miss
+      await UserDataService.getPassport(testUserId); // hit
+      await UserDataService.getPassport(testUserId); // hit
+      UserDataService.invalidateCache('passport', testUserId);
+      await UserDataService.getPassport(testUserId); // miss
+      await UserDataService.getPassport(testUserId); // hit
 
-      const stats = PassportDataService.getCacheStats();
+      const stats = UserDataService.getCacheStats();
 
       expect(stats.hits).toBe(3);
       expect(stats.misses).toBe(2);
@@ -444,7 +444,7 @@ describe('PassportDataService - Performance Tests', () => {
 
       Passport.load.mockResolvedValue(mockPassport);
 
-      const stats = PassportDataService.getCacheStats();
+      const stats = UserDataService.getCacheStats();
 
       expect(stats.lastReset).toBeDefined();
       expect(stats.timeSinceReset).toBeGreaterThanOrEqual(0);
@@ -463,14 +463,14 @@ describe('PassportDataService - Performance Tests', () => {
 
       const startTime = Date.now();
       for (let i = 0; i < 1000; i++) {
-        await PassportDataService.getPassport(testUserId);
+        await UserDataService.getPassport(testUserId);
       }
       const duration = Date.now() - startTime;
 
       // Should complete in reasonable time
       expect(duration).toBeLessThan(1000);
 
-      const stats = PassportDataService.getCacheStats();
+      const stats = UserDataService.getCacheStats();
       expect(stats.hits).toBe(999);
       expect(stats.misses).toBe(1);
     });
@@ -486,8 +486,8 @@ describe('PassportDataService - Performance Tests', () => {
 
       const startTime = Date.now();
       for (let i = 0; i < 100; i++) {
-        await PassportDataService.getPassport(testUserId);
-        PassportDataService.invalidateCache('passport', testUserId);
+        await UserDataService.getPassport(testUserId);
+        UserDataService.invalidateCache('passport', testUserId);
       }
       const duration = Date.now() - startTime;
 

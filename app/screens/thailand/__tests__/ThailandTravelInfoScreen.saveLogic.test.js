@@ -3,12 +3,12 @@
  * Tests save filtering with user interaction tracking and backward compatibility migration
  */
 
-import PassportDataService from '../../../services/data/PassportDataService';
+import UserDataService from '../../../services/data/UserDataService';
 import FieldStateManager from '../../../utils/FieldStateManager';
 import { useUserInteractionTracker } from '../../../utils/UserInteractionTracker';
 
 // Mock dependencies
-jest.mock('../../../services/data/PassportDataService');
+jest.mock('../../../services/data/UserDataService');
 jest.mock('../../../utils/FieldStateManager');
 jest.mock('../../../utils/UserInteractionTracker');
 
@@ -30,16 +30,16 @@ describe('ThailandTravelInfoScreen - Save Logic Integration Tests', () => {
     
     useUserInteractionTracker.mockReturnValue(mockUserInteractionTracker);
     
-    // Mock PassportDataService
-    PassportDataService.getAllUserData = jest.fn().mockResolvedValue({
+    // Mock UserDataService
+    UserDataService.getAllUserData = jest.fn().mockResolvedValue({
       passport: null,
       personalInfo: null,
       userId: 'user_001'
     });
-    PassportDataService.getTravelInfo = jest.fn().mockResolvedValue(null);
-    PassportDataService.updatePassport = jest.fn().mockResolvedValue();
-    PassportDataService.upsertPersonalInfo = jest.fn().mockResolvedValue();
-    PassportDataService.saveTravelInfo = jest.fn().mockResolvedValue();
+    UserDataService.getTravelInfo = jest.fn().mockResolvedValue(null);
+    UserDataService.updatePassport = jest.fn().mockResolvedValue();
+    UserDataService.upsertPersonalInfo = jest.fn().mockResolvedValue();
+    UserDataService.saveTravelInfo = jest.fn().mockResolvedValue();
     
     // Mock FieldStateManager
     FieldStateManager.filterSaveableFields = jest.fn().mockImplementation((fields) => fields);
@@ -385,16 +385,16 @@ describe('ThailandTravelInfoScreen - Save Logic Integration Tests', () => {
     });
 
     it('should handle save operation failures', async () => {
-      PassportDataService.saveTravelInfo.mockRejectedValue(new Error('Save failed'));
+      UserDataService.saveTravelInfo.mockRejectedValue(new Error('Save failed'));
 
       // Test that save errors are handled gracefully
       try {
-        await PassportDataService.saveTravelInfo('user_001', { travelPurpose: 'BUSINESS' });
+        await UserDataService.saveTravelInfo('user_001', { travelPurpose: 'BUSINESS' });
       } catch (error) {
         expect(error.message).toBe('Save failed');
       }
 
-      expect(PassportDataService.saveTravelInfo).toHaveBeenCalled();
+      expect(UserDataService.saveTravelInfo).toHaveBeenCalled();
     });
   });
 });

@@ -1,8 +1,8 @@
 /**
- * Tests for PassportDataService conflict detection and error handling
+ * Tests for UserDataService conflict detection and error handling
  */
 
-import PassportDataService from '../PassportDataService';
+import UserDataService from '../UserDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
 // FundingProof removed - conflict tests updated
@@ -16,12 +16,12 @@ jest.mock('../../../models/PersonalInfo');
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');
 
-describe('PassportDataService - Conflict Detection and Error Handling', () => {
+describe('UserDataService - Conflict Detection and Error Handling', () => {
   const testUserId = 'test-user-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
   });
 
   describe('detectDataConflicts', () => {
@@ -51,7 +51,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.detectDataConflicts(testUserId);
+      const result = await UserDataService.detectDataConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(false);
       expect(result.userId).toBe(testUserId);
@@ -89,7 +89,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.detectDataConflicts(testUserId);
+      const result = await UserDataService.detectDataConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts.passport).toBeDefined();
@@ -125,7 +125,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.detectDataConflicts(testUserId);
+      const result = await UserDataService.detectDataConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts.personalInfo).toBeDefined();
@@ -158,7 +158,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.detectDataConflicts(testUserId);
+      const result = await UserDataService.detectDataConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts.fundingProof).toBeDefined();
@@ -190,7 +190,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.resolveDataConflicts(testUserId);
+      const result = await UserDataService.resolveDataConflicts(testUserId);
 
       expect(result.resolved).toBe(true);
       expect(result.hadConflicts).toBe(true);
@@ -203,7 +203,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       PersonalInfo.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
-      const result = await PassportDataService.resolveDataConflicts(testUserId);
+      const result = await UserDataService.resolveDataConflicts(testUserId);
 
       expect(result.resolved).toBe(true);
       expect(result.hadConflicts).toBe(false);
@@ -223,7 +223,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       PersonalInfo.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
-      const result = await PassportDataService.getAllUserDataWithConflictHandling(testUserId);
+      const result = await UserDataService.getAllUserDataWithConflictHandling(testUserId);
 
       expect(result.passport).toEqual(passportData);
       expect(result.conflictHandling).toBeDefined();
@@ -250,7 +250,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.getAllUserDataWithConflictHandling(testUserId);
+      const result = await UserDataService.getAllUserDataWithConflictHandling(testUserId);
 
       expect(result.conflictHandling.hasConflicts).toBe(true);
       expect(result.conflictHandling.resolved).toBe(true);
@@ -261,7 +261,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       Passport.load.mockResolvedValue({ id: 'passport-1' });
       PersonalInfo.load.mockResolvedValue(null);
 
-      const result = await PassportDataService.getAllUserDataWithConflictHandling(
+      const result = await UserDataService.getAllUserDataWithConflictHandling(
         testUserId,
         { detectConflicts: false }
       );
@@ -275,7 +275,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       PersonalInfo.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockRejectedValue(new Error('AsyncStorage error'));
 
-      const result = await PassportDataService.getAllUserDataWithConflictHandling(testUserId);
+      const result = await UserDataService.getAllUserDataWithConflictHandling(testUserId);
 
       expect(result.conflictHandling.detectionFailed).toBe(true);
       expect(result.conflictHandling.error).toBeDefined();
@@ -306,7 +306,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
         return Promise.resolve(null);
       });
 
-      const result = await PassportDataService.checkAndLogConflicts(testUserId);
+      const result = await UserDataService.checkAndLogConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts).toBeDefined();
@@ -320,7 +320,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       PersonalInfo.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
-      const result = await PassportDataService.checkAndLogConflicts(testUserId);
+      const result = await UserDataService.checkAndLogConflicts(testUserId);
 
       expect(result.hasConflicts).toBe(false);
       expect(result.message).toBe('No conflicts detected');
@@ -330,7 +330,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
   describe('handleDataOperationError', () => {
     it('should categorize NOT_FOUND errors', () => {
       const error = new Error('Passport not found: test-id');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'getPassport',
         testUserId
@@ -343,7 +343,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
     it('should categorize VALIDATION_ERROR', () => {
       const error = new Error('Validation failed: missing required field');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'savePassport',
         testUserId
@@ -355,7 +355,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
     it('should categorize CONFLICT_ERROR', () => {
       const error = new Error('Data conflict detected between sources');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'loadData',
         testUserId
@@ -367,7 +367,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
     it('should categorize DATABASE_ERROR', () => {
       const error = new Error('SQLite database connection failed');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'saveData',
         testUserId
@@ -379,7 +379,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
     it('should categorize ASYNCSTORAGE_ERROR', () => {
       const error = new Error('AsyncStorage read failed');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'migrateData',
         testUserId
@@ -391,7 +391,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
 
     it('should categorize UNKNOWN_ERROR for unrecognized errors', () => {
       const error = new Error('Something unexpected happened');
-      const result = PassportDataService.handleDataOperationError(
+      const result = UserDataService.handleDataOperationError(
         error,
         'someOperation',
         testUserId
@@ -410,7 +410,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
       PersonalInfo.load.mockResolvedValue(null);
       AsyncStorage.getItem.mockResolvedValue(null);
 
-      const result = await PassportDataService.safeLoadUserData(testUserId);
+      const result = await UserDataService.safeLoadUserData(testUserId);
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -420,7 +420,7 @@ describe('PassportDataService - Conflict Detection and Error Handling', () => {
     it('should handle errors gracefully', async () => {
       Passport.load.mockRejectedValue(new Error('Database connection failed'));
 
-      const result = await PassportDataService.safeLoadUserData(testUserId);
+      const result = await UserDataService.safeLoadUserData(testUserId);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();

@@ -9,7 +9,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
 import EntryInfo from '../../models/EntryInfo';
-import PassportDataService from '../data/PassportDataService';
+import UserDataService from '../data/UserDataService';
 import BiometricAuthService from '../security/BiometricAuthService';
 
 class DataExportService {
@@ -1403,19 +1403,19 @@ class DataExportService {
    async loadCompleteEntryInfoData(entryInfo) {
      try {
        // Load passport data
-       const passport = await PassportDataService.getPassport(entryInfo.userId);
+       const passport = await UserDataService.getPassport(entryInfo.userId);
 
        // Load personal info
-       const personalInfo = await PassportDataService.getPersonalInfo(entryInfo.userId);
+       const personalInfo = await UserDataService.getPersonalInfo(entryInfo.userId);
 
        // Load funds data
-       const funds = await PassportDataService.getFunds(entryInfo.userId);
+       const funds = await UserDataService.getFunds(entryInfo.userId);
 
        // Load travel info
-       const travel = await PassportDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
+       const travel = await UserDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
 
        // Load digital arrival cards
-       const digitalArrivalCards = await PassportDataService.getDigitalArrivalCardsByEntryInfoId(entryInfo.id);
+       const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfoId(entryInfo.id);
 
        return {
          entryInfo,

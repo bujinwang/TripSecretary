@@ -16,7 +16,7 @@ const testEntryInfoCreation = async () => {
 
   try {
     // Import required services
-    const PassportDataService = require('../app/services/data/PassportDataService').default;
+    const UserDataService = require('../app/services/data/UserDataService').default;
     const SecureStorageService = require('../app/services/security/SecureStorageService').default;
 
     // Test user ID
@@ -30,7 +30,7 @@ const testEntryInfoCreation = async () => {
 
     // 2. Check existing entry_info records
     console.log('2️⃣  Checking existing entry_info records...');
-    const existingEntryInfos = await PassportDataService.getAllEntryInfosForUser(userId);
+    const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
     console.log(`   Found ${existingEntryInfos.length} existing entry_info records`);
 
     if (existingEntryInfos.length > 0) {
@@ -76,12 +76,12 @@ const testEntryInfoCreation = async () => {
         lastUpdatedAt: new Date().toISOString()
       };
 
-      const savedEntry = await PassportDataService.saveEntryInfo(entryInfoData, userId);
+      const savedEntry = await UserDataService.saveEntryInfo(entryInfoData, userId);
       console.log(`   ✅ Created entry info: ${savedEntry.id}\n`);
 
       // 5. Verify it was saved
       console.log('4️⃣  Verifying entry info was saved...');
-      const verifyEntry = await PassportDataService.getEntryInfo(userId, destinationId);
+      const verifyEntry = await UserDataService.getEntryInfo(userId, destinationId);
 
       if (verifyEntry) {
         console.log('   ✅ Entry info verified in database');

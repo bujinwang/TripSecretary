@@ -1,44 +1,44 @@
 /**
- * PassportDataService Caching Demonstration
+ * UserDataService Caching Demonstration
  * 
- * This script demonstrates the caching functionality of PassportDataService.
+ * This script demonstrates the caching functionality of UserDataService.
  * Run this in a React Native environment to see caching in action.
  */
 
-import PassportDataService from '../../../app/services/data/PassportDataService';
+import UserDataService from '../../../app/services/data/UserDataService';
 
 async function demonstrateCaching() {
-  console.log('=== PassportDataService Caching Demo ===\n');
+  console.log('=== UserDataService Caching Demo ===\n');
   
   const testUserId = 'demo-user-123';
   
   try {
     // Initialize the service
-    console.log('1. Initializing PassportDataService...');
-    await PassportDataService.initialize(testUserId);
+    console.log('1. Initializing UserDataService...');
+    await UserDataService.initialize(testUserId);
     console.log('   ✓ Initialized\n');
     
     // Reset statistics for clean demo
-    PassportDataService.resetCacheStats();
+    UserDataService.resetCacheStats();
     
     // Demonstrate cache miss (first load)
     console.log('2. First load - should be CACHE MISS:');
-    const passport1 = await PassportDataService.getPassport(testUserId);
+    const passport1 = await UserDataService.getPassport(testUserId);
     console.log(`   Result: ${passport1 ? 'Data loaded' : 'No data found'}\n`);
     
     // Demonstrate cache hit (second load within TTL)
     console.log('3. Second load (within 5 min) - should be CACHE HIT:');
-    const passport2 = await PassportDataService.getPassport(testUserId);
+    const passport2 = await UserDataService.getPassport(testUserId);
     console.log(`   Result: ${passport2 ? 'Data loaded' : 'No data found'}\n`);
     
     // Demonstrate cache hit (third load)
     console.log('4. Third load (within 5 min) - should be CACHE HIT:');
-    const passport3 = await PassportDataService.getPassport(testUserId);
+    const passport3 = await UserDataService.getPassport(testUserId);
     console.log(`   Result: ${passport3 ? 'Data loaded' : 'No data found'}\n`);
     
     // Show statistics
     console.log('5. Cache Statistics after 3 loads:');
-    const stats1 = PassportDataService.getCacheStats();
+    const stats1 = UserDataService.getCacheStats();
     console.log(`   Hits: ${stats1.hits}`);
     console.log(`   Misses: ${stats1.misses}`);
     console.log(`   Hit Rate: ${stats1.hitRate}%`);
@@ -47,35 +47,35 @@ async function demonstrateCaching() {
     // Demonstrate cache invalidation
     if (passport1) {
       console.log('6. Updating passport - should INVALIDATE cache:');
-      await PassportDataService.updatePassport(passport1.id, {
+      await UserDataService.updatePassport(passport1.id, {
         fullName: 'UPDATED NAME'
       });
       console.log('   ✓ Cache invalidated\n');
       
       // Load after invalidation - should be cache miss
       console.log('7. Load after update - should be CACHE MISS:');
-      const passport4 = await PassportDataService.getPassport(testUserId);
+      const passport4 = await UserDataService.getPassport(testUserId);
       console.log(`   Result: ${passport4 ? 'Data loaded' : 'No data found'}\n`);
     }
     
     // Final statistics
     console.log('8. Final Cache Statistics:');
-    PassportDataService.logCacheStats();
+    UserDataService.logCacheStats();
     
     // Demonstrate cache expiration
     console.log('\n9. Simulating cache expiration (6 minutes):');
     const cacheKey = `passport_${testUserId}`;
     const expiredTime = Date.now() - (6 * 60 * 1000); // 6 minutes ago
-    PassportDataService.cache.lastUpdate.set(cacheKey, expiredTime);
+    UserDataService.cache.lastUpdate.set(cacheKey, expiredTime);
     console.log('   ✓ Cache timestamp set to 6 minutes ago\n');
     
     console.log('10. Load after expiration - should be CACHE MISS:');
-    const passport5 = await PassportDataService.getPassport(testUserId);
+    const passport5 = await UserDataService.getPassport(testUserId);
     console.log(`    Result: ${passport5 ? 'Data loaded' : 'No data found'}\n`);
     
     // Demonstrate multi-data-type caching
     console.log('11. Loading all data types (parallel):');
-    const allData = await PassportDataService.getAllUserData(testUserId);
+    const allData = await UserDataService.getAllUserData(testUserId);
     console.log(`    Passport: ${allData.passport ? '✓' : '✗'}`);
     console.log(`    Personal Info: ${allData.personalInfo ? '✓' : '✗'}`);
     console.log(`    Funding Proof: ${allData.fundingProof ? '✓' : '✗'}`);
@@ -84,14 +84,14 @@ async function demonstrateCaching() {
     // Load again to show caching benefit
     console.log('12. Loading all data types again (should use cache):');
     const startTime = Date.now();
-    const allData2 = await PassportDataService.getAllUserData(testUserId);
+    const allData2 = await UserDataService.getAllUserData(testUserId);
     const cachedLoadTime = Date.now() - startTime;
     console.log(`    Load time: ${cachedLoadTime}ms`);
     console.log(`    Performance improvement: ${Math.round((1 - cachedLoadTime / allData.loadDurationMs) * 100)}%\n`);
     
     // Final statistics
     console.log('13. Final Statistics:');
-    const finalStats = PassportDataService.getCacheStats();
+    const finalStats = UserDataService.getCacheStats();
     console.log(`    Total Hits: ${finalStats.hits}`);
     console.log(`    Total Misses: ${finalStats.misses}`);
     console.log(`    Total Invalidations: ${finalStats.invalidations}`);
@@ -120,9 +120,9 @@ useEffect(() => {
 
 // Expected Console Output:
 /*
-=== PassportDataService Caching Demo ===
+=== UserDataService Caching Demo ===
 
-1. Initializing PassportDataService...
+1. Initializing UserDataService...
    ✓ Initialized
 
 2. First load - should be CACHE MISS:
@@ -152,7 +152,7 @@ Cache invalidated for passport of user demo-user-123
    Result: Data loaded
 
 8. Final Cache Statistics:
-=== PassportDataService Cache Statistics ===
+=== UserDataService Cache Statistics ===
 Time period: 0.05 minutes
 Cache hits: 2
 Cache misses: 2

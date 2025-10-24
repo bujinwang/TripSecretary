@@ -1,9 +1,9 @@
 /**
- * 入境通 - PassportDataService Consistency Tests
+ * 入境通 - UserDataService Consistency Tests
  * Tests for data consistency validation and conflict resolution
  */
 
-import PassportDataService from '../PassportDataService';
+import UserDataService from '../UserDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
 // FundingProof removed - tests updated to focus on passport and personal info
@@ -16,12 +16,12 @@ jest.mock('../../../models/PersonalInfo');
 jest.mock('@react-native-async-storage/async-storage');
 jest.mock('../../security/SecureStorageService');
 
-describe('PassportDataService - Data Consistency Validation', () => {
+describe('UserDataService - Data Consistency Validation', () => {
   const mockUserId = 'test-user-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
   });
 
   describe('validateDataConsistency', () => {
@@ -54,14 +54,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
       // mockFundingProof removed
 
       // Mock getAllUserData
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: mockPersonalInfo,
         // fundingProof removed
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(true);
       expect(result.passport.valid).toBe(true);
@@ -82,14 +82,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
         expiryDate: '2030-12-31'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: null,
         fundingProof: null,
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(false);
       expect(result.passport.valid).toBe(false);
@@ -110,14 +110,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
         issueDate: '2020-12-31'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: null,
         fundingProof: null,
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(false);
       expect(result.passport.valid).toBe(false);
@@ -137,14 +137,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
         issueDate: '2025-12-31' // Issue after expiry
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: null,
         fundingProof: null,
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(false);
       expect(result.passport.valid).toBe(false);
@@ -161,14 +161,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
         occupation: 'Engineer'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: null,
         personalInfo: mockPersonalInfo,
         fundingProof: null,
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(false);
       expect(result.personalInfo.valid).toBe(false);
@@ -196,14 +196,14 @@ describe('PassportDataService - Data Consistency Validation', () => {
         email: 'test@example.com'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockPassport,
         personalInfo: mockPersonalInfo,
         fundingProof: null,
         userId: mockUserId
       });
 
-      const result = await PassportDataService.validateDataConsistency(mockUserId);
+      const result = await UserDataService.validateDataConsistency(mockUserId);
 
       expect(result.isConsistent).toBe(false);
       expect(result.crossFieldValidation.valid).toBe(false);
@@ -221,7 +221,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
       };
 
       // Mock SQLite data
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: mockData,
         personalInfo: null,
         fundingProof: null,
@@ -229,13 +229,13 @@ describe('PassportDataService - Data Consistency Validation', () => {
       });
 
       // Mock AsyncStorage data
-      jest.spyOn(PassportDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
+      jest.spyOn(UserDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
         passport: mockData,
         personalInfo: null,
         fundingProof: null
       });
 
-      const result = await PassportDataService.detectDataConflicts(mockUserId);
+      const result = await UserDataService.detectDataConflicts(mockUserId);
 
       expect(result.hasConflicts).toBe(false);
     });
@@ -253,20 +253,20 @@ describe('PassportDataService - Data Consistency Validation', () => {
         nationality: 'CHN'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: sqliteData,
         personalInfo: null,
         fundingProof: null,
         userId: mockUserId
       });
 
-      jest.spyOn(PassportDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
+      jest.spyOn(UserDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
         passport: asyncStorageData,
         personalInfo: null,
         fundingProof: null
       });
 
-      const result = await PassportDataService.detectDataConflicts(mockUserId);
+      const result = await UserDataService.detectDataConflicts(mockUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts.passport).not.toBeNull();
@@ -285,20 +285,20 @@ describe('PassportDataService - Data Consistency Validation', () => {
         phoneNumber: '+86 13812345678'
       };
 
-      jest.spyOn(PassportDataService, 'getAllUserData').mockResolvedValue({
+      jest.spyOn(UserDataService, 'getAllUserData').mockResolvedValue({
         passport: null,
         personalInfo: sqliteData,
         fundingProof: null,
         userId: mockUserId
       });
 
-      jest.spyOn(PassportDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
+      jest.spyOn(UserDataService, 'loadAllFromAsyncStorage').mockResolvedValue({
         passport: null,
         personalInfo: asyncStorageData,
         fundingProof: null
       });
 
-      const result = await PassportDataService.detectDataConflicts(mockUserId);
+      const result = await UserDataService.detectDataConflicts(mockUserId);
 
       expect(result.hasConflicts).toBe(true);
       expect(result.conflicts.personalInfo).not.toBeNull();
@@ -309,7 +309,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
   describe('resolveDataConflicts', () => {
     it('should resolve conflicts by prioritizing SQLite data', async () => {
       // Mock conflict detection
-      jest.spyOn(PassportDataService, 'detectDataConflicts').mockResolvedValue({
+      jest.spyOn(UserDataService, 'detectDataConflicts').mockResolvedValue({
         hasConflicts: true,
         userId: mockUserId,
         conflicts: {
@@ -326,24 +326,24 @@ describe('PassportDataService - Data Consistency Validation', () => {
         }
       });
 
-      jest.spyOn(PassportDataService, 'refreshCache').mockResolvedValue();
+      jest.spyOn(UserDataService, 'refreshCache').mockResolvedValue();
 
-      const result = await PassportDataService.resolveDataConflicts(mockUserId);
+      const result = await UserDataService.resolveDataConflicts(mockUserId);
 
       expect(result.resolved).toBe(true);
       expect(result.hadConflicts).toBe(true);
       expect(result.resolution).toBe('SQLite data retained as source of truth');
-      expect(PassportDataService.refreshCache).toHaveBeenCalledWith(mockUserId);
+      expect(UserDataService.refreshCache).toHaveBeenCalledWith(mockUserId);
     });
 
     it('should handle no conflicts gracefully', async () => {
-      jest.spyOn(PassportDataService, 'detectDataConflicts').mockResolvedValue({
+      jest.spyOn(UserDataService, 'detectDataConflicts').mockResolvedValue({
         hasConflicts: false,
         userId: mockUserId,
         conflicts: {}
       });
 
-      const result = await PassportDataService.resolveDataConflicts(mockUserId);
+      const result = await UserDataService.resolveDataConflicts(mockUserId);
 
       expect(result.resolved).toBe(true);
       expect(result.hadConflicts).toBe(false);
@@ -365,7 +365,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
         nationality: 'USA'
       };
 
-      const result = PassportDataService.comparePassportData(data1, data2);
+      const result = UserDataService.comparePassportData(data1, data2);
 
       expect(result.hasDifferences).toBe(true);
       expect(result.differences.length).toBe(2);
@@ -388,7 +388,7 @@ describe('PassportDataService - Data Consistency Validation', () => {
         nationality: 'CHN'
       };
 
-      const result = PassportDataService.comparePassportData(data, data);
+      const result = UserDataService.comparePassportData(data, data);
 
       expect(result.hasDifferences).toBe(false);
       expect(result.differences.length).toBe(0);

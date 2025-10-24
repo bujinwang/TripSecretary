@@ -18,7 +18,7 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import { colors, typography, spacing } from '../../theme';
 import { thailandEntryGuide as thailandGuideConfig } from '../../config/entryGuide/thailand';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 // 从统一配置中获取步骤，确保屏幕与服务保持一致
 const THAILAND_ENTRY_STEPS = thailandGuideConfig.steps;
@@ -26,7 +26,7 @@ const THAILAND_ENTRY_STEPS = thailandGuideConfig.steps;
 const ThailandEntryGuideScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const { passport: rawPassport, destination, completionData } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set());
 

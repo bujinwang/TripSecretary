@@ -4,11 +4,11 @@
  */
 
 import EntryPackService from '../../services/entryPack/EntryPackService';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 // Mock services
 jest.mock('../../services/entryPack/EntryPackService');
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 jest.mock('../../services/api');
 
 // Mock EntryInfo
@@ -22,9 +22,9 @@ describe('HomeScreen Entry Pack Cards Logic', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock PassportDataService
-    PassportDataService.initialize = jest.fn().mockResolvedValue();
-    PassportDataService.getPrimaryPassport = jest.fn().mockResolvedValue(null);
+    // Mock UserDataService
+    UserDataService.initialize = jest.fn().mockResolvedValue();
+    UserDataService.getPrimaryPassport = jest.fn().mockResolvedValue(null);
   });
 
   it('should load active entry packs for user', async () => {

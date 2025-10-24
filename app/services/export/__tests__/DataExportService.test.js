@@ -36,7 +36,7 @@ jest.mock('expo-print', () => ({
 }));
 
 jest.mock('../../../models/EntryPack');
-jest.mock('../../data/PassportDataService', () => ({
+jest.mock('../../data/UserDataService', () => ({
   default: {
     getEntryInfo: jest.fn(),
     getPassport: jest.fn(),

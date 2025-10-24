@@ -3,17 +3,17 @@
  * Verifies data consistency between ProfileScreen and ThailandTravelInfoScreen
  */
 
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 // Mock dependencies
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 
 describe('Cross-Screen Data Consistency', () => {
   const testUserId = 'user_001';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
   });
 
   describe('Passport Data Consistency', () => {
@@ -31,13 +31,13 @@ describe('Cross-Screen Data Consistency', () => {
         issuePlace: 'Shanghai'
       };
 
-      PassportDataService.getPassport.mockResolvedValue(passportData);
+      UserDataService.getPassport.mockResolvedValue(passportData);
 
       // Load from ProfileScreen
-      const profileData = await PassportDataService.getPassport(testUserId);
+      const profileData = await UserDataService.getPassport(testUserId);
 
       // Load from ThailandTravelInfoScreen
-      const thailandData = await PassportDataService.getPassport(testUserId);
+      const thailandData = await UserDataService.getPassport(testUserId);
 
       // Both should be identical
       expect(profileData).toEqual(thailandData);
@@ -59,23 +59,23 @@ describe('Cross-Screen Data Consistency', () => {
         passportNumber: 'E99999999'
       };
 
-      PassportDataService.getPassport
+      UserDataService.getPassport
         .mockResolvedValueOnce(initialPassport)
         .mockResolvedValueOnce(updatedPassport);
 
-      PassportDataService.updatePassport.mockResolvedValue();
+      UserDataService.updatePassport.mockResolvedValue();
 
       // Load in ProfileScreen
-      const profilePassport = await PassportDataService.getPassport(testUserId);
+      const profilePassport = await UserDataService.getPassport(testUserId);
       expect(profilePassport.passportNumber).toBe('E12345678');
 
       // Update in ProfileScreen
-      await PassportDataService.updatePassport('passport-1', {
+      await UserDataService.updatePassport('passport-1', {
         passportNumber: 'E99999999'
       });
 
       // Load in ThailandTravelInfoScreen - should see updated data
-      const thailandPassport = await PassportDataService.getPassport(testUserId);
+      const thailandPassport = await UserDataService.getPassport(testUserId);
       expect(thailandPassport.passportNumber).toBe('E99999999');
     });
 
@@ -92,23 +92,23 @@ describe('Cross-Screen Data Consistency', () => {
         fullName: 'ZHANG, WEI (UPDATED)'
       };
 
-      PassportDataService.getPassport
+      UserDataService.getPassport
         .mockResolvedValueOnce(initialPassport)
         .mockResolvedValueOnce(updatedPassport);
 
-      PassportDataService.updatePassport.mockResolvedValue();
+      UserDataService.updatePassport.mockResolvedValue();
 
       // Load in ThailandTravelInfoScreen
-      const thailandPassport = await PassportDataService.getPassport(testUserId);
+      const thailandPassport = await UserDataService.getPassport(testUserId);
       expect(thailandPassport.fullName).toBe('ZHANG, WEI');
 
       // Update in ThailandTravelInfoScreen
-      await PassportDataService.updatePassport('passport-1', {
+      await UserDataService.updatePassport('passport-1', {
         fullName: 'ZHANG, WEI (UPDATED)'
       });
 
       // Load in ProfileScreen - should see updated data
-      const profilePassport = await PassportDataService.getPassport(testUserId);
+      const profilePassport = await UserDataService.getPassport(testUserId);
       expect(profilePassport.fullName).toBe('ZHANG, WEI (UPDATED)');
     });
   });
@@ -125,11 +125,11 @@ describe('Cross-Screen Data Consistency', () => {
         countryRegion: 'CHN'
       };
 
-      PassportDataService.getPersonalInfo.mockResolvedValue(personalInfo);
+      UserDataService.getPersonalInfo.mockResolvedValue(personalInfo);
 
       // Load from both screens
-      const profileInfo = await PassportDataService.getPersonalInfo(testUserId);
-      const thailandInfo = await PassportDataService.getPersonalInfo(testUserId);
+      const profileInfo = await UserDataService.getPersonalInfo(testUserId);
+      const thailandInfo = await UserDataService.getPersonalInfo(testUserId);
 
       expect(profileInfo).toEqual(thailandInfo);
       expect(profileInfo.email).toBe('test@example.com');
@@ -149,23 +149,23 @@ describe('Cross-Screen Data Consistency', () => {
       };
 
       // First call returns initial, second call returns updated
-      PassportDataService.getPersonalInfo
+      UserDataService.getPersonalInfo
         .mockResolvedValueOnce(initialInfo)
         .mockResolvedValueOnce(updatedInfo);
 
-      PassportDataService.updatePersonalInfo.mockResolvedValue();
+      UserDataService.updatePersonalInfo.mockResolvedValue();
 
       // Load initial from ProfileScreen
-      const profileInfo = await PassportDataService.getPersonalInfo(testUserId);
+      const profileInfo = await UserDataService.getPersonalInfo(testUserId);
       expect(profileInfo.email).toBe('old@example.com');
 
       // Update from ProfileScreen
-      await PassportDataService.updatePersonalInfo('personal-1', {
+      await UserDataService.updatePersonalInfo('personal-1', {
         email: 'new@example.com'
       });
 
       // Load in ThailandTravelInfoScreen - should get updated data
-      const thailandInfo = await PassportDataService.getPersonalInfo(testUserId);
+      const thailandInfo = await UserDataService.getPersonalInfo(testUserId);
       expect(thailandInfo.email).toBe('new@example.com');
     });
   });
@@ -180,11 +180,11 @@ describe('Cross-Screen Data Consistency', () => {
         supportingDocs: 'Bank statement'
       };
 
-      PassportDataService.getFundingProof.mockResolvedValue(fundingProof);
+      UserDataService.getFundingProof.mockResolvedValue(fundingProof);
 
       // Load from both screens
-      const profileFunding = await PassportDataService.getFundingProof(testUserId);
-      const thailandFunding = await PassportDataService.getFundingProof(testUserId);
+      const profileFunding = await UserDataService.getFundingProof(testUserId);
+      const thailandFunding = await UserDataService.getFundingProof(testUserId);
 
       expect(profileFunding).toEqual(thailandFunding);
       expect(profileFunding.cashAmount).toBe('10000 THB');
@@ -204,23 +204,23 @@ describe('Cross-Screen Data Consistency', () => {
       };
 
       // First call returns initial, second call returns updated
-      PassportDataService.getFundingProof
+      UserDataService.getFundingProof
         .mockResolvedValueOnce(initialFunding)
         .mockResolvedValueOnce(updatedFunding);
 
-      PassportDataService.updateFundingProof.mockResolvedValue();
+      UserDataService.updateFundingProof.mockResolvedValue();
 
       // Load initial from ThailandTravelInfoScreen
-      const thailandFunding = await PassportDataService.getFundingProof(testUserId);
+      const thailandFunding = await UserDataService.getFundingProof(testUserId);
       expect(thailandFunding.cashAmount).toBe('10000 THB');
 
       // Update from ThailandTravelInfoScreen
-      await PassportDataService.updateFundingProof('funding-1', {
+      await UserDataService.updateFundingProof('funding-1', {
         cashAmount: '20000 THB'
       });
 
       // Load in ProfileScreen - should get updated data
-      const profileFunding = await PassportDataService.getFundingProof(testUserId);
+      const profileFunding = await UserDataService.getFundingProof(testUserId);
       expect(profileFunding.cashAmount).toBe('20000 THB');
     });
   });
@@ -247,13 +247,13 @@ describe('Cross-Screen Data Consistency', () => {
         userId: testUserId
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(completeUserData);
+      UserDataService.getAllUserData.mockResolvedValue(completeUserData);
 
       // Load from ProfileScreen
-      const profileData = await PassportDataService.getAllUserData(testUserId);
+      const profileData = await UserDataService.getAllUserData(testUserId);
 
       // Load from ThailandTravelInfoScreen
-      const thailandData = await PassportDataService.getAllUserData(testUserId);
+      const thailandData = await UserDataService.getAllUserData(testUserId);
 
       // All data should match
       expect(profileData).toEqual(thailandData);
@@ -274,11 +274,11 @@ describe('Cross-Screen Data Consistency', () => {
         userId: testUserId
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(partialData);
+      UserDataService.getAllUserData.mockResolvedValue(partialData);
 
       // Load from both screens
-      const profileData = await PassportDataService.getAllUserData(testUserId);
-      const thailandData = await PassportDataService.getAllUserData(testUserId);
+      const profileData = await UserDataService.getAllUserData(testUserId);
+      const thailandData = await UserDataService.getAllUserData(testUserId);
 
       // Both should have same structure
       expect(profileData.passport).toBeDefined();
@@ -296,16 +296,16 @@ describe('Cross-Screen Data Consistency', () => {
         passportNumber: 'E12345678'
       };
 
-      PassportDataService.getPassport.mockResolvedValue(passportData);
+      UserDataService.getPassport.mockResolvedValue(passportData);
 
       // First load (cache miss)
-      await PassportDataService.getPassport(testUserId);
+      await UserDataService.getPassport(testUserId);
 
       // Second load from different screen (cache hit)
-      await PassportDataService.getPassport(testUserId);
+      await UserDataService.getPassport(testUserId);
 
       // Should only load from database once
-      expect(PassportDataService.getPassport).toHaveBeenCalledTimes(2);
+      expect(UserDataService.getPassport).toHaveBeenCalledTimes(2);
     });
 
     it('should invalidate cache consistently after updates', async () => {
@@ -316,21 +316,21 @@ describe('Cross-Screen Data Consistency', () => {
         save: jest.fn().mockResolvedValue(true)
       };
 
-      PassportDataService.getPassport.mockResolvedValue(passportData);
-      PassportDataService.updatePassport.mockResolvedValue();
+      UserDataService.getPassport.mockResolvedValue(passportData);
+      UserDataService.updatePassport.mockResolvedValue();
 
       // Load and cache
-      await PassportDataService.getPassport(testUserId);
+      await UserDataService.getPassport(testUserId);
 
       // Update from one screen
-      await PassportDataService.updatePassport('passport-1', {
+      await UserDataService.updatePassport('passport-1', {
         passportNumber: 'E99999999'
       });
 
       // Next load from any screen should get fresh data
-      await PassportDataService.getPassport(testUserId);
+      await UserDataService.getPassport(testUserId);
 
-      expect(PassportDataService.updatePassport).toHaveBeenCalled();
+      expect(UserDataService.updatePassport).toHaveBeenCalled();
     });
   });
 
@@ -342,13 +342,13 @@ describe('Cross-Screen Data Consistency', () => {
         passportNumber: 'E12345678'
       };
 
-      PassportDataService.getPassport.mockResolvedValue(passportData);
+      UserDataService.getPassport.mockResolvedValue(passportData);
 
       // Simulate concurrent loads from multiple screens
       const [profile, thailand, japan] = await Promise.all([
-        PassportDataService.getPassport(testUserId),
-        PassportDataService.getPassport(testUserId),
-        PassportDataService.getPassport(testUserId)
+        UserDataService.getPassport(testUserId),
+        UserDataService.getPassport(testUserId),
+        UserDataService.getPassport(testUserId)
       ]);
 
       // All should get same data
@@ -365,17 +365,17 @@ describe('Cross-Screen Data Consistency', () => {
         save: jest.fn().mockResolvedValue(true)
       };
 
-      PassportDataService.getPassport.mockResolvedValue(passportData);
-      PassportDataService.updatePassport.mockResolvedValue();
+      UserDataService.getPassport.mockResolvedValue(passportData);
+      UserDataService.updatePassport.mockResolvedValue();
 
       // Simulate concurrent updates from different screens
       await Promise.all([
-        PassportDataService.updatePassport('passport-1', { passportNumber: 'E11111111' }),
-        PassportDataService.updatePassport('passport-1', { fullName: 'WANG, LI' })
+        UserDataService.updatePassport('passport-1', { passportNumber: 'E11111111' }),
+        UserDataService.updatePassport('passport-1', { fullName: 'WANG, LI' })
       ]);
 
       // Both updates should be processed
-      expect(PassportDataService.updatePassport).toHaveBeenCalledTimes(2);
+      expect(UserDataService.updatePassport).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -7,11 +7,11 @@ import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import FundItemDetailModal from '../FundItemDetailModal';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import * as ImagePicker from 'expo-image-picker';
 
 // Mock dependencies
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 jest.mock('../../i18n/LocaleContext', () => ({
   useTranslation: () => ({
     t: (key, options) => options?.defaultValue || key,
@@ -254,7 +254,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
   describe('Save Operation', () => {
     it('should save changes successfully', async () => {
       const updatedItem = { ...mockCashItem, amount: 6000 };
-      PassportDataService.saveFundItem.mockResolvedValue(updatedItem);
+      UserDataService.saveFundItem.mockResolvedValue(updatedItem);
 
       const { getByText, getByDisplayValue } = render(
         <FundItemDetailModal
@@ -281,7 +281,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
       });
 
       await waitFor(() => {
-        expect(PassportDataService.saveFundItem).toHaveBeenCalledWith(
+        expect(UserDataService.saveFundItem).toHaveBeenCalledWith(
           expect.objectContaining({
             id: 'fund-1',
             amount: 6000,
@@ -321,7 +321,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
       // Should show validation error
       await waitFor(() => {
         expect(getByText('Amount is required')).toBeTruthy();
-        expect(PassportDataService.saveFundItem).not.toHaveBeenCalled();
+        expect(UserDataService.saveFundItem).not.toHaveBeenCalled();
       });
     });
 
@@ -353,12 +353,12 @@ describe('FundItemDetailModal - Unit Tests', () => {
       // Should show validation error
       await waitFor(() => {
         expect(getByText('Amount must be greater than 0')).toBeTruthy();
-        expect(PassportDataService.saveFundItem).not.toHaveBeenCalled();
+        expect(UserDataService.saveFundItem).not.toHaveBeenCalled();
       });
     });
 
     it('should handle save errors gracefully', async () => {
-      PassportDataService.saveFundItem.mockRejectedValue(
+      UserDataService.saveFundItem.mockRejectedValue(
         new Error('Database error')
       );
 
@@ -420,7 +420,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should delete fund item when confirmed', async () => {
-      PassportDataService.deleteFundItem.mockResolvedValue();
+      UserDataService.deleteFundItem.mockResolvedValue();
 
       const { getByText } = render(
         <FundItemDetailModal
@@ -446,7 +446,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
       });
 
       await waitFor(() => {
-        expect(PassportDataService.deleteFundItem).toHaveBeenCalledWith(
+        expect(UserDataService.deleteFundItem).toHaveBeenCalledWith(
           'fund-1',
           'user_001'
         );
@@ -456,7 +456,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should handle delete errors gracefully', async () => {
-      PassportDataService.deleteFundItem.mockRejectedValue(
+      UserDataService.deleteFundItem.mockRejectedValue(
         new Error('Database error')
       );
 
@@ -494,7 +494,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   describe('Error Display', () => {
     it('should display error message when save fails', async () => {
-      PassportDataService.saveFundItem.mockRejectedValue(
+      UserDataService.saveFundItem.mockRejectedValue(
         new Error('Network error')
       );
 
@@ -528,7 +528,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should clear error when switching modes', async () => {
-      PassportDataService.saveFundItem.mockRejectedValue(
+      UserDataService.saveFundItem.mockRejectedValue(
         new Error('Network error')
       );
 

@@ -25,7 +25,7 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import EntryInfoService from '../../services/EntryInfoService';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -39,7 +39,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
   // Convert travelerInfo to expected format
   const passport = params.passport
-    ? PassportDataService.toSerializablePassport(params.passport)
+    ? UserDataService.toSerializablePassport(params.passport)
     : {
         passportNo: travelerInfo.passportNo,
         nameEn: travelerInfo.familyName && travelerInfo.firstName

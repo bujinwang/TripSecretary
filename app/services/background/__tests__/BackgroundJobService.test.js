@@ -6,11 +6,11 @@
 
 import BackgroundJobService from '../BackgroundJobService';
 import EntryPackService from '../../entryPack/EntryPackService';
-import PassportDataService from '../../data/PassportDataService';
+import UserDataService from '../../data/UserDataService';
 
 // Mock dependencies
 jest.mock('../../entryPack/EntryPackService');
-jest.mock('../../data/PassportDataService');
+jest.mock('../../data/UserDataService');
 jest.mock('../../notification/NotificationCoordinator');
 jest.mock('../../notification/NotificationPreferencesService');
 
@@ -133,7 +133,7 @@ describe('BackgroundJobService', () => {
       const userId = 'user_001';
       
       // Mock dependencies
-      PassportDataService.initialize = jest.fn().mockResolvedValue();
+      UserDataService.initialize = jest.fn().mockResolvedValue();
       EntryPackService.getActivePacksForUser = jest.fn().mockResolvedValue([]);
 
       const result = await BackgroundJobService.runManualCheck(userId);
@@ -141,14 +141,14 @@ describe('BackgroundJobService', () => {
       expect(result.success).toBe(true);
       expect(result.usersChecked).toBe(1);
       expect(result.packsArchived).toBe(0);
-      expect(PassportDataService.initialize).toHaveBeenCalledWith(userId);
+      expect(UserDataService.initialize).toHaveBeenCalledWith(userId);
     });
 
     test('should handle manual check errors gracefully', async () => {
       const userId = 'user_001';
       
       // Mock error
-      PassportDataService.initialize = jest.fn().mockRejectedValue(new Error('Test error'));
+      UserDataService.initialize = jest.fn().mockRejectedValue(new Error('Test error'));
 
       const result = await BackgroundJobService.runManualCheck(userId);
 

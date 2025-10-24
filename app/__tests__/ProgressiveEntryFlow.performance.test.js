@@ -16,7 +16,7 @@ import EntryPackHistoryScreen from '../screens/EntryPackHistoryScreen';
 import ThailandTravelInfoScreen from '../screens/thailand/ThailandTravelInfoScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
 import EntryInfoService from '../services/EntryInfoService';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import LazyLoadingHelper from '../utils/LazyLoadingHelper';
 
@@ -49,7 +49,7 @@ const TestNavigator = ({ initialRouteName = 'Home', initialParams = {} }) => (
 
 // Mock services
 jest.mock('../services/EntryInfoService');
-jest.mock('../services/data/PassportDataService');
+jest.mock('../services/data/UserDataService');
 jest.mock('../services/snapshot/SnapshotService');
 jest.mock('../services/data/LegacyDataMigrationService');
 
@@ -62,8 +62,8 @@ describe('Progressive Entry Flow Performance Tests', () => {
     jest.clearAllMocks();
     
     // Setup default mock responses
-    PassportDataService.initialize.mockResolvedValue(true);
-    PassportDataService.getPrimaryPassport.mockResolvedValue({
+    UserDataService.initialize.mockResolvedValue(true);
+    UserDataService.getPrimaryPassport.mockResolvedValue({
       fullName: 'John Doe',
       passportNumber: 'A12345678',
       expiryDate: '2025-12-31'
@@ -314,8 +314,8 @@ describe('Progressive Entry Flow Performance Tests', () => {
     it('should load passport data efficiently', async () => {
       const startTime = performance.now();
       
-      await PassportDataService.initialize('test_user');
-      const passport = await PassportDataService.getPrimaryPassport('test_user');
+      await UserDataService.initialize('test_user');
+      const passport = await UserDataService.getPrimaryPassport('test_user');
       
       const loadTime = performance.now() - startTime;
       expect(loadTime).toBeLessThan(1000); // Should load within 1 second
@@ -327,9 +327,9 @@ describe('Progressive Entry Flow Performance Tests', () => {
       
       // Simulate concurrent loading of multiple data sources
       const promises = [
-        PassportDataService.initialize('test_user'),
+        UserDataService.initialize('test_user'),
         EntryInfoService.getHomeScreenData('test_user'),
-        PassportDataService.getPrimaryPassport('test_user')
+        UserDataService.getPrimaryPassport('test_user')
       ];
       
       await Promise.all(promises);

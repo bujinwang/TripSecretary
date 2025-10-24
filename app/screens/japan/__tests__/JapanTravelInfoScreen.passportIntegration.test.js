@@ -1,9 +1,9 @@
 /**
  * Integration tests for JapanTravelInfoScreen passport data integration
- * Tests the integration with PassportDataService for loading and saving passport data
+ * Tests the integration with UserDataService for loading and saving passport data
  */
 
-import PassportDataService from '../../../services/data/PassportDataService';
+import UserDataService from '../../../services/data/UserDataService';
 import Passport from '../../../models/Passport';
 
 describe('JapanTravelInfoScreen - Passport Data Integration', () => {
@@ -11,13 +11,13 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
 
   beforeAll(async () => {
     // Initialize the service
-    await PassportDataService.initialize(TEST_USER_ID);
+    await UserDataService.initialize(TEST_USER_ID);
   });
 
   afterAll(async () => {
     // Clean up test data
     try {
-      const passport = await PassportDataService.getPassport(TEST_USER_ID);
+      const passport = await UserDataService.getPassport(TEST_USER_ID);
       if (passport) {
         await passport.delete();
       }
@@ -28,7 +28,7 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
 
   beforeEach(() => {
     // Clear cache before each test
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
   });
 
   test('should save passport data with correct field names', async () => {
@@ -42,7 +42,7 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
     };
 
     // Save passport
-    const savedPassport = await PassportDataService.savePassport(
+    const savedPassport = await UserDataService.savePassport(
       passportData,
       TEST_USER_ID,
       { skipValidation: true }
@@ -66,17 +66,17 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
       expiryDate: '2028-06-30'
     };
 
-    await PassportDataService.savePassport(
+    await UserDataService.savePassport(
       passportData,
       TEST_USER_ID,
       { skipValidation: true }
     );
 
     // Clear cache to force database load
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
 
     // Load passport (simulating what JapanTravelInfoScreen does)
-    const loadedPassport = await PassportDataService.getPassport(TEST_USER_ID);
+    const loadedPassport = await UserDataService.getPassport(TEST_USER_ID);
 
     expect(loadedPassport).toBeDefined();
     expect(loadedPassport.passportNumber).toBe('P98765432');
@@ -96,25 +96,25 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
       expiryDate: '2029-08-15'
     };
 
-    await PassportDataService.savePassport(
+    await UserDataService.savePassport(
       initialData,
       TEST_USER_ID,
       { skipValidation: true }
     );
 
     // Get the passport
-    const passport = await PassportDataService.getPassport(TEST_USER_ID);
+    const passport = await UserDataService.getPassport(TEST_USER_ID);
 
     // Simulate field blur update (what handleFieldBlur does)
-    await PassportDataService.updatePassport(
+    await UserDataService.updatePassport(
       passport.id,
       { fullName: 'KIM, MINHO UPDATED' },
       { skipValidation: true }
     );
 
     // Verify the update
-    PassportDataService.clearCache();
-    const updatedPassport = await PassportDataService.getPassport(TEST_USER_ID);
+    UserDataService.clearCache();
+    const updatedPassport = await UserDataService.getPassport(TEST_USER_ID);
 
     expect(updatedPassport.fullName).toBe('KIM, MINHO UPDATED');
     expect(updatedPassport.passportNumber).toBe('K11111111'); // Other fields unchanged
@@ -126,7 +126,7 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
       passportNumber: 'A00000001'
     };
 
-    const passport1 = await PassportDataService.savePassport(
+    const passport1 = await UserDataService.savePassport(
       minimalData,
       TEST_USER_ID,
       { skipValidation: true }
@@ -136,21 +136,21 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
     expect(passport1.fullName).toBeUndefined();
 
     // Add more data progressively
-    await PassportDataService.updatePassport(
+    await UserDataService.updatePassport(
       passport1.id,
       { fullName: 'SMITH, JOHN' },
       { skipValidation: true }
     );
 
-    await PassportDataService.updatePassport(
+    await UserDataService.updatePassport(
       passport1.id,
       { dateOfBirth: '1988-07-22' },
       { skipValidation: true }
     );
 
     // Verify all data is present
-    PassportDataService.clearCache();
-    const finalPassport = await PassportDataService.getPassport(TEST_USER_ID);
+    UserDataService.clearCache();
+    const finalPassport = await UserDataService.getPassport(TEST_USER_ID);
 
     expect(finalPassport.passportNumber).toBe('A00000001');
     expect(finalPassport.fullName).toBe('SMITH, JOHN');
@@ -167,14 +167,14 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
       expiryDate: '2031-01-01'
     };
 
-    const passport = await PassportDataService.savePassport(
+    const passport = await UserDataService.savePassport(
       fullData,
       TEST_USER_ID,
       { skipValidation: true }
     );
 
     // Try to update with empty values (should be filtered out by updatePassport)
-    await PassportDataService.updatePassport(
+    await UserDataService.updatePassport(
       passport.id,
       {
         fullName: '',
@@ -184,8 +184,8 @@ describe('JapanTravelInfoScreen - Passport Data Integration', () => {
     );
 
     // Verify empty value didn't overwrite
-    PassportDataService.clearCache();
-    const updatedPassport = await PassportDataService.getPassport(TEST_USER_ID);
+    UserDataService.clearCache();
+    const updatedPassport = await UserDataService.getPassport(TEST_USER_ID);
 
     expect(updatedPassport.fullName).toBe('WANG, LEI'); // Should remain unchanged
     expect(updatedPassport.nationality).toBe('USA'); // Should be updated

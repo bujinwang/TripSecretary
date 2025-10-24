@@ -19,7 +19,7 @@ import { colors, typography, spacing, borderRadius } from '../theme';
 import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
 import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 import EntryInfoService from '../services/EntryInfoService';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
@@ -221,13 +221,13 @@ const HomeScreen = ({ navigation }) => {
       const userId = 'user_001'; // TODO: Get from auth context
 
       // Ensure secure storage is initialized before accessing data
-      await PassportDataService.initialize(userId);
+      await UserDataService.initialize(userId);
 
       // Try multiple methods to get passport data
-      let passport = await PassportDataService.getPrimaryPassport(userId);
+      let passport = await UserDataService.getPrimaryPassport(userId);
 
       if (!passport) {
-        const allPassports = await PassportDataService.getAllPassports(userId);
+        const allPassports = await UserDataService.getAllPassports(userId);
         passport = allPassports?.[0] || null;
       }
 
@@ -262,7 +262,7 @@ const HomeScreen = ({ navigation }) => {
 
     try {
       const userId = 'user_001'; // TODO: Get from auth context
-      await PassportDataService.initialize(userId);
+      await UserDataService.initialize(userId);
       
       // Load home screen data with multi-destination support
       const homeScreenData = await EntryInfoService.getHomeScreenData(userId);

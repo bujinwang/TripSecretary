@@ -10,11 +10,11 @@ import {
   Vibration,
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 const AirportArrivalScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStep, setCurrentStep] = useState(0);
 
   // Simulate arrival detection (in real app, this would use GPS/time)

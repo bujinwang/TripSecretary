@@ -16,7 +16,7 @@ import { colors } from '../../theme';
 // Removed mockTDACData dependency - using pure user data
 import EntryInfoService from '../../services/EntryInfoService';
 import SnapshotService from '../../services/snapshot/SnapshotService';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import TDACValidationService from '../../services/validation/TDACValidationService';
 import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 
@@ -87,7 +87,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 
       if (entryInfoId) {
         // Create or update digital arrival card
-        const digitalArrivalCard = await PassportDataService.saveDigitalArrivalCard({
+        const digitalArrivalCard = await UserDataService.saveDigitalArrivalCard({
           entryInfoId: entryInfoId,
           cardType: 'TDAC', // Default to TDAC, can be extended for other types
           arrCardNo: tdacSubmission.arrCardNo,
@@ -392,8 +392,8 @@ const TDACSelectionScreen = ({ navigation, route }) => {
       console.log('🔍 Looking for existing entry info...');
       
       // Try to find existing entry info for this user and destination
-      const PassportDataService = require('../../services/data/PassportDataService').default;
-      let entryInfo = await PassportDataService.getEntryInfo(userId, destinationId);
+      const UserDataService = require('../../services/data/UserDataService').default;
+      let entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
       
       if (entryInfo) {
         console.log('✅ Found existing entry info:', entryInfo.id);
@@ -415,7 +415,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
         lastUpdatedAt: new Date().toISOString()
       };
       
-      entryInfo = await PassportDataService.saveEntryInfo(entryInfoData, userId);
+      entryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
       console.log('✅ Created new entry info:', entryInfo.id);
       
       return entryInfo.id;
@@ -433,10 +433,10 @@ const TDACSelectionScreen = ({ navigation, route }) => {
     try {
       console.log('📋 Updating EntryInfo status to submitted...');
       
-      const PassportDataService = require('../../services/data/PassportDataService').default;
+      const UserDataService = require('../../services/data/UserDataService').default;
       
       // Update EntryInfo status from 'ready' to 'submitted'
-      const updatedEntryInfo = await PassportDataService.updateEntryInfoStatus(
+      const updatedEntryInfo = await UserDataService.updateEntryInfoStatus(
         entryInfoId,
         'submitted',
         {

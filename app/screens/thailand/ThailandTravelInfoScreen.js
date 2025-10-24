@@ -41,136 +41,17 @@ import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
 import EntryData from '../../models/EntryData';
 import EntryInfo from '../../models/EntryInfo';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
+
+// Import Thailand-specific utilities
+import { formatDateForInput, processTicketOCRResult, processHotelOCRResult } from '../../utils/thailand/OcrProcessingUtils';
+import { validateField } from '../../utils/thailand/ThailandValidationRules';
+import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
-
-// Helper component to show warning icon for empty required fields
-const FieldWarningIcon = ({ hasWarning, hasError }) => {
-  if (hasError) {
-    return <Text style={styles.fieldErrorIcon}>❌</Text>;
-  }
-  if (hasWarning) {
-    return <Text style={styles.fieldWarningIcon}>⚠️</Text>;
-  }
-  return null;
-};
-
-// Enhanced Input wrapper that shows warning icons and highlights last edited field
-const InputWithValidation = ({
-  label,
-  value,
-  onChangeText,
-  onBlur,
-  error,
-  errorMessage,
-  warning,
-  warningMessage,
-  fieldName,
-  lastEditedField,
-  required = false,
-  optional = false,
-  ...props
-}) => {
-  const { t } = useLocale();
-  const hasError = error && errorMessage;
-  const hasWarning = warning && warningMessage && !hasError;
-  const isLastEdited = fieldName && lastEditedField === fieldName;
-
-  // Determine if field is required or optional
-  const getFieldRequirementText = () => {
-    if (required) return <Text style={styles.requiredText}>*</Text>;
-    if (optional) return <Text style={styles.optionalText}>（可选）</Text>;
-    return null;
-  };
-  
-  return (
-    <View style={[
-      styles.inputWithValidationContainer,
-      isLastEdited && styles.lastEditedField
-    ]}>
-      <View style={styles.inputLabelContainer}>
-        <View style={styles.labelRow}>
-          <Text style={[
-            styles.inputLabel,
-            isLastEdited && styles.lastEditedLabel
-          ]}>
-            {label}
-            {isLastEdited && ' ✨'}
-          </Text>
-          <View style={styles.requirementIndicator}>
-            {getFieldRequirementText()}
-          </View>
-        </View>
-        <FieldWarningIcon hasWarning={hasWarning} hasError={hasError} />
-      </View>
-      <Input
-        value={value}
-        onChangeText={onChangeText}
-        onBlur={onBlur}
-        error={hasError}
-        errorMessage={errorMessage}
-        {...props}
-      />
-      {hasWarning && !hasError && (
-        <Text style={styles.warningText}>{warningMessage}</Text>
-      )}
-      {isLastEdited && (
-        <Text style={styles.lastEditedIndicator}>
-          {t('thailand.travelInfo.lastEdited', { defaultValue: '最近编辑' })}
-        </Text>
-      )}
-    </View>
-  );
-};
-
-const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onToggle, fieldCount }) => {
-  const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    onToggle();
-  };
-
-  const isComplete = fieldCount && fieldCount.filled === fieldCount.total;
-
-  return (
-    <View style={styles.sectionContainer}>
-      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
-        <View style={styles.sectionTitleContainer}>
-          <View>
-            <Text style={styles.sectionTitle}>{title}</Text>
-            {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
-          </View>
-          {fieldCount && (
-            <View style={[
-              styles.fieldCountBadge,
-              isComplete ? styles.fieldCountBadgeComplete : styles.fieldCountBadgeIncomplete
-            ]}>
-              <Text style={[
-                styles.fieldCountText,
-                isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
-              ]}>
-                {`${fieldCount.filled}/${fieldCount.total}`}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>扫描</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
-        </View>
-      </TouchableOpacity>
-      {isExpanded && <View style={styles.sectionContent}>{children}</View>}
-    </View>
-  );
-};
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
@@ -178,7 +59,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   
   // Memoize passport to prevent infinite re-renders
   const passport = useMemo(() => {
-    return PassportDataService.toSerializablePassport(rawPassport);
+    return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
   
   // Memoize userId to prevent unnecessary re-renders
@@ -679,7 +560,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       setSex('Male');
       
       // Clear cache
-      PassportDataService.clearCache();
+      UserDataService.clearCache();
       
       alert('User data cleared successfully');
     } catch (error) {
@@ -694,15 +575,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       try {
         setIsLoading(true);
         
-        // Initialize PassportDataService and trigger migration if needed
+        // Initialize UserDataService and trigger migration if needed
         try {
-          await PassportDataService.initialize(userId);
+          await UserDataService.initialize(userId);
         } catch (initError) {
-          // Initialization failed, continue with route params
+          console.error('Failed to initialize UserDataService:', initError);
+          console.error('Error details:', initError.message, initError.stack);
+          // Log the error but re-throw it to prevent further operations
+          throw initError;
         }
         
         // Load all user data from centralized service
-        const userData = await PassportDataService.getAllUserData(userId);
+        const userData = await UserDataService.getAllUserData(userId);
         console.log('=== LOADED USER DATA ===');
         console.log('userData:', userData);
         console.log('userData.passport:', userData?.passport);
@@ -712,7 +596,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         // Load travel info and add to userData for migration
         try {
           const destinationId = destination?.id || 'thailand';
-          const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
           if (travelInfo) {
             userData.travelInfo = travelInfo;
           }
@@ -808,13 +692,13 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           // Use destination.id for consistent lookup (not affected by localization)
           const destinationId = destination?.id || 'thailand';
           console.log('Loading travel info for destination:', destinationId);
-          let travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+          let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
           
           // Fallback: try loading with localized name if id lookup fails
           // This handles data saved before the fix
           if (!travelInfo && destination?.name) {
             console.log('Trying fallback with destination name:', destination.name);
-            travelInfo = await PassportDataService.getTravelInfo(userId, destination.name);
+            travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
           }
           
           if (travelInfo) {
@@ -926,14 +810,14 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       const reloadData = async () => {
         try {
           
-          // Reload data from PassportDataService
-          const userData = await PassportDataService.getAllUserData(userId);
+          // Reload data from UserDataService
+          const userData = await UserDataService.getAllUserData(userId);
 
           if (userData) {
             // Load travel info and add to userData for migration
             try {
               const destinationId = destination?.id || 'thailand';
-              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
               if (travelInfo) {
                 userData.travelInfo = travelInfo;
               }
@@ -981,7 +865,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             // Reload travel info data as well
             try {
               const destinationId = destination?.id || 'thailand';
-              const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
               
               if (travelInfo) {
                 console.log('=== RELOADING TRAVEL INFO ON FOCUS ===');
@@ -1296,348 +1180,39 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   const handleFieldBlur = async (fieldName, fieldValue) => {
     try {
-      console.log('=== HANDLE FIELD BLUR ===');
-      console.log('Field:', fieldName);
-      console.log('Value:', fieldValue);
-      
       // Mark field as user-modified for interaction tracking
       userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
-      
+
       // Track last edited field for session state
       setLastEditedField(fieldName);
-      
+
       // Brief highlight animation for last edited field
       if (fieldName) {
-        // Clear any existing highlight timeout
         if (window.highlightTimeout) {
           clearTimeout(window.highlightTimeout);
         }
-        
-        // Set highlight timeout to clear after 2 seconds
         window.highlightTimeout = setTimeout(() => {
           setLastEditedField(null);
         }, 2000);
       }
-      
-      // Enhanced validation using SoftValidation utility
-      let isValid = true;
-      let errorMessage = '';
-      let isWarning = false;
 
-      // Comprehensive validation rules for each field
-      switch (fieldName) {
-        case 'fullName':
-          if (fieldValue && fieldValue.trim()) {
-            // Check for Chinese characters (not allowed in passport names)
-            if (/[\u4e00-\u9fff]/.test(fieldValue)) {
-              isValid = false;
-              errorMessage = 'Please use English letters only (no Chinese characters)';
-            }
-            // Check for proper format (Last, First or LAST, FIRST)
-            else if (!/^[A-Za-z\s,.-]+$/.test(fieldValue)) {
-              isValid = false;
-              errorMessage = 'Name should contain only letters, spaces, commas, periods, and hyphens';
-            }
-            // Check minimum length
-            else if (fieldValue.trim().length < 2) {
-              isValid = false;
-              errorMessage = 'Name must be at least 2 characters long';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Full name is required';
-          }
-          break;
+      // Use centralized validation
+      const validationContext = {
+        arrivalArrivalDate,
+        residentCountry,
+        travelPurpose,
+        accommodationType,
+        isTransitPassenger
+      };
 
-        case 'passportNo':
-          if (fieldValue && fieldValue.trim()) {
-            // Remove spaces and validate format
-            const cleanPassport = fieldValue.replace(/\s/g, '');
-            if (!/^[A-Z0-9]{6,12}$/i.test(cleanPassport)) {
-              isValid = false;
-              errorMessage = 'Passport number must be 6-12 letters and numbers';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Passport number is required';
-          }
-          break;
+      const { isValid, isWarning, errorMessage } = validateField(fieldName, fieldValue, validationContext);
 
-        case 'visaNumber':
-          if (fieldValue && fieldValue.trim()) {
-            if (!/^[A-Za-z0-9]{5,15}$/.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Visa number must be 5-15 letters or numbers';
-            }
-          }
-          // Visa number is optional, so no warning for empty value
-          break;
-
-        case 'dob':
-        case 'expiryDate':
-        case 'arrivalArrivalDate':
-        case 'departureDepartureDate':
-          if (fieldValue && fieldValue.trim()) {
-            // Validate date format
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(fieldValue)) {
-              isValid = false;
-              errorMessage = 'Date must be in YYYY-MM-DD format';
-            } else {
-              // Validate actual date
-              const date = new Date(fieldValue);
-              if (isNaN(date.getTime())) {
-                isValid = false;
-                errorMessage = 'Please enter a valid date';
-              } else {
-                // Additional date-specific validations
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (fieldName === 'dob') {
-                  // Birth date should be in the past and reasonable
-                  if (date >= today) {
-                    isValid = false;
-                    errorMessage = 'Birth date must be in the past';
-                  } else if (date < new Date('1900-01-01')) {
-                    isValid = false;
-                    errorMessage = 'Please enter a valid birth date';
-                  }
-                } else if (fieldName === 'expiryDate') {
-                  // Passport expiry should be in the future
-                  if (date <= today) {
-                    isValid = false;
-                    errorMessage = 'Passport expiry date must be in the future';
-                  }
-                } else if (fieldName === 'arrivalArrivalDate') {
-                  // Arrival date should be in the future (or today)
-                  const yesterday = new Date(today);
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  if (date < yesterday) {
-                    isValid = false;
-                    errorMessage = 'Arrival date should not be in the past';
-                  }
-                } else if (fieldName === 'departureDepartureDate') {
-                  // Departure date should be after arrival date
-                  if (arrivalArrivalDate && date <= new Date(arrivalArrivalDate)) {
-                    isValid = false;
-                    errorMessage = 'Departure date must be after arrival date';
-                  }
-                }
-              }
-            }
-          } else if (['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate'].includes(fieldName)) {
-            isWarning = true;
-            errorMessage = `${fieldName === 'dob' ? 'Birth date' : 
-                           fieldName === 'expiryDate' ? 'Passport expiry date' :
-                           fieldName === 'arrivalArrivalDate' ? 'Arrival date' : 'Departure date'} is required`;
-          }
-          break;
-
-        case 'email':
-          if (fieldValue && fieldValue.trim()) {
-            // Enhanced email validation
-            const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-            if (!emailRegex.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Please enter a valid email address';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Email address is required';
-          }
-          break;
-
-        case 'phoneNumber':
-          if (fieldValue && fieldValue.trim()) {
-            // Remove all non-digit characters except + for validation
-            const cleanPhone = fieldValue.replace(/[^\d+]/g, '');
-            if (cleanPhone.length < 7) {
-              isValid = false;
-              errorMessage = 'Phone number must be at least 7 digits';
-            } else if (cleanPhone.length > 15) {
-              isValid = false;
-              errorMessage = 'Phone number must be no more than 15 digits';
-            } else if (!/^[\+]?[\d\s\-()]{7,}$/.test(fieldValue)) {
-              isValid = false;
-              errorMessage = 'Phone number contains invalid characters';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Phone number is required';
-          }
-          break;
-
-        case 'phoneCode':
-          if (fieldValue && fieldValue.trim()) {
-            if (!/^\+\d{1,4}$/.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Country code must start with + followed by 1-4 digits';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Country code is required';
-          }
-          break;
-
-        case 'occupation':
-          if (fieldValue && fieldValue.trim()) {
-            // Check for English characters only
-            if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Please use English letters only';
-            } else if (fieldValue.trim().length < 2) {
-              isValid = false;
-              errorMessage = 'Must be at least 2 characters long';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = 'Occupation is required';
-          }
-          break;
-
-        case 'cityOfResidence':
-          if (fieldValue && fieldValue.trim()) {
-            const trimmedValue = fieldValue.trim();
-            
-            if (!/^[A-Za-z\s\-.]+$/.test(trimmedValue)) {
-              isValid = false;
-              errorMessage = 'Please use English letters only';
-            } else if (trimmedValue.length < 2) {
-              isValid = false;
-              errorMessage = 'Must be at least 2 characters long';
-            } else if (residentCountry === 'CHN') {
-              const provinceMatch = findChinaProvince(trimmedValue);
-              if (!provinceMatch) {
-                isValid = false;
-                errorMessage = 'For China, please enter a province name (e.g., Anhui, Guangdong)';
-              } else if (provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
-                setCityOfResidence(provinceMatch.displayName.toUpperCase());
-              }
-            }
-          } else {
-            isWarning = true;
-            errorMessage = residentCountry === 'CHN'
-              ? 'Province is required for China'
-              : 'Province or city is required';
-          }
-          break;
-
-        case 'recentStayCountry':
-          if (fieldValue && fieldValue.trim()) {
-            // Ensure ISO code format
-            if (!/^[A-Za-z]{3}$/.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Please select a valid country or territory';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = '过去14天停留国家或地区是必填信息';
-          }
-          break;
-
-        case 'arrivalFlightNumber':
-        case 'departureFlightNumber':
-          if (fieldValue && fieldValue.trim()) {
-            // Flight number format validation (e.g., TG123, CX456)
-            if (!/^[A-Z]{2,3}\d{1,4}[A-Z]?$/i.test(fieldValue.trim())) {
-              isValid = false;
-              errorMessage = 'Flight number format: 2-3 letters + 1-4 digits (e.g., TG123)';
-            }
-          } else {
-            isWarning = true;
-            errorMessage = `${fieldName === 'arrivalFlightNumber' ? 'Arrival' : 'Departure'} flight number is required`;
-          }
-          break;
-
-        case 'customTravelPurpose':
-          if (travelPurpose === 'OTHER') {
-            if (fieldValue && fieldValue.trim()) {
-              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
-                isValid = false;
-                errorMessage = 'Please use English letters only';
-              } else if (fieldValue.trim().length < 3) {
-                isValid = false;
-                errorMessage = 'Travel purpose must be at least 3 characters';
-              }
-            } else {
-              isWarning = true;
-              errorMessage = 'Please specify your travel purpose';
-            }
-          }
-          break;
-
-        case 'customAccommodationType':
-          if (accommodationType === 'OTHER') {
-            if (fieldValue && fieldValue.trim()) {
-              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
-                isValid = false;
-                errorMessage = 'Please use English letters only';
-              } else if (fieldValue.trim().length < 3) {
-                isValid = false;
-                errorMessage = 'Accommodation type must be at least 3 characters';
-              }
-            } else {
-              isWarning = true;
-              errorMessage = 'Please specify your accommodation type';
-            }
-          }
-          break;
-
-        case 'hotelAddress':
-          if (!isTransitPassenger) {
-            if (fieldValue && fieldValue.trim()) {
-              if (fieldValue.trim().length < 10) {
-                isValid = false;
-                errorMessage = 'Address must be at least 10 characters long';
-              }
-            } else {
-              isWarning = true;
-              errorMessage = 'Address is required';
-            }
-          }
-          break;
-
-        case 'district':
-        case 'subDistrict':
-          if (!isTransitPassenger && accommodationType !== 'HOTEL') {
-            if (fieldValue && fieldValue.trim()) {
-              if (!/^[A-Za-z\s\-.]+$/.test(fieldValue.trim())) {
-                isValid = false;
-                errorMessage = 'Please use English letters only';
-              }
-            } else {
-              isWarning = true;
-              errorMessage = `${fieldName === 'district' ? 'District' : 'Sub-district'} is required`;
-            }
-          }
-          break;
-
-        case 'postalCode':
-          if (!isTransitPassenger && accommodationType !== 'HOTEL') {
-            if (fieldValue && fieldValue.trim()) {
-              if (!/^\d{5}$/.test(fieldValue.trim())) {
-                isValid = false;
-                errorMessage = 'Postal code must be 5 digits';
-              }
-            } else {
-              isWarning = true;
-              errorMessage = 'Postal code is required';
-            }
-          }
-          break;
-
-        default:
-          // For any other fields, just check if they're not empty when required
-          if (!fieldValue || !fieldValue.toString().trim()) {
-            isWarning = true;
-            errorMessage = 'This field is required';
-          }
-          break;
-      }
-
-      console.log('Validation result:', isValid ? (isWarning ? 'WARNING' : 'VALID') : 'ERROR');
-      if (!isValid || isWarning) {
-        console.log('Message:', errorMessage);
+      // Handle province auto-correction for China
+      if (fieldName === 'cityOfResidence' && residentCountry === 'CHN' && fieldValue) {
+        const provinceMatch = findChinaProvince(fieldValue.trim());
+        if (provinceMatch && provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
+          setCityOfResidence(provinceMatch.displayName.toUpperCase());
+        }
       }
 
       // Update errors and warnings state
@@ -1645,38 +1220,28 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
-      
+
       setWarnings(prev => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
 
-      // Save data if valid (including warnings) using debounced save
+      // Save data if valid (including warnings)
       if (isValid) {
-        console.log('Validation passed, triggering debounced save...');
         try {
-          // For date fields, we need to pass the new value directly to avoid React state delay
           const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
           if (immediateSaveFields.includes(fieldName)) {
-            console.log('Immediate-save field detected, saving with new value:', fieldValue);
-            // Save immediately with the new value to avoid React state delay
             await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
             setLastEditedAt(new Date());
           } else {
             debouncedSaveData();
           }
         } catch (saveError) {
-          console.error('Failed to trigger debounced save:', saveError);
-          // Don't show error to user for debounced saves, as they will retry automatically
+          console.error('Failed to trigger save:', saveError);
         }
-      } else {
-        console.log('Skipping save due to validation error');
       }
-
     } catch (error) {
       console.error('Failed to validate and save field:', error);
-      console.error('Error stack:', error.stack);
-      // Don't show error to user for field validation, as it's non-critical
     }
   };
 
@@ -1730,7 +1295,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
         console.log('Saving passport updates:', passportUpdates);
         if (existingPassport && existingPassport.id) {
           console.log('Updating existing passport with ID:', existingPassport.id);
-          const updated = await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+          const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
           console.log('Passport data updated successfully');
 
           // Update passportData state to track the correct passport ID
@@ -1738,7 +1303,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
           saveResults.passport.success = true;
         } else {
           console.log('Creating new passport for userId:', userId);
-          const saved = await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+          const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
           console.log('Passport data saved successfully');
 
           // Update passportData state to track the new passport ID
@@ -1783,7 +1348,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
     if (hasValidData) {
       try {
         console.log('Saving personal info updates:', personalInfoUpdates);
-        const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+        const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
         console.log('✅ Personal info saved successfully');
 
         // Update personalInfoData state
@@ -1792,7 +1357,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
 
         // Verify the save worked
         console.log('=== 🔍 SAVE VERIFICATION ===');
-        const verifyData = await PassportDataService.getPersonalInfo(userId);
+        const verifyData = await UserDataService.getPersonalInfo(userId);
         console.log('Verification - loaded from database:', verifyData);
 
         if (verifyData) {
@@ -1891,13 +1456,13 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
           destination: destinationId
         };
 
-        const savedTravelInfo = await PassportDataService.saveTravelInfo(userId, travelDataWithDestination);
+        const savedTravelInfo = await UserDataService.saveTravelInfo(userId, travelDataWithDestination);
         console.log('✅ Travel info saved successfully');
         saveResults.travelInfo.success = true;
 
         // Verify the save worked
         console.log('=== 🔍 TRAVEL INFO SAVE VERIFICATION ===');
-        const verifyTravelData = await PassportDataService.getTravelInfo(userId, destinationId);
+        const verifyTravelData = await UserDataService.getTravelInfo(userId, destinationId);
         console.log('Verification - loaded travel info from database:', verifyTravelData);
 
         if (verifyTravelData) {
@@ -1927,12 +1492,12 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
 
         // Get the latest passport and personal info from database
         // This ensures we have the correct IDs even if they were just created
-        const latestPassport = await PassportDataService.getPassport(userId);
-        const latestPersonalInfo = await PassportDataService.getPersonalInfo(userId);
+        const latestPassport = await UserDataService.getPassport(userId);
+        const latestPersonalInfo = await UserDataService.getPersonalInfo(userId);
 
         // Get travel_info_id if it was just saved
         const destinationId = destination?.id || 'thailand';
-        const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
         const entryInfoUpdateData = {
           id: entryInfoId,
@@ -1955,7 +1520,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
           fundItemIds: funds.map(f => f.id)
         });
 
-        await PassportDataService.saveEntryInfo(entryInfoUpdateData, userId);
+        await UserDataService.saveEntryInfo(entryInfoUpdateData, userId);
         console.log('✅ Entry info updated successfully with fund items');
         saveResults.entryInfo = { success: true, error: null };
       } catch (entryInfoError) {
@@ -2026,7 +1591,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     console.log('- sex:', sex);
 
     // Get existing passport first to ensure we're updating the right one
-    const existingPassport = await PassportDataService.getPassport(userId);
+    const existingPassport = await UserDataService.getPassport(userId);
     console.log('Existing passport:', existingPassport);
 
     // Prepare current state for the save operation
@@ -2069,7 +1634,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
                console.log('Attempting to clear travel info and retry...');
                try {
                  // Clear travel info for this user and destination
-                 await PassportDataService.clearTravelInfo(userId, destination?.id || 'thailand');
+                 await UserDataService.clearTravelInfo(userId, destination?.id || 'thailand');
                  console.log('Cleared travel info. Retrying save...');
   
                  // Prepare current state for retry
@@ -2141,7 +1706,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const refreshFundItems = useCallback(async (options = {}) => {
     try {
-      const fundItems = await PassportDataService.getFundItems(userId, options);
+      const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
       setFunds(normalized);
     } catch (error) {
@@ -2164,7 +1729,7 @@ const normalizeFundItem = useCallback((item) => ({
       console.log('🔍 Initializing entry info for destination:', destinationId);
 
       // Try to find existing entry_info for this user and destination
-      const existingEntryInfos = await PassportDataService.getAllEntryInfosForUser(userId);
+      const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
       const existingEntryInfo = existingEntryInfos?.find(
         entry => entry.destinationId === destinationId
       );
@@ -2192,7 +1757,7 @@ const normalizeFundItem = useCallback((item) => ({
         lastUpdatedAt: new Date().toISOString()
       };
 
-      const savedEntryInfo = await PassportDataService.saveEntryInfo(entryInfoData, userId);
+      const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
       console.log('✅ Created new entry info:', savedEntryInfo.id);
 
       setEntryInfoId(savedEntryInfo.id);
@@ -2274,58 +1839,6 @@ const normalizeFundItem = useCallback((item) => ({
     }
   };
 
-// Test function to verify personal info data flow
-const testPersonalInfoDataFlow = async () => {
-  console.log('=== 🧪 TESTING PERSONAL INFO DATA FLOW ===');
-
-  // Test current UI state
-  console.log('Current UI state:');
-  console.log('- phoneCode:', phoneCode, 'Length:', phoneCode?.length);
-  console.log('- phoneNumber:', phoneNumber, 'Length:', phoneNumber?.length);
-  console.log('- email:', email, 'Length:', email?.length);
-  console.log('- occupation:', occupation, 'Length:', occupation?.length);
-  console.log('- cityOfResidence:', cityOfResidence, 'Length:', cityOfResidence?.length);
-  console.log('- residentCountry:', residentCountry, 'Length:', residentCountry?.length);
-  console.log('- sex:', sex, 'Length:', sex?.length);
-
-  // Test data preparation
-  const personalInfoUpdates = {};
-  if (phoneCode && phoneCode.trim()) personalInfoUpdates.phoneCode = phoneCode;
-  if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-  if (email && email.trim()) personalInfoUpdates.email = email;
-  if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-  if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-  if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
-  // NOTE: gender removed from personalInfo - stored in passport only
-
-  console.log('Prepared personalInfoUpdates:', personalInfoUpdates);
-  console.log('Number of fields that would be saved:', Object.keys(personalInfoUpdates).length);
-
-  // Test the save process
-  if (Object.keys(personalInfoUpdates).length > 0) {
-    try {
-      console.log('Attempting to save personal info...');
-      const userId = passport?.id || 'user_001';
-      const savedPersonalInfo = await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-      console.log('✅ Personal info saved successfully:', savedPersonalInfo);
-
-      // Verify in database
-      const verifyData = await PassportDataService.getPersonalInfo(userId);
-      console.log('✅ Verification - loaded from database:', verifyData);
-
-    } catch (error) {
-      console.error('❌ Failed to save personal info:', error);
-      console.error('Error details:', error.message, error.stack);
-    }
-  } else {
-    console.log('⚠️ No fields to save - all fields are empty or invalid');
-  }
-};
-
-// Make test function available globally for debugging
-if (typeof window !== 'undefined') {
-  window.testPersonalInfoDataFlow = testPersonalInfoDataFlow;
-}
 
   const validate = () => {
     // Disable all required checks to support progressive entry info filling
@@ -2447,10 +1960,10 @@ if (typeof window !== 'undefined') {
         let ocrResult;
         if (documentType === 'ticket') {
           ocrResult = await apiClient.recognizeTicket(imageUri);
-          await processTicketOCRResult(ocrResult);
+          await handleTicketOCRResult(ocrResult);
         } else if (documentType === 'hotel') {
           ocrResult = await apiClient.recognizeHotel(imageUri);
-          await processHotelOCRResult(ocrResult);
+          await handleHotelOCRResult(ocrResult);
         }
 
         // Show success message
@@ -2498,242 +2011,33 @@ if (typeof window !== 'undefined') {
     }
   };
 
-  const processTicketOCRResult = async (ocrResult) => {
-    console.log('Processing ticket OCR result:', ocrResult);
-    
-    // Extract and set flight information
-    if (ocrResult.flightNumber) {
-      // Determine if this is arrival or departure flight based on current context
-      // If arrival flight is empty, assume this is arrival flight
-      if (!arrivalFlightNumber || arrivalFlightNumber.trim() === '') {
-        setArrivalFlightNumber(ocrResult.flightNumber);
-        setLastEditedField('arrivalFlightNumber');
-      } else if (!departureFlightNumber || departureFlightNumber.trim() === '') {
-        // If arrival is filled but departure is empty, assume this is departure
-        setDepartureFlightNumber(ocrResult.flightNumber);
-        setLastEditedField('departureFlightNumber');
-      } else {
-        // Both are filled, ask user which one to update
-        Alert.alert(
-          t('thailand.travelInfo.scan.flightChoiceTitle', { defaultValue: '选择航班' }),
-          t('thailand.travelInfo.scan.flightChoiceMessage', { 
-            defaultValue: '检测到航班号 {flightNumber}，请选择要更新的航班信息',
-            flightNumber: ocrResult.flightNumber 
-          }),
-          [
-            {
-              text: t('thailand.travelInfo.scan.arrivalFlight', { defaultValue: '入境航班' }),
-              onPress: () => {
-                setArrivalFlightNumber(ocrResult.flightNumber);
-                setLastEditedField('arrivalFlightNumber');
-              }
-            },
-            {
-              text: t('thailand.travelInfo.scan.departureFlight', { defaultValue: '离境航班' }),
-              onPress: () => {
-                setDepartureFlightNumber(ocrResult.flightNumber);
-                setLastEditedField('departureFlight');
-              }
-            },
-            {
-              text: t('common.cancel', { defaultValue: '取消' }),
-              style: 'cancel'
-            }
-          ]
-        );
-        return; // Don't process dates if user needs to choose
-      }
-    }
-
-    // Set arrival date if detected and arrival flight was updated
-    if (ocrResult.arrivalDate && (ocrResult.flightNumber === arrivalFlightNumber || !departureFlightNumber)) {
-      const formattedDate = formatDateForInput(ocrResult.arrivalDate);
-      if (formattedDate) {
-        setArrivalArrivalDate(formattedDate);
-        setLastEditedField('arrivalArrivalDate');
-      }
-    }
-
-    // Set departure city as boarding country if available
-    if (ocrResult.departureCity) {
-      // Try to map city to country code
-      const countryCode = mapCityToCountryCode(ocrResult.departureCity);
-      if (countryCode) {
-        setBoardingCountry(countryCode);
-        setLastEditedField('boardingCountry');
-      }
-    }
-  };
-
-  const processHotelOCRResult = async (ocrResult) => {
-    console.log('Processing hotel OCR result:', ocrResult);
-    
-    // Set hotel address
-    if (ocrResult.address) {
-      setHotelAddress(ocrResult.address);
-      setLastEditedField('hotelAddress');
-    } else if (ocrResult.hotelName) {
-      // If no address but hotel name is available, use hotel name as address
-      setHotelAddress(ocrResult.hotelName);
-      setLastEditedField('hotelAddress');
-    }
-
-    // Set check-in date as arrival date if not already set
-    if (ocrResult.checkIn && (!arrivalArrivalDate || arrivalArrivalDate.trim() === '')) {
-      const formattedDate = formatDateForInput(ocrResult.checkIn);
-      if (formattedDate) {
-        setArrivalArrivalDate(formattedDate);
-        setLastEditedField('arrivalArrivalDate');
-      }
-    }
-
-    // Set check-out date as departure date if not already set
-    if (ocrResult.checkOut && (!departureDepartureDate || departureDepartureDate.trim() === '')) {
-      const formattedDate = formatDateForInput(ocrResult.checkOut);
-      if (formattedDate) {
-        setDepartureDepartureDate(formattedDate);
-        setLastEditedField('departureDepartureDate');
-      }
-    }
-
-    // Extract province from address if possible
-    if (ocrResult.address && (!province || province.trim() === '')) {
-      const extractedProvince = extractProvinceFromAddress(ocrResult.address);
-      if (extractedProvince) {
-        setProvince(extractedProvince);
-        setLastEditedField('province');
-      }
-    }
-  };
-
-  // Helper function to format date from OCR result to YYYY-MM-DD format
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return null;
-    
-    try {
-      // Try different date formats that might come from OCR
-      const dateFormats = [
-        /(\d{4})-(\d{1,2})-(\d{1,2})/, // YYYY-MM-DD
-        /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // MM/DD/YYYY or DD/MM/YYYY
-        /(\d{1,2})-(\d{1,2})-(\d{4})/, // MM-DD-YYYY or DD-MM-YYYY
-        /(\d{4})年(\d{1,2})月(\d{1,2})日/, // Chinese format
-        /(\d{1,2})月(\d{1,2})日/, // Chinese format without year
-      ];
-
-      for (const format of dateFormats) {
-        const match = dateString.match(format);
-        if (match) {
-          let year, month, day;
-          
-          if (format.source.includes('年')) {
-            // Chinese format
-            if (match.length === 4) {
-              [, year, month, day] = match;
-            } else {
-              // No year, use current year
-              year = new Date().getFullYear().toString();
-              [, month, day] = match;
-            }
-          } else if (match[1].length === 4) {
-            // YYYY-MM-DD format
-            [, year, month, day] = match;
-          } else {
-            // Assume DD/MM/YYYY for international documents
-            [, day, month, year] = match;
-          }
-
-          // Validate and format
-          const y = parseInt(year);
-          const m = parseInt(month);
-          const d = parseInt(day);
-
-          if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
-            return `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Date formatting error:', error);
-    }
-    
-    return null;
-  };
-
-  // Helper function to map city names to country codes
-  const mapCityToCountryCode = (cityName) => {
-    if (!cityName) return null;
-    
-    const cityToCountry = {
-      // Major Chinese cities
-      '北京': 'CHN', '上海': 'CHN', '广州': 'CHN', '深圳': 'CHN', '成都': 'CHN',
-      '杭州': 'CHN', '南京': 'CHN', '武汉': 'CHN', '西安': 'CHN', '重庆': 'CHN',
-      'Beijing': 'CHN', 'Shanghai': 'CHN', 'Guangzhou': 'CHN', 'Shenzhen': 'CHN',
-      'Chengdu': 'CHN', 'Hangzhou': 'CHN', 'Nanjing': 'CHN', 'Wuhan': 'CHN',
-      
-      // Major international cities
-      'Bangkok': 'THA', '曼谷': 'THA',
-      'Singapore': 'SGP', '新加坡': 'SGP',
-      'Tokyo': 'JPN', '东京': 'JPN', 'Osaka': 'JPN', '大阪': 'JPN',
-      'Seoul': 'KOR', '首尔': 'KOR',
-      'Hong Kong': 'HKG', '香港': 'HKG',
-      'Taipei': 'TWN', '台北': 'TWN',
-      'Kuala Lumpur': 'MYS', '吉隆坡': 'MYS',
-      'New York': 'USA', '纽约': 'USA', 'Los Angeles': 'USA', '洛杉矶': 'USA',
-      'London': 'GBR', '伦敦': 'GBR',
-      'Paris': 'FRA', '巴黎': 'FRA',
-      'Sydney': 'AUS', '悉尼': 'AUS',
-      'Vancouver': 'CAN', '温哥华': 'CAN', 'Toronto': 'CAN', '多伦多': 'CAN',
+  // Wrapper for processTicketOCRResult from utility
+  const handleTicketOCRResult = async (ocrResult) => {
+    const currentState = { arrivalFlightNumber, departureFlightNumber };
+    const setters = {
+      setArrivalFlightNumber,
+      setDepartureFlightNumber,
+      setArrivalArrivalDate,
+      setBoardingCountry,
+      setLastEditedField,
+      Alert
     };
-
-    // Direct match
-    if (cityToCountry[cityName]) {
-      return cityToCountry[cityName];
-    }
-
-    // Partial match (case insensitive)
-    const cityLower = cityName.toLowerCase();
-    for (const [city, country] of Object.entries(cityToCountry)) {
-      if (city.toLowerCase().includes(cityLower) || cityLower.includes(city.toLowerCase())) {
-        return country;
-      }
-    }
-
-    return null;
+    await processTicketOCRResult(ocrResult, currentState, setters, t);
   };
 
-  // Helper function to extract province from address
-  const extractProvinceFromAddress = (address) => {
-    if (!address) return null;
-    
-    const thaiProvinces = [
-      'Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya', 'Krabi', 'Koh Samui',
-      'Hua Hin', 'Ayutthaya', 'Sukhothai', 'Chiang Rai', 'Kanchanaburi',
-      'Nakhon Ratchasima', 'Udon Thani', 'Khon Kaen', 'Surat Thani',
-      '曼谷', '清迈', '普吉', '芭提雅', '甲米', '苏梅岛'
-    ];
-
-    for (const province of thaiProvinces) {
-      if (address.includes(province)) {
-        return province;
-      }
-    }
-
-    // If no specific province found, try to extract from common patterns
-    const provincePatterns = [
-      /(\w+)\s+Province/i,
-      /(\w+)府/,
-      /(\w+)\s+จังหวัด/
-    ];
-
-    for (const pattern of provincePatterns) {
-      const match = address.match(pattern);
-      if (match) {
-        return match[1];
-      }
-    }
-
-    return null;
+  // Wrapper for processHotelOCRResult from utility
+  const handleHotelOCRResult = async (ocrResult) => {
+    const currentState = { arrivalArrivalDate, departureDepartureDate, province };
+    const setters = {
+      setHotelAddress,
+      setArrivalArrivalDate,
+      setDepartureDepartureDate,
+      setProvince,
+      setLastEditedField
+    };
+    await processHotelOCRResult(ocrResult, currentState, setters);
   };
+
 
   const renderGenderOptions = () => {
     const options = [
@@ -3054,8 +2358,6 @@ if (typeof window !== 'undefined') {
              label="职业"
              value={occupation}
              onChangeText={(text) => {
-               console.log('=== 🔍 OCCUPATION INPUT CHANGE ===');
-               console.log('New occupation value:', text);
                setOccupation(text.toUpperCase());
              }}
              onBlur={() => handleFieldBlur('occupation', occupation)}
@@ -3072,8 +2374,6 @@ if (typeof window !== 'undefined') {
              label={cityOfResidenceLabel}
              value={cityOfResidence}
              onChangeText={(text) => {
-               console.log('=== 🔍 CITY OF RESIDENCE INPUT CHANGE ===');
-               console.log('New city of residence value:', text);
                setCityOfResidence(text.toUpperCase());
              }}
              onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
@@ -3091,12 +2391,9 @@ if (typeof window !== 'undefined') {
              label="居住国家"
              value={residentCountry}
              onValueChange={(code) => {
-               console.log('=== 🔍 RESIDENT COUNTRY CHANGE ===');
-               console.log('New resident country code:', code);
-               console.log('Previous resident country code:', residentCountry);
                setResidentCountry(code);
                setPhoneCode(getPhoneCode(code));
-               debouncedSaveData(); // Trigger debounced save when country changes
+               debouncedSaveData();
              }}
              helpText="请选择您居住的国家"
              error={!!errors.residentCountry}
@@ -3117,11 +2414,7 @@ if (typeof window !== 'undefined') {
              <Input
                label="电话号码"
                value={phoneNumber}
-               onChangeText={(text) => {
-                 console.log('=== 🔍 PHONE NUMBER INPUT CHANGE ===');
-                 console.log('New phone number value:', text);
-                 setPhoneNumber(text);
-               }}
+               onChangeText={setPhoneNumber}
                onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
                keyboardType="phone-pad"
                helpText="请输入您的电话号码"
@@ -3133,11 +2426,7 @@ if (typeof window !== 'undefined') {
            <InputWithValidation
              label="电子邮箱"
              value={email}
-             onChangeText={(text) => {
-               console.log('=== 🔍 EMAIL INPUT CHANGE ===');
-               console.log('New email value:', text);
-               setEmail(text);
-             }}
+             onChangeText={setEmail}
              onBlur={() => handleFieldBlur('email', email)} 
              keyboardType="email-address" 
              helpText="请输入您的电子邮箱地址" 
@@ -3413,20 +2702,12 @@ if (typeof window !== 'undefined') {
               </TouchableOpacity>
           </View>
           <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
-          <DateTimeInput 
-            label="出发日期" 
-            value={departureDepartureDate} 
+          <DateTimeInput
+            label="出发日期"
+            value={departureDepartureDate}
             onChangeText={(newValue) => {
-              console.log('=== DEPARTURE DATE CHANGE ===');
-              console.log('New departure date value:', newValue);
-              console.log('Previous departure date value:', departureDepartureDate);
-              console.log('Setting state and triggering save...');
-              
               setDepartureDepartureDate(newValue);
-              
-              // Use setTimeout to ensure state has updated before saving
               setTimeout(() => {
-                console.log('State after update:', newValue);
                 handleFieldBlur('departureDepartureDate', newValue);
               }, 0);
             }}
@@ -3450,10 +2731,6 @@ if (typeof window !== 'undefined') {
             style={styles.checkboxContainer}
             onPress={async () => {
               const newValue = !isTransitPassenger;
-              console.log('=== TRANSIT PASSENGER SELECTED ===');
-              console.log('New isTransitPassenger value:', newValue);
-              console.log('Previous isTransitPassenger value:', isTransitPassenger);
-              
               setIsTransitPassenger(newValue);
               if (newValue) {
                 setAccommodationType('HOTEL');
@@ -3464,9 +2741,8 @@ if (typeof window !== 'undefined') {
                 setPostalCode('');
                 setHotelAddress('');
               }
-              
-              console.log('Saving immediately with new transit passenger status...');
-              // Save immediately with the new value to avoid React state delay
+
+              // Save immediately with the new value
               try {
                 const overrides = { isTransitPassenger: newValue };
                 if (newValue) {

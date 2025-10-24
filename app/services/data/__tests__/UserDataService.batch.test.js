@@ -1,9 +1,9 @@
 /**
- * Tests for PassportDataService batch operations
+ * Tests for UserDataService batch operations
  * Tests batch loading and batch updates with transactions
  */
 
-import PassportDataService from '../PassportDataService';
+import UserDataService from '../UserDataService';
 import SecureStorageService from '../../security/SecureStorageService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
@@ -14,7 +14,7 @@ jest.mock('../../security/SecureStorageService');
 jest.mock('../../../models/Passport');
 jest.mock('../../../models/PersonalInfo');
 
-describe('PassportDataService - Batch Operations', () => {
+describe('UserDataService - Batch Operations', () => {
   const testUserId = 'test_user_123';
 
   beforeEach(() => {
@@ -22,12 +22,11 @@ describe('PassportDataService - Batch Operations', () => {
     jest.clearAllMocks();
     
     // Clear cache
-    PassportDataService.clearCache();
-    PassportDataService.resetCacheStats();
+    UserDataService.clearCache();
+    UserDataService.resetCacheStats();
     
     // Mock SecureStorageService.initialize
     SecureStorageService.initialize.mockResolvedValue();
-    SecureStorageService.needsMigration.mockResolvedValue(false);
   });
 
   describe('getAllUserData with batch loading', () => {
@@ -55,7 +54,7 @@ describe('PassportDataService - Batch Operations', () => {
 
       });
 
-      const result = await PassportDataService.getAllUserData(testUserId);
+      const result = await UserDataService.getAllUserData(testUserId);
 
       // Verify batchLoad was called
       expect(SecureStorageService.batchLoad).toHaveBeenCalledWith(
@@ -83,7 +82,7 @@ describe('PassportDataService - Batch Operations', () => {
       PersonalInfo.load.mockResolvedValue(null);
       
 
-      const result = await PassportDataService.getAllUserData(testUserId, {
+      const result = await UserDataService.getAllUserData(testUserId, {
         useBatchLoad: false
       });
 
@@ -112,11 +111,11 @@ describe('PassportDataService - Batch Operations', () => {
 
       });
 
-      await PassportDataService.getAllUserData(testUserId);
+      await UserDataService.getAllUserData(testUserId);
 
       // Verify cache was updated
-      expect(PassportDataService.cache.passport.get(testUserId)).toEqual(mockPassport);
-      expect(PassportDataService.cache.lastUpdate.has(`passport_${testUserId}`)).toBe(true);
+      expect(UserDataService.cache.passport.get(testUserId)).toEqual(mockPassport);
+      expect(UserDataService.cache.lastUpdate.has(`passport_${testUserId}`)).toBe(true);
     });
 
     it('should handle batch loading errors gracefully', async () => {
@@ -125,7 +124,7 @@ describe('PassportDataService - Batch Operations', () => {
       );
 
       await expect(
-        PassportDataService.getAllUserData(testUserId)
+        UserDataService.getAllUserData(testUserId)
       ).rejects.toThrow('Database error');
     });
   });
@@ -166,7 +165,7 @@ describe('PassportDataService - Batch Operations', () => {
         { type: 'fundingProof', id: 'funding_1' }
       ]);
 
-      const result = await PassportDataService.batchUpdate(testUserId, updates);
+      const result = await UserDataService.batchUpdate(testUserId, updates);
 
       // Verify batchSave was called with merged data
       expect(SecureStorageService.batchSave).toHaveBeenCalledWith(
@@ -218,7 +217,7 @@ describe('PassportDataService - Batch Operations', () => {
         { type: 'passport', id: 'passport_1' }
       ]);
 
-      await PassportDataService.batchUpdate(testUserId, updates);
+      await UserDataService.batchUpdate(testUserId, updates);
 
       // Verify only passport was updated
       expect(SecureStorageService.batchSave).toHaveBeenCalledWith(
@@ -246,7 +245,7 @@ describe('PassportDataService - Batch Operations', () => {
 
       SecureStorageService.batchLoad.mockResolvedValue(currentData);
 
-      const result = await PassportDataService.batchUpdate(testUserId, {});
+      const result = await UserDataService.batchUpdate(testUserId, {});
 
       // Verify batchSave was NOT called
       expect(SecureStorageService.batchSave).not.toHaveBeenCalled();
@@ -278,9 +277,9 @@ describe('PassportDataService - Batch Operations', () => {
       ]);
 
       // Pre-populate cache
-      PassportDataService.cache.passport.set(testUserId, currentData.passport);
+      UserDataService.cache.passport.set(testUserId, currentData.passport);
 
-      await PassportDataService.batchUpdate(testUserId, updates);
+      await UserDataService.batchUpdate(testUserId, updates);
 
       // Cache should be invalidated and reloaded
       // The second batchLoad call is for reloading after update
@@ -303,7 +302,7 @@ describe('PassportDataService - Batch Operations', () => {
       );
 
       await expect(
-        PassportDataService.batchUpdate(testUserId, {
+        UserDataService.batchUpdate(testUserId, {
           passport: { fullName: 'TEST' }
         })
       ).rejects.toThrow('Transaction failed');
@@ -335,7 +334,7 @@ describe('PassportDataService - Batch Operations', () => {
       PersonalInfo.load.mockResolvedValue({ ...userData.personalInfo, id: 'personal_1' });
 
 
-      await PassportDataService.saveAllUserData(userData, testUserId);
+      await UserDataService.saveAllUserData(userData, testUserId);
 
       // Verify batchSave was called with all data
       expect(SecureStorageService.batchSave).toHaveBeenCalledWith(
@@ -363,11 +362,11 @@ describe('PassportDataService - Batch Operations', () => {
       );
 
       await expect(
-        PassportDataService.saveAllUserData(userData, testUserId)
+        UserDataService.saveAllUserData(userData, testUserId)
       ).rejects.toThrow('Transaction rolled back');
 
       // Verify cache was not updated (since transaction failed)
-      expect(PassportDataService.cache.passport.has(testUserId)).toBe(false);
+      expect(UserDataService.cache.passport.has(testUserId)).toBe(false);
     });
   });
 
@@ -398,17 +397,17 @@ describe('PassportDataService - Batch Operations', () => {
 
       // Test batch loading
       const batchStart = Date.now();
-      const batchResult = await PassportDataService.getAllUserData(testUserId, {
+      const batchResult = await UserDataService.getAllUserData(testUserId, {
         useBatchLoad: true
       });
       const batchDuration = batchResult.loadDurationMs;
 
       // Clear cache for fair comparison
-      PassportDataService.clearCache();
+      UserDataService.clearCache();
 
       // Test parallel loading
       const parallelStart = Date.now();
-      const parallelResult = await PassportDataService.getAllUserData(testUserId, {
+      const parallelResult = await UserDataService.getAllUserData(testUserId, {
         useBatchLoad: false
       });
       const parallelDuration = parallelResult.loadDurationMs;

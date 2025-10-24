@@ -1,9 +1,9 @@
 /**
- * PassportDataService CRUD Operations Tests
+ * UserDataService CRUD Operations Tests
  * Tests for Create, Read, Update, Delete operations and migration logic
  */
 
-import PassportDataService from '../PassportDataService';
+import UserDataService from '../UserDataService';
 import Passport from '../../../models/Passport';
 import PersonalInfo from '../../../models/PersonalInfo';
 // FundingProof model removed - use FundItem instead
@@ -17,13 +17,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 jest.mock('../../security/SecureStorageService');
 jest.mock('@react-native-async-storage/async-storage');
 
-describe('PassportDataService - CRUD Operations', () => {
+describe('UserDataService - CRUD Operations', () => {
   const testUserId = 'test-user-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    PassportDataService.clearCache();
-    PassportDataService.resetCacheStats();
+    UserDataService.clearCache();
+    UserDataService.resetCacheStats();
     Passport.load = jest.fn();
     Passport.loadPrimary = jest.fn();
     PersonalInfo.load = jest.fn();
@@ -52,7 +52,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         const saveSpy = jest.spyOn(Passport.prototype, 'save').mockResolvedValue(true);
 
-        const result = await PassportDataService.savePassport(passportData, testUserId);
+        const result = await UserDataService.savePassport(passportData, testUserId);
 
         expect(saveSpy).toHaveBeenCalled();
         expect(result.userId).toEqual(testUserId);
@@ -68,7 +68,7 @@ describe('PassportDataService - CRUD Operations', () => {
         };
 
         await expect(
-          PassportDataService.savePassport(passportData, null)
+          UserDataService.savePassport(passportData, null)
         ).rejects.toThrow('userId is required');
       });
 
@@ -83,12 +83,12 @@ describe('PassportDataService - CRUD Operations', () => {
         Passport.load.mockResolvedValue(new Passport(passportData));
 
         // Pre-populate cache
-        PassportDataService.cache.passport.set(testUserId, { old: 'data' });
+        UserDataService.cache.passport.set(testUserId, { old: 'data' });
 
-        await PassportDataService.savePassport(passportData, testUserId);
+        await UserDataService.savePassport(passportData, testUserId);
 
         // Cache should be invalidated
-        const stats = PassportDataService.getCacheStats();
+        const stats = UserDataService.getCacheStats();
         expect(stats.invalidations).toBeGreaterThan(0);
 
         saveSpy.mockRestore();
@@ -114,7 +114,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         const saveSpy = jest.spyOn(PersonalInfo.prototype, 'save').mockResolvedValue(true);
 
-        const result = await PassportDataService.savePersonalInfo(personalData, testUserId);
+        const result = await UserDataService.savePersonalInfo(personalData, testUserId);
 
         expect(saveSpy).toHaveBeenCalled();
         expect(result.userId).toEqual(testUserId);
@@ -139,7 +139,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         Passport.load.mockResolvedValue(mockPassport);
 
-        const result = await PassportDataService.getPassport(testUserId);
+        const result = await UserDataService.getPassport(testUserId);
 
         expect(Passport.load).toHaveBeenCalledWith(testUserId);
         expect(result).toEqual(mockPassport);
@@ -148,7 +148,7 @@ describe('PassportDataService - CRUD Operations', () => {
       it('should return null when passport not found', async () => {
         Passport.load.mockResolvedValue(null);
 
-        const result = await PassportDataService.getPassport(testUserId);
+        const result = await UserDataService.getPassport(testUserId);
 
         expect(result).toBeNull();
       });
@@ -163,14 +163,14 @@ describe('PassportDataService - CRUD Operations', () => {
         Passport.load.mockResolvedValue(mockPassport);
 
         // First call
-        await PassportDataService.getPassport(testUserId);
+        await UserDataService.getPassport(testUserId);
         expect(Passport.load).toHaveBeenCalledTimes(1);
 
         // Second call - should use cache
-        await PassportDataService.getPassport(testUserId);
+        await UserDataService.getPassport(testUserId);
         expect(Passport.load).toHaveBeenCalledTimes(1);
 
-        const stats = PassportDataService.getCacheStats();
+        const stats = UserDataService.getCacheStats();
         expect(stats.hits).toBe(1);
         expect(stats.misses).toBe(1);
       });
@@ -187,7 +187,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
         PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
 
-        const result = await PassportDataService.getPersonalInfo(testUserId);
+        const result = await UserDataService.getPersonalInfo(testUserId);
 
         expect(PersonalInfo.load).toHaveBeenCalledWith(testUserId);
         expect(result).toEqual(mockPersonalInfo);
@@ -204,7 +204,7 @@ describe('PassportDataService - CRUD Operations', () => {
         Passport.load.mockResolvedValue(mockPassport);
         PersonalInfo.load.mockResolvedValue(mockPersonalInfo);
 
-        const result = await PassportDataService.getAllUserData(testUserId, {
+        const result = await UserDataService.getAllUserData(testUserId, {
           useBatchLoad: false
         });
 
@@ -217,7 +217,7 @@ describe('PassportDataService - CRUD Operations', () => {
         Passport.load.mockResolvedValue({ id: 'passport-1' });
         PersonalInfo.load.mockResolvedValue(null);
 
-        const result = await PassportDataService.getAllUserData(testUserId, {
+        const result = await UserDataService.getAllUserData(testUserId, {
           useBatchLoad: false
         });
 
@@ -245,7 +245,7 @@ describe('PassportDataService - CRUD Operations', () => {
           expiryDate: '2035-12-31'
         };
 
-        await PassportDataService.updatePassport('passport-1', updates);
+        await UserDataService.updatePassport('passport-1', updates);
 
         expect(existingPassport.fullName).toBe('ZHANG, WEI (UPDATED)');
         expect(existingPassport.expiryDate).toBe('2035-12-31');
@@ -256,7 +256,7 @@ describe('PassportDataService - CRUD Operations', () => {
         Passport.load.mockResolvedValue(null);
 
         await expect(
-          PassportDataService.updatePassport('nonexistent-id', { fullName: 'TEST' })
+          UserDataService.updatePassport('nonexistent-id', { fullName: 'TEST' })
         ).rejects.toThrow('Passport not found');
       });
 
@@ -270,9 +270,9 @@ describe('PassportDataService - CRUD Operations', () => {
 
         Passport.load.mockResolvedValue(mockPassport);
 
-        await PassportDataService.updatePassport('passport-1', { fullName: 'NEW NAME' });
+        await UserDataService.updatePassport('passport-1', { fullName: 'NEW NAME' });
 
-        const stats = PassportDataService.getCacheStats();
+        const stats = UserDataService.getCacheStats();
         expect(stats.invalidations).toBeGreaterThan(0);
       });
     });
@@ -292,7 +292,7 @@ describe('PassportDataService - CRUD Operations', () => {
           email: 'new@example.com'
         };
 
-        await PassportDataService.updatePersonalInfo('personal-1', updates);
+        await UserDataService.updatePersonalInfo('personal-1', updates);
 
         expect(existingPersonalInfo.mergeUpdates).toHaveBeenCalledWith(updates, { skipValidation: true });
       });
@@ -314,7 +314,7 @@ describe('PassportDataService - CRUD Operations', () => {
           cashAmount: '20000 THB'
         };
 
-        await PassportDataService.updateFundingProof('funding-1', updates);
+        await UserDataService.updateFundingProof('funding-1', updates);
 
         expect(existingFundingProof.update).toHaveBeenCalledWith(updates, { skipValidation: true });
       });
@@ -327,7 +327,7 @@ describe('PassportDataService - CRUD Operations', () => {
       Passport.load.mockRejectedValue(new Error('Database connection failed'));
 
       await expect(
-        PassportDataService.getPassport(testUserId)
+        UserDataService.getPassport(testUserId)
       ).rejects.toThrow('Database connection failed');
     });
 
@@ -336,7 +336,7 @@ describe('PassportDataService - CRUD Operations', () => {
       mockPassportInstance.save = jest.fn().mockRejectedValue(new Error('Validation failed'));
 
       await expect(
-        PassportDataService.savePassport({ passportNumber: '' }, testUserId)
+        UserDataService.savePassport({ passportNumber: '' }, testUserId)
       ).rejects.toThrow('Validation failed');
     });
 
@@ -353,7 +353,7 @@ describe('PassportDataService - CRUD Operations', () => {
 
       // First update should fail
       await expect(
-        PassportDataService.updatePassport('passport-1', { fullName: 'TEST' })
+        UserDataService.updatePassport('passport-1', { fullName: 'TEST' })
       ).rejects.toThrow('Concurrent modification');
     });
   });

@@ -19,7 +19,7 @@ import { useTranslation, useLocale, getLanguageOptions } from '../i18n/LocaleCon
 import { NationalitySelector, PassportNameInput } from '../components';
 import FundItemDetailModal from '../components/FundItemDetailModal';
 import { destinationRequirements } from '../config/destinationRequirements';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 import SecureStorageService from '../services/security/SecureStorageService';
 import DataExportService from '../services/export/DataExportService';
 
@@ -92,11 +92,11 @@ const ProfileScreen = ({ navigation, route }) => {
         // Get userId (for now using 'user_001', in production this would come from auth)
         const userId = 'user_001';
         
-        // Initialize PassportDataService (ensures database is ready)
+        // Initialize UserDataService (ensures database is ready)
         try {
-          await PassportDataService.initialize(userId);
+          await UserDataService.initialize(userId);
         } catch (initError) {
-          console.error('Failed to initialize PassportDataService:', initError);
+          console.error('Failed to initialize UserDataService:', initError);
           
           // If initialization fails due to schema issues, show alert to user
           if (initError.message && initError.message.includes('no such column')) {
@@ -111,13 +111,13 @@ const ProfileScreen = ({ navigation, route }) => {
         
         // Check if migration is needed and trigger it
         try {
-          await PassportDataService.migrateFromAsyncStorage(userId);
+          await UserDataService.migrateFromAsyncStorage(userId);
         } catch (migrationError) {
           // Continue loading even if migration fails
         }
         
         // Load all user data from centralized service
-        const userData = await PassportDataService.getAllUserData(userId);
+        const userData = await UserDataService.getAllUserData(userId);
         
         // Load passport data
         if (userData.passport) {
@@ -164,7 +164,7 @@ const ProfileScreen = ({ navigation, route }) => {
         
         // Load fund items (force refresh to ensure fresh data)
          try {
-           const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+           const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
            console.log('Loaded fund items:', items);
            setFundItems(items || []);
          } catch (fundItemsError) {
@@ -187,8 +187,8 @@ const ProfileScreen = ({ navigation, route }) => {
         try {
           const userId = 'user_001';
           // Invalidate cache first to ensure fresh data when screen comes into focus
-          PassportDataService.invalidateCache('fundItems', userId);
-          const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+          UserDataService.invalidateCache('fundItems', userId);
+          const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
           console.log('Reloaded fund items on focus:', items);
           setFundItems(items || []);
         } catch (error) {
@@ -200,7 +200,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }, [])
   );
 
-  // Note: Data saving is now handled through PassportDataService in individual update handlers
+  // Note: Data saving is now handled through UserDataService in individual update handlers
   // instead of useEffect hooks to avoid unnecessary saves on every render
 
   const personalFields = useMemo(() => {
@@ -440,7 +440,7 @@ const ProfileScreen = ({ navigation, route }) => {
       const userId = 'user_001';
       
       // Check if user has any entry packs
-      const userData = await PassportDataService.getAllUserData(userId);
+      const userData = await UserDataService.getAllUserData(userId);
       
       if (!userData.passport && !userData.personalInfo && (!userData.funds || userData.funds.length === 0)) {
         Alert.alert(
@@ -611,12 +611,12 @@ const ProfileScreen = ({ navigation, route }) => {
       gender: value,
     }));
     
-    // Save to PassportDataService
+    // Save to UserDataService
     try {
       const userId = 'user_001';
-      const passport = await PassportDataService.getPassport(userId);
+      const passport = await UserDataService.getPassport(userId);
       if (passport && passport.id) {
-        await PassportDataService.updatePassport(passport.id, {
+        await UserDataService.updatePassport(passport.id, {
           gender: value,
         }, { skipValidation: true }); // Skip validation for progressive data entry
       }
@@ -764,7 +764,7 @@ const ProfileScreen = ({ navigation, route }) => {
             [editingContext.key]: value,
           }));
           
-          // Save to PassportDataService using upsert (create or update)
+          // Save to UserDataService using upsert (create or update)
            const updates = {};
            if (editingContext.key === 'phone') updates.phoneNumber = value;
            else if (editingContext.key === 'email') updates.email = value;
@@ -772,16 +772,16 @@ const ProfileScreen = ({ navigation, route }) => {
            else if (editingContext.key === 'provinceCity') updates.provinceCity = value;
            else if (editingContext.key === 'countryRegion') updates.countryRegion = value;
 
-           await PassportDataService.upsertPersonalInfo(userId, updates);
+           await UserDataService.upsertPersonalInfo(userId, updates);
           
           // Update passport if gender or dateOfBirth changed
           if (editingContext.key === 'gender' || editingContext.key === 'dateOfBirth') {
-            const passportData = await PassportDataService.getPassport(userId);
+            const passportData = await UserDataService.getPassport(userId);
             if (passportData && passportData.id) {
               const updates = {};
               if (editingContext.key === 'gender') updates.gender = value;
               if (editingContext.key === 'dateOfBirth') updates.dateOfBirth = value;
-              await PassportDataService.updatePassport(passportData.id, updates, { skipValidation: true });
+              await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
             }
           }
         } else if (editingContext.type === 'passport-nationality') {
@@ -790,9 +790,9 @@ const ProfileScreen = ({ navigation, route }) => {
             [editingContext.key]: value,
           }));
           
-          const passport = await PassportDataService.getPassport(userId);
+          const passport = await UserDataService.getPassport(userId);
           if (passport && passport.id) {
-            await PassportDataService.updatePassport(passport.id, {
+            await UserDataService.updatePassport(passport.id, {
               nationality: value,
             }, { skipValidation: true });
           }
@@ -803,9 +803,9 @@ const ProfileScreen = ({ navigation, route }) => {
             nameEn: value,
           }));
 
-          const passport = await PassportDataService.getPassport(userId);
+          const passport = await UserDataService.getPassport(userId);
           if (passport && passport.id) {
-            await PassportDataService.updatePassport(
+            await UserDataService.updatePassport(
               passport.id,
               {
                 fullName: value,
@@ -819,7 +819,7 @@ const ProfileScreen = ({ navigation, route }) => {
             [editingContext.key]: value,
           }));
           
-          await PassportDataService.upsertPersonalInfo(userId, {
+          await UserDataService.upsertPersonalInfo(userId, {
             countryRegion: value,
           });
         }
@@ -858,12 +858,12 @@ const ProfileScreen = ({ navigation, route }) => {
             dateOfBirth: formatted,
           }));
           
-          // Save to PassportDataService
+          // Save to UserDataService
           try {
             const userId = 'user_001';
-            const passport = await PassportDataService.getPassport(userId);
+            const passport = await UserDataService.getPassport(userId);
             if (passport && passport.id) {
-              await PassportDataService.updatePassport(passport.id, {
+              await UserDataService.updatePassport(passport.id, {
                 dateOfBirth: formatted,
               }, { skipValidation: true });
             }
@@ -893,7 +893,7 @@ const ProfileScreen = ({ navigation, route }) => {
         };
         setPersonalInfo(updatedPersonalInfo);
         
-        // Save to PassportDataService using upsert
+        // Save to UserDataService using upsert
         const updates = {};
         if (editingContext.key === 'phone') updates.phoneNumber = editValue;
         else if (editingContext.key === 'email') updates.email = editValue;
@@ -901,16 +901,16 @@ const ProfileScreen = ({ navigation, route }) => {
         else if (editingContext.key === 'provinceCity') updates.provinceCity = editValue;
         else if (editingContext.key === 'countryRegion') updates.countryRegion = editValue;
         
-        await PassportDataService.upsertPersonalInfo(userId, updates);
+        await UserDataService.upsertPersonalInfo(userId, updates);
         
         // Update passport if gender or dateOfBirth changed
         if (editingContext.key === 'gender' || editingContext.key === 'dateOfBirth') {
-          const passportData = await PassportDataService.getPassport(userId);
+          const passportData = await UserDataService.getPassport(userId);
           if (passportData && passportData.id) {
             const updates = {};
             if (editingContext.key === 'gender') updates.gender = editValue;
             if (editingContext.key === 'dateOfBirth') updates.dateOfBirth = editValue;
-            await PassportDataService.updatePassport(passportData.id, updates, { skipValidation: true });
+            await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
           }
         }
       } else if (editingContext.type === 'passport-nationality') {
@@ -920,10 +920,10 @@ const ProfileScreen = ({ navigation, route }) => {
         };
         setPassportData(updatedPassportData);
         
-        // Save to PassportDataService
-        const passport = await PassportDataService.getPassport(userId);
+        // Save to UserDataService
+        const passport = await UserDataService.getPassport(userId);
         if (passport && passport.id) {
-          await PassportDataService.updatePassport(passport.id, {
+          await UserDataService.updatePassport(passport.id, {
             nationality: editValue,
           }, { skipValidation: true });
         }
@@ -934,10 +934,10 @@ const ProfileScreen = ({ navigation, route }) => {
         };
         setPassportData(updatedPassportData);
         
-        // Save to PassportDataService
-        const passport = await PassportDataService.getPassport(userId);
+        // Save to UserDataService
+        const passport = await UserDataService.getPassport(userId);
         if (passport && passport.id) {
-          await PassportDataService.updatePassport(passport.id, {
+          await UserDataService.updatePassport(passport.id, {
             fullName: editValue,
           }, { skipValidation: true });
         }
@@ -948,8 +948,8 @@ const ProfileScreen = ({ navigation, route }) => {
         };
         setPersonalInfo(updatedPersonalInfo);
         
-        // Save to PassportDataService
-        await PassportDataService.upsertPersonalInfo(userId, {
+        // Save to UserDataService
+        await UserDataService.upsertPersonalInfo(userId, {
           countryRegion: editValue,
         });
       }
@@ -983,10 +983,10 @@ const ProfileScreen = ({ navigation, route }) => {
     try {
       // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
-      PassportDataService.invalidateCache('fundItems', userId);
+      UserDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
-      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+      const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after update:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);
@@ -1000,10 +1000,10 @@ const ProfileScreen = ({ navigation, route }) => {
     try {
       // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
-      PassportDataService.invalidateCache('fundItems', userId);
+      UserDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
-      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+      const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after delete:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);
@@ -1070,10 +1070,10 @@ const ProfileScreen = ({ navigation, route }) => {
     try {
       // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
-      PassportDataService.invalidateCache('fundItems', userId);
+      UserDataService.invalidateCache('fundItems', userId);
 
       // Refresh fund items list
-      const items = await PassportDataService.getFundItems(userId, { forceRefresh: true });
+      const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
       console.log('Refreshed fund items after create:', items);
       setFundItems(items || []);
       setFundItemModalVisible(false);

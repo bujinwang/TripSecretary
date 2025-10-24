@@ -4,7 +4,7 @@
  * Simulate App Initialization
  *
  * This script simulates what happens when the app initializes
- * by calling PassportDataService.initialize with user_001
+ * by calling UserDataService.initialize with user_001
  *
  * Usage: node scripts/simulate-app-init.js
  */
@@ -76,12 +76,12 @@ async function simulateAppInit() {
 
   try {
     // Import the services (this will use our mocked modules)
-    const PassportDataService = require('../app/services/data/PassportDataService').default;
+    const UserDataService = require('../app/services/data/UserDataService').default;
     
-    console.log('📱 Calling PassportDataService.initialize("user_001")...');
+    console.log('📱 Calling UserDataService.initialize("user_001")...');
     
     // This should trigger our ensureUser method
-    await PassportDataService.initialize('user_001');
+    await UserDataService.initialize('user_001');
     
     console.log('✅ Initialization completed successfully!');
     console.log('💡 In a real app, this would create the user_001 record in the database.');

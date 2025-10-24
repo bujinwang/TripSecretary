@@ -23,7 +23,7 @@ import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
 
 // Import secure data models and services
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -78,7 +78,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   
   // Memoize passport to prevent infinite re-renders
   const passport = useMemo(() => {
-    return PassportDataService.toSerializablePassport(rawPassport);
+    return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
 
   // Data model instances
@@ -286,9 +286,9 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
       try {
         setIsLoading(true);
         
-        await PassportDataService.initialize(userId);
+        await UserDataService.initialize(userId);
         
-        const userData = await PassportDataService.getAllUserData(userId);
+        const userData = await UserDataService.getAllUserData(userId);
 
         const passportInfo = userData?.passport;
         if (passportInfo) {
@@ -325,10 +325,10 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
         }
 
         const destinationId = destination?.id || 'taiwan';
-        let travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+        let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
         
         if (!travelInfo && destination?.name) {
-          travelInfo = await PassportDataService.getTravelInfo(userId, destination.name);
+          travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
         }
         
         if (travelInfo) {
@@ -361,7 +361,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const saveDataToSecureStorage = async () => {
     try {
 
-      const existingPassport = await PassportDataService.getPassport(userId);
+      const existingPassport = await UserDataService.getPassport(userId);
 
       const passportUpdates = {};
       if (passportNo) passportUpdates.passportNumber = passportNo;
@@ -373,9 +373,9 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
 
       if (Object.keys(passportUpdates).length > 0) {
         if (existingPassport && existingPassport.id) {
-          await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+          await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
         } else {
-          await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+          await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
         }
       }
 
@@ -386,7 +386,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
       if (residentCountry) personalInfoUpdates.countryRegion = residentCountry;
 
       if (Object.keys(personalInfoUpdates).length > 0) {
-        await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+        await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
       }
 
       const travelInfoUpdates = {};
@@ -398,7 +398,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
 
       if (Object.keys(travelInfoUpdates).length > 0) {
         const destinationId = destination?.id || 'taiwan';
-        await PassportDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
+        await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
       }
     } catch (error) {
       console.error('Failed to save data to secure storage:', error);

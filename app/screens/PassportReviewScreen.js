@@ -19,7 +19,7 @@ import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { DataValidator } from '../utils/validation';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 const PassportReviewScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -120,12 +120,12 @@ const PassportReviewScreen = ({ navigation, route }) => {
       };
 
       console.log('passportToSave object:', passportToSave);
-      console.log('About to call PassportDataService.savePassport with options: { partial: true }');
+      console.log('About to call UserDataService.savePassport with options: { partial: true }');
 
       // Use partial validation for progressive filling
-      await PassportDataService.savePassport(passportToSave, userId, { partial: true });
+      await UserDataService.savePassport(passportToSave, userId, { partial: true });
 
-      console.log('PassportDataService.savePassport completed successfully');
+      console.log('UserDataService.savePassport completed successfully');
 
       Alert.alert(
         'Success',

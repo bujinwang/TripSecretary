@@ -13,11 +13,11 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import BackButton from '../../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../../theme';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const PIKGuideScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const [fontSize, setFontSize] = useState(16);
 
   const increaseFontSize = () => {

@@ -10,12 +10,12 @@ import {
 import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const TWArrivalSelectionScreen = ({ navigation, route }) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
   const goToGuide = () => {

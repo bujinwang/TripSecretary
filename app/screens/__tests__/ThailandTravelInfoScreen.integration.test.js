@@ -1,16 +1,16 @@
 /**
  * ThailandTravelInfoScreen Integration Tests
- * Tests data loading and updates through PassportDataService
+ * Tests data loading and updates through UserDataService
  */
 
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import ThailandTravelInfoScreen from '../thailand/ThailandTravelInfoScreen';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Mock dependencies
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 jest.mock('../../i18n/LocaleContext', () => ({
   useLocale: () => ({
     locale: 'en',
@@ -69,7 +69,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
 
       render(
         <NavigationContainer>
@@ -79,12 +79,12 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
 
       // Verify passport data is loaded - service was called
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('user_001');
+        expect(UserDataService.getAllUserData).toHaveBeenCalledWith('user_001');
       }, { timeout: 3000 });
     });
 
     it('should handle missing data gracefully', async () => {
-      PassportDataService.getAllUserData.mockResolvedValue({
+      UserDataService.getAllUserData.mockResolvedValue({
         passport: null,
         personalInfo: null,
         fundingProof: null,
@@ -98,7 +98,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Screen should render without errors
@@ -113,7 +113,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       });
 
-      PassportDataService.migrateFromAsyncStorage.mockResolvedValue({
+      UserDataService.migrateFromAsyncStorage.mockResolvedValue({
         migrated: true,
         passport: true,
         personalInfo: true,
@@ -127,12 +127,12 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
     });
 
     it('should handle data loading errors gracefully', async () => {
-      PassportDataService.getAllUserData.mockRejectedValue(
+      UserDataService.getAllUserData.mockRejectedValue(
         new Error('Database connection failed')
       );
 
@@ -146,7 +146,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Screen should still be rendered
@@ -157,7 +157,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
   });
 
   describe('Data Updates', () => {
-    it('should update passport data through PassportDataService', async () => {
+    it('should update passport data through UserDataService', async () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
@@ -170,8 +170,8 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockResolvedValue();
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockResolvedValue();
 
       const { getByTestId } = render(
         <NavigationContainer>
@@ -180,7 +180,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Simulate user updating passport number and triggering blur
@@ -189,7 +189,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       fireEvent(passportInput, 'blur');
 
       await waitFor(() => {
-        expect(PassportDataService.updatePassport).toHaveBeenCalledWith(
+        expect(UserDataService.updatePassport).toHaveBeenCalledWith(
           'passport-1',
           expect.objectContaining({
             passportNumber: 'E99999999'
@@ -198,7 +198,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       }, { timeout: 3000 });
     });
 
-    it('should have PassportDataService available for personal info updates', async () => {
+    it('should have UserDataService available for personal info updates', async () => {
       const mockUserData = {
         passport: null,
         personalInfo: {
@@ -210,8 +210,8 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePersonalInfo.mockResolvedValue();
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePersonalInfo.mockResolvedValue();
 
       render(
         <NavigationContainer>
@@ -220,14 +220,14 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify service methods are available for updates
-      expect(PassportDataService.updatePersonalInfo).toBeDefined();
+      expect(UserDataService.updatePersonalInfo).toBeDefined();
     });
 
-    it('should call PassportDataService for funding proof updates', async () => {
+    it('should call UserDataService for funding proof updates', async () => {
       const mockUserData = {
         passport: null,
         personalInfo: null,
@@ -239,8 +239,8 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updateFundingProof.mockResolvedValue();
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updateFundingProof.mockResolvedValue();
 
       render(
         <NavigationContainer>
@@ -249,12 +249,12 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify the service is available for funding proof updates
       // (actual update happens on form submission, not individual field changes)
-      expect(PassportDataService.updateFundingProof).toBeDefined();
+      expect(UserDataService.updateFundingProof).toBeDefined();
     });
 
     it('should handle update errors gracefully', async () => {
@@ -269,8 +269,8 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockRejectedValue(
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockRejectedValue(
         new Error('Update failed')
       );
 
@@ -283,7 +283,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       const passportInput = getByTestId('passport-number-input');
@@ -291,7 +291,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       fireEvent(passportInput, 'blur');
 
       await waitFor(() => {
-        expect(PassportDataService.updatePassport).toHaveBeenCalled();
+        expect(UserDataService.updatePassport).toHaveBeenCalled();
       }, { timeout: 3000 });
 
       consoleSpy.mockRestore();
@@ -320,7 +320,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
         }
       };
 
-      PassportDataService.getAllUserData
+      UserDataService.getAllUserData
         .mockResolvedValueOnce(initialData)
         .mockResolvedValueOnce(updatedData);
 
@@ -331,7 +331,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledTimes(1);
+        expect(UserDataService.getAllUserData).toHaveBeenCalledTimes(1);
       });
 
       // Simulate screen re-focus (user returns from ProfileScreen)
@@ -341,7 +341,7 @@ describe('ThailandTravelInfoScreen - Integration Tests', () => {
 
       await waitFor(() => {
         // Should reload data on focus
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledTimes(2);
+        expect(UserDataService.getAllUserData).toHaveBeenCalledTimes(2);
       });
     });
   });

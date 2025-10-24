@@ -11,11 +11,11 @@ import {
 import { colors, typography, spacing } from '../../theme';
 import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const ThailandRequirementsScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
   const handleContinue = () => {

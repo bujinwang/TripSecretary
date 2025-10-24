@@ -1,11 +1,11 @@
 /**
- * Example usage of DebouncedSave with PassportDataService
+ * Example usage of DebouncedSave with UserDataService
  * This demonstrates how to integrate the debounced save utility
  * with the existing data service for auto-save functionality.
  */
 
 import DebouncedSave from './DebouncedSave';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 /**
  * Example implementation showing how to use DebouncedSave
@@ -18,19 +18,19 @@ class AutoSaveExample {
     // Create debounced save functions for different data types
     this.savePassport = DebouncedSave.debouncedSave(
       'passport_' + userId,
-      (passportData) => PassportDataService.savePassport(passportData, userId),
+      (passportData) => UserDataService.savePassport(passportData, userId),
       300 // 300ms delay
     );
     
     this.savePersonalInfo = DebouncedSave.debouncedSave(
       'personalInfo_' + userId,
-      (personalData) => PassportDataService.savePersonalInfo(personalData, userId),
+      (personalData) => UserDataService.savePersonalInfo(personalData, userId),
       300
     );
     
     this.saveTravelInfo = DebouncedSave.debouncedSave(
       'travelInfo_' + userId,
-      (travelData) => PassportDataService.saveTravelInfo(travelData, userId),
+      (travelData) => UserDataService.saveTravelInfo(travelData, userId),
       300
     );
   }

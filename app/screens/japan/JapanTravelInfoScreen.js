@@ -24,7 +24,7 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 
 // Import secure data models and services
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import { getPhoneCode } from '../../data/phoneCodes';
 import JapanFormHelper from '../../utils/japan/JapanFormHelper';
 
@@ -36,7 +36,7 @@ if (Platform.OS === 'android') {
 
 const JapanTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
-  const passport = PassportDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t, language } = useLocale();
   
   // Debug: Log current language
@@ -45,7 +45,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   console.log('Sample translation test:', t('japan.travelInfo.headerTitle'));
   console.log('Back button translation:', t('common.back'));
 
-  // UI State - will be populated from PassportDataService
+  // UI State - will be populated from UserDataService
   const [passportNo, setPassportNo] = useState('');
   const [fullName, setFullName] = useState('');
   const [nationality, setNationality] = useState('');
@@ -243,7 +243,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     return null;
   };
 
-  // Load data from PassportDataService on screen mount and when screen gains focus
+  // Load data from UserDataService on screen mount and when screen gains focus
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -252,24 +252,24 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
         
         console.log('JapanTravelInfoScreen: Loading data for userId:', userId);
         
-        // Initialize PassportDataService if needed
-        await PassportDataService.initialize(userId);
+        // Initialize UserDataService if needed
+        await UserDataService.initialize(userId);
         
-        // Load existing data from PassportDataService
+        // Load existing data from UserDataService
         const [passportData, personalInfo, travelInfo, fundItems] = await Promise.all([
-          PassportDataService.getPassport(userId).catch(err => {
+          UserDataService.getPassport(userId).catch(err => {
             console.warn('Failed to load passport data:', err);
             return null;
           }),
-          PassportDataService.getPersonalInfo(userId).catch(err => {
+          UserDataService.getPersonalInfo(userId).catch(err => {
             console.warn('Failed to load personal info:', err);
             return null;
           }),
-          PassportDataService.getTravelInfo(userId, 'japan').catch(err => {
+          UserDataService.getTravelInfo(userId, 'japan').catch(err => {
             console.warn('Failed to load travel info:', err);
             return null;
           }),
-          PassportDataService.getFundItems(userId).catch(err => {
+          UserDataService.getFundItems(userId).catch(err => {
             console.warn('Failed to load fund items:', err);
             return [];
           })
@@ -281,7 +281,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
         console.log('JapanTravelInfoScreen: Loaded fund items:', fundItems?.length || 0);
 
         // Populate passport fields
-        // PassportDataService returns Passport model instances with standard field names
+        // UserDataService returns Passport model instances with standard field names
         if (passportData) {
           const passportFields = {
             passportNumber: passportData.passportNumber,
@@ -386,7 +386,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     return unsubscribe;
   }, [passport?.id, navigation]);
 
-  // Save data to PassportDataService
+  // Save data to UserDataService
   const saveDataToSecureStorage = async () => {
     try {
       const userId = passport?.id || 'user_001';
@@ -395,7 +395,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       console.log('Passport data:', { passportNo, fullName, nationality, dob, expiryDate });
 
       // Get existing passport first to ensure we're updating the right one
-      const existingPassport = await PassportDataService.getPassport(userId);
+      const existingPassport = await UserDataService.getPassport(userId);
       console.log('Existing passport:', existingPassport);
 
       // Save passport data - only include non-empty fields
@@ -411,11 +411,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
         console.log('Saving passport updates:', passportUpdates);
         if (existingPassport && existingPassport.id) {
           console.log('Updating existing passport with ID:', existingPassport.id);
-          await PassportDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
+          await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
           console.log('Passport data updated successfully');
         } else {
           console.log('Creating new passport for userId:', userId);
-          await PassportDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+          await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
           console.log('Passport data saved successfully');
         }
       }
@@ -430,7 +430,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
       if (Object.keys(personalInfoUpdates).length > 0) {
         console.log('Saving personal info updates:', personalInfoUpdates);
-        await PassportDataService.upsertPersonalInfo(userId, personalInfoUpdates);
+        await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
         console.log('Personal info saved successfully');
       }
 
@@ -464,7 +464,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
       if (Object.keys(travelInfoUpdates).length > 0) {
         console.log('Saving travel info updates:', JSON.stringify(travelInfoUpdates, null, 2));
-        await PassportDataService.updateTravelInfo(userId, 'japan', travelInfoUpdates);
+        await UserDataService.updateTravelInfo(userId, 'japan', travelInfoUpdates);
         console.log('Travel info saved successfully');
       } else {
         console.log('No travel info updates to save');
@@ -523,7 +523,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     try {
       // Refresh fund items list
       const userId = passport?.id || 'user_001';
-      const items = await PassportDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(userId);
       console.log('Refreshed fund items after update:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);
@@ -537,7 +537,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     try {
       // Refresh fund items list
       const userId = passport?.id || 'user_001';
-      const items = await PassportDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(userId);
       console.log('Refreshed fund items after delete:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);
@@ -593,7 +593,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     try {
       // Refresh fund items list
       const userId = passport?.id || 'user_001';
-      const items = await PassportDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(userId);
       console.log('Refreshed fund items after create:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);

@@ -14,7 +14,7 @@ import * as FileSystem from 'expo-file-system';
 // Mock dependencies
 jest.mock('expo-file-system');
 jest.mock('../../security/SecureStorageService');
-jest.mock('../../data/PassportDataService');
+jest.mock('../../data/UserDataService');
 
 describe('SnapshotIntegration', () => {
   let mockEntryPack;

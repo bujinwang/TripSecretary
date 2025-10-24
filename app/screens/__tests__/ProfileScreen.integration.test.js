@@ -1,16 +1,16 @@
 /**
  * ProfileScreen Integration Tests
- * Tests data loading and updates through PassportDataService
+ * Tests data loading and updates through UserDataService
  */
 
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import ProfileScreen from '../ProfileScreen';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Mock dependencies
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 jest.mock('../../i18n/LocaleContext', () => ({
   useLocale: () => ({
     locale: 'en',
@@ -40,7 +40,7 @@ describe('ProfileScreen - Integration Tests', () => {
   });
 
   describe('Data Loading', () => {
-    it('should call PassportDataService on mount', async () => {
+    it('should call UserDataService on mount', async () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
@@ -67,8 +67,8 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.migrateFromAsyncStorage.mockResolvedValue({ migrated: false });
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.migrateFromAsyncStorage.mockResolvedValue({ migrated: false });
 
       try {
         render(
@@ -79,16 +79,16 @@ describe('ProfileScreen - Integration Tests', () => {
 
         // Verify service was called
         await waitFor(() => {
-          expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+          expect(UserDataService.getAllUserData).toHaveBeenCalled();
         }, { timeout: 3000 });
       } catch (error) {
         // Screen may have rendering issues, but we're testing service integration
-        expect(PassportDataService.getAllUserData).toBeDefined();
+        expect(UserDataService.getAllUserData).toBeDefined();
       }
     });
 
     it('should handle empty profile gracefully', async () => {
-      PassportDataService.getAllUserData.mockResolvedValue({
+      UserDataService.getAllUserData.mockResolvedValue({
         passport: null,
         personalInfo: null,
         fundingProof: null,
@@ -102,7 +102,7 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Screen should render without errors
@@ -110,14 +110,14 @@ describe('ProfileScreen - Integration Tests', () => {
     });
 
     it('should trigger migration if needed', async () => {
-      PassportDataService.getAllUserData.mockResolvedValue({
+      UserDataService.getAllUserData.mockResolvedValue({
         passport: null,
         personalInfo: null,
         fundingProof: null,
         userId: 'user_001'
       });
 
-      PassportDataService.migrateFromAsyncStorage.mockResolvedValue({
+      UserDataService.migrateFromAsyncStorage.mockResolvedValue({
         migrated: true,
         passport: true
       });
@@ -129,13 +129,13 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
     });
   });
 
   describe('Data Updates', () => {
-    it('should have PassportDataService available for updates', async () => {
+    it('should have UserDataService available for updates', async () => {
       const mockUserData = {
         passport: {
           id: 'passport-1',
@@ -149,9 +149,9 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockResolvedValue();
-      PassportDataService.getPassport.mockResolvedValue(mockUserData.passport);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockResolvedValue();
+      UserDataService.getPassport.mockResolvedValue(mockUserData.passport);
 
       render(
         <NavigationContainer>
@@ -160,15 +160,15 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify service methods are available
-      expect(PassportDataService.updatePassport).toBeDefined();
-      expect(PassportDataService.getPassport).toBeDefined();
+      expect(UserDataService.updatePassport).toBeDefined();
+      expect(UserDataService.getPassport).toBeDefined();
     });
 
-    it('should have PassportDataService available for personal info updates', async () => {
+    it('should have UserDataService available for personal info updates', async () => {
       const mockUserData = {
         passport: null,
         personalInfo: {
@@ -181,9 +181,9 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePersonalInfo.mockResolvedValue();
-      PassportDataService.getPersonalInfo.mockResolvedValue(mockUserData.personalInfo);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePersonalInfo.mockResolvedValue();
+      UserDataService.getPersonalInfo.mockResolvedValue(mockUserData.personalInfo);
 
       render(
         <NavigationContainer>
@@ -192,15 +192,15 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify service methods are available
-      expect(PassportDataService.updatePersonalInfo).toBeDefined();
-      expect(PassportDataService.getPersonalInfo).toBeDefined();
+      expect(UserDataService.updatePersonalInfo).toBeDefined();
+      expect(UserDataService.getPersonalInfo).toBeDefined();
     });
 
-    it('should have PassportDataService available for funding proof updates', async () => {
+    it('should have UserDataService available for funding proof updates', async () => {
       const mockUserData = {
         passport: null,
         personalInfo: null,
@@ -213,9 +213,9 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updateFundingProof.mockResolvedValue();
-      PassportDataService.getFundingProof.mockResolvedValue(mockUserData.fundingProof);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updateFundingProof.mockResolvedValue();
+      UserDataService.getFundingProof.mockResolvedValue(mockUserData.fundingProof);
 
       render(
         <NavigationContainer>
@@ -224,12 +224,12 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify service methods are available
-      expect(PassportDataService.updateFundingProof).toBeDefined();
-      expect(PassportDataService.getFundingProof).toBeDefined();
+      expect(UserDataService.updateFundingProof).toBeDefined();
+      expect(UserDataService.getFundingProof).toBeDefined();
     });
 
     it('should support multiple data types in one screen', async () => {
@@ -249,11 +249,11 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockResolvedValue();
-      PassportDataService.updatePersonalInfo.mockResolvedValue();
-      PassportDataService.getPassport.mockResolvedValue(mockUserData.passport);
-      PassportDataService.getPersonalInfo.mockResolvedValue(mockUserData.personalInfo);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockResolvedValue();
+      UserDataService.updatePersonalInfo.mockResolvedValue();
+      UserDataService.getPassport.mockResolvedValue(mockUserData.passport);
+      UserDataService.getPersonalInfo.mockResolvedValue(mockUserData.personalInfo);
 
       render(
         <NavigationContainer>
@@ -262,14 +262,14 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify all service methods are available
-      expect(PassportDataService.updatePassport).toBeDefined();
-      expect(PassportDataService.updatePersonalInfo).toBeDefined();
-      expect(PassportDataService.getPassport).toBeDefined();
-      expect(PassportDataService.getPersonalInfo).toBeDefined();
+      expect(UserDataService.updatePassport).toBeDefined();
+      expect(UserDataService.updatePersonalInfo).toBeDefined();
+      expect(UserDataService.getPassport).toBeDefined();
+      expect(UserDataService.getPersonalInfo).toBeDefined();
     });
   });
 
@@ -296,7 +296,7 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(sharedData);
+      UserDataService.getAllUserData.mockResolvedValue(sharedData);
 
       const { getByTestId } = render(
         <NavigationContainer>
@@ -305,12 +305,12 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify all data is loaded - service was called
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalledWith('user_001');
+        expect(UserDataService.getAllUserData).toHaveBeenCalledWith('user_001');
       }, { timeout: 3000 });
     });
 
@@ -326,9 +326,9 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockResolvedValue();
-      PassportDataService.getPassport.mockResolvedValue(mockUserData.passport);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockResolvedValue();
+      UserDataService.getPassport.mockResolvedValue(mockUserData.passport);
 
       render(
         <NavigationContainer>
@@ -337,19 +337,19 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify update methods are available (they handle cache invalidation internally)
-      expect(PassportDataService.updatePassport).toBeDefined();
-      expect(PassportDataService.updatePersonalInfo).toBeDefined();
-      expect(PassportDataService.updateFundingProof).toBeDefined();
+      expect(UserDataService.updatePassport).toBeDefined();
+      expect(UserDataService.updatePersonalInfo).toBeDefined();
+      expect(UserDataService.updateFundingProof).toBeDefined();
     });
   });
 
   describe('Error Handling', () => {
     it('should handle load errors gracefully', async () => {
-      PassportDataService.getAllUserData.mockRejectedValue(
+      UserDataService.getAllUserData.mockRejectedValue(
         new Error('Database error')
       );
 
@@ -380,11 +380,11 @@ describe('ProfileScreen - Integration Tests', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.updatePassport.mockRejectedValue(
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.updatePassport.mockRejectedValue(
         new Error('Update failed')
       );
-      PassportDataService.getPassport.mockResolvedValue(mockUserData.passport);
+      UserDataService.getPassport.mockResolvedValue(mockUserData.passport);
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -396,7 +396,7 @@ describe('ProfileScreen - Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Screen should still be rendered
@@ -439,7 +439,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
   ];
 
   describe('Modal Opens When Fund Item is Tapped', () => {
-    it('should have PassportDataService.getFundItems available for loading fund items', async () => {
+    it('should have UserDataService.getFundItems available for loading fund items', async () => {
       const mockUserData = {
         passport: null,
         personalInfo: null,
@@ -447,8 +447,8 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.getFundItems.mockResolvedValue(mockFundItems);
 
       render(
         <NavigationContainer>
@@ -457,17 +457,17 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getAllUserData).toHaveBeenCalled();
+        expect(UserDataService.getAllUserData).toHaveBeenCalled();
       });
 
       // Verify fund items service is called
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalledWith('user_001');
+        expect(UserDataService.getFundItems).toHaveBeenCalledWith('user_001');
       });
 
       // Verify service methods are available
-      expect(PassportDataService.saveFundItem).toBeDefined();
-      expect(PassportDataService.deleteFundItem).toBeDefined();
+      expect(UserDataService.saveFundItem).toBeDefined();
+      expect(UserDataService.deleteFundItem).toBeDefined();
     });
   });
 
@@ -480,9 +480,9 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
-      PassportDataService.saveFundItem.mockResolvedValue(mockFundItems[0]);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.getFundItems.mockResolvedValue(mockFundItems);
+      UserDataService.saveFundItem.mockResolvedValue(mockFundItems[0]);
 
       render(
         <NavigationContainer>
@@ -491,12 +491,12 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Verify update methods are available
-      expect(PassportDataService.saveFundItem).toBeDefined();
-      expect(PassportDataService.getFundItems).toBeDefined();
+      expect(UserDataService.saveFundItem).toBeDefined();
+      expect(UserDataService.getFundItems).toBeDefined();
     });
   });
 
@@ -509,9 +509,9 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
-      PassportDataService.deleteFundItem.mockResolvedValue();
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.getFundItems.mockResolvedValue(mockFundItems);
+      UserDataService.deleteFundItem.mockResolvedValue();
 
       render(
         <NavigationContainer>
@@ -520,12 +520,12 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Verify delete methods are available
-      expect(PassportDataService.deleteFundItem).toBeDefined();
-      expect(PassportDataService.getFundItems).toBeDefined();
+      expect(UserDataService.deleteFundItem).toBeDefined();
+      expect(UserDataService.getFundItems).toBeDefined();
     });
   });
 
@@ -538,8 +538,8 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getAllUserData.mockResolvedValue(mockUserData);
-      PassportDataService.getFundItems.mockResolvedValue(mockFundItems);
+      UserDataService.getAllUserData.mockResolvedValue(mockUserData);
+      UserDataService.getFundItems.mockResolvedValue(mockFundItems);
 
       render(
         <NavigationContainer>
@@ -548,7 +548,7 @@ describe('ProfileScreen - Fund Item Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Verify navigation is available

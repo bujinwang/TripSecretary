@@ -107,35 +107,6 @@ describe('SecureStorageService - Task 3 Enhancements', () => {
     });
   });
 
-  describe('3.3 Migration tracking methods', () => {
-    test('needsMigration should return true for unmigrated user', async () => {
-      const newUserId = 'unmigrated_user_456';
-      const needsMigration = await service.needsMigration(newUserId);
-      
-      expect(needsMigration).toBe(true);
-    });
-
-    test('markMigrationComplete should mark user as migrated', async () => {
-      const newUserId = 'migrated_user_789';
-      
-      await service.markMigrationComplete(newUserId, 'AsyncStorage');
-      const needsMigration = await service.needsMigration(newUserId);
-      
-      expect(needsMigration).toBe(false);
-    });
-
-    test('getMigrationStatus should return migration details', async () => {
-      const newUserId = 'status_user_101';
-      
-      await service.markMigrationComplete(newUserId, 'TestSource');
-      const status = await service.getMigrationStatus(newUserId);
-      
-      expect(status).not.toBeNull();
-      expect(status.userId).toBe(newUserId);
-      expect(status.source).toBe('TestSource');
-      expect(status.migratedAt).toBeDefined();
-    });
-  });
 
   describe('3.4 Batch operation support', () => {
     test('batchSave should save multiple operations atomically', async () => {

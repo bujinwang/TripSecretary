@@ -92,12 +92,12 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
           setDataLoading(true);
           try {
             const EntryInfoService = require('../../services/EntryInfoService').default;
-            const PassportDataService = require('../../services/data/PassportDataService').default;
+            const UserDataService = require('../../services/data/UserDataService').default;
 
             const loadedEntryInfo = await EntryInfoService.getEntryInfoById(entryPackId);
-            const loadedPassportData = await PassportDataService.getPassportInfo();
-            const loadedTravelData = await PassportDataService.getTravelInfo();
-            const loadedFundData = await PassportDataService.getFundItems();
+            const loadedPassportData = await UserDataService.getPassportInfo();
+            const loadedTravelData = await UserDataService.getTravelInfo();
+            const loadedFundData = await UserDataService.getFundItems();
 
             // Convert entry info to entry pack format for compatibility
             const loadedEntryPack = loadedEntryInfo ? {

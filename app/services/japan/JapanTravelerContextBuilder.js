@@ -1,11 +1,39 @@
 /**
  * Japan Traveler Context Builder Service
- * Builds complete traveler payload for Japan manual entry guide from PassportDataService data
+ * Builds complete traveler payload for Japan manual entry guide from UserDataService data
  * Formats data specifically for Japan's manual arrival card completion
  */
 import JapanFormHelper from '../../utils/japan/JapanFormHelper';
 
 class JapanTravelerContextBuilder {
+  // Constants
+  static DEFAULT_COUNTRY_CODE = '86'; // China
+  static DEFAULT_COUNTRY = 'China';
+
+  static NATIONALITY_MAP = {
+    'CHN': 'China',
+    'USA': 'United States',
+    'GBR': 'United Kingdom',
+    'JPN': 'Japan',
+    'KOR': 'South Korea',
+    'SGP': 'Singapore',
+    'MYS': 'Malaysia',
+    'HKG': 'Hong Kong',
+    'MAC': 'Macau',
+    'TWN': 'Taiwan'
+  };
+
+  static COUNTRY_CODES = {
+    CHINA: '86',
+    JAPAN: '81',
+    HONG_KONG: '852',
+    US_CANADA: '1'
+  };
+
+  // ============================================================================
+  // Public API
+  // ============================================================================
+
   /**
    * Build complete Japan traveler context from user data
    * @param {string} userId - User ID
@@ -16,14 +44,14 @@ class JapanTravelerContextBuilder {
       console.log('=== JAPAN TRAVELER CONTEXT BUILDER ===');
       console.log('Building context for userId:', userId);
 
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../data/UserDataService').default;
 
       // Retrieve all user data for Japan destination
-      const userData = await PassportDataService.getAllUserData(userId);
+      const userData = await UserDataService.getAllUserData(userId);
       
       // Get Japan-specific travel info
-      const japanTravelInfo = await PassportDataService.getTravelInfo(userId, 'japan');
+      const japanTravelInfo = await UserDataService.getTravelInfo(userId, 'japan');
       if (japanTravelInfo) {
         userData.travelInfo = japanTravelInfo;
       }
@@ -83,9 +111,13 @@ class JapanTravelerContextBuilder {
     }
   }
 
+  // ============================================================================
+  // Validation Methods
+  // ============================================================================
+
   /**
    * Validate that user data contains required information for Japan
-   * @param {Object} userData - User data from PassportDataService
+   * @param {Object} userData - User data from UserDataService
    * @returns {Object} - Validation result
    */
   static validateUserData(userData) {
@@ -154,220 +186,6 @@ class JapanTravelerContextBuilder {
       isValid: errors.length === 0,
       errors
     };
-  }
-
-  /**
-   * Transform user data to Japan manual entry format
-   * @param {Object} userData - User data from PassportDataService
-   * @returns {Object} - Japan-formatted data
-   */
-  static transformToJapanFormat(userData) {
-    const { passport, personalInfo, travelInfo, fundItems } = userData;
-
-    // Parse full name into components
-    const nameInfo = this.parseFullName(passport?.fullName || '');
-
-    // Transform to Japan manual entry format
-    const japanData = {
-      // Passport Information
-      passportNo: passport?.passportNumber || '',
-      fullName: passport?.fullName || '',
-      familyName: nameInfo.familyName,
-      givenName: nameInfo.givenName,
-      nationality: passport?.nationality || '',
-      dateOfBirth: passport?.dateOfBirth || '',
-      expiryDate: passport?.expiryDate || '',
-      gender: passport?.gender || '',
-      
-      // Personal Information
-      occupation: personalInfo?.occupation || '',
-      cityOfResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
-      residentCountry: personalInfo?.countryRegion || this.getCountryFromNationality(passport?.nationality),
-      phoneCode: this.extractPhoneCode(personalInfo?.phoneNumber),
-      phoneNumber: this.extractPhoneNumber(personalInfo?.phoneNumber),
-      email: personalInfo?.email || '',
-      
-      // Travel Information (Japan-specific)
-      travelPurpose: JapanFormHelper.normalizeTravelPurpose(travelInfo?.travelPurpose),
-      customTravelPurpose: travelInfo?.customTravelPurpose || '',
-      arrivalFlightNumber: travelInfo?.arrivalFlightNumber || '',
-      arrivalDate: this.formatDateForJapan(travelInfo?.arrivalDate),
-      lengthOfStay: travelInfo?.lengthOfStay || '',
-      
-      // Accommodation Information (Japan format)
-      accommodationAddress: travelInfo?.accommodationAddress || '',
-      accommodationPhone: travelInfo?.accommodationPhone || '',
-      
-      // Fund Information
-      fundItems: fundItems || [],
-      totalFunds: this.calculateTotalFunds(fundItems),
-      
-      // Metadata
-      destination: 'japan',
-      entryType: 'manual_guide',
-      generatedAt: new Date().toISOString()
-    };
-
-    return japanData;
-  }
-
-  /**
-   * Parse full name into family and given name components
-   * @param {string} fullName - Full name string
-   * @returns {Object} - Name components
-   */
-  static parseFullName(fullName) {
-    if (!fullName) {
-      return { familyName: '', givenName: '' };
-    }
-
-    // Try comma-separated format first (e.g., "YAMADA, TARO")
-    if (fullName.includes(',')) {
-      const parts = fullName.split(',').map(part => part.trim());
-      if (parts.length === 2) {
-        return {
-          familyName: parts[0],
-          givenName: parts[1]
-        };
-      }
-    }
-
-    // Try space-separated format (e.g., "YAMADA TARO")
-    const spaceParts = fullName.trim().split(/\s+/);
-    if (spaceParts.length >= 2) {
-      return {
-        familyName: spaceParts[0],
-        givenName: spaceParts.slice(1).join(' ')
-      };
-    }
-
-    // Single name - treat as given name
-    return {
-      familyName: '',
-      givenName: fullName
-    };
-  }
-
-  /**
-   * Get country code from nationality
-   * @param {string} nationality - Nationality code
-   * @returns {string} - Country code
-   */
-  static getCountryFromNationality(nationality) {
-    // Map common nationality codes to country codes
-    const nationalityMap = {
-      'CHN': 'China',
-      'USA': 'United States',
-      'GBR': 'United Kingdom',
-      'JPN': 'Japan',
-      'KOR': 'South Korea',
-      'SGP': 'Singapore',
-      'MYS': 'Malaysia',
-      'HKG': 'Hong Kong',
-      'MAC': 'Macau',
-      'TWN': 'Taiwan'
-    };
-
-    return nationalityMap[nationality] || nationality || 'China';
-  }
-
-  /**
-   * Extract phone code from phone number
-   * @param {string} phoneNumber - Full phone number
-   * @returns {string} - Phone code
-   */
-  static extractPhoneCode(phoneNumber) {
-    if (!phoneNumber) return '86'; // Default to China
-
-    // Remove all non-digit characters except +
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Extract country code
-    if (cleaned.startsWith('+86') || cleaned.startsWith('86')) {
-      return '86';
-    } else if (cleaned.startsWith('+81') || cleaned.startsWith('81')) {
-      return '81'; // Japan
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return '852'; // Hong Kong
-    } else if (cleaned.startsWith('+1') || cleaned.startsWith('1')) {
-      return '1'; // US/Canada
-    } else if (cleaned.startsWith('+')) {
-      // Extract first 1-3 digits after +
-      const match = cleaned.match(/^\+(\d{1,3})/);
-      return match ? match[1] : '86';
-    }
-
-    return '86'; // Default fallback
-  }
-
-  /**
-   * Extract phone number without country code
-   * @param {string} phoneNumber - Full phone number
-   * @returns {string} - Phone number without country code
-   */
-  static extractPhoneNumber(phoneNumber) {
-    if (!phoneNumber) return '';
-
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Remove country codes
-    if (cleaned.startsWith('+86') || cleaned.startsWith('86')) {
-      return cleaned.replace(/^\+?86/, '');
-    } else if (cleaned.startsWith('+81') || cleaned.startsWith('81')) {
-      return cleaned.replace(/^\+?81/, '');
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return cleaned.replace(/^\+?852/, '');
-    } else if (cleaned.startsWith('+1') || cleaned.startsWith('1')) {
-      return cleaned.replace(/^\+?1/, '');
-    } else if (cleaned.startsWith('+')) {
-      // Remove any country code (1-3 digits after +)
-      return cleaned.replace(/^\+\d{1,3}/, '');
-    }
-
-    return cleaned;
-  }
-
-  /**
-   * Format date for Japan entry (YYYY-MM-DD)
-   * @param {string} dateStr - Date string
-   * @returns {string} - Formatted date
-   */
-  static formatDateForJapan(dateStr) {
-    if (!dateStr) return '';
-
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '';
-
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD format
-    } catch (error) {
-      console.error('Failed to format date:', error);
-      return '';
-    }
-  }
-
-  /**
-   * Calculate total funds from fund items
-   * @param {Array} fundItems - Array of fund items
-   * @returns {Object} - Total funds by currency
-   */
-  static calculateTotalFunds(fundItems) {
-    if (!fundItems || !Array.isArray(fundItems)) {
-      return {};
-    }
-
-    const totals = {};
-    
-    fundItems.forEach(item => {
-      if (item.amount && item.currency) {
-        if (!totals[item.currency]) {
-          totals[item.currency] = 0;
-        }
-        totals[item.currency] += parseFloat(item.amount);
-      }
-    });
-
-    return totals;
   }
 
   /**
@@ -452,13 +270,252 @@ class JapanTravelerContextBuilder {
     return emailRegex.test(email);
   }
 
+  // ============================================================================
+  // Data Transformation Methods
+  // ============================================================================
+
   /**
-   * Get traveler context with error handling and fallbacks
-   * @param {string} userId - User ID
-   * @returns {Promise<Object>} - Traveler context with success/error status
+   * Transform user data to Japan manual entry format
+   * @param {Object} userData - User data from UserDataService
+   * @returns {Object} - Japan-formatted data
    */
-  static async buildJapanTravelerContext(userId) {
-    return await this.buildContext(userId);
+  static transformToJapanFormat(userData) {
+    const { passport, personalInfo, travelInfo, fundItems } = userData;
+
+    // Parse full name into components
+    const nameInfo = this.parseFullName(passport?.fullName || '');
+
+    // Transform to Japan manual entry format
+    const japanData = {
+      // Passport Information
+      passportNo: passport?.passportNumber || '',
+      fullName: passport?.fullName || '',
+      familyName: nameInfo.familyName,
+      givenName: nameInfo.givenName,
+      nationality: passport?.nationality || '',
+      dateOfBirth: passport?.dateOfBirth || '',
+      expiryDate: passport?.expiryDate || '',
+      gender: passport?.gender || '',
+      
+      // Personal Information
+      occupation: personalInfo?.occupation || '',
+      cityOfResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
+      residentCountry: personalInfo?.countryRegion || this.getCountryFromNationality(passport?.nationality),
+      phoneCode: this.extractPhoneCode(personalInfo?.phoneNumber),
+      phoneNumber: this.extractPhoneNumber(personalInfo?.phoneNumber),
+      email: personalInfo?.email || '',
+      
+      // Travel Information (Japan-specific)
+      travelPurpose: JapanFormHelper.normalizeTravelPurpose(travelInfo?.travelPurpose),
+      customTravelPurpose: travelInfo?.customTravelPurpose || '',
+      arrivalFlightNumber: travelInfo?.arrivalFlightNumber || '',
+      arrivalDate: this.formatDateForJapan(travelInfo?.arrivalDate),
+      lengthOfStay: travelInfo?.lengthOfStay || '',
+      
+      // Accommodation Information (Japan format)
+      accommodationAddress: travelInfo?.accommodationAddress || '',
+      accommodationPhone: travelInfo?.accommodationPhone || '',
+      
+      // Fund Information
+      fundItems: fundItems || [],
+      totalFunds: this.calculateTotalFunds(fundItems),
+      
+      // Metadata
+      destination: 'japan',
+      entryType: 'manual_guide',
+      generatedAt: new Date().toISOString()
+    };
+
+    return japanData;
+  }
+
+  // ============================================================================
+  // Helper Methods - Name Parsing
+  // ============================================================================
+
+  /**
+   * Parse full name into family and given name components
+   * @param {string} fullName - Full name string
+   * @returns {Object} - Name components
+   */
+  static parseFullName(fullName) {
+    if (!fullName) {
+      return { familyName: '', givenName: '' };
+    }
+
+    // Try comma-separated format first (e.g., "YAMADA, TARO")
+    if (fullName.includes(',')) {
+      const parts = fullName.split(',').map(part => part.trim());
+      if (parts.length === 2) {
+        return {
+          familyName: parts[0],
+          givenName: parts[1]
+        };
+      }
+    }
+
+    // Try space-separated format (e.g., "YAMADA TARO")
+    const spaceParts = fullName.trim().split(/\s+/);
+    if (spaceParts.length >= 2) {
+      return {
+        familyName: spaceParts[0],
+        givenName: spaceParts.slice(1).join(' ')
+      };
+    }
+
+    // Single name - treat as given name
+    return {
+      familyName: '',
+      givenName: fullName
+    };
+  }
+
+  // ============================================================================
+  // Helper Methods - Country & Nationality
+  // ============================================================================
+
+  /**
+   * Get country code from nationality
+   * @param {string} nationality - Nationality code
+   * @returns {string} - Country code
+   */
+  static getCountryFromNationality(nationality) {
+    return this.NATIONALITY_MAP[nationality] || nationality || this.DEFAULT_COUNTRY;
+  }
+
+  // ============================================================================
+  // Helper Methods - Phone Number Processing
+  // ============================================================================
+
+  /**
+   * Clean phone number by removing all non-digit characters except +
+   * @param {string} phoneNumber - Phone number to clean
+   * @returns {string} - Cleaned phone number
+   */
+  static cleanPhoneNumber(phoneNumber) {
+    if (!phoneNumber) return '';
+    return phoneNumber.replace(/[^\d+]/g, '');
+  }
+
+  /**
+   * Parse country code from cleaned phone number
+   * @param {string} cleaned - Cleaned phone number
+   * @returns {string|null} - Country code or null
+   */
+  static parseCountryCode(cleaned) {
+    const codePrefixes = [
+      { prefix: ['+86', '86'], code: this.COUNTRY_CODES.CHINA },
+      { prefix: ['+81', '81'], code: this.COUNTRY_CODES.JAPAN },
+      { prefix: ['+852', '852'], code: this.COUNTRY_CODES.HONG_KONG },
+      { prefix: ['+1', '1'], code: this.COUNTRY_CODES.US_CANADA }
+    ];
+
+    for (const { prefix, code } of codePrefixes) {
+      if (prefix.some(p => cleaned.startsWith(p))) {
+        return code;
+      }
+    }
+
+    // Try to extract generic country code after +
+    if (cleaned.startsWith('+')) {
+      const match = cleaned.match(/^\+(\d{1,3})/);
+      if (match) return match[1];
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract phone code from phone number
+   * @param {string} phoneNumber - Full phone number
+   * @returns {string} - Phone code
+   */
+  static extractPhoneCode(phoneNumber) {
+    if (!phoneNumber) return this.DEFAULT_COUNTRY_CODE;
+
+    const cleaned = this.cleanPhoneNumber(phoneNumber);
+    const code = this.parseCountryCode(cleaned);
+
+    return code || this.DEFAULT_COUNTRY_CODE;
+  }
+
+  /**
+   * Extract phone number without country code
+   * @param {string} phoneNumber - Full phone number
+   * @returns {string} - Phone number without country code
+   */
+  static extractPhoneNumber(phoneNumber) {
+    if (!phoneNumber) return '';
+
+    const cleaned = this.cleanPhoneNumber(phoneNumber);
+
+    // Define patterns for country code removal
+    const patterns = [
+      /^\+?86/,    // China
+      /^\+?81/,    // Japan
+      /^\+?852/,   // Hong Kong
+      /^\+?1/,     // US/Canada
+      /^\+\d{1,3}/ // Generic country code
+    ];
+
+    for (const pattern of patterns) {
+      if (pattern.test(cleaned)) {
+        return cleaned.replace(pattern, '');
+      }
+    }
+
+    return cleaned;
+  }
+
+  // ============================================================================
+  // Helper Methods - Date & Time Formatting
+  // ============================================================================
+
+  /**
+   * Format date for Japan entry (YYYY-MM-DD)
+   * @param {string} dateStr - Date string
+   * @returns {string} - Formatted date
+   */
+  static formatDateForJapan(dateStr) {
+    if (!dateStr) return '';
+
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return '';
+
+      return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    } catch (error) {
+      console.error('Failed to format date:', error);
+      return '';
+    }
+  }
+
+  // ============================================================================
+  // Helper Methods - Fund Calculations
+  // ============================================================================
+
+  /**
+   * Calculate total funds from fund items
+   * @param {Array} fundItems - Array of fund items
+   * @returns {Object} - Total funds by currency
+   */
+  static calculateTotalFunds(fundItems) {
+    if (!fundItems || !Array.isArray(fundItems)) {
+      return {};
+    }
+
+    const totals = {};
+    
+    fundItems.forEach(item => {
+      if (item.amount && item.currency) {
+        if (!totals[item.currency]) {
+          totals[item.currency] = 0;
+        }
+        totals[item.currency] += parseFloat(item.amount);
+      }
+    });
+
+    return totals;
   }
 }
 

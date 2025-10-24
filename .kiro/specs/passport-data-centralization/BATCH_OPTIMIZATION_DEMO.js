@@ -5,7 +5,7 @@
  * Run this in a React Native environment to see the optimizations in action
  */
 
-import PassportDataService from '../../app/services/data/PassportDataService';
+import UserDataService from '../../app/services/data/UserDataService';
 import SecureStorageService from '../../app/services/security/SecureStorageService';
 
 /**
@@ -91,7 +91,7 @@ async function demoBatchLoad() {
   const startTime = Date.now();
   
   try {
-    const userData = await PassportDataService.getAllUserData(userId);
+    const userData = await UserDataService.getAllUserData(userId);
     const duration = Date.now() - startTime;
     
     console.log(`✅ Batch load completed in ${duration}ms`);
@@ -139,7 +139,7 @@ async function demoBatchUpdate() {
   const startTime = Date.now();
   
   try {
-    const result = await PassportDataService.batchUpdate(userId, updates);
+    const result = await UserDataService.batchUpdate(userId, updates);
     const duration = Date.now() - startTime;
     
     console.log(`✅ Batch update completed in ${duration}ms`);
@@ -171,17 +171,17 @@ async function demoPerformanceComparison() {
   // Test 1: Batch loading (optimized)
   console.log('Test 1: Batch loading (optimized)');
   const batchStart = Date.now();
-  await PassportDataService.getAllUserData(userId, { useBatchLoad: true });
+  await UserDataService.getAllUserData(userId, { useBatchLoad: true });
   const batchDuration = Date.now() - batchStart;
   console.log(`   Duration: ${batchDuration}ms`);
   
   // Clear cache for fair comparison
-  PassportDataService.clearCache();
+  UserDataService.clearCache();
   
   // Test 2: Parallel loading (fallback)
   console.log('\nTest 2: Parallel loading (fallback)');
   const parallelStart = Date.now();
-  await PassportDataService.getAllUserData(userId, { useBatchLoad: false });
+  await UserDataService.getAllUserData(userId, { useBatchLoad: false });
   const parallelDuration = Date.now() - parallelStart;
   console.log(`   Duration: ${parallelDuration}ms`);
   
@@ -207,25 +207,25 @@ async function demoCacheStatistics() {
   const userId = 'demo_user_123';
   
   // Reset cache stats
-  PassportDataService.resetCacheStats();
-  PassportDataService.clearCache();
+  UserDataService.resetCacheStats();
+  UserDataService.clearCache();
   
   console.log('Performing multiple data access operations...\n');
   
   // First access - cache miss
   console.log('1. First access (cache miss)');
-  await PassportDataService.getAllUserData(userId);
+  await UserDataService.getAllUserData(userId);
   
   // Second access - cache hit
   console.log('2. Second access (cache hit)');
-  await PassportDataService.getAllUserData(userId);
+  await UserDataService.getAllUserData(userId);
   
   // Third access - cache hit
   console.log('3. Third access (cache hit)');
-  await PassportDataService.getAllUserData(userId);
+  await UserDataService.getAllUserData(userId);
   
   // Get statistics
-  const stats = PassportDataService.getCacheStats();
+  const stats = UserDataService.getCacheStats();
   
   console.log('\n📊 Cache Statistics:');
   console.log(`   - Total requests: ${stats.totalRequests}`);
@@ -248,7 +248,7 @@ export async function runAllDemos() {
   
   try {
     // Initialize service
-    await PassportDataService.initialize('demo_user_123');
+    await UserDataService.initialize('demo_user_123');
     
     // Run demos
     await demoBatchSave();

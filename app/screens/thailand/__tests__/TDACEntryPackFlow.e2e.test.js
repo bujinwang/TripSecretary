@@ -5,12 +5,12 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryPackService from '../../../services/entryPack/EntryPackService';
-import PassportDataService from '../../../services/data/PassportDataService';
+import UserDataService from '../../../services/data/UserDataService';
 
 // Mock all dependencies
 jest.mock('@react-native-async-storage/async-storage');
 jest.mock('../../../services/entryPack/EntryPackService');
-jest.mock('../../../services/data/PassportDataService');
+jest.mock('../../../services/data/UserDataService');
 
 describe('TDAC to EntryPack E2E Flow', () => {
   beforeEach(() => {
@@ -20,8 +20,8 @@ describe('TDAC to EntryPack E2E Flow', () => {
     AsyncStorage.getItem.mockResolvedValue(null);
     AsyncStorage.setItem.mockResolvedValue();
     
-    // Mock PassportDataService
-    PassportDataService.getEntryInfoByDestination.mockResolvedValue({
+    // Mock UserDataService
+    UserDataService.getEntryInfoByDestination.mockResolvedValue({
       id: 'thailand_entry_info',
       userId: 'user123',
       destinationId: 'thailand',

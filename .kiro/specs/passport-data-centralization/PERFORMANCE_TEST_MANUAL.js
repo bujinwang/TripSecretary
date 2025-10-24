@@ -2,7 +2,7 @@
  * Manual Performance Testing Script
  * 
  * This script can be run in a React Native environment to test actual performance
- * of the PassportDataService with real SQLite database operations.
+ * of the UserDataService with real SQLite database operations.
  * 
  * Usage:
  * 1. Import this file in your app
@@ -10,7 +10,7 @@
  * 3. Check console output for results
  */
 
-import PassportDataService from '../../app/services/data/PassportDataService';
+import UserDataService from '../../app/services/data/UserDataService';
 import Passport from '../../app/models/Passport';
 import PersonalInfo from '../../app/models/PersonalInfo';
 import FundingProof from '../../app/models/FundingProof';
@@ -51,24 +51,24 @@ async function testDataLoadTimes(userId) {
   console.log('Target: < 100ms per operation\n');
 
   // Clear cache to ensure fresh loads
-  PassportDataService.clearCache();
+  UserDataService.clearCache();
 
   const tests = [
     {
       name: 'Load Passport Data',
-      fn: async () => await PassportDataService.getPassport(userId),
+      fn: async () => await UserDataService.getPassport(userId),
     },
     {
       name: 'Load Personal Info',
-      fn: async () => await PassportDataService.getPersonalInfo(userId),
+      fn: async () => await UserDataService.getPersonalInfo(userId),
     },
     {
       name: 'Load Funding Proof',
-      fn: async () => await PassportDataService.getFundingProof(userId),
+      fn: async () => await UserDataService.getFundingProof(userId),
     },
     {
       name: 'Load All User Data (Batch)',
-      fn: async () => await PassportDataService.getAllUserData(userId),
+      fn: async () => await UserDataService.getAllUserData(userId),
     },
   ];
 
@@ -93,22 +93,22 @@ async function testCachePerformance(userId) {
   console.log('Target: < 10ms for cached data, > 80% hit rate\n');
 
   // Reset cache stats
-  PassportDataService.resetCacheStats();
-  PassportDataService.clearCache();
+  UserDataService.resetCacheStats();
+  UserDataService.clearCache();
 
   // First load (cache miss)
-  await PassportDataService.getPassport(userId);
+  await UserDataService.getPassport(userId);
 
   // Subsequent loads (cache hits)
   for (let i = 0; i < 9; i++) {
     const result = await measureTime(`Cached Read ${i + 1}`, async () => {
-      await PassportDataService.getPassport(userId);
+      await UserDataService.getPassport(userId);
     });
     results.cacheHitTimes.push(result);
   }
 
   // Get cache statistics
-  const stats = PassportDataService.getCacheStats();
+  const stats = UserDataService.getCacheStats();
   results.cacheStats = stats;
 
   // Summary
@@ -127,11 +127,11 @@ async function testConcurrentAccess(userId) {
   console.log('\n📊 Test 3: Concurrent Access Performance');
   console.log('Target: Handle 10 concurrent reads in < 500ms\n');
 
-  PassportDataService.clearCache();
+  UserDataService.clearCache();
 
   const result = await measureTime('10 Concurrent Reads', async () => {
     const promises = Array(10).fill(null).map(() =>
-      PassportDataService.getPassport(userId)
+      UserDataService.getPassport(userId)
     );
     await Promise.all(promises);
   });
@@ -148,21 +148,21 @@ async function testBatchOperations(userId) {
   console.log('\n📊 Test 4: Batch Operation Performance');
   console.log('Target: Batch load faster than parallel load\n');
 
-  PassportDataService.clearCache();
+  UserDataService.clearCache();
 
   // Test batch load
   const batchResult = await measureTime('Batch Load (getAllUserData)', async () => {
-    await PassportDataService.getAllUserData(userId);
+    await UserDataService.getAllUserData(userId);
   });
 
-  PassportDataService.clearCache();
+  UserDataService.clearCache();
 
   // Test parallel load
   const parallelResult = await measureTime('Parallel Load (3 separate calls)', async () => {
     await Promise.all([
-      PassportDataService.getPassport(userId),
-      PassportDataService.getPersonalInfo(userId),
-      PassportDataService.getFundingProof(userId),
+      UserDataService.getPassport(userId),
+      UserDataService.getPersonalInfo(userId),
+      UserDataService.getFundingProof(userId),
     ]);
   });
 
@@ -180,16 +180,16 @@ async function testStressScenarios(userId) {
   console.log('\n📊 Test 5: Stress Testing');
   console.log('Target: Handle 100 rapid reads in < 1000ms\n');
 
-  PassportDataService.resetCacheStats();
-  PassportDataService.clearCache();
+  UserDataService.resetCacheStats();
+  UserDataService.clearCache();
 
   const result = await measureTime('100 Rapid Successive Reads', async () => {
     for (let i = 0; i < 100; i++) {
-      await PassportDataService.getPassport(userId);
+      await UserDataService.getPassport(userId);
     }
   });
 
-  const stats = PassportDataService.getCacheStats();
+  const stats = UserDataService.getCacheStats();
 
   console.log(`\n📈 Total Time: ${result.duration}ms`);
   console.log(`📈 Average per Read: ${(result.duration / 100).toFixed(2)}ms`);
@@ -297,7 +297,7 @@ export async function runPerformanceTests(userId = 'test-user-performance') {
 
   try {
     // Initialize service
-    await PassportDataService.initialize(userId);
+    await UserDataService.initialize(userId);
 
     // Setup test data
     await setupTestData(userId);
@@ -326,17 +326,17 @@ export async function quickPerformanceCheck(userId = 'test-user-quick') {
   console.log('\n⚡ Quick Performance Check...\n');
 
   try {
-    await PassportDataService.initialize(userId);
+    await UserDataService.initialize(userId);
 
     // Just test basic load time and cache
-    PassportDataService.clearCache();
+    UserDataService.clearCache();
     
     const loadResult = await measureTime('Data Load', async () => {
-      await PassportDataService.getPassport(userId);
+      await UserDataService.getPassport(userId);
     });
 
     const cacheResult = await measureTime('Cached Load', async () => {
-      await PassportDataService.getPassport(userId);
+      await UserDataService.getPassport(userId);
     });
 
     console.log(`\n${loadResult.duration < 100 ? '✅' : '❌'} Load Time: ${loadResult.duration}ms (target: < 100ms)`);

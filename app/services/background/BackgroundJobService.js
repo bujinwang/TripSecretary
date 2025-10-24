@@ -12,7 +12,7 @@
 
 import NotificationCoordinator from '../notification/NotificationCoordinator';
 import NotificationPreferencesService from '../notification/NotificationPreferencesService';
-import PassportDataService from '../data/PassportDataService';
+import UserDataService from '../data/UserDataService';
 import EntryInfoService from '../EntryInfoService';
 
 class BackgroundJobService {
@@ -158,7 +158,7 @@ class BackgroundJobService {
       console.log(`Checking expired entry infos for user: ${userId}`);
       
       // Initialize user data service
-      await PassportDataService.initialize(userId);
+      await UserDataService.initialize(userId);
       
       // Get active entry infos for user
       const activeEntryInfos = await EntryInfoService.getAllEntryInfos(userId);

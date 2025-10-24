@@ -21,7 +21,7 @@ import api from '../services/api';
 import { getAvailableFeatures, getEntryInstructions } from '../config/destinationRequirements';
 // Removed mockTDACData dependency - using pure user data
 import { useTranslation } from '../i18n/LocaleContext';
-import PassportDataService from '../services/data/PassportDataService';
+import UserDataService from '../services/data/UserDataService';
 
 const ResultScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ const ResultScreen = ({ navigation, route }) => {
   const currentDestination = resultData?.destination || routeParams.destination;
   const currentTravelInfo = resultData?.travelInfo || routeParams.travelInfo;
 
-  const passport = PassportDataService.toSerializablePassport(currentPassport);
+  const passport = UserDataService.toSerializablePassport(currentPassport);
   const destination = currentDestination;
   const travelInfo = currentTravelInfo;
   const isThailand = destination?.id === 'th';

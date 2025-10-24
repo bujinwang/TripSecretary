@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import EntryInfo from '../../models/EntryInfo';
-import PassportDataService from '../data/PassportDataService';
+import UserDataService from '../data/UserDataService';
 import DataExportService from '../export/DataExportService';
 import SecureStorageService from '../security/SecureStorageService';
 

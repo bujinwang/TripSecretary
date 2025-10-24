@@ -327,15 +327,15 @@ class ThailandDataValidator {
    */
   static async validateComplete(userId) {
     try {
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../data/UserDataService').default;
       
       // Get all data for Thailand destination
       const [passport, personalInfo, travelInfo, fundItems] = await Promise.all([
-        PassportDataService.getPassport(userId),
-        PassportDataService.getPersonalInfo(userId),
-        PassportDataService.getTravelInfo(userId, 'thailand'), // Thailand-specific destination
-        PassportDataService.getFundItems(userId)
+        UserDataService.getPassport(userId),
+        UserDataService.getPersonalInfo(userId),
+        UserDataService.getTravelInfo(userId, 'thailand'), // Thailand-specific destination
+        UserDataService.getFundItems(userId)
       ]);
 
       // Validate each category

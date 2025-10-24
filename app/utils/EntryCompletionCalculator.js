@@ -731,15 +731,15 @@ class EntryCompletionCalculator {
    */
   async getMultiDestinationProgress(userId, destinationIds = []) {
     try {
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../services/data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../services/data/UserDataService').default;
       
       const allDestinationData = {};
       
       // Load entry info for each destination
       for (const destinationId of destinationIds) {
         try {
-          const entryInfo = await PassportDataService.getEntryInfoByDestination(destinationId);
+          const entryInfo = await UserDataService.getEntryInfoByDestination(destinationId);
           allDestinationData[destinationId] = entryInfo;
         } catch (error) {
           console.log(`Failed to load entry info for destination ${destinationId}:`, error.message);
@@ -773,11 +773,11 @@ class EntryCompletionCalculator {
    */
   async getDestinationsWithProgress(userId) {
     try {
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../services/data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../services/data/UserDataService').default;
       
       // Get all entry infos for the user
-      const allEntryInfos = await PassportDataService.getAllEntryInfosForUser(userId);
+      const allEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
       
       const destinationsWithProgress = [];
       
@@ -821,13 +821,13 @@ class EntryCompletionCalculator {
    */
   async switchDestinationContext(fromDestinationId, toDestinationId, userId) {
     try {
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../services/data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../services/data/UserDataService').default;
       
       // Get entry info for both destinations
       const [fromEntryInfo, toEntryInfo] = await Promise.all([
-        PassportDataService.getEntryInfoByDestination(fromDestinationId),
-        PassportDataService.getEntryInfoByDestination(toDestinationId)
+        UserDataService.getEntryInfoByDestination(fromDestinationId),
+        UserDataService.getEntryInfoByDestination(toDestinationId)
       ]);
       
       const fromSummary = fromEntryInfo 

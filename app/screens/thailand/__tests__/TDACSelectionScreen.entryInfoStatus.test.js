@@ -6,7 +6,7 @@
 import TDACSelectionScreen from '../TDACSelectionScreen';
 
 // Mock dependencies
-jest.mock('../../../services/data/PassportDataService', () => ({
+jest.mock('../../../services/data/UserDataService', () => ({
   default: {
     getEntryInfo: jest.fn(),
     saveEntryInfo: jest.fn(),
@@ -35,7 +35,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
-  let PassportDataService;
+  let UserDataService;
   let EntryPackService;
   let SnapshotService;
   let AsyncStorage;
@@ -43,7 +43,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    PassportDataService = require('../../../services/data/PassportDataService').default;
+    UserDataService = require('../../../services/data/UserDataService').default;
     EntryPackService = require('../../../services/entryPack/EntryPackService').default;
     SnapshotService = require('../../../services/snapshot/SnapshotService').default;
     AsyncStorage = require('@react-native-async-storage/async-storage').default;
@@ -59,21 +59,21 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         status: 'incomplete'
       };
 
-      PassportDataService.getEntryInfo.mockResolvedValue(mockEntryInfo);
+      UserDataService.getEntryInfo.mockResolvedValue(mockEntryInfo);
 
       // Test the logic directly without instantiating the component
       const userId = 'current_user';
       const destinationId = 'thailand';
       
-      const entryInfo = await PassportDataService.getEntryInfo(userId, destinationId);
+      const entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
       
-      expect(PassportDataService.getEntryInfo).toHaveBeenCalledWith(userId, destinationId);
+      expect(UserDataService.getEntryInfo).toHaveBeenCalledWith(userId, destinationId);
       expect(entryInfo.id).toBe('existing_entry_info_123');
     });
 
     it('should create new entry info when none exists', async () => {
       // Mock no existing entry info
-      PassportDataService.getEntryInfo.mockResolvedValue(null);
+      UserDataService.getEntryInfo.mockResolvedValue(null);
       
       // Mock successful creation
       const mockNewEntryInfo = {
@@ -83,13 +83,13 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         status: 'incomplete'
       };
       
-      PassportDataService.saveEntryInfo.mockResolvedValue(mockNewEntryInfo);
+      UserDataService.saveEntryInfo.mockResolvedValue(mockNewEntryInfo);
 
       const userId = 'current_user';
       const destinationId = 'thailand';
       
       // First call returns null (no existing entry info)
-      const existingEntryInfo = await PassportDataService.getEntryInfo(userId, destinationId);
+      const existingEntryInfo = await UserDataService.getEntryInfo(userId, destinationId);
       expect(existingEntryInfo).toBeNull();
       
       // Then create new entry info
@@ -105,9 +105,9 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         lastUpdatedAt: expect.any(String)
       };
       
-      const newEntryInfo = await PassportDataService.saveEntryInfo(entryInfoData, userId);
+      const newEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
       
-      expect(PassportDataService.saveEntryInfo).toHaveBeenCalledWith(
+      expect(UserDataService.saveEntryInfo).toHaveBeenCalledWith(
         expect.objectContaining({
           destinationId: 'thailand',
           status: 'incomplete'
@@ -136,10 +136,10 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         lastUpdatedAt: '2024-01-15T10:30:00.000Z'
       };
 
-      PassportDataService.updateEntryInfoStatus.mockResolvedValue(mockUpdatedEntryInfo);
+      UserDataService.updateEntryInfoStatus.mockResolvedValue(mockUpdatedEntryInfo);
 
       // Test the status update
-      const result = await PassportDataService.updateEntryInfoStatus(
+      const result = await UserDataService.updateEntryInfoStatus(
         entryInfoId,
         'submitted',
         {
@@ -154,7 +154,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         }
       );
 
-      expect(PassportDataService.updateEntryInfoStatus).toHaveBeenCalledWith(
+      expect(UserDataService.updateEntryInfoStatus).toHaveBeenCalledWith(
         entryInfoId,
         'submitted',
         {
@@ -185,7 +185,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
 
       // Mock failure
       const error = new Error('Database connection failed');
-      PassportDataService.updateEntryInfoStatus.mockRejectedValue(error);
+      UserDataService.updateEntryInfoStatus.mockRejectedValue(error);
       
       // Mock AsyncStorage for error logging
       AsyncStorage.setItem.mockResolvedValue();
@@ -195,7 +195,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
       let thrownError;
       
       try {
-        result = await PassportDataService.updateEntryInfoStatus(entryInfoId, 'submitted', {
+        result = await UserDataService.updateEntryInfoStatus(entryInfoId, 'submitted', {
           reason: 'TDAC submission successful',
           tdacSubmission
         });
@@ -204,7 +204,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
       }
 
       // Should have attempted the update
-      expect(PassportDataService.updateEntryInfoStatus).toHaveBeenCalled();
+      expect(UserDataService.updateEntryInfoStatus).toHaveBeenCalled();
       
       // Should have thrown the error (since we're testing the service directly)
       expect(thrownError).toBeDefined();
@@ -239,9 +239,9 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
         lastUpdatedAt: '2024-01-15T10:30:00.000Z'
       };
 
-      PassportDataService.getEntryInfo.mockResolvedValue(mockEntryInfo);
+      UserDataService.getEntryInfo.mockResolvedValue(mockEntryInfo);
       EntryPackService.createOrUpdatePack.mockResolvedValue(mockEntryPack);
-      PassportDataService.updateEntryInfoStatus.mockResolvedValue(mockUpdatedEntryInfo);
+      UserDataService.updateEntryInfoStatus.mockResolvedValue(mockUpdatedEntryInfo);
       SnapshotService.createSnapshot.mockResolvedValue(mockSnapshot);
 
       const tdacSubmission = {
@@ -253,7 +253,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
       };
 
       // Test the complete flow
-      const entryInfo = await PassportDataService.getEntryInfo('current_user', 'thailand');
+      const entryInfo = await UserDataService.getEntryInfo('current_user', 'thailand');
       expect(entryInfo.id).toBe('entry_info_123');
 
       const entryPack = await EntryPackService.createOrUpdatePack(
@@ -263,7 +263,7 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
       );
       expect(entryPack.id).toBe('entry_pack_456');
 
-      const updatedEntryInfo = await PassportDataService.updateEntryInfoStatus(
+      const updatedEntryInfo = await UserDataService.updateEntryInfoStatus(
         entryInfo.id,
         'submitted',
         {
@@ -286,13 +286,13 @@ describe('TDACSelectionScreen - EntryInfo Status Updates', () => {
       expect(snapshot.snapshotId).toBe('snapshot_789');
 
       // Verify all services were called correctly
-      expect(PassportDataService.getEntryInfo).toHaveBeenCalledWith('current_user', 'thailand');
+      expect(UserDataService.getEntryInfo).toHaveBeenCalledWith('current_user', 'thailand');
       expect(EntryPackService.createOrUpdatePack).toHaveBeenCalledWith(
         'entry_info_123',
         tdacSubmission,
         { submissionMethod: 'hybrid' }
       );
-      expect(PassportDataService.updateEntryInfoStatus).toHaveBeenCalledWith(
+      expect(UserDataService.updateEntryInfoStatus).toHaveBeenCalledWith(
         'entry_info_123',
         'submitted',
         expect.objectContaining({

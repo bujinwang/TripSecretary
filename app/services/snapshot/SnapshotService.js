@@ -178,12 +178,12 @@ class SnapshotService {
       // Load complete data from entry info
       const completeData = await entryInfo.getCompleteData();
 
-      // Load funds separately using PassportDataService
+      // Load funds separately using UserDataService
       let funds = [];
       if (entryInfo.userId) {
         try {
-          const PassportDataService = require('../data/PassportDataService').default;
-          funds = await PassportDataService.getFundItems(entryInfo.userId) || [];
+          const UserDataService = require('../data/UserDataService').default;
+          funds = await UserDataService.getFundItems(entryInfo.userId) || [];
           console.log('Loaded funds for snapshot:', {
             userId: entryInfo.userId,
             fundCount: funds.length
@@ -197,8 +197,8 @@ class SnapshotService {
       let travel = completeData.travel || {};
       if (entryInfo.userId && entryInfo.destinationId && (!travel || Object.keys(travel).length === 0)) {
         try {
-          const PassportDataService = require('../data/PassportDataService').default;
-          const travelInfo = await PassportDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
+          const UserDataService = require('../data/UserDataService').default;
+          const travelInfo = await UserDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
           if (travelInfo) {
             travel = travelInfo;
             console.log('Loaded travel info for snapshot:', {

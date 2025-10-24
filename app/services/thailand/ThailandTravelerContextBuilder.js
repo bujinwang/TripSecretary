@@ -1,6 +1,6 @@
 /**
  * Thailand Traveler Context Builder Service
- * Builds complete traveler payload for TDAC submission from PassportDataService data
+ * Builds complete traveler payload for TDAC submission from UserDataService data
  * Merges user data with TDAC defaults and validates completeness
  */
 
@@ -17,17 +17,17 @@ class ThailandTravelerContextBuilder {
       console.log('=== THAILAND TRAVELER CONTEXT BUILDER ===');
       console.log('Building context for userId:', userId);
 
-      // Import PassportDataService dynamically to avoid circular dependencies
-      const PassportDataService = require('../data/PassportDataService').default;
+      // Import UserDataService dynamically to avoid circular dependencies
+      const UserDataService = require('../data/UserDataService').default;
 
       // Retrieve all user data in a single operation for efficiency
-      const userData = await PassportDataService.getAllUserData(userId);
+      const userData = await UserDataService.getAllUserData(userId);
       
       // Also get travel info and fund items separately since they're not included in getAllUserData
       // Try multiple destination identifiers to ensure we find the data
       const [travelInfo, fundItems] = await Promise.all([
         ThailandTravelerContextBuilder.getTravelInfoWithFallback(userId),
-        PassportDataService.getFundItems(userId).catch(() => [])
+        UserDataService.getFundItems(userId).catch(() => [])
       ]);
       
       // Add travel info and fund items to user data
@@ -131,7 +131,7 @@ class ThailandTravelerContextBuilder {
   /**
    * Validate that user data contains ALL required information for TDAC submission
    * TDAC requires strict validation - no defaults allowed for critical fields
-   * @param {Object} userData - User data from PassportDataService
+   * @param {Object} userData - User data from UserDataService
    * @returns {Object} - Validation result
    */
   static validateUserData(userData) {
@@ -227,7 +227,7 @@ class ThailandTravelerContextBuilder {
   /**
    * Transform user data to TDAC format
    * Maps user input fields to exact TDAC API requirements
-   * @param {Object} userData - User data from PassportDataService
+   * @param {Object} userData - User data from UserDataService
    * @returns {Object} - TDAC-formatted data
    */
   static transformToTDACFormat(userData) {
@@ -1193,8 +1193,8 @@ class ThailandTravelerContextBuilder {
   static async getTravelInfoWithFallback(userId) {
     console.log('🔍 Starting getTravelInfoWithFallback for userId:', userId);
     
-    // Import PassportDataService dynamically
-    const PassportDataService = require('../data/PassportDataService').default;
+    // Import UserDataService dynamically
+    const UserDataService = require('../data/UserDataService').default;
     
     // Based on database analysis, data is stored with destination='th'
     // Try the most likely destination IDs first
@@ -1209,7 +1209,7 @@ class ThailandTravelerContextBuilder {
         const destinationStr = destinationId === null ? 'null' : destinationId;
         console.log(`🔍 Trying to get travel info with destination: ${destinationStr}`);
         
-        const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
         
         if (travelInfo && typeof travelInfo === 'object') {
           console.log(`✅ Found travel info with destination: ${destinationStr}`);

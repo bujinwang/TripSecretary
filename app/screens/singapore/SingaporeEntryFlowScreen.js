@@ -23,13 +23,13 @@ import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 
 const SingaporeEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const passportParam = PassportDataService.toSerializablePassport(route.params?.passport);
+  const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
 
   // Completion state - calculated from real user data
   const [completionPercent, setCompletionPercent] = useState(0);
@@ -81,7 +81,7 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
 
   const setupDataChangeListener = () => {
     // Add listener for data changes and resubmission warnings
-    dataChangeUnsubscribe = PassportDataService.addDataChangeListener((event) => {
+    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
       console.log('Data change event received in SingaporeEntryFlowScreen:', event);
 
       if (event.type === 'RESUBMISSION_WARNING') {
@@ -104,19 +104,19 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
       // Get user ID from route params or use default
       const userId = passportParam?.id || 'user_001';
 
-      // Initialize PassportDataService
-      await PassportDataService.initialize(userId);
+      // Initialize UserDataService
+      await UserDataService.initialize(userId);
 
       // Load all user data
-      const allUserData = await PassportDataService.getAllUserData(userId);
+      const allUserData = await UserDataService.getAllUserData(userId);
       console.log('Loaded user data for completion calculation:', allUserData);
 
       // Load fund items
-      const fundItems = await PassportDataService.getFundItems(userId);
+      const fundItems = await UserDataService.getFundItems(userId);
 
       // Load travel info for Singapore
       const destinationId = route.params?.destination?.id || 'singapore';
-      const travelInfo = await PassportDataService.getTravelInfo(userId, destinationId);
+      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
@@ -250,7 +250,7 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
 
           // Check for pending resubmission warnings
           try {
-            const warning = PassportDataService.getResubmissionWarning(singaporeEntryInfo.id);
+            const warning = UserDataService.getResubmissionWarning(singaporeEntryInfo.id);
             if (warning) {
               setResubmissionWarning(warning);
             }
@@ -284,7 +284,7 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
     try {
       if (action === 'resubmit') {
         // Mark entry pack as superseded and navigate to edit
-        await PassportDataService.markEntryPackAsSuperseded(warning.entryPackId, {
+        await UserDataService.markEntryPackAsSuperseded(warning.entryPackId, {
           changedFields: warning.diffResult.changedFields,
           changeReason: 'user_confirmed_resubmission'
         });
@@ -301,7 +301,7 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
         });
       } else if (action === 'ignore') {
         // Clear the warning but don't mark as superseded
-        PassportDataService.clearResubmissionWarning(warning.entryPackId);
+        UserDataService.clearResubmissionWarning(warning.entryPackId);
         setResubmissionWarning(null);
       }
     } catch (error) {

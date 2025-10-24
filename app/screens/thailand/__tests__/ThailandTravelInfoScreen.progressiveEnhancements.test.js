@@ -6,7 +6,7 @@
 import EntryCompletionCalculator from '../../../utils/EntryCompletionCalculator';
 
 // Mock dependencies
-jest.mock('../../../services/data/PassportDataService');
+jest.mock('../../../services/data/UserDataService');
 jest.mock('../../../utils/DebouncedSave');
 jest.mock('../../../utils/EntryCompletionCalculator');
 jest.mock('@react-native-async-storage/async-storage');

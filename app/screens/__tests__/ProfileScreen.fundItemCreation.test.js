@@ -7,11 +7,11 @@ import React from 'react';
 import { render, waitFor, fireEvent, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import ProfileScreen from '../ProfileScreen';
-import PassportDataService from '../../services/data/PassportDataService';
+import UserDataService from '../../services/data/UserDataService';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Mock dependencies
-jest.mock('../../services/data/PassportDataService');
+jest.mock('../../services/data/UserDataService');
 jest.mock('../../i18n/LocaleContext', () => ({
   useLocale: () => ({
     locale: 'en',
@@ -44,14 +44,14 @@ describe('ProfileScreen - Fund Item Creation', () => {
     jest.clearAllMocks();
     
     // Setup default mocks
-    PassportDataService.initialize = jest.fn().mockResolvedValue();
-    PassportDataService.getAllUserData = jest.fn().mockResolvedValue({
+    UserDataService.initialize = jest.fn().mockResolvedValue();
+    UserDataService.getAllUserData = jest.fn().mockResolvedValue({
       passport: null,
       personalInfo: null,
       userId: 'user_001'
     });
-    PassportDataService.getFundItems = jest.fn().mockResolvedValue([]);
-    PassportDataService.migrateFromAsyncStorage = jest.fn().mockResolvedValue({ migrated: false });
+    UserDataService.getFundItems = jest.fn().mockResolvedValue([]);
+    UserDataService.migrateFromAsyncStorage = jest.fn().mockResolvedValue({ migrated: false });
   });
 
   describe('Add Fund Item Button', () => {
@@ -63,7 +63,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Expand funding section
@@ -85,7 +85,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -102,7 +102,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -125,7 +125,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
     });
 
     it('should handle CASH type selection', async () => {
-      PassportDataService.saveFundItem = jest.fn().mockResolvedValue({
+      UserDataService.saveFundItem = jest.fn().mockResolvedValue({
         id: 'fund-1',
         type: 'CASH',
         amount: 1000,
@@ -140,7 +140,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -171,7 +171,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -198,7 +198,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -225,7 +225,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -251,11 +251,11 @@ describe('ProfileScreen - Fund Item Creation', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.getFundItems
+      UserDataService.getFundItems
         .mockResolvedValueOnce([]) // Initial load
         .mockResolvedValueOnce([newFundItem]); // After creation
 
-      PassportDataService.saveFundItem = jest.fn().mockResolvedValue(newFundItem);
+      UserDataService.saveFundItem = jest.fn().mockResolvedValue(newFundItem);
 
       const { getByLabelText, rerender } = render(
         <NavigationContainer>
@@ -264,15 +264,15 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalledTimes(1);
+        expect(UserDataService.getFundItems).toHaveBeenCalledTimes(1);
       });
 
       // Verify getFundItems is called to refresh after creation
-      expect(PassportDataService.getFundItems).toHaveBeenCalledWith('user_001');
+      expect(UserDataService.getFundItems).toHaveBeenCalledWith('user_001');
     });
 
     it('should display empty state when no fund items exist', async () => {
-      PassportDataService.getFundItems = jest.fn().mockResolvedValue([]);
+      UserDataService.getFundItems = jest.fn().mockResolvedValue([]);
 
       const { getByText } = render(
         <NavigationContainer>
@@ -281,7 +281,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Check for empty state message
@@ -301,7 +301,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // This button should not exist
@@ -317,7 +317,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Press Add Fund Item button
@@ -351,7 +351,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Verify translation key is used
@@ -367,7 +367,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       const addButton = getByLabelText('Add Fund Item');
@@ -384,7 +384,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
     });
 
     it('should use translation keys for empty state', async () => {
-      PassportDataService.getFundItems = jest.fn().mockResolvedValue([]);
+      UserDataService.getFundItems = jest.fn().mockResolvedValue([]);
 
       const { getByText } = render(
         <NavigationContainer>
@@ -393,7 +393,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalled();
+        expect(UserDataService.getFundItems).toHaveBeenCalled();
       });
 
       // Check for translated empty state message
@@ -404,9 +404,9 @@ describe('ProfileScreen - Fund Item Creation', () => {
     });
   });
 
-  describe('Integration with PassportDataService', () => {
-    it('should call PassportDataService.saveFundItem when creating', async () => {
-      PassportDataService.saveFundItem = jest.fn().mockResolvedValue({
+  describe('Integration with UserDataService', () => {
+    it('should call UserDataService.saveFundItem when creating', async () => {
+      UserDataService.saveFundItem = jest.fn().mockResolvedValue({
         id: 'fund-1',
         type: 'CASH',
         amount: 1000,
@@ -416,7 +416,7 @@ describe('ProfileScreen - Fund Item Creation', () => {
       });
 
       // This test verifies the service method is available
-      expect(PassportDataService.saveFundItem).toBeDefined();
+      expect(UserDataService.saveFundItem).toBeDefined();
     });
 
     it('should refresh fund items after successful creation', async () => {
@@ -429,8 +429,8 @@ describe('ProfileScreen - Fund Item Creation', () => {
         userId: 'user_001'
       };
 
-      PassportDataService.saveFundItem = jest.fn().mockResolvedValue(newItem);
-      PassportDataService.getFundItems
+      UserDataService.saveFundItem = jest.fn().mockResolvedValue(newItem);
+      UserDataService.getFundItems
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([newItem]);
 
@@ -441,12 +441,12 @@ describe('ProfileScreen - Fund Item Creation', () => {
       );
 
       await waitFor(() => {
-        expect(PassportDataService.getFundItems).toHaveBeenCalledTimes(1);
+        expect(UserDataService.getFundItems).toHaveBeenCalledTimes(1);
       });
 
       // Verify service is set up to be called again after creation
-      expect(PassportDataService.getFundItems).toBeDefined();
-      expect(PassportDataService.saveFundItem).toBeDefined();
+      expect(UserDataService.getFundItems).toBeDefined();
+      expect(UserDataService.saveFundItem).toBeDefined();
     });
   });
 });

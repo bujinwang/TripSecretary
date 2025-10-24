@@ -7,7 +7,7 @@
 
 import * as FileSystem from 'expo-file-system';
 import EntryInfo from '../../models/EntryInfo';
-import PassportDataService from '../data/PassportDataService';
+import UserDataService from '../data/UserDataService';
 
 class DataImportService {
   constructor() {
@@ -398,7 +398,7 @@ class DataImportService {
 
       // Check for passport conflicts
       if (importData.passport && importData.passport.passportNumber) {
-        const existingPassport = await PassportDataService.getPassportByNumber(importData.passport.passportNumber);
+        const existingPassport = await UserDataService.getPassportByNumber(importData.passport.passportNumber);
         if (existingPassport && existingPassport.id !== importData.passport.id) {
           conflicts.push({
             type: 'passport_exists',
@@ -415,7 +415,7 @@ class DataImportService {
       if (importData.funds && Array.isArray(importData.funds)) {
         for (const fund of importData.funds) {
           if (fund.id) {
-            const existingFund = await PassportDataService.getFundById(fund.id);
+            const existingFund = await UserDataService.getFundById(fund.id);
             if (existingFund) {
               conflicts.push({
                 type: 'fund_exists',
@@ -477,7 +477,7 @@ class DataImportService {
       // Import passport data
       if (importData.passport) {
         try {
-          await PassportDataService.savePassport(importData.passport);
+          await UserDataService.savePassport(importData.passport);
           console.log('Imported passport data');
         } catch (error) {
           importResult.errors.push(`Failed to import passport: ${error.message}`);
@@ -487,7 +487,7 @@ class DataImportService {
       // Import personal info
       if (importData.personalInfo) {
         try {
-          await PassportDataService.savePersonalInfo(importData.personalInfo);
+          await UserDataService.savePersonalInfo(importData.personalInfo);
           console.log('Imported personal info');
         } catch (error) {
           importResult.errors.push(`Failed to import personal info: ${error.message}`);
@@ -497,7 +497,7 @@ class DataImportService {
       // Import travel info
       if (importData.travel) {
         try {
-          await PassportDataService.saveTravelInfo(importData.travel);
+          await UserDataService.saveTravelInfo(importData.travel);
           console.log('Imported travel info');
         } catch (error) {
           importResult.errors.push(`Failed to import travel info: ${error.message}`);
@@ -523,7 +523,7 @@ class DataImportService {
               }
             }
 
-            await PassportDataService.saveFund(fund);
+            await UserDataService.saveFund(fund);
             console.log(`Imported fund item: ${fund.id}`);
           } catch (error) {
             importResult.errors.push(`Failed to import fund ${fund.id}: ${error.message}`);

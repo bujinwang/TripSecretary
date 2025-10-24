@@ -31,6 +31,9 @@ class SecureStorageService {
   /**
    * Initialize secure storage service
    * @param {string} userId - User identifier for encryption setup
+   *
+   * DEV MODE: Simplified initialization - just creates latest schema (v1.3.0)
+   * TODO: Before production, re-add migration system for existing user data
    */
   async initialize(userId) {
     try {
@@ -58,22 +61,14 @@ class SecureStorageService {
 
       this.modernDb = await openDatabaseAsync(this.DB_NAME);
 
-      // Run database migrations FIRST to handle existing databases
-      await this.runMigrations();
-
-      // Create tables if they don't exist (after migration)
+      // DEV MODE: Just create latest schema (no migrations needed)
+      // All tables created with v2.0 schema from the start
       await this.createTables();
-
-      // Clean up legacy funding_proof table if it exists (one-time operation)
-      await this.cleanupLegacyFundingProofTable();
-
-      // Clean up obsolete Schema v1.0 tables (one-time operation)
-      await this.cleanupObsoleteTables();
 
       // Ensure backup directory exists
       await this.ensureBackupDirectory();
 
-      console.log('Secure storage initialized successfully');
+      console.log('✅ Secure storage initialized with schema v' + this.DB_VERSION);
     } catch (error) {
       console.error('Failed to initialize secure storage:', error);
       console.error('Error details:', error.message, error.stack);
@@ -347,14 +342,7 @@ class SecureStorageService {
           )
         `);
 
-        // Migrations tracking table
-        await this.modernDb.execAsync(`
-          CREATE TABLE IF NOT EXISTS migrations (
-            user_id TEXT PRIMARY KEY,
-            migrated_at TEXT,
-            source TEXT
-          )
-        `);
+
 
         // ========================================
         // Database Triggers
@@ -479,8 +467,19 @@ class SecureStorageService {
     }
   }
 
+  // ============================================================================
+  // ⚠️ DEPRECATED MIGRATION METHODS - FOR REFERENCE ONLY
+  // ============================================================================
+  // These methods are NOT called in development mode.
+  // They are kept for reference when implementing production migrations.
+  // TODO: Before production release, review and update these methods or remove entirely.
+  // ============================================================================
+
   /**
    * Run database migrations for schema updates
+   *
+   * ⚠️ DEPRECATED: Not used in dev mode (always creates fresh schema)
+   * TODO: Re-enable before production if migrating from older schema versions
    */
   async runMigrations() {
     try {
@@ -2735,70 +2734,7 @@ class SecureStorageService {
     }
   }
 
-  /**
-   * Check if migration is needed for a user
-   * @param {string} userId - User ID
-   * @returns {boolean} - True if migration is needed
-   */
-  async needsMigration(userId) {
-    try {
-      const result = await this.modernDb.getFirstAsync(
-        'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
-        [userId]
-      );
-      
-      return !result;
-    } catch (error) {
-      console.error('Failed to check migration status:', error);
-      return true; // Assume migration needed on error
-    }
-  }
 
-  /**
-   * Mark migration as complete for a user
-   * @param {string} userId - User ID
-   * @param {string} source - Migration source (e.g., 'AsyncStorage')
-   */
-  async markMigrationComplete(userId, source = 'AsyncStorage') {
-    try {
-      const now = new Date().toISOString();
-      await this.modernDb.runAsync(
-        'INSERT OR REPLACE INTO migrations (user_id, migrated_at, source) VALUES (?, ?, ?)',
-        [userId, now, source]
-      );
-      console.log(`Migration marked complete for user ${userId} from ${source}`);
-    } catch (error) {
-      console.error('Failed to mark migration complete:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get migration status for a user
-   * @param {string} userId - User ID
-   * @returns {Object|null} - Migration status or null if not migrated
-   */
-  async getMigrationStatus(userId) {
-    try {
-      const result = await this.modernDb.getFirstAsync(
-        'SELECT * FROM migrations WHERE user_id = ? LIMIT 1',
-        [userId]
-      );
-      
-      if (!result) {
-        return null;
-      }
-      
-      return {
-        userId: result.user_id,
-        migratedAt: result.migrated_at,
-        source: result.source
-      };
-    } catch (error) {
-      console.error('Failed to get migration status:', error);
-      return null;
-    }
-  }
 
   /**
    * Batch save operations for atomic updates
@@ -3191,7 +3127,6 @@ class SecureStorageService {
         await this.modernDb.runAsync('DELETE FROM personal_info WHERE user_id = ?', [userId]);
         await this.modernDb.runAsync('DELETE FROM fund_items WHERE user_id = ?', [userId]);
         await this.modernDb.runAsync('DELETE FROM travel_history WHERE user_id = ?', [userId]);
-        await this.modernDb.runAsync('DELETE FROM migrations WHERE user_id = ?', [userId]);
       });
       
       await this.logAudit('DELETE_ALL', 'all_tables', userId);
@@ -3552,7 +3487,6 @@ class SecureStorageService {
        // Reset settings and migrations tables as well
        try {
          await this.modernDb.runAsync('DELETE FROM settings');
-         await this.modernDb.runAsync('DELETE FROM migrations');
          console.log('✅ Settings and migrations tables cleared');
        } catch (error) {
          console.warn('⚠️ Failed to clear settings/migrations:', error.message);

@@ -16,7 +16,17 @@
       "Bash(ls:*)",
       "Bash(done)",
       "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/**)",
-      "Bash(/Users/bujin/Documents/Projects/TripSecretary/find-tdac-pdf.sh)"
+      "Bash(/Users/bujin/Documents/Projects/TripSecretary/find-tdac-pdf.sh)",
+      "Bash(./scripts/rename-to-user-data-service.sh:*)",
+      "Bash(for test in /Users/bujin/Documents/Projects/TripSecretary/app/services/data/__tests__/UserDataService.*.test.js)",
+      "Bash(do node -c \"$test\")",
+      "Bash(for:*)",
+      "Bash(do echo \"Checking: $file\")",
+      "Bash(wc:*)",
+      "Bash(do basename \"$file\")",
+      "Bash(cat:*)",
+      "Bash(node -e:*)",
+      "Read(///**)"
     ],
     "deny": [],
     "ask": []
