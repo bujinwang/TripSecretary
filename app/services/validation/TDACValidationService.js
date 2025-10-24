@@ -18,7 +18,7 @@ class TDACValidationService {
       
       // Optional but recommended fields
       recommended: [
-        'pdfPath',
+        'pdfUrl',
         'travelerName',
         'passportNo',
         'arrivalDate'
@@ -28,7 +28,7 @@ class TDACValidationService {
       formats: {
         arrCardNo: /^[A-Za-z0-9_-]+$/,
         qrUri: /^(data:|file:\/\/|https?:\/\/)/,
-        pdfPath: /^(file:\/\/|https?:\/\/)/,
+        pdfUrl: /^(file:\/\/|https?:\/\/)/,
         submittedAt: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/,
         submissionMethod: /^(api|webview|hybrid)$/,
         passportNo: /^[A-Za-z0-9]{6,12}$/,
@@ -57,7 +57,7 @@ class TDACValidationService {
       format: {
         arrCardNo: 'Arrival card number must contain only letters, numbers, underscores, and hyphens',
         qrUri: 'QR URI must be a valid data URL, file path, or HTTP(S) URL',
-        pdfPath: 'PDF path must be a valid file path or HTTP(S) URL',
+        pdfUrl: 'PDF path must be a valid file path or HTTP(S) URL',
         submittedAt: 'Submission timestamp must be in ISO 8601 format',
         submissionMethod: 'Submission method must be one of: api, webview, hybrid',
         passportNo: 'Passport number must be 6-12 alphanumeric characters',
@@ -270,7 +270,7 @@ class TDACValidationService {
    * Validate file accessibility (async operation)
    */
   async validateFileAccessibility(tdacSubmission, result, options) {
-    const fileFields = ['qrUri', 'pdfPath'];
+    const fileFields = ['qrUri', 'pdfUrl'];
     
     for (const field of fileFields) {
       const filePath = tdacSubmission[field];

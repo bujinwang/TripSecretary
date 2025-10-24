@@ -38,6 +38,7 @@ import TDACValidationService from '../../services/validation/TDACValidationServi
 import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 import ThailandTravelerContextBuilder from '../../services/thailand/ThailandTravelerContextBuilder';
+import DigitalArrivalCard from '../../models/DigitalArrivalCard';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -409,7 +410,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
           const tdacSubmission = {
             arrCardNo: result.arrCardNo,
             qrUri: fileUri,
-            pdfPath: fileUri,
+            pdfUrl: fileUri,
             submittedAt: result.submittedAt,
             submissionMethod: 'hybrid',
             cardType: 'TDAC',
@@ -425,6 +426,35 @@ const TDACHybridScreen = ({ navigation, route }) => {
           });
 
           console.log('✅ Entry info updated successfully via Hybrid');
+
+          // Save to digital_arrival_cards table using DigitalArrivalCard model
+          try {
+            const digitalArrivalCard = new DigitalArrivalCard({
+              entryInfoId: entryInfoId,
+              userId: route.params?.userId || null,
+              cardType: 'TDAC',
+              destinationId: 'thailand',
+              arrCardNo: result.arrCardNo,
+              qrUri: fileUri,
+              pdfUrl: fileUri, // Using local file URI as pdfUrl
+              submittedAt: result.submittedAt,
+              submissionMethod: 'hybrid',
+              status: 'success',
+              processingTime: result.duration,
+              retryCount: 0,
+              apiResponse: {
+                cardNo: result.arrCardNo,
+                duration: result.duration,
+                travelerInfo: result.travelerInfo
+              }
+            });
+
+            await digitalArrivalCard.save();
+            console.log('✅ Digital arrival card saved to database:', digitalArrivalCard.id);
+          } catch (dbError) {
+            console.error('❌ Failed to save to digital_arrival_cards table:', dbError);
+            // Don't block user flow - this is just for record keeping
+          }
         } catch (entryInfoError) {
           console.error('❌ Failed to update entry info:', entryInfoError);
           // Don't block user flow - continue with file saving

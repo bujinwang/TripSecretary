@@ -386,6 +386,12 @@ class TDACAPIService {
     this.selectItemRows.purpose = lists.listPurposeOfTravel || [];
     this.selectItemRows.purposeCodeMap = this.buildValueMap(lists.listPurposeOfTravel);
 
+    // Log gender IDs returned by API
+    console.log('🔍 Gender IDs from API:', JSON.stringify(lists.listGender));
+    console.log('🔍 Gender cache map:', JSON.stringify(this.selectItemCache.gender));
+    console.log('🔍 Accommodation IDs from API:', JSON.stringify(lists.listAccom));
+    console.log('🔍 Accommodation cache map:', JSON.stringify(this.selectItemCache.accommodation));
+
     console.log('✅ Step 2: gotoAdd success');
     return data;
   }
@@ -496,30 +502,44 @@ class TDACAPIService {
     }
     console.log('✅ Step 3: Matched province:', provinceRow);
 
-    const districtRows = await this.fetchSelectItems('searchDistrictSelectItem', {
-      term: null,
-      provinceCode: provinceRow.key
-    });
-    const districtRow = this.findBestMatch('district', districtRows, {
-      valueCandidates: [traveler.district],
-      codeCandidates: [traveler.postCode],
-      allowFallback: false
-    });
-    if (!districtRow) {
-      throw new Error('Unable to resolve district from TDAC select list');
-    }
+    // For hotels, district/subDistrict/postCode are not required
+    // Check both the string value and the ID value
+    const accommodationType = this.normalizeInput(traveler.accommodationType);
+    const isHotelType = accommodationType === 'HOTEL' ||
+                       traveler.accommodationType === ID_MAPS.accommodation.HOTEL ||
+                       traveler.accommodationTypeDisplay === 'HOTEL';
 
-    const subDistrictRows = await this.fetchSelectItems('searchSubDistrictSelectItem', {
-      term: null,
-      provinceCode: provinceRow.key,
-      districtCode: districtRow.key
-    });
-    const subDistrictRow = this.findBestMatch('subDistrict', subDistrictRows, {
-      valueCandidates: [traveler.subDistrict],
-      allowFallback: false
-    });
-    if (!subDistrictRow) {
-      throw new Error('Unable to resolve sub-district from TDAC select list');
+    let districtRow = null;
+    let subDistrictRow = null;
+
+    if (!isHotelType) {
+      const districtRows = await this.fetchSelectItems('searchDistrictSelectItem', {
+        term: null,
+        provinceCode: provinceRow.key
+      });
+      districtRow = this.findBestMatch('district', districtRows, {
+        valueCandidates: [traveler.district],
+        codeCandidates: [traveler.postCode],
+        allowFallback: false
+      });
+      if (!districtRow) {
+        throw new Error('Unable to resolve district from TDAC select list');
+      }
+
+      const subDistrictRows = await this.fetchSelectItems('searchSubDistrictSelectItem', {
+        term: null,
+        provinceCode: provinceRow.key,
+        districtCode: districtRow.key
+      });
+      subDistrictRow = this.findBestMatch('subDistrict', subDistrictRows, {
+        valueCandidates: [traveler.subDistrict],
+        allowFallback: false
+      });
+      if (!subDistrictRow) {
+        throw new Error('Unable to resolve sub-district from TDAC select list');
+      }
+    } else {
+      console.log('✅ Hotel accommodation type detected - skipping district/subDistrict validation');
     }
 
     const registerRow = (map, keys, row) => {
@@ -1066,6 +1086,16 @@ class TDACAPIService {
       );
     }
 
+    // Validate gender before building form
+    const genderId = this.getGenderId(traveler.gender);
+    if (!genderId) {
+      throw new Error(
+        'Gender information is required for TDAC submission. ' +
+        'Please ensure your passport information includes a valid gender (Male or Female). ' +
+        'Current gender value: ' + (traveler.gender || '(not provided)')
+      );
+    }
+
     const dyn = this.dynamicData || {};
     const purposeRow = dyn.purposeRow;
     const purposeId = purposeRow?.key || this.getPurposeId(traveler.purpose);
@@ -1073,41 +1103,56 @@ class TDACAPIService {
     const provinceName = dyn.provinceRow?.value || this.normalizeInput(traveler.province);
 
     // For hotels, district/subDistrict/postCode are not required
-    const isHotelType = traveler.accommodationType === 'HOTEL';
+    // Check both the string value and the ID value
+    const accommodationType = this.normalizeInput(traveler.accommodationType);
+    const isHotelType = accommodationType === 'HOTEL' ||
+                       traveler.accommodationType === ID_MAPS.accommodation.HOTEL ||
+                       traveler.accommodationTypeDisplay === 'HOTEL';
     const districtName = isHotelType ? '' : (dyn.districtRow?.value || this.normalizeInput(traveler.district));
     const subDistrictName = isHotelType ? '' : (dyn.subDistrictRow?.value || this.normalizeInput(traveler.subDistrict));
 
     console.log('🔍 Dynamic data check:');
     console.log('   provinceRow:', dyn.provinceRow);
     console.log('   provinceName used:', provinceName);
+    console.log('   accommodationType input:', traveler.accommodationType);
+    console.log('   accommodationTypeDisplay:', traveler.accommodationTypeDisplay);
     console.log('   isHotelType:', isHotelType);
+    console.log('   districtRow:', dyn.districtRow);
+    console.log('   subDistrictRow:', dyn.subDistrictRow);
     const postalCode = isHotelType ? '' : (dyn.districtRow?.code || traveler.postCode || '');
-    const tranModeId = traveler.tranModeId || this.getTranModeId(traveler.travelMode);
+
+    // IMPORTANT: Use tranModeRow from dynamic data (fetched from API in prepareDynamicLookups)
+    // Do NOT use traveler.tranModeId as it may contain hardcoded IDs that don't match the session
+    const tranModeId = dyn.tranModeRow?.key || this.getTranModeId(traveler.travelMode);
+    console.log('   Using tranModeId:', tranModeId, 'from:', dyn.tranModeRow ? 'API session data' : 'fallback');
+
     const hasDeparture = !!departureDate;
-    const deptTranModeId = hasDeparture
+    const deptFlightNo = hasDeparture
+      ? (traveler.departureFlightNo || traveler.departureFlightNumber || '').toUpperCase().trim()
+      : '';
+
+    // IMPORTANT: Only include departure transport mode if there's a departure flight number
+    // TDAC API requires flight number when transport mode is provided
+    const hasDepartureFlight = hasDeparture && !!deptFlightNo;
+    const deptTranModeId = hasDepartureFlight
       ? this.getTranModeId(traveler.departureTravelMode || traveler.travelMode)
       : '';
-    const deptFlightNo = hasDeparture
-      ? (traveler.departureFlightNo || traveler.departureFlightNumber || '').toUpperCase()
-      : '';
+
     console.log('   Departure flags:', {
       hasDeparture,
+      hasDepartureFlight,
       departureDate,
       deptTranModeId,
       deptFlightNo,
       rawDepartureMode: traveler.departureTravelMode,
       rawDepartureFlight: traveler.departureFlightNo || traveler.departureFlightNumber
     });
-    const recentStayCountries = Array.isArray(traveler.recentStayCountry)
-      ? traveler.recentStayCountry
-      : traveler.recentStayCountry
-        ? String(traveler.recentStayCountry).split(',').map(item => item.trim())
-        : [];
-    const ddcCountryCodes = recentStayCountries
-      .map(code => (code || '').toUpperCase())
-      .filter(Boolean)
-      .join(',');
-    
+    // IMPORTANT: ddcCountrys (Disease Control Countries) should be empty string
+    // unless the traveler has actually visited countries on Thailand's disease control list
+    // in the last 21 days. This is NOT the same as nationality or boarded country.
+    // For most travelers, this should be an empty string.
+    const ddcCountrys = ''; // Empty string - no disease control countries visited
+
     const payload = {
       hiddenToken: '',
       informTempId: '',
@@ -1116,7 +1161,7 @@ class TDACAPIService {
         familyName: (traveler.familyName || '').toUpperCase(),
         middleName: (traveler.middleName || '').toUpperCase(),
         firstName: (traveler.firstName || '').toUpperCase(),
-        gender: this.getGenderId(traveler.gender),
+        gender: genderId, // Use pre-validated gender ID
         nationalityId: this.getNationalityId(traveler.nationality),
         nationalityDesc: this.getNationalityDesc(traveler.nationality),
         passportNo: (traveler.passportNo || '').toUpperCase(),
@@ -1156,17 +1201,24 @@ class TDACAPIService {
         notStayInTh: false
       },
       healthInfo: {
-        ddcCountryCodes // Visited countries in last 21 days
+        ddcCountrys // Note: Field name is ddcCountrys (not ddcCountryCodes)
       }
     };
 
+    // Clean up departure fields based on what data we have
     if (!hasDeparture) {
+      // No departure date at all - remove all departure fields
       delete payload.tripInfo.deptTraModeId;
       delete payload.tripInfo.deptFlightNo;
       delete payload.tripInfo.deptDate;
+    } else if (!hasDepartureFlight) {
+      // Have departure date but no flight number - remove transport mode and flight number
+      // Keep the departure date as it's still valid information
+      delete payload.tripInfo.deptTraModeId;
+      delete payload.tripInfo.deptFlightNo;
     }
 
-    TDACSubmissionLogger.logResolvedSelectMappings(travelerData, payload, dyn)
+    TDACSubmissionLogger.logResolvedSelectMappings(traveler, payload, dyn)
       .catch((error) => {
         console.warn('⚠️ Failed to log resolved TDAC select mappings:', error?.message || error);
       });
@@ -1288,7 +1340,40 @@ class TDACAPIService {
   }
 
   getGenderId(gender) {
-    return this.lookupWithCache('gender', gender, ID_MAPS.gender, ID_MAPS.gender.UNDEFINED);
+    console.log('🔍 TDACAPIService.getGenderId called with:', gender, 'type:', typeof gender);
+
+    // IMPORTANT: Do not default to UNDEFINED - TDAC API does not accept it
+    // If gender lookup fails, return empty string to trigger validation error
+
+    // If the gender is already an ID (starts with base64 pattern), return it as-is
+    if (gender && typeof gender === 'string' && gender.includes('==')) {
+      console.log('✅ Gender is already a TDAC ID, returning as-is:', gender);
+      return gender;
+    }
+
+    // First, try to find in the session cache (from Step 2 gotoAdd response)
+    // This is the most reliable source as it comes from the current session
+    const genderId = this.lookupWithCache('gender', gender, null, null);
+
+    if (genderId) {
+      console.log('✅ Found gender ID from session cache:', genderId);
+      return genderId;
+    }
+
+    // Fallback: Try direct ID_MAPS lookup (hardcoded values)
+    // This is less reliable as IDs might change between sessions
+    const normalized = this.normalizeInput(gender);
+    if (normalized && ID_MAPS.gender[normalized]) {
+      console.log('⚠️  Using fallback gender ID from ID_MAPS:', ID_MAPS.gender[normalized]);
+      return ID_MAPS.gender[normalized];
+    }
+
+    // No valid gender found - return empty string to trigger validation error
+    // This is better than defaulting to UNDEFINED which the API rejects
+    console.error('❌ No valid gender ID found for:', gender, 'normalized:', normalized);
+    console.error('   Available gender options from cache:', Object.keys(this.selectItemCache?.gender || {}));
+    console.error('   Gender rows:', this.selectItemRows?.gender);
+    return '';
   }
 
   getNationalityId(nationality) {
@@ -1449,10 +1534,26 @@ class TDACAPIService {
   }
 
   getAccommodationId(type) {
+    console.log('🔍 TDACAPIService.getAccommodationId called with:', type, 'type:', typeof type);
+
+    // If the accommodation type is already an ID (contains ==), return it as-is
+    if (type && typeof type === 'string' && type.includes('==')) {
+      console.log('✅ Accommodation type is already a TDAC ID, returning as-is:', type);
+      return type;
+    }
+
+    // Try to find in the session cache (from Step 2 gotoAdd response)
+    const id = this.lookupWithCache('accommodation', type, null, null);
+    if (id) {
+      console.log('✅ Found accommodation ID from session cache:', id);
+      return id;
+    }
+
+    // Fallback to hardcoded ID_MAPS
     const fallbackKey = type ? type.toString().toUpperCase().replace(/\s+/g, '_') : 'HOTEL';
-    const id = this.lookupWithCache('accommodation', type, ID_MAPS.accommodation, null);
-    if (id) return id;
-    return ID_MAPS.accommodation[fallbackKey] || ID_MAPS.accommodation.HOTEL;
+    const fallbackId = ID_MAPS.accommodation[fallbackKey] || ID_MAPS.accommodation.HOTEL;
+    console.log('⚠️  Using fallback accommodation ID from ID_MAPS:', fallbackId, 'for key:', fallbackKey);
+    return fallbackId;
   }
 
   getProvinceId(province) {

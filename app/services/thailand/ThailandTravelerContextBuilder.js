@@ -247,13 +247,17 @@ class ThailandTravelerContextBuilder {
       firstName: nameInfo.firstName,
       middleName: nameInfo.middleName || '',
       passportNo: passport?.passportNumber || '',
-      nationality: ThailandTravelerContextBuilder.getNationalityId(passport?.nationality) || passport?.nationality || '',
+      // DO NOT use encrypted nationality ID here - TDACAPIService will look it up
+      // Pass plain nationality code (CHN, USA, etc.) for search and lookup
+      nationality: passport?.nationality || '',
       nationalityDesc: passport?.nationality || '', // Plain text nationality for language detection
       
       // Personal Information (from user's personal info)
       birthDate: ThailandTravelerContextBuilder.formatDateForTDAC(passport?.dateOfBirth),
       occupation: personalInfo?.occupation || '',
-      gender: ThailandTravelerContextBuilder.getGenderId(passport?.gender),
+      // IMPORTANT: Pass plain text gender value, NOT the TDAC ID
+      // TDACAPIService will look it up from the session-specific cache
+      gender: passport?.gender || '', // Pass "Male", "Female", etc. as plain text
       countryResidence: ThailandTravelerContextBuilder.getCountryFromNationality(passport?.nationality),
       cityResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
       phoneCode: ThailandTravelerContextBuilder.getPhoneCode(personalInfo),
@@ -279,7 +283,9 @@ class ThailandTravelerContextBuilder {
       departureTravelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo), // Same as arrival for most cases
       
       // Accommodation (from user's travel info)
-      accommodationType: ThailandTravelerContextBuilder.getAccommodationTypeId(travelInfo?.accommodationType),
+      // IMPORTANT: Pass plain text accommodation type, NOT the TDAC ID
+      // TDACAPIService will look it up from the session-specific cache
+      accommodationType: travelInfo?.accommodationType || '', // Pass "HOTEL", "GUEST_HOUSE", etc. as plain text
       accommodationTypeDisplay: ThailandTravelerContextBuilder.getAccommodationTypeDisplay(travelInfo?.accommodationType),
       province: ThailandTravelerContextBuilder.transformProvince(travelInfo?.province),
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
@@ -336,15 +342,17 @@ class ThailandTravelerContextBuilder {
     // Clean the full name - remove extra spaces and normalize
     const cleanedName = fullName.trim().replace(/\s+/g, ' ');
 
-    // Try comma-separated format first (e.g., "ZHANG, WEI MING")
+    // Try comma-separated format first (e.g., "ZHANG, WEI MING" or "WANG, BAOBAO")
     if (cleanedName.includes(',')) {
       const parts = cleanedName.split(',').map(part => part.trim());
       if (parts.length === 2) {
         const givenNames = parts[1].split(' ').filter(name => name.length > 0);
         const result = {
           familyName: parts[0].replace(/,+$/, '').trim(), // Remove trailing commas
-          middleName: givenNames[0] || '',
-          firstName: givenNames.slice(1).join(' ') || givenNames[0] || ''
+          // If only one given name, it's the first name with no middle name
+          // If two or more given names, first is middle, rest is first name
+          middleName: givenNames.length >= 2 ? givenNames[0] : '',
+          firstName: givenNames.length >= 2 ? givenNames.slice(1).join(' ') : (givenNames[0] || '')
         };
         console.log('✅ Comma format parsed:', result);
         return result;
@@ -982,17 +990,19 @@ class ThailandTravelerContextBuilder {
    * @returns {string} - TDAC encoded gender ID
    */
   static getGenderId(gender) {
-    if (!gender) return '';
-    
     // TDAC gender IDs (extracted from HAR file)
     const TDAC_GENDER_IDS = {
       'MALE': 'g5iW15ADyFWOAxDewREkVA==',
       'FEMALE': 'JGb85pWhehCWn5EM6PeL5A==',
       'UNDEFINED': 'W6iZt0z/ayaCvyGt6LXKIA=='
     };
-    
+
+    // If gender is missing or undefined, return empty string
+    // The TDAC API validation will catch this and show a proper error message
+    if (!gender) return '';
+
     const normalizedGender = gender.toUpperCase().trim();
-    
+
     // Map common variations
     if (normalizedGender === 'M' || normalizedGender === 'MALE' || normalizedGender === '男性') {
       return TDAC_GENDER_IDS['MALE'];
@@ -1000,8 +1010,10 @@ class ThailandTravelerContextBuilder {
     if (normalizedGender === 'F' || normalizedGender === 'FEMALE' || normalizedGender === '女性') {
       return TDAC_GENDER_IDS['FEMALE'];
     }
-    
-    return TDAC_GENDER_IDS['UNDEFINED']; // Fallback
+
+    // IMPORTANT: TDAC API does not accept UNDEFINED gender
+    // Return empty string so validation will catch it and show proper error
+    return '';
   }
 
   /**

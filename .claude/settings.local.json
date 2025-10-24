@@ -6,7 +6,16 @@
       "Bash(chmod:*)",
       "Bash(node scripts/check-fund-photo.js:*)",
       "Bash(npx eslint:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(sqlite3:*)",
+      "Bash(xcrun simctl get_app_container:*)",
+      "Bash(xcrun simctl:*)",
+      "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/**)",
+      "Bash(for dir in ~/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/*/Documents)",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(ls:*)",
+      "Bash(done)",
+      "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/**)"
     ],
     "deny": [],
     "ask": []

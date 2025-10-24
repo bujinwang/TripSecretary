@@ -176,7 +176,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
           const tdacSubmission = {
             arrCardNo: result.arrCardNo,
             qrUri: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
-            pdfPath: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
+            pdfUrl: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
             submittedAt: new Date().toISOString(),
             submissionMethod: 'api',
             cardType: 'TDAC',
