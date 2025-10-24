@@ -67,9 +67,13 @@ const TDACHybridScreen = ({ navigation, route }) => {
     familyName: travelerInfo.familyName,
     firstName: travelerInfo.firstName,
     arrivalDate: travelerInfo.arrivalDate,
+    departureDate: travelerInfo.departureDate,
     email: travelerInfo.email,
     flightNo: travelerInfo.flightNo,
-    tranModeId: travelerInfo.tranModeId // Add this to debug logging
+    departureFlightNo: travelerInfo.departureFlightNo,
+    departureFlightNumber: travelerInfo.departureFlightNumber,
+    tranModeId: travelerInfo.tranModeId,
+    departureTransportModeId: travelerInfo.departureTransportModeId
   });
   
   const webViewRef = useRef(null);
@@ -217,6 +221,11 @@ const TDACHybridScreen = ({ navigation, route }) => {
         travelMode: travelerInfo.travelMode,
         flightNo: travelerInfo.flightNo,
         tranModeId: resolvedTranModeId,
+        // Departure flight information
+        departureFlightNo: travelerInfo.departureFlightNo || travelerInfo.departureFlightNumber || '',
+        departureFlightNumber: travelerInfo.departureFlightNumber || travelerInfo.departureFlightNo || '',
+        departureTravelMode: travelerInfo.departureTravelMode || travelerInfo.travelMode,
+        departureTransportModeId: travelerInfo.departureTransportModeId || resolvedTranModeId,
         accommodationType: travelerInfo.accommodationType,
         province: travelerInfo.province,
         district: travelerInfo.district,

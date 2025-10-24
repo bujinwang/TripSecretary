@@ -46,6 +46,8 @@ class ThailandTravelerContextBuilder {
         console.log('Travel info details:', {
           arrivalArrivalDate: userData.travelInfo.arrivalArrivalDate,
           arrivalFlightNumber: userData.travelInfo.arrivalFlightNumber,
+          departureDepartureDate: userData.travelInfo.departureDepartureDate,
+          departureFlightNumber: userData.travelInfo.departureFlightNumber,
           accommodationType: userData.travelInfo.accommodationType,
           province: userData.travelInfo.province,
           hotelAddress: userData.travelInfo.hotelAddress,
@@ -77,7 +79,12 @@ class ThailandTravelerContextBuilder {
         hasPassportNo: !!tdacData.passportNo,
         hasFullName: !!tdacData.familyName && !!tdacData.firstName,
         hasArrivalDate: !!tdacData.arrivalDate,
-        hasEmail: !!tdacData.email
+        hasEmail: !!tdacData.email,
+        departureDate: tdacData.departureDate,
+        departureFlightNo: tdacData.departureFlightNo,
+        departureFlightNumber: tdacData.departureFlightNumber,
+        departureTravelMode: tdacData.departureTravelMode,
+        departureTransportModeId: tdacData.departureTransportModeId
       });
 
       // Add required technical fields that are not user-provided
@@ -281,6 +288,7 @@ class ThailandTravelerContextBuilder {
       departureFlightNo: travelInfo?.departureFlightNumber || '',
       departureFlightNumber: travelInfo?.departureFlightNumber || '', // Alternative field name
       departureTravelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo), // Same as arrival for most cases
+      departureTransportModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo), // Same transport mode as arrival
       
       // Accommodation (from user's travel info)
       // IMPORTANT: Pass plain text accommodation type, NOT the TDAC ID

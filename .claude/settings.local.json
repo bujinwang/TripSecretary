@@ -15,7 +15,8 @@
       "Bash(do echo \"=== $dir ===\")",
       "Bash(ls:*)",
       "Bash(done)",
-      "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/**)"
+      "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/**)",
+      "Bash(/Users/bujin/Documents/Projects/TripSecretary/find-tdac-pdf.sh)"
     ],
     "deny": [],
     "ask": []

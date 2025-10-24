@@ -1135,7 +1135,7 @@ class TDACAPIService {
     // TDAC API requires flight number when transport mode is provided
     const hasDepartureFlight = hasDeparture && !!deptFlightNo;
     const deptTranModeId = hasDepartureFlight
-      ? this.getTranModeId(traveler.departureTravelMode || traveler.travelMode)
+      ? (traveler.departureTransportModeId || dyn.tranModeRow?.key || this.getTranModeId(traveler.departureTravelMode || traveler.travelMode))
       : '';
 
     console.log('   Departure flags:', {
@@ -1145,7 +1145,10 @@ class TDACAPIService {
       deptTranModeId,
       deptFlightNo,
       rawDepartureMode: traveler.departureTravelMode,
-      rawDepartureFlight: traveler.departureFlightNo || traveler.departureFlightNumber
+      rawDepartureTransportModeId: traveler.departureTransportModeId,
+      rawDepartureFlightNo: traveler.departureFlightNo,
+      rawDepartureFlightNumber: traveler.departureFlightNumber,
+      combinedDepartureFlight: traveler.departureFlightNo || traveler.departureFlightNumber
     });
     // IMPORTANT: ddcCountrys (Disease Control Countries) should be empty string
     // unless the traveler has actually visited countries on Thailand's disease control list
@@ -1205,18 +1208,36 @@ class TDACAPIService {
       }
     };
 
+    console.log('   Before cleanup - Departure fields in payload:', {
+      deptDate: payload.tripInfo.deptDate,
+      deptFlightNo: payload.tripInfo.deptFlightNo,
+      deptTraModeId: payload.tripInfo.deptTraModeId,
+      hasDeparture,
+      hasDepartureFlight
+    });
+
     // Clean up departure fields based on what data we have
     if (!hasDeparture) {
       // No departure date at all - remove all departure fields
+      console.log('   Cleanup: Removing ALL departure fields (no departure date)');
       delete payload.tripInfo.deptTraModeId;
       delete payload.tripInfo.deptFlightNo;
       delete payload.tripInfo.deptDate;
     } else if (!hasDepartureFlight) {
       // Have departure date but no flight number - remove transport mode and flight number
       // Keep the departure date as it's still valid information
+      console.log('   Cleanup: Removing deptTraModeId and deptFlightNo (have date but no flight number)');
       delete payload.tripInfo.deptTraModeId;
       delete payload.tripInfo.deptFlightNo;
+    } else {
+      console.log('   Cleanup: Keeping ALL departure fields (have both date and flight number)');
     }
+
+    console.log('   After cleanup - Departure fields in payload:', {
+      deptDate: payload.tripInfo.deptDate,
+      deptFlightNo: payload.tripInfo.deptFlightNo,
+      deptTraModeId: payload.tripInfo.deptTraModeId
+    });
 
     TDACSubmissionLogger.logResolvedSelectMappings(traveler, payload, dyn)
       .catch((error) => {
