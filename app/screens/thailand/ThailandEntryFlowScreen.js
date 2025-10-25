@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
@@ -703,18 +704,29 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             destination: route.params?.destination,
             completionData: userData
           })}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Text style={styles.entryGuideIcon}>🗺️</Text>
-          <View style={styles.entryGuideContent}>
-            <Text style={styles.entryGuideTitle}>
-              查看泰国入境指引
-            </Text>
-            <Text style={styles.entryGuideSubtitle}>
-              6步骤完整入境流程指南
-            </Text>
-          </View>
-          <Text style={styles.entryGuideArrow}>›</Text>
+          <LinearGradient
+            colors={['#0BD67B', colors.primary]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.entryGuideGradient}
+          >
+            <View style={styles.entryGuideIconContainer}>
+              <Text style={styles.entryGuideIcon}>🗺️</Text>
+            </View>
+            <View style={styles.entryGuideContent}>
+              <Text style={styles.entryGuideTitle}>
+                查看泰国入境指引
+              </Text>
+              <Text style={styles.entryGuideSubtitle}>
+                6步骤完整入境流程指南
+              </Text>
+            </View>
+            <View style={styles.entryGuideChevron}>
+              <Text style={styles.entryGuideArrow}>›</Text>
+            </View>
+          </LinearGradient>
         </TouchableOpacity>
 
         {/* Secondary Actions - Redesigned */}
@@ -723,12 +735,20 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.secondaryActionButton}
               onPress={handlePreviewEntryCard}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.secondaryActionIcon}>👁️</Text>
-              <Text style={styles.secondaryActionText}>
-                看看我的通关包
-              </Text>
+              <View style={styles.secondaryActionIconContainer}>
+                <Text style={styles.secondaryActionIcon}>👁️</Text>
+              </View>
+              <View style={styles.secondaryActionContent}>
+                <Text style={styles.secondaryActionTitle}>
+                  看看我的通关包
+                </Text>
+                <Text style={styles.secondaryActionSubtitle}>
+                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+                </Text>
+              </View>
+              <Text style={styles.secondaryActionArrow}>›</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -945,30 +965,54 @@ const styles = StyleSheet.create({
   secondaryActionButton: {
     flex: 1,
     minWidth: 100,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: spacing.md,
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(7, 193, 96, 0.15)',
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  secondaryActionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
   secondaryActionIcon: {
-    fontSize: 20,
-    marginBottom: spacing.xs,
+    fontSize: 24,
   },
-  secondaryActionText: {
-    ...typography.body2,
+  secondaryActionContent: {
+    flex: 1,
+  },
+  secondaryActionTitle: {
+    ...typography.body1,
     color: colors.text,
-    textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  secondaryActionSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  secondaryActionArrow: {
+    ...typography.body2,
+    color: colors.primaryDark,
+    fontWeight: '700',
+    fontSize: 18,
+    marginLeft: spacing.sm,
   },
   // No Data Styles
   noDataContainer: {
@@ -1056,42 +1100,61 @@ const styles = StyleSheet.create({
 
   // Entry Guide Button Styles
   entryGuideButton: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: spacing.md,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: spacing.lg,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  entryGuideGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  entryGuideIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
   entryGuideContent: {
     flex: 1,
-    marginLeft: spacing.sm,
   },
   entryGuideTitle: {
     ...typography.body1,
-    color: colors.text,
-    fontWeight: '600',
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 16,
   },
   entryGuideSubtitle: {
     ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 4,
   },
   entryGuideIcon: {
-    fontSize: 20,
-    marginRight: spacing.xs,
+    fontSize: 24,
+  },
+  entryGuideChevron: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.md,
   },
   entryGuideArrow: {
     ...typography.body1,
-    color: colors.textSecondary,
+    color: colors.white,
     fontSize: 18,
+    fontWeight: '600',
   },
 
   // Additional action buttons styles

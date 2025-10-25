@@ -20,7 +20,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
-import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
+import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../components';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
 import { colors, typography, spacing } from '../../theme';
@@ -28,11 +28,11 @@ import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
-import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
 import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
 import SuggestionProviders from '../../utils/SuggestionProviders';
 import FieldStateManager from '../../utils/FieldStateManager';
+import { getDistrictsByProvince, getSubDistrictsByDistrictId } from '../../data/thailandLocations';
 
 // Import secure data models and services
 import Passport from '../../models/Passport';
@@ -49,6 +49,42 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
+
+const normalizeLocationValue = (value) => (value || '').toString().trim().toLowerCase();
+
+const findDistrictOption = (provinceCode, targetValue) => {
+  if (!provinceCode || !targetValue) return null;
+  const districts = getDistrictsByProvince(provinceCode);
+  if (!Array.isArray(districts) || districts.length === 0) return null;
+  const normalized = normalizeLocationValue(targetValue);
+
+  return (
+    districts.find((district) => {
+      if (!district) return false;
+      const nameEn = normalizeLocationValue(district.nameEn);
+      const nameTh = normalizeLocationValue(district.nameTh);
+      const nameZh = normalizeLocationValue(district.nameZh);
+      return normalized === nameEn || normalized === nameTh || normalized === nameZh;
+    }) || null
+  );
+};
+
+const findSubDistrictOption = (districtId, targetValue) => {
+  if (!districtId || !targetValue) return null;
+  const subDistricts = getSubDistrictsByDistrictId(districtId);
+  if (!Array.isArray(subDistricts) || subDistricts.length === 0) return null;
+  const normalized = normalizeLocationValue(targetValue);
+
+  return (
+    subDistricts.find((subDistrict) => {
+      if (!subDistrict) return false;
+      const nameEn = normalizeLocationValue(subDistrict.nameEn);
+      const nameTh = normalizeLocationValue(subDistrict.nameTh);
+      const nameZh = normalizeLocationValue(subDistrict.nameZh);
+      return normalized === nameEn || normalized === nameTh || normalized === nameZh;
+    }) || null
+  );
+};
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
@@ -142,7 +178,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [funds, setFunds] = useState([]);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
   const [selectedFundItem, setSelectedFundItem] = useState(null);
-  const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
+  const [currentFundItem, setCurrentFundItem] = useState(null);
   const [newFundItemType, setNewFundItemType] = useState(null);
 
   // Entry Info State - for tracking the entry pack
@@ -165,9 +201,42 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
   const [province, setProvince] = useState(''); // 省
   const [district, setDistrict] = useState(''); // 区（地区）
+  const [districtId, setDistrictId] = useState(null); // 区ID
   const [subDistrict, setSubDistrict] = useState(''); // 乡（子地区）
+  const [subDistrictId, setSubDistrictId] = useState(null); // 乡ID
   const [postalCode, setPostalCode] = useState(''); // 邮政编码
   const [hotelAddress, setHotelAddress] = useState('');
+
+  useEffect(() => {
+    if (!province || !district) {
+      if (districtId !== null) {
+        setDistrictId(null);
+      }
+      return;
+    }
+
+    const match = findDistrictOption(province, district);
+    if (match && match.id !== districtId) {
+      setDistrictId(match.id);
+    }
+  }, [province, district, districtId]);
+
+  useEffect(() => {
+    if (!districtId || !subDistrict) {
+      if (subDistrictId !== null) {
+        setSubDistrictId(null);
+      }
+      return;
+    }
+
+    const match = findSubDistrictOption(districtId, subDistrict);
+    if (match && match.id !== subDistrictId) {
+      setSubDistrictId(match.id);
+      if (!postalCode && match.postalCode) {
+        setPostalCode(String(match.postalCode));
+      }
+    }
+  }, [districtId, subDistrict, subDistrictId, postalCode]);
 
   const [errors, setErrors] = useState({});
   const [warnings, setWarnings] = useState({});
@@ -775,18 +844,25 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
             const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
             if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
-              setAccommodationType(loadedAccommodationType);
-              setCustomAccommodationType('');
-            } else {
-              // Custom accommodation type - set to OTHER and store custom value
-              setAccommodationType('OTHER');
-              setCustomAccommodationType(loadedAccommodationType);
-            }
-            setProvince(travelInfo.province || '');
-            setDistrict(travelInfo.district || '');
-            setSubDistrict(travelInfo.subDistrict || '');
-            setPostalCode(travelInfo.postalCode || '');
-            setHotelAddress(travelInfo.hotelAddress || '');
+            setAccommodationType(loadedAccommodationType);
+            setCustomAccommodationType('');
+          } else {
+            // Custom accommodation type - set to OTHER and store custom value
+            setAccommodationType('OTHER');
+            setCustomAccommodationType(loadedAccommodationType);
+          }
+          setProvince(travelInfo.province || '');
+          setDistrict(travelInfo.district || '');
+          const matchedDistrict = findDistrictOption(travelInfo.province || province, travelInfo.district || '');
+          setDistrictId(matchedDistrict?.id || null);
+          setSubDistrict(travelInfo.subDistrict || '');
+          const matchedSubDistrict = findSubDistrictOption(
+            matchedDistrict?.id || travelInfo.districtId || null,
+            travelInfo.subDistrict || ''
+          );
+          setSubDistrictId(matchedSubDistrict?.id || null);
+          setPostalCode(travelInfo.postalCode || '');
+          setHotelAddress(travelInfo.hotelAddress || '');
             
             console.log('Travel info loaded and state updated');
             
@@ -1341,6 +1417,64 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     handleFieldBlur('cityOfResidence', cityOfResidence);
   }, [residentCountry]);
 
+  const resetDistrictSelection = useCallback(() => {
+    setDistrict('');
+    setDistrictId(null);
+    setSubDistrict('');
+    setSubDistrictId(null);
+    setPostalCode('');
+  }, []);
+
+  const handleProvinceSelect = useCallback((code) => {
+    setProvince(code);
+    resetDistrictSelection();
+
+    handleFieldBlur('province', code);
+
+    if (district) {
+      handleFieldBlur('district', '');
+    }
+    if (subDistrict) {
+      handleFieldBlur('subDistrict', '');
+    }
+    if (postalCode) {
+      handleFieldBlur('postalCode', '');
+    }
+  }, [handleFieldBlur, resetDistrictSelection, district, subDistrict, postalCode]);
+
+  const handleDistrictSelect = useCallback((selection) => {
+    if (!selection) return;
+
+    setDistrict(selection.nameEn);
+    setDistrictId(selection.id);
+    handleFieldBlur('district', selection.nameEn);
+
+    if (subDistrict) {
+      setSubDistrict('');
+      setSubDistrictId(null);
+      handleFieldBlur('subDistrict', '');
+    }
+
+    if (postalCode) {
+      setPostalCode('');
+      handleFieldBlur('postalCode', '');
+    }
+  }, [handleFieldBlur, subDistrict, postalCode]);
+
+  const handleSubDistrictSelect = useCallback((selection) => {
+    if (!selection) return;
+
+    setSubDistrict(selection.nameEn);
+    setSubDistrictId(selection.id);
+    handleFieldBlur('subDistrict', selection.nameEn);
+
+    const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
+    if (newPostalCode || postalCode) {
+      setPostalCode(newPostalCode);
+      handleFieldBlur('postalCode', newPostalCode);
+    }
+  }, [handleFieldBlur, postalCode]);
+
 // Helper method to perform the actual save operation
 const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
   try {
@@ -1871,24 +2005,19 @@ const normalizeFundItem = useCallback((item) => ({
    }, [userId, destination, entryInfoInitialized]);
 
   const addFund = (type) => {
+    setCurrentFundItem(null);
     setNewFundItemType(type);
-    setIsCreatingFundItem(true);
-    setSelectedFundItem(null);
     setFundItemModalVisible(true);
   };
 
   const handleFundItemPress = (fund) => {
-    setSelectedFundItem(fund);
-    setIsCreatingFundItem(false);
-    setNewFundItemType(null);
+    setCurrentFundItem(fund);
     setFundItemModalVisible(true);
   };
 
   const handleFundItemModalClose = () => {
     setFundItemModalVisible(false);
-    setSelectedFundItem(null);
-    setIsCreatingFundItem(false);
-    setNewFundItemType(null);
+    setCurrentFundItem(null);
   };
 
   const handleFundItemUpdate = async (updatedItem) => {
@@ -2656,7 +2785,9 @@ const normalizeFundItem = useCallback((item) => ({
                 setCustomAccommodationType('');
                 setProvince('');
                 setDistrict('');
+                setDistrictId(null);
                 setSubDistrict('');
+                setSubDistrictId(null);
                 setPostalCode('');
                 setHotelAddress('');
               }
@@ -2767,10 +2898,7 @@ const normalizeFundItem = useCallback((item) => ({
                 <ProvinceSelector
                   label="省"
                   value={province}
-                  onValueChange={(code) => {
-                    setProvince(code);
-                    debouncedSaveData(); // Trigger debounced save when province changes
-                  }}
+                  onValueChange={handleProvinceSelect}
                   helpText="请选择泰国的省份"
                   error={!!errors.province}
                   errorMessage={errors.province}
@@ -2792,43 +2920,42 @@ const normalizeFundItem = useCallback((item) => ({
                 <ProvinceSelector
                   label="省"
                   value={province}
-                  onValueChange={(code) => {
-                    setProvince(code);
-                    debouncedSaveData(); // Trigger debounced save when province changes
-                  }}
+                  onValueChange={handleProvinceSelect}
                   helpText="请选择泰国的省份"
                   error={!!errors.province}
                   errorMessage={errors.province}
                 />
-                <Input 
-                  label="区（地区）" 
-                  value={district} 
-                  onChangeText={setDistrict} 
-                  onBlur={() => handleFieldBlur('district', district)} 
-                  helpText="请输入区或地区" 
-                  error={!!errors.district} 
-                  errorMessage={errors.district} 
-                  autoCapitalize="words" 
+                <DistrictSelector
+                  label="区（地区）"
+                  provinceCode={province}
+                  value={district}
+                  selectedDistrictId={districtId}
+                  onSelect={handleDistrictSelect}
+                  helpText="请选择区或地区（支持中英文搜索）"
+                  error={!!errors.district}
+                  errorMessage={errors.district}
                 />
-                <Input 
-                  label="乡（子地区）" 
-                  value={subDistrict} 
-                  onChangeText={setSubDistrict} 
-                  onBlur={() => handleFieldBlur('subDistrict', subDistrict)} 
-                  helpText="请输入乡或子地区" 
-                  error={!!errors.subDistrict} 
-                  errorMessage={errors.subDistrict} 
-                  autoCapitalize="words" 
+                <SubDistrictSelector
+                  label="乡（子地区）"
+                  districtId={districtId}
+                  value={subDistrict}
+                  selectedSubDistrictId={subDistrictId}
+                  onSelect={handleSubDistrictSelect}
+                  helpText="选择后我们会自动匹配邮政编码"
+                  error={!!errors.subDistrict}
+                  errorMessage={errors.subDistrict}
                 />
-                <Input 
-                  label="邮政编码" 
-                  value={postalCode} 
-                  onChangeText={setPostalCode} 
-                  onBlur={() => handleFieldBlur('postalCode', postalCode)} 
-                  helpText="请输入邮政编码" 
-                  error={!!errors.postalCode} 
-                  errorMessage={errors.postalCode} 
-                  keyboardType="numeric" 
+                <Input
+                  label="邮政编码"
+                  value={postalCode}
+                  onChangeText={(value) => {
+                    setPostalCode(value);
+                  }}
+                  onBlur={() => handleFieldBlur('postalCode', postalCode)}
+                  helpText="选择乡 / 街道后会自动填写，可手动修正"
+                  error={!!errors.postalCode}
+                  errorMessage={errors.postalCode}
+                  keyboardType="numeric"
                 />
                 <Input 
                   label="详细地址" 
@@ -2936,8 +3063,7 @@ const normalizeFundItem = useCallback((item) => ({
 
       <FundItemDetailModal
         visible={fundItemModalVisible}
-        fundItem={isCreatingFundItem ? null : selectedFundItem}
-        isCreateMode={isCreatingFundItem}
+        fundItem={currentFundItem}
         createItemType={newFundItemType}
         onClose={handleFundItemModalClose}
         onUpdate={handleFundItemUpdate}

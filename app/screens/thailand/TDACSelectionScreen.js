@@ -8,11 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
+  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
+import BackButton from '../../components/BackButton';
 // Removed mockTDACData dependency - using pure user data
 import EntryInfoService from '../../services/EntryInfoService';
 import SnapshotService from '../../services/snapshot/SnapshotService';
@@ -529,15 +532,28 @@ const TDACSelectionScreen = ({ navigation, route }) => {
   }, [navigation]);
 
   return (
-    <ScrollView style={styles.container}>
-      {/* 情感化头部 */}
-      <View style={styles.heroSection}>
-        <Text style={styles.heroEmoji}>🌟</Text>
-        <Text style={styles.heroTitle}>快速入境，无忧通关</Text>
-        <Text style={styles.heroSubtitle}>
-          选择最适合您的泰国入境卡提交方式，{'\n'}让通关更简单、更安心
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        {/* 情感化头部 */}
+        <LinearGradient
+          colors={['#4c5bdc', '#6a48b8']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroSection}
+        >
+          <View style={styles.heroHeaderRow}>
+            <BackButton
+              onPress={() => navigation.goBack()}
+              label="返回"
+              style={styles.backButton}
+              labelStyle={styles.backButtonLabel}
+              iconStyle={styles.backButtonIcon}
+            />
+          </View>
+          <Text style={styles.heroEmoji}>🌟</Text>
+          <Text style={styles.heroTitle}>选择提交方式</Text>
+          <Text style={styles.heroSubtitle}>快速完成泰国入境卡</Text>
+        </LinearGradient>
 
       {/* 快速通道选项 */}
       <View style={styles.optionSection}>
@@ -590,10 +606,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 
           {/* 用户利益 */}
           <View style={styles.userBenefits}>
-            <Text style={styles.benefitsTitle}>✨ 让您更省心</Text>
-            <Text style={styles.benefitPoint}>• 节省宝贵时间，避免排队焦虑</Text>
-            <Text style={styles.benefitPoint}>• 快速获得确认，安心等待登机</Text>
-            <Text style={styles.benefitPoint}>• 专业团队保障，全程技术支持</Text>
+            <Text style={styles.benefitSummary}>节省排队时间，提交后即可获得确认。</Text>
           </View>
 
           {/* 行动按钮 */}
@@ -601,29 +614,29 @@ const TDACSelectionScreen = ({ navigation, route }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('TDACHybrid', { travelerInfo })}
           >
-            <Text style={styles.actionButtonText}>立即体验闪电提交 →</Text>
+            <Text style={styles.actionButtonText}>使用闪电提交</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </View>
 
-      {/* 稳定通道选项 */}
-      <View style={styles.optionSection}>
-        <TouchableOpacity
-          style={[styles.optionCard, styles.stableCard]}
-          onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
-          activeOpacity={0.8}
-        >
-          {/* 标题区域 */}
-          <View style={styles.cardHeader}>
-            <Text style={[styles.optionIcon, styles.stableIcon]}>🛡️</Text>
-            <View style={styles.titleSection}>
-              <Text style={[styles.optionTitle, styles.stableTitle]}>稳妥提交</Text>
-              <Text style={[styles.optionSubtitle, styles.stableSubtitle]}>稳定通道 · 清晰可见</Text>
+        {/* 稳定通道选项 */}
+        <View style={styles.optionSection}>
+          <TouchableOpacity
+            style={[styles.optionCard, styles.stableCard]}
+            onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
+            activeOpacity={0.8}
+          >
+            {/* 标题区域 */}
+            <View style={styles.cardHeader}>
+              <Text style={[styles.optionIcon, styles.stableIcon]}>🛡️</Text>
+              <View style={styles.titleSection}>
+                <Text style={[styles.optionTitle, styles.stableTitle]}>稳妥提交</Text>
+                <Text style={[styles.optionSubtitle, styles.stableSubtitle]}>稳定通道 · 清晰可见</Text>
+              </View>
             </View>
-          </View>
 
           {/* 核心指标 */}
-          <View style={styles.benefitsSection}>
+          <View style={[styles.benefitsSection, styles.stableBenefitsSection]}>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>⏱️</Text>
               <View>
@@ -643,50 +656,44 @@ const TDACSelectionScreen = ({ navigation, route }) => {
 
           {/* 用户利益 */}
           <View style={styles.userBenefits}>
-            <Text style={styles.benefitsTitle}>✨ 适合这些旅客</Text>
-            <Text style={styles.benefitPoint}>• 喜欢眼见为实，过程清晰可见</Text>
-            <Text style={styles.benefitPoint}>• 初次使用，更喜欢稳妥的方式</Text>
-            <Text style={styles.benefitPoint}>• 不赶时间，可以慢慢确认</Text>
+            <Text style={styles.benefitSummary}>适合想亲自查看每一步的旅客。</Text>
           </View>
 
-          {/* 行动按钮 */}
-          <TouchableOpacity
-            style={[styles.actionButton, styles.stableButton]}
-            onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
-          >
-            <Text style={[styles.actionButtonText, styles.stableButtonText]}>选择稳妥方案</Text>
+            {/* 行动按钮 */}
+            <TouchableOpacity
+              style={[styles.actionButton, styles.stableButton]}
+              onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
+            >
+              <Text style={[styles.actionButtonText, styles.stableButtonText]}>选择稳妥方案</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
+        </View>
 
-      {/* 智能推荐提示 */}
-      <View style={styles.smartTipSection}>
-        <View style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>智能推荐</Text>
-            <Text style={styles.tipText}>
-              基于您的旅行习惯，我们推荐闪电提交方案。{'\n'}
-              如果您更喜欢眼见为实的过程，可以随时切换到稳妥方案。
-            </Text>
+        {/* 智能推荐提示 */}
+        <View style={styles.smartTipSection}>
+          <View style={styles.tipCard}>
+            <Text style={styles.tipIcon}>💡</Text>
+            <View style={styles.tipContent}>
+              <Text style={styles.tipTitle}>智能推荐</Text>
+              <Text style={styles.tipText}>推荐闪电提交；如需完整流程，可随时切换稳妥方案。</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* 底部鼓励信息 */}
-      <View style={styles.footerSection}>
-        <Text style={styles.footerEmoji}>🌺</Text>
-        <Text style={styles.footerTitle}>祝您泰国之旅愉快！</Text>
-        <Text style={styles.footerText}>
-          无论选择哪种方式，我们都会全力协助您{'\n'}
-          顺利完成入境卡提交，安心享受泰国假期
-        </Text>
-      </View>
-    </ScrollView>
+        {/* 底部鼓励信息 */}
+        <View style={styles.footerSection}>
+          <Text style={styles.footerText}>我们会陪您完成整个流程，确保顺利提交。</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -694,12 +701,25 @@ const styles = StyleSheet.create({
 
   // 情感化头部区域
   heroSection: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: 24,
     paddingTop: 60,
     alignItems: 'center',
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
+  },
+  heroHeaderRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  backButton: {
+    marginBottom: 16,
+  },
+  backButtonIcon: {
+    color: colors.white,
+  },
+  backButtonLabel: {
+    color: colors.white,
   },
   heroEmoji: {
     fontSize: 48,
@@ -711,6 +731,9 @@ const styles = StyleSheet.create({
     color: colors.white,
     marginBottom: 12,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   heroSubtitle: {
     fontSize: 16,
@@ -718,6 +741,9 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     textAlign: 'center',
     lineHeight: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 
   // 选项卡样式
@@ -805,8 +831,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 24,
     paddingVertical: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.05)',
     borderRadius: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.05)',
+  },
+  stableBenefitsSection: {
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
   },
   benefitItem: {
     alignItems: 'center',
@@ -835,16 +864,9 @@ const styles = StyleSheet.create({
   userBenefits: {
     marginBottom: 24,
   },
-  benefitsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  benefitPoint: {
+  benefitSummary: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 8,
     lineHeight: 20,
   },
 
@@ -911,17 +933,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     alignItems: 'center',
     paddingVertical: 24,
-  },
-  footerEmoji: {
-    fontSize: 36,
-    marginBottom: 12,
-  },
-  footerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 8,
-    textAlign: 'center',
   },
   footerText: {
     fontSize: 14,

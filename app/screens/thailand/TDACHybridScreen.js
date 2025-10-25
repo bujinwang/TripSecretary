@@ -474,6 +474,31 @@ const TDACHybridScreen = ({ navigation, route }) => {
         )}
         
         <Text style={styles.progressText}>{progress}</Text>
+
+        {stage === 'error' && (
+          <View style={styles.errorActions}>
+            <TouchableOpacity
+              style={styles.errorButton}
+              onPress={() => navigation.replace('TDACHybrid', { travelerInfo })}
+            >
+              <Text style={styles.errorButtonText}>🔄 重试提交</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.errorButton, styles.secondaryButton]}
+              onPress={() => navigation.replace('TDACWebView', { travelerInfo })}
+            >
+              <Text style={[styles.errorButtonText, styles.secondaryButtonText]}>
+                🌐 使用WebView版本
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.errorButton, styles.ghostButton]}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={[styles.errorButtonText, styles.ghostButtonText]}>⬅ 返回上一页</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         
         {stage === 'success' && arrCardNo && (
           <View style={styles.successInfo}>
@@ -747,6 +772,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successButtonText: {
+   color: colors.white,
+   fontSize: 16,
+   fontWeight: 'bold',
+  },
+  errorActions: {
+    width: '100%',
+    marginTop: 32,
+    gap: 12,
+  },
+  errorButton: {
+    width: '100%',
+    backgroundColor: '#f44336',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  errorButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
@@ -758,6 +801,14 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: '#1b6ca3',
+  },
+  ghostButton: {
+    backgroundColor: '#fff',
+    borderWidth: 0,
+    borderColor: 'transparent',
+  },
+  ghostButtonText: {
+    color: '#666',
   },
   statsContainer: {
     flexDirection: 'row',
