@@ -180,6 +180,24 @@ class EntryCompletionCalculator {
    * @returns {Object} - Passport completion metrics
    */
   calculatePassportCompletion(passport = {}) {
+    // If passport is null or undefined, treat as missing (but allow entry_info creation)
+    if (!passport || Object.keys(passport).length === 0) {
+      return {
+        complete: 0,
+        total: 5,
+        state: 'missing',
+        fields: [
+          { name: 'passportNumber', hasValue: false, isValid: false },
+          { name: 'fullName', hasValue: false, isValid: false },
+          { name: 'nationality', hasValue: false, isValid: false },
+          { name: 'dateOfBirth', hasValue: false, isValid: false },
+          { name: 'expiryDate', hasValue: false, isValid: false }
+        ],
+        percentage: 0,
+        note: 'Passport can be added later'
+      };
+    }
+
     const requiredFields = [
       { name: 'passportNumber', type: 'passport', value: passport.passportNumber },
       { name: 'fullName', type: 'text', value: passport.fullName },
@@ -461,7 +479,17 @@ class EntryCompletionCalculator {
    * @returns {boolean} - Is ready for submission
    */
   isReadyForSubmission(metrics) {
-    return Object.values(metrics).every(metric => metric.state === 'complete');
+    // Allow submission even if passport is missing (can be added later)
+    // But require all other categories to be complete
+    const requiredCategories = ['personalInfo', 'funds', 'travel'];
+    const allRequiredComplete = requiredCategories.every(category =>
+      metrics[category] && metrics[category].state === 'complete'
+    );
+
+    // Passport is optional for submission (can be added later)
+    const passportComplete = !metrics.passport || metrics.passport.state === 'complete';
+
+    return allRequiredComplete && passportComplete;
   }
 
   /**

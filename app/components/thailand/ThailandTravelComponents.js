@@ -123,12 +123,6 @@ export const CollapsibleSection = ({ title, subtitle, children, onScan, isExpand
           )}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>扫描</Text>
-            </TouchableOpacity>
-          )}
           <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
         </View>
       </TouchableOpacity>
@@ -251,24 +245,6 @@ const styles = StyleSheet.create({
   },
   fieldCountTextIncomplete: {
     color: '#856404',
-  },
-  scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e3f2fd',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  scanIcon: {
-    fontSize: 16,
-    marginRight: 4,
-  },
-  scanText: {
-    fontSize: 13,
-    color: '#1976d2',
-    fontWeight: '600',
   },
   sectionIcon: {
     fontSize: 16,

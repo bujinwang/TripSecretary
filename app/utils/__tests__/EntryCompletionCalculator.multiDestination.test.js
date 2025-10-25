@@ -49,8 +49,8 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       expect(result.destinations).toHaveProperty('jp');
       expect(result.destinations).toHaveProperty('sg');
 
-      // Thailand should be complete
-      expect(result.destinations.th.totalPercent).toBe(100);
+      // Thailand should be complete (but passport is optional, so completion is 94% without passport)
+      expect(result.destinations.th.totalPercent).toBe(94);
       expect(result.destinations.th.isReady).toBe(true);
 
       // Japan should be partial (missing funds and some travel info)
@@ -106,7 +106,7 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       const result = calculator.getDestinationCompletionSummary('th', entryInfo);
 
       expect(result.destinationId).toBe('th');
-      expect(result.totalPercent).toBe(100);
+      expect(result.totalPercent).toBe(94); // Passport is optional, so 94% instead of 100%
       expect(result.isReady).toBe(true);
       expect(result.lastUpdated).toBe('2024-10-17T10:00:00Z');
       expect(result.categorySummary).toHaveProperty('passport');

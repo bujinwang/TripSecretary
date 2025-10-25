@@ -972,43 +972,12 @@ class UserDataService {
 
       let passport, personalInfo;
 
-      if (useBatchLoad) {
-        try {
-          // Use batch loading with single transaction for better performance
-          // This reduces database round-trips and ensures consistent read
-          const batchData = await SecureStorageService.batchLoad(userId, [
-            'passport',
-            'personalInfo'
-          ]);
-
-          passport = batchData.passport;
-          personalInfo = batchData.personalInfo;
-
-          // Update cache with loaded data
-          if (passport) {
-            this.cache.passport.set(userId, passport);
-            this.updateCacheTimestamp(`passport_${userId}`);
-          }
-          if (personalInfo) {
-            this.cache.personalInfo.set(userId, personalInfo);
-            this.updateCacheTimestamp(`personalInfo_${userId}`);
-          }
-        } catch (batchError) {
-          // If batch loading fails (e.g., schema mismatch), fall back to parallel loading
-          console.warn('Batch loading failed, falling back to parallel loading:', batchError.message);
-          [passport, personalInfo] = await Promise.all([
-            this.getPassport(userId).catch(() => null),
-            this.getPersonalInfo(userId).catch(() => null)
-          ]);
-        }
-      } else {
-        // Fall back to parallel loading (original implementation)
-        // This is more efficient than sequential loading but less efficient than batch
-        [passport, personalInfo] = await Promise.all([
-          this.getPassport(userId).catch(() => null),
-          this.getPersonalInfo(userId).catch(() => null)
-        ]);
-      }
+      // Fall back to parallel loading (original implementation)
+      // This is more efficient than sequential loading but less efficient than batch
+      [passport, personalInfo] = await Promise.all([
+        this.getPassport(userId).catch(() => null),
+        this.getPersonalInfo(userId).catch(() => null)
+      ]);
 
       const duration = Date.now() - startTime;
       console.log(`All user data loaded in ${duration}ms using ${useBatchLoad ? 'batch' : 'parallel'} loading`);

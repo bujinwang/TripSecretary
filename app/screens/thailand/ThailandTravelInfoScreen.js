@@ -13,7 +13,6 @@ import {
   UIManager,
   Alert,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
@@ -34,7 +33,6 @@ import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator
 import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
 import SuggestionProviders from '../../utils/SuggestionProviders';
 import FieldStateManager from '../../utils/FieldStateManager';
-import apiClient from '../../services/api';
 
 // Import secure data models and services
 import Passport from '../../models/Passport';
@@ -44,7 +42,6 @@ import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../../services/data/UserDataService';
 
 // Import Thailand-specific utilities
-import { formatDateForInput, processTicketOCRResult, processHotelOCRResult } from '../../utils/thailand/OcrProcessingUtils';
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 if (Platform.OS === 'android') {
@@ -116,7 +113,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // UI State (loaded from database, not from route params)
   const [passportNo, setPassportNo] = useState('');
   const [visaNumber, setVisaNumber] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [givenName, setGivenName] = useState('');
   const [nationality, setNationality] = useState('');
   const [dob, setDob] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -279,7 +278,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     switch (section) {
       case 'passport':
         const passportFields = {
-          fullName: fullName,
+          fullName: [surname, middleName, givenName].filter(Boolean).join(', '),
           nationality: nationality,
           passportNo: passportNo,
           dob: dob,
@@ -621,21 +620,40 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         if (passportInfo) {
           console.log('Loading passport from database:', passportInfo);
           setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
-          setFullName(prev => {
-            if (passportInfo.fullName && passportInfo.fullName.trim()) {
-              return passportInfo.fullName;
+          const nameToParse = passportInfo?.fullName || passport?.nameEn || passport?.name || '';
+          if (nameToParse) {
+            if (nameToParse.includes(',')) {
+              const parts = nameToParse.split(',').map(part => part.trim());
+              if (parts.length === 3) {
+                setSurname(parts[0]);
+                setMiddleName(parts[1]);
+                setGivenName(parts[2]);
+              } else if (parts.length === 2) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName(parts[1]);
+              } else if (parts.length === 1) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
+            } else {
+              const spaceParts = nameToParse.trim().split(/\s+/);
+              if (spaceParts.length >= 3) {
+                setSurname(spaceParts[0]);
+                setMiddleName(spaceParts[1]);
+                setGivenName(spaceParts.slice(2).join(' '));
+              } else if (spaceParts.length === 2) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName(spaceParts[1]);
+              } else if (spaceParts.length === 1) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
             }
-            if (prev && prev.trim()) {
-              return prev;
-            }
-            if (passport?.nameEn && passport?.nameEn.trim()) {
-              return passport.nameEn;
-            }
-            if (passport?.name && passport?.name.trim()) {
-              return passport.name;
-            }
-            return '';
-          });
+          };
           setNationality(passportInfo.nationality || passport?.nationality || '');
           setDob(passportInfo.dateOfBirth || passport?.dob || '');
           setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
@@ -646,18 +664,40 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           console.log('No passport data in database, using route params');
           // Fallback to route params if no centralized data
           setPassportNo(passport?.passportNo || '');
-          setFullName(prev => {
-            if (prev && prev.trim()) {
-              return prev;
+          const nameToParse = passport?.nameEn || passport?.name || '';
+          if (nameToParse) {
+            if (nameToParse.includes(',')) {
+              const parts = nameToParse.split(',').map(part => part.trim());
+              if (parts.length === 3) {
+                setSurname(parts[0]);
+                setMiddleName(parts[1]);
+                setGivenName(parts[2]);
+              } else if (parts.length === 2) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName(parts[1]);
+              } else if (parts.length === 1) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
+            } else {
+              const spaceParts = nameToParse.trim().split(/\s+/);
+              if (spaceParts.length >= 3) {
+                setSurname(spaceParts[0]);
+                setMiddleName(spaceParts[1]);
+                setGivenName(spaceParts.slice(2).join(' '));
+              } else if (spaceParts.length === 2) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName(spaceParts[1]);
+              } else if (spaceParts.length === 1) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
             }
-            if (passport?.nameEn && passport?.nameEn.trim()) {
-              return passport.nameEn;
-            }
-            if (passport?.name && passport?.name.trim()) {
-              return passport.name;
-            }
-            return '';
-          });
+          };
           setNationality(passport?.nationality || '');
           setDob(passport?.dob || '');
           setExpiryDate(passport?.expiry || '');
@@ -779,18 +819,40 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       } catch (error) {
         // Fallback to route params on error
         setPassportNo(passport?.passportNo || '');
-        setFullName(prev => {
-          if (prev && prev.trim()) {
-            return prev;
-          }
-          if (passport?.nameEn && passport?.nameEn.trim()) {
-            return passport.nameEn;
-          }
-          if (passport?.name && passport?.name.trim()) {
-            return passport.name;
-          }
-          return '';
-        });
+        const nameToParse = passport?.nameEn || passport?.name || '';
+        if (nameToParse) {
+            if (nameToParse.includes(',')) {
+              const parts = nameToParse.split(',').map(part => part.trim());
+              if (parts.length === 3) {
+                setSurname(parts[0]);
+                setMiddleName(parts[1]);
+                setGivenName(parts[2]);
+              } else if (parts.length === 2) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName(parts[1]);
+              } else if (parts.length === 1) {
+                setSurname(parts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
+            } else {
+              const spaceParts = nameToParse.trim().split(/\s+/);
+              if (spaceParts.length >= 3) {
+                setSurname(spaceParts[0]);
+                setMiddleName(spaceParts[1]);
+                setGivenName(spaceParts.slice(2).join(' '));
+              } else if (spaceParts.length === 2) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName(spaceParts[1]);
+              } else if (spaceParts.length === 1) {
+                setSurname(spaceParts[0]);
+                setMiddleName('');
+                setGivenName('');
+              }
+            }
+        }
         setNationality(passport?.nationality || '');
         setDob(passport?.dob || '');
         setExpiryDate(passport?.expiry || '');
@@ -833,12 +895,40 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             const passportInfo = userData.passport;
             if (passportInfo) {
               setPassportNo(prev => passportInfo.passportNumber || prev);
-              setFullName(prev => {
-                if (passportInfo.fullName && passportInfo.fullName.trim()) {
-                  return passportInfo.fullName;
+              const nameToParse = passportInfo?.fullName || '';
+              if (nameToParse) {
+                if (nameToParse.includes(',')) {
+                  const parts = nameToParse.split(',').map(part => part.trim());
+                  if (parts.length === 3) {
+                    setSurname(parts[0]);
+                    setMiddleName(parts[1]);
+                    setGivenName(parts[2]);
+                  } else if (parts.length === 2) {
+                    setSurname(parts[0]);
+                    setMiddleName('');
+                    setGivenName(parts[1]);
+                  } else if (parts.length === 1) {
+                    setSurname(parts[0]);
+                    setMiddleName('');
+                    setGivenName('');
+                  }
+                } else {
+                  const spaceParts = nameToParse.trim().split(/\s+/);
+                  if (spaceParts.length >= 3) {
+                    setSurname(spaceParts[0]);
+                    setMiddleName(spaceParts[1]);
+                    setGivenName(spaceParts.slice(2).join(' '));
+                  } else if (spaceParts.length === 2) {
+                    setSurname(spaceParts[0]);
+                    setMiddleName('');
+                    setGivenName(spaceParts[1]);
+                  } else if (spaceParts.length === 1) {
+                    setSurname(spaceParts[0]);
+                    setMiddleName('');
+                    setGivenName('');
+                  }
                 }
-                return prev;
-              });
+              }
               setNationality(prev => passportInfo.nationality || prev);
               setDob(prev => passportInfo.dateOfBirth || prev);
               setExpiryDate(prev => passportInfo.expiryDate || prev);
@@ -1061,7 +1151,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       calculateCompletionMetrics();
     }
   }, [
-    passportNo, fullName, nationality, dob, expiryDate, sex,
+    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
     occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
     funds,
     travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
@@ -1255,7 +1345,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
   try {
     const {
-      passportNo, fullName, nationality, dob, expiryDate, sex,
+      passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
       phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
@@ -1273,7 +1363,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
     // Save passport data - filter based on user interaction
     const allPassportFields = {
       passportNumber: getCurrentValue('passportNo', passportNo),
-      fullName: getCurrentValue('fullName', fullName),
+      fullName: [getCurrentValue('surname', surname), getCurrentValue('middleName', middleName), getCurrentValue('givenName', givenName)].filter(Boolean).join(', '),
       nationality: getCurrentValue('nationality', nationality),
       dateOfBirth: getCurrentValue('dob', dob),
       expiryDate: getCurrentValue('expiryDate', expiryDate),
@@ -1499,10 +1589,13 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
         const destinationId = destination?.id || 'thailand';
         const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
+        // Allow entry_info update even without passport (passport can be added later)
+        console.log('Passport lookup result:', latestPassport ? `Found passport ${latestPassport.id}` : 'No passport found - proceeding with null passport_id');
+
         const entryInfoUpdateData = {
           id: entryInfoId,
           userId,
-          passportId: latestPassport?.id || null,
+          passportId: latestPassport?.id || null, // Nullable - can be null initially
           personalInfoId: latestPersonalInfo?.id || null,
           travelInfoId: travelInfo?.id || null,
           destinationId,
@@ -1513,9 +1606,9 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
 
         console.log('Entry info update data:', {
           entryInfoId,
-          passportId: latestPassport?.id,
-          personalInfoId: latestPersonalInfo?.id,
-          travelInfoId: travelInfo?.id,
+          passportId: latestPassport?.id || 'NULL',
+          personalInfoId: latestPersonalInfo?.id || 'NULL',
+          travelInfoId: travelInfo?.id || 'NULL',
           fundItemCount: funds.length,
           fundItemIds: funds.map(f => f.id)
         });
@@ -1596,7 +1689,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
     // Prepare current state for the save operation
     const currentState = {
-      passportNo, fullName, nationality, dob, expiryDate, sex,
+      passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
       phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
@@ -1639,7 +1732,7 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
   
                  // Prepare current state for retry
                  const currentState = {
-                   passportNo, fullName, nationality, dob, expiryDate, sex,
+                   passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
                    phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
                    travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
                    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
@@ -1715,61 +1808,67 @@ const normalizeFundItem = useCallback((item) => ({
   }, [userId, normalizeFundItem]);
 
   /**
-   * Initialize or load entry_info for this user and destination
-   * Creates entry_info on first visit to ensure data is properly tracked
-   */
-  const initializeEntryInfo = useCallback(async () => {
-    try {
-      if (entryInfoInitialized) {
-        console.log('Entry info already initialized');
-        return;
-      }
+    * Initialize or load entry_info for this user and destination
+    * Creates entry_info on first visit to ensure data is properly tracked
+    * Now allows creation without passport (passport can be added later)
+    */
+   const initializeEntryInfo = useCallback(async () => {
+     try {
+       if (entryInfoInitialized) {
+         console.log('Entry info already initialized');
+         return;
+       }
 
-      const destinationId = destination?.id || 'thailand';
-      console.log('🔍 Initializing entry info for destination:', destinationId);
+       const destinationId = destination?.id || 'thailand';
+       console.log('🔍 Initializing entry info for destination:', destinationId);
 
-      // Try to find existing entry_info for this user and destination
-      const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
-      const existingEntryInfo = existingEntryInfos?.find(
-        entry => entry.destinationId === destinationId
-      );
+       // Try to find existing entry_info for this user and destination
+       const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
+       const existingEntryInfo = existingEntryInfos?.find(
+         entry => entry.destinationId === destinationId
+       );
 
-      if (existingEntryInfo) {
-        console.log('✅ Found existing entry info:', existingEntryInfo.id);
-        setEntryInfoId(existingEntryInfo.id);
-        setEntryInfoInitialized(true);
-        return existingEntryInfo.id;
-      }
+       if (existingEntryInfo) {
+         console.log('✅ Found existing entry info:', existingEntryInfo.id);
+         setEntryInfoId(existingEntryInfo.id);
+         setEntryInfoInitialized(true);
+         return existingEntryInfo.id;
+       }
 
-      // Create new entry_info if none exists
-      console.log('📝 Creating new entry info for user:', userId);
-      const entryInfoData = {
-        userId,
-        destinationId,
-        status: 'incomplete',
-        completionMetrics: {
-          passport: { complete: 0, total: 5, state: 'missing' },
-          personalInfo: { complete: 0, total: 6, state: 'missing' },
-          funds: { complete: 0, total: 1, state: 'missing' },
-          travel: { complete: 0, total: 6, state: 'missing' }
-        },
-        fundItemIds: [], // Will be updated when saving
-        lastUpdatedAt: new Date().toISOString()
-      };
+       // Try to get passport, but don't require it for entry_info creation
+       const passport = await UserDataService.getPassport(userId);
+       console.log('Passport lookup result:', passport ? `Found passport ${passport.id}` : 'No passport found');
 
-      const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
-      console.log('✅ Created new entry info:', savedEntryInfo.id);
+       // Create new entry_info even without passport (passport can be added later)
+       console.log('📝 Creating new entry info for user:', userId, '(passport optional)');
+       const entryInfoData = {
+         userId,
+         passportId: passport?.id || null, // Nullable - can be null initially
+         destinationId,
+         status: 'incomplete',
+         completionMetrics: {
+           passport: { complete: 0, total: 5, state: 'missing' },
+           personalInfo: { complete: 0, total: 6, state: 'missing' },
+           funds: { complete: 0, total: 1, state: 'missing' },
+           travel: { complete: 0, total: 6, state: 'missing' }
+         },
+         fundItemIds: [], // Will be updated when saving
+         lastUpdatedAt: new Date().toISOString()
+       };
 
-      setEntryInfoId(savedEntryInfo.id);
-      setEntryInfoInitialized(true);
-      return savedEntryInfo.id;
-    } catch (error) {
-      console.error('❌ Failed to initialize entry info:', error);
-      console.error('Error details:', error.message, error.stack);
-      // Don't throw - allow the app to continue even if entry_info creation fails
-      return null;
-    }
-  }, [userId, destination, entryInfoInitialized]);
+       const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
+       console.log('✅ Created new entry info:', savedEntryInfo.id, '(passport_id:', savedEntryInfo.passportId || 'NULL', ')');
+
+       setEntryInfoId(savedEntryInfo.id);
+       setEntryInfoInitialized(true);
+       return savedEntryInfo.id;
+     } catch (error) {
+       console.error('❌ Failed to initialize entry info:', error);
+       console.error('Error details:', error.message, error.stack);
+       // Don't throw - allow the app to continue even if entry_info creation fails
+       return null;
+     }
+   }, [userId, destination, entryInfoInitialized]);
 
   const addFund = (type) => {
     setNewFundItemType(type);
@@ -1864,179 +1963,8 @@ const normalizeFundItem = useCallback((item) => ({
     );
   };
 
-  const handleScanPassport = () => {
-    // navigation.navigate('ScanPassport');
-  };
-
-  const handleScanTickets = () => {
-    Alert.alert(
-      t('thailand.travelInfo.scan.ticketTitle', { defaultValue: '扫描机票' }),
-      t('thailand.travelInfo.scan.ticketMessage', { defaultValue: '请选择机票图片来源' }),
-      [
-        {
-          text: t('thailand.travelInfo.scan.takePhoto', { defaultValue: '拍照' }),
-          onPress: () => scanDocument('ticket', 'camera')
-        },
-        {
-          text: t('thailand.travelInfo.scan.fromLibrary', { defaultValue: '从相册选择' }),
-          onPress: () => scanDocument('ticket', 'library')
-        },
-        {
-          text: t('common.cancel', { defaultValue: '取消' }),
-          style: 'cancel'
-        }
-      ]
-    );
-  };
-
-  const handleScanHotel = () => {
-    Alert.alert(
-      t('thailand.travelInfo.scan.hotelTitle', { defaultValue: '扫描酒店预订' }),
-      t('thailand.travelInfo.scan.hotelMessage', { defaultValue: '请选择酒店预订确认单图片来源' }),
-      [
-        {
-          text: t('thailand.travelInfo.scan.takePhoto', { defaultValue: '拍照' }),
-          onPress: () => scanDocument('hotel', 'camera')
-        },
-        {
-          text: t('thailand.travelInfo.scan.fromLibrary', { defaultValue: '从相册选择' }),
-          onPress: () => scanDocument('hotel', 'library')
-        },
-        {
-          text: t('common.cancel', { defaultValue: '取消' }),
-          style: 'cancel'
-        }
-      ]
-    );
-  };
   
-  const scanDocument = async (documentType, source) => {
-    try {
-      // Request permissions
-      let permissionResult;
-      if (source === 'camera') {
-        permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-      } else {
-        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      }
 
-      if (permissionResult.status !== 'granted') {
-        Alert.alert(
-          t('thailand.travelInfo.scan.permissionTitle', { defaultValue: '需要权限' }),
-          source === 'camera' 
-            ? t('thailand.travelInfo.scan.cameraPermissionMessage', { defaultValue: '需要相机权限来拍照扫描文档' })
-            : t('thailand.travelInfo.scan.libraryPermissionMessage', { defaultValue: '需要相册权限来选择图片' })
-        );
-        return;
-      }
-
-      // Launch image picker
-      let result;
-      if (source === 'camera') {
-        result = await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-          quality: 0.8,
-          aspect: [4, 3],
-        });
-      } else {
-        result = await ImagePicker.launchImageLibraryAsync({
-          allowsEditing: true,
-          quality: 0.8,
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        });
-      }
-
-      if (result.canceled) {
-        return;
-      }
-
-      const imageUri = result.assets[0].uri;
-      
-      // Show loading indicator
-      setSaveStatus('saving');
-      
-      try {
-        // Process OCR
-        let ocrResult;
-        if (documentType === 'ticket') {
-          ocrResult = await apiClient.recognizeTicket(imageUri);
-          await handleTicketOCRResult(ocrResult);
-        } else if (documentType === 'hotel') {
-          ocrResult = await apiClient.recognizeHotel(imageUri);
-          await handleHotelOCRResult(ocrResult);
-        }
-
-        // Show success message
-        Alert.alert(
-          t('thailand.travelInfo.scan.successTitle', { defaultValue: '扫描成功' }),
-          documentType === 'ticket' 
-            ? t('thailand.travelInfo.scan.ticketSuccess', { defaultValue: '机票信息已提取并填入表单' })
-            : t('thailand.travelInfo.scan.hotelSuccess', { defaultValue: '酒店信息已提取并填入表单' })
-        );
-
-        setSaveStatus('saved');
-        
-        // Auto-save the extracted data
-        debouncedSaveData();
-
-      } catch (ocrError) {
-        console.error('OCR processing failed:', ocrError);
-        
-        // Show error with option to enter manually
-        Alert.alert(
-          t('thailand.travelInfo.scan.ocrFailTitle', { defaultValue: '识别失败' }),
-          t('thailand.travelInfo.scan.ocrFailMessage', { defaultValue: '无法从图片中提取信息，请检查图片清晰度或手动输入' }),
-          [
-            {
-              text: t('thailand.travelInfo.scan.retryButton', { defaultValue: '重试' }),
-              onPress: () => scanDocument(documentType, source)
-            },
-            {
-              text: t('thailand.travelInfo.scan.manualButton', { defaultValue: '手动输入' }),
-              style: 'cancel'
-            }
-          ]
-        );
-        
-        setSaveStatus('error');
-      }
-
-    } catch (error) {
-      console.error('Document scanning failed:', error);
-      Alert.alert(
-        t('thailand.travelInfo.scan.errorTitle', { defaultValue: '扫描失败' }),
-        t('thailand.travelInfo.scan.errorMessage', { defaultValue: '扫描过程中出现错误，请重试' })
-      );
-      setSaveStatus('error');
-    }
-  };
-
-  // Wrapper for processTicketOCRResult from utility
-  const handleTicketOCRResult = async (ocrResult) => {
-    const currentState = { arrivalFlightNumber, departureFlightNumber };
-    const setters = {
-      setArrivalFlightNumber,
-      setDepartureFlightNumber,
-      setArrivalArrivalDate,
-      setBoardingCountry,
-      setLastEditedField,
-      Alert
-    };
-    await processTicketOCRResult(ocrResult, currentState, setters, t);
-  };
-
-  // Wrapper for processHotelOCRResult from utility
-  const handleHotelOCRResult = async (ocrResult) => {
-    const currentState = { arrivalArrivalDate, departureDepartureDate, province };
-    const setters = {
-      setHotelAddress,
-      setArrivalArrivalDate,
-      setDepartureDepartureDate,
-      setProvince,
-      setLastEditedField
-    };
-    await processHotelOCRResult(ocrResult, currentState, setters);
-  };
 
 
   const renderGenderOptions = () => {
@@ -2234,7 +2162,6 @@ const normalizeFundItem = useCallback((item) => ({
         <CollapsibleSection
           title="👤 护照信息"
           subtitle="泰国海关需要核实你的身份"
-          onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
@@ -2252,9 +2179,13 @@ const normalizeFundItem = useCallback((item) => ({
                <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!errors.fullName} />
              </View>
              <PassportNameInput
-               value={fullName}
-               onChangeText={setFullName}
-               onBlur={() => handleFieldBlur('fullName', fullName)}
+               surname={surname}
+               middleName={middleName}
+               givenName={givenName}
+               onSurnameChange={setSurname}
+               onMiddleNameChange={setMiddleName}
+               onGivenNameChange={setGivenName}
+               onBlur={() => handleFieldBlur('fullName', [surname, middleName, givenName].filter(Boolean).join(', '))}
                helpText="填写护照上显示的英文姓名，例如：LI, MAO（姓在前，名在后）"
                error={!!errors.fullName}
                errorMessage={errors.fullName}
@@ -2648,10 +2579,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>来程机票（入境泰国）</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
           <NationalitySelector
             label="登机国家或地区"
@@ -2696,10 +2623,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>去程机票（离开泰国）</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
           <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
           <DateTimeInput
@@ -2720,10 +2643,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>住宿信息</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanHotel}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
 
           {/* Transit Passenger Checkbox */}
@@ -3201,25 +3120,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     fontWeight: '600',
     fontSize: 14,
-  },
-  scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  scanIcon: {
-    fontSize: 18,
-    marginRight: spacing.xs,
-  },
-  scanText: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
   },
   subSectionHeader: {
     flexDirection: 'row',

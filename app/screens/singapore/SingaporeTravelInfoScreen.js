@@ -141,12 +141,6 @@ const CollapsibleSection = ({ title, subtitle, onScan, isExpanded, onToggle, fie
           )}
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>扫描</Text>
-            </TouchableOpacity>
-          )}
           <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
         </View>
       </TouchableOpacity>
@@ -1592,152 +1586,7 @@ const normalizeFundItem = useCallback((item) => ({
     );
   };
 
-  const handleScanPassport = () => {
-    // navigation.navigate('ScanPassport');
-  };
-
-  const handleScanTickets = () => {
-    Alert.alert(
-      t('singapore.travelInfo.scan.ticketTitle', { defaultValue: '扫描机票' }),
-      t('singapore.travelInfo.scan.ticketMessage', { defaultValue: '请选择机票图片来源' }),
-      [
-        {
-          text: t('singapore.travelInfo.scan.takePhoto', { defaultValue: '拍照' }),
-          onPress: () => scanDocument('ticket', 'camera')
-        },
-        {
-          text: t('singapore.travelInfo.scan.fromLibrary', { defaultValue: '从相册选择' }),
-          onPress: () => scanDocument('ticket', 'library')
-        },
-        {
-          text: t('common.cancel', { defaultValue: '取消' }),
-          style: 'cancel'
-        }
-      ]
-    );
-  };
-
-  const handleScanHotel = () => {
-    Alert.alert(
-      t('singapore.travelInfo.scan.hotelTitle', { defaultValue: '扫描酒店预订' }),
-      t('singapore.travelInfo.scan.hotelMessage', { defaultValue: '请选择酒店预订确认单图片来源' }),
-      [
-        {
-          text: t('singapore.travelInfo.scan.takePhoto', { defaultValue: '拍照' }),
-          onPress: () => scanDocument('hotel', 'camera')
-        },
-        {
-          text: t('singapore.travelInfo.scan.fromLibrary', { defaultValue: '从相册选择' }),
-          onPress: () => scanDocument('hotel', 'library')
-        },
-        {
-          text: t('common.cancel', { defaultValue: '取消' }),
-          style: 'cancel'
-        }
-      ]
-    );
-  };
   
-  const scanDocument = async (documentType, source) => {
-    try {
-      // Request permissions
-      let permissionResult;
-      if (source === 'camera') {
-        permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-      } else {
-        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      }
-
-      if (permissionResult.status !== 'granted') {
-        Alert.alert(
-          t('singapore.travelInfo.scan.permissionTitle', { defaultValue: '需要权限' }),
-          source === 'camera' 
-            ? t('singapore.travelInfo.scan.cameraPermissionMessage', { defaultValue: '需要相机权限来拍照扫描文档' })
-            : t('singapore.travelInfo.scan.libraryPermissionMessage', { defaultValue: '需要相册权限来选择图片' })
-        );
-        return;
-      }
-
-      // Launch image picker
-      let result;
-      if (source === 'camera') {
-        result = await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-          quality: 0.8,
-          aspect: [4, 3],
-        });
-      } else {
-        result = await ImagePicker.launchImageLibraryAsync({
-          allowsEditing: true,
-          quality: 0.8,
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        });
-      }
-
-      if (result.canceled) {
-        return;
-      }
-
-      const imageUri = result.assets[0].uri;
-      
-      // Show loading indicator
-      setSaveStatus('saving');
-      
-      try {
-        // Process OCR
-        let ocrResult;
-        if (documentType === 'ticket') {
-          ocrResult = await apiClient.recognizeTicket(imageUri);
-          await processTicketOCRResult(ocrResult);
-        } else if (documentType === 'hotel') {
-          ocrResult = await apiClient.recognizeHotel(imageUri);
-          await processHotelOCRResult(ocrResult);
-        }
-
-        // Show success message
-        Alert.alert(
-          t('singapore.travelInfo.scan.successTitle', { defaultValue: '扫描成功' }),
-          documentType === 'ticket' 
-            ? t('singapore.travelInfo.scan.ticketSuccess', { defaultValue: '机票信息已提取并填入表单' })
-            : t('singapore.travelInfo.scan.hotelSuccess', { defaultValue: '酒店信息已提取并填入表单' })
-        );
-
-        setSaveStatus('saved');
-        
-        // Auto-save the extracted data
-        debouncedSaveData();
-
-      } catch (ocrError) {
-        console.error('OCR processing failed:', ocrError);
-        
-        // Show error with option to enter manually
-        Alert.alert(
-          t('singapore.travelInfo.scan.ocrFailTitle', { defaultValue: '识别失败' }),
-          t('singapore.travelInfo.scan.ocrFailMessage', { defaultValue: '无法从图片中提取信息，请检查图片清晰度或手动输入' }),
-          [
-            {
-              text: t('singapore.travelInfo.scan.retryButton', { defaultValue: '重试' }),
-              onPress: () => scanDocument(documentType, source)
-            },
-            {
-              text: t('singapore.travelInfo.scan.manualButton', { defaultValue: '手动输入' }),
-              style: 'cancel'
-            }
-          ]
-        );
-        
-        setSaveStatus('error');
-      }
-
-    } catch (error) {
-      console.error('Document scanning failed:', error);
-      Alert.alert(
-        t('singapore.travelInfo.scan.errorTitle', { defaultValue: '扫描失败' }),
-        t('singapore.travelInfo.scan.errorMessage', { defaultValue: '扫描过程中出现错误，请重试' })
-      );
-      setSaveStatus('error');
-    }
-  };
 
   const processTicketOCRResult = async (ocrResult) => {
     console.log('Processing ticket OCR result:', ocrResult);
@@ -2100,7 +1949,6 @@ const normalizeFundItem = useCallback((item) => ({
         <CollapsibleSection
           title="👤 关于我自己"
           subtitle="让我们认识一下你"
-          onScan={handleScanPassport}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
@@ -2452,10 +2300,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>来程机票（入境新加坡）</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
           <NationalitySelector
             label="登机国家或地区"
@@ -2499,10 +2343,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>去程机票（离开新加坡）</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanTickets}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
           <Input label="航班号" value={departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
           <DateTimeInput 
@@ -2531,10 +2371,6 @@ const normalizeFundItem = useCallback((item) => ({
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>住宿信息</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={handleScanHotel}>
-                  <Text style={styles.scanIcon}>📸</Text>
-                  <Text style={styles.scanText}>扫描</Text>
-              </TouchableOpacity>
           </View>
 
           {/* Transit Passenger Checkbox */}
@@ -2998,25 +2834,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     fontWeight: '600',
     fontSize: 14,
-  },
-  scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  scanIcon: {
-    fontSize: 18,
-    marginRight: spacing.xs,
-  },
-  scanText: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
   },
   subSectionHeader: {
     flexDirection: 'row',

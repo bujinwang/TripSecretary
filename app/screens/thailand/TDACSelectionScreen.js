@@ -386,7 +386,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
    */
   const findOrCreateEntryInfoId = async (travelerInfo) => {
     try {
-      const userId = 'current_user'; // Would get from auth context
+      const userId = travelerInfo?.userId || 'current_user';
       const destinationId = 'thailand';
       
       console.log('🔍 Looking for existing entry info...');
@@ -402,9 +402,15 @@ const TDACSelectionScreen = ({ navigation, route }) => {
       
       console.log('📝 Creating new entry info...');
       
+      const passport = await UserDataService.getPassport(userId);
+      if (!passport) {
+        throw new Error('User has no passport, cannot create entry info');
+      }
+
       // Create new entry info if none exists
       const entryInfoData = {
         destinationId,
+        passportId: passport.id,
         status: 'incomplete',
         completionMetrics: {
           passport: { complete: 0, total: 5, state: 'missing' },

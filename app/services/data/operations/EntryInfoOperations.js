@@ -75,7 +75,7 @@ class EntryInfoOperations {
    */
   static async saveEntryInfo(entryInfoData, userId) {
     try {
-      console.log('Saving entry info for user:', userId);
+      console.log('Saving entry info for user:', userId, 'with passport_id:', entryInfoData.passportId || 'NULL');
 
       const EntryInfo = require('../../../models/EntryInfo').default;
 
@@ -85,7 +85,7 @@ class EntryInfoOperations {
         userId
       });
 
-      // Save to database
+      // Save to database (passport_id can be null)
       await entryInfo.save({ skipValidation: true });
 
       // Invalidate cache
@@ -99,7 +99,7 @@ class EntryInfoOperations {
       CacheStore.cache.entryInfo.set(`${userId}_${destinationId}`, entryInfo);
       CacheManager.updateTimestamp(`entryInfo_${userId}_${destinationId}`);
 
-      console.log(`Entry info saved for user ${userId}`);
+      console.log(`Entry info saved for user ${userId} (passport_id: ${entryInfo.passportId || 'NULL'})`);
       return entryInfo;
     } catch (error) {
       console.error('Failed to save entry info:', error);
