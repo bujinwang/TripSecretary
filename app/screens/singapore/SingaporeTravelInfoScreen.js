@@ -20,7 +20,7 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
-import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector } from '../../components';
+import { NationalitySelector, PassportNameInput, DateTimeInput, SingaporeDistrictSelector } from '../../components';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
 import { colors, typography, spacing } from '../../theme';
@@ -1954,8 +1954,8 @@ const normalizeFundItem = useCallback((item) => ({
         </View>
 
         <CollapsibleSection
-          title="👤 关于我自己"
-          subtitle="让我们认识一下你"
+          title="👤 About Yourself / 关于我自己"
+          subtitle="Let's get to know you / 让我们认识一下你"
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
@@ -2048,8 +2048,8 @@ const normalizeFundItem = useCallback((item) => ({
          </CollapsibleSection>
 
         <CollapsibleSection
-          title="� 个人信息"
-          subtitle="新加坡需要了解你的基本信息"
+          title="ℹ️ Personal Information / 个人信息"
+          subtitle="Singapore needs your basic information / 新加坡需要了解你的基本信息"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
@@ -2127,8 +2127,8 @@ const normalizeFundItem = useCallback((item) => ({
          </CollapsibleSection>
 
         <CollapsibleSection
-          title="💰 资金证明"
-          subtitle="告诉新加坡你有足够的旅行资金"
+          title="💰 Funds Proof / 资金证明"
+          subtitle="Show Singapore you have enough funds for your trip / 告诉新加坡你有足够的旅行资金"
           isExpanded={expandedSection === 'funds'}
           onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
@@ -2240,8 +2240,8 @@ const normalizeFundItem = useCallback((item) => ({
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="✈️ 旅行计划"
-          subtitle="你的新加坡冒险之旅"
+          title="✈️ Travel Plans / 旅行计划"
+          subtitle="Your Singapore adventure / 你的新加坡冒险之旅"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
@@ -2440,22 +2440,22 @@ const normalizeFundItem = useCallback((item) => ({
           {!isTransitPassenger && accommodationType === 'HOTEL' && (
             <>
               <Input
-                label="酒店/旅舍名称"
+                label="Hotel/Hostel Name / 酒店/旅舍名称"
                 value={customAccommodationType}
                 onChangeText={setCustomAccommodationType}
                 onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-                helpText="请输入酒店、宾馆或青旅名称"
+                helpText="Enter hotel, guesthouse or hostel name / 请输入酒店、宾馆或青旅名称"
                 error={!!errors.customAccommodationType}
                 errorMessage={errors.customAccommodationType}
                 autoCapitalize="words"
               />
               <Input
-                label="酒店地址"
+                label="Hotel Address / 酒店地址"
                 value={hotelAddress}
                 onChangeText={setHotelAddress}
                 onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
                 multiline
-                helpText="请输入酒店完整地址"
+                helpText="Enter complete hotel address / 请输入酒店完整地址"
                 error={!!errors.hotelAddress}
                 errorMessage={errors.hotelAddress}
                 autoCapitalize="words"
@@ -2465,53 +2465,65 @@ const normalizeFundItem = useCallback((item) => ({
 
           {!isTransitPassenger && accommodationType === 'RESIDENTIAL' && (
             <>
+              <SingaporeDistrictSelector
+                label="Planning Area / 规划区"
+                value={province}
+                onSelect={(selection) => {
+                  if (!selection) return;
+                  setProvince(selection.name);
+                  handleFieldBlur('province', selection.name);
+                }}
+                helpText="Select your planning area in Singapore / 选择您在新加坡的规划区"
+                error={!!errors.province}
+                errorMessage={errors.province}
+              />
               <Input
-                label="邮政编码"
+                label="Postal Code / 邮政编码"
                 value={postalCode}
                 onChangeText={setPostalCode}
                 onBlur={() => handleFieldBlur('postalCode', postalCode)}
-                helpText="新加坡邮政编码（6位数字）"
+                helpText="Singapore postal code (6 digits) / 新加坡邮政编码（6位数字）"
                 error={!!errors.postalCode}
                 errorMessage={errors.postalCode}
                 keyboardType="numeric"
                 maxLength={6}
               />
               <Input
-                label="楼栋号"
+                label="Block Number / 楼栋号"
                 value={district}
                 onChangeText={setDistrict}
                 onBlur={() => handleFieldBlur('district', district)}
-                helpText="Block Number（例如：123）"
+                helpText="e.g., 123 / 例如：123"
                 error={!!errors.district}
                 errorMessage={errors.district}
                 autoCapitalize="words"
               />
               <Input
-                label="街道名称"
+                label="Street Name / 街道名称"
                 value={subDistrict}
                 onChangeText={setSubDistrict}
                 onBlur={() => handleFieldBlur('subDistrict', subDistrict)}
-                helpText="Street Name（例如：Orchard Road）"
+                helpText="e.g., Orchard Road / 例如：Orchard Road"
                 error={!!errors.subDistrict}
                 errorMessage={errors.subDistrict}
                 autoCapitalize="words"
               />
               <Input
-                label="建筑名称"
+                label="Building Name / 建筑名称"
                 value={customAccommodationType}
                 onChangeText={setCustomAccommodationType}
                 onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-                helpText="Building Name（例如：Marina Bay Residences）"
+                helpText="e.g., Marina Bay Residences / 例如：Marina Bay Residences"
                 error={!!errors.customAccommodationType}
                 errorMessage={errors.customAccommodationType}
                 autoCapitalize="words"
               />
               <Input
-                label="单元号"
+                label="Unit Number / 单元号"
                 value={hotelAddress}
                 onChangeText={setHotelAddress}
                 onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
-                helpText="Unit Number（例如：#12-34）"
+                helpText="e.g., #12-34 / 例如：#12-34"
                 error={!!errors.hotelAddress}
                 errorMessage={errors.hotelAddress}
                 autoCapitalize="words"

@@ -470,41 +470,98 @@ const EntryPackDisplay = ({
     );
   };
 
-  const renderImmigrationTips = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs</Text>
+  const getTipsConfig = () => {
+    const tipsConfig = {
+      thailand: {
+        title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'
+          },
+          {
+            q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?',
+            a: travelInfo?.lengthOfStay || '30 วัน / 30 days'
+          },
+          {
+            q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
+          }
+        ]
+      },
+      malaysia: {
+        title: '💡 Immigration Officer FAQs / Soalan Lazim Pegawai Imigresen',
+        questions: [
+          {
+            q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan'
+          },
+          {
+            q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?',
+            a: travelInfo?.lengthOfStay || '7 days / 7 hari'
+          },
+          {
+            q: 'Q: Where will you be staying? / Di mana anda akan menginap?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: How much money do you have? / Berapa banyak wang yang anda ada?',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / Tunai dan kad bank)`
+          }
+        ]
+      },
+      singapore: {
+        title: '💡 Immigration Officer FAQs / 入境官员常见问题',
+        questions: [
+          {
+            q: 'Q: What is the purpose of your visit to Singapore? / 你来新加坡的目的是什么？',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游'
+          },
+          {
+            q: 'Q: How long will you stay in Singapore? / 你会在新加坡停留多久？',
+            a: travelInfo?.lengthOfStay || '7 days / 7天'
+          },
+          {
+            q: 'Q: Where will you be staying? / 你会住在哪里？',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: How much money do you have for your stay? / 你带了多少钱？',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 现金和银行卡)`
+          },
+          {
+            q: 'Q: Do you have a return ticket? / 你有回程机票吗？',
+            a: travelInfo?.departureFlightNumber ? `Yes, ${travelInfo.departureFlightNumber} / 有，${travelInfo.departureFlightNumber}` : 'Yes / 有'
+          }
+        ]
+      }
+    };
 
-      <View style={styles.tipsList}>
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'}
-          </Text>
-        </View>
+    return tipsConfig[country] || tipsConfig.thailand;
+  };
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.lengthOfStay || '30 วัน / 30 days'}
-          </Text>
-        </View>
+  const renderImmigrationTips = () => {
+    const tips = getTipsConfig();
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพักที่ไหน? / Where will you be staying?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {stayLocationAnswer}
-          </Text>
-        </View>
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{tips.title}</Text>
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณมีเงินทุนเท่าไร? / How much money do you have?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)
-          </Text>
+        <View style={styles.tipsList}>
+          {tips.questions.map((tip, index) => (
+            <View key={index} style={styles.tipItem}>
+              <Text style={styles.tipQuestion}>{tip.q}</Text>
+              <Text style={styles.tipAnswer}>A: {tip.a}</Text>
+            </View>
+          ))}
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {

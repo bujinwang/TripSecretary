@@ -23,19 +23,20 @@ export const PREDEFINED_TRAVEL_PURPOSES = [
 
 /**
  * Travel purpose options with labels and icons for UI display
+ * Labels are English-primary with Chinese secondary
  */
 export const TRAVEL_PURPOSE_OPTIONS = [
-  { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️' },
-  { value: 'MEETING', label: '会议', icon: '👔' },
-  { value: 'SPORTS', label: '体育活动', icon: '⚽' },
-  { value: 'BUSINESS', label: '商务', icon: '💼' },
-  { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁' },
-  { value: 'CONVENTION', label: '会展', icon: '🎪' },
-  { value: 'EDUCATION', label: '教育', icon: '📚' },
-  { value: 'EMPLOYMENT', label: '就业', icon: '💻' },
-  { value: 'EXHIBITION', label: '展览', icon: '🎨' },
-  { value: 'MEDICAL', label: '医疗', icon: '🏥' },
-  { value: 'OTHER', label: '其他', icon: '✏️' },
+  { value: 'HOLIDAY', label: 'Holiday / 度假旅游', icon: '🏖️' },
+  { value: 'MEETING', label: 'Meeting / 会议', icon: '👔' },
+  { value: 'SPORTS', label: 'Sports / 体育活动', icon: '⚽' },
+  { value: 'BUSINESS', label: 'Business / 商务', icon: '💼' },
+  { value: 'INCENTIVE', label: 'Incentive Travel / 奖励旅游', icon: '🎁' },
+  { value: 'CONVENTION', label: 'Convention / 会展', icon: '🎪' },
+  { value: 'EDUCATION', label: 'Education / 教育', icon: '📚' },
+  { value: 'EMPLOYMENT', label: 'Employment / 就业', icon: '💻' },
+  { value: 'EXHIBITION', label: 'Exhibition / 展览', icon: '🎨' },
+  { value: 'MEDICAL', label: 'Medical / 医疗', icon: '🏥' },
+  { value: 'OTHER', label: 'Other / 其他', icon: '✏️' },
 ];
 
 /**
@@ -52,22 +53,24 @@ export const PREDEFINED_ACCOMMODATION_TYPES = [
 /**
  * Accommodation type options with labels and icons for UI display
  * Matches the official Singapore Arrival Card (SGAC) form
+ * Labels are English-primary with Chinese secondary
  */
 export const ACCOMMODATION_TYPE_OPTIONS = [
-  { value: 'HOTEL', label: '酒店/宾馆/旅舍', icon: '🏨', tip: '包括酒店、青旅、民宿' },
-  { value: 'RESIDENTIAL', label: '住宅/朋友家', icon: '🏠', tip: '包括公寓、朋友家' },
-  { value: 'DAY_TRIP', label: '当日往返', icon: '✈️' },
-  { value: 'TRANSIT', label: '过境转机', icon: '🔄' },
+  { value: 'HOTEL', label: 'Hotel/Guesthouse/Hostel / 酒店/宾馆/旅舍', icon: '🏨', tip: 'Includes hotels, hostels, guesthouses / 包括酒店、青旅、民宿' },
+  { value: 'RESIDENTIAL', label: 'Residential/Friends House / 住宅/朋友家', icon: '🏠', tip: 'Includes apartments, staying with friends / 包括公寓、朋友家' },
+  { value: 'DAY_TRIP', label: 'Day Trip / 当日往返', icon: '✈️' },
+  { value: 'TRANSIT', label: 'Transit / 过境转机', icon: '🔄' },
 ];
 
 /**
  * Gender/Sex options for passport information
  * Uses translation keys for internationalization support
+ * Labels are English-primary with Chinese secondary
  */
 export const GENDER_OPTIONS = [
-  { value: 'Female', translationKey: 'singapore.travelInfo.fields.sex.options.female', defaultLabel: '女性' },
-  { value: 'Male', translationKey: 'singapore.travelInfo.fields.sex.options.male', defaultLabel: '男性' },
-  { value: 'Undefined', translationKey: 'singapore.travelInfo.fields.sex.options.undefined', defaultLabel: '未定义' },
+  { value: 'Female', translationKey: 'singapore.travelInfo.fields.sex.options.female', defaultLabel: 'Female / 女性' },
+  { value: 'Male', translationKey: 'singapore.travelInfo.fields.sex.options.male', defaultLabel: 'Male / 男性' },
+  { value: 'Undefined', translationKey: 'singapore.travelInfo.fields.sex.options.undefined', defaultLabel: 'Undefined / 未定义' },
 ];
 
 /**
