@@ -11,7 +11,7 @@
  * - Handles initialization with existing saved data
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY_PREFIX = 'user_interaction_state_';
@@ -305,22 +305,31 @@ export const useUserInteractionTracker = (screenId) => {
     }
   }, [storageKey]);
 
-  return {
+  return useMemo(() => ({
     // Core methods required by the spec
     markFieldAsModified,
     isFieldUserModified,
     getModifiedFields,
     resetField,
     initializeWithExistingData,
-    
+
     // Additional utility methods
     getFieldInteractionDetails,
     clearAllInteractions,
-    
+
     // State information
     isInitialized,
     sessionId: sessionIdRef.current
-  };
+  }), [
+    markFieldAsModified,
+    isFieldUserModified,
+    getModifiedFields,
+    resetField,
+    initializeWithExistingData,
+    getFieldInteractionDetails,
+    clearAllInteractions,
+    isInitialized
+  ]);
 };
 
 export default useUserInteractionTracker;

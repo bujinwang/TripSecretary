@@ -259,7 +259,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   const handleUserInteraction = useCallback((fieldName, value) => {
     // Use the travel info form utility to handle user interaction
     travelInfoForm.handleUserInteraction(fieldName, value);
-    
+
     // Update the appropriate state based on field name
     switch (fieldName) {
       case 'travelPurpose':
@@ -280,10 +280,10 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       default:
         console.warn(`Unknown field for user interaction: ${fieldName}`);
     }
-    
+
     // Trigger debounced save
     debouncedSaveData();
-  }, [travelInfoForm]);
+  }, [travelInfoForm.handleUserInteraction]);
 
   // Count filled fields for each section using TravelInfoFormUtils
   const getFieldCount = (section) => {

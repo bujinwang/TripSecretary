@@ -475,25 +475,35 @@ export const useTravelInfoForm = (destination, options = {}) => {
     return options && options.includes(value);
   }, [destinationConfig]);
 
-  return {
+  return useMemo(() => ({
     // Core tracking functionality
     userInteractionTracker,
     handleUserInteraction,
     initializeWithExistingData,
-    
+
     // Field management
     getFieldCount,
     calculateCompletionMetrics,
     filterFieldsForSave,
     getSuggestions,
     isPredefinedOption,
-    
+
     // Configuration
     destinationConfig,
-    
+
     // State information
     isInitialized: userInteractionTracker.isInitialized
-  };
+  }), [
+    userInteractionTracker,
+    handleUserInteraction,
+    initializeWithExistingData,
+    getFieldCount,
+    calculateCompletionMetrics,
+    filterFieldsForSave,
+    getSuggestions,
+    isPredefinedOption,
+    destinationConfig
+  ]);
 };
 
 /**

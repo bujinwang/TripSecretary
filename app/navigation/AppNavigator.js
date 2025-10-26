@@ -87,6 +87,7 @@ import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
 import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
+import KoreaEntryPackPreviewScreen from '../screens/korea/KoreaEntryPackPreviewScreen';
 
 import { colors } from '../theme';
 

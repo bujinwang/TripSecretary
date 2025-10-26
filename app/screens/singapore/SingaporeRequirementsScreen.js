@@ -161,17 +161,21 @@ const styles = StyleSheet.create({
     width: 40,
   },
   titleSection: {
+    alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.xl,
   },
   title: {
-    ...typography.h2,
+    ...typography.h3,
     color: colors.primary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   subtitle: {
     ...typography.body1,
     color: colors.textSecondary,
+    textAlign: 'center',
     lineHeight: 22,
   },
   requirementsList: {
@@ -225,6 +229,55 @@ const styles = StyleSheet.create({
   statusSection: {
     paddingHorizontal: spacing.md,
     marginTop: spacing.lg,
+  },
+  successCard: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#81C784',
+    alignItems: 'center',
+  },
+  successIcon: {
+    fontSize: 48,
+    marginBottom: spacing.md,
+  },
+  successText: {
+    ...typography.h3,
+    color: '#2E7D32',
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  successSubtext: {
+    ...typography.body1,
+    color: '#388E3C',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  warningCard: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+    alignItems: 'center',
+  },
+  warningIcon: {
+    fontSize: 48,
+    marginBottom: spacing.md,
+  },
+  warningText: {
+    ...typography.h3,
+    color: '#E65100',
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  warningSubtext: {
+    ...typography.body1,
+    color: '#F57C00',
+    textAlign: 'center',
   },
   infoCard: {
     backgroundColor: '#E3F2FD',
