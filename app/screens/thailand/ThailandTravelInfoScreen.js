@@ -44,47 +44,15 @@ import UserDataService from '../../services/data/UserDataService';
 // Import Thailand-specific utilities
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
+import { parsePassportName } from '../../utils/NameParser';
+import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES } from './constants';
+import OptionSelector from '../../components/thailand/OptionSelector';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
-
-const normalizeLocationValue = (value) => (value || '').toString().trim().toLowerCase();
-
-const findDistrictOption = (provinceCode, targetValue) => {
-  if (!provinceCode || !targetValue) return null;
-  const districts = getDistrictsByProvince(provinceCode);
-  if (!Array.isArray(districts) || districts.length === 0) return null;
-  const normalized = normalizeLocationValue(targetValue);
-
-  return (
-    districts.find((district) => {
-      if (!district) return false;
-      const nameEn = normalizeLocationValue(district.nameEn);
-      const nameTh = normalizeLocationValue(district.nameTh);
-      const nameZh = normalizeLocationValue(district.nameZh);
-      return normalized === nameEn || normalized === nameTh || normalized === nameZh;
-    }) || null
-  );
-};
-
-const findSubDistrictOption = (districtId, targetValue) => {
-  if (!districtId || !targetValue) return null;
-  const subDistricts = getSubDistrictsByDistrictId(districtId);
-  if (!Array.isArray(subDistricts) || subDistricts.length === 0) return null;
-  const normalized = normalizeLocationValue(targetValue);
-
-  return (
-    subDistricts.find((subDistrict) => {
-      if (!subDistrict) return false;
-      const nameEn = normalizeLocationValue(subDistrict.nameEn);
-      const nameTh = normalizeLocationValue(subDistrict.nameTh);
-      const nameZh = normalizeLocationValue(subDistrict.nameZh);
-      return normalized === nameEn || normalized === nameTh || normalized === nameZh;
-    }) || null
-  );
-};
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
@@ -691,42 +659,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
           const nameToParse = passportInfo?.fullName || passport?.nameEn || passport?.name || '';
           if (nameToParse) {
-            if (nameToParse.includes(',')) {
-              const parts = nameToParse.split(',').map(part => part.trim());
-              if (parts.length === 3) {
-                setSurname(parts[0]);
-                setMiddleName(parts[1]);
-                setGivenName(parts[2]);
-              } else if (parts.length === 2) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName(parts[1]);
-              } else if (parts.length === 1) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            } else {
-              const spaceParts = nameToParse.trim().split(/\s+/);
-              if (spaceParts.length >= 3) {
-                setSurname(spaceParts[0]);
-                setMiddleName(spaceParts[1]);
-                setGivenName(spaceParts.slice(2).join(' '));
-              } else if (spaceParts.length === 2) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName(spaceParts[1]);
-              } else if (spaceParts.length === 1) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            }
-          };
+            const { surname, middleName, givenName } = parsePassportName(nameToParse);
+            setSurname(surname);
+            setMiddleName(middleName);
+            setGivenName(givenName);
+          }
           setNationality(passportInfo.nationality || passport?.nationality || '');
           setDob(passportInfo.dateOfBirth || passport?.dob || '');
           setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-          
+
           // Store passport data model instance
           setPassportData(passportInfo);
         } else {
@@ -735,38 +676,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           setPassportNo(passport?.passportNo || '');
           const nameToParse = passport?.nameEn || passport?.name || '';
           if (nameToParse) {
-            if (nameToParse.includes(',')) {
-              const parts = nameToParse.split(',').map(part => part.trim());
-              if (parts.length === 3) {
-                setSurname(parts[0]);
-                setMiddleName(parts[1]);
-                setGivenName(parts[2]);
-              } else if (parts.length === 2) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName(parts[1]);
-              } else if (parts.length === 1) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            } else {
-              const spaceParts = nameToParse.trim().split(/\s+/);
-              if (spaceParts.length >= 3) {
-                setSurname(spaceParts[0]);
-                setMiddleName(spaceParts[1]);
-                setGivenName(spaceParts.slice(2).join(' '));
-              } else if (spaceParts.length === 2) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName(spaceParts[1]);
-              } else if (spaceParts.length === 1) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            }
-          };
+            const { surname, middleName, givenName } = parsePassportName(nameToParse);
+            setSurname(surname);
+            setMiddleName(middleName);
+            setGivenName(givenName);
+          }
           setNationality(passport?.nationality || '');
           setDob(passport?.dob || '');
           setExpiryDate(passport?.expiry || '');
@@ -818,7 +732,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
             
             // Check if travel purpose is a predefined option
-            const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
+            const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
             const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
             if (predefinedPurposes.includes(loadedPurpose)) {
               setTravelPurpose(loadedPurpose);
@@ -841,7 +755,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
             setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
-            const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
+            const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
             const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
             if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
             setAccommodationType(loadedAccommodationType);
@@ -897,37 +811,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         setPassportNo(passport?.passportNo || '');
         const nameToParse = passport?.nameEn || passport?.name || '';
         if (nameToParse) {
-            if (nameToParse.includes(',')) {
-              const parts = nameToParse.split(',').map(part => part.trim());
-              if (parts.length === 3) {
-                setSurname(parts[0]);
-                setMiddleName(parts[1]);
-                setGivenName(parts[2]);
-              } else if (parts.length === 2) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName(parts[1]);
-              } else if (parts.length === 1) {
-                setSurname(parts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            } else {
-              const spaceParts = nameToParse.trim().split(/\s+/);
-              if (spaceParts.length >= 3) {
-                setSurname(spaceParts[0]);
-                setMiddleName(spaceParts[1]);
-                setGivenName(spaceParts.slice(2).join(' '));
-              } else if (spaceParts.length === 2) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName(spaceParts[1]);
-              } else if (spaceParts.length === 1) {
-                setSurname(spaceParts[0]);
-                setMiddleName('');
-                setGivenName('');
-              }
-            }
+          const { surname, middleName, givenName } = parsePassportName(nameToParse);
+          setSurname(surname);
+          setMiddleName(middleName);
+          setGivenName(givenName);
         }
         setNationality(passport?.nationality || '');
         setDob(passport?.dob || '');
@@ -973,37 +860,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               setPassportNo(prev => passportInfo.passportNumber || prev);
               const nameToParse = passportInfo?.fullName || '';
               if (nameToParse) {
-                if (nameToParse.includes(',')) {
-                  const parts = nameToParse.split(',').map(part => part.trim());
-                  if (parts.length === 3) {
-                    setSurname(parts[0]);
-                    setMiddleName(parts[1]);
-                    setGivenName(parts[2]);
-                  } else if (parts.length === 2) {
-                    setSurname(parts[0]);
-                    setMiddleName('');
-                    setGivenName(parts[1]);
-                  } else if (parts.length === 1) {
-                    setSurname(parts[0]);
-                    setMiddleName('');
-                    setGivenName('');
-                  }
-                } else {
-                  const spaceParts = nameToParse.trim().split(/\s+/);
-                  if (spaceParts.length >= 3) {
-                    setSurname(spaceParts[0]);
-                    setMiddleName(spaceParts[1]);
-                    setGivenName(spaceParts.slice(2).join(' '));
-                  } else if (spaceParts.length === 2) {
-                    setSurname(spaceParts[0]);
-                    setMiddleName('');
-                    setGivenName(spaceParts[1]);
-                  } else if (spaceParts.length === 1) {
-                    setSurname(spaceParts[0]);
-                    setMiddleName('');
-                    setGivenName('');
-                  }
-                }
+                const { surname, middleName, givenName } = parsePassportName(nameToParse);
+                setSurname(surname);
+                setMiddleName(middleName);
+                setGivenName(givenName);
               }
               setNationality(prev => passportInfo.nationality || prev);
               setDob(prev => passportInfo.dateOfBirth || prev);
@@ -1038,7 +898,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
                 
                 // Update travel info state
-                const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
+                const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
                 const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
                 if (predefinedPurposes.includes(loadedPurpose)) {
                   setTravelPurpose(loadedPurpose);
@@ -1057,7 +917,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 setIsTransitPassenger(travelInfo.isTransitPassenger || false);
                 
                 // Load accommodation type
-                const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
+                const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
                 const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
                 if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
                   setAccommodationType(loadedAccommodationType);
