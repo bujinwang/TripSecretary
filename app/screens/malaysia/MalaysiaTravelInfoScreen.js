@@ -565,7 +565,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     // Save before navigating
     debouncedSaveRef.current?.saveImmediately();
 
-    navigation.navigate('Result', {
+    navigation.navigate('MalaysiaEntryFlow', {
       destination: destination || { id: 'my', name: 'Malaysia' },
       passport: passport,
     });
