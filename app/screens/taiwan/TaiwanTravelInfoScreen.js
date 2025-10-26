@@ -114,23 +114,11 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
     const passportCount = getFieldCount('passport');
     const personalCount = getFieldCount('personal');
     const travelCount = getFieldCount('travel');
-    
+
     const totalFields = passportCount.total + personalCount.total + travelCount.total;
     const filledFields = passportCount.filled + personalCount.filled + travelCount.filled;
-    
-    const percent = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
-    
-    // Debug logging to track completion changes
-    console.log('Taiwan completion calculation:', {
-      passport: passportCount,
-      personal: personalCount,
-      travel: travelCount,
-      totalFields,
-      filledFields,
-      percent
-    });
-    
-    return percent;
+
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   }, [
     // Dependencies: all form fields that affect completion calculation
     passportNo, fullName, nationality, dob, expiryDate,
