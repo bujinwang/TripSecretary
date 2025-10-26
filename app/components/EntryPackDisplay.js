@@ -288,6 +288,15 @@ const EntryPackDisplay = ({
         card: 'Bank Card / Kad Bank',
         debit_card: 'Debit Card / Kad Debit',
         other: 'Other / Lain-lain'
+      },
+      hongkong: {
+        cash: '現金 / Cash',
+        credit_card: '信用卡 / Credit Card',
+        bank_balance: '銀行存款 / Bank Balance',
+        investment: '投資 / Investments',
+        card: '銀行卡 / Bank Card',
+        debit_card: '扣賬卡 / Debit Card',
+        other: '其他 / Other'
       }
     };
 
@@ -483,41 +492,90 @@ const EntryPackDisplay = ({
     </View>
   );
 
-  const renderImmigrationTips = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs</Text>
+  const renderImmigrationTips = () => {
+    const tipsConfig = {
+      thailand: {
+        title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'
+          },
+          {
+            q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?',
+            a: travelInfo?.lengthOfStay || '30 วัน / 30 days'
+          },
+          {
+            q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
+          }
+        ]
+      },
+      malaysia: {
+        title: '💡 Immigration Officer FAQs / Soalan Lazim Pegawai Imigresen',
+        questions: [
+          {
+            q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan'
+          },
+          {
+            q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?',
+            a: travelInfo?.lengthOfStay || '30 days / 30 hari'
+          },
+          {
+            q: 'Q: Where will you be staying? / Di mana anda akan menginap?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: How much money do you have? / Berapa banyak wang yang anda ada?',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / Tunai dan kad bank)`
+          }
+        ]
+      },
+      hongkong: {
+        title: '💡 入境處常見問題 / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: 你來香港的目的是什麼？ / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '旅遊 / Tourism'
+          },
+          {
+            q: 'Q: 你會在香港停留多久？ / How long will you stay in Hong Kong?',
+            a: travelInfo?.lengthOfStay || '7 天 / 7 days'
+          },
+          {
+            q: 'Q: 你會住在哪裡？ / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: 你帶了多少錢？ / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
+          }
+        ]
+      }
+    };
 
-      <View style={styles.tipsList}>
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'}
-          </Text>
-        </View>
+    const tips = tipsConfig[country] || tipsConfig.thailand;
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.lengthOfStay || '30 วัน / 30 days'}
-          </Text>
-        </View>
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{tips.title}</Text>
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพักที่ไหน? / Where will you be staying?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {stayLocationAnswer}
-          </Text>
-        </View>
-
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณมีเงินทุนเท่าไร? / How much money do you have?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)
-          </Text>
+        <View style={styles.tipsList}>
+          {tips.questions.map((item, index) => (
+            <View key={index} style={styles.tipItem}>
+              <Text style={styles.tipQuestion}>{item.q}</Text>
+              <Text style={styles.tipAnswer}>A: {item.a}</Text>
+            </View>
+          ))}
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -529,6 +587,7 @@ const EntryPackDisplay = ({
         return renderFundsInfo();
       case 'tdac':
       case 'mdac':
+      case 'hdac':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -549,6 +608,12 @@ const EntryPackDisplay = ({
       { key: 'personal', label: 'Personal', labelEn: 'Peribadi' },
       { key: 'travel', label: 'Travel', labelEn: 'Perjalanan' },
       { key: 'funds', label: 'Funds', labelEn: 'Kewangan' },
+    ],
+    hongkong: [
+      { key: 'hdac', label: '入境資料', labelEn: 'Entry Info' },
+      { key: 'personal', label: '個人資料', labelEn: 'Personal' },
+      { key: 'travel', label: '旅行資料', labelEn: 'Travel' },
+      { key: 'funds', label: '資金證明', labelEn: 'Funds' },
     ]
   };
 
@@ -556,12 +621,14 @@ const EntryPackDisplay = ({
 
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
-    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan'
+    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
+    hongkong: '🇭🇰 入境資料包 / Entry Pack'
   };
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
-    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen'
+    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
+    hongkong: '入境處重要資料 / Important information for immigration officer'
   };
 
   return (
