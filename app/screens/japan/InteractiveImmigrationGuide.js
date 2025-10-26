@@ -320,20 +320,6 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
             </TouchableOpacity>
             <Text style={styles.imageHint}>点击查看大图，方便截图或对照填写</Text>
           </View>
-          <TouchableOpacity
-            style={styles.viewFormButton}
-            onPress={() => navigation.navigate('CopyWrite', {
-              passport,
-              destination,
-              travelInfo,
-              userId,
-              formType: 'entry',
-            })}
-          >
-            <Text style={styles.viewFormIcon}>📝</Text>
-            <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step2.viewFormButton')}</Text>
-            <Text style={styles.viewFormArrow}>›</Text>
-          </TouchableOpacity>
         </>
       )}
 
@@ -362,20 +348,6 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity
-                style={styles.viewFormButton}
-                onPress={() => navigation.navigate('CopyWrite', {
-                  passport,
-                  destination,
-                  travelInfo,
-                  userId,
-                  formType: 'customs',
-                })}
-              >
-                <Text style={styles.viewFormIcon}>📋</Text>
-                <Text style={styles.viewFormText}>{t('immigrationGuide.japanSteps.step3.viewFormButton')}</Text>
-                <Text style={styles.viewFormArrow}>›</Text>
-              </TouchableOpacity>
             </>
           )}
 

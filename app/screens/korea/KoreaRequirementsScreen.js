@@ -18,7 +18,7 @@ const KoreaRequirementsScreen = ({ navigation, route }) => {
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
   const handleContinue = () => {
-    navigation.navigate('TravelInfo', { passport, destination });
+    navigation.navigate('KoreaTravelInfo', { passport, destination });
   };
 
   const requirementItems = useMemo(() => [

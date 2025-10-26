@@ -18,8 +18,30 @@ export const japanEntryGuide = {
     '了解日本的入境规定和文化礼仪'
   ],
 
-  // 6步骤完整流程 (从飞机落地后开始)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存日本紧急联系电话，以备不时之需',
+      descriptionZh: '保存日本紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察：110',
+        '救护车/火警：119',
+        '旅游咨询：0570-000-330（有中文服务）',
+        '中国大使馆：+81-3-3403-3066',
+        '台湾驻日办事处：+81-3-3263-4244',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打',
+        '旅游咨询提供中文服务'
+      ]
+    },
     {
       id: 'landing_setup',
       title: '落地前准备',
@@ -27,7 +49,7 @@ export const japanEntryGuide = {
       description: '关闭蜂窝网络数据，激活日本eSIM卡',
       descriptionZh: '关闭蜂窝网络数据，激活日本eSIM卡',
       category: 'post-landing',
-      priority: 1,
+      priority: 2,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -48,7 +70,7 @@ export const japanEntryGuide = {
       description: '出示通关包、护照和居留卡，核验入境信息',
       descriptionZh: '出示通关包、护照和居留卡，核验入境信息',
       category: 'immigration',
-      priority: 2,
+      priority: 3,
       estimatedTime: '20分钟',
       icon: '🛂',
       required: true,
@@ -70,7 +92,7 @@ export const japanEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 3,
+      priority: 4,
       estimatedTime: '15分钟',
       icon: '🧳',
       required: true,
@@ -88,7 +110,7 @@ export const japanEntryGuide = {
       description: '申报物品，海关X光机检查',
       descriptionZh: '申报物品，海关X光机检查',
       category: 'customs',
-      priority: 4,
+      priority: 5,
       estimatedTime: '10分钟',
       icon: '🔍',
       required: true,
@@ -107,7 +129,7 @@ export const japanEntryGuide = {
       description: '选择交通方式前往目的地',
       descriptionZh: '选择交通方式前往目的地',
       category: 'transportation',
-      priority: 5,
+      priority: 6,
       estimatedTime: '30分钟',
       icon: '🚆',
       required: true,
@@ -127,7 +149,7 @@ export const japanEntryGuide = {
       description: '安全抵达住宿地点，完成入境手续',
       descriptionZh: '安全抵达住宿地点，完成入境手续',
       category: 'arrival',
-      priority: 6,
+      priority: 7,
       estimatedTime: '45分钟',
       icon: '🏨',
       required: true,

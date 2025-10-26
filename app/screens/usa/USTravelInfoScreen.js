@@ -22,11 +22,11 @@ import HeroCard from '../../components/japan/HeroCard';
 import TipsChips from '../../components/japan/TipsChips';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import { useJapanTravelData } from '../../hooks/japan/useJapanTravelData';
+import { useUSTravelData } from '../../hooks/usa/useUSTravelData';
 import { useFormProgress } from '../../hooks/japan/useFormProgress';
 import UserDataService from '../../services/data/UserDataService';
 import { getPhoneCode } from '../../data/phoneCodes';
-import JapanFormHelper from '../../utils/japan/JapanFormHelper';
+import USFormHelper from '../../utils/usa/USFormHelper';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -34,7 +34,7 @@ if (Platform.OS === 'android') {
   }
 }
 
-const JapanTravelInfoScreen = ({ navigation, route }) => {
+const USTravelInfoScreen = ({ navigation, route }) => {
   const {
     passport: rawPassport,
     destination,
@@ -80,7 +80,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     lengthOfStay, setLengthOfStay,
     handleFieldBlur,
     saveData,
-  } = useJapanTravelData(resolvedUserId, navigation, t);
+  } = useUSTravelData(resolvedUserId, navigation, t);
 
   const travelPurposeCode = useMemo(() => {
     const mapping = {
@@ -111,21 +111,21 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     isFormValid,
   } = useFormProgress(formData);
 
-  const heroNextActionLabel = t('japan.travelInfo.hero.nextAction', {
+  const heroNextActionLabel = t('us.travelInfo.hero.nextAction', {
     defaultValue: '查看准备状态'
   });
 
-  const heroSummaryLabel = t('japan.travelInfo.hero.summary', {
+  const heroSummaryLabel = t('us.travelInfo.hero.summary', {
     completed: totalFilled,
     total: totalFields,
     defaultValue: `已完成 ${totalFilled}/${totalFields} 项准备`,
   });
 
   const heroMetaLabel = isReadyForTravel
-    ? t('japan.travelInfo.hero.metaReady', {
+    ? t('us.travelInfo.hero.metaReady', {
         defaultValue: '所有资料已整理完成，点击查看准备状态和入境指南。',
       })
-    : t('japan.travelInfo.hero.metaPending', {
+    : t('us.travelInfo.hero.metaPending', {
         remaining: remainingItems,
         defaultValue:
           remainingItems > 0
@@ -138,17 +138,17 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       {
         id: 'pen',
         icon: '✍️',
-        label: t('japan.travelInfo.hero.tipPen', { defaultValue: '带黑/蓝色签字笔' }),
+        label: t('us.travelInfo.hero.tipPen', { defaultValue: '带黑/蓝色签字笔' }),
       },
       {
         id: 'sample',
         icon: '📷',
-        label: t('japan.travelInfo.hero.tipSample', { defaultValue: '保存纸质表格样例' }),
+        label: t('us.travelInfo.hero.tipSample', { defaultValue: '保存纸质表格样例' }),
       },
       {
         id: 'print',
         icon: '✅',
-        label: t('japan.travelInfo.hero.tipPrint', { defaultValue: '打印入境包备用' }),
+        label: t('us.travelInfo.hero.tipPrint', { defaultValue: '打印入境包备用' }),
       },
     ],
     [t]
@@ -194,19 +194,28 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleNavigateToResult = useCallback(
     async ({ initialAction = 'guide', requireValid = true } = {}) => {
       if (requireValid && !isFormValid()) {
-        Alert.alert(t('common.error'), t('japan.travelInfo.errors.completeAllFields'));
+        Alert.alert(t('common.error'), t('us.travelInfo.errors.completeAllFields', {
+          defaultValue: 'Please complete all required fields'
+        }));
         return;
       }
 
       try {
         await saveData();
-        navigation.navigate('JapanEntryFlow', {
-          userId: resolvedUserId,
-          passport: passport,
-          destination: destination || { id: 'jp' },
-        });
+        // Navigate to US Entry Flow (to be created)
+        // navigation.navigate('USEntryFlow', {
+        //   userId: resolvedUserId,
+        //   passport: passport,
+        //   destination: destination || { id: 'us' },
+        // });
+        Alert.alert(
+          t('common.success', { defaultValue: 'Success' }),
+          t('us.travelInfo.success.dataSaved', { defaultValue: 'Your travel information has been saved successfully' })
+        );
       } catch (error) {
-        Alert.alert(t('common.error'), t('japan.travelInfo.errors.saveFailed'));
+        Alert.alert(t('common.error'), t('us.travelInfo.errors.saveFailed', {
+          defaultValue: 'Failed to save travel information'
+        }));
       }
     },
     [destination, isFormValid, navigation, resolvedUserId, saveData, t, passport]
@@ -227,7 +236,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
     const fallbackParams = {
       userId: resolvedUserId,
-      destination: destination || { id: 'jp' },
+      destination: destination || { id: 'us' },
     };
 
     if (passport) {
@@ -236,7 +245,8 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       fallbackParams.passport = rawPassport;
     }
 
-    navigation.navigate('JapanEntryFlow', fallbackParams);
+    // navigation.navigate('USEntryFlow', fallbackParams);
+    navigation.goBack();
   };
 
   const handleGoBack = async () => {
@@ -258,7 +268,6 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     await handleNavigateToResult({ initialAction: 'guide', requireValid: true });
   };
 
-  // Handle section toggle
   // Fund item handlers
   const handleFundItemPress = (fundItem) => {
     const fundItemData = fundItem.toJSON ? fundItem.toJSON() : fundItem;
@@ -304,21 +313,21 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       t('profile.funding.selectType', { defaultValue: 'Select Fund Item Type' }),
       t('profile.funding.selectTypeMessage', { defaultValue: 'Choose the type of fund item to add' }),
       [
-        { 
-          text: t('fundItem.types.CASH', { defaultValue: 'Cash' }), 
-          onPress: () => handleCreateFundItem('CASH') 
+        {
+          text: t('fundItem.types.CASH', { defaultValue: 'Cash' }),
+          onPress: () => handleCreateFundItem('CASH')
         },
-        { 
-          text: t('fundItem.types.BANK_CARD', { defaultValue: 'Bank Card' }), 
-          onPress: () => handleCreateFundItem('BANK_CARD') 
+        {
+          text: t('fundItem.types.BANK_CARD', { defaultValue: 'Bank Card' }),
+          onPress: () => handleCreateFundItem('BANK_CARD')
         },
-        { 
-          text: t('fundItem.types.DOCUMENT', { defaultValue: 'Supporting Document' }), 
-          onPress: () => handleCreateFundItem('DOCUMENT') 
+        {
+          text: t('fundItem.types.DOCUMENT', { defaultValue: 'Supporting Document' }),
+          onPress: () => handleCreateFundItem('DOCUMENT')
         },
-        { 
-          text: t('common.cancel', { defaultValue: 'Cancel' }), 
-          style: 'cancel' 
+        {
+          text: t('common.cancel', { defaultValue: 'Cancel' }),
+          style: 'cancel'
         }
       ]
     );
@@ -346,7 +355,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('japan.travelInfo.loading')}</Text>
+          <Text style={styles.loadingText}>{t('us.travelInfo.loading', { defaultValue: 'Loading...' })}</Text>
         </View>
       </SafeAreaView>
     );
@@ -361,7 +370,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('japan.travelInfo.headerTitle')}</Text>
+        <Text style={styles.headerTitle}>{t('us.travelInfo.headerTitle', { defaultValue: '美国入境资料' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -376,7 +385,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
             nextActionLabel={heroNextActionLabel}
             summaryLabel={heroSummaryLabel}
             metaLabel={heroMetaLabel}
-            progressLabel={t('japan.travelInfo.hero.progressLabel', { defaultValue: '准备度' })}
+            progressLabel={t('us.travelInfo.hero.progressLabel', { defaultValue: '准备度' })}
             onPress={handleHeroPress}
           />
 
@@ -401,12 +410,12 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           <TipsChips tips={heroTips} />
 
           <Text style={styles.sectionGroupTitle}>
-            {t('japan.travelInfo.groups.copyRequired', { defaultValue: '需抄写信息' })}
+            {t('us.travelInfo.groups.copyRequired', { defaultValue: '需抄写信息' })}
           </Text>
 
           <View onLayout={updateSectionOffset('passport')}>
             <CollapsibleSection
-              title={t('japan.travelInfo.sections.passport')}
+              title={t('us.travelInfo.sections.passport', { defaultValue: '护照信息' })}
               expanded={expandedSection === 'passport'}
               onToggle={(expanded) => setExpandedSection(expanded ? 'passport' : null)}
               fieldCount={sectionProgress.passport}
@@ -415,41 +424,41 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               contentStyle={styles.sectionContent}
             >
               <PassportNameInput
-                label={t('japan.travelInfo.fields.passportName')}
+                label={t('us.travelInfo.fields.passportName', { defaultValue: '护照姓名' })}
                 value={fullName}
                 onChangeText={setFullName}
                 onBlur={() => handleFieldBlur('fullName', fullName)}
-                placeholder={t('japan.travelInfo.fields.passportNamePlaceholder')}
+                placeholder={t('us.travelInfo.fields.passportNamePlaceholder', { defaultValue: 'ZHANG/SAN' })}
                 error={errors.fullName}
                 errorMessage={errors.fullName}
               />
 
               <NationalitySelector
-                label={t('japan.travelInfo.fields.nationality')}
+                label={t('us.travelInfo.fields.nationality', { defaultValue: '国籍' })}
                 value={nationality}
                 onValueChange={(value) => {
                   setNationality(value);
                   handleFieldBlur('nationality', value);
                 }}
-                placeholder={t('japan.travelInfo.fields.nationalityPlaceholder')}
+                placeholder={t('us.travelInfo.fields.nationalityPlaceholder', { defaultValue: '选择国籍' })}
                 error={errors.nationality}
                 errorMessage={errors.nationality}
               />
 
               <Input
-                label={t('japan.travelInfo.fields.passportNumber')}
+                label={t('us.travelInfo.fields.passportNumber', { defaultValue: '护照号码' })}
                 value={passportNo}
                 onChangeText={setPassportNo}
                 onBlur={() => handleFieldBlur('passportNo', passportNo)}
-                placeholder={t('japan.travelInfo.fields.passportNumberPlaceholder')}
+                placeholder={t('us.travelInfo.fields.passportNumberPlaceholder', { defaultValue: 'E12345678' })}
                 autoCapitalize="characters"
                 error={errors.passportNo}
                 errorMessage={errors.passportNo}
-                helpText={t('japan.travelInfo.fields.passportNumberHelp')}
+                helpText={t('us.travelInfo.fields.passportNumberHelp', { defaultValue: '护照号码通常在护照信息页右上角' })}
               />
 
               <DateTimeInput
-                label={t('japan.travelInfo.fields.dateOfBirth')}
+                label={t('us.travelInfo.fields.dateOfBirth', { defaultValue: '出生日期' })}
                 value={dob}
                 onChangeText={setDob}
                 onBlur={() => handleFieldBlur('dob', dob)}
@@ -457,11 +466,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                 dateType="past"
                 error={errors.dob}
                 errorMessage={errors.dob}
-                helpText={t('japan.travelInfo.fields.dateOfBirthHelp')}
+                helpText={t('us.travelInfo.fields.dateOfBirthHelp', { defaultValue: '护照上的出生日期' })}
               />
 
               <DateTimeInput
-                label={t('japan.travelInfo.fields.expiryDate')}
+                label={t('us.travelInfo.fields.expiryDate', { defaultValue: '护照有效期' })}
                 value={expiryDate}
                 onChangeText={setExpiryDate}
                 onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
@@ -469,14 +478,14 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                 dateType="future"
                 error={errors.expiryDate}
                 errorMessage={errors.expiryDate}
-                helpText={t('japan.travelInfo.fields.expiryDateHelp')}
+                helpText={t('us.travelInfo.fields.expiryDateHelp', { defaultValue: '护照过期日期' })}
               />
             </CollapsibleSection>
           </View>
 
           <View onLayout={updateSectionOffset('travel')}>
             <CollapsibleSection
-              title={t('japan.travelInfo.sections.travel')}
+              title={t('us.travelInfo.sections.travel', { defaultValue: '行程信息' })}
               expanded={expandedSection === 'travel'}
               onToggle={(expanded) => setExpandedSection(expanded ? 'travel' : null)}
               fieldCount={sectionProgress.travel}
@@ -485,17 +494,17 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               contentStyle={styles.sectionContent}
             >
               <TravelPurposeSelector
-                label={t('japan.travelInfo.fields.travelPurpose')}
+                label={t('us.travelInfo.fields.travelPurpose', { defaultValue: '旅行目的' })}
                 value={travelPurposeCode}
                 onValueChange={(value) => {
-                  const normalizedValue = JapanFormHelper.normalizeTravelPurpose(value);
+                  const normalizedValue = USFormHelper.normalizeTravelPurpose(value);
                   setTravelPurpose(normalizedValue);
                   if (normalizedValue !== 'Other') {
                     setCustomTravelPurpose('');
                   }
                   handleFieldBlur('travelPurpose', normalizedValue);
                 }}
-                purposeType="japan"
+                purposeType="us"
                 locale={language}
                 error={!!errors.travelPurpose}
                 errorMessage={errors.travelPurpose}
@@ -503,29 +512,29 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
               {travelPurpose === 'Other' && (
                 <Input
-                  label={t('japan.travelInfo.fields.customTravelPurpose')}
+                  label={t('us.travelInfo.fields.customTravelPurpose', { defaultValue: '其他目的' })}
                   value={customTravelPurpose}
                   onChangeText={setCustomTravelPurpose}
                   onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
-                  placeholder={t('japan.travelInfo.fields.customTravelPurposePlaceholder')}
+                  placeholder={t('us.travelInfo.fields.customTravelPurposePlaceholder', { defaultValue: '请输入旅行目的' })}
                   helpText="Please enter in English"
                   autoCapitalize="words"
                 />
               )}
 
               <Input
-                label={t('japan.travelInfo.fields.arrivalFlightNumber')}
+                label={t('us.travelInfo.fields.arrivalFlightNumber', { defaultValue: '抵达航班号' })}
                 value={arrivalFlightNumber}
                 onChangeText={setArrivalFlightNumber}
                 onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
-                placeholder={t('japan.travelInfo.fields.arrivalFlightNumberPlaceholder')}
+                placeholder={t('us.travelInfo.fields.arrivalFlightNumberPlaceholder', { defaultValue: 'UA857' })}
                 autoCapitalize="characters"
                 error={errors.arrivalFlightNumber}
                 errorMessage={errors.arrivalFlightNumber}
               />
 
               <DateTimeInput
-                label={t('japan.travelInfo.fields.arrivalDate')}
+                label={t('us.travelInfo.fields.arrivalDate', { defaultValue: '抵达日期' })}
                 value={arrivalDate}
                 onChangeText={setArrivalDate}
                 onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
@@ -533,7 +542,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                 dateType="future"
                 error={errors.arrivalDate}
                 errorMessage={errors.arrivalDate}
-                helpText={t('japan.travelInfo.fields.arrivalDateHelp')}
+                helpText={t('us.travelInfo.fields.arrivalDateHelp', { defaultValue: '预计抵达美国日期' })}
               />
 
               <TouchableOpacity
@@ -553,31 +562,31 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                   {isTransitPassenger && <Text style={styles.checkmark}>✓</Text>}
                 </View>
                 <Text style={styles.checkboxLabel}>
-                  {t('japan.travelInfo.fields.transitPassenger', { defaultValue: '我是过境旅客，不在日本停留' })}
+                  {t('us.travelInfo.fields.transitPassenger', { defaultValue: '我是过境旅客，不在美国停留' })}
                 </Text>
               </TouchableOpacity>
 
               {!isTransitPassenger && (
                 <>
                   <Input
-                    label={t('japan.travelInfo.fields.accommodationAddress')}
+                    label={t('us.travelInfo.fields.accommodationAddress', { defaultValue: '住宿地址' })}
                     value={accommodationAddress}
                     onChangeText={setAccommodationAddress}
                     onBlur={() => handleFieldBlur('accommodationAddress', accommodationAddress)}
-                    placeholder={t('japan.travelInfo.fields.accommodationAddressPlaceholder')}
+                    placeholder={t('us.travelInfo.fields.accommodationAddressPlaceholder', { defaultValue: '123 Main St, New York, NY 10001' })}
                     multiline
                     numberOfLines={3}
                     error={errors.accommodationAddress}
                     errorMessage={errors.accommodationAddress}
-                    helpText={t('japan.travelInfo.fields.accommodationAddressHelp')}
+                    helpText={t('us.travelInfo.fields.accommodationAddressHelp', { defaultValue: '请输入在美国的住宿地址' })}
                   />
 
                   <Input
-                    label={t('japan.travelInfo.fields.accommodationPhone')}
+                    label={t('us.travelInfo.fields.accommodationPhone', { defaultValue: '住宿电话' })}
                     value={accommodationPhone}
                     onChangeText={setAccommodationPhone}
                     onBlur={() => handleFieldBlur('accommodationPhone', accommodationPhone)}
-                    placeholder={t('japan.travelInfo.fields.accommodationPhonePlaceholder')}
+                    placeholder={t('us.travelInfo.fields.accommodationPhonePlaceholder', { defaultValue: '212-555-1234' })}
                     keyboardType="phone-pad"
                     error={errors.accommodationPhone}
                     errorMessage={errors.accommodationPhone}
@@ -586,11 +595,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               )}
 
               <Input
-                label={t('japan.travelInfo.fields.lengthOfStay')}
+                label={t('us.travelInfo.fields.lengthOfStay', { defaultValue: '停留天数' })}
                 value={lengthOfStay}
                 onChangeText={setLengthOfStay}
                 onBlur={() => handleFieldBlur('lengthOfStay', lengthOfStay)}
-                placeholder={t('japan.travelInfo.fields.lengthOfStayPlaceholder')}
+                placeholder={t('us.travelInfo.fields.lengthOfStayPlaceholder', { defaultValue: '7' })}
                 keyboardType="numeric"
                 error={errors.lengthOfStay}
                 errorMessage={errors.lengthOfStay}
@@ -599,12 +608,12 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
           </View>
 
           <Text style={styles.sectionGroupTitleSecondary}>
-            {t('japan.travelInfo.groups.supportingDocs', { defaultValue: '随身备用资料' })}
+            {t('us.travelInfo.groups.supportingDocs', { defaultValue: '随身备用资料' })}
           </Text>
 
           <View onLayout={updateSectionOffset('personal')}>
             <CollapsibleSection
-              title={t('japan.travelInfo.sections.personal')}
+              title={t('us.travelInfo.sections.personal', { defaultValue: '个人信息' })}
               expanded={expandedSection === 'personal'}
               onToggle={(expanded) => setExpandedSection(expanded ? 'personal' : null)}
               fieldCount={sectionProgress.personal}
@@ -613,27 +622,27 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               contentStyle={styles.sectionContent}
             >
               <Input
-                label={t('japan.travelInfo.fields.occupation')}
+                label={t('us.travelInfo.fields.occupation', { defaultValue: '职业' })}
                 value={occupation}
                 onChangeText={setOccupation}
                 onBlur={() => handleFieldBlur('occupation', occupation)}
-                placeholder={t('japan.travelInfo.fields.occupationPlaceholder')}
+                placeholder={t('us.travelInfo.fields.occupationPlaceholder', { defaultValue: 'Engineer' })}
                 error={errors.occupation}
                 errorMessage={errors.occupation}
               />
 
               <Input
-                label={t('japan.travelInfo.fields.cityOfResidence')}
+                label={t('us.travelInfo.fields.cityOfResidence', { defaultValue: '居住城市' })}
                 value={cityOfResidence}
                 onChangeText={setCityOfResidence}
                 onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
-                placeholder={t('japan.travelInfo.fields.cityOfResidencePlaceholder')}
+                placeholder={t('us.travelInfo.fields.cityOfResidencePlaceholder', { defaultValue: 'Beijing' })}
                 error={errors.cityOfResidence}
                 errorMessage={errors.cityOfResidence}
               />
 
               <NationalitySelector
-                label={t('japan.travelInfo.fields.residentCountry')}
+                label={t('us.travelInfo.fields.residentCountry', { defaultValue: '居住国家' })}
                 value={residentCountry}
                 onValueChange={(value) => {
                   setResidentCountry(value);
@@ -643,7 +652,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                   }
                   handleFieldBlur('residentCountry', value);
                 }}
-                placeholder={t('japan.travelInfo.fields.residentCountryPlaceholder')}
+                placeholder={t('us.travelInfo.fields.residentCountryPlaceholder', { defaultValue: '选择居住国家' })}
                 error={errors.residentCountry}
                 errorMessage={errors.residentCountry}
               />
@@ -651,11 +660,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               <View style={styles.phoneRow}>
                 <View style={styles.phoneCodeContainer}>
                   <Input
-                    label={t('japan.travelInfo.fields.phoneCode')}
+                    label={t('us.travelInfo.fields.phoneCode', { defaultValue: '区号' })}
                     value={phoneCode}
                     onChangeText={setPhoneCode}
                     onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
-                    placeholder={t('japan.travelInfo.fields.phoneCodePlaceholder')}
+                    placeholder={t('us.travelInfo.fields.phoneCodePlaceholder', { defaultValue: '+86' })}
                     error={errors.phoneCode}
                     errorMessage={errors.phoneCode}
                     style={styles.phoneCodeInput}
@@ -663,11 +672,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                 </View>
                 <View style={styles.phoneNumberContainer}>
                   <Input
-                    label={t('japan.travelInfo.fields.phoneNumber')}
+                    label={t('us.travelInfo.fields.phoneNumber', { defaultValue: '电话号码' })}
                     value={phoneNumber}
                     onChangeText={setPhoneNumber}
                     onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
-                    placeholder={t('japan.travelInfo.fields.phoneNumberPlaceholder')}
+                    placeholder={t('us.travelInfo.fields.phoneNumberPlaceholder', { defaultValue: '13800138000' })}
                     keyboardType="phone-pad"
                     error={errors.phoneNumber}
                     errorMessage={errors.phoneNumber}
@@ -676,11 +685,11 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               </View>
 
               <Input
-                label={t('japan.travelInfo.fields.email')}
+                label={t('us.travelInfo.fields.email', { defaultValue: '电子邮箱' })}
                 value={email}
                 onChangeText={setEmail}
                 onBlur={() => handleFieldBlur('email', email)}
-                placeholder={t('japan.travelInfo.fields.emailPlaceholder')}
+                placeholder={t('us.travelInfo.fields.emailPlaceholder', { defaultValue: 'example@email.com' })}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 error={errors.email}
@@ -688,7 +697,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               />
 
               <View style={styles.genderContainer}>
-                <Text style={styles.genderLabel}>{t('japan.travelInfo.fields.gender')}</Text>
+                <Text style={styles.genderLabel}>{t('us.travelInfo.fields.gender', { defaultValue: '性别' })}</Text>
                 <View style={styles.genderButtons}>
                   <TouchableOpacity
                     style={[
@@ -704,7 +713,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                       styles.genderButtonText,
                       gender === 'Male' && styles.genderButtonTextSelected
                     ]}>
-                      {t('japan.travelInfo.fields.genderMale')}
+                      {t('us.travelInfo.fields.genderMale', { defaultValue: '男' })}
                     </Text>
                   </TouchableOpacity>
 
@@ -722,7 +731,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                       styles.genderButtonText,
                       gender === 'Female' && styles.genderButtonTextSelected
                     ]}>
-                      {t('japan.travelInfo.fields.genderFemale')}
+                      {t('us.travelInfo.fields.genderFemale', { defaultValue: '女' })}
                     </Text>
                   </TouchableOpacity>
 
@@ -740,7 +749,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                       styles.genderButtonText,
                       gender === 'Undefined' && styles.genderButtonTextSelected
                     ]}>
-                      {t('japan.travelInfo.fields.genderUndefined')}
+                      {t('us.travelInfo.fields.genderUndefined', { defaultValue: '其他' })}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -753,7 +762,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
           <View onLayout={updateSectionOffset('funds')}>
             <CollapsibleSection
-              title={t('japan.travelInfo.sections.funds')}
+              title={t('us.travelInfo.sections.funds', { defaultValue: '资金证明' })}
               expanded={expandedSection === 'funds'}
               onToggle={(expanded) => setExpandedSection(expanded ? 'funds' : null)}
               fieldCount={sectionProgress.funds}
@@ -763,7 +772,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
             >
               {funds.length === 0 ? (
                 <Text style={styles.emptyFundsText}>
-                  {t('japan.travelInfo.funds.emptyMessage', { defaultValue: 'No fund items added yet. Add at least one fund item to show proof of funds.' })}
+                  {t('us.travelInfo.funds.emptyMessage', { defaultValue: 'No fund items added yet. Add at least one fund item to show proof of funds.' })}
                 </Text>
               ) : (
                 <View style={styles.fundsList}>
@@ -780,13 +789,13 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
                         activeOpacity={0.8}
                       >
                         <View style={styles.fundItemContent}>
-                          <Text style={styles.fundItemIcon}>{JapanFormHelper.getFundItemIcon(item.type)}</Text>
+                          <Text style={styles.fundItemIcon}>{USFormHelper.getFundItemIcon(item.type)}</Text>
                           <View style={styles.fundItemDetails}>
                             <Text style={styles.fundItemType}>
-                              {JapanFormHelper.getFundItemLabel(item.type, t)}
+                              {USFormHelper.getFundItemLabel(item.type, t)}
                             </Text>
                             <Text style={styles.fundItemValue}>
-                              {JapanFormHelper.getFundItemSummary(item, t)}
+                              {USFormHelper.getFundItemSummary(item, t)}
                             </Text>
                           </View>
                         </View>
@@ -803,7 +812,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
               >
                 <Text style={styles.addFundItemIcon}>➕</Text>
                 <Text style={styles.addFundItemText}>
-                  {t('japan.travelInfo.funds.addButton')}
+                  {t('us.travelInfo.funds.addButton', { defaultValue: '添加资金项目' })}
                 </Text>
               </TouchableOpacity>
             </CollapsibleSection>
@@ -966,14 +975,14 @@ const styles = StyleSheet.create({
   fundsList: {
     marginBottom: spacing.md,
   },
-  fundItemRow: {
+  fundItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
   },
-  fundItemRowDivider: {
+  fundItemBorder: {
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -1025,23 +1034,6 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: colors.primary,
     fontWeight: '600',
-  },
-  pickerContainer: {
-    marginBottom: spacing.md,
-  },
-  fieldContainer: {
-    marginBottom: spacing.md,
-  },
-  fieldLabel: {
-    ...typography.body1,
-    color: colors.text,
-    marginBottom: spacing.sm,
-    fontWeight: '600',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
   },
   primaryButton: {
     backgroundColor: colors.primary,
@@ -1115,33 +1107,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
   },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    margin: spacing.xs,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-  },
-  optionButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  optionIcon: {
-    fontSize: 18,
-    marginRight: spacing.xs,
-  },
-  optionText: {
-    ...typography.body2,
-    color: colors.text,
-  },
-  optionTextActive: {
-    color: colors.white,
-    fontWeight: '600',
-  },
 });
 
-export default JapanTravelInfoScreen;
+export default USTravelInfoScreen;

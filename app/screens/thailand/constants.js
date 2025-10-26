@@ -42,6 +42,29 @@ export const GENDER_OPTIONS = [
 ];
 
 /**
+ * Predefined occupation options for Thailand TDAC
+ * Chinese labels with English values (submitted in uppercase)
+ */
+export const OCCUPATION_OPTIONS = [
+  { value: 'SOFTWARE ENGINEER', label: '软件工程师', icon: '💻' },
+  { value: 'STUDENT', label: '学生', icon: '📚' },
+  { value: 'TEACHER', label: '教师', icon: '👨‍🏫' },
+  { value: 'DOCTOR', label: '医生', icon: '👨‍⚕️' },
+  { value: 'ACCOUNTANT', label: '会计师', icon: '📊' },
+  { value: 'SALES MANAGER', label: '销售经理', icon: '📈' },
+  { value: 'RETIRED', label: '退休人员', icon: '🏖️' },
+  { value: 'ENGINEER', label: '工程师', icon: '⚙️' },
+  { value: 'CIVIL SERVANT', label: '公务员', icon: '🏛️' },
+  { value: 'LAWYER', label: '律师', icon: '⚖️' },
+  { value: 'NURSE', label: '护士', icon: '👩‍⚕️' },
+  { value: 'FREELANCER', label: '自由职业者', icon: '🎨' },
+  { value: 'BUSINESS OWNER', label: '企业主', icon: '💼' },
+  { value: 'HOMEMAKER', label: '家庭主妇', icon: '🏠' },
+  { value: 'DESIGNER', label: '设计师', icon: '✏️' },
+  { value: 'OTHER', label: '其他', icon: '📝' },
+];
+
+/**
  * Storage keys for AsyncStorage
  */
 export const STORAGE_KEYS = {
@@ -133,6 +156,7 @@ export default {
   PREDEFINED_TRAVEL_PURPOSES,
   PREDEFINED_ACCOMMODATION_TYPES,
   GENDER_OPTIONS,
+  OCCUPATION_OPTIONS,
   STORAGE_KEYS,
   SECTIONS,
   FIELD_NAMES,

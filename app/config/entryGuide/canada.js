@@ -18,8 +18,31 @@ export const canadaEntryGuide = {
     '注意加拿大严寒气候，做好保暖准备'
   ],
 
-  // 6步骤完整流程 (加拿大入境友好但 thorough)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存加拿大紧急联系电话，以备不时之需',
+      descriptionZh: '保存加拿大紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察/救护车/火警：911',
+        '旅游警察：1-888-315-4626',
+        '中国大使馆：+1-613-230-6298',
+        '韩国大使馆：+1-613-244-5010',
+        '日本大使馆：+1-613-241-8541',
+        '移民局：+1-613-952-3200',
+        '机场服务：+1-888-226-1797',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打911'
+      ]
+    },
     {
       id: 'eta_application',
       title: 'eTA电子旅行许可申请',
@@ -27,7 +50,7 @@ export const canadaEntryGuide = {
       description: '抵达前72小时申请加拿大电子旅行许可',
       descriptionZh: '抵达前72小时申请加拿大电子旅行许可',
       category: 'pre-arrival',
-      priority: 1,
+      priority: 2,
       estimatedTime: '10分钟',
       icon: '📱',
       required: true,
@@ -50,7 +73,7 @@ export const canadaEntryGuide = {
       description: '准备详细的旅行计划和住宿证明',
       descriptionZh: '准备详细的旅行计划和住宿证明',
       category: 'pre-flight',
-      priority: 2,
+      priority: 3,
       estimatedTime: '15分钟',
       icon: '📋',
       required: true,
@@ -68,7 +91,7 @@ export const canadaEntryGuide = {
       description: '关闭蜂窝网络，准备加元兑换',
       descriptionZh: '关闭蜂窝网络，准备加元兑换',
       category: 'post-landing',
-      priority: 3,
+      priority: 4,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -89,7 +112,7 @@ export const canadaEntryGuide = {
       description: '出示护照和eTA，回答移民官问题',
       descriptionZh: '出示护照和eTA，回答移民官问题',
       category: 'immigration',
-      priority: 4,
+      priority: 5,
       estimatedTime: '20分钟',
       icon: '🛂',
       required: true,
@@ -107,7 +130,7 @@ export const canadaEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 5,
+      priority: 6,
       estimatedTime: '15分钟',
       icon: '🧳',
       required: true,
@@ -124,7 +147,7 @@ export const canadaEntryGuide = {
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 6,
+      priority: 7,
       estimatedTime: '15分钟',
       icon: '🔍',
       required: true,
