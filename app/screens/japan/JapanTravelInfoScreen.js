@@ -20,7 +20,6 @@ import FundItemDetailModal from '../../components/FundItemDetailModal';
 import TravelPurposeSelector from '../../components/TravelPurposeSelector';
 import HeroCard from '../../components/japan/HeroCard';
 import TipsChips from '../../components/japan/TipsChips';
-import ActionBar from '../../components/japan/ActionBar';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useJapanTravelData } from '../../hooks/japan/useJapanTravelData';
@@ -28,8 +27,6 @@ import { useFormProgress } from '../../hooks/japan/useFormProgress';
 import UserDataService from '../../services/data/UserDataService';
 import { getPhoneCode } from '../../data/phoneCodes';
 import JapanFormHelper from '../../utils/japan/JapanFormHelper';
-
-const ACTION_BAR_HEIGHT = 88;
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -114,12 +111,9 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     isFormValid,
   } = useFormProgress(formData);
 
-  const heroNextActionLabel = isReadyForTravel
-    ? t('japan.travelInfo.hero.nextActionReady', { defaultValue: '下一步：打印入境包' })
-    : t('japan.travelInfo.hero.nextActionPending', {
-        remaining: remainingItems,
-        defaultValue: remainingItems > 0 ? `还有 ${remainingItems} 项待确认` : '继续完善资料',
-      });
+  const heroNextActionLabel = t('japan.travelInfo.hero.nextAction', {
+    defaultValue: '查看准备状态'
+  });
 
   const heroSummaryLabel = t('japan.travelInfo.hero.summary', {
     completed: totalFilled,
@@ -129,14 +123,14 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
   const heroMetaLabel = isReadyForTravel
     ? t('japan.travelInfo.hero.metaReady', {
-        defaultValue: '所有资料已核对完成，可随时打印或分享给同行人。',
+        defaultValue: '所有资料已整理完成，点击查看准备状态和入境指南。',
       })
     : t('japan.travelInfo.hero.metaPending', {
         remaining: remainingItems,
         defaultValue:
           remainingItems > 0
-            ? `尚有 ${remainingItems} 项资料待填写，点击进度快速定位。`
-            : '继续检查资料，确保纸质表格填写无误。',
+            ? `尚有 ${remainingItems} 项资料待填写，点击可查看详情。`
+            : '点击查看准备状态，可继续完善资料或查看入境指南。',
       });
 
   const heroTips = useMemo(
@@ -206,38 +200,23 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
       try {
         await saveData();
-        navigation.navigate('Result', {
+        navigation.navigate('JapanEntryFlow', {
           userId: resolvedUserId,
+          passport: passport,
           destination: destination || { id: 'jp' },
-          context: 'manual_entry_guide',
-          initialAction,
         });
       } catch (error) {
         Alert.alert(t('common.error'), t('japan.travelInfo.errors.saveFailed'));
       }
     },
-    [destination, isFormValid, navigation, resolvedUserId, saveData, t]
+    [destination, isFormValid, navigation, resolvedUserId, saveData, t, passport]
   );
 
   const handleHeroPress = useCallback(() => {
-    if (isReadyForTravel) {
-      handleNavigateToResult({ initialAction: 'guide', requireValid: true });
-    } else {
-      focusFirstIncompleteSection();
-    }
-  }, [focusFirstIncompleteSection, handleNavigateToResult, isReadyForTravel]);
-
-  const handleShareWithFriends = useCallback(() => {
-    handleNavigateToResult({ initialAction: 'share', requireValid: false });
+    // Always navigate to the entry flow hub, regardless of completion status
+    handleNavigateToResult({ initialAction: 'guide', requireValid: false });
   }, [handleNavigateToResult]);
 
-  const handlePrintOrSave = useCallback(() => {
-    handleNavigateToResult({ initialAction: 'print', requireValid: true });
-  }, [handleNavigateToResult]);
-
-  const handleEditInformation = useCallback(() => {
-    focusFirstIncompleteSection();
-  }, [focusFirstIncompleteSection]);
 
   // Handle continue button press
   const navigateBackToPreviousScreen = () => {
@@ -257,15 +236,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       fallbackParams.passport = rawPassport;
     }
 
-    if (initialTravelInfo) {
-      fallbackParams.travelInfo = initialTravelInfo;
-    }
-
-    if (routeContext) {
-      fallbackParams.context = routeContext;
-    }
-
-    navigation.navigate('Result', fallbackParams);
+    navigation.navigate('JapanEntryFlow', fallbackParams);
   };
 
   const handleGoBack = async () => {
@@ -408,6 +379,24 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
             progressLabel={t('japan.travelInfo.hero.progressLabel', { defaultValue: '准备度' })}
             onPress={handleHeroPress}
           />
+
+          {/* Primary Action Button */}
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleHeroPress}
+            activeOpacity={0.85}
+          >
+            <View style={styles.primaryButtonContent}>
+              <Text style={styles.primaryButtonIcon}>🧳</Text>
+              <View style={styles.primaryButtonTextContainer}>
+                <Text style={styles.primaryButtonTitle}>查看准备状态</Text>
+                <Text style={styles.primaryButtonSubtitle}>
+                  {isReadyForTravel ? '已完成，查看入境指南' : `已完成 ${totalFilled}/${totalFields} 项资料`}
+                </Text>
+              </View>
+              <Text style={styles.primaryButtonArrow}>›</Text>
+            </View>
+          </TouchableOpacity>
 
           <TipsChips tips={heroTips} />
 
@@ -820,38 +809,8 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
             </CollapsibleSection>
           </View>
 
-          <TouchableOpacity
-            style={styles.offlineGuideCard}
-            activeOpacity={0.85}
-            onPress={() => handleNavigateToResult({ initialAction: 'guide', requireValid: isReadyForTravel })}
-          >
-            <View style={styles.offlineGuideIconWrap}>
-              <Text style={styles.offlineGuideIcon}>🧳</Text>
-            </View>
-            <View style={styles.offlineGuideContent}>
-              <Text style={styles.offlineGuideTitle}>
-                {t('japan.travelInfo.offlineGuide.title', { defaultValue: '查看离线入境指南' })}
-              </Text>
-              <Text style={styles.offlineGuideSubtitle}>
-                {t('japan.travelInfo.offlineGuide.subtitle', {
-                  defaultValue: '分步指导 + 大字模式，离线也能查看。',
-                })}
-              </Text>
-            </View>
-            <Text style={styles.offlineGuideArrow}>›</Text>
-          </TouchableOpacity>
-
           <View style={{ height: spacing.xl }} />
         </ScrollView>
-
-        <ActionBar
-          onEdit={handleEditInformation}
-          onShare={handleShareWithFriends}
-          onPrint={handlePrintOrSave}
-          editLabel={t('japan.travelInfo.actions.edit', { defaultValue: '修改信息' })}
-          shareLabel={t('japan.travelInfo.actions.share', { defaultValue: '分享同行' })}
-          printLabel={t('japan.travelInfo.actions.print', { defaultValue: '打印/保存 PDF' })}
-        />
       </View>
 
       {/* Fund Item Detail Modal */}
@@ -911,7 +870,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xl + ACTION_BAR_HEIGHT,
+    paddingBottom: spacing.xl,
   },
   sectionGroupTitle: {
     ...typography.body2,
@@ -1084,48 +1043,45 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginHorizontal: -spacing.xs,
   },
-  offlineGuideCard: {
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 18,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginTop: spacing.lg,
-    shadowColor: '#00000014',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 6,
   },
-  offlineGuideIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#E8F5E9',
-    alignItems: 'center',
-    justifyContent: 'center',
+  primaryButtonIcon: {
+    fontSize: 28,
     marginRight: spacing.md,
   },
-  offlineGuideIcon: {
-    fontSize: 24,
-  },
-  offlineGuideContent: {
+  primaryButtonTextContainer: {
     flex: 1,
   },
-  offlineGuideTitle: {
-    ...typography.body1,
+  primaryButtonTitle: {
+    fontSize: 17,
     fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.xs,
+    color: colors.white,
+    marginBottom: 2,
   },
-  offlineGuideSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  primaryButtonSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
-  offlineGuideArrow: {
+  primaryButtonArrow: {
     fontSize: 24,
-    color: colors.primary,
+    color: colors.white,
+    fontWeight: '400',
     marginLeft: spacing.md,
   },
   checkboxContainer: {
