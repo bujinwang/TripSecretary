@@ -305,7 +305,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   };
 
   // Calculate completion metrics using TravelInfoFormUtils
-  const calculateCompletionMetrics = () => {
+  const calculateCompletionMetrics = useCallback(() => {
     try {
       // Build all fields object for the utility
       const allFields = {
@@ -330,7 +330,15 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
       console.error('Failed to calculate completion metrics:', error);
       return { totalPercent: 0, metrics: null, isReady: false };
     }
-  };
+  }, [
+    passportNo, fullName, nationality, dob, expiryDate, sex,
+    occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
+    travelPurpose, customTravelPurpose, boardingCountry, arrivalFlightNumber, arrivalArrivalDate,
+    departureFlightNumber, departureDepartureDate, isTransitPassenger, accommodationType,
+    customAccommodationType, province, district, subDistrict, postalCode, hotelAddress,
+    funds,
+    travelInfoForm
+  ]);
 
   // Check if all fields are filled and valid
   const isFormValid = () => {
@@ -899,15 +907,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
     if (!isLoading) {
       calculateCompletionMetrics();
     }
-  }, [
-    passportNo, fullName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
-    funds,
-    travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, boardingCountry, hotelAddress,
-    accommodationType, customAccommodationType, province, district, subDistrict,
-    postalCode, isTransitPassenger, isLoading
-  ]);
+  }, [isLoading, calculateCompletionMetrics]);
 
   // Helper function to handle navigation with save error handling
   const handleNavigationWithSave = async (navigationAction, actionName = 'navigate') => {
