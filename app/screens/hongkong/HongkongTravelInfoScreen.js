@@ -13,6 +13,7 @@ import {
   UIManager,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -24,6 +25,8 @@ import { getPhoneCode } from '../../data/phoneCodes';
 
 // Import secure data models and services
 import UserDataService from '../../services/data/UserDataService';
+import { hongkongEntryGuide } from '../../config/entryGuide/hongkong';
+
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -104,10 +107,16 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
   const [email, setEmail] = useState('');
 
   // Travel Info State
+  const [travelPurpose, setTravelPurpose] = useState('');
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
   const [arrivalDate, setArrivalDate] = useState('');
+  const [departureFlightNumber, setDepartureFlightNumber] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [hotelName, setHotelName] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
   const [stayDuration, setStayDuration] = useState('');
+  const [previousVisit, setPreviousVisit] = useState(false);
+  const [lastVisitDate, setLastVisitDate] = useState('');
 
 
   const [errors, setErrors] = useState({});
@@ -133,15 +142,21 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
       
       case 'travel':
         const travelFields = [
+          travelPurpose,
           arrivalFlightNumber, arrivalDate,
-          hotelAddress,
+          departureFlightNumber, departureDate,
+          hotelName, hotelAddress,
           stayDuration
         ];
-        total = travelFields.length;
+        // Count based on whether previous visit is selected
+        const baseTotal = travelFields.length;
+        const extraFields = previousVisit ? 1 : 0; // lastVisitDate if previousVisit is true
+
+        total = baseTotal + extraFields;
         filled = travelFields.filter(field => {
-          if (typeof field === 'boolean') return field;
+          if (typeof field === 'boolean') return true;
           return field && field.toString().trim() !== '';
-        }).length;
+        }).length + (previousVisit && lastVisitDate ? 1 : 0);
         break;
     }
 
@@ -214,10 +229,16 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
         }
         
         if (travelInfo) {
+          setTravelPurpose(travelInfo.travelPurpose || '');
           setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
           setArrivalDate(travelInfo.arrivalArrivalDate || '');
+          setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+          setDepartureDate(travelInfo.departureDepartureDate || '');
+          setHotelName(travelInfo.hotelName || '');
           setHotelAddress(travelInfo.hotelAddress || '');
           setStayDuration(travelInfo.lengthOfStay || '');
+          setPreviousVisit(travelInfo.previousVisit || false);
+          setLastVisitDate(travelInfo.lastVisitDate || '');
         }
         
       } catch (error) {
@@ -272,10 +293,16 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
       }
 
       const travelInfoUpdates = {};
+      if (travelPurpose) travelInfoUpdates.travelPurpose = travelPurpose;
       if (arrivalFlightNumber) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
       if (arrivalDate) travelInfoUpdates.arrivalArrivalDate = arrivalDate;
+      if (departureFlightNumber) travelInfoUpdates.departureFlightNumber = departureFlightNumber;
+      if (departureDate) travelInfoUpdates.departureDepartureDate = departureDate;
+      if (hotelName) travelInfoUpdates.hotelName = hotelName;
       if (hotelAddress) travelInfoUpdates.hotelAddress = hotelAddress;
       if (stayDuration) travelInfoUpdates.lengthOfStay = stayDuration;
+      travelInfoUpdates.previousVisit = previousVisit;
+      if (lastVisitDate) travelInfoUpdates.lastVisitDate = lastVisitDate;
 
 
       if (Object.keys(travelInfoUpdates).length > 0) {
@@ -472,45 +499,184 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection 
+        <CollapsibleSection
           title="旅行信息"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
-          <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
-          <DateTimeInput 
-            label="抵达日期" 
-            value={arrivalDate} 
-            onChangeText={setArrivalDate} 
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>旅行目的</Text>
+            <View style={styles.optionsContainer}>
+              {[
+                { value: 'TOURISM', label: '旅游观光' },
+                { value: 'BUSINESS', label: '商务' },
+                { value: 'VISIT_FAMILY', label: '探亲访友' },
+                { value: 'TRANSIT', label: '过境' },
+                { value: 'OTHER', label: '其他' }
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.optionButton,
+                    travelPurpose === option.value && styles.optionButtonActive,
+                  ]}
+                  onPress={async () => {
+                    setTravelPurpose(option.value);
+                    await saveDataToSecureStorage();
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      travelPurpose === option.value && styles.optionTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <Text style={styles.subSectionTitle}>✈️ 抵达信息</Text>
+          <Input
+            label="抵达航班号"
+            value={arrivalFlightNumber}
+            onChangeText={setArrivalFlightNumber}
+            onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
+            helpText="请输入您的抵达航班号 (例如 CX123)"
+            error={!!errors.arrivalFlightNumber}
+            errorMessage={errors.arrivalFlightNumber}
+            autoCapitalize="characters"
+          />
+          <DateTimeInput
+            label="抵达日期"
+            value={arrivalDate}
+            onChangeText={setArrivalDate}
             mode="date"
             dateType="future"
-            helpText="选择日期"
-            error={!!errors.arrivalDate} 
+            helpText="选择抵达日期"
+            error={!!errors.arrivalDate}
             errorMessage={errors.arrivalDate}
             onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
           />
-          <Input 
-            label="在港住址" 
-            value={hotelAddress} 
-            onChangeText={setHotelAddress} 
-            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-            multiline 
-            helpText="请输入详细地址" 
-            error={!!errors.hotelAddress} 
-            errorMessage={errors.hotelAddress} 
-            autoCapitalize="words" 
+
+          <Text style={styles.subSectionTitle}>🛫 离开信息</Text>
+          <Input
+            label="离开航班号"
+            value={departureFlightNumber}
+            onChangeText={setDepartureFlightNumber}
+            onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)}
+            helpText="请输入您的离开航班号 (例如 CX456)"
+            error={!!errors.departureFlightNumber}
+            errorMessage={errors.departureFlightNumber}
+            autoCapitalize="characters"
           />
-          <Input 
-            label="停留天数" 
-            value={stayDuration} 
-            onChangeText={setStayDuration} 
-            onBlur={() => handleFieldBlur('stayDuration', stayDuration)} 
-            helpText="请输入停留天数" 
-            error={!!errors.stayDuration} 
-            errorMessage={errors.stayDuration} 
-            keyboardType="numeric" 
+          <DateTimeInput
+            label="离开日期"
+            value={departureDate}
+            onChangeText={setDepartureDate}
+            mode="date"
+            dateType="future"
+            helpText="选择离开日期"
+            error={!!errors.departureDate}
+            errorMessage={errors.departureDate}
+            onBlur={() => handleFieldBlur('departureDate', departureDate)}
           />
+
+          <Text style={styles.subSectionTitle}>🏨 住宿信息</Text>
+          <Input
+            label="酒店名称"
+            value={hotelName}
+            onChangeText={setHotelName}
+            onBlur={() => handleFieldBlur('hotelName', hotelName)}
+            helpText="请输入酒店名称"
+            error={!!errors.hotelName}
+            errorMessage={errors.hotelName}
+            autoCapitalize="words"
+          />
+          <Input
+            label="在港住址"
+            value={hotelAddress}
+            onChangeText={setHotelAddress}
+            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+            multiline
+            helpText="请输入详细地址"
+            error={!!errors.hotelAddress}
+            errorMessage={errors.hotelAddress}
+            autoCapitalize="words"
+          />
+          <Input
+            label="停留天数"
+            value={stayDuration}
+            onChangeText={setStayDuration}
+            onBlur={() => handleFieldBlur('stayDuration', stayDuration)}
+            helpText="请输入停留天数"
+            error={!!errors.stayDuration}
+            errorMessage={errors.stayDuration}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.subSectionTitle}>📅 访问历史</Text>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>是否曾访问过香港？</Text>
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  previousVisit && styles.optionButtonActive,
+                ]}
+                onPress={async () => {
+                  setPreviousVisit(true);
+                  await saveDataToSecureStorage();
+                }}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    previousVisit && styles.optionTextActive,
+                  ]}
+                >
+                  是
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  !previousVisit && styles.optionButtonActive,
+                ]}
+                onPress={async () => {
+                  setPreviousVisit(false);
+                  setLastVisitDate('');
+                  await saveDataToSecureStorage();
+                }}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    !previousVisit && styles.optionTextActive,
+                  ]}
+                >
+                  否
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {previousVisit && (
+            <DateTimeInput
+              label="上次访问日期"
+              value={lastVisitDate}
+              onChangeText={setLastVisitDate}
+              mode="date"
+              dateType="past"
+              helpText="选择上次访问日期"
+              error={!!errors.lastVisitDate}
+              errorMessage={errors.lastVisitDate}
+              onBlur={() => handleFieldBlur('lastVisitDate', lastVisitDate)}
+            />
+          )}
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
@@ -733,6 +899,13 @@ const styles = StyleSheet.create({
   loadingText: {
     ...typography.body1,
     color: colors.textSecondary,
+  },
+  subSectionTitle: {
+    ...typography.h4,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
 });
 
