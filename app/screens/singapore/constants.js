@@ -40,25 +40,24 @@ export const TRAVEL_PURPOSE_OPTIONS = [
 
 /**
  * Predefined accommodation type options for Singapore stay
+ * Based on official SGAC form requirements
  */
 export const PREDEFINED_ACCOMMODATION_TYPES = [
   'HOTEL',
-  'YOUTH_HOSTEL',
-  'GUEST_HOUSE',
-  'FRIEND_HOUSE',
-  'APARTMENT',
+  'RESIDENTIAL',
+  'DAY_TRIP',
+  'TRANSIT',
 ];
 
 /**
  * Accommodation type options with labels and icons for UI display
+ * Matches the official Singapore Arrival Card (SGAC) form
  */
 export const ACCOMMODATION_TYPE_OPTIONS = [
-  { value: 'HOTEL', label: '酒店', icon: '🏨' },
-  { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠' },
-  { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡' },
-  { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥' },
-  { value: 'APARTMENT', label: '公寓', icon: '🏢' },
-  { value: 'OTHER', label: '其他', icon: '✏️' },
+  { value: 'HOTEL', label: '酒店/宾馆/旅舍', icon: '🏨', tip: '包括酒店、青旅、民宿' },
+  { value: 'RESIDENTIAL', label: '住宅/朋友家', icon: '🏠', tip: '包括公寓、朋友家' },
+  { value: 'DAY_TRIP', label: '当日往返', icon: '✈️' },
+  { value: 'TRANSIT', label: '过境转机', icon: '🔄' },
 ];
 
 /**

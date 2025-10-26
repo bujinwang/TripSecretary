@@ -30,7 +30,10 @@
       "Bash(npm install:*)",
       "Bash(npx expo install react-native-svg)",
       "Bash(npx react-native log-android:*)",
-      "Bash(npx expo start)"
+      "Bash(npx expo start)",
+      "WebSearch",
+      "Bash(pkill:*)",
+      "Bash(npx expo start --clear)"
     ],
     "deny": [],
     "ask": []

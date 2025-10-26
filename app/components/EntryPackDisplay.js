@@ -66,6 +66,34 @@ const countryConfigs = {
       amount: 'Amount / Jumlah'
     },
     dateLocales: ['en-US', 'ms-MY']
+  },
+  singapore: {
+    entryCardName: 'SGAC',
+    entryCardTab: 'sgac',
+    entryCardTitle: 'SG Arrival Card (SGAC) / 新加坡入境卡',
+    personalInfoTitle: 'Personal Information / 个人信息',
+    travelInfoTitle: 'Travel Information / 旅行信息',
+    fundsTitle: 'Funds Information / 资金信息',
+    currency: 'SGD',
+    currencyName: '新元',
+    notProvided: 'Not provided / 未提供',
+    fallbackHotelText: 'Please provide accommodation address / 请提供住宿地址',
+    labels: {
+      fullName: 'Full Name / 全名',
+      passportNumber: 'Passport Number / 护照号码',
+      nationality: 'Nationality / 国籍',
+      dateOfBirth: 'Date of Birth / 出生日期',
+      arrivalDate: 'Arrival Date / 抵达日期',
+      departureDate: 'Departure Date / 离开日期',
+      flightNumber: 'Flight Number / 航班号',
+      stayLocation: 'Accommodation / 住宿地址',
+      lengthOfStay: 'Length of Stay / 停留时间',
+      purpose: 'Purpose of Visit / 访问目的',
+      totalFunds: 'Total Funds / 资金总额',
+      fundType: 'Type / 类型',
+      amount: 'Amount / 金额'
+    },
+    dateLocales: ['en-US', 'zh-CN']
   }
 };
 
@@ -143,11 +171,9 @@ const EntryPackDisplay = ({
       return `${amount} ${currency}`;
     }
 
-    const locale1Formatted = numericAmount.toLocaleString(config.dateLocales[0]);
-    const locale2Formatted = numericAmount.toLocaleString(config.dateLocales[1]);
-    const currencyName = config.currencyName;
-
-    return `${locale1Formatted} ${currencyName} / ${locale2Formatted} ${currency}`;
+    // Simply format the number with the currency code (no bilingual conversion)
+    const formattedAmount = numericAmount.toLocaleString('en-US');
+    return `${formattedAmount} ${currency}`;
   };
 
   const totalFunds = useMemo(() => {
@@ -220,6 +246,15 @@ const EntryPackDisplay = ({
         card: 'Bank Card / Kad Bank',
         debit_card: 'Debit Card / Kad Debit',
         other: 'Other / Lain-lain'
+      },
+      singapore: {
+        cash: 'Cash / 现金',
+        credit_card: 'Credit Card / 信用卡',
+        bank_balance: 'Bank Balance / 银行存款',
+        investment: 'Investments / 投资',
+        card: 'Bank Card / 银行卡',
+        debit_card: 'Debit Card / 借记卡',
+        other: 'Other / 其他'
       }
     };
 
@@ -318,13 +353,19 @@ const EntryPackDisplay = ({
   );
 
   const renderFundsInfo = () => {
-    const proofPhotoText = country === 'malaysia'
-      ? '📸 Proof photo uploaded / Foto bukti dimuat naik'
-      : '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded';
+    const proofPhotoTexts = {
+      thailand: '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded',
+      malaysia: '📸 Proof photo uploaded / Foto bukti dimuat naik',
+      singapore: '📸 Proof photo uploaded / 已上传凭证照片'
+    };
+    const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
 
-    const noDataText = country === 'malaysia'
-      ? 'No funds information / Tiada maklumat kewangan'
-      : 'ยังไม่มีข้อมูลเงินทุน / No funds information';
+    const noDataTexts = {
+      thailand: 'ยังไม่มีข้อมูลเงินทุน / No funds information',
+      malaysia: 'No funds information / Tiada maklumat kewangan',
+      singapore: 'No funds information / 未提供资金信息'
+    };
+    const noDataText = noDataTexts[country] || noDataTexts.thailand;
 
     return (
       <View style={styles.section}>
@@ -369,51 +410,65 @@ const EntryPackDisplay = ({
     );
   };
 
-  const renderTDACInfo = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
+  const renderTDACInfo = () => {
+    const placeholderTitles = {
+      thailand: 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet',
+      malaysia: 'MDAC Not Submitted Yet / MDAC Belum Dihantar',
+      singapore: 'SGAC Not Submitted Yet / 新加坡入境卡尚未提交'
+    };
 
-      {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
-        <TDACInfoCard
-          tdacSubmission={entryPack.tdacSubmission}
-          isReadOnly={true}
-          country={country}
-        />
-      ) : (
-        <View style={styles.tdacPlaceholder}>
-          <View style={styles.placeholderIcon}>
-            <Text style={styles.placeholderIconText}>📱</Text>
-          </View>
-          <Text style={styles.placeholderTitle}>
-            {country === 'malaysia'
-              ? `MDAC Not Submitted Yet / MDAC Belum Dihantar`
-              : 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet'
-            }
-          </Text>
-          <Text style={styles.placeholderDescription}>
-            {country === 'malaysia'
-              ? 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan'
-              : 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival'
-            }
-          </Text>
-          <View style={styles.qrPlaceholder}>
-            <Text style={styles.qrPlaceholderText}>
-              {country === 'malaysia'
-                ? 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran'
-                : 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission'
-              }
+    const placeholderDescriptions = {
+      thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival',
+      malaysia: 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan',
+      singapore: 'Please submit SGAC within 3 days before arrival / 请在抵达前3天内提交新加坡入境卡'
+    };
+
+    const qrPlaceholderTexts = {
+      thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission',
+      malaysia: 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran',
+      singapore: 'DE Number will appear after submission / 提交后会显示DE编号'
+    };
+
+    const placeholderNotes = {
+      thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC',
+      malaysia: 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen',
+      singapore: 'You can still show other information to immigration officer / 您仍可向入境官员出示其他信息'
+    };
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
+
+        {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
+          <TDACInfoCard
+            tdacSubmission={entryPack.tdacSubmission}
+            isReadOnly={true}
+            country={country}
+          />
+        ) : (
+          <View style={styles.tdacPlaceholder}>
+            <View style={styles.placeholderIcon}>
+              <Text style={styles.placeholderIconText}>📱</Text>
+            </View>
+            <Text style={styles.placeholderTitle}>
+              {placeholderTitles[country] || placeholderTitles.thailand}
+            </Text>
+            <Text style={styles.placeholderDescription}>
+              {placeholderDescriptions[country] || placeholderDescriptions.thailand}
+            </Text>
+            <View style={styles.qrPlaceholder}>
+              <Text style={styles.qrPlaceholderText}>
+                {qrPlaceholderTexts[country] || qrPlaceholderTexts.thailand}
+              </Text>
+            </View>
+            <Text style={styles.placeholderNote}>
+              {placeholderNotes[country] || placeholderNotes.thailand}
             </Text>
           </View>
-          <Text style={styles.placeholderNote}>
-            {country === 'malaysia'
-              ? 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen'
-              : 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC'
-            }
-          </Text>
-        </View>
-      )}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   const renderImmigrationTips = () => (
     <View style={styles.section}>
@@ -461,6 +516,7 @@ const EntryPackDisplay = ({
         return renderFundsInfo();
       case 'tdac':
       case 'mdac':
+      case 'sgac':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -481,6 +537,12 @@ const EntryPackDisplay = ({
       { key: 'personal', label: 'Personal', labelEn: 'Peribadi' },
       { key: 'travel', label: 'Travel', labelEn: 'Perjalanan' },
       { key: 'funds', label: 'Funds', labelEn: 'Kewangan' },
+    ],
+    singapore: [
+      { key: 'sgac', label: 'SGAC', labelEn: '入境卡' },
+      { key: 'personal', label: 'Personal', labelEn: '个人' },
+      { key: 'travel', label: 'Travel', labelEn: '旅行' },
+      { key: 'funds', label: 'Funds', labelEn: '资金' },
     ]
   };
 
@@ -488,12 +550,14 @@ const EntryPackDisplay = ({
 
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
-    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan'
+    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
+    singapore: '🇸🇬 Entry Pack / 入境信息包'
   };
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
-    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen'
+    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
+    singapore: 'Important information for immigration officer / 重要入境信息'
   };
 
   return (
@@ -538,6 +602,8 @@ const EntryPackDisplay = ({
         <Text style={styles.footerText}>
           {country === 'malaysia'
             ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
+            : country === 'singapore'
+            ? 'Please show this entry pack to the immigration officer / 请向入境官员出示此信息包'
             : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
           }
         </Text>

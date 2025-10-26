@@ -1,5 +1,6 @@
-// 入境通 - Thailand Province Selector Component
-// Dropdown selector for Thailand provinces with bilingual display (English - Chinese)
+// 入境通 - Region/Province Selector Component
+// Dropdown selector for regions/provinces with bilingual display (English - Chinese)
+// Supports different country data sources
 
 import React, { useState } from 'react';
 import {
@@ -25,6 +26,10 @@ const ProvinceSelector = ({
   helpText,
   style,
   showSearch = true,
+  regionsData = null, // Custom regions data for different countries
+  getDisplayNameFunc = null, // Custom display name function
+  modalTitle = "选择省份", // Custom modal title
+  searchPlaceholder = "搜索省份（中文或英文）", // Custom search placeholder
   ...rest
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -35,17 +40,20 @@ const ProvinceSelector = ({
   // Load provinces on mount
   React.useEffect(() => {
     try {
-      if (Array.isArray(thailandProvinces) && thailandProvinces.length > 0) {
-        setProvinces(thailandProvinces);
+      // Use custom regionsData if provided, otherwise fall back to thailandProvinces
+      const dataSource = regionsData || thailandProvinces;
+
+      if (Array.isArray(dataSource) && dataSource.length > 0) {
+        setProvinces(dataSource);
       } else {
-        console.warn('thailandProvinces is not a valid array:', thailandProvinces);
+        console.warn('Regions data is not a valid array:', dataSource);
         setProvinces([]);
       }
     } catch (error) {
-      console.error('Error loading provinces:', error);
+      console.error('Error loading regions:', error);
       setProvinces([]);
     }
-  }, []);
+  }, [regionsData]);
 
   // Filter provinces based on search text
   const filteredProvinces = React.useMemo(() => {
@@ -66,6 +74,10 @@ const ProvinceSelector = ({
   // Get current display value
   const getCurrentDisplayValue = () => {
     if (!value) return '';
+    // Use custom display function if provided, otherwise use default Thailand function
+    if (getDisplayNameFunc) {
+      return getDisplayNameFunc(value);
+    }
     return getProvinceDisplayNameBilingual(value);
   };
 
@@ -123,7 +135,7 @@ const ProvinceSelector = ({
           <View style={styles.modalOverlay}>
             <SafeAreaView style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>选择省份</Text>
+                <Text style={styles.modalTitle}>{modalTitle}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setIsModalVisible(false)}
@@ -136,7 +148,7 @@ const ProvinceSelector = ({
                 <View style={styles.searchContainer}>
                   <TextInput
                     style={styles.searchInput}
-                    placeholder="搜索省份（中文或英文）"
+                    placeholder={searchPlaceholder}
                     value={searchText}
                     onChangeText={setSearchText}
                     autoFocus

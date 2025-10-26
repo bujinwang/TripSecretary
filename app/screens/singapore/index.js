@@ -4,4 +4,5 @@ export { default as SGArrivalSelectionScreen } from './SGArrivalSelectionScreen'
 export { default as SGArrivalGuideScreen } from './SGArrivalGuideScreen';
 export { default as SGArrivalWebViewScreen } from './SGArrivalWebViewScreen';
 export { default as SingaporeTravelInfoScreen } from './SingaporeTravelInfoScreen';
+export { default as SingaporeEntryFlowScreen } from './SingaporeEntryFlowScreen';
 export { default as SingaporeEntryPackPreviewScreen } from './SingaporeEntryPackPreviewScreen';
