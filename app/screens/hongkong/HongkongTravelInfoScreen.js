@@ -321,45 +321,51 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
 
     switch (section) {
       case 'passport':
+        // Hong Kong passport fields - count individual name fields for clarity
         const passportFields = {
-          fullName: [surname, middleName, givenName].filter(Boolean).join(', '),
+          surname: surname,
+          givenName: givenName,
+          // middleName is optional, only count if provided
           nationality: nationality,
           passportNo: passportNo,
           dob: dob,
           expiryDate: expiryDate,
           sex: sex
         };
-        
-        const passportFieldCount = FieldStateManager.getFieldCount(
-          passportFields,
-          interactionState,
-          Object.keys(passportFields)
-        );
-        
+
+        // Add middleName to count if provided
+        if (middleName) {
+          passportFields.middleName = middleName;
+        }
+
+        // Simple counting: just count filled vs total fields
+        const filledPassportFields = Object.values(passportFields).filter(
+          value => value && String(value).trim() !== ''
+        ).length;
+
         return {
-          filled: passportFieldCount.totalWithValues,
-          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
+          filled: filledPassportFields,
+          total: Object.keys(passportFields).length
         };
       
       case 'personal':
+        // Hong Kong personal info fields
         const personalFields = {
           occupation: occupation,
           cityOfResidence: cityOfResidence,
           residentCountry: residentCountry,
-          phoneCode: phoneCode,
           phoneNumber: phoneNumber,
           email: email
         };
-        
-        const personalFieldCount = FieldStateManager.getFieldCount(
-          personalFields,
-          interactionState,
-          Object.keys(personalFields)
-        );
-        
+
+        // Simple counting: count filled vs total
+        const filledPersonalFields = Object.values(personalFields).filter(
+          value => value && String(value).trim() !== ''
+        ).length;
+
         return {
-          filled: personalFieldCount.totalWithValues,
-          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
+          filled: filledPersonalFields,
+          total: Object.keys(personalFields).length
         };
       
       case 'funds':
@@ -373,49 +379,24 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
         }
       
       case 'travel':
-        // Build travel fields with proper handling of custom values
-        const purposeFilled = travelPurpose === 'OTHER' 
-          ? (customTravelPurpose && customTravelPurpose.trim() !== '')
-          : (travelPurpose && travelPurpose.trim() !== '');
-        
-        const accommodationTypeFilled = accommodationType === 'OTHER'
-          ? (customAccommodationType && customAccommodationType.trim() !== '')
-          : (accommodationType && accommodationType.trim() !== '');
-
+        // Hong Kong travel info fields - simplified for clarity
         const travelFields = {
-          travelPurpose: purposeFilled ? (travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose) : '',
-          recentStayCountry: recentStayCountry,
-          boardingCountry: boardingCountry,
+          travelPurpose: travelPurpose,
           arrivalFlightNumber: arrivalFlightNumber,
           arrivalArrivalDate: arrivalArrivalDate,
           departureFlightNumber: departureFlightNumber,
-          departureDepartureDate: departureDepartureDate
+          departureDepartureDate: departureDepartureDate,
+          hotelAddress: hotelAddress,
         };
 
-        // Only include accommodation fields if not a transit passenger
-        if (!isTransitPassenger) {
-          travelFields.accommodationType = accommodationTypeFilled ? (accommodationType === 'OTHER' ? customAccommodationType : accommodationType) : '';
-          travelFields.province = province;
-          travelFields.hotelAddress = hotelAddress;
-          
-          // Different fields based on accommodation type
-          const isHotelType = accommodationType === 'HOTEL';
-          if (!isHotelType) {
-            travelFields.district = district;
-            travelFields.subDistrict = subDistrict;
-            travelFields.postalCode = postalCode;
-          }
-        }
-        
-        const travelFieldCount = FieldStateManager.getFieldCount(
-          travelFields,
-          interactionState,
-          Object.keys(travelFields)
-        );
-        
+        // Simple counting: count filled vs total
+        const filledTravelFields = Object.values(travelFields).filter(
+          value => value && String(value).trim() !== ''
+        ).length;
+
         return {
-          filled: travelFieldCount.totalWithValues,
-          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+          filled: filledTravelFields,
+          total: Object.keys(travelFields).length
         };
     }
 
