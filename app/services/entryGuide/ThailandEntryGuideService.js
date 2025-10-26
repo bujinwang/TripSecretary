@@ -338,6 +338,227 @@ class ThailandEntryGuideService {
       primaryStep: 'immigration'
     };
   }
+
+  // ===== 入境问题相关方法 =====
+
+  /**
+   * 获取所有入境问题配置
+   * @returns {Object} 入境问题配置对象
+   */
+  getImmigrationQuestions() {
+    return this.guide.immigrationQuestions;
+  }
+
+  /**
+   * 根据旅客档案生成带答案的入境问题列表
+   * @param {Object} travelerProfile - 旅客档案，包含 travelInfo, passport, personalInfo
+   * @param {Object} options - 选项 { language: 'en'|'th'|'zh', includeOptional: boolean }
+   * @returns {Array} 问题和答案列表
+   */
+  generateQuestionsWithAnswers(travelerProfile, options = {}) {
+    const { language = 'zh', includeOptional = true } = options;
+    const questions = this.guide.immigrationQuestions;
+    const result = [];
+
+    if (!travelerProfile || !travelerProfile.travelInfo) {
+      console.warn('Traveler profile is incomplete');
+      return result;
+    }
+
+    const travelInfo = travelerProfile.travelInfo;
+
+    // 处理基础问题
+    if (questions.basic) {
+      questions.basic.forEach(q => {
+        if (!includeOptional && !q.required) return;
+
+        const questionAnswer = this._processQuestion(q, travelInfo, language);
+        if (questionAnswer) {
+          result.push(questionAnswer);
+        }
+      });
+    }
+
+    // 根据旅行目的添加特定问题
+    if (travelInfo.travelPurpose === 'HOLIDAY' && questions.holiday) {
+      questions.holiday.forEach(q => {
+        if (!includeOptional && !q.required) return;
+        if (this._shouldIncludeQuestion(q, travelInfo)) {
+          const questionAnswer = this._processQuestion(q, travelInfo, language);
+          if (questionAnswer) {
+            result.push(questionAnswer);
+          }
+        }
+      });
+    }
+
+    if (['BUSINESS', 'MEETING'].includes(travelInfo.travelPurpose) && questions.business) {
+      questions.business.forEach(q => {
+        if (!includeOptional && !q.required) return;
+        if (this._shouldIncludeQuestion(q, travelInfo)) {
+          const questionAnswer = this._processQuestion(q, travelInfo, language);
+          if (questionAnswer) {
+            result.push(questionAnswer);
+          }
+        }
+      });
+    }
+
+    // 添加健康和资金问题
+    if (questions.health_finance) {
+      questions.health_finance.forEach(q => {
+        if (!includeOptional && !q.required) return;
+        const questionAnswer = this._processQuestion(q, travelInfo, language);
+        if (questionAnswer) {
+          result.push(questionAnswer);
+        }
+      });
+    }
+
+    // 添加签证问题
+    if (questions.visa) {
+      questions.visa.forEach(q => {
+        const questionAnswer = this._processQuestion(q, travelInfo, language);
+        if (questionAnswer) {
+          result.push(questionAnswer);
+        }
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * 处理单个问题，生成带答案的问题对象
+   * @private
+   */
+  _processQuestion(questionConfig, travelInfo, language) {
+    const langSuffix = this._getLangSuffix(language);
+    const question = questionConfig[`question${langSuffix}`] || questionConfig.questionEn;
+
+    let answer = null;
+    let tips = questionConfig.tips || [];
+
+    // 如果有答案生成函数，使用它
+    if (questionConfig.generateAnswer && typeof questionConfig.generateAnswer === 'function') {
+      const answerObj = questionConfig.generateAnswer(travelInfo);
+      if (answerObj) {
+        answer = answerObj[language] || answerObj.en;
+      }
+    }
+    // 如果有答案映射，使用它
+    else if (questionConfig.answerMapping && questionConfig.profileField) {
+      const fieldValue = travelInfo[questionConfig.profileField];
+      if (fieldValue && questionConfig.answerMapping[fieldValue]) {
+        const answerObj = questionConfig.answerMapping[fieldValue];
+        answer = answerObj[language] || answerObj.en;
+      }
+    }
+    // 如果是需要手动回答的问题，提供建议答案
+    else if (questionConfig.manualAnswer && questionConfig.suggestedAnswers) {
+      const suggestedAnswers = questionConfig.suggestedAnswers.map(sa =>
+        sa[language] || sa.en
+      );
+      answer = suggestedAnswers.length > 0 ? suggestedAnswers[0] : null;
+    }
+    // 如果有单个profileField，直接读取
+    else if (questionConfig.profileField) {
+      answer = travelInfo[questionConfig.profileField] || null;
+    }
+
+    // 如果没有答案，跳过这个问题
+    if (!answer) {
+      return null;
+    }
+
+    return {
+      id: questionConfig.id,
+      question,
+      answer,
+      category: questionConfig.category,
+      required: questionConfig.required || false,
+      tips: tips,
+      suggestedAnswers: questionConfig.suggestedAnswers ?
+        questionConfig.suggestedAnswers.map(sa => sa[language] || sa.en) :
+        []
+    };
+  }
+
+  /**
+   * 判断是否应包含某个问题
+   * @private
+   */
+  _shouldIncludeQuestion(questionConfig, travelInfo) {
+    if (!questionConfig.condition) return true;
+
+    for (const [field, value] of Object.entries(questionConfig.condition)) {
+      if (Array.isArray(value)) {
+        if (!value.includes(travelInfo[field])) {
+          return false;
+        }
+      } else {
+        if (travelInfo[field] !== value) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 获取语言后缀
+   * @private
+   */
+  _getLangSuffix(language) {
+    const langMap = {
+      'en': 'En',
+      'th': 'Th',
+      'zh': 'Zh'
+    };
+    return langMap[language] || 'En';
+  }
+
+  /**
+   * 按类别获取问题
+   * @param {Object} travelerProfile - 旅客档案
+   * @param {string} category - 类别: 'basic', 'holiday', 'business', 'health', 'finance', 'visa'
+   * @param {Object} options - 选项
+   * @returns {Array} 问题列表
+   */
+  getQuestionsByCategory(travelerProfile, category, options = {}) {
+    const allQuestions = this.generateQuestionsWithAnswers(travelerProfile, options);
+    return allQuestions.filter(q => q.category === category);
+  }
+
+  /**
+   * 获取必填问题
+   * @param {Object} travelerProfile - 旅客档案
+   * @param {Object} options - 选项
+   * @returns {Array} 必填问题列表
+   */
+  getRequiredQuestions(travelerProfile, options = {}) {
+    const allQuestions = this.generateQuestionsWithAnswers(travelerProfile, options);
+    return allQuestions.filter(q => q.required);
+  }
+
+  /**
+   * 检查问题答案完整性
+   * @param {Object} travelerProfile - 旅客档案
+   * @returns {Object} 完整性检查结果
+   */
+  checkQuestionsCompleteness(travelerProfile) {
+    const requiredQuestions = this.getRequiredQuestions(travelerProfile);
+    const answeredQuestions = requiredQuestions.filter(q => q.answer && q.answer.trim() !== '');
+
+    return {
+      total: requiredQuestions.length,
+      answered: answeredQuestions.length,
+      missing: requiredQuestions.length - answeredQuestions.length,
+      percentage: Math.round((answeredQuestions.length / requiredQuestions.length) * 100),
+      isComplete: answeredQuestions.length === requiredQuestions.length,
+      missingQuestions: requiredQuestions.filter(q => !q.answer || q.answer.trim() === '')
+    };
+  }
 }
 
 export default ThailandEntryGuideService;

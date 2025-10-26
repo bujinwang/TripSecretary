@@ -550,6 +550,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ThailandEntryQuestions"
+          component={require('../screens/thailand/ThailandEntryQuestionsScreen').default}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="ThailandTravelInfo"
           component={ThailandTravelInfoScreen}
           options={{
