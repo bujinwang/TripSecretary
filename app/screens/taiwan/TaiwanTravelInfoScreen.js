@@ -690,12 +690,18 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           </Text>
         </View>
 
-        <CollapsibleSection 
-          title={t('taiwan.travelInfo.sections.passport', { defaultValue: '护照信息' })} 
+        <CollapsibleSection
+          title={t('taiwan.travelInfo.sections.passport', { defaultValue: '护照信息' })}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>🛂</Text>
+            <Text style={styles.sectionIntroText}>
+              海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！/ Customs will verify your passport info. Make sure it matches exactly - we'll help you format it!
+            </Text>
+          </View>
            <View style={styles.inputWithValidationContainer}>
              <View style={styles.inputLabelContainer}>
                <Text style={styles.inputLabel}>护照上的姓名 / Name on Passport</Text>
@@ -764,12 +770,18 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
            />
          </CollapsibleSection>
 
-        <CollapsibleSection 
+        <CollapsibleSection
           title={t('taiwan.travelInfo.sections.personal', { defaultValue: '个人信息' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>📱</Text>
+            <Text style={styles.sectionIntroText}>
+              提供你的基本个人信息，包括职业、居住地和联系方式，以便台湾海关了解你的情况。/ Provide basic personal info including occupation, residence, and contact details for Taiwan customs.
+            </Text>
+          </View>
            <InputWithValidation
              label="职业"
              value={occupation}
@@ -844,12 +856,18 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection 
+        <CollapsibleSection
           title="旅行信息"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>✈️</Text>
+            <Text style={styles.sectionIntroText}>
+              填写航班和住宿信息，帮助台湾海关了解你的旅行计划。/ Fill in flight and accommodation details to help Taiwan customs understand your travel plans.
+            </Text>
+          </View>
           <InputWithValidation
             label="航班号"
             value={arrivalFlightNumber}
@@ -923,7 +941,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           <View style={styles.sectionIntro}>
             <Text style={styles.sectionIntroIcon}>💳</Text>
             <Text style={styles.sectionIntroText}>
-              台湾海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用。
+              台湾海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用。/ Taiwan customs wants to ensure you won't be a burden. Just prove you have enough money to cover travel expenses.
             </Text>
           </View>
           <View style={styles.fundActions}>
