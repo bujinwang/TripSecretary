@@ -207,6 +207,21 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
+  const handlePreviewEntryCard = () => {
+    // Navigate to KoreaEntryPackPreview to show the complete entry pack preview
+    navigation.navigate('KoreaEntryPackPreview', {
+      userData,
+      passport: passportParam,
+      destination: route.params?.destination,
+      entryPackData: {
+        personalInfo: userData?.personalInfo,
+        travelInfo: userData?.travel,
+        funds: userData?.funds,
+        ketaSubmission: null // Will be populated when K-ETA is submitted
+      }
+    });
+  };
+
   const handleCategoryPress = (category) => {
     // Navigate back to KoreaTravelInfoScreen with the specific section expanded
     navigation.navigate('KoreaTravelInfo', {
@@ -245,7 +260,7 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         break;
       case 'view_entry_pack':
         // Navigate to entry pack preview screen
-        Alert.alert('提示', '查看通关包功能开发中');
+        handlePreviewEntryCard();
         break;
       default:
         break;
@@ -391,7 +406,64 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
 
       {/* Action Section */}
       <View style={styles.actionSection}>
-        {/* Primary Action Button */}
+        {/* Entry Guide Button */}
+        <TouchableOpacity
+          style={styles.entryGuideButton}
+          onPress={() => navigation.navigate('KoreaEntryGuide', {
+            passport: passportParam,
+            destination: route.params?.destination,
+            completionData: userData
+          })}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#4A90E2', colors.primary]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.entryGuideGradient}
+          >
+            <View style={styles.entryGuideIconContainer}>
+              <Text style={styles.entryGuideIcon}>🗺️</Text>
+            </View>
+            <View style={styles.entryGuideContent}>
+              <Text style={styles.entryGuideTitle}>
+                查看韩国入境指引
+              </Text>
+              <Text style={styles.entryGuideSubtitle}>
+                6步骤完整入境流程指南
+              </Text>
+            </View>
+            <View style={styles.entryGuideChevron}>
+              <Text style={styles.entryGuideArrow}>›</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Secondary Actions - Entry Pack Preview */}
+        {completionPercent > 50 && (
+          <View style={styles.secondaryActionsContainer}>
+            <TouchableOpacity
+              style={styles.secondaryActionButton}
+              onPress={handlePreviewEntryCard}
+              activeOpacity={0.8}
+            >
+              <View style={styles.secondaryActionIconContainer}>
+                <Text style={styles.secondaryActionIcon}>👁️</Text>
+              </View>
+              <View style={styles.secondaryActionContent}>
+                <Text style={styles.secondaryActionTitle}>
+                  看看我的通关包
+                </Text>
+                <Text style={styles.secondaryActionSubtitle}>
+                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+                </Text>
+              </View>
+              <Text style={styles.secondaryActionArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Primary Action Container */}
         <View style={styles.primaryActionContainer}>
           {renderPrimaryAction()}
         </View>
@@ -560,6 +632,7 @@ const styles = StyleSheet.create({
   },
   primaryActionContainer: {
     marginBottom: spacing.md,
+    marginTop: spacing.md,
   },
   primaryActionButton: {
     marginBottom: spacing.xs,
@@ -569,6 +642,124 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  // Entry Guide Button Styles
+  entryGuideButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  entryGuideGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  entryGuideIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  entryGuideContent: {
+    flex: 1,
+  },
+  entryGuideTitle: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  entryGuideSubtitle: {
+    ...typography.caption,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 4,
+  },
+  entryGuideIcon: {
+    fontSize: 24,
+  },
+  entryGuideChevron: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.md,
+  },
+  entryGuideArrow: {
+    ...typography.body1,
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  // Secondary Actions Styles
+  secondaryActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+    marginBottom: spacing.md,
+  },
+  secondaryActionButton: {
+    flex: 1,
+    minWidth: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 144, 226, 0.15)',
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  secondaryActionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  secondaryActionIcon: {
+    fontSize: 24,
+  },
+  secondaryActionContent: {
+    flex: 1,
+  },
+  secondaryActionTitle: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  secondaryActionSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  secondaryActionArrow: {
+    ...typography.body2,
+    color: colors.primaryDark,
+    fontWeight: '700',
+    fontSize: 18,
+    marginLeft: spacing.sm,
   },
   noDataContainer: {
     alignItems: 'center',
