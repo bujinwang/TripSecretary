@@ -11,39 +11,44 @@ const CompletionSummaryCard = ({
   completionPercent = 0,
   status = 'incomplete',
   showProgressBar = true,
-  country = 'thailand' // 'thailand', 'malaysia', 'japan', etc.
+  country = 'thailand' // 'thailand', 'malaysia', 'hongkong', 'japan', etc.
 }) => {
-  // Country-specific emojis and text
-  const countryConfig = {
-    thailand: {
-      readyEmoji: '🌴',
-      progressEmoji: '🌺',
-      readyText: '泰国准备就绪！',
-      progressText: '泰国之旅准备就绪！'
-    },
-    malaysia: {
-      readyEmoji: '🌴',
-      progressEmoji: '🇲🇾',
-      readyText: '马来西亚准备就绪！',
-      progressText: '马来西亚之旅准备就绪！'
-    },
-    japan: {
-      readyEmoji: '🌸',
-      progressEmoji: '🗾',
-      readyText: '日本准备就绪！',
-      progressText: '日本之旅准备就绪！'
-    }
+  // Get country-specific emojis and texts
+  const getCountryConfig = () => {
+    const configs = {
+      thailand: {
+        readyText: '泰国准备就绪！🌴',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去泰国了 🌺`,
+        completeText: '太棒了！泰国之旅准备就绪！🌴'
+      },
+      malaysia: {
+        readyText: '马来西亚准备就绪！🇲🇾',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去马来西亚了 🌺`,
+        completeText: '太棒了！马来西亚之旅准备就绪！🇲🇾'
+      },
+      hongkong: {
+        readyText: '香港准备就绪！🇭🇰',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去香港了 ✨`,
+        completeText: '太棒了！香港之旅准备就绪！🇭🇰'
+      },
+      japan: {
+        readyText: '日本准备就绪！🌸',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去日本了 🗾`,
+        completeText: '太棒了！日本之旅准备就绪！🌸'
+      }
+    };
+    return configs[country] || configs.thailand;
   };
 
-  const config = countryConfig[country] || countryConfig.thailand;
+  const config = getCountryConfig();
 
   // Determine status text and color based on completion percentage
   const getStatusInfo = () => {
     if (completionPercent === 100) {
       return {
-        text: `Ready! ${config.readyEmoji}`,
+        text: config.readyText,
         textKey: `${country}.entryFlow.status.ready`,
-        defaultText: `${config.readyText}${config.readyEmoji}`,
+        defaultText: config.readyText,
         color: colors.success,
         backgroundColor: '#E8F9F0', // Light green
       };
@@ -57,9 +62,9 @@ const CompletionSummaryCard = ({
       };
     } else {
       return {
-        text: `Let\'s Get Started! ${config.progressEmoji}`,
+        text: 'Let\'s Get Started! 🌺',
         textKey: `${country}.entryFlow.status.needsImprovement`,
-        defaultText: `让我们开始吧！${config.progressEmoji}`,
+        defaultText: '让我们开始吧！🌺',
         color: colors.primary,
         backgroundColor: '#F0F8FF', // Light blue
       };
@@ -103,8 +108,8 @@ const CompletionSummaryCard = ({
           </View>
           <Text style={styles.progressText}>
             {completionPercent < 100
-              ? `继续加油！还差 ${100 - completionPercent}% ${config.progressEmoji}`
-              : `太棒了！${config.progressText}${config.readyEmoji}`
+              ? config.progressText(100 - completionPercent)
+              : config.completeText
             }
           </Text>
         </View>

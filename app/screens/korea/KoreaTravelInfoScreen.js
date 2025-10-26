@@ -143,9 +143,13 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('korea_travel_info');
 
+  // Track if migration has been completed to prevent re-migration
+  const migrationCompletedRef = useRef(false);
+
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
+    // Skip if already migrated or tracker not ready
+    if (migrationCompletedRef.current || !userData || !userInteractionTracker.isInitialized) {
       return;
     }
 
@@ -194,11 +198,12 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
 
     if (Object.keys(existingDataToMigrate).length > 0) {
       userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      migrationCompletedRef.current = true;
       console.log('✅ Migration completed - existing data marked as user-modified');
     } else {
       console.log('⚠️ No existing data found to migrate');
     }
-  }, [userInteractionTracker]);
+  }, [userInteractionTracker.isInitialized, userInteractionTracker.initializeWithExistingData]);
 
   // Count filled fields for each section
   const getFieldCount = (section) => {
@@ -391,17 +396,8 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
         allUserData.travelInfo = travelInfo;
       }
 
-      // Wait for interaction tracker to be initialized before migration
-      if (userInteractionTracker.isInitialized) {
-        await migrateExistingDataToInteractionState(allUserData);
-      } else {
-        // If not initialized yet, wait a bit and try again
-        setTimeout(async () => {
-          if (userInteractionTracker.isInitialized) {
-            await migrateExistingDataToInteractionState(allUserData);
-          }
-        }, 100);
-      }
+      // Migrate existing data to interaction state (only runs once)
+      await migrateExistingDataToInteractionState(allUserData);
 
       // Load passport data
       if (allUserData.passport) {
@@ -450,7 +446,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, userInteractionTracker, migrateExistingDataToInteractionState, route.params?.destination?.id]);
+  }, [userId, migrateExistingDataToInteractionState, route.params?.destination?.id]);
 
   useEffect(() => {
     loadData();
