@@ -48,6 +48,45 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const [passportData, setPassportData] = useState(null);
   const [personalInfoData, setPersonalInfoData] = useState(null);
 
+  // Smart defaults for common scenarios
+  const getSmartDefaults = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    return {
+      arrivalDate: tomorrow.toISOString().split('T')[0], // Default to tomorrow
+      stayDuration: '7', // Default to 7 days
+    };
+  };
+
+  // Auto-complete suggestions for common scenarios
+  const getAutoCompleteSuggestions = (fieldType, currentValue) => {
+    const suggestions = {
+      flightNumber: [
+        'CI101', 'CI123', 'BR101', 'BR189', 'CX123', 'CX456',
+        'MU5007', 'MU5005', 'CA123', 'CA456', 'ZH123', 'ZH456'
+      ],
+      hotelName: [
+        'Taipei Marriott Hotel', 'Grand Hyatt Taipei',
+        'Mandarin Oriental Taipei', 'Shangri-La Taipei',
+        'W Taipei', 'Eslite Hotel', 'Hotel Proverbs Taipei'
+      ],
+      occupation: [
+        '软件工程师', '学生', '教师', '医生', '律师', '会计师',
+        '销售经理', '退休人员', '家庭主妇', '自由职业者'
+      ]
+    };
+
+    if (!currentValue || currentValue.length < 2) return [];
+
+    return suggestions[fieldType]?.filter(item =>
+      item.toLowerCase().includes(currentValue.toLowerCase())
+    ).slice(0, 5) || [];
+  };
+
   // UI State (loaded from database, not from route params)
   const [passportNo, setPassportNo] = useState('');
   const [fullName, setFullName] = useState('');
@@ -63,11 +102,12 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
-  // Travel Info State
+  // Travel Info State - with smart defaults
+  const smartDefaults = getSmartDefaults();
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalDate, setArrivalDate] = useState('');
+  const [arrivalDate, setArrivalDate] = useState(smartDefaults.arrivalDate);
   const [hotelAddress, setHotelAddress] = useState('');
-  const [stayDuration, setStayDuration] = useState('');
+  const [stayDuration, setStayDuration] = useState(smartDefaults.stayDuration);
 
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
@@ -81,6 +121,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState(null);
   const [lastEditedField, setLastEditedField] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null); // null, 'pending', 'saving', 'saved', 'error'
 
   const getFieldCount = (section) => {
     let filled = 0;
@@ -376,6 +417,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
 
   const saveDataToSecureStorage = async () => {
     try {
+      setSaveStatus('saving');
 
       const existingPassport = await UserDataService.getPassport(userId);
 
@@ -421,8 +463,13 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
       if (funds && funds.length > 0) {
         await UserDataService.saveFunds(userId, funds);
       }
+
+      setSaveStatus('saved');
+      // Clear saved status after 2 seconds
+      setTimeout(() => setSaveStatus(null), 2000);
     } catch (error) {
       console.error('Failed to save data to secure storage:', error);
+      setSaveStatus('error');
     }
   };
 
@@ -955,6 +1002,37 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
               {nextStepHint}
             </Text>
           )}
+
+          {/* Enhanced Save Status Indicator */}
+          {saveStatus && (
+            <View style={[styles.saveStatusBar, styles[`saveStatus${saveStatus.charAt(0).toUpperCase() + saveStatus.slice(1)}`]]}>
+              <Text style={styles.saveStatusIcon}>
+                {saveStatus === 'pending' && '⏳'}
+                {saveStatus === 'saving' && '💾'}
+                {saveStatus === 'saved' && '✅'}
+                {saveStatus === 'error' && '❌'}
+              </Text>
+              <Text style={styles.saveStatusText}>
+                {saveStatus === 'pending' && '等待保存... / Pending save...'}
+                {saveStatus === 'saving' && '正在保存... / Saving...'}
+                {saveStatus === 'saved' && '已保存 / Saved'}
+                {saveStatus === 'error' && '保存失败 / Save failed'}
+              </Text>
+              {saveStatus === 'error' && (
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => {
+                    setSaveStatus('saving');
+                    saveDataToSecureStorage();
+                  }}
+                >
+                  <Text style={styles.retryButtonText}>
+                    重试 / Retry
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -1258,6 +1336,57 @@ const styles = StyleSheet.create({
   },
   fundItemDeleteText: {
     fontSize: 20,
+  },
+  saveStatusBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 16,
+    marginTop: spacing.sm,
+    alignSelf: 'center',
+  },
+  saveStatusPending: {
+    backgroundColor: '#fff3cd',
+    borderWidth: 1,
+    borderColor: '#ffeaa7',
+  },
+  saveStatusSaving: {
+    backgroundColor: '#d1ecf1',
+    borderWidth: 1,
+    borderColor: '#bee5eb',
+  },
+  saveStatusSaved: {
+    backgroundColor: '#d4edda',
+    borderWidth: 1,
+    borderColor: '#c3e6cb',
+  },
+  saveStatusError: {
+    backgroundColor: '#f8d7da',
+    borderWidth: 1,
+    borderColor: '#f5c6cb',
+  },
+  saveStatusIcon: {
+    fontSize: 14,
+    marginRight: spacing.xs,
+  },
+  saveStatusText: {
+    ...typography.caption,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  retryButton: {
+    marginLeft: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+  },
+  retryButtonText: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
 
