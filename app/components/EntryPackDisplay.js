@@ -94,6 +94,34 @@ const countryConfigs = {
       amount: 'Amount / 金额'
     },
     dateLocales: ['en-US', 'zh-CN']
+  },
+  usa: {
+    entryCardName: 'I-94',
+    entryCardTab: 'i94',
+    entryCardTitle: 'I-94 Entry Record / 美国入境记录',
+    personalInfoTitle: 'Personal Information / 个人信息',
+    travelInfoTitle: 'Travel Information / 旅行信息',
+    fundsTitle: 'Funds Information / 资金信息',
+    currency: 'USD',
+    currencyName: 'Dollar / 美元',
+    notProvided: 'Not provided / 未提供',
+    fallbackHotelText: 'Please provide accommodation address / 请提供住宿地址',
+    labels: {
+      fullName: 'Full Name / 全名',
+      passportNumber: 'Passport Number / 护照号码',
+      nationality: 'Nationality / 国籍',
+      dateOfBirth: 'Date of Birth / 出生日期',
+      arrivalDate: 'Arrival Date / 抵达日期',
+      departureDate: 'Departure Date / 离开日期',
+      flightNumber: 'Flight Number / 航班号',
+      stayLocation: 'Accommodation Address / 住宿地址',
+      lengthOfStay: 'Length of Stay / 停留时间',
+      purpose: 'Purpose of Visit / 访问目的',
+      totalFunds: 'Total Funds / 资金总额',
+      fundType: 'Type / 类型',
+      amount: 'Amount / 金额'
+    },
+    dateLocales: ['en-US', 'zh-CN']
   }
 };
 
@@ -255,6 +283,15 @@ const EntryPackDisplay = ({
         card: 'Bank Card / 银行卡',
         debit_card: 'Debit Card / 借记卡',
         other: 'Other / 其他'
+      },
+      usa: {
+        cash: 'Cash / 现金',
+        credit_card: 'Credit Card / 信用卡',
+        bank_balance: 'Bank Balance / 银行存款',
+        investment: 'Investments / 投资',
+        card: 'Bank Card / 银行卡',
+        debit_card: 'Debit Card / 借记卡',
+        other: 'Other / 其他'
       }
     };
 
@@ -356,14 +393,16 @@ const EntryPackDisplay = ({
     const proofPhotoTexts = {
       thailand: '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded',
       malaysia: '📸 Proof photo uploaded / Foto bukti dimuat naik',
-      singapore: '📸 Proof photo uploaded / 已上传凭证照片'
+      singapore: '📸 Proof photo uploaded / 已上传凭证照片',
+      usa: '📸 Proof photo uploaded / 已上传凭证照片'
     };
     const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
 
     const noDataTexts = {
       thailand: 'ยังไม่มีข้อมูลเงินทุน / No funds information',
       malaysia: 'No funds information / Tiada maklumat kewangan',
-      singapore: 'No funds information / 未提供资金信息'
+      singapore: 'No funds information / 未提供资金信息',
+      usa: 'No funds information / 未提供资金信息'
     };
     const noDataText = noDataTexts[country] || noDataTexts.thailand;
 
@@ -414,25 +453,29 @@ const EntryPackDisplay = ({
     const placeholderTitles = {
       thailand: 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet',
       malaysia: 'MDAC Not Submitted Yet / MDAC Belum Dihantar',
-      singapore: 'SGAC Not Submitted Yet / 新加坡入境卡尚未提交'
+      singapore: 'SGAC Not Submitted Yet / 新加坡入境卡尚未提交',
+      usa: 'I-94 Not Required Online / 无需在线提交I-94'
     };
 
     const placeholderDescriptions = {
       thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival',
       malaysia: 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan',
-      singapore: 'Please submit SGAC within 3 days before arrival / 请在抵达前3天内提交新加坡入境卡'
+      singapore: 'Please submit SGAC within 3 days before arrival / 请在抵达前3天内提交新加坡入境卡',
+      usa: 'I-94 is completed at the airport upon arrival / I-94将在抵达机场时填写'
     };
 
     const qrPlaceholderTexts = {
       thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission',
       malaysia: 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran',
-      singapore: 'DE Number will appear after submission / 提交后会显示DE编号'
+      singapore: 'DE Number will appear after submission / 提交后会显示DE编号',
+      usa: 'I-94 number will be provided at entry / 入境时将获得I-94编号'
     };
 
     const placeholderNotes = {
       thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC',
       malaysia: 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen',
-      singapore: 'You can still show other information to immigration officer / 您仍可向入境官员出示其他信息'
+      singapore: 'You can still show other information to immigration officer / 您仍可向入境官员出示其他信息',
+      usa: 'Prepare this information for CBP officer at the airport / 为机场海关及边境保护局官员准备好此信息'
     };
 
     return (
@@ -470,41 +513,62 @@ const EntryPackDisplay = ({
     );
   };
 
-  const renderImmigrationTips = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs</Text>
+  const renderImmigrationTips = () => {
+    const tipsConfig = {
+      thailand: {
+        title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
+        questions: [
+          { q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism' },
+          { q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?', a: travelInfo?.lengthOfStay || '30 วัน / 30 days' },
+          { q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?', a: stayLocationAnswer },
+          { q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)` }
+        ]
+      },
+      malaysia: {
+        title: '💡 Immigration Officer FAQs / Soalan Lazim Pegawai Imigresen',
+        questions: [
+          { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan' },
+          { q: 'Q: How long will you stay? / Berapa lama anda akan tinggal?', a: travelInfo?.lengthOfStay || '7 days / 7 hari' },
+          { q: 'Q: Where will you be staying? / Di mana anda akan tinggal?', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have? / Berapa banyak wang yang anda ada?', a: `${formatBilingualCurrency(totalFunds)} (Cash and cards / Tunai dan kad)` }
+        ]
+      },
+      singapore: {
+        title: '💡 Immigration Officer FAQs / 入境处常见问题',
+        questions: [
+          { q: 'Q: What is the purpose of your visit? / 你来新加坡的目的是什么？', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游' },
+          { q: 'Q: How long will you stay? / 你会停留多久？', a: travelInfo?.lengthOfStay || '7 days / 7天' },
+          { q: 'Q: Where will you be staying? / 你会住在哪里？', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have? / 你带了多少钱？', a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 现金和银行卡)` }
+        ]
+      },
+      usa: {
+        title: '💡 CBP Officer FAQs / 海关及边境保护局常见问题',
+        questions: [
+          { q: 'Q: What is the purpose of your visit? / 你来美国的目的是什么？', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游' },
+          { q: 'Q: How long will you stay? / 你会在美国停留多久？', a: travelInfo?.lengthOfStay || '7 days / 7天' },
+          { q: 'Q: Where will you be staying? / 你会住在哪里？', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have? / 你带了多少钱？', a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 现金和银行卡)` }
+        ]
+      }
+    };
 
-      <View style={styles.tipsList}>
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'}
-          </Text>
-        </View>
+    const tips = tipsConfig[country] || tipsConfig.thailand;
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.lengthOfStay || '30 วัน / 30 days'}
-          </Text>
-        </View>
-
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพักที่ไหน? / Where will you be staying?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {stayLocationAnswer}
-          </Text>
-        </View>
-
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณมีเงินทุนเท่าไร? / How much money do you have?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)
-          </Text>
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{tips.title}</Text>
+        <View style={styles.tipsList}>
+          {tips.questions.map((tip, index) => (
+            <View key={index} style={styles.tipItem}>
+              <Text style={styles.tipQuestion}>{tip.q}</Text>
+              <Text style={styles.tipAnswer}>A: {tip.a}</Text>
+            </View>
+          ))}
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -517,6 +581,7 @@ const EntryPackDisplay = ({
       case 'tdac':
       case 'mdac':
       case 'sgac':
+      case 'i94':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -543,6 +608,12 @@ const EntryPackDisplay = ({
       { key: 'personal', label: 'Personal', labelEn: '个人' },
       { key: 'travel', label: 'Travel', labelEn: '旅行' },
       { key: 'funds', label: 'Funds', labelEn: '资金' },
+    ],
+    usa: [
+      { key: 'i94', label: 'I-94', labelEn: '入境记录' },
+      { key: 'personal', label: 'Personal', labelEn: '个人' },
+      { key: 'travel', label: 'Travel', labelEn: '旅行' },
+      { key: 'funds', label: 'Funds', labelEn: '资金' },
     ]
   };
 
@@ -551,13 +622,15 @@ const EntryPackDisplay = ({
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
     malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
-    singapore: '🇸🇬 Entry Pack / 入境信息包'
+    singapore: '🇸🇬 Entry Pack / 入境信息包',
+    usa: '🇺🇸 Entry Pack / 入境信息包'
   };
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
     malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
-    singapore: 'Important information for immigration officer / 重要入境信息'
+    singapore: 'Important information for immigration officer / 重要入境信息',
+    usa: 'Important information for immigration officer / 重要入境信息'
   };
 
   return (
@@ -604,6 +677,8 @@ const EntryPackDisplay = ({
             ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
             : country === 'singapore'
             ? 'Please show this entry pack to the immigration officer / 请向入境官员出示此信息包'
+            : country === 'usa'
+            ? 'Please show this entry pack to the CBP officer / 请向海关及边境保护局官员出示此信息包'
             : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
           }
         </Text>
