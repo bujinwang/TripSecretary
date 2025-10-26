@@ -17,8 +17,11 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
 
+import SubmissionCountdown from '../../components/SubmissionCountdown';
+import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 
 const HongKongEntryFlowScreen = ({ navigation, route }) => {
@@ -26,23 +29,59 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
-
+  
   // Completion state - calculated from real user data
   const [completionPercent, setCompletionPercent] = useState(0);
   const [completionStatus, setCompletionStatus] = useState('incomplete');
   const [categories, setCategories] = useState([]);
   const [userData, setUserData] = useState(null);
   const [arrivalDate, setArrivalDate] = useState(null);
-
+  
+  // Data change detection state
+  const [resubmissionWarning, setResubmissionWarning] = useState(null);
+  const [entryPackStatus, setEntryPackStatus] = useState(null);
+  const [showSupersededStatus, setShowSupersededStatus] = useState(false);
+  
   // Passport selection state
   const [userId, setUserId] = useState(null);
+
+
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
     React.useCallback(() => {
       loadData();
+      setupDataChangeListener();
+      
+      return () => {
+        // Cleanup listener on unmount
+        if (dataChangeUnsubscribe) {
+          dataChangeUnsubscribe();
+        }
+      };
     }, [])
   );
+
+  // Data change listener
+  let dataChangeUnsubscribe = null;
+
+  const setupDataChangeListener = () => {
+    // Add listener for data changes and resubmission warnings
+    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
+      console.log('Data change event received in HongKongEntryFlowScreen:', event);
+      
+      if (event.type === 'RESUBMISSION_WARNING') {
+        // Check if this warning is for the current entry pack
+        const currentEntryPackId = route.params?.entryPackId;
+        if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
+          setResubmissionWarning(event);
+        }
+      } else if (event.type === 'DATA_CHANGED') {
+        // Refresh data when changes are detected
+        loadData();
+      }
+    });
+  };
 
   const loadData = async () => {
     try {
@@ -55,40 +94,46 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
       // Initialize UserDataService
       await UserDataService.initialize(currentUserId);
 
-      // Load all user data
+      // Load all user data - use currentUserId directly instead of userId state
       const allUserData = await UserDataService.getAllUserData(currentUserId);
-      console.log('Loaded user data for HongKong completion calculation:', allUserData);
+      console.log('Loaded user data for completion calculation:', allUserData);
 
-      // Load travel info for HongKong
+      // Load fund items - use currentUserId directly
+      const fundItems = await UserDataService.getFundItems(currentUserId);
+
+      // Load travel info for HongKong - use currentUserId directly
       const destinationId = route.params?.destination?.id || 'hongkong';
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
-
+      
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
       const personalInfoFromStore = allUserData.personalInfo || {};
-      const fundsInfo = allUserData.funds || [];
+      const normalizedPersonalInfo = { ...personalInfoFromStore };
+
+      // Gender removed from personalInfo - use passport data directly
+      // Gender normalization logic removed - handled by passport model
 
       const entryInfo = {
         passport: passportInfo,
-        personalInfo: personalInfoFromStore,
+        personalInfo: normalizedPersonalInfo,
+        funds: fundItems || [],
         travel: travelInfo || {},
-        funds: fundsInfo,
         lastUpdatedAt: new Date().toISOString()
       };
-
+      
       setUserData(entryInfo);
-
-      // Extract arrival date for display
+      
+      // Extract arrival date for countdown
       const arrivalDateFromTravel = travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate;
       setArrivalDate(arrivalDateFromTravel);
-
-      // Calculate completion for HongKong (no funds required)
-      const completionSummary = calculateHongKongCompletion(entryInfo);
-      console.log('HongKong completion summary:', completionSummary);
-
+      
+      // Calculate completion using EntryCompletionCalculator
+      const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
+      console.log('Completion summary:', completionSummary);
+      
       // Update completion state
       setCompletionPercent(completionSummary.totalPercent);
-
+      
       if (completionSummary.totalPercent === 100) {
         setCompletionStatus('ready');
       } else if (completionSummary.totalPercent >= 50) {
@@ -101,7 +146,7 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
       const categoryData = [
         {
           id: 'passport',
-          name: t('hongkong.entryFlow.categories.passport', { defaultValue: '护照信息' }),
+          name: t('progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
           icon: '📘',
           status: completionSummary.categorySummary.passport.state,
           completedCount: completionSummary.categorySummary.passport.completed,
@@ -110,7 +155,7 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: t('hongkong.entryFlow.categories.personal', { defaultValue: '个人信息' }),
+          name: t('progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
           icon: '👤',
           status: completionSummary.categorySummary.personalInfo.state,
           completedCount: completionSummary.categorySummary.personalInfo.completed,
@@ -118,8 +163,17 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
           missingFields: completionSummary.missingFields.personalInfo || [],
         },
         {
+          id: 'funds',
+          name: t('progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
+          icon: '💰',
+          status: completionSummary.categorySummary.funds.state,
+          completedCount: completionSummary.categorySummary.funds.validFunds,
+          totalCount: 1, // At least 1 fund item required
+          missingFields: completionSummary.missingFields.funds || [],
+        },
+        {
           id: 'travel',
-          name: t('hongkong.entryFlow.categories.travel', { defaultValue: '旅行信息' }),
+          name: t('progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
           icon: '✈️',
           status: completionSummary.categorySummary.travel.state,
           completedCount: completionSummary.categorySummary.travel.completed,
@@ -127,12 +181,17 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
           missingFields: completionSummary.missingFields.travel || [],
         },
       ];
-
+      
       setCategories(categoryData);
 
+      // Check for entry info and resubmission warnings (non-blocking) - use currentUserId directly
+      loadEntryInfoStatus(currentUserId).catch(error => {
+        console.log('Entry info status check failed, continuing without it:', error);
+      });
+      
     } catch (error) {
-      console.error('Failed to load HongKong entry flow data:', error);
-
+      console.error('Failed to load entry flow data:', error);
+      
       // Fallback to empty state on error
       setCompletionPercent(0);
       setCompletionStatus('needs_improvement');
@@ -148,12 +207,21 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: '个人信息',
+          name: '护照信息',
           icon: '👤',
           status: 'incomplete',
           completedCount: 0,
-          totalCount: 6,
-          missingFields: ['occupation', 'phoneNumber', 'email', 'gender', 'residentCountry'],
+          totalCount: 4,
+          missingFields: ['occupation', 'phoneNumber', 'email', 'gender'],
+        },
+        {
+          id: 'funds',
+          name: '资金证明',
+          icon: '💰',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 1,
+          missingFields: ['fundItems'],
         },
         {
           id: 'travel',
@@ -162,7 +230,7 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
           status: 'incomplete',
           completedCount: 0,
           totalCount: 4,
-          missingFields: ['arrivalDate', 'flightNumber', 'hotelAddress', 'stayDuration'],
+          missingFields: ['arrivalDate', 'flightNumber', 'accommodation', 'travelPurpose'],
         },
       ]);
     } finally {
@@ -170,87 +238,111 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
-  // Calculate HongKong-specific completion (no funds section)
-  const calculateHongKongCompletion = (entryInfo) => {
-    const passport = entryInfo.passport || {};
-    const personalInfo = entryInfo.personalInfo || {};
-    const travel = entryInfo.travel || {};
-
-    // Passport fields
-    const passportFields = {
-      passportNumber: passport.passportNumber,
-      fullName: passport.fullName,
-      nationality: passport.nationality,
-      dateOfBirth: passport.dateOfBirth,
-      expiryDate: passport.expiryDate,
-    };
-
-    const passportCompleted = Object.values(passportFields).filter(v => v && String(v).trim()).length;
-    const passportTotal = Object.keys(passportFields).length;
-    const passportMissing = Object.keys(passportFields).filter(k => !passportFields[k] || !String(passportFields[k]).trim());
-
-    // Personal info fields
-    const personalFields = {
-      occupation: personalInfo.occupation,
-      phoneNumber: personalInfo.phoneNumber,
-      email: personalInfo.email,
-      gender: passport.gender, // Gender stored in passport
-      residentCountry: personalInfo.countryRegion,
-      phoneCode: personalInfo.phoneCode,
-    };
-
-    const personalCompleted = Object.values(personalFields).filter(v => v && String(v).trim()).length;
-    const personalTotal = Object.keys(personalFields).length;
-    const personalMissing = Object.keys(personalFields).filter(k => !personalFields[k] || !String(personalFields[k]).trim());
-
-    // Travel info fields
-    const travelFields = {
-      arrivalDate: travel.arrivalArrivalDate || travel.arrivalDate,
-      flightNumber: travel.arrivalFlightNumber,
-      hotelAddress: travel.hotelAddress,
-      stayDuration: travel.lengthOfStay,
-    };
-
-    const travelCompleted = Object.values(travelFields).filter(v => v && String(v).trim()).length;
-    const travelTotal = Object.keys(travelFields).length;
-    const travelMissing = Object.keys(travelFields).filter(k => !travelFields[k] || !String(travelFields[k]).trim());
-
-    // Calculate overall completion (3 sections for HongKong)
-    const totalCompleted = passportCompleted + personalCompleted + travelCompleted;
-    const totalFields = passportTotal + personalTotal + travelTotal;
-    const totalPercent = totalFields > 0 ? Math.round((totalCompleted / totalFields) * 100) : 0;
-
-    return {
-      totalPercent,
-      categorySummary: {
-        passport: {
-          state: passportCompleted === passportTotal ? 'complete' : passportCompleted > 0 ? 'partial' : 'incomplete',
-          completed: passportCompleted,
-          total: passportTotal,
-        },
-        personalInfo: {
-          state: personalCompleted === personalTotal ? 'complete' : personalCompleted > 0 ? 'partial' : 'incomplete',
-          completed: personalCompleted,
-          total: personalTotal,
-        },
-        travel: {
-          state: travelCompleted === travelTotal ? 'complete' : travelCompleted > 0 ? 'partial' : 'incomplete',
-          completed: travelCompleted,
-          total: travelTotal,
-        },
-      },
-      missingFields: {
-        passport: passportMissing,
-        personalInfo: personalMissing,
-        travel: travelMissing,
-      }
-    };
-  };
-
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
+  };
+
+  const loadEntryInfoStatus = async (userId) => {
+    try {
+      // Use EntryInfoService to check for entry info with DAC submissions
+      const EntryInfoService = require('../../services/EntryInfoService').default;
+
+      if (!EntryInfoService || typeof EntryInfoService.getAllEntryInfos !== 'function') {
+        console.log('EntryInfoService methods not available, skipping entry info status check');
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setResubmissionWarning(null);
+        return;
+      }
+
+      const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
+
+      // Find entry info for HongKong
+      const destinationId = route.params?.destination?.id || 'hongkong';
+      const hongkongEntryInfo = allEntryInfos?.find(info =>
+        info.destinationId === destinationId || info.destinationId === 'hongkong'
+      );
+
+      if (hongkongEntryInfo) {
+        // Check if this entry info has a successful DAC submission
+        const latestDAC = await EntryInfoService.getLatestSuccessfulDigitalArrivalCard(hongkongEntryInfo.id, 'HDAC');
+
+        if (latestDAC) {
+          // Has successful DAC - consider it "submitted"
+          setEntryPackStatus('submitted');
+          setShowSupersededStatus(latestDAC.status === 'superseded');
+
+          // Check for pending resubmission warnings
+          try {
+            const warning = UserDataService.getResubmissionWarning(hongkongEntryInfo.id);
+            if (warning) {
+              setResubmissionWarning(warning);
+            }
+          } catch (warningError) {
+            console.log('Resubmission warning check failed:', warningError);
+          }
+
+          console.log('Entry info status loaded:', {
+            entryInfoId: hongkongEntryInfo.id,
+            hasDAC: !!latestDAC,
+            dacStatus: latestDAC.status,
+            hasWarning: !!resubmissionWarning
+          });
+        } else {
+          // No successful DAC - consider it "in_progress"
+          setEntryPackStatus('in_progress');
+          setShowSupersededStatus(false);
+          setResubmissionWarning(null);
+        }
+      } else {
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setResubmissionWarning(null);
+      }
+    } catch (error) {
+      console.error('Failed to load entry info status:', error);
+      // Don't let entry info status loading failure block the main UI
+      setEntryPackStatus(null);
+      setShowSupersededStatus(false);
+      setResubmissionWarning(null);
+    }
+  };
+
+  const handleResubmissionWarning = async (warning, action) => {
+    try {
+      if (action === 'resubmit') {
+        // Mark entry pack as superseded and navigate to edit
+        await UserDataService.markEntryPackAsSuperseded(warning.entryPackId, {
+          changedFields: warning.diffResult.changedFields,
+          changeReason: 'user_confirmed_resubmission'
+        });
+
+        // Clear the warning
+        setResubmissionWarning(null);
+        setShowSupersededStatus(true);
+
+        // Navigate to edit screen
+        navigation.navigate('HongKongTravelInfo', {
+          passport: passportParam,
+          destination: route.params?.destination,
+          resubmissionMode: true
+        });
+      } else if (action === 'ignore') {
+        // Clear the warning but don't mark as superseded
+        UserDataService.clearResubmissionWarning(warning.entryPackId);
+        setResubmissionWarning(null);
+      }
+    } catch (error) {
+      console.error('Failed to handle resubmission warning:', error);
+      Alert.alert(
+        t('common.error', { defaultValue: '错误' }),
+        t('progressiveEntryFlow.dataChange.handleError', { 
+          defaultValue: '处理数据变更时出错，请重试。' 
+        })
+      );
+    }
   };
 
   const handleGoBack = () => {
@@ -265,17 +357,37 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
+  const handlePreviewEntryCard = () => {
+    // Navigate to EntryPackPreview to show the complete entry pack preview
+    navigation.navigate('EntryPackPreview', {
+      userData,
+      passport: passportParam,
+      destination: route.params?.destination,
+      entryPackData: {
+        personalInfo: userData?.personalInfo,
+        travelInfo: userData?.travel,
+        funds: userData?.funds,
+        tdacSubmission: null // Will be populated when HDAC is submitted
+      }
+    });
+  };
+
+
+
   const handleCategoryPress = (category) => {
-    // Navigate back to HongKongTravelInfoScreen
+    // Navigate back to HongKongTravelInfoScreen with the specific section expanded
+    // This will be enhanced in future tasks to expand the correct section
     navigation.navigate('HongKongTravelInfo', {
+      expandSection: category.id,
       passport: passportParam,
       destination: route.params?.destination,
     });
   };
 
+
   const handlePrimaryAction = async () => {
     const buttonState = getPrimaryButtonState();
-
+    
     switch (buttonState.action) {
       case 'continue_improving':
         // Navigate back to HongKongTravelInfoScreen
@@ -284,13 +396,103 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
           destination: route.params?.destination,
         });
         break;
-      case 'submit_mdac':
-        // Navigate to HDAC submission screen
-        navigation.navigate('HDACSelection', {
+      case 'submit_tdac':
+        // Navigate to HDAC submission screen with complete traveler info
+        try {
+          // Build complete traveler context from user data
+          const userId = passportParam?.id || 'user_001';
+          const HongKongTravelerContextBuilder = require('../../services/hongkong/HongKongTravelerContextBuilder').default;
+          const contextResult = await HongKongTravelerContextBuilder.buildHongKongTravelerContext(userId);
+          
+          if (contextResult.success) {
+            console.log('✅ Built traveler context for HDAC submission:', {
+              hasPassportNo: !!contextResult.payload.passportNo,
+              hasFullName: !!contextResult.payload.familyName && !!contextResult.payload.firstName,
+              hasArrivalDate: !!contextResult.payload.arrivalDate,
+              hasEmail: !!contextResult.payload.email,
+              warnings: contextResult.warnings
+            });
+            
+            // Show warnings if any (but still allow submission since validation passed)
+            if (contextResult.warnings && contextResult.warnings.length > 0) {
+              Alert.alert(
+                '⚠️ 数据提醒',
+                '以下信息需要注意：\n\n• ' + contextResult.warnings.join('\n• ') + '\n\n数据验证通过，可以继续提交。',
+                [
+                  {
+                    text: '完善信息',
+                    onPress: () => {
+                      navigation.navigate('HongKongTravelInfo', {
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                      });
+                    }
+                  },
+                  {
+                    text: '继续提交',
+                    style: 'default',
+                    onPress: () => {
+                      navigation.navigate('HDACSelection', {
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                        travelerInfo: contextResult.payload,
+                      });
+                    }
+                  }
+                ]
+              );
+            } else {
+              // No warnings, proceed directly
+              navigation.navigate('HDACSelection', {
+                passport: passportParam,
+                destination: route.params?.destination,
+                travelerInfo: contextResult.payload,
+              });
+            }
+          } else {
+            console.error('❌ Failed to build traveler context:', contextResult.errors);
+            Alert.alert(
+              '❌ HDAC提交要求严格',
+              '香港入境卡(HDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ' + contextResult.errors.join('\n• ') + '\n\n请返回完善所有必需信息后再提交。',
+              [
+                {
+                  text: '立即完善',
+                  style: 'default',
+                  onPress: () => {
+                    navigation.navigate('HongKongTravelInfo', {
+                      passport: passportParam,
+                      destination: route.params?.destination,
+                      highlightMissingFields: true, // Flag to highlight missing fields
+                    });
+                  }
+                },
+                { text: '取消', style: 'cancel' }
+              ]
+            );
+          }
+        } catch (error) {
+          console.error('❌ Error building traveler context:', error);
+          Alert.alert(
+            '系统错误',
+            '构建旅行者信息时出错，请稍后重试。',
+            [{ text: '确定' }]
+          );
+        }
+        break;
+      case 'view_entry_pack':
+        // Navigate to entry pack preview screen (not detail, as it's not submitted yet)
+        handlePreviewEntryCard();
+        break;
+      case 'resubmit_tdac':
+        // Handle resubmission - navigate to edit screen first
+        navigation.navigate('HongKongTravelInfo', {
           passport: passportParam,
           destination: route.params?.destination,
+          resubmissionMode: true,
+          showResubmissionHint: true
         });
         break;
+      case 'wait_for_window':
       default:
         // Button is disabled, no action
         break;
@@ -298,25 +500,74 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const getPrimaryButtonState = () => {
+    // Check if entry pack is superseded
+    if (showSupersededStatus || entryPackStatus === 'superseded') {
+      return {
+        title: '更新我的香港准备信息 🏙️',
+        action: 'resubmit_tdac',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '你的信息有更新，让我们重新准备最新的入境卡'
+      };
+    }
+
     // Check completion status
     const isComplete = completionPercent === 100;
+    
+    // Check submission window status
+    let canSubmitNow = false;
+    if (arrivalDate) {
+      const window = require('../../utils/hongkong/ArrivalWindowCalculator').default.getSubmissionWindow(arrivalDate);
+      canSubmitNow = window.canSubmit;
+    }
 
-    if (isComplete) {
+    // If completion is high enough, show entry pack option
+    if (completionPercent >= 80 && isComplete && canSubmitNow) {
       return {
-        title: t('hongkong.entryFlow.actions.submitHDAC', { defaultValue: '提交入境卡' }),
-        action: 'submit_mdac',
+        title: '提交入境卡',
+        action: 'submit_tdac',
         disabled: false,
         variant: 'primary'
       };
-    } else {
+    } else if (completionPercent >= 60) {
       return {
-        title: t('hongkong.entryFlow.actions.continueImproving', { defaultValue: '继续完善信息' }),
+        title: '查看我的通关包 📋',
+        action: 'view_entry_pack',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '看看你已经准备好的入境信息'
+      };
+    } else if (!isComplete) {
+      return {
+        title: '继续准备我的香港之旅 💪',
+        action: 'continue_improving',
+        disabled: false,
+        variant: 'secondary'
+      };
+    } else if (isComplete && !arrivalDate) {
+      return {
+        title: '告诉我你什么时候到香港 ✈️',
         action: 'continue_improving',
         disabled: false,
         variant: 'secondary',
-        subtitle: t('hongkong.entryFlow.actions.improvingSubtitle', {
-          defaultValue: '还差一点就完成了！'
+        subtitle: '设置抵达日期，我们就能帮你找到最佳提交时间'
+      };
+    } else if (isComplete && !canSubmitNow) {
+      return {
+        title: t('progressiveEntryFlow.countdown.preWindow', { defaultValue: '等待提交窗口' }),
+        action: 'wait_for_window',
+        disabled: true,
+        variant: 'primary',
+        subtitle: t('progressiveEntryFlow.countdown.preWindow', { 
+          defaultValue: '提交窗口尚未开启' 
         })
+      };
+    } else {
+      return {
+        title: '提交入境卡',
+        action: 'submit_tdac',
+        disabled: false,
+        variant: 'primary'
       };
     }
   };
@@ -347,19 +598,199 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
     <View style={styles.noDataContainer}>
       <Text style={styles.noDataIcon}>📝</Text>
       <Text style={styles.noDataTitle}>
-        {t('hongkong.entryFlow.noData.title', { defaultValue: '让我们开始准备香港之旅吧！' })}
+        准备开始香港之旅吧！🌴
       </Text>
       <Text style={styles.noDataDescription}>
-        {t('hongkong.entryFlow.noData.description', {
-          defaultValue: '点击下方按钮，开始填写入境信息'
-        })}
+        你还没有填写香港入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境香港！
       </Text>
+
+      {/* Example/Tutorial hints */}
+      <View style={styles.noDataHints}>
+        <Text style={styles.noDataHintsTitle}>
+          香港入境需要准备这些信息 🏙️
+        </Text>
+        <View style={styles.noDataHintsList}>
+          <Text style={styles.noDataHint}>• 📘 护照信息 - 让香港认识你</Text>
+          <Text style={styles.noDataHint}>• 📞 联系方式 - 香港怎么找到你</Text>
+          <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
+          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
+        </View>
+      </View>
+
       <Button
-        title={t('hongkong.entryFlow.noData.button', { defaultValue: '开始填写' })}
+        title="开始我的香港准备之旅！🇭🇰"
         onPress={handleEditInformation}
         variant="primary"
         style={styles.noDataButton}
       />
+    </View>
+  );
+
+  const renderPreparedState = () => (
+    <View>
+      {/* Status Cards Section */}
+      <View style={styles.statusSection}>
+        <CompletionSummaryCard
+          completionPercent={completionPercent}
+          status={completionStatus}
+          showProgressBar={true}
+        />
+
+        {/* Additional Action Buttons - Show when completion is high */}
+        {completionPercent >= 80 && (
+          <View style={styles.additionalActionsContainer}>
+            <TouchableOpacity
+              style={styles.additionalActionButton}
+              onPress={handleEditInformation}
+            >
+              <Text style={styles.additionalActionIcon}>✏️</Text>
+              <Text style={styles.additionalActionText}>再改改</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.additionalActionButton}
+              onPress={() => {
+                // Show sharing options
+                Alert.alert(
+                  '寻求帮助',
+                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
+                  [
+                    {
+                      text: '截图分享',
+                      onPress: () => {
+                        // Here you could implement screenshot functionality
+                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
+                      }
+                    },
+                    { text: '取消', style: 'cancel' }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.additionalActionIcon}>👥</Text>
+              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Integrated Countdown & Submission Section */}
+      <View style={styles.countdownSection}>
+        <Text style={styles.sectionTitle}>
+          最佳提交时间 ⏰
+        </Text>
+
+        {/* Submission Countdown */}
+        <SubmissionCountdown
+          arrivalDate={arrivalDate}
+          locale={t('locale', { defaultValue: 'zh' })}
+          showIcon={true}
+          updateInterval={1000} // Update every second for real-time countdown
+        />
+
+        {/* Smart Primary Action Button - Integrated with Countdown */}
+        <View style={styles.primaryActionContainer}>
+          {renderPrimaryAction()}
+        </View>
+      </View>
+
+      {/* Secondary Actions Section */}
+      <View style={styles.actionSection}>
+        {/* Entry Guide Button */}
+        <TouchableOpacity
+          style={styles.entryGuideButton}
+          onPress={() => navigation.navigate('HongKongEntryGuide', {
+            passport: passportParam,
+            destination: route.params?.destination,
+            completionData: userData
+          })}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#0BD67B', colors.primary]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.entryGuideGradient}
+          >
+            <View style={styles.entryGuideIconContainer}>
+              <Text style={styles.entryGuideIcon}>🗺️</Text>
+            </View>
+            <View style={styles.entryGuideContent}>
+              <Text style={styles.entryGuideTitle}>
+                查看香港入境指引
+              </Text>
+              <Text style={styles.entryGuideSubtitle}>
+                6步骤完整入境流程指南
+              </Text>
+            </View>
+            <View style={styles.entryGuideChevron}>
+              <Text style={styles.entryGuideArrow}>›</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Secondary Actions - Redesigned */}
+        {completionPercent > 50 && (
+          <View style={styles.secondaryActionsContainer}>
+            <TouchableOpacity
+              style={styles.secondaryActionButton}
+              onPress={handlePreviewEntryCard}
+              activeOpacity={0.8}
+            >
+              <View style={styles.secondaryActionIconContainer}>
+                <Text style={styles.secondaryActionIcon}>👁️</Text>
+              </View>
+              <View style={styles.secondaryActionContent}>
+                <Text style={styles.secondaryActionTitle}>
+                  看看我的通关包
+                </Text>
+                <Text style={styles.secondaryActionSubtitle}>
+                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+                </Text>
+              </View>
+              <Text style={styles.secondaryActionArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
+  const renderContent = () => (
+    <View style={styles.contentContainer}>
+      {/* Superseded Status Banner */}
+      {showSupersededStatus && (
+        <View style={styles.supersededBanner}>
+          <Text style={styles.supersededIcon}>🔄</Text>
+          <View style={styles.supersededContent}>
+            <Text style={styles.supersededTitle}>
+              {t('progressiveEntryFlow.status.superseded', {
+                defaultValue: '需要重新提交'
+              })}
+            </Text>
+            <Text style={styles.supersededMessage}>
+              {t('progressiveEntryFlow.superseded.message', {
+                defaultValue: '您的入境信息已更新，需要重新提交入境卡以确保信息准确。'
+              })}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Data Change Alert */}
+      {resubmissionWarning && (
+        <DataChangeAlert
+          warning={resubmissionWarning}
+          onResubmit={(warning) => handleResubmissionWarning(warning, 'resubmit')}
+          onIgnore={(warning) => handleResubmissionWarning(warning, 'ignore')}
+          onViewDetails={(warning) => {
+            console.log('View details for warning:', warning);
+          }}
+          style={styles.dataChangeAlert}
+        />
+      )}
+
+      {hasNoEntryData ? renderNoDataState() : renderPreparedState()}
     </View>
   );
 
@@ -369,140 +800,45 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
         <BackButton
           onPress={handleGoBack}
           label={t('common.back')}
+          style={styles.backButton}
         />
         <Text style={styles.headerTitle}>
-          {t('hongkong.entryFlow.headerTitle', { defaultValue: '香港入境准备' })}
+          我的香港之旅 🏙️
         </Text>
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
+            colors={[colors.primary]}
             tintColor={colors.primary}
           />
         }
       >
-        {/* Hero Section */}
-        <LinearGradient
-          colors={['#FF6B6B', '#FF8E53']}
-          style={styles.heroGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.heroFlag}>🇲🇾</Text>
-          <Text style={styles.heroTitle}>
-            {t('hongkong.entryFlow.hero.title', { defaultValue: '香港之旅准备' })}
+
+        <View style={styles.titleSection}>
+          <Text style={styles.flag}>🇭🇰</Text>
+          <Text style={styles.title}>
+            我的香港之旅准备好了吗？🏙️
           </Text>
-          <Text style={styles.heroSubtitle}>
-            {arrivalDate
-              ? t('hongkong.entryFlow.hero.subtitleWithDate', {
-                  date: arrivalDate,
-                  defaultValue: `抵达日期: ${arrivalDate}`
-                })
-              : t('hongkong.entryFlow.hero.subtitle', {
-                  defaultValue: '让我们一起准备你的入境信息'
-                })
-            }
+          <Text style={styles.subtitle}>
+            看看你准备得怎么样，一起迎接香港冒险！
           </Text>
-        </LinearGradient>
+        </View>
 
-        {hasNoEntryData ? renderNoDataState() : (
-          <>
-            {/* Completion Summary Card */}
-            <View style={styles.summaryContainer}>
-              <CompletionSummaryCard
-                completionPercent={completionPercent}
-                completionStatus={completionStatus}
-                categories={categories}
-                onCategoryPress={handleCategoryPress}
-                onEditPress={handleEditInformation}
-                country="hongkong"
-              />
-            </View>
-
-            {/* Action Cards */}
-            <View style={styles.actionCardsContainer}>
-              <Text style={styles.actionCardsTitle}>快速操作</Text>
-
-              <TouchableOpacity
-                style={styles.actionCard}
-                onPress={() => {
-                  navigation.navigate('HongKongEntryGuide', {
-                    passport: passportParam,
-                    destination: route.params?.destination,
-                    completionData: userData,
-                  });
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.actionIconContainer, { backgroundColor: '#34C75915' }]}>
-                  <Text style={styles.actionIcon}>📋</Text>
-                </View>
-                <View style={styles.actionTextContainer}>
-                  <Text style={styles.actionTitle}>查看香港入境指引</Text>
-                  <Text style={styles.actionSubtitle}>7步骤完整入境流程指南</Text>
-                </View>
-                <Text style={[styles.actionArrow, { color: '#34C759' }]}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionCard}
-                onPress={() => {
-                  navigation.navigate('HongKongEntryPackPreview', {
-                    userData,
-                    passport: passportParam,
-                    destination: route.params?.destination,
-                    entryPackData: {
-                      personalInfo: userData?.personalInfo,
-                      travelInfo: userData?.travel,
-                      funds: userData?.funds || [],
-                      mdacSubmission: null,
-                    },
-                  });
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.actionIconContainer, { backgroundColor: '#007AFF15' }]}>
-                  <Text style={styles.actionIcon}>📦</Text>
-                </View>
-                <View style={styles.actionTextContainer}>
-                  <Text style={styles.actionTitle}>看看我的通关包</Text>
-                  <Text style={styles.actionSubtitle}>快速查看旅途资料</Text>
-                </View>
-                <Text style={[styles.actionArrow, { color: '#007AFF' }]}>›</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Information Notice */}
-            <View style={styles.noticeBox}>
-              <Text style={styles.noticeIcon}>💡</Text>
-              <Text style={styles.noticeText}>
-                {t('hongkong.entryFlow.notice', {
-                  defaultValue: '香港入境卡(HDAC)需要完整的个人和旅行信息。请确保所有信息准确无误。'
-                })}
-              </Text>
-            </View>
-
-            {/* Primary Action Button */}
-            <View style={styles.actionContainer}>
-              {renderPrimaryAction()}
-            </View>
-
-            {/* Privacy Notice */}
-            <View style={styles.privacyBox}>
-              <Text style={styles.privacyIcon}>🔒</Text>
-              <Text style={styles.privacyText}>
-                {t('hongkong.entryFlow.privacy', {
-                  defaultValue: '您的所有信息仅保存在手机本地，我们重视您的隐私安全'
-                })}
-              </Text>
-            </View>
-          </>
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>
+              {t('hongkong.entryFlow.loading', { defaultValue: '正在加载准备状态...' })}
+            </Text>
+          </View>
+        ) : (
+          renderContent()
         )}
       </ScrollView>
     </SafeAreaView>
@@ -524,178 +860,334 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  backButton: {
+    marginLeft: -spacing.sm,
+  },
   headerTitle: {
-    ...typography.h3,
+    ...typography.body2,
     fontWeight: '600',
     color: colors.text,
+    textAlign: 'center',
+    flex: 1,
   },
   headerRight: {
     width: 40,
   },
-  scrollView: {
-    flex: 1,
+  scrollContainer: {
+    paddingBottom: spacing.lg,
   },
-  scrollContent: {
-    paddingBottom: spacing.xl,
-  },
-  heroGradient: {
-    padding: spacing.xl,
+
+  titleSection: {
     alignItems: 'center',
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    borderRadius: 20,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
-  heroFlag: {
-    fontSize: 48,
+  flag: {
+    fontSize: 40,
     marginBottom: spacing.sm,
   },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.white,
-    textAlign: 'center',
+  title: {
+    ...typography.h3,
+    color: colors.primary,
     marginBottom: spacing.xs,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
-  summaryContainer: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.lg,
+  subtitle: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
-  actionCardsContainer: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.lg,
+  loadingContainer: {
+    padding: spacing.md,
+    alignItems: 'center',
   },
-  actionCardsTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+  loadingText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+  },
+  contentContainer: {
+    paddingHorizontal: spacing.md,
+  },
+  // Status Section Styles
+  statusSection: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    ...typography.h3,
     color: colors.text,
+    fontWeight: '600',
     marginBottom: spacing.md,
   },
-  actionCard: {
+
+
+
+  // Integrated Countdown & Submission Section Styles
+  countdownSection: {
+    marginBottom: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Action Section Styles (now only for secondary actions)
+  actionSection: {
+    marginBottom: spacing.lg,
+  },
+  actionButtonsContainer: {
+    gap: spacing.md,
+  },
+  primaryActionContainer: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  primaryActionButton: {
+    marginBottom: spacing.xs,
+  },
+  primaryActionSubtitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  secondaryActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  secondaryActionButton: {
+    flex: 1,
+    minWidth: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 16,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    borderColor: 'rgba(7, 193, 96, 0.15)',
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
   },
-  actionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  secondaryActionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  actionIcon: {
+  secondaryActionIcon: {
     fontSize: 24,
   },
-  actionTextContainer: {
+  secondaryActionContent: {
     flex: 1,
   },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  secondaryActionTitle: {
+    ...typography.body1,
     color: colors.text,
-    marginBottom: 2,
+    fontWeight: '600',
   },
-  actionSubtitle: {
-    fontSize: 13,
+  secondaryActionSubtitle: {
+    ...typography.caption,
     color: colors.textSecondary,
+    marginTop: 4,
   },
-  actionArrow: {
-    fontSize: 28,
-    fontWeight: '400',
+  secondaryActionArrow: {
+    ...typography.body2,
+    color: colors.primaryDark,
+    fontWeight: '700',
+    fontSize: 18,
     marginLeft: spacing.sm,
   },
-  noticeBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 149, 0, 0.1)',
-    padding: spacing.md,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 149, 0, 0.2)',
-  },
-  noticeIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
-  },
-  noticeText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#D97706',
-    lineHeight: 18,
-  },
-  actionContainer: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.lg,
-  },
-  primaryActionButton: {
-    marginBottom: spacing.sm,
-  },
-  primaryActionSubtitle: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  privacyBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    padding: spacing.md,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.lg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
-  },
-  privacyIcon: {
-    fontSize: 16,
-    marginRight: spacing.sm,
-  },
-  privacyText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#34C759',
-    lineHeight: 18,
-  },
+  // No Data Styles
   noDataContainer: {
-    padding: spacing.xl,
     alignItems: 'center',
-    marginTop: spacing.xl,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   noDataIcon: {
     fontSize: 64,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   noDataTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...typography.h2,
     color: colors.text,
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    fontWeight: '600',
   },
   noDataDescription: {
-    fontSize: 14,
+    ...typography.body1,
     color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
     marginBottom: spacing.lg,
+  },
+  noDataHints: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    width: '100%',
+  },
+  noDataHintsTitle: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+  noDataHintsList: {
+    gap: spacing.xs,
+  },
+  noDataHint: {
+    ...typography.body2,
+    color: colors.primary,
+    lineHeight: 18,
   },
   noDataButton: {
     minWidth: 200,
+  },
+
+  // Superseded Status Banner Styles
+  supersededBanner: {
+    backgroundColor: '#FFF5F5',
+    borderColor: colors.error,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  supersededIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  supersededContent: {
+    flex: 1,
+  },
+  supersededTitle: {
+    ...typography.h4,
+    fontWeight: '600',
+    color: colors.error,
+    marginBottom: spacing.xs,
+  },
+  supersededMessage: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+
+  // Data Change Alert Styles
+  dataChangeAlert: {
+    marginBottom: spacing.md,
+  },
+
+  // Entry Guide Button Styles
+  entryGuideButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: spacing.lg,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  entryGuideGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  entryGuideIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  entryGuideContent: {
+    flex: 1,
+  },
+  entryGuideTitle: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  entryGuideSubtitle: {
+    ...typography.caption,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 4,
+  },
+  entryGuideIcon: {
+    fontSize: 24,
+  },
+  entryGuideChevron: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.md,
+  },
+  entryGuideArrow: {
+    ...typography.body1,
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
+  // Additional action buttons styles
+  additionalActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  additionalActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  additionalActionIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  additionalActionText: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '500',
+    fontSize: 13,
   },
 });
 
