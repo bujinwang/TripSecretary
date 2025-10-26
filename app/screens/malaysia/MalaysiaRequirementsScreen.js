@@ -1,5 +1,5 @@
 // 入境通 - Malaysia Requirements Screen (马来西亚入境要求确认)
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -285,30 +285,6 @@ const styles = StyleSheet.create({
     color: '#F57C00',
     textAlign: 'center',
     lineHeight: 22,
-  },
-  infoCard: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 12,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#90CAF9',
-    alignItems: 'center',
-  },
-  infoIcon: {
-    fontSize: 28,
-    marginBottom: spacing.sm,
-  },
-  infoText: {
-    ...typography.h4,
-    color: '#1565C0',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  infoSubtext: {
-    ...typography.body2,
-    color: '#1976D2',
-    marginTop: spacing.xs,
-    textAlign: 'center',
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
