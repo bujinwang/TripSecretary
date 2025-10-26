@@ -12,7 +12,9 @@ import {
   Platform,
   UIManager,
   Alert,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
@@ -46,7 +48,7 @@ import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES } from './constants';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -127,6 +129,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Personal Info State (loaded from database)
   const [sex, setSex] = useState('');
   const [occupation, setOccupation] = useState('');
+  const [customOccupation, setCustomOccupation] = useState('');
   const [cityOfResidence, setCityOfResidence] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
   const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || '')); // Initialize phone code based on passport nationality or empty
@@ -174,6 +177,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const [subDistrictId, setSubDistrictId] = useState(null); // 乡ID
   const [postalCode, setPostalCode] = useState(''); // 邮政编码
   const [hotelAddress, setHotelAddress] = useState('');
+
+  // Document photos
+  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
+  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
 
   useEffect(() => {
     if (!province || !district) {
@@ -689,7 +696,20 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         // Personal Info - load from centralized data
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          setOccupation(personalInfo.occupation || '');
+          // Handle occupation - check if it's in predefined list
+          const savedOccupation = personalInfo.occupation || '';
+          const isPredefin = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+          if (isPredefin) {
+            setOccupation(savedOccupation);
+            setCustomOccupation('');
+          } else if (savedOccupation) {
+            // Custom occupation - set to OTHER and populate custom field
+            setOccupation('OTHER');
+            setCustomOccupation(savedOccupation);
+          } else {
+            setOccupation('');
+            setCustomOccupation('');
+          }
           setCityOfResidence(personalInfo.provinceCity || '');
           setResidentCountry(personalInfo.countryRegion || '');
           setPhoneNumber(personalInfo.phoneNumber || '');
@@ -777,7 +797,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           setSubDistrictId(matchedSubDistrict?.id || null);
           setPostalCode(travelInfo.postalCode || '');
           setHotelAddress(travelInfo.hotelAddress || '');
-            
+
+          // Load document photos
+          setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
+          setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
+
             console.log('Travel info loaded and state updated');
             
             // Initialize user interaction tracker with loaded travel info
@@ -874,7 +898,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             // Update personal info if available
             const personalInfo = userData.personalInfo;
             if (personalInfo) {
-              setOccupation(personalInfo.occupation || occupation);
+              // Handle occupation - check if it's in predefined list
+              const savedOccupation = personalInfo.occupation || occupation;
+              const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+              if (isPredefined) {
+                setOccupation(savedOccupation);
+                setCustomOccupation('');
+              } else if (savedOccupation) {
+                // Custom occupation - set to OTHER and populate custom field
+                setOccupation('OTHER');
+                setCustomOccupation(savedOccupation);
+              }
               setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
               setResidentCountry(personalInfo.countryRegion || residentCountry);
               setPhoneNumber(personalInfo.phoneNumber || phoneNumber);
@@ -931,6 +965,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 setSubDistrict(travelInfo.subDistrict || '');
                 setPostalCode(travelInfo.postalCode || '');
                 setHotelAddress(travelInfo.hotelAddress || '');
+
+                // Load document photos
+                setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
+                setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
               }
             } catch (travelInfoError) {
               console.log('Failed to reload travel info on focus:', travelInfoError);
@@ -1345,6 +1383,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
       isTransitPassenger, accommodationType, customAccommodationType, province, district,
       subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+      flightTicketPhoto, hotelReservationPhoto,
       // Entry info tracking
       entryInfoId, passportData, personalInfoData, funds
     } = currentState;
@@ -1517,7 +1556,9 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
       district: currentDistrict,
       subDistrict: currentSubDistrict,
       postalCode: currentPostalCode,
-      hotelAddress: currentHotelAddress
+      hotelAddress: currentHotelAddress,
+      flightTicketPhoto: getCurrentValue('flightTicketPhoto', flightTicketPhoto),
+      hotelReservationPhoto: getCurrentValue('hotelReservationPhoto', hotelReservationPhoto)
     };
 
     // Use FieldStateManager to filter only user-modified fields
@@ -1682,13 +1723,17 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     console.log('Existing passport:', existingPassport);
 
     // Prepare current state for the save operation
+    // For occupation, use custom value if "OTHER" is selected
+    const finalOccupation = occupation === 'OTHER' ? customOccupation : occupation;
+
     const currentState = {
       passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-      phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
+      phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
       isTransitPassenger, accommodationType, customAccommodationType, province, district,
       subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+      flightTicketPhoto, hotelReservationPhoto,
       // Entry info tracking
       entryInfoId, passportData, personalInfoData, funds
     };
@@ -1725,13 +1770,17 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
                  console.log('Cleared travel info. Retrying save...');
   
                  // Prepare current state for retry
+                 // For occupation, use custom value if "OTHER" is selected
+                 const finalOccupation = occupation === 'OTHER' ? customOccupation : occupation;
+
                  const currentState = {
                    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-                   phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
+                   phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
                    travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
                    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
                    isTransitPassenger, accommodationType, customAccommodationType, province, district,
                    subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
+                   flightTicketPhoto, hotelReservationPhoto,
                    // Entry info tracking
                    entryInfoId, passportData, personalInfoData, funds
                  };
@@ -1863,6 +1912,86 @@ const normalizeFundItem = useCallback((item) => ({
        return null;
      }
    }, [userId, destination, entryInfoInitialized]);
+
+  // Handle flight ticket photo upload
+  const handleFlightTicketPhotoUpload = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        setFlightTicketPhoto(photoUri);
+
+        // Save to secure storage
+        try {
+          await saveDataToSecureStorageWithOverride({
+            flightTicketPhoto: photoUri
+          });
+          Alert.alert(
+            t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
+            t('thailand.travelInfo.flightTicketUploaded', { defaultValue: '机票照片已上传' })
+          );
+        } catch (error) {
+          console.error('Failed to save flight ticket photo:', error);
+          Alert.alert(
+            t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+            t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error picking flight ticket photo:', error);
+      Alert.alert(
+        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+      );
+    }
+  };
+
+  // Handle hotel reservation photo upload
+  const handleHotelReservationPhotoUpload = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        setHotelReservationPhoto(photoUri);
+
+        // Save to secure storage
+        try {
+          await saveDataToSecureStorageWithOverride({
+            hotelReservationPhoto: photoUri
+          });
+          Alert.alert(
+            t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
+            t('thailand.travelInfo.hotelReservationUploaded', { defaultValue: '酒店预订照片已上传' })
+          );
+        } catch (error) {
+          console.error('Failed to save hotel reservation photo:', error);
+          Alert.alert(
+            t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+            t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error picking hotel reservation photo:', error);
+      Alert.alert(
+        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+      );
+    }
+  };
 
   const addFund = (type) => {
     setCurrentFundItem(null);
@@ -2274,22 +2403,42 @@ const normalizeFundItem = useCallback((item) => ({
               提供你的基本个人信息，包括职业、居住地和联系方式，以便泰国海关了解你的情况。
             </Text>
           </View>
-           <InputWithValidation
-             label="职业"
-             value={occupation}
-             onChangeText={(text) => {
-               setOccupation(text.toUpperCase());
-             }}
-             onBlur={() => handleFieldBlur('occupation', occupation)}
-             helpText="填写你的工作职位，例如：软件工程师、学生、退休人员等（用英文）"
-             error={!!errors.occupation}
-             errorMessage={errors.occupation}
-             warning={!!warnings.occupation}
-             warningMessage={warnings.occupation}
-             fieldName="occupation"
-             lastEditedField={lastEditedField}
-             autoCapitalize="characters"
-           />
+           <View style={styles.fieldContainer}>
+             <Text style={styles.fieldLabel}>职业</Text>
+             <OptionSelector
+               options={OCCUPATION_OPTIONS}
+               value={occupation}
+               onSelect={(value) => {
+                 setOccupation(value);
+                 if (value !== 'OTHER') {
+                   setCustomOccupation('');
+                   // Trigger validation for the selected occupation
+                   handleFieldBlur('occupation', value);
+                 }
+                 // Trigger debounced save after occupation selection
+                 debouncedSaveData();
+               }}
+               customValue={customOccupation}
+               onCustomChange={(text) => {
+                 setCustomOccupation(text.toUpperCase());
+               }}
+               onCustomBlur={() => {
+                 // When custom occupation is entered, validate and save it
+                 const finalOccupation = customOccupation.trim() ? customOccupation : occupation;
+                 handleFieldBlur('occupation', finalOccupation);
+                 debouncedSaveData();
+               }}
+               customLabel="请输入您的职业"
+               customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
+               customHelpText="请用英文填写您的职业"
+             />
+             {errors.occupation && (
+               <Text style={styles.errorText}>{errors.occupation}</Text>
+             )}
+             {warnings.occupation && !errors.occupation && (
+               <Text style={styles.warningText}>{warnings.occupation}</Text>
+             )}
+           </View>
            <InputWithValidation
              label={cityOfResidenceLabel}
              value={cityOfResidence}
@@ -2595,9 +2744,9 @@ const normalizeFundItem = useCallback((item) => ({
             lastEditedField={lastEditedField}
             autoCapitalize="characters" 
           />
-          <DateTimeInput 
-            label="抵达日期" 
-            value={arrivalArrivalDate} 
+          <DateTimeInput
+            label="抵达日期"
+            value={arrivalArrivalDate}
             onChangeText={(newValue) => {
               setArrivalArrivalDate(newValue);
               // Trigger validation and save immediately when value changes
@@ -2606,9 +2755,34 @@ const normalizeFundItem = useCallback((item) => ({
             mode="date"
             dateType="future"
             helpText="格式: YYYY-MM-DD"
-            error={!!errors.arrivalArrivalDate} 
+            error={!!errors.arrivalArrivalDate}
             errorMessage={errors.arrivalArrivalDate}
           />
+
+          {/* Flight Ticket Upload Section */}
+          <View style={styles.documentUploadSection}>
+            <Text style={styles.documentUploadLabel}>📷 机票照片（可选）</Text>
+            <Text style={styles.documentUploadNote}>
+              💡 提示：请上传英文版本的机票
+            </Text>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={handleFlightTicketPhotoUpload}
+            >
+              <Text style={styles.uploadButtonText}>
+                {flightTicketPhoto ? '✓ 已上传 - 点击更换' : '📤 上传机票照片'}
+              </Text>
+            </TouchableOpacity>
+            {flightTicketPhoto && (
+              <View style={styles.photoPreview}>
+                <Image
+                  source={{ uri: flightTicketPhoto }}
+                  style={styles.photoPreviewImage}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+          </View>
 
           <View style={styles.subSectionHeader}>
               <Text style={styles.subSectionTitle}>去程机票（离开泰国）</Text>
@@ -2763,17 +2937,42 @@ const normalizeFundItem = useCallback((item) => ({
                   error={!!errors.province}
                   errorMessage={errors.province}
                 />
-                <Input 
-                  label="地址" 
-                  value={hotelAddress} 
-                  onChangeText={setHotelAddress} 
-                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                  multiline 
-                  helpText="请输入详细地址" 
-                  error={!!errors.hotelAddress} 
-                  errorMessage={errors.hotelAddress} 
-                  autoCapitalize="words" 
+                <Input
+                  label="地址"
+                  value={hotelAddress}
+                  onChangeText={setHotelAddress}
+                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+                  multiline
+                  helpText="请输入详细地址"
+                  error={!!errors.hotelAddress}
+                  errorMessage={errors.hotelAddress}
+                  autoCapitalize="words"
                 />
+
+                {/* Hotel Reservation Upload Section */}
+                <View style={styles.documentUploadSection}>
+                  <Text style={styles.documentUploadLabel}>📷 酒店预订照片（可选）</Text>
+                  <Text style={styles.documentUploadNote}>
+                    💡 提示：请上传英文版本的酒店预订确认单
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={handleHotelReservationPhotoUpload}
+                  >
+                    <Text style={styles.uploadButtonText}>
+                      {hotelReservationPhoto ? '✓ 已上传 - 点击更换' : '📤 上传预订照片'}
+                    </Text>
+                  </TouchableOpacity>
+                  {hotelReservationPhoto && (
+                    <View style={styles.photoPreview}>
+                      <Image
+                        source={{ uri: hotelReservationPhoto }}
+                        style={styles.photoPreviewImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  )}
+                </View>
               </>
             ) : (
               <>
@@ -3679,6 +3878,50 @@ const styles = StyleSheet.create({
     color: '#27ae60',
     fontWeight: '400',
     marginLeft: spacing.xs,
+  },
+  documentUploadSection: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  documentUploadLabel: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  documentUploadNote: {
+    ...typography.caption,
+    color: '#6c757d',
+    marginBottom: spacing.md,
+    fontStyle: 'italic',
+  },
+  uploadButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  uploadButtonText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  photoPreview: {
+    marginTop: spacing.md,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  photoPreviewImage: {
+    width: '100%',
+    height: 200,
   },
 
 

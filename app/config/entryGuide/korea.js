@@ -18,8 +18,31 @@ export const koreaEntryGuide = {
     '地铁系统发达但标识复杂，建议使用机场巴士'
   ],
 
-  // 6步骤完整流程 (韩国入境高效但要求严格)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存韩国紧急联系电话，以备不时之需',
+      descriptionZh: '保存韩国紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察：112',
+        '救护车：119',
+        '旅游警察：1345',
+        '中国大使馆：+82-2-3210-0700',
+        '美国大使馆：+82-2-397-4114',
+        '移民局：+82-1345',
+        '机场服务：+82-1577-2600',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打'
+      ]
+    },
     {
       id: 'keta_application',
       title: 'K-ETA电子旅行许可申请',
@@ -27,7 +50,7 @@ export const koreaEntryGuide = {
       description: '抵达前72小时申请韩国电子旅行许可',
       descriptionZh: '抵达前72小时申请韩国电子旅行许可',
       category: 'pre-arrival',
-      priority: 1,
+      priority: 2,
       estimatedTime: '30分钟',
       icon: '📱',
       required: true,
@@ -50,7 +73,7 @@ export const koreaEntryGuide = {
       description: '准备指纹和面部识别数据',
       descriptionZh: '准备指纹和面部识别数据',
       category: 'pre-flight',
-      priority: 2,
+      priority: 3,
       estimatedTime: '10分钟',
       icon: '👆',
       required: true,
@@ -68,7 +91,7 @@ export const koreaEntryGuide = {
       description: '关闭蜂窝网络，准备韩国eSIM卡',
       descriptionZh: '关闭蜂窝网络，准备韩国eSIM卡',
       category: 'post-landing',
-      priority: 3,
+      priority: 4,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -89,7 +112,7 @@ export const koreaEntryGuide = {
       description: '进行指纹和面部识别，提交入境卡',
       descriptionZh: '进行指纹和面部识别，提交入境卡',
       category: 'immigration',
-      priority: 4,
+      priority: 5,
       estimatedTime: '10分钟',
       icon: '🛂',
       required: true,
@@ -107,7 +130,7 @@ export const koreaEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 5,
+      priority: 6,
       estimatedTime: '15分钟',
       icon: '🧳',
       required: true,
@@ -124,7 +147,7 @@ export const koreaEntryGuide = {
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 6,
+      priority: 7,
       estimatedTime: '10分钟',
       icon: '🔍',
       required: true,

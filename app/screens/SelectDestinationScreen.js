@@ -57,7 +57,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
 
     // Map country ID to screen name
     const screenMap = {
-      'jp': 'JapanInfo',
+      'jp': 'JapanEntryFlow',  // Direct to hub, skip intro pages
       'th': 'ThailandInfo',
       'hk': 'HongKongInfo',
       'tw': 'TaiwanInfo',

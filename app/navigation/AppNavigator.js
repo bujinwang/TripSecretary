@@ -25,6 +25,7 @@ import {
   JapanRequirementsScreen,
   JapanProceduresScreen,
   JapanTravelInfoScreen,
+  JapanEntryFlowScreen,
   InteractiveImmigrationGuide,
   JapanInteractiveImmigrationGuide,
   // Thailand screens
@@ -46,6 +47,8 @@ import {
   MDACGuideScreen,
   MDACWebViewScreen,
   MalaysiaTravelInfoScreen,
+  MalaysiaEntryFlowScreen,
+  MalaysiaEntryPackPreviewScreen,
   // Singapore screens
   SingaporeInfoScreen,
   SingaporeRequirementsScreen,
@@ -72,6 +75,7 @@ import {
   // USA screens
   USAInfoScreen,
   USARequirementsScreen,
+  USTravelInfoScreen,
 } from '../screens';
 
 // Import NotificationSettingsScreen directly since it's not in the screens index yet
@@ -80,6 +84,7 @@ import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
+import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 
 import { colors } from '../theme';
 
@@ -447,6 +452,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="USTravelInfo"
+          component={USTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
 
         <Stack.Screen
           name="SGArrivalSelection"
@@ -524,6 +536,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="JapanEntryFlow"
+          component={JapanEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="ThailandInfo"
           component={ThailandInfoScreen}
           options={{
@@ -551,6 +570,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
             headerShown: false,
             presentation: 'fullScreenModal',
             gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="ThailandEntryQuestions"
+          component={require('../screens/thailand/ThailandEntryQuestionsScreen').default}
+          options={{
+            headerShown: false,
           }}
         />
         <Stack.Screen
@@ -614,6 +640,27 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="MalaysiaTravelInfo"
           component={MalaysiaTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryFlow"
+          component={MalaysiaEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryGuide"
+          component={MalaysiaEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryPackPreview"
+          component={MalaysiaEntryPackPreviewScreen}
           options={{
             headerShown: false,
           }}

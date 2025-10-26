@@ -32,6 +32,7 @@ class TravelInfo {
     this.arrivalDepartureDate = data.arrivalDepartureDate || '';
     this.arrivalArrivalAirport = data.arrivalArrivalAirport || '';
     this.arrivalArrivalDate = data.arrivalArrivalDate || '';
+    this.arrivalFlightTicketPhotoUri = data.arrivalFlightTicketPhotoUri || ''; // Flight ticket photo
 
     // Departure Flight Information (离开泰国机票)
     this.departureFlightNumber = data.departureFlightNumber || '';
@@ -39,7 +40,7 @@ class TravelInfo {
     this.departureDepartureDate = data.departureDepartureDate || '';
     this.departureArrivalAirport = data.departureArrivalAirport || '';
     this.departureArrivalDate = data.departureArrivalDate || '';
-    
+
     // Accommodation Information
     this.isTransitPassenger = data.isTransitPassenger || false; // Transit passenger flag
     this.accommodationType = data.accommodationType || 'HOTEL'; // HOTEL, YOUTH_HOSTEL, GUEST_HOUSE, FRIEND_HOUSE, APARTMENT, or custom
@@ -49,6 +50,7 @@ class TravelInfo {
     this.postalCode = data.postalCode || ''; // Postal code (required for non-hotel types)
     this.hotelName = data.hotelName || ''; // Hotel name (for hotel types)
     this.hotelAddress = data.hotelAddress || ''; // Detailed address
+    this.hotelBookingPhotoUri = data.hotelBookingPhotoUri || ''; // Hotel booking photo
     this.accommodationPhone = data.accommodationPhone || ''; // Accommodation phone (for Japan)
     this.lengthOfStay = data.lengthOfStay || ''; // Length of stay in days
     
@@ -229,6 +231,7 @@ class TravelInfo {
         arrivalDepartureDate: this.arrivalDepartureDate,
         arrivalArrivalAirport: this.arrivalArrivalAirport,
         arrivalArrivalDate: this.arrivalArrivalDate,
+        arrivalFlightTicketPhotoUri: this.arrivalFlightTicketPhotoUri,
         departureFlightNumber: this.departureFlightNumber,
         departureDepartureAirport: this.departureDepartureAirport,
         departureDepartureDate: this.departureDepartureDate,
@@ -242,6 +245,7 @@ class TravelInfo {
         postalCode: this.postalCode,
         hotelName: this.hotelName,
         hotelAddress: this.hotelAddress,
+        hotelBookingPhotoUri: this.hotelBookingPhotoUri,
         accommodationPhone: this.accommodationPhone,
         lengthOfStay: this.lengthOfStay,
         status: this.status,

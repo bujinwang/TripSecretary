@@ -1,12 +1,12 @@
 /**
- * Thailand Travel Info Screen Constants
+ * Singapore Travel Info Screen Constants
  *
- * Centralized constants for Thailand travel form including predefined options,
+ * Centralized constants for Singapore travel form including predefined options,
  * validation rules, and static data used throughout the component.
  */
 
 /**
- * Predefined travel purpose options for Thailand entry
+ * Predefined travel purpose options for Singapore entry
  */
 export const PREDEFINED_TRAVEL_PURPOSES = [
   'HOLIDAY',
@@ -22,7 +22,24 @@ export const PREDEFINED_TRAVEL_PURPOSES = [
 ];
 
 /**
- * Predefined accommodation type options for Thailand stay
+ * Travel purpose options with labels and icons for UI display
+ */
+export const TRAVEL_PURPOSE_OPTIONS = [
+  { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️' },
+  { value: 'MEETING', label: '会议', icon: '👔' },
+  { value: 'SPORTS', label: '体育活动', icon: '⚽' },
+  { value: 'BUSINESS', label: '商务', icon: '💼' },
+  { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁' },
+  { value: 'CONVENTION', label: '会展', icon: '🎪' },
+  { value: 'EDUCATION', label: '教育', icon: '📚' },
+  { value: 'EMPLOYMENT', label: '就业', icon: '💻' },
+  { value: 'EXHIBITION', label: '展览', icon: '🎨' },
+  { value: 'MEDICAL', label: '医疗', icon: '🏥' },
+  { value: 'OTHER', label: '其他', icon: '✏️' },
+];
+
+/**
+ * Predefined accommodation type options for Singapore stay
  */
 export const PREDEFINED_ACCOMMODATION_TYPES = [
   'HOTEL',
@@ -33,45 +50,35 @@ export const PREDEFINED_ACCOMMODATION_TYPES = [
 ];
 
 /**
- * Gender/Sex options for passport information
+ * Accommodation type options with labels and icons for UI display
  */
-export const GENDER_OPTIONS = [
-  { value: 'Female', translationKey: 'thailand.travelInfo.fields.sex.options.female', defaultLabel: '女性' },
-  { value: 'Male', translationKey: 'thailand.travelInfo.fields.sex.options.male', defaultLabel: '男性' },
-  { value: 'Undefined', translationKey: 'thailand.travelInfo.fields.sex.options.undefined', defaultLabel: '未定义' },
+export const ACCOMMODATION_TYPE_OPTIONS = [
+  { value: 'HOTEL', label: '酒店', icon: '🏨' },
+  { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠' },
+  { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡' },
+  { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥' },
+  { value: 'APARTMENT', label: '公寓', icon: '🏢' },
+  { value: 'OTHER', label: '其他', icon: '✏️' },
 ];
 
 /**
- * Predefined occupation options for Thailand TDAC
- * Chinese labels with English values (submitted in uppercase)
+ * Gender/Sex options for passport information
+ * Uses translation keys for internationalization support
  */
-export const OCCUPATION_OPTIONS = [
-  { value: 'SOFTWARE ENGINEER', label: '软件工程师', icon: '💻' },
-  { value: 'STUDENT', label: '学生', icon: '📚' },
-  { value: 'TEACHER', label: '教师', icon: '👨‍🏫' },
-  { value: 'DOCTOR', label: '医生', icon: '👨‍⚕️' },
-  { value: 'ACCOUNTANT', label: '会计师', icon: '📊' },
-  { value: 'SALES MANAGER', label: '销售经理', icon: '📈' },
-  { value: 'RETIRED', label: '退休人员', icon: '🏖️' },
-  { value: 'ENGINEER', label: '工程师', icon: '⚙️' },
-  { value: 'CIVIL SERVANT', label: '公务员', icon: '🏛️' },
-  { value: 'LAWYER', label: '律师', icon: '⚖️' },
-  { value: 'NURSE', label: '护士', icon: '👩‍⚕️' },
-  { value: 'FREELANCER', label: '自由职业者', icon: '🎨' },
-  { value: 'BUSINESS OWNER', label: '企业主', icon: '💼' },
-  { value: 'HOMEMAKER', label: '家庭主妇', icon: '🏠' },
-  { value: 'DESIGNER', label: '设计师', icon: '✏️' },
-  { value: 'OTHER', label: '其他', icon: '📝' },
+export const GENDER_OPTIONS = [
+  { value: 'Female', translationKey: 'singapore.travelInfo.fields.sex.options.female', defaultLabel: '女性' },
+  { value: 'Male', translationKey: 'singapore.travelInfo.fields.sex.options.male', defaultLabel: '男性' },
+  { value: 'Undefined', translationKey: 'singapore.travelInfo.fields.sex.options.undefined', defaultLabel: '未定义' },
 ];
 
 /**
  * Storage keys for AsyncStorage
  */
 export const STORAGE_KEYS = {
-  SESSION_STATE: 'thailand_session_state',
-  EXPANDED_SECTION: 'thailand_expanded_section',
-  LAST_EDITED_FIELD: 'thailand_last_edited_field',
-  SCROLL_POSITION: 'thailand_scroll_position',
+  SESSION_STATE: 'singapore_session_state',
+  EXPANDED_SECTION: 'singapore_expanded_section',
+  LAST_EDITED_FIELD: 'singapore_last_edited_field',
+  SCROLL_POSITION: 'singapore_scroll_position',
 };
 
 /**
@@ -90,9 +97,8 @@ export const SECTIONS = {
 export const FIELD_NAMES = {
   // Passport fields
   PASSPORT_NO: 'passportNo',
-  SURNAME: 'surname',
-  MIDDLE_NAME: 'middleName',
-  GIVEN_NAME: 'givenName',
+  VISA_NUMBER: 'visaNumber',
+  FULL_NAME: 'fullName',
   NATIONALITY: 'nationality',
   DOB: 'dob',
   EXPIRY_DATE: 'expiryDate',
@@ -112,8 +118,8 @@ export const FIELD_NAMES = {
   DEPARTURE_DATE: 'departureDepartureDate',
   ARRIVAL_FLIGHT_NUMBER: 'arrivalFlightNumber',
   DEPARTURE_FLIGHT_NUMBER: 'departureFlightNumber',
-  RECENT_STAY_COUNTRY: 'recentStayCountry',
   BOARDING_COUNTRY: 'boardingCountry',
+  PREVIOUS_ARRIVAL_DATE: 'previousArrivalDate',
 
   // Accommodation fields
   ACCOMMODATION_TYPE: 'accommodationType',
@@ -132,6 +138,7 @@ export const FIELD_NAMES = {
 export const DEFAULT_VALUES = {
   PHONE_CODE: '+86',
   NATIONALITY: 'China',
+  SEX: 'Male',
 };
 
 /**
@@ -154,9 +161,10 @@ export const ANIMATION_CONFIG = {
 
 export default {
   PREDEFINED_TRAVEL_PURPOSES,
+  TRAVEL_PURPOSE_OPTIONS,
   PREDEFINED_ACCOMMODATION_TYPES,
+  ACCOMMODATION_TYPE_OPTIONS,
   GENDER_OPTIONS,
-  OCCUPATION_OPTIONS,
   STORAGE_KEYS,
   SECTIONS,
   FIELD_NAMES,
