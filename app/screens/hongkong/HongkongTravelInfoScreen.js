@@ -1063,6 +1063,128 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
           )}
         </CollapsibleSection>
 
+        {/* Funds Section */}
+        <CollapsibleSection
+          title="💰 资金证明"
+          isExpanded={expandedSection === 'funds'}
+          onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
+          fieldCount={getFieldCount('funds')}
+        >
+          {/* Hong Kong Funds Context */}
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>💳</Text>
+            <Text style={styles.sectionIntroText}>
+              香港入境处建议旅客准备充足的旅费。建议每天至少 HKD 1,000（约 RMB 900 或 USD 130）。
+            </Text>
+            <Text style={styles.sectionIntroTextSecondary}>
+              Hong Kong Immigration suggests travelers carry sufficient funds. Recommended minimum: HKD 1,000 (~RMB 900 or ~USD 130) per day.
+            </Text>
+          </View>
+          <View style={styles.fundActions}>
+            <Button title="添加现金" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
+            <Button title="添加信用卡" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
+            <Button title="添加银行余额" onPress={() => addFund('bank_balance')} variant="secondary" style={styles.fundButton} />
+          </View>
+
+          {funds.length === 0 ? (
+            <View style={styles.fundEmptyState}>
+              <Text style={styles.fundEmptyText}>
+                暂未添加资金证明。请至少添加一项资金证明。
+              </Text>
+              <Text style={styles.fundEmptyTextSecondary}>
+                No funds added yet. Please add at least one fund proof.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.fundList}>
+              {funds.map((fund, index) => {
+                const isLast = index === funds.length - 1;
+                const typeKey = (fund.type || 'OTHER').toUpperCase();
+                const typeMeta = {
+                  CASH: { icon: '💵' },
+                  BANK_CARD: { icon: '💳' },
+                  CREDIT_CARD: { icon: '💳' },
+                  BANK_BALANCE: { icon: '🏦' },
+                  DOCUMENT: { icon: '📄' },
+                  INVESTMENT: { icon: '📈' },
+                  OTHER: { icon: '💰' },
+                };
+                const defaultTypeLabels = {
+                  CASH: '现金 / Cash',
+                  BANK_CARD: '银行卡 / Bank Card',
+                  CREDIT_CARD: '信用卡 / Credit Card',
+                  BANK_BALANCE: '银行余额 / Bank Balance',
+                  DOCUMENT: '支持文件 / Supporting Document',
+                  INVESTMENT: '投资 / Investment',
+                  OTHER: '资金 / Funding',
+                };
+                const typeIcon = (typeMeta[typeKey] || typeMeta.OTHER).icon;
+                const typeLabel = defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER;
+                const notProvidedLabel = '未提供 / Not provided yet';
+
+                const normalizeAmount = (value) => {
+                  if (value === null || value === undefined || value === '') return '';
+                  if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value.toLocaleString();
+                  }
+                  if (typeof value === 'string') {
+                    const trimmed = value.trim();
+                    if (!trimmed) return '';
+                    const parsed = Number(trimmed.replace(/,/g, ''));
+                    return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
+                  }
+                  return `${value}`;
+                };
+
+                const amountValue = normalizeAmount(fund.amount);
+                const currencyValue = fund.currency ? fund.currency.toUpperCase() : '';
+                const detailsValue = fund.details || '';
+
+                let displayText;
+                if (typeKey === 'DOCUMENT') {
+                  displayText = detailsValue || notProvidedLabel;
+                } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
+                  const cardLabel = detailsValue || notProvidedLabel;
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
+                } else if (['CASH', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey)) {
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${amountLabel} ${currencyLabel}`.trim();
+                } else {
+                  displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
+                }
+
+                if ((fund.photoUri || fund.photo) && typeKey !== 'CASH') {
+                  const photoLabel = '已附照片 / Photo attached';
+                  displayText = `${displayText} • ${photoLabel}`;
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={fund.id}
+                    style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
+                    onPress={() => handleFundItemPress(fund)}
+                    accessibilityRole="button"
+                  >
+                    <View style={styles.fundListItemContent}>
+                      <Text style={styles.fundItemIcon}>{typeIcon}</Text>
+                      <View style={styles.fundItemDetails}>
+                        <Text style={styles.fundItemTitle}>{typeLabel}</Text>
+                        <Text style={styles.fundItemSubtitle} numberOfLines={2}>
+                          {displayText}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.fundListItemArrow}>›</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </CollapsibleSection>
+
         <View style={styles.buttonContainer}>
           <Button
             title="生成入境包"
@@ -1072,6 +1194,16 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
           />
         </View>
       </ScrollView>
+
+      <FundItemDetailModal
+        visible={fundItemModalVisible}
+        fundItem={currentFundItem}
+        createItemType={newFundItemType}
+        onClose={handleFundItemModalClose}
+        onUpdate={handleFundItemUpdate}
+        onCreate={handleFundItemCreate}
+        onDelete={handleFundItemDelete}
+      />
     </SafeAreaView>
   );
 };
@@ -1290,6 +1422,104 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
+  },
+  sectionIntro: {
+    backgroundColor: 'rgba(52, 199, 89, 0.05)',
+    padding: spacing.md,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(52, 199, 89, 0.1)',
+  },
+  sectionIntroIcon: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
+  sectionIntroText: {
+    ...typography.body2,
+    color: colors.text,
+    lineHeight: 20,
+    marginBottom: spacing.xs,
+  },
+  sectionIntroTextSecondary: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  fundActions: {
+    marginBottom: spacing.md,
+  },
+  fundButton: {
+    marginBottom: spacing.sm,
+  },
+  fundEmptyState: {
+    padding: spacing.lg,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  fundEmptyText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  fundEmptyTextSecondary: {
+    ...typography.body2,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontSize: 13,
+  },
+  fundList: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  fundListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    backgroundColor: colors.white,
+  },
+  fundListItemDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  fundListItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  fundItemIcon: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  fundItemDetails: {
+    flex: 1,
+  },
+  fundItemTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs / 2,
+  },
+  fundItemSubtitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  fundListItemArrow: {
+    fontSize: 20,
+    color: colors.textTertiary,
+    marginLeft: spacing.sm,
   },
 });
 
