@@ -17,14 +17,52 @@ import UserDataService from '../services/data/UserDataService';
 
 const CopyWriteModeScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo, userId: routeUserId } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
+  const userId = routeUserId || passport?.id || rawPassport?.id || 'user_001';
   const [fontSize, setFontSize] = useState(24);
+  const [personalInfo, setPersonalInfo] = useState(null);
+  const [fullPassport, setFullPassport] = useState(passport);
+  const [loadedTravelInfo, setLoadedTravelInfo] = useState(travelInfo);
 
   // Check destination for conditional content
   const isJapan = destination?.id === 'jp' || destination?.name === '日本';
 
   useEffect(() => {
+    // Load user data from database
+    const loadUserData = async () => {
+      try {
+        await UserDataService.initialize(userId);
+
+        // Load passport data
+        const passportData = await UserDataService.getPassport(userId).catch(() => null);
+        if (passportData) {
+          setFullPassport(passportData);
+        }
+
+        // Load personal info
+        const personalData = await UserDataService.getPersonalInfo(userId).catch(() => null);
+        if (personalData) {
+          setPersonalInfo(personalData);
+        }
+
+        // Load travel info based on destination
+        if (destination?.id) {
+          const destId = destination.id === 'jp' ? 'japan' :
+                        destination.id === 'th' ? 'thailand' :
+                        destination.id === 'ca' ? 'canada' : destination.id;
+          const travelData = await UserDataService.getTravelInfo(userId, destId).catch(() => null);
+          if (travelData) {
+            setLoadedTravelInfo(travelData);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+      }
+    };
+
+    loadUserData();
+
     // 保持屏幕常亮，防止抄写时黑屏
     const keepAwake = async () => {
       try {
@@ -33,9 +71,9 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
         // Failed to activate keep awake
       }
     };
-    
+
     keepAwake();
-    
+
     return () => {
       const deactivate = async () => {
         try {
@@ -46,7 +84,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
       };
       deactivate();
     };
-  }, []);
+  }, [userId, isJapan]);
 
   const increaseFontSize = () => {
     if (fontSize < 32) setFontSize(fontSize + 2);
@@ -63,6 +101,28 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
     return dateStr;
   };
 
+  // Parse passport full name (format: "SURNAME, GIVEN NAME MIDDLE NAME")
+  const getPassportNames = () => {
+    const fullName = fullPassport?.fullName || fullPassport?.nameEn || '';
+    if (fullName.includes(',')) {
+      const [surname, givenNames] = fullName.split(',').map(s => s.trim());
+      // Extract first given name only (exclude middle name)
+      const givenName = givenNames.split(' ')[0];
+      return { surname, givenName, fullGivenNames: givenNames };
+    } else if (fullName.includes(' ')) {
+      // Legacy format: "GIVEN SURNAME" or "GIVEN MIDDLE SURNAME"
+      const parts = fullName.split(' ');
+      return {
+        surname: parts[parts.length - 1],
+        givenName: parts[0],
+        fullGivenNames: parts.slice(0, -1).join(' ')
+      };
+    }
+    return { surname: fullName, givenName: '', fullGivenNames: '' };
+  };
+
+  const { surname, givenName } = getPassportNames();
+
   // 根据目的地显示不同的表格字段
   const getFormFields = () => {
     const isJapan = destination?.id === 'jp' || destination?.name === '日本';
@@ -76,42 +136,42 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           fields: [
             {
               label: `${t('copyWriteMode.familyName')} (Family Name)`,
-              value: passport?.nameEn?.split(' ').pop() || 'ZHANG',
+              value: surname,
               instruction: t('copyWriteMode.instructionFamilyName'),
             },
             {
               label: `${t('copyWriteMode.givenName')} (Given Name)`,
-              value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
+              value: givenName,
               instruction: t('copyWriteMode.instructionGivenName'),
             },
             {
               label: `${t('copyWriteMode.dateOfBirth')} (Date of Birth)`,
-              value: passport?.birthDate || '1980-01-01',
+              value: fullPassport?.dateOfBirth || fullPassport?.birthDate || '',
               instruction: t('copyWriteMode.instructionDateOfBirth'),
             },
             {
               label: `${t('copyWriteMode.nationality')} (Nationality)`,
-              value: 'CHINA',
+              value: fullPassport?.nationality || '',
               instruction: t('copyWriteMode.instructionNationality'),
             },
             {
               label: `${t('copyWriteMode.passportNumber')} (Passport Number)`,
-              value: passport?.passportNo || 'E12345678',
+              value: fullPassport?.passportNumber || fullPassport?.passportNo || '',
               instruction: t('copyWriteMode.instructionPassportNumber'),
             },
             {
               label: `${t('copyWriteMode.flightNumber')} (Flight Number)`,
-              value: travelInfo?.flightNumber || '',
+              value: loadedTravelInfo?.arrivalFlightNumber || loadedTravelInfo?.flightNumber || '',
               instruction: t('copyWriteMode.instructionFlightNumber'),
             },
             {
               label: `${t('copyWriteMode.purposeOfVisit')} (Purpose of Visit)`,
-              value: 'TOURISM',
+              value: loadedTravelInfo?.travelPurpose || loadedTravelInfo?.customTravelPurpose || 'TOURISM',
               instruction: t('copyWriteMode.instructionPurposeOfVisit'),
             },
             {
               label: `${t('copyWriteMode.addressInJapan')} (Address in Japan)`,
-              value: travelInfo?.hotelName + ', ' + travelInfo?.hotelAddress || '',
+              value: loadedTravelInfo?.hotelAddress || loadedTravelInfo?.accommodationAddress || '',
               instruction: t('copyWriteMode.instructionAddressInJapan'),
               multiline: true,
             },
@@ -123,7 +183,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           fields: [
             {
               label: `${t('copyWriteMode.name')} (Name)`,
-              value: passport?.name || t('copyWriteMode.defaultChineseName'),
+              value: fullPassport?.name || fullPassport?.nameLocal || '',
               instruction: t('copyWriteMode.instructionName'),
             },
             {
@@ -143,7 +203,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             },
             {
               label: `${t('copyWriteMode.totalValueOfGoods')} (Total Value of Goods)`,
-              value: travelInfo?.goodsValue || '¥0',
+              value: loadedTravelInfo?.goodsValue || '¥0',
               instruction: t('copyWriteMode.instructionTotalValue'),
             },
           ],
@@ -158,12 +218,12 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           fields: [
             {
               label: `${t('copyWriteMode.lastName')} (Last Name)`,
-              value: passport?.nameEn?.split(' ').pop() || passport?.name || 'ZHANG',
+              value: surname,
               instruction: t('copyWriteMode.instructionLastName'),
             },
             {
               label: `${t('copyWriteMode.firstName')} (First Name)`,
-              value: passport?.nameEn?.split(' ').slice(0, -1).join(' ') || 'WEI',
+              value: givenName,
               instruction: t('copyWriteMode.instructionFirstName'),
             },
             {
@@ -173,12 +233,12 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             },
             {
               label: `${t('copyWriteMode.dateOfBirth')} (Date of Birth)`,
-              value: passport?.birthDate || '1980-01-01',
+              value: fullPassport?.dateOfBirth || fullPassport?.birthDate || '',
               instruction: t('copyWriteMode.instructionDateOfBirthDash'),
             },
             {
               label: `${t('copyWriteMode.citizenship')} (Citizenship)`,
-              value: passport?.nationality || 'CHINA',
+              value: fullPassport?.nationality || '',
               instruction: t('copyWriteMode.instructionCitizenship'),
             },
           ],
@@ -189,7 +249,7 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           fields: [
             {
               label: `${t('copyWriteMode.homeAddress')} (Home Address)`,
-              value: travelInfo?.hotelAddress || '',
+              value: loadedTravelInfo?.hotelAddress || '',
               instruction: t('copyWriteMode.instructionCanadaAddress'),
               multiline: true,
             },
@@ -206,24 +266,24 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
           fields: [
             {
               label: `${t('copyWriteMode.airlineFlightNumber')} (Airline/Flight Number)`,
-              value: travelInfo?.flightNumber || '',
+              value: loadedTravelInfo?.flightNumber || '',
               instruction: t('copyWriteMode.instructionFlightNumberCanada'),
             },
             {
               label: `${t('copyWriteMode.arrivalDate')} (Arrival Date)`,
-              value: formatDate(travelInfo?.arrivalDate) || '',
+              value: formatDate(loadedTravelInfo?.arrivalDate) || '',
               instruction: t('copyWriteMode.instructionDateFormat'),
             },
             {
               label: `${t('copyWriteMode.arrivingFrom')} (Arriving From)`,
-              value: 'CHINA',
+              value: personalInfo?.residentCountry || fullPassport?.nationality || '',
               instruction: t('copyWriteMode.instructionArrivingFrom'),
             },
             {
               label: `${t('copyWriteMode.purposeOfTrip')} (Purpose of Trip)`,
-              value: travelInfo?.travelPurpose === '旅游' ? 'Personal' :
-                     travelInfo?.travelPurpose === '商务' ? 'Business' :
-                     travelInfo?.travelPurpose === '学习' ? 'Study' : 'Personal',
+              value: loadedTravelInfo?.travelPurpose === '旅游' ? 'Personal' :
+                     loadedTravelInfo?.travelPurpose === '商务' ? 'Business' :
+                     loadedTravelInfo?.travelPurpose === '学习' ? 'Study' : 'Personal',
               instruction: t('copyWriteMode.instructionPurposeOptions'),
             },
           ],
@@ -235,44 +295,44 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
             {
               label: t('copyWriteMode.currencyOverLimit'),
               labelEn: 'Currency/monetary instruments ≥ CAN$10,000?',
-              value: travelInfo?.hasHighCurrency === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.hasHighCurrency === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionTruthfulAnswer'),
-              highlight: travelInfo?.hasHighCurrency === '是',
+              highlight: loadedTravelInfo?.hasHighCurrency === '是',
             },
             {
               label: t('copyWriteMode.commercialGoodsForResale'),
               labelEn: 'Commercial goods, samples, or goods for resale?',
-              value: travelInfo?.hasCommercialGoods === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.hasCommercialGoods === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionTruthfulAnswer'),
-              highlight: travelInfo?.hasCommercialGoods === '是',
+              highlight: loadedTravelInfo?.hasCommercialGoods === '是',
             },
             {
               label: t('copyWriteMode.foodPlantsAnimals'),
               labelEn: 'Food, plants, animals, or related products?',
-              value: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.visitedFarm === '是' || loadedTravelInfo?.carryingFood === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionFoodItems'),
-              highlight: travelInfo?.visitedFarm === '是' || travelInfo?.carryingFood === '是',
+              highlight: loadedTravelInfo?.visitedFarm === '是' || loadedTravelInfo?.carryingFood === '是',
             },
             {
               label: t('copyWriteMode.visitedFarm'),
               labelEn: 'Visited a farm or been in contact with farm animals?',
-              value: travelInfo?.visitedFarm === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.visitedFarm === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionTruthfulAnswer'),
-              highlight: travelInfo?.visitedFarm === '是',
+              highlight: loadedTravelInfo?.visitedFarm === '是',
             },
             {
               label: t('copyWriteMode.firearms'),
               labelEn: 'Firearms or weapons?',
-              value: travelInfo?.hasFirearms === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.hasFirearms === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionTruthfulAnswer'),
-              highlight: travelInfo?.hasFirearms === '是',
+              highlight: loadedTravelInfo?.hasFirearms === '是',
             },
             {
               label: t('copyWriteMode.exceedsDutyFree'),
               labelEn: 'Goods exceed duty-free allowance?',
-              value: travelInfo?.exceedsDutyFree === '是' ? '✓ YES' : '✗ NO',
+              value: loadedTravelInfo?.exceedsDutyFree === '是' ? '✓ YES' : '✗ NO',
               instruction: t('copyWriteMode.instructionGiftsLimit'),
-              highlight: travelInfo?.exceedsDutyFree === '是',
+              highlight: loadedTravelInfo?.exceedsDutyFree === '是',
             },
           ],
         },

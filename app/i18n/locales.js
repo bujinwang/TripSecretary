@@ -1742,12 +1742,6 @@ const baseTranslations = {
         selectType: 'Select Fund Item Type',
         selectTypeMessage: 'Choose the type of fund item to add',
         empty: 'No fund items yet. Tap below to add your first item.',
-        tip: {
-          title: 'Sufficient funds',
-          subtitle: 'Carry at least 10,000 THB per person or equivalent proof',
-          description:
-            'Officers may check cash or bank balances. Prepare screenshots or statements and list your cash, cards, and balances for quick inspection.',
-        },
         footerNote: 'Information syncs to your entry pack for immigration checks.',
         actions: {
           scanProof: 'Scan / Upload Funding Proof',
@@ -2651,7 +2645,7 @@ const baseTranslations = {
         loading: '加载中...',
         sections: {
           passport: '护照信息',
-          personal: '护照信息',
+          personal: '个人信息',
           funds: '资金证明',
           travel: '旅行信息',
         },
@@ -3415,7 +3409,7 @@ const baseTranslations = {
         completionHint: '完成所有信息后可提交入境卡。',
         sections: {
           passport: '护照信息',
-          personal: '护照信息',
+          personal: '个人信息',
           funds: '资金证明',
           travel: '行程信息',
           accommodation: '住宿信息',
@@ -3658,9 +3652,9 @@ const baseTranslations = {
         notFilled: '未填写',
       },
       personal: {
-        title: '护照信息',
+        title: '个人信息',
         subtitle: '更新通关资料',
-        collapsedHint: '点击展开查看护照信息',
+        collapsedHint: '点击展开查看个人信息',
         fields: {
           dateOfBirth: {
             title: '出生日期',
@@ -3707,12 +3701,6 @@ const baseTranslations = {
         selectType: '选择资金项目类型',
         selectTypeMessage: '选择要添加的资金项目类型',
         empty: '暂无资金项目，点击下方按钮添加第一个项目',
-        tip: {
-          title: '充足资金',
-          subtitle: '建议携带不少于10,000泰铢/人或等值现金及账户证明',
-          description:
-            '移民官可能抽查现金或银行卡余额证明，请提前准备截图或交易记录，并整理一份资金清单，列出随身现金、银行卡及余额以便快速出示。',
-        },
         footerNote: '以上信息会同步到通关包，方便入境检查时向移民官展示。',
         actions: {
           scanProof: '扫描 / 上传资金证明',
@@ -4346,12 +4334,6 @@ const baseTranslations = {
         title: 'Checkliste Finanznachweis',
         subtitle: 'Schnell bei der Einreise vorzeigen',
         collapsedHint: 'Tippen, um die Finanznachweise anzuzeigen',
-        tip: {
-          title: 'Ausreichende Mittel',
-          subtitle: 'Führe mindestens 10.000 THB pro Person oder gleichwertige Nachweise mit',
-          description:
-            'Die Beamten können Bargeld oder Kontostände prüfen. Bereite Screenshots oder Kontoauszüge vor und liste Bargeld, Karten und Guthaben für eine schnelle Kontrolle auf.',
-        },
         footerNote: 'Diese Angaben werden in deinem Einreisepaket gespeichert und können bei der Kontrolle gezeigt werden.',
         actions: {
           scanProof: 'Finanznachweis scannen / hochladen',
@@ -4575,12 +4557,6 @@ const baseTranslations = {
         selectType: 'Seleccionar tipo de artículo de fondos',
         selectTypeMessage: 'Elige el tipo de artículo de fondos a agregar',
         empty: 'Aún no hay artículos de fondos. Toca abajo para agregar tu primer artículo.',
-        tip: {
-          title: 'Fondos suficientes',
-          subtitle: 'Lleva al menos 10 000 THB por persona o un comprobante equivalente',
-          description:
-            'Los oficiales pueden revisar tu efectivo o saldo bancario. Prepara capturas o estados y enumera efectivo, tarjetas y saldos para una inspección rápida.',
-        },
         footerNote: 'Esta información se sincroniza con tu paquete de entrada para mostrarla en el control.',
         actions: {
           scanProof: 'Escanear / subir comprobante de fondos',

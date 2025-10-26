@@ -1,5 +1,5 @@
 // 入境通 - Result Screen
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ const ResultScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const routeParams = route.params || {};
   const { generationId, fromHistory = false, userId, context } = routeParams;
+  const initialAction = routeParams.initialAction || 'guide';
 
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,8 @@ const ResultScreen = ({ navigation, route }) => {
   const isTaiwan = destination?.id === 'tw';
   const isJapan = destination?.id === 'jp' || destination?.id === 'japan';
   const isJapanManualGuide = isJapan && context === 'manual_entry_guide';
+
+  const initialActionHandledRef = useRef(false);
 
   // 获取目的地特定的功能配置
   const features = getAvailableFeatures(destination?.id);
@@ -509,6 +512,15 @@ const ResultScreen = ({ navigation, route }) => {
     }
     setShareModalVisible(true);
   };
+
+  useEffect(() => {
+    if (!initialActionHandledRef.current && isJapanManualGuide) {
+      if (initialAction === 'share') {
+        initialActionHandledRef.current = true;
+        handleShare();
+      }
+    }
+  }, [initialAction, isJapanManualGuide, handleShare]);
 
   const handleCancelShare = () => {
     Alert.alert(

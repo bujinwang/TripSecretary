@@ -13,6 +13,8 @@ import {
 import { colors, typography, spacing, borderRadius } from '../theme';
 import {
   getBasicTravelPurposes,
+  getJapanTravelPurposes,
+  getThailandTravelPurposes,
   getTravelPurposeDisplayName,
   normalizeTravelPurpose
 } from '../data/travelPurposes';
@@ -40,35 +42,26 @@ const TravelPurposeSelector = ({
   const [travelPurposes, setTravelPurposes] = useState([]);
   const [showOtherInput, setShowOtherInput] = useState(false);
 
+  // Normalize locale (e.g., 'zh-CN' -> 'zh', 'en-US' -> 'en')
+  const normalizedLocale = React.useMemo(() => {
+    if (!locale) return 'en';
+    const parts = locale.split('-');
+    return parts[0]; // Return just the language code without country
+  }, [locale]);
+
   // Load travel purposes on mount
   React.useEffect(() => {
     try {
       let purposes = [];
       switch (purposeType) {
         case 'japan':
-          purposes = getBasicTravelPurposes(locale).concat([
-            { code: 'TRANSIT', name: getTravelPurposeDisplayName('TRANSIT', locale) },
-            { code: 'OTHER', name: getTravelPurposeDisplayName('OTHER', locale) }
-          ]);
+          purposes = getJapanTravelPurposes(normalizedLocale);
           break;
         case 'thailand':
-          purposes = [
-            { code: 'HOLIDAY', name: getTravelPurposeDisplayName('HOLIDAY', locale) },
-            { code: 'BUSINESS', name: getTravelPurposeDisplayName('BUSINESS', locale) },
-            { code: 'MEETING', name: getTravelPurposeDisplayName('MEETING', locale) },
-            { code: 'SPORTS', name: getTravelPurposeDisplayName('SPORTS', locale) },
-            { code: 'INCENTIVE', name: getTravelPurposeDisplayName('INCENTIVE', locale) },
-            { code: 'CONVENTION', name: getTravelPurposeDisplayName('CONVENTION', locale) },
-            { code: 'EDUCATION', name: getTravelPurposeDisplayName('EDUCATION', locale) },
-            { code: 'EMPLOYMENT', name: getTravelPurposeDisplayName('EMPLOYMENT', locale) },
-            { code: 'EXHIBITION', name: getTravelPurposeDisplayName('EXHIBITION', locale) },
-            { code: 'MEDICAL', name: getTravelPurposeDisplayName('MEDICAL', locale) },
-            { code: 'TRANSIT', name: getTravelPurposeDisplayName('TRANSIT', locale) },
-            { code: 'OTHER', name: getTravelPurposeDisplayName('OTHER', locale) }
-          ];
+          purposes = getThailandTravelPurposes(normalizedLocale);
           break;
         default: // 'basic'
-          purposes = getBasicTravelPurposes(locale);
+          purposes = getBasicTravelPurposes(normalizedLocale);
           break;
       }
 
@@ -82,7 +75,7 @@ const TravelPurposeSelector = ({
       console.error('Error getting travel purposes:', error);
       setTravelPurposes([]);
     }
-  }, [purposeType, locale]);
+  }, [purposeType, normalizedLocale]);
 
   // Initialize showOtherInput state based on current value
   // Only manage internal input if parent provides the necessary props
@@ -108,7 +101,7 @@ const TravelPurposeSelector = ({
   }, [travelPurposes, searchText]);
 
   // Get current display value
-  const getCurrentDisplayValue = () => {
+  const getCurrentDisplayValue = React.useMemo(() => {
     if (!value) return '';
 
     // If OTHER is selected and there's custom text, show the custom text
@@ -117,8 +110,8 @@ const TravelPurposeSelector = ({
       return otherValue;
     }
 
-    return getTravelPurposeDisplayName(value, locale);
-  };
+    return getTravelPurposeDisplayName(value, normalizedLocale);
+  }, [value, normalizedLocale, otherValue, onOtherValueChange]);
 
   const handleSelectTravelPurpose = (purpose) => {
     const normalizedValue = normalizeTravelPurpose(purpose.code);
@@ -180,10 +173,10 @@ const TravelPurposeSelector = ({
       >
         <Text style={[
           styles.selectorText,
-          !getCurrentDisplayValue() && styles.selectorPlaceholder,
+          !getCurrentDisplayValue && styles.selectorPlaceholder,
           error && styles.selectorTextError
         ]}>
-          {getCurrentDisplayValue() || placeholder}
+          {getCurrentDisplayValue || placeholder}
         </Text>
         <Text style={[
           styles.dropdownIcon,
@@ -331,6 +324,8 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.text,
     flex: 1,
+    fontSize: 16,
+    lineHeight: 22,
   },
   selectorPlaceholder: {
     color: colors.textDisabled,

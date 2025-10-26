@@ -98,38 +98,56 @@ class JapanFormHelper {
    * @returns {Object} - Field count
    */
   static getTravelFieldCount(travelInfo) {
-    const requiredFields = [
-      'travelPurpose',
-      'arrivalFlightNumber',
-      'arrivalDate',
-      'accommodationAddress',
-      'accommodationPhone',
-      'lengthOfStay'
-    ];
-    
+    const baseFields = ['arrivalFlightNumber', 'arrivalDate', 'lengthOfStay'];
+    const isTransitPassenger = Boolean(travelInfo?.isTransitPassenger);
+    const fields = isTransitPassenger
+      ? baseFields
+      : [...baseFields, 'accommodationAddress', 'accommodationPhone'];
+
     let filled = 0;
-    
+    let total = fields.length + 1; // +1 for travel purpose requirement
+
     if (travelInfo) {
-      // Count basic required fields
-      requiredFields.forEach(field => {
-        if (travelInfo[field] && travelInfo[field].toString().trim().length > 0) {
-          filled++;
+      const normalizedPurpose = this.normalizeTravelPurpose(travelInfo.travelPurpose);
+      const customPurposeFilled = Boolean(
+        travelInfo.customTravelPurpose && travelInfo.customTravelPurpose.toString().trim().length > 0
+      );
+      const legacyCustomPurpose =
+        normalizedPurpose === 'Other' &&
+        !customPurposeFilled &&
+        travelInfo.travelPurpose &&
+        travelInfo.travelPurpose.toString().trim().length > 0 &&
+        travelInfo.travelPurpose !== 'Other';
+
+      const purposeIsFilled =
+        (normalizedPurpose && normalizedPurpose !== 'Other') ||
+        (normalizedPurpose === 'Other' && (customPurposeFilled || legacyCustomPurpose));
+
+      if (purposeIsFilled) {
+        filled += 1;
+      }
+
+      fields.forEach(field => {
+        let value = travelInfo[field];
+        if (!value && field === 'arrivalDate') {
+          value = travelInfo.arrivalArrivalDate;
+        }
+        if (!value && field === 'accommodationAddress') {
+          value = travelInfo.hotelAddress;
+        }
+        if (!value && field === 'accommodationPhone') {
+          value = travelInfo.accommodationPhone || travelInfo.contactPhone || travelInfo.hotelPhone;
+        }
+        if (value && value.toString().trim().length > 0) {
+          filled += 1;
         }
       });
-      
-      // Handle conditional fields
-      if (travelInfo.travelPurpose === 'Other' && travelInfo.customTravelPurpose) {
-        // Custom travel purpose counts as filled
-      } else if (travelInfo.travelPurpose === 'Other' && !travelInfo.customTravelPurpose) {
-        filled--; // Subtract one because "Other" without custom purpose is incomplete
-      }
-      
     }
 
     return {
       filled,
-      total: requiredFields.length,
-      isComplete: filled === requiredFields.length
+      total,
+      isComplete: filled === total
     };
   }
 
@@ -290,16 +308,32 @@ class JapanFormHelper {
       return 'Tourism';
     }
 
-    if (purpose === 'Visiting Friends/Relatives') {
+    const raw = purpose.toString().trim();
+    const upper = raw.toUpperCase().replace(/\s+/g, '_');
+
+    const uppercaseMap = {
+      TOURISM: 'Tourism',
+      BUSINESS: 'Business',
+      VISITING_RELATIVES: 'Visiting Relatives',
+      VISITINGFRIENDSRELATIVES: 'Visiting Relatives',
+      TRANSIT: 'Transit',
+      OTHER: 'Other',
+    };
+
+    if (uppercaseMap[upper]) {
+      return uppercaseMap[upper];
+    }
+
+    if (raw === 'Visiting Friends/Relatives') {
       return 'Visiting Relatives';
     }
 
-    if (purpose === 'Conference') {
+    if (raw === 'Conference') {
       return 'Business';
     }
 
     const allowedPurposes = ['Tourism', 'Business', 'Visiting Relatives', 'Transit', 'Other'];
-    return allowedPurposes.includes(purpose) ? purpose : 'Other';
+    return allowedPurposes.includes(raw) ? raw : 'Other';
   }
 
   /**
@@ -415,6 +449,126 @@ class JapanFormHelper {
       overallPercentage: Math.round((totalFilled / totalRequired) * 100),
       isComplete: this.isFormComplete(allData)
     };
+  }
+
+  /**
+   * Normalize fund item metadata
+   * @param {string} type
+   * @returns {{key: string, icon: string, defaultLabel: string}}
+   */
+  static getFundItemMeta(type) {
+    const typeKey = (type || '').toString().toUpperCase();
+    const icons = {
+      CASH: '💰',
+      BANK_CARD: '💳',
+      CREDIT_CARD: '💳',
+      BANK_BALANCE: '🏦',
+      INVESTMENT: '📈',
+      DOCUMENT: '📄',
+      OTHER: '🧾',
+    };
+
+    const labels = {
+      CASH: 'Cash',
+      BANK_CARD: 'Bank Card',
+      CREDIT_CARD: 'Bank Card',
+      BANK_BALANCE: 'Bank Balance',
+      INVESTMENT: 'Investment',
+      DOCUMENT: 'Supporting Document',
+      OTHER: 'Funding',
+    };
+
+    const normalizedKey = icons[typeKey] ? typeKey : 'OTHER';
+
+    return {
+      key: normalizedKey,
+      icon: icons[normalizedKey],
+      defaultLabel: labels[normalizedKey],
+    };
+  }
+
+  /**
+   * Get display icon for fund item type
+   * @param {string} type
+   * @returns {string}
+   */
+  static getFundItemIcon(type) {
+    return this.getFundItemMeta(type).icon;
+  }
+
+  /**
+   * Get localized label for fund item type
+   * @param {string} type
+    * @param {Function} translate
+   * @returns {string}
+   */
+  static getFundItemLabel(type, translate) {
+    const meta = this.getFundItemMeta(type);
+    if (typeof translate === 'function') {
+      return translate(`fundItem.types.${meta.key}`, {
+        defaultValue: meta.defaultLabel,
+      });
+    }
+    return meta.defaultLabel;
+  }
+
+  /**
+   * Build summary string for fund item
+   * @param {Object} item
+   * @param {Function} translate
+   * @returns {string}
+   */
+  static getFundItemSummary(item, translate) {
+    if (!item) {
+      return '';
+    }
+
+    const meta = this.getFundItemMeta(item.type);
+    const t = typeof translate === 'function' ? translate : null;
+
+    const notProvidedLabel = t
+      ? t('fundItem.detail.notProvided', { defaultValue: 'Not provided yet' })
+      : 'Not provided yet';
+
+    const descriptionValue = item.description || item.details || '';
+    const currencyValue = item.currency ? item.currency.toUpperCase() : '';
+
+    const normalizeAmount = (value) => {
+      if (value === null || value === undefined || value === '') return '';
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value.toLocaleString();
+      }
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) return '';
+        const parsed = Number(trimmed.replace(/,/g, ''));
+        return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
+      }
+      return `${value}`;
+    };
+
+    const amountValue = normalizeAmount(item.amount);
+    const typeKey = meta.key;
+    const isAmountType = ['CASH', 'BANK_CARD', 'CREDIT_CARD', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey);
+
+    if (typeKey === 'DOCUMENT') {
+      return descriptionValue || notProvidedLabel;
+    }
+
+    if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
+      const cardLabel = descriptionValue || notProvidedLabel;
+      const amountLabel = amountValue || notProvidedLabel;
+      const currencyLabel = currencyValue || notProvidedLabel;
+      return `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
+    }
+
+    if (isAmountType) {
+      const amountLabel = amountValue || notProvidedLabel;
+      const currencyLabel = currencyValue || notProvidedLabel;
+      return `${amountLabel} ${currencyLabel}`.trim();
+    }
+
+    return descriptionValue || amountValue || currencyValue || notProvidedLabel;
   }
 }
 

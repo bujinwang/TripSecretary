@@ -14,7 +14,7 @@
       "viewTitle": "历史记录 - 只读",
       "legacyBadge": "这是旧版本的历史记录",
       "incompleteNotice": "此入境包未完成提交",
-      "completenessIndicator": "护照 {{passport}}, 护照信息 {{personal}}, 资金 {{funds}}, 旅行信息 {{travel}}"
+      "completenessIndicator": "护照 {{passport}}, 个人信息 {{personal}}, 资金 {{funds}}, 旅行信息 {{travel}}"
     },
     "history": {
       "title": "历史记录",
@@ -219,7 +219,7 @@
     },
     "categories": {
       "passport": "护照信息",
-      "personal": "护照信息",
+      "personal": "个人信息",
       "funds": "资金证明",
       "travel": "旅行信息",
       "fieldsComplete": "{{filled}}/{{total}} 字段已完成"
@@ -736,7 +736,7 @@
     "travelInfo": {
       "sections": {
         "passport": "护照信息",
-        "personal": "护照信息",
+        "personal": "个人信息",
         "travel": "旅行信息"
       }
     },

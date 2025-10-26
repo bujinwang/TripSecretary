@@ -23,8 +23,9 @@ const japanBiometricSample = require('../../../assets/forms/japan-biometric-scan
 
 const InteractiveImmigrationGuide = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport: rawPassport, destination, travelInfo, currentStep: initialStep = 0 } = route.params || {};
+  const { passport: rawPassport, destination, travelInfo, currentStep: initialStep = 0, userId: routeUserId } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
+  const userId = routeUserId || passport?.id || rawPassport?.id || 'user_001';
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isFormSampleVisible, setFormSampleVisible] = useState(false);
   const [isCustomsSampleVisible, setCustomsSampleVisible] = useState(false);
@@ -325,6 +326,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
               passport,
               destination,
               travelInfo,
+              userId,
               formType: 'entry',
             })}
           >
@@ -366,6 +368,7 @@ const InteractiveImmigrationGuide = ({ navigation, route }) => {
                   passport,
                   destination,
                   travelInfo,
+                  userId,
                   formType: 'customs',
                 })}
               >

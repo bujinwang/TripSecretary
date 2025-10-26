@@ -1,6 +1,6 @@
 // 入境通 - CollapsibleSection Component
 // Collapsible section with field count badge and completion status indicators
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,10 @@ const CollapsibleSection = ({
   contentStyle,
 }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
+
+  useEffect(() => {
+    setIsExpanded(expanded);
+  }, [expanded]);
   
   const handleToggle = () => {
     if (Platform.OS === 'ios') {

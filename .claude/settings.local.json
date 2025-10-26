@@ -26,7 +26,9 @@
       "Bash(do basename \"$file\")",
       "Bash(cat:*)",
       "Bash(node -e:*)",
-      "Read(///**)"
+      "Read(///**)",
+      "Bash(npm install:*)",
+      "Bash(npx expo install react-native-svg)"
     ],
     "deny": [],
     "ask": []
