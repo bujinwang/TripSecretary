@@ -622,14 +622,23 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
-           <PassportNameInput
-             value={fullName}
-             onChangeText={setFullName}
-             onBlur={() => handleFieldBlur('fullName', fullName)}
-             helpText="请填写汉语拼音"
-             error={!!errors.fullName}
-             errorMessage={errors.fullName}
-           />
+           <View style={styles.inputWithValidationContainer}>
+             <View style={styles.inputLabelContainer}>
+               <Text style={styles.inputLabel}>护照上的姓名 / Name on Passport</Text>
+               <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!errors.fullName} />
+             </View>
+             <PassportNameInput
+               value={fullName}
+               onChangeText={setFullName}
+               onBlur={() => handleFieldBlur('fullName', fullName)}
+               helpText="请填写汉语拼音"
+               error={!!errors.fullName}
+               errorMessage={errors.fullName}
+             />
+             {warnings.fullName && !errors.fullName && (
+               <Text style={styles.warningText}>{warnings.fullName}</Text>
+             )}
+           </View>
            <NationalitySelector
              label="国籍"
              value={nationality}
@@ -1387,6 +1396,27 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 11,
     fontWeight: '600',
+  },
+  inputWithValidationContainer: {
+    marginBottom: spacing.sm,
+  },
+  inputLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  inputLabel: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  warningText: {
+    ...typography.caption,
+    color: '#f39c12', // Orange warning color
+    marginTop: spacing.xs,
+    fontSize: 12,
+    fontStyle: 'italic',
   },
 });
 
