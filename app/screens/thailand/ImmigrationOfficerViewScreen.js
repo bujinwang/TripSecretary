@@ -668,15 +668,15 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
       {/* Flight Information Group */}
       <View style={styles.infoGroup}>
         <Text style={styles.groupTitle}>
-          ✈️ {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.flightDetails') : 
-               language === 'thai' ? 'รายละเอียดเที่ยวบิน' : 
+          ✈️ {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.flightDetails') :
+               language === 'thai' ? 'รายละเอียดเที่ยวบิน' :
                `รายละเอียดเที่ยวบิน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.flightDetails')}`}
         </Text>
-        
+
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight') : 
-             language === 'thai' ? 'เที่ยวบินมา' : 
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight') :
+             language === 'thai' ? 'เที่ยวบินมา' :
              `เที่ยวบินมา / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight')}`}:
           </Text>
           <Text style={styles.infoValue}>
@@ -686,8 +686,8 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime') : 
-             language === 'thai' ? 'วันและเวลาที่มาถึง' : 
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime') :
+             language === 'thai' ? 'วันและเวลาที่มาถึง' :
              `วันและเวลาที่มาถึง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime')}`}:
           </Text>
           <Text style={styles.infoValue}>
@@ -698,8 +698,8 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         {travelData?.departureDate && (
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate') : 
-               language === 'thai' ? 'วันที่เดินทางกลับ' : 
+              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate') :
+               language === 'thai' ? 'วันที่เดินทางกลับ' :
                `วันที่เดินทางกลับ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate')}`}:
             </Text>
             <Text style={styles.infoValue}>
@@ -707,20 +707,53 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
             </Text>
           </View>
         )}
+
+        {/* Flight Ticket Photo */}
+        {travelData?.arrivalFlightTicketPhotoUri && (
+          <TouchableOpacity
+            style={styles.documentPhotoContainer}
+            onPress={() => {
+              Alert.alert(
+                language === 'english' ? 'Flight Ticket' :
+                language === 'thai' ? 'ตั๋วเครื่องบิน' :
+                'ตั๋วเครื่องบิน / Flight Ticket',
+                language === 'english' ? 'Tap to view larger image' :
+                language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' :
+                'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
+              );
+            }}
+          >
+            <Text style={styles.documentPhotoLabel}>
+              🎫 {language === 'english' ? 'Flight Ticket' :
+                  language === 'thai' ? 'ตั๋วเครื่องบิน' :
+                  'ตั๋วเครื่องบิน / Flight Ticket'}
+            </Text>
+            <Image
+              source={{ uri: travelData.arrivalFlightTicketPhotoUri }}
+              style={styles.documentPhoto}
+              resizeMode="contain"
+            />
+            <Text style={styles.documentPhotoHint}>
+              {language === 'english' ? 'Tap to enlarge' :
+               language === 'thai' ? 'แตะเพื่อขยาย' :
+               'แตะเพื่อขยาย'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Accommodation Information Group */}
       <View style={styles.infoGroup}>
         <Text style={styles.groupTitle}>
-          🏨 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.accommodation') : 
-               language === 'thai' ? 'ที่พัก' : 
+          🏨 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.accommodation') :
+               language === 'thai' ? 'ที่พัก' :
                `ที่พัก / ${t('progressiveEntryFlow.immigrationOfficer.presentation.accommodation')}`}
         </Text>
-        
+
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName') : 
-             language === 'thai' ? 'ชื่อโรงแรม' : 
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName') :
+             language === 'thai' ? 'ชื่อโรงแรม' :
              `ชื่อโรงแรม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName')}`}:
           </Text>
           <Text style={styles.infoValue}>
@@ -730,8 +763,8 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.address') : 
-             language === 'thai' ? 'ที่อยู่' : 
+            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.address') :
+             language === 'thai' ? 'ที่อยู่' :
              `ที่อยู่ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.address')}`}:
           </Text>
           <Text style={styles.infoValue}>
@@ -742,14 +775,47 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         {travelData?.accommodationPhone && (
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phone') : 
-               language === 'thai' ? 'โทรศัพท์' : 
+              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phone') :
+               language === 'thai' ? 'โทรศัพท์' :
                `โทรศัพท์ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phone')}`}:
             </Text>
             <Text style={styles.infoValue}>
               {travelData.accommodationPhone}
             </Text>
           </View>
+        )}
+
+        {/* Hotel Booking Photo */}
+        {travelData?.hotelBookingPhotoUri && (
+          <TouchableOpacity
+            style={styles.documentPhotoContainer}
+            onPress={() => {
+              Alert.alert(
+                language === 'english' ? 'Hotel Booking' :
+                language === 'thai' ? 'การจองโรงแรม' :
+                'การจองโรงแรม / Hotel Booking',
+                language === 'english' ? 'Tap to view larger image' :
+                language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' :
+                'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
+              );
+            }}
+          >
+            <Text style={styles.documentPhotoLabel}>
+              🏨 {language === 'english' ? 'Hotel Booking' :
+                  language === 'thai' ? 'การจองโรงแรม' :
+                  'การจองโรงแรม / Hotel Booking'}
+            </Text>
+            <Image
+              source={{ uri: travelData.hotelBookingPhotoUri }}
+              style={styles.documentPhoto}
+              resizeMode="contain"
+            />
+            <Text style={styles.documentPhotoHint}>
+              {language === 'english' ? 'Tap to enlarge' :
+               language === 'thai' ? 'แตะเพื่อขยาย' :
+               'แตะเพื่อขยาย'}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -1472,6 +1538,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.xs,
     fontStyle: 'italic',
+  },
+  // Document photo styles
+  documentPhotoContainer: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: spacing.md,
+    borderRadius: 8,
+  },
+  documentPhotoLabel: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    opacity: 0.9,
+  },
+  documentPhoto: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  documentPhotoHint: {
+    color: colors.white,
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: spacing.xs,
   },
 });
 

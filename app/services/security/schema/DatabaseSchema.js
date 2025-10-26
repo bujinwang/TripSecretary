@@ -150,6 +150,7 @@ class DatabaseSchema {
             arrival_departure_date TEXT,
             arrival_arrival_airport TEXT,
             arrival_arrival_date TEXT,
+            arrival_flight_ticket_photo_uri TEXT,
             departure_flight_number TEXT,
             departure_departure_airport TEXT,
             departure_departure_date TEXT,
@@ -162,6 +163,7 @@ class DatabaseSchema {
             postal_code TEXT,
             hotel_name TEXT,
             hotel_address TEXT,
+            hotel_booking_photo_uri TEXT,
             accommodation_phone TEXT,
             length_of_stay TEXT,
             is_transit_passenger INTEGER DEFAULT 0,
@@ -405,6 +407,27 @@ class DatabaseSchema {
           await db.execAsync('DROP TABLE entry_info_old;');
         });
         console.log('✅ Migration completed: passport_id in entry_info is now nullable');
+      }
+
+      // Migration: Add photo columns to travel_info table
+      const travelInfoColumns = await db.getAllAsync("PRAGMA table_info(travel_info)");
+      const hasFlightTicketPhoto = travelInfoColumns.some(col => col.name === 'arrival_flight_ticket_photo_uri');
+      const hasHotelBookingPhoto = travelInfoColumns.some(col => col.name === 'hotel_booking_photo_uri');
+
+      if (!hasFlightTicketPhoto) {
+        console.log('Applying migration: Adding arrival_flight_ticket_photo_uri to travel_info table');
+        await db.execAsync(`
+          ALTER TABLE travel_info ADD COLUMN arrival_flight_ticket_photo_uri TEXT;
+        `);
+        console.log('✅ Migration completed: arrival_flight_ticket_photo_uri column added to travel_info');
+      }
+
+      if (!hasHotelBookingPhoto) {
+        console.log('Applying migration: Adding hotel_booking_photo_uri to travel_info table');
+        await db.execAsync(`
+          ALTER TABLE travel_info ADD COLUMN hotel_booking_photo_uri TEXT;
+        `);
+        console.log('✅ Migration completed: hotel_booking_photo_uri column added to travel_info');
       }
     } catch (error) {
       console.error('Migration error:', error);

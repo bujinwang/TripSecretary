@@ -41,18 +41,18 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
     {
       id: 2,
       title: '📄 第三步：准备必要文件',
-      description: '准备护照和电子入境卡',
-      instruction: '准备好护照原件，打开手机中的入境包准备展示',
+      description: '准备护照、电子入境卡、机票和酒店预订',
+      instruction: '准备好护照原件，打开手机中的入境包（包含电子入境卡、机票和酒店预订照片）准备展示',
       action: '文件已准备',
-      voiceText: '请准备好护照原件和手机中的电子入境卡',
+      voiceText: '请准备好护照原件和手机中的入境包，包括电子入境卡、机票和酒店预订信息',
     },
     {
       id: 3,
       title: '👮 第四步：向移民官展示文件',
-      description: '出示护照和电子入境卡QR码',
-      instruction: '将护照递给移民官，同时展示手机中的QR码',
+      description: '出示护照、电子入境卡QR码、机票和酒店预订',
+      instruction: '将护照递给移民官，展示手机中的QR码、机票和酒店预订照片，方便移民官快速核验',
       action: '向海关展示',
-      voiceText: '现在向移民官出示您的护照和电子入境卡QR码',
+      voiceText: '现在向移民官出示您的护照、电子入境卡QR码、机票和酒店预订信息',
       showToOfficer: true,
     },
     {
@@ -244,7 +244,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
             <View style={styles.specialActionContainer}>
               <Text style={styles.specialActionTitle}>📱 准备向海关展示</Text>
               <Text style={styles.specialActionDescription}>
-                点击下方按钮将打开专门的展示页面，屏幕会自动调整为最佳亮度和方向
+                点击下方按钮将打开专门的展示页面，屏幕会自动调整为最佳亮度和方向。页面将显示您的电子入境卡QR码、机票和酒店预订照片，方便移民官快速核验。
               </Text>
             </View>
           )}
