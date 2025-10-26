@@ -34,6 +34,21 @@ import InputWithUserTracking from '../../components/InputWithUserTracking';
 import TravelInfoFormSection from '../../components/TravelInfoFormSection';
 import apiClient from '../../services/api';
 
+// Import reusable components and utilities
+import OptionSelector from '../../components/thailand/OptionSelector';
+import { parsePassportName } from '../../utils/NameParser';
+
+// Import constants
+import {
+  TRAVEL_PURPOSE_OPTIONS,
+  ACCOMMODATION_TYPE_OPTIONS,
+  GENDER_OPTIONS,
+  STORAGE_KEYS,
+  SECTIONS,
+  FIELD_NAMES,
+  DEFAULT_VALUES,
+} from './constants';
+
 // Import secure data models and services
 import Passport from '../../models/Passport';
 import PersonalInfo from '../../models/PersonalInfo';
@@ -568,9 +583,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
 
             // Check if travel purpose is a predefined option
-            const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
             const loadedPurpose = travelInfo.travelPurpose || '';
-            if (predefinedPurposes.includes(loadedPurpose)) {
+            if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
               setTravelPurpose(loadedPurpose);
               setCustomTravelPurpose('');
             } else {
@@ -590,9 +604,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
             setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
-            const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
             const loadedAccommodationType = travelInfo.accommodationType || '';
-            if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
+            if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
               setAccommodationType(loadedAccommodationType);
               setCustomAccommodationType('');
             } else {
@@ -711,9 +724,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
                 console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
 
                 // Update travel info state
-                const predefinedPurposes = ['HOLIDAY', 'MEETING', 'SPORTS', 'BUSINESS', 'INCENTIVE', 'CONVENTION', 'EDUCATION', 'EMPLOYMENT', 'EXHIBITION', 'MEDICAL'];
                 const loadedPurpose = travelInfo.travelPurpose || '';
-                if (predefinedPurposes.includes(loadedPurpose)) {
+                if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
                   setTravelPurpose(loadedPurpose);
                   setCustomTravelPurpose('');
                 } else {
@@ -729,9 +741,8 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
                 setIsTransitPassenger(travelInfo.isTransitPassenger || false);
 
                 // Load accommodation type
-                const predefinedAccommodationTypes = ['HOTEL', 'YOUTH_HOSTEL', 'GUEST_HOUSE', 'FRIEND_HOUSE', 'APARTMENT'];
                 const loadedAccommodationType = travelInfo.accommodationType || '';
-                if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
+                if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
                   setAccommodationType(loadedAccommodationType);
                   setCustomAccommodationType('');
                 } else {
@@ -1826,11 +1837,10 @@ const normalizeFundItem = useCallback((item) => ({
   };
 
   const renderGenderOptions = () => {
-    const options = [
-      { value: 'Female', label: t('singapore.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('singapore.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('singapore.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
-    ];
+    const options = GENDER_OPTIONS.map(option => ({
+      value: option.value,
+      label: t(option.translationKey, { defaultValue: option.defaultLabel })
+    }));
 
     return (
       <View style={styles.optionsContainer}>
@@ -2241,61 +2251,24 @@ const normalizeFundItem = useCallback((item) => ({
         >
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>旅行目的</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️' },
-                { value: 'MEETING', label: '会议', icon: '👔' },
-                { value: 'SPORTS', label: '体育活动', icon: '⚽' },
-                { value: 'BUSINESS', label: '商务', icon: '💼' },
-                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁' },
-                { value: 'CONVENTION', label: '会展', icon: '🎪' },
-                { value: 'EDUCATION', label: '教育', icon: '📚' },
-                { value: 'EMPLOYMENT', label: '就业', icon: '💻' },
-                { value: 'EXHIBITION', label: '展览', icon: '🎨' },
-                { value: 'MEDICAL', label: '医疗', icon: '🏥' },
-                { value: 'OTHER', label: '其他', icon: '✏️' },
-              ].map((option) => {
-                const isActive = travelPurpose === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={() => {
-                      setTravelPurpose(option.value);
-                      if (option.value !== 'OTHER') {
-                        setCustomTravelPurpose('');
-                      }
-                      // Trigger debounced save after purpose selection
-                      debouncedSaveData();
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {travelPurpose === 'OTHER' && (
-              <Input
-                label="请输入旅行目的"
-                value={customTravelPurpose}
-                onChangeText={setCustomTravelPurpose}
-                onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
-                placeholder="请输入您的旅行目的"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
+            <OptionSelector
+              options={TRAVEL_PURPOSE_OPTIONS}
+              value={travelPurpose}
+              onSelect={(value) => {
+                setTravelPurpose(value);
+                if (value !== 'OTHER') {
+                  setCustomTravelPurpose('');
+                }
+                // Trigger debounced save after purpose selection
+                debouncedSaveData();
+              }}
+              customValue={customTravelPurpose}
+              onCustomChange={setCustomTravelPurpose}
+              onCustomBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
+              customLabel="请输入旅行目的"
+              customPlaceholder="请输入您的旅行目的"
+              customHelpText="请用英文填写"
+            />
           </View>
 
           <View style={styles.subSectionHeader}>
@@ -2427,70 +2400,38 @@ const normalizeFundItem = useCallback((item) => ({
           {!isTransitPassenger && (
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>住宿类型</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOTEL', label: '酒店', icon: '🏨' },
-                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠' },
-                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡' },
-                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥' },
-                { value: 'APARTMENT', label: '公寓', icon: '🏢' },
-                { value: 'OTHER', label: '其他', icon: '✏️' },
-              ].map((option) => {
-                const isActive = accommodationType === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={async () => {
-                      console.log('=== ACCOMMODATION TYPE SELECTED ===');
-                      console.log('Selected option:', option.value);
-                      console.log('Previous accommodationType:', accommodationType);
-                      
-                      setAccommodationType(option.value);
-                      if (option.value !== 'OTHER') {
-                        setCustomAccommodationType('');
-                      }
-                      
-                      console.log('Saving immediately with new accommodation type...');
-                      // Save immediately with the new value to avoid React state delay
-                      try {
-                        await saveDataToSecureStorageWithOverride({ 
-                          accommodationType: option.value,
-                          customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
-                        });
-                        setLastEditedAt(new Date());
-                      } catch (error) {
-                        console.error('Failed to save accommodation type:', error);
-                      }
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {accommodationType === 'OTHER' && (
-              <Input
-                label="请输入住宿类型"
-                value={customAccommodationType}
-                onChangeText={setCustomAccommodationType}
-                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-                placeholder="请输入您的住宿类型"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
+            <OptionSelector
+              options={ACCOMMODATION_TYPE_OPTIONS}
+              value={accommodationType}
+              onSelect={async (value) => {
+                console.log('=== ACCOMMODATION TYPE SELECTED ===');
+                console.log('Selected option:', value);
+                console.log('Previous accommodationType:', accommodationType);
+
+                setAccommodationType(value);
+                if (value !== 'OTHER') {
+                  setCustomAccommodationType('');
+                }
+
+                console.log('Saving immediately with new accommodation type...');
+                // Save immediately with the new value to avoid React state delay
+                try {
+                  await saveDataToSecureStorageWithOverride({
+                    accommodationType: value,
+                    customAccommodationType: value !== 'OTHER' ? '' : customAccommodationType
+                  });
+                  setLastEditedAt(new Date());
+                } catch (error) {
+                  console.error('Failed to save accommodation type:', error);
+                }
+              }}
+              customValue={customAccommodationType}
+              onCustomChange={setCustomAccommodationType}
+              onCustomBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
+              customLabel="请输入住宿类型"
+              customPlaceholder="请输入您的住宿类型"
+              customHelpText="请用英文填写"
+            />
           </View>
           )}
           
