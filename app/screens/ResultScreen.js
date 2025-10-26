@@ -1,5 +1,5 @@
 // 入境通 - Result Screen
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -158,6 +158,74 @@ const ResultScreen = ({ navigation, route }) => {
   };
 
   const canShareInline = features.showShare && !isHistoryItem;
+
+  const japanManualCompletion = useMemo(() => {
+    if (!isJapanManualGuide) {
+      return {
+        percent: 0,
+        completed: 0,
+        total: 0,
+        loaded: false,
+      };
+    }
+
+    const requiredFields = [
+      'passportNo',
+      'fullName',
+      'nationality',
+      'dateOfBirth',
+      'occupation',
+      'email',
+      'arrivalDate',
+      'arrivalFlightNumber',
+      'accommodationAddress',
+      'accommodationPhone',
+      'lengthOfStay',
+    ];
+
+    if (!japanTravelerData) {
+      return {
+        percent: 0,
+        completed: 0,
+        total: requiredFields.length + 1, // +1 for funds evidence
+        loaded: false,
+      };
+    }
+
+    let completed = requiredFields.filter((field) => {
+      const value = japanTravelerData[field];
+      if (value === null || value === undefined) {
+        return false;
+      }
+      if (typeof value === 'number') {
+        return !Number.isNaN(value);
+      }
+      return String(value).trim().length > 0;
+    }).length;
+
+    const total = requiredFields.length + 1;
+    if (Array.isArray(japanTravelerData.fundItems) && japanTravelerData.fundItems.length > 0) {
+      completed += 1;
+    }
+
+    const percent = total === 0 ? 0 : Math.min(100, Math.round((completed / total) * 100));
+
+    return {
+      percent,
+      completed,
+      total,
+      loaded: true,
+    };
+  }, [isJapanManualGuide, japanTravelerData]);
+
+  const handleJapanManualEdit = useCallback(() => {
+    navigation.navigate('JapanTravelInfo', {
+      passport,
+      destination,
+      travelInfo,
+      userId: userId || passport?.id,
+    });
+  }, [navigation, passport, destination, travelInfo, userId]);
 
   const travelerName = useMemo(() => {
     if (!passport) {
@@ -491,161 +559,341 @@ const ResultScreen = ({ navigation, route }) => {
     });
   };
 
-  const renderJapanManualGuide = () => {
-    if (!isJapanManualGuide || !japanTravelerData) {
+  const renderJapanManualHero = () => {
+    if (!isJapanManualGuide) {
       return null;
     }
 
+    const { percent, loaded, completed, total } = japanManualCompletion;
+    const statusVariant = !loaded
+      ? 'loading'
+      : percent === 100
+        ? 'complete'
+        : percent >= 80
+          ? 'almost'
+          : 'incomplete';
+
+    const themeMap = {
+      complete: {
+        color: '#0BD67B',
+        background: 'rgba(11, 214, 123, 0.12)',
+        border: 'rgba(11, 214, 123, 0.25)',
+        statusText: '日本入境准备就绪！🌸',
+        subtitle: '所有资料整理完成，随时可以在机场出示。',
+      },
+      almost: {
+        color: '#FF9500',
+        background: 'rgba(255, 149, 0, 0.12)',
+        border: 'rgba(255, 149, 0, 0.2)',
+        statusText: '再检查一下信息～',
+        subtitle: '还有少量信息待确认，完成后更安心出行。',
+      },
+      incomplete: {
+        color: colors.primary,
+        background: 'rgba(10, 132, 255, 0.12)',
+        border: 'rgba(10, 132, 255, 0.2)',
+        statusText: '继续完善资料吧！',
+        subtitle: '完成所有资料即可生成完整的日本入境包。',
+      },
+      loading: {
+        color: colors.textSecondary,
+        background: 'rgba(0, 0, 0, 0.04)',
+        border: 'rgba(0, 0, 0, 0.08)',
+        statusText: '正在加载您的资料…',
+        subtitle: '请稍候，我们正在整理旅客信息。',
+      },
+    };
+
+    const theme = themeMap[statusVariant];
+    const progressWidth = loaded ? `${percent}%` : '0%';
+
     return (
-      <View style={styles.japanManualGuideCard}>
-        <View style={styles.japanManualGuideHeader}>
-          <Text style={styles.japanManualGuideIcon}>📋</Text>
-          <View style={styles.japanManualGuideHeaderText}>
-            <Text style={styles.japanManualGuideTitle}>日本入境卡填写指南</Text>
-            <Text style={styles.japanManualGuideSubtitle}>请参考以下信息手动填写纸质入境卡</Text>
-          </View>
+      <View style={styles.japanHeroContainer}>
+        <View style={styles.japanHeroHeader}>
+          <Text style={styles.japanHeroTitle}>
+            {t('japan.result.manualEntry.heroTitle', { defaultValue: '我的日本之旅准备好了吗？🌸' })}
+          </Text>
+          <Text style={styles.japanHeroIntro}>
+            {t('japan.result.manualEntry.heroSubtitle', {
+              defaultValue: '看看你准备得怎么样，一起迎接日本冒险！',
+            })}
+          </Text>
         </View>
 
-        {/* Passport Information Section */}
-        <View style={styles.japanInfoSection}>
-          <Text style={styles.japanSectionTitle}>护照信息 Passport Information</Text>
-          <View style={styles.japanInfoGrid}>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>姓名 Full Name</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.fullName}</Text>
+        <View
+          style={[
+            styles.japanHeroCard,
+            { backgroundColor: theme.background, borderColor: theme.border },
+          ]}
+        >
+          <View style={styles.japanHeroProgressSection}>
+            <Text style={[styles.japanHeroPercent, { color: theme.color }]}>
+              {loaded ? `${percent}%` : '--'}
+            </Text>
+            <Text style={styles.japanHeroPercentLabel}>准备进度</Text>
+            <View style={styles.japanHeroProgressBar}>
+              <View
+                style={[
+                  styles.japanHeroProgressFill,
+                  { width: progressWidth, backgroundColor: theme.color },
+                ]}
+              />
             </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>姓 Family Name</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.familyName}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>名 Given Name</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.givenName}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>护照号 Passport No.</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.passportNo}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>国籍 Nationality</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.nationality}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>出生日期 Date of Birth</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.dateOfBirth}</Text>
-            </View>
-            {japanTravelerData.gender && (
-              <View style={styles.japanInfoRow}>
-                <Text style={styles.japanInfoLabel}>性别 Gender</Text>
-                <Text style={styles.japanInfoValue}>{japanTravelerData.gender}</Text>
-              </View>
+            <Text style={[styles.japanHeroStatus, { color: theme.color }]}>
+              {t('japan.result.manualEntry.statusText', {
+                status: theme.statusText,
+                defaultValue: theme.statusText,
+              })}
+            </Text>
+            <Text style={styles.japanHeroSubtitle}>
+              {t('japan.result.manualEntry.statusSubtitle', {
+                subtitle: theme.subtitle,
+                defaultValue: theme.subtitle,
+              })}
+            </Text>
+            {loaded && total > 0 && (
+              <Text style={styles.japanHeroMeta}>
+                {t('japan.result.manualEntry.itemsCompleted', {
+                  completed,
+                  total,
+                  defaultValue: `已完成 ${completed}/${total} 项资料`,
+                })}
+              </Text>
             )}
           </View>
         </View>
 
-        {/* Personal Information Section */}
-        <View style={styles.japanInfoSection}>
-          <Text style={styles.japanSectionTitle}>护照信息 Personal Information</Text>
-          <View style={styles.japanInfoGrid}>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>职业 Occupation</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.occupation}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>居住城市 City of Residence</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.cityOfResidence}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>居住国家 Country of Residence</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.residentCountry}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>联系电话 Phone</Text>
-              <Text style={styles.japanInfoValue}>+{japanTravelerData.phoneCode} {japanTravelerData.phoneNumber}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>电子邮箱 Email</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.email}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Travel Information Section */}
-        <View style={styles.japanInfoSection}>
-          <Text style={styles.japanSectionTitle}>旅行信息 Travel Information</Text>
-          <View style={styles.japanInfoGrid}>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>旅行目的 Purpose of Visit</Text>
-              <Text style={styles.japanInfoValue}>
-                {japanTravelerData.travelPurpose === 'Other' && japanTravelerData.customTravelPurpose
-                  ? japanTravelerData.customTravelPurpose
-                  : japanTravelerData.travelPurpose}
+        <View style={styles.japanHeroActions}>
+          <View
+            style={[
+              styles.japanHeroActionWrapper,
+              !features.showShare && styles.japanHeroActionWrapperLast,
+            ]}
+          >
+            <TouchableOpacity
+              style={[styles.japanHeroActionButton, styles.japanHeroActionPrimary]}
+              onPress={handleJapanManualEdit}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.japanHeroActionIcon}>✏️</Text>
+              <Text style={styles.japanHeroActionLabel}>
+                {t('japan.result.manualEntry.editButton', { defaultValue: '再改改' })}
               </Text>
+            </TouchableOpacity>
+          </View>
+          {features.showShare && (
+            <View style={[styles.japanHeroActionWrapper, styles.japanHeroActionWrapperLast]}>
+              <TouchableOpacity
+                style={[styles.japanHeroActionButton, styles.japanHeroActionSecondary]}
+                onPress={handleShare}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.japanHeroActionIcon, styles.japanHeroActionSecondaryIcon]}>👥</Text>
+                <Text style={[styles.japanHeroActionLabel, styles.japanHeroActionSecondaryLabel]}>
+                  {t('japan.result.manualEntry.shareButton', { defaultValue: '找亲友帮忙修改' })}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>航班号 Flight Number</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.arrivalFlightNumber}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>到达日期 Arrival Date</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.arrivalDate}</Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>停留天数 Length of Stay</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.lengthOfStay} 天</Text>
-            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderJapanManualGuide = () => {
+    if (!isJapanManualGuide) {
+      return null;
+    }
+
+    if (!japanTravelerData) {
+      return (
+        <View style={styles.japanManualLoadingCard}>
+          <Text style={styles.japanManualLoadingText}>
+            {t('japan.result.manualEntry.loading', { defaultValue: '正在加载日本入境资料…' })}
+          </Text>
+        </View>
+      );
+    }
+
+    const data = japanTravelerData;
+    const travelPurposeDisplay =
+      data.travelPurpose === 'Other' && data.customTravelPurpose
+        ? data.customTravelPurpose
+        : data.travelPurpose;
+
+    const fundTypeLabels = {
+      cash: '现金 Cash',
+      credit_card: '信用卡 Credit Card',
+      bank_balance: '银行存款 Bank Balance',
+      investment: '投资证明 Investment',
+      other: '其他证明 Other',
+    };
+
+    const getFundIcon = (type) => {
+      switch (type) {
+        case 'cash':
+          return '💵';
+        case 'credit_card':
+          return '💳';
+        case 'bank_balance':
+          return '🏦';
+        case 'investment':
+          return '📈';
+        default:
+          return '📂';
+      }
+    };
+
+    const renderSection = (title, icon, rows) => (
+      <View key={title} style={styles.japanManualSectionCard}>
+        <View style={styles.japanManualSectionHeader}>
+          <Text style={styles.japanManualSectionIcon}>{icon}</Text>
+          <Text style={styles.japanManualSectionTitle}>{title}</Text>
+        </View>
+        <View style={styles.japanManualSectionBody}>
+          {rows.map((row, index) => {
+            if (!row) return null;
+            const isLastRow = index === rows.length - 1;
+            const value = row.value ?? '—';
+            const isMultiline =
+              row.multiline || (typeof value === 'string' && value.length > 22);
+
+            return (
+              <View
+                key={`${title}-${row.label}-${index}`}
+                style={[
+                  styles.japanManualRow,
+                  row.fullWidth && styles.japanManualRowFull,
+                  isLastRow && styles.japanManualRowLast,
+                ]}
+              >
+                <Text style={styles.japanManualLabel}>{row.label}</Text>
+                <Text
+                  style={[
+                    styles.japanManualValue,
+                    (row.fullWidth || isMultiline) && styles.japanManualValueMultiline,
+                  ]}
+                >
+                  {value}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+
+    const phoneDisplay =
+      data.phoneCode || data.phoneNumber
+        ? `${data.phoneCode ? `+${data.phoneCode} ` : ''}${data.phoneNumber || ''}`.trim()
+        : '—';
+
+    return (
+      <View style={styles.japanManualContainer}>
+        <View style={styles.japanManualIntroCard}>
+          <Text style={styles.japanManualIntroTitle}>日本入境卡填写指南</Text>
+          <Text style={styles.japanManualIntroSubtitle}>
+            {t('japan.result.manualEntry.intro', {
+              defaultValue: '请按照下列信息填写纸质入境卡与海关申报表，可离线查看，建议截图保存。',
+            })}
+          </Text>
+          <View style={styles.japanManualBadgesRow}>
+            <Text style={styles.japanManualBadge}>✍️ 手写纸质入境卡</Text>
+            <Text style={styles.japanManualBadge}>📦 信息已备份到入境包</Text>
+            <Text style={styles.japanManualBadge}>📵 离线可用</Text>
           </View>
         </View>
 
-        {/* Accommodation Information Section */}
-        <View style={styles.japanInfoSection}>
-          <Text style={styles.japanSectionTitle}>住宿信息 Accommodation</Text>
-          <View style={styles.japanInfoGrid}>
-            <View style={[styles.japanInfoRow, styles.japanInfoRowFull]}>
-              <Text style={styles.japanInfoLabel}>住宿地址 Address</Text>
-              <Text style={[styles.japanInfoValue, styles.japanInfoValueMultiline]}>
-                {japanTravelerData.accommodationAddress}
-              </Text>
-            </View>
-            <View style={styles.japanInfoRow}>
-              <Text style={styles.japanInfoLabel}>住宿电话 Phone</Text>
-              <Text style={styles.japanInfoValue}>{japanTravelerData.accommodationPhone}</Text>
-            </View>
-          </View>
-        </View>
+        {renderSection('护照信息 Passport', '🛂', [
+          { label: '姓名 Full Name', value: data.fullName },
+          { label: '护照号 Passport No.', value: data.passportNo },
+          { label: '国籍 Nationality', value: data.nationality },
+          { label: '出生日期 Date of Birth', value: data.dateOfBirth },
+          data.gender ? { label: '性别 Gender', value: data.gender } : null,
+          data.expiryDate ? { label: '护照有效期 Passport Expiry', value: data.expiryDate } : null,
+        ].filter(Boolean))}
 
-        {/* Fund Items Section */}
-        {japanTravelerData.fundItems && japanTravelerData.fundItems.length > 0 && (
-          <View style={styles.japanInfoSection}>
-            <Text style={styles.japanSectionTitle}>资金证明 Funds</Text>
-            <View style={styles.japanInfoGrid}>
-              {japanTravelerData.fundItems.map((item, index) => (
-                <View key={index} style={styles.japanInfoRow}>
-                  <Text style={styles.japanInfoLabel}>
-                    {item.type === 'cash' ? '现金 Cash' : 
-                     item.type === 'credit_card' ? '信用卡 Credit Card' : 
-                     '银行余额 Bank Balance'}
-                  </Text>
-                  <Text style={styles.japanInfoValue}>
-                    {item.currency} {item.amount}
-                  </Text>
-                </View>
-              ))}
-              {japanTravelerData.totalFunds && Object.keys(japanTravelerData.totalFunds).length > 0 && (
-                <View style={[styles.japanInfoRow, styles.japanTotalRow]}>
-                  <Text style={styles.japanInfoLabel}>总计 Total</Text>
-                  <Text style={styles.japanInfoValue}>
-                    {Object.entries(japanTravelerData.totalFunds)
+        {renderSection('个人信息 Personal', '🙋‍♀️', [
+          { label: '职业 Occupation', value: data.occupation },
+          { label: '居住城市 City of Residence', value: data.cityOfResidence },
+          { label: '居住国家 Country of Residence', value: data.residentCountry },
+          { label: '联系电话 Phone', value: phoneDisplay },
+          { label: '电子邮箱 Email', value: data.email },
+        ])}
+
+        {renderSection('旅行信息 Travel Details', '🛫', [
+          { label: '旅行目的 Purpose of Visit', value: travelPurposeDisplay },
+          { label: '航班号 Flight Number', value: data.arrivalFlightNumber },
+          { label: '到达日期 Arrival Date', value: data.arrivalDate },
+          {
+            label: '停留天数 Length of Stay',
+            value: data.lengthOfStay ? `${data.lengthOfStay} 天` : '—',
+          },
+        ])}
+
+        {renderSection('住宿与联系 Accommodation', '🏨', [
+          {
+            label: '住宿地址 Address',
+            value: data.accommodationAddress,
+            fullWidth: true,
+            multiline: true,
+          },
+          { label: '住宿电话 Phone', value: data.accommodationPhone },
+        ])}
+
+        <View style={styles.japanManualSectionCard}>
+          <View style={styles.japanManualSectionHeader}>
+            <Text style={styles.japanManualSectionIcon}>💰</Text>
+            <Text style={styles.japanManualSectionTitle}>资金证明 Funds & Assets</Text>
+          </View>
+          <View style={styles.japanManualSectionBody}>
+            {Array.isArray(data.fundItems) && data.fundItems.length > 0 ? (
+              <View style={styles.japanManualFundsList}>
+                {data.fundItems.map((item, index) => {
+                  const label = fundTypeLabels[item.type] || '资金证明';
+                  const isLast = index === data.fundItems.length - 1;
+
+                  return (
+                    <View
+                      key={`${item.id || index}`}
+                      style={[
+                        styles.japanManualFundItem,
+                        isLast && styles.japanManualFundItemLast,
+                      ]}
+                    >
+                      <Text style={styles.japanManualFundIcon}>{getFundIcon(item.type)}</Text>
+                      <View style={styles.japanManualFundTextContainer}>
+                        <Text style={styles.japanManualFundTitle}>
+                          {item.details || label}
+                        </Text>
+                        {(item.amount || item.currency) && (
+                          <Text style={styles.japanManualFundSubtitle}>
+                            {[item.currency, item.amount].filter(Boolean).join(' ')}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+                {data.totalFunds && Object.keys(data.totalFunds).length > 0 && (
+                  <Text style={styles.japanManualTotalFunds}>
+                    {Object.entries(data.totalFunds)
                       .map(([currency, amount]) => `${currency} ${amount}`)
-                      .join(' + ')}
+                      .join(' · ')}
                   </Text>
-                </View>
-              )}
-            </View>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.japanManualEmptyText}>
+                {t('japan.result.manualEntry.noFunds', {
+                  defaultValue:
+                    '尚未添加资金证明，建议准备至少一项（现金、银行卡或其他资产）。',
+                })}
+              </Text>
+            )}
           </View>
-        )}
+        </View>
 
-        {/* Interactive Guide Button */}
         <TouchableOpacity
           style={styles.japanInteractiveGuideButton}
           onPress={handleNavigateToInteractiveGuide}
@@ -661,11 +909,13 @@ const ResultScreen = ({ navigation, route }) => {
           </View>
         </TouchableOpacity>
 
-        {/* Help Text */}
         <View style={styles.japanHelpBox}>
           <Text style={styles.japanHelpIcon}>💡</Text>
           <Text style={styles.japanHelpText}>
-            请在飞机上或到达机场后，参考以上信息填写纸质入境卡。建议截图保存以便随时查看。
+            {t('japan.result.manualEntry.helpTip', {
+              defaultValue:
+                '请在飞机上或到达机场后，参考以上信息填写纸质入境卡。建议截图保存以便随时查看。',
+            })}
           </Text>
         </View>
       </View>
@@ -679,7 +929,14 @@ const ResultScreen = ({ navigation, route }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Success Header - Enhanced Design */}
+        {isJapanManualGuide ? (
+          <>
+            {renderJapanManualHero()}
+            {renderJapanManualGuide()}
+          </>
+        ) : (
+          <>
+            {/* Success Header - Enhanced Design */}
         <Animated.View style={[styles.successCard, { opacity: fadeAnimation }]}>
           <View style={styles.successGradient}>
             <View style={styles.successIconContainer}>
@@ -717,11 +974,7 @@ const ResultScreen = ({ navigation, route }) => {
             </View>
           </View>
         </Animated.View>
-
-        {/* Japan Manual Entry Guide */}
-        {renderJapanManualGuide()}
-
-        {isHistoryItem && !isJapanManualGuide && (
+        {isHistoryItem && (
           <TouchableOpacity
             style={styles.historyPrimaryCta}
             onPress={handleStartArrivalFlow}
@@ -738,7 +991,7 @@ const ResultScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         )}
 
-        {features.digitalInfo && !isJapanManualGuide && (
+        {features.digitalInfo && (
           <View style={styles.digitalInfoCard}>
             <View style={styles.digitalInfoHeader}>
               <Text style={styles.digitalInfoIcon}>📱</Text>
@@ -896,7 +1149,6 @@ const ResultScreen = ({ navigation, route }) => {
           </View>
         )}
 
-        {!isJapanManualGuide && (
         <View style={styles.entryPackCard}>
           <View style={styles.entryPackHeader}>
             <Text style={styles.entryPackIcon}>🧳</Text>
@@ -987,9 +1239,8 @@ const ResultScreen = ({ navigation, route }) => {
 
           <Text style={styles.entryPackTimestamp}>{t('result.entryPack.lastUpdated', { time: formattedGeneratedAt })}</Text>
         </View>
-        )}
 
-        {isHistoryItem && !isJapanManualGuide && (
+        {isHistoryItem && (
           <View style={styles.actionButtonsRow}>
             <TouchableOpacity
               style={styles.actionButton}
@@ -1033,6 +1284,8 @@ const ResultScreen = ({ navigation, route }) => {
           )}
 
         </View>
+          </>
+        )}
 
         {/* Privacy Notice */}
         <View style={styles.privacyBox}>
@@ -1909,104 +2162,291 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     flex: 1,
   },
-  // Japan Manual Guide Styles
-  japanManualGuideCard: {
-    backgroundColor: colors.white,
-    borderRadius: 18,
+  // Japan Manual Hero Styles
+  japanHeroContainer: {
     marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
+  },
+  japanHeroHeader: {
     marginBottom: spacing.md,
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  japanHeroTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  japanHeroIntro: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginTop: spacing.xs,
+  },
+  japanHeroCard: {
+    borderRadius: 22,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.06,
-    shadowRadius: 14,
+    shadowRadius: 16,
     elevation: 3,
   },
-  japanManualGuideHeader: {
-    flexDirection: 'row',
+  japanHeroProgressSection: {
     alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 2,
-    borderBottomColor: '#E3F2FD',
-    backgroundColor: '#F5F9FF',
   },
-  japanManualGuideIcon: {
-    fontSize: 32,
-    marginRight: spacing.md,
-  },
-  japanManualGuideHeaderText: {
-    flex: 1,
-  },
-  japanManualGuideTitle: {
-    fontSize: 18,
+  japanHeroPercent: {
+    fontSize: 48,
     fontWeight: '700',
-    color: '#1565C0',
+    lineHeight: 52,
   },
-  japanManualGuideSubtitle: {
+  japanHeroPercentLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 2,
+    marginTop: spacing.xs,
   },
-  japanInfoSection: {
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  japanHeroProgressBar: {
+    width: '100%',
+    height: 10,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
-  japanSectionTitle: {
-    fontSize: 16,
+  japanHeroProgressFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  japanHeroStatus: {
+    fontSize: 18,
     fontWeight: '700',
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  japanHeroSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginTop: spacing.xs,
+  },
+  japanHeroMeta: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  japanHeroActions: {
+    flexDirection: 'row',
+    marginTop: spacing.lg,
+  },
+  japanHeroActionWrapper: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  japanHeroActionWrapperLast: {
+    marginRight: 0,
+  },
+  japanHeroActionButton: {
+    borderRadius: 16,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  japanHeroActionPrimary: {},
+  japanHeroActionSecondary: {
+    backgroundColor: '#F4F8FF',
+    borderColor: 'rgba(21, 101, 192, 0.2)',
+  },
+  japanHeroActionIcon: {
+    fontSize: 20,
+  },
+  japanHeroActionLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: spacing.xs,
+  },
+  japanHeroActionSecondaryIcon: {
     color: '#1565C0',
+  },
+  japanHeroActionSecondaryLabel: {
+    color: '#1565C0',
+  },
+
+  // Japan Manual Guide Styles
+  japanManualLoadingCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+    borderRadius: 16,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  japanManualLoadingText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  japanManualContainer: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  japanManualIntroCard: {
+    backgroundColor: 'rgba(21, 101, 192, 0.12)',
+    borderRadius: 18,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(21, 101, 192, 0.2)',
     marginBottom: spacing.md,
-    paddingBottom: spacing.xs,
-    borderBottomWidth: 2,
-    borderBottomColor: '#E3F2FD',
   },
-  japanInfoGrid: {
-    gap: spacing.sm,
+  japanManualIntroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0D47A1',
   },
-  japanInfoRow: {
+  japanManualIntroSubtitle: {
+    fontSize: 14,
+    color: '#1565C0',
+    lineHeight: 20,
+    marginTop: spacing.xs,
+  },
+  japanManualBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: spacing.md,
+  },
+  japanManualBadge: {
+    backgroundColor: 'rgba(21, 101, 192, 0.18)',
+    color: '#0D47A1',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    fontSize: 12,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  japanManualSectionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    marginBottom: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  japanManualSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  japanManualSectionIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  japanManualSectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  japanManualSectionBody: {},
+  japanManualRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingVertical: spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
   },
-  japanInfoRowFull: {
+  japanManualRowFull: {
     flexDirection: 'column',
     alignItems: 'flex-start',
   },
-  japanInfoLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    flex: 1,
-    lineHeight: 20,
+  japanManualRowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
   },
-  japanInfoValue: {
-    fontSize: 15,
+  japanManualLabel: {
+    flex: 0.9,
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  japanManualValue: {
+    flex: 1,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.text,
-    flex: 1,
     textAlign: 'right',
     lineHeight: 20,
   },
-  japanInfoValueMultiline: {
+  japanManualValueMultiline: {
     textAlign: 'left',
     marginTop: spacing.xs,
   },
-  japanTotalRow: {
+  japanManualFundsList: {
+    marginTop: spacing.xs,
+  },
+  japanManualFundItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+  },
+  japanManualFundItemLast: {
+    borderBottomWidth: 0,
+  },
+  japanManualFundIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+  },
+  japanManualFundTextContainer: {
+    flex: 1,
+  },
+  japanManualFundTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  japanManualFundSubtitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  japanManualTotalFunds: {
     marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    fontStyle: 'italic',
+  },
+  japanManualEmptyText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   japanInteractiveGuideButton: {
     backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    marginHorizontal: spacing.lg,
     marginTop: spacing.lg,
     marginBottom: spacing.md,
     shadowColor: colors.primary,
@@ -2047,8 +2487,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(33, 150, 243, 0.1)',
     padding: spacing.md,
-    marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
+    marginTop: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(33, 150, 243, 0.2)',

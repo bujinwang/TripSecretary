@@ -35,8 +35,15 @@ if (Platform.OS === 'android') {
 }
 
 const JapanTravelInfoScreen = ({ navigation, route }) => {
-  const { passport: rawPassport, destination } = route.params || {};
+  const {
+    passport: rawPassport,
+    destination,
+    travelInfo: initialTravelInfo,
+    userId: routeUserId,
+    context: routeContext,
+  } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
+  const resolvedUserId = routeUserId || passport?.id || rawPassport?.id || 'user_001';
   const { t, language } = useLocale();
   
   // Debug: Log current language
@@ -248,28 +255,27 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const userId = passport?.id || 'user_001';
         
-        console.log('JapanTravelInfoScreen: Loading data for userId:', userId);
+        console.log('JapanTravelInfoScreen: Loading data for userId:', resolvedUserId);
         
         // Initialize UserDataService if needed
-        await UserDataService.initialize(userId);
+        await UserDataService.initialize(resolvedUserId);
         
         // Load existing data from UserDataService
         const [passportData, personalInfo, travelInfo, fundItems] = await Promise.all([
-          UserDataService.getPassport(userId).catch(err => {
+          UserDataService.getPassport(resolvedUserId).catch(err => {
             console.warn('Failed to load passport data:', err);
             return null;
           }),
-          UserDataService.getPersonalInfo(userId).catch(err => {
+          UserDataService.getPersonalInfo(resolvedUserId).catch(err => {
             console.warn('Failed to load personal info:', err);
             return null;
           }),
-          UserDataService.getTravelInfo(userId, 'japan').catch(err => {
+          UserDataService.getTravelInfo(resolvedUserId, 'japan').catch(err => {
             console.warn('Failed to load travel info:', err);
             return null;
           }),
-          UserDataService.getFundItems(userId).catch(err => {
+          UserDataService.getFundItems(resolvedUserId).catch(err => {
             console.warn('Failed to load fund items:', err);
             return [];
           })
@@ -384,12 +390,12 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
 
     // Cleanup listener on unmount
     return unsubscribe;
-  }, [passport?.id, navigation]);
+  }, [resolvedUserId, navigation]);
 
   // Save data to UserDataService
   const saveDataToSecureStorage = async () => {
     try {
-      const userId = passport?.id || 'user_001';
+      const userId = resolvedUserId;
       console.log('=== SAVING DATA TO SECURE STORAGE (JAPAN) ===');
       console.log('userId:', userId);
       console.log('Passport data:', { passportNo, fullName, nationality, dob, expiryDate });
@@ -481,6 +487,49 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   };
 
   // Handle continue button press
+  const navigateBackToPreviousScreen = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    const fallbackParams = {
+      userId: resolvedUserId,
+      destination: destination || { id: 'jp' },
+    };
+
+    if (passport) {
+      fallbackParams.passport = passport;
+    } else if (rawPassport) {
+      fallbackParams.passport = rawPassport;
+    }
+
+    if (initialTravelInfo) {
+      fallbackParams.travelInfo = initialTravelInfo;
+    }
+
+    if (routeContext) {
+      fallbackParams.context = routeContext;
+    }
+
+    navigation.navigate('Result', fallbackParams);
+  };
+
+  const handleGoBack = async () => {
+    if (isLoading) {
+      navigateBackToPreviousScreen();
+      return;
+    }
+
+    try {
+      await saveDataToSecureStorage();
+    } catch (error) {
+      console.error('Failed to save before navigating back:', error);
+    } finally {
+      navigateBackToPreviousScreen();
+    }
+  };
+
   const handleContinue = async () => {
     if (!isFormValid()) {
       Alert.alert(t('common.error'), t('japan.travelInfo.errors.completeAllFields'));
@@ -490,10 +539,10 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
     try {
       await saveDataToSecureStorage();
       
-      // Navigate to ResultScreen with Japan context
-      navigation.navigate('ResultScreen', {
-        userId: passport?.id || 'user_001',
-        destination: 'japan',
+      // Navigate to Result screen with Japan context
+      navigation.navigate('Result', {
+        userId: resolvedUserId,
+        destination: destination || { id: 'jp' },
         context: 'manual_entry_guide'
       });
     } catch (error) {
@@ -522,8 +571,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemUpdate = async (updatedItem) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'user_001';
-      const items = await UserDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(resolvedUserId);
       console.log('Refreshed fund items after update:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);
@@ -536,8 +584,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemDelete = async (fundItemId) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'user_001';
-      const items = await UserDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(resolvedUserId);
       console.log('Refreshed fund items after delete:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);
@@ -592,8 +639,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
   const handleFundItemCreate = async (newItem) => {
     try {
       // Refresh fund items list
-      const userId = passport?.id || 'user_001';
-      const items = await UserDataService.getFundItems(userId);
+      const items = await UserDataService.getFundItems(resolvedUserId);
       console.log('Refreshed fund items after create:', items);
       setFunds(items || []);
       setFundItemModalVisible(false);
@@ -619,7 +665,7 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <BackButton
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
           label={t('common.back')}
           style={styles.backButton}
         />

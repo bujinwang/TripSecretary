@@ -286,8 +286,8 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Please fill all required fields.");
       return;
     }
-    navigation.navigate('ResultScreen', {
-      destination: 'Malaysia',
+    navigation.navigate('Result', {
+      destination: destination || { id: 'my' },
     });
   };
 

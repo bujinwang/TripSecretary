@@ -52,8 +52,27 @@ class JapanTravelerContextBuilder {
       
       // Get Japan-specific travel info
       const japanTravelInfo = await UserDataService.getTravelInfo(userId, 'japan');
+      const fallbackTravelInfo = await UserDataService.getTravelInfo(userId).catch(() => null);
+
+      let travelInfoSource = {};
+      if (fallbackTravelInfo) {
+        travelInfoSource = { ...fallbackTravelInfo };
+      }
       if (japanTravelInfo) {
-        userData.travelInfo = japanTravelInfo;
+        travelInfoSource = { ...travelInfoSource, ...japanTravelInfo };
+      }
+      userData.travelInfo = travelInfoSource;
+
+      // Normalize travel info so legacy keys map into the Japan schema
+      userData.travelInfo = this.normalizeTravelInfo(userData.travelInfo || {});
+
+      // Load shared fund items (reused across destinations)
+      try {
+        const fundItems = await UserDataService.getFundItems(userId);
+        userData.fundItems = Array.isArray(fundItems) ? fundItems : [];
+      } catch (fundError) {
+        console.warn('Unable to load shared fund items:', fundError.message);
+        userData.fundItems = [];
       }
 
       console.log('Retrieved user data:', {
@@ -160,19 +179,20 @@ class JapanTravelerContextBuilder {
     if (!userData.travelInfo) {
       errors.push('Travel information is required');
     } else {
-      if (!userData.travelInfo.arrivalDate) {
+      const normalizedTravelInfo = this.normalizeTravelInfo(userData.travelInfo);
+      if (!normalizedTravelInfo.arrivalDate) {
         errors.push('Arrival date is required');
       }
-      if (!userData.travelInfo.arrivalFlightNumber) {
+      if (!normalizedTravelInfo.arrivalFlightNumber) {
         errors.push('Arrival flight number is required');
       }
-      if (!userData.travelInfo.accommodationAddress) {
+      if (!normalizedTravelInfo.accommodationAddress) {
         errors.push('Accommodation address is required');
       }
-      if (!userData.travelInfo.accommodationPhone) {
+      if (!normalizedTravelInfo.accommodationPhone) {
         errors.push('Accommodation phone is required');
       }
-      if (!userData.travelInfo.lengthOfStay) {
+      if (!normalizedTravelInfo.lengthOfStay) {
         errors.push('Length of stay is required');
       }
     }
@@ -195,6 +215,10 @@ class JapanTravelerContextBuilder {
    */
   static validateJapanPayload(payload) {
     const errors = [];
+    const normalizedPayload = {
+      ...payload,
+      ...this.normalizeTravelInfo(payload),
+    };
 
     // Required fields for Japan manual entry
     const requiredFields = [
@@ -212,28 +236,29 @@ class JapanTravelerContextBuilder {
     ];
 
     requiredFields.forEach(field => {
-      if (!payload[field] || payload[field].toString().trim().length === 0) {
+      const value = normalizedPayload[field];
+      if (!value || value.toString().trim().length === 0) {
         errors.push(`Japan field '${field}' is required but missing`);
       }
     });
 
     // Validate date formats
-    if (payload.arrivalDate && !this.isValidDate(payload.arrivalDate)) {
+    if (normalizedPayload.arrivalDate && !this.isValidDate(normalizedPayload.arrivalDate)) {
       errors.push('Invalid arrival date format');
     }
 
-    if (payload.dateOfBirth && !this.isValidDate(payload.dateOfBirth)) {
+    if (normalizedPayload.dateOfBirth && !this.isValidDate(normalizedPayload.dateOfBirth)) {
       errors.push('Invalid birth date format');
     }
 
     // Validate email format
-    if (payload.email && !this.isValidEmail(payload.email)) {
+    if (normalizedPayload.email && !this.isValidEmail(normalizedPayload.email)) {
       errors.push('Invalid email format');
     }
 
     // Validate length of stay (must be positive number)
-    if (payload.lengthOfStay) {
-      const days = parseInt(payload.lengthOfStay);
+    if (normalizedPayload.lengthOfStay) {
+      const days = parseInt(normalizedPayload.lengthOfStay);
       if (isNaN(days) || days <= 0) {
         errors.push('Length of stay must be a positive number');
       }
@@ -284,6 +309,7 @@ class JapanTravelerContextBuilder {
 
     // Parse full name into components
     const nameInfo = this.parseFullName(passport?.fullName || '');
+    const normalizedTravelInfo = this.normalizeTravelInfo(travelInfo || {});
 
     // Transform to Japan manual entry format
     const japanData = {
@@ -306,15 +332,15 @@ class JapanTravelerContextBuilder {
       email: personalInfo?.email || '',
       
       // Travel Information (Japan-specific)
-      travelPurpose: JapanFormHelper.normalizeTravelPurpose(travelInfo?.travelPurpose),
-      customTravelPurpose: travelInfo?.customTravelPurpose || '',
-      arrivalFlightNumber: travelInfo?.arrivalFlightNumber || '',
-      arrivalDate: this.formatDateForJapan(travelInfo?.arrivalDate),
-      lengthOfStay: travelInfo?.lengthOfStay || '',
+      travelPurpose: JapanFormHelper.normalizeTravelPurpose(normalizedTravelInfo.travelPurpose),
+      customTravelPurpose: normalizedTravelInfo.customTravelPurpose || '',
+      arrivalFlightNumber: normalizedTravelInfo.arrivalFlightNumber || '',
+      arrivalDate: this.formatDateForJapan(normalizedTravelInfo.arrivalDate),
+      lengthOfStay: normalizedTravelInfo.lengthOfStay || '',
       
       // Accommodation Information (Japan format)
-      accommodationAddress: travelInfo?.accommodationAddress || '',
-      accommodationPhone: travelInfo?.accommodationPhone || '',
+      accommodationAddress: normalizedTravelInfo.accommodationAddress || '',
+      accommodationPhone: normalizedTravelInfo.accommodationPhone || '',
       
       // Fund Information
       fundItems: fundItems || [],
@@ -332,6 +358,62 @@ class JapanTravelerContextBuilder {
   // ============================================================================
   // Helper Methods - Name Parsing
   // ============================================================================
+
+  /**
+   * Normalize travel info fields collected from different destinations or legacy schemas.
+   * Ensures consistent keys for Japan manual guide.
+   * @param {Object} travelInfo
+   * @returns {Object}
+   */
+  static normalizeTravelInfo(travelInfo = {}) {
+    if (!travelInfo || typeof travelInfo !== 'object') {
+      return {};
+    }
+
+    const arrivalDate =
+      travelInfo.arrivalDate ||
+      travelInfo.arrivalArrivalDate ||
+      travelInfo.arrival_date ||
+      travelInfo.entryDate ||
+      null;
+
+    const arrivalFlightNumber =
+      travelInfo.arrivalFlightNumber ||
+      travelInfo.arrivalFlightNo ||
+      travelInfo.flightNumber ||
+      travelInfo.flightNo ||
+      null;
+
+    const lengthOfStay =
+      travelInfo.lengthOfStay ||
+      travelInfo.stayDuration ||
+      travelInfo.durationOfStay ||
+      travelInfo.daysOfStay ||
+      null;
+
+    const accommodationAddress =
+      travelInfo.accommodationAddress ||
+      travelInfo.hotelAddress ||
+      travelInfo.address ||
+      travelInfo.destinationAddress ||
+      null;
+
+    const accommodationPhone =
+      travelInfo.accommodationPhone ||
+      travelInfo.contactPhone ||
+      travelInfo.hotelPhone ||
+      travelInfo.phoneNumber ||
+      null;
+
+    return {
+      ...travelInfo,
+      arrivalDate,
+      arrivalFlightNumber,
+      lengthOfStay,
+      accommodationAddress,
+      accommodationPhone,
+    };
+  }
 
   /**
    * Parse full name into family and given name components

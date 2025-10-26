@@ -1,7 +1,8 @@
 // 入境通 - Passport Name Input Component
-// Three separate fields for surname, middle name (optional), and given name
+// Provides three separate fields for surname, optional middle name, and given name.
+// Supports both fully-controlled usage (individual name parts) and a combined full name value.
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +10,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import {
+  formatPassportFullName,
+  normalizePassportNameParts,
+  parsePassportFullName,
+} from '../utils/passportNameUtils';
 
 const PassportNameInput = ({
   label,
@@ -18,8 +24,9 @@ const PassportNameInput = ({
   onSurnameChange,
   onMiddleNameChange,
   onGivenNameChange,
+  value,
+  onChangeText,
   onBlur,
-  placeholder = "请输入您的全名",
   error,
   errorMessage,
   helpText,
@@ -30,132 +37,162 @@ const PassportNameInput = ({
   const [middleNameError, setMiddleNameError] = useState('');
   const [givenNameError, setGivenNameError] = useState('');
 
+  const usesCombinedValue =
+    !onSurnameChange && !onMiddleNameChange && !onGivenNameChange && typeof onChangeText === 'function';
+
+  const parsedFromValue = useMemo(() => {
+    if (!usesCombinedValue) {
+      return { surname: '', middleName: '', givenName: '' };
+    }
+    return normalizePassportNameParts(parsePassportFullName(value || ''));
+  }, [usesCombinedValue, value]);
+
+  const [localSurname, setLocalSurname] = useState(parsedFromValue.surname);
+  const [localMiddleName, setLocalMiddleName] = useState(parsedFromValue.middleName);
+  const [localGivenName, setLocalGivenName] = useState(parsedFromValue.givenName);
+
+  useEffect(() => {
+    if (usesCombinedValue) {
+      setLocalSurname(parsedFromValue.surname);
+      setLocalMiddleName(parsedFromValue.middleName);
+      setLocalGivenName(parsedFromValue.givenName);
+    }
+  }, [parsedFromValue, usesCombinedValue]);
+
+  const currentSurname = usesCombinedValue ? localSurname : (surname || '');
+  const currentMiddleName = usesCombinedValue ? localMiddleName : (middleName || '');
+  const currentGivenName = usesCombinedValue ? localGivenName : (givenName || '');
+
+  const propagateCombinedChange = (nextSurname, nextMiddleName, nextGivenName) => {
+    if (typeof onChangeText === 'function') {
+      const formatted = formatPassportFullName({
+        surname: nextSurname,
+        middleName: nextMiddleName,
+        givenName: nextGivenName,
+      });
+      onChangeText(formatted);
+    }
+  };
+
   // Validation function to check if input contains only A-Z letters
   const validateLettersOnly = (text) => {
-    // Allow only A-Z letters (uppercase and lowercase)
     const lettersOnlyRegex = /^[A-Za-z]*$/;
     return lettersOnlyRegex.test(text);
   };
+
+  const renderNameField = ({
+    labelText,
+    value: fieldValue,
+    onChange,
+    setError,
+    errorFlag,
+    placeholderText,
+  }) => (
+    <View style={styles.inputContainer}>
+      <Text style={styles.inputLabel}>{labelText}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          error && styles.inputError,
+          errorFlag && styles.inputError,
+        ]}
+        value={fieldValue}
+        onChangeText={(text) => {
+          if (validateLettersOnly(text)) {
+            const normalized = text.toUpperCase();
+            onChange(normalized);
+            setError('');
+          } else if (text.length > 0) {
+            setError('仅限A-Z字母');
+          } else {
+            onChange(text);
+            setError('');
+          }
+        }}
+        onBlur={onBlur}
+        placeholder={placeholderText}
+        placeholderTextColor={colors.textDisabled}
+        autoCapitalize="characters"
+        autoCorrect={false}
+        autoComplete="off"
+        spellCheck={false}
+        keyboardType="ascii-capable"
+        {...rest}
+      />
+    </View>
+  );
 
   return (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
 
       <View style={styles.inputRow}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>姓</Text>
-          <TextInput
-            style={[
-              styles.input,
-              error && styles.inputError,
-              surnameError && styles.inputError,
-            ]}
-            value={surname}
-            onChangeText={(text) => {
-              if (validateLettersOnly(text)) {
-                onSurnameChange(text.toUpperCase());
-                setSurnameError('');
-              } else if (text.length > 0) {
-                setSurnameError('仅限A-Z字母');
-              } else {
-                onSurnameChange(text);
-                setSurnameError('');
-              }
-            }}
-            onBlur={onBlur}
-            placeholder="LI"
-            placeholderTextColor={colors.textDisabled}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            autoComplete="off"
-            spellCheck={false}
-            keyboardType="ascii-capable"
-            {...rest}
-          />
-        </View>
+        {renderNameField({
+          labelText: '姓',
+          value: currentSurname,
+          onChange: (text) => {
+            if (onSurnameChange) {
+              onSurnameChange(text);
+            } else {
+              setLocalSurname(text);
+              propagateCombinedChange(text, currentMiddleName, currentGivenName);
+            }
+          },
+          setError: setSurnameError,
+          errorFlag: surnameError,
+          placeholderText: 'LI',
+        })}
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>中间名（可选）</Text>
-          <TextInput
-            style={[
-              styles.input,
-              error && styles.inputError,
-              middleNameError && styles.inputError,
-            ]}
-            value={middleName}
-            onChangeText={(text) => {
-              if (validateLettersOnly(text)) {
-                onMiddleNameChange(text.toUpperCase());
-                setMiddleNameError('');
-              } else if (text.length > 0) {
-                setMiddleNameError('仅限A-Z字母');
-              } else {
-                onMiddleNameChange(text);
-                setMiddleNameError('');
-              }
-            }}
-            onBlur={onBlur}
-            placeholder="可选"
-            placeholderTextColor={colors.textDisabled}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            autoComplete="off"
-            spellCheck={false}
-            keyboardType="ascii-capable"
-            {...rest}
-          />
-        </View>
+        {renderNameField({
+          labelText: '中间名（可选）',
+          value: currentMiddleName,
+          onChange: (text) => {
+            if (onMiddleNameChange) {
+              onMiddleNameChange(text);
+            } else {
+              setLocalMiddleName(text);
+              propagateCombinedChange(currentSurname, text, currentGivenName);
+            }
+          },
+          setError: setMiddleNameError,
+          errorFlag: middleNameError,
+          placeholderText: '可选',
+        })}
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>名</Text>
-          <TextInput
-            style={[
-              styles.input,
-              error && styles.inputError,
-              givenNameError && styles.inputError,
-            ]}
-            value={givenName}
-            onChangeText={(text) => {
-              if (validateLettersOnly(text)) {
-                onGivenNameChange(text.toUpperCase());
-                setGivenNameError('');
-              } else if (text.length > 0) {
-                setGivenNameError('仅限A-Z字母');
-              } else {
-                onGivenNameChange(text);
-                setGivenNameError('');
-              }
-            }}
-            onBlur={onBlur}
-            placeholder="MAOA"
-            placeholderTextColor={colors.textDisabled}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            autoComplete="off"
-            spellCheck={false}
-            keyboardType="ascii-capable"
-            {...rest}
-          />
-        </View>
+        {renderNameField({
+          labelText: '名',
+          value: currentGivenName,
+          onChange: (text) => {
+            if (onGivenNameChange) {
+              onGivenNameChange(text);
+            } else {
+              setLocalGivenName(text);
+              propagateCombinedChange(currentSurname, currentMiddleName, text);
+            }
+          },
+          setError: setGivenNameError,
+          errorFlag: givenNameError,
+          placeholderText: 'MAOA',
+        })}
       </View>
 
-       {error && errorMessage && (
-         <Text style={styles.errorText}>{errorMessage}</Text>
-       )}
-       {surnameError && (
-         <Text style={styles.errorText}>{surnameError}</Text>
-       )}
-       {middleNameError && (
-         <Text style={styles.errorText}>{middleNameError}</Text>
-       )}
-       {givenNameError && (
-         <Text style={styles.errorText}>{givenNameError}</Text>
-       )}
-       {!helpText && (
-         <Text style={styles.helpText}>
-           请填写汉语拼音姓名（例如：LI, MAOA 或 LI, MARIE, MAOA）- 仅限A-Z字母
-         </Text>
-       )}
+      {error && errorMessage && (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      )}
+      {surnameError && (
+        <Text style={styles.errorText}>{surnameError}</Text>
+      )}
+      {middleNameError && (
+        <Text style={styles.errorText}>{middleNameError}</Text>
+      )}
+      {givenNameError && (
+        <Text style={styles.errorText}>{givenNameError}</Text>
+      )}
+      {!helpText && (
+        <Text style={styles.helpText}>
+          请填写汉语拼音姓名（例如：LI, MAOA 或 LI, MARIE, MAOA）- 仅限A-Z字母
+        </Text>
+      )}
     </View>
   );
 };

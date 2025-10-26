@@ -292,8 +292,8 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
       Alert.alert("Error", "Please fill all required fields.");
       return;
     }
-    navigation.navigate('ResultScreen', {
-      destination: 'Hong Kong',
+    navigation.navigate('Result', {
+      destination: destination || { id: 'hk' },
     });
   };
 
