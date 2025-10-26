@@ -28,6 +28,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
     mdacSubmission: entryPackData?.mdacSubmission || null,
     personalInfo: userData?.personalInfo || {},
     travel: userData?.travel || {},
+    funds: userData?.funds || entryPackData?.funds || [],
     passport: userData?.passport || passport || {},
     country: 'malaysia'
   };
@@ -55,7 +56,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
           entryPack={mockEntryPack}
           personalInfo={mockEntryPack.personalInfo}
           travelInfo={mockEntryPack.travel}
-          funds={mockEntryPack.funds}
+          funds={mockEntryPack.funds || []}
           isModal={false}
           country="malaysia"
         />

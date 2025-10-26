@@ -66,11 +66,13 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
       const personalInfoFromStore = allUserData.personalInfo || {};
+      const fundsInfo = allUserData.funds || [];
 
       const entryInfo = {
         passport: passportInfo,
         personalInfo: personalInfoFromStore,
         travel: travelInfo || {},
+        funds: fundsInfo,
         lastUpdatedAt: new Date().toISOString()
       };
 
@@ -458,6 +460,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
                     entryPackData: {
                       personalInfo: userData?.personalInfo,
                       travelInfo: userData?.travel,
+                      funds: userData?.funds || [],
                       mdacSubmission: null,
                     },
                   });

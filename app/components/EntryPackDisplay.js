@@ -536,7 +536,10 @@ const EntryPackDisplay = ({
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer
+          {country === 'malaysia'
+            ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
+            : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
+          }
         </Text>
       </View>
     </View>
