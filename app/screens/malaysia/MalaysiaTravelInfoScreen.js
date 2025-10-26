@@ -77,13 +77,16 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 };
 
 const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
-  const { passport: rawPassport, destination } = route.params || {};
+  const { passport: rawPassport, destination: rawDestination } = route.params || {};
   const { t } = useLocale();
 
   // Memoize passport to prevent infinite re-renders
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
+
+  // Memoize destination to prevent unnecessary re-renders
+  const destination = useMemo(() => rawDestination, [rawDestination?.id, rawDestination?.name]);
 
   // Memoize userId to prevent unnecessary re-renders
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
@@ -146,38 +149,11 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
   // Session state tracking
   const scrollViewRef = useRef(null);
-  const debouncedSaveRef = useRef(null);
-
-  // Initialize DebouncedSave
-  useEffect(() => {
-    debouncedSaveRef.current = new DebouncedSave(saveDataToSecureStorage, {
-      delay: 1000,
-      onSaveStart: () => {
-        setSaveStatus('saving');
-        console.log('🔄 Auto-save started...');
-      },
-      onSaveSuccess: () => {
-        setSaveStatus('saved');
-        setLastEditedAt(new Date().toISOString());
-        console.log('✅ Auto-save completed');
-        // Clear saved status after 2 seconds
-        setTimeout(() => setSaveStatus(null), 2000);
-      },
-      onSaveError: (error) => {
-        setSaveStatus('error');
-        console.error('❌ Auto-save failed:', error);
-        setTimeout(() => setSaveStatus(null), 3000);
-      },
-    });
-
-    return () => {
-      debouncedSaveRef.current?.cleanup();
-    };
-  }, []);
+  const hasMigratedRef = useRef(false);
 
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
+    if (!userData || !userInteractionTracker.isInitialized || hasMigratedRef.current) {
       return;
     }
 
@@ -220,6 +196,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
     if (Object.keys(existingDataToMigrate).length > 0) {
       userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      hasMigratedRef.current = true; // Mark migration as completed
       console.log('✅ Migration completed - existing data marked as user-modified');
     } else {
       console.log('⚠️ No existing data found to migrate');
@@ -254,15 +231,14 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           expiryDate: expiryDate
         };
 
-        const passportFieldCount = FieldStateManager.getFieldCount(
-          passportFields,
-          interactionState,
-          Object.keys(passportFields)
-        );
+        // Count fields that have values (not just user-modified)
+        const passportFilledCount = Object.values(passportFields).filter(
+          value => value !== null && value !== undefined && value !== ''
+        ).length;
 
         return {
-          filled: passportFieldCount.totalWithValues,
-          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
+          filled: passportFilledCount,
+          total: Object.keys(passportFields).length
         };
 
       case 'personal':
@@ -275,15 +251,14 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           sex: sex
         };
 
-        const personalFieldCount = FieldStateManager.getFieldCount(
-          personalFields,
-          interactionState,
-          Object.keys(personalFields)
-        );
+        // Count fields that have values (not just user-modified)
+        const personalFilledCount = Object.values(personalFields).filter(
+          value => value !== null && value !== undefined && value !== ''
+        ).length;
 
         return {
-          filled: personalFieldCount.totalWithValues,
-          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
+          filled: personalFilledCount,
+          total: Object.keys(personalFields).length
         };
 
       case 'travel':
@@ -294,15 +269,14 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           stayDuration: stayDuration
         };
 
-        const travelFieldCount = FieldStateManager.getFieldCount(
-          travelFields,
-          interactionState,
-          Object.keys(travelFields)
-        );
+        // Count fields that have values (not just user-modified)
+        const filledCount = Object.values(travelFields).filter(
+          value => value !== null && value !== undefined && value !== ''
+        ).length;
 
         return {
-          filled: travelFieldCount.totalWithValues,
-          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+          filled: filledCount,
+          total: Object.keys(travelFields).length
         };
     }
 
@@ -461,27 +435,10 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           setStayDuration(travelInfo.lengthOfStay || smartDefaults.stayDuration);
         }
 
-        // Wait for interaction tracker to initialize, then migrate data
-        const checkInteractionTrackerAndMigrate = async () => {
-          let attempts = 0;
-          const maxAttempts = 50;
-
-          const checkInterval = setInterval(() => {
-            attempts++;
-            console.log(`Checking interaction tracker initialization (attempt ${attempts}/${maxAttempts})...`);
-
-            if (userInteractionTracker.isInitialized) {
-              console.log('✅ Interaction tracker initialized, migrating data...');
-              clearInterval(checkInterval);
-              migrateExistingDataToInteractionState(userData);
-            } else if (attempts >= maxAttempts) {
-              console.warn('⚠️ Interaction tracker initialization timeout, skipping migration');
-              clearInterval(checkInterval);
-            }
-          }, 100);
-        };
-
-        await checkInteractionTrackerAndMigrate();
+        // Trigger migration (will only happen once due to hasMigratedRef check)
+        if (userInteractionTracker.isInitialized && !hasMigratedRef.current) {
+          migrateExistingDataToInteractionState(userData);
+        }
 
       } catch (error) {
         console.error('Failed to load saved data:', error);
@@ -498,13 +455,14 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [userId, passport, destination?.id, destination?.name, migrateExistingDataToInteractionState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const handleFieldChange = (fieldName, value, setter) => {
     setter(value);
     userInteractionTracker.markFieldAsUserModified(fieldName, value);
     setSaveStatus('pending');
-    debouncedSaveRef.current?.scheduleSave();
+    debouncedSaveData();
   };
 
   const saveDataToSecureStorage = async () => {
@@ -553,7 +511,66 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleContinue = () => {
+  // Create debounced save function with error handling (using singleton pattern)
+  const debouncedSaveData = DebouncedSave.debouncedSave(
+    'malaysia_travel_info',
+    async () => {
+      await saveDataToSecureStorage();
+      setLastEditedAt(new Date().toISOString());
+    },
+    1000,
+    {
+      maxRetries: 3,
+      retryDelay: 1000,
+      onError: (error, retryCount) => {
+        setSaveStatus('error');
+        console.error('❌ Auto-save failed:', error);
+        setTimeout(() => setSaveStatus(null), 3000);
+      },
+      onRetry: (error, retryCount, maxRetries) => {
+        console.log(`🔄 Retrying save (attempt ${retryCount}/${maxRetries})...`);
+      },
+    }
+  );
+
+  // Monitor save status changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentStatus = DebouncedSave.getSaveState('malaysia_travel_info');
+      if (currentStatus === 'saving') {
+        setSaveStatus('saving');
+        console.log('🔄 Auto-save started...');
+      } else if (currentStatus === 'saved') {
+        setSaveStatus('saved');
+        console.log('✅ Auto-save completed');
+        setTimeout(() => setSaveStatus(null), 2000);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Add blur listener to save data when leaving the screen
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      DebouncedSave.flushPendingSave('malaysia_travel_info');
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      try {
+        DebouncedSave.flushPendingSave('malaysia_travel_info');
+      } catch (error) {
+        console.error('Failed to save data on component unmount:', error);
+      }
+    };
+  }, []);
+
+  const handleContinue = async () => {
     if (!isFormValid()) {
       Alert.alert(
         t('malaysia.travelInfo.alerts.incompleteTitle', { defaultValue: '信息不完整' }),
@@ -563,7 +580,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     }
 
     // Save before navigating
-    debouncedSaveRef.current?.saveImmediately();
+    await DebouncedSave.flushPendingSave('malaysia_travel_info');
 
     navigation.navigate('MalaysiaEntryFlow', {
       destination: destination || { id: 'my', name: 'Malaysia' },
@@ -573,7 +590,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
   const handleGoBack = async () => {
     // Save immediately before going back
-    await debouncedSaveRef.current?.saveImmediately();
+    await DebouncedSave.flushPendingSave('malaysia_travel_info');
     navigation.goBack();
   };
 

@@ -419,7 +419,60 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
                 categories={categories}
                 onCategoryPress={handleCategoryPress}
                 onEditPress={handleEditInformation}
+                country="malaysia"
               />
+            </View>
+
+            {/* Action Cards */}
+            <View style={styles.actionCardsContainer}>
+              <Text style={styles.actionCardsTitle}>快速操作</Text>
+
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => {
+                  navigation.navigate('MalaysiaEntryGuide', {
+                    passport: passportParam,
+                    destination: route.params?.destination,
+                    completionData: userData,
+                  });
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: '#34C75915' }]}>
+                  <Text style={styles.actionIcon}>📋</Text>
+                </View>
+                <View style={styles.actionTextContainer}>
+                  <Text style={styles.actionTitle}>查看马来西亚入境指引</Text>
+                  <Text style={styles.actionSubtitle}>7步骤完整入境流程指南</Text>
+                </View>
+                <Text style={[styles.actionArrow, { color: '#34C759' }]}>›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => {
+                  navigation.navigate('MalaysiaEntryPackPreview', {
+                    userData,
+                    passport: passportParam,
+                    destination: route.params?.destination,
+                    entryPackData: {
+                      personalInfo: userData?.personalInfo,
+                      travelInfo: userData?.travel,
+                      mdacSubmission: null,
+                    },
+                  });
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: '#007AFF15' }]}>
+                  <Text style={styles.actionIcon}>📦</Text>
+                </View>
+                <View style={styles.actionTextContainer}>
+                  <Text style={styles.actionTitle}>看看我的通关包</Text>
+                  <Text style={styles.actionSubtitle}>快速查看旅途资料</Text>
+                </View>
+                <Text style={[styles.actionArrow, { color: '#007AFF' }]}>›</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Information Notice */}
@@ -508,6 +561,60 @@ const styles = StyleSheet.create({
   summaryContainer: {
     marginHorizontal: spacing.md,
     marginTop: spacing.lg,
+  },
+  actionCardsContainer: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.lg,
+  },
+  actionCardsTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  actionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  actionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  actionIcon: {
+    fontSize: 24,
+  },
+  actionTextContainer: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  actionSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  actionArrow: {
+    fontSize: 28,
+    fontWeight: '400',
+    marginLeft: spacing.sm,
   },
   noticeBox: {
     flexDirection: 'row',

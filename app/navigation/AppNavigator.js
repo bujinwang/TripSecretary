@@ -48,6 +48,7 @@ import {
   MDACWebViewScreen,
   MalaysiaTravelInfoScreen,
   MalaysiaEntryFlowScreen,
+  MalaysiaEntryPackPreviewScreen,
   // Singapore screens
   SingaporeInfoScreen,
   SingaporeRequirementsScreen,
@@ -81,6 +82,7 @@ import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
+import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 
 import { colors } from '../theme';
 
@@ -615,6 +617,20 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="MalaysiaEntryFlow"
           component={MalaysiaEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryGuide"
+          component={MalaysiaEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryPackPreview"
+          component={MalaysiaEntryPackPreviewScreen}
           options={{
             headerShown: false,
           }}

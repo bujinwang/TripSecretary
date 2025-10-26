@@ -9,17 +9,79 @@ import { thailandProvinces } from '../data/thailandProvinces';
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
+// Country-specific configurations
+const countryConfigs = {
+  thailand: {
+    entryCardName: 'TDAC',
+    entryCardTab: 'tdac',
+    entryCardTitle: 'บัตรเข้าเมือง TDAC / TDAC Entry Card',
+    personalInfoTitle: 'ข้อมูลส่วนบุคคล / Personal Information',
+    travelInfoTitle: 'ข้อมูลการเดินทาง / Travel Information',
+    fundsTitle: 'ข้อมูลเงินพกพา / Funds Information',
+    currency: 'THB',
+    currencyName: 'บาท',
+    notProvided: 'ยังไม่ได้กรอก / Not provided',
+    fallbackHotelText: 'โปรดระบุที่อยู่ที่พัก / Please provide hotel address',
+    labels: {
+      fullName: 'ชื่อเต็ม / Full Name',
+      passportNumber: 'หมายเลขหนังสือเดินทาง / Passport Number',
+      nationality: 'สัญชาติ / Nationality',
+      dateOfBirth: 'วันเกิด / Date of Birth',
+      arrivalDate: 'วันเข้าประเทศ / Arrival Date',
+      departureDate: 'วันออกจากประเทศ / Departure Date',
+      flightNumber: 'เที่ยวบิน / Flight Number',
+      stayLocation: 'สถานที่พัก / Stay Location',
+      lengthOfStay: 'ระยะเวลาพัก / Length of Stay',
+      purpose: 'วัตถุประสงค์ / Purpose of Visit',
+      totalFunds: 'เงินพกพาทั้งหมด / Total Funds',
+      fundType: 'ประเภท / Type',
+      amount: 'จำนวนเงิน / Amount'
+    },
+    dateLocales: ['th-TH', 'en-US']
+  },
+  malaysia: {
+    entryCardName: 'MDAC',
+    entryCardTab: 'mdac',
+    entryCardTitle: 'MDAC Entry Card / Kad Ketibaan Digital Malaysia',
+    personalInfoTitle: 'Personal Information / Maklumat Peribadi',
+    travelInfoTitle: 'Travel Information / Maklumat Perjalanan',
+    fundsTitle: 'Funds Information / Maklumat Kewangan',
+    currency: 'MYR',
+    currencyName: 'Ringgit',
+    notProvided: 'Not provided / Tidak diberikan',
+    fallbackHotelText: 'Please provide hotel address / Sila berikan alamat hotel',
+    labels: {
+      fullName: 'Full Name / Nama Penuh',
+      passportNumber: 'Passport Number / Nombor Pasport',
+      nationality: 'Nationality / Warganegara',
+      dateOfBirth: 'Date of Birth / Tarikh Lahir',
+      arrivalDate: 'Arrival Date / Tarikh Ketibaan',
+      departureDate: 'Departure Date / Tarikh Berlepas',
+      flightNumber: 'Flight Number / Nombor Penerbangan',
+      stayLocation: 'Stay Location / Lokasi Penginapan',
+      lengthOfStay: 'Length of Stay / Tempoh Penginapan',
+      purpose: 'Purpose of Visit / Tujuan Lawatan',
+      totalFunds: 'Total Funds / Jumlah Wang',
+      fundType: 'Type / Jenis',
+      amount: 'Amount / Jumlah'
+    },
+    dateLocales: ['en-US', 'ms-MY']
+  }
+};
+
 const EntryPackDisplay = ({
   entryPack,
   personalInfo,
   travelInfo,
   funds,
   onClose,
-  isModal = false
+  isModal = false,
+  country = 'thailand'
 }) => {
-  const [activeTab, setActiveTab] = useState('tdac');
+  const config = countryConfigs[country] || countryConfigs.thailand;
+  const [activeTab, setActiveTab] = useState(config.entryCardTab);
 
-  const fallbackHotelText = 'โปรดระบุที่อยู่ที่พัก / Please provide hotel address';
+  const fallbackHotelText = config.fallbackHotelText;
 
   const formatProvinceThaiEnglish = (value) => {
     if (!value || typeof value !== 'string') return '';
@@ -52,36 +114,40 @@ const EntryPackDisplay = ({
       const date = new Date(dateString);
       if (Number.isNaN(date.getTime())) return '';
 
-      const thaiDate = date.toLocaleDateString('th-TH', {
+      const locale1 = config.dateLocales[0];
+      const locale2 = config.dateLocales[1];
+
+      const date1 = date.toLocaleDateString(locale1, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-      const englishDate = date.toLocaleDateString('en-US', {
+      const date2 = date.toLocaleDateString(locale2, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
 
-      return `${thaiDate} / ${englishDate}`;
+      return `${date1} / ${date2}`;
     } catch (error) {
       return dateString;
     }
   };
 
-  const formatBilingualCurrency = (amount, currency = 'THB') => {
+  const formatBilingualCurrency = (amount, currencyOverride = null) => {
     if (amount === null || amount === undefined) return '';
 
+    const currency = currencyOverride || config.currency;
     const numericAmount = Number(amount);
     if (Number.isNaN(numericAmount)) {
       return `${amount} ${currency}`;
     }
 
-    const thaiFormatted = numericAmount.toLocaleString('th-TH');
-    const englishFormatted = numericAmount.toLocaleString('en-US');
-    const thaiCurrency = currency === 'THB' ? 'บาท' : currency;
+    const locale1Formatted = numericAmount.toLocaleString(config.dateLocales[0]);
+    const locale2Formatted = numericAmount.toLocaleString(config.dateLocales[1]);
+    const currencyName = config.currencyName;
 
-    return `${thaiFormatted} ${thaiCurrency} / ${englishFormatted} ${currency}`;
+    return `${locale1Formatted} ${currencyName} / ${locale2Formatted} ${currency}`;
   };
 
   const totalFunds = useMemo(() => {
@@ -136,52 +202,59 @@ const EntryPackDisplay = ({
   }, [hotelProvinceDisplay, travelInfo?.hotelAddress]);
 
   const getFundTypeLabel = (type) => {
-    switch (type) {
-      case 'cash':
-        return 'เงินสด / Cash';
-      case 'credit_card':
-        return 'บัตรเครดิต / Credit Card';
-      case 'bank_balance':
-        return 'ยอดเงินฝากธนาคาร / Bank Balance';
-      case 'investment':
-        return 'การลงทุน / Investments';
-      case 'card':
-        return 'บัตรธนาคาร / Bank Card';
-      case 'debit_card':
-        return 'บัตรเดบิต / Debit Card';
-      default:
-        return type ? `${type} / ${type}` : 'อื่น ๆ / Other';
-    }
+    const fundLabels = {
+      thailand: {
+        cash: 'เงินสด / Cash',
+        credit_card: 'บัตรเครดิต / Credit Card',
+        bank_balance: 'ยอดเงินฝากธนาคาร / Bank Balance',
+        investment: 'การลงทุน / Investments',
+        card: 'บัตรธนาคาร / Bank Card',
+        debit_card: 'บัตรเดบิต / Debit Card',
+        other: 'อื่น ๆ / Other'
+      },
+      malaysia: {
+        cash: 'Cash / Tunai',
+        credit_card: 'Credit Card / Kad Kredit',
+        bank_balance: 'Bank Balance / Baki Bank',
+        investment: 'Investments / Pelaburan',
+        card: 'Bank Card / Kad Bank',
+        debit_card: 'Debit Card / Kad Debit',
+        other: 'Other / Lain-lain'
+      }
+    };
+
+    const labels = fundLabels[country] || fundLabels.thailand;
+    return labels[type] || labels.other;
   };
 
   const renderPersonalInfo = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>👤 ข้อมูลส่วนบุคคล / Personal Information</Text>
+      <Text style={styles.sectionTitle}>👤 {config.personalInfoTitle}</Text>
 
       <View style={styles.infoGrid}>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>ชื่อเต็ม / Full Name:</Text>
+          <Text style={styles.infoLabel}>{config.labels.fullName}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.fullName || personalInfo?.fullName || 'ยังไม่ได้กรอก / Not provided'}
+            {entryPack?.passport?.fullName || personalInfo?.fullName || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>หมายเลขหนังสือเดินทาง / Passport Number:</Text>
+          <Text style={styles.infoLabel}>{config.labels.passportNumber}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.passportNumber || personalInfo?.passportNumber || 'ยังไม่ได้กรอก / Not provided'}
+            {entryPack?.passport?.passportNumber || personalInfo?.passportNumber || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>สัญชาติ / Nationality:</Text>
+          <Text style={styles.infoLabel}>{config.labels.nationality}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.nationality || personalInfo?.nationality || 'ยังไม่ได้กรอก / Not provided'}
+            {entryPack?.passport?.nationality || personalInfo?.nationality || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>วันเกิด / Date of Birth:</Text>
+          <Text style={styles.infoLabel}>{config.labels.dateOfBirth}:</Text>
           <Text style={styles.infoValue}>
             {formatBilingualDate(entryPack?.passport?.dateOfBirth || personalInfo?.dateOfBirth)}
           </Text>
@@ -192,97 +265,119 @@ const EntryPackDisplay = ({
 
   const renderTravelInfo = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>✈️ ข้อมูลการเดินทาง / Travel Information</Text>
+      <Text style={styles.sectionTitle}>✈️ {config.travelInfoTitle}</Text>
 
       <View style={styles.infoGrid}>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>วันเข้าประเทศ / Arrival Date:</Text>
+          <Text style={styles.infoLabel}>{config.labels.arrivalDate}:</Text>
           <Text style={styles.infoValue}>
             {formatBilingualDate(travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate)}
           </Text>
         </View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>จังหวัด / Province:</Text>
-          <Text style={styles.infoValue}>
-            {hotelProvinceDisplay || 'ยังไม่ได้กรอก / Not provided'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>เที่ยวบิน / Flight Number:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber || 'ยังไม่ได้กรอก / Not provided'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>วัตถุประสงค์การเดินทาง / Purpose of Visit:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ยังไม่ได้กรอก / Not provided'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>ที่อยู่ที่พัก / Hotel Address:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.hotelAddress || 'ยังไม่ได้กรอก / Not provided'}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderFundsInfo = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>💰 ข้อมูลเงินทุน / Funds Information</Text>
-
-      {funds && funds.length > 0 ? (
-        funds.map((fund, index) => (
-          <View key={index} style={styles.fundItem}>
-            <View style={styles.fundHeader}>
-              <Text style={styles.fundType}>
-                {getFundTypeLabel(fund.type)}
-              </Text>
-              <Text style={styles.fundAmount}>
-                {formatBilingualCurrency(fund.amount, fund.currency)}
-              </Text>
-            </View>
-
-            {(fund.details || fund.description) && (
-              <Text style={styles.fundDescription}>
-                {fund.details || fund.description}
-              </Text>
-            )}
-
-            {(fund.photoUri || fund.proofPhoto) && (
-              <Text style={styles.fundProof}>
-                📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded
-              </Text>
-            )}
+        {country === 'thailand' && hotelProvinceDisplay && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>จังหวัด / Province:</Text>
+            <Text style={styles.infoValue}>
+              {hotelProvinceDisplay || config.notProvided}
+            </Text>
           </View>
-        ))
-      ) : (
-        <Text style={styles.noData}>ยังไม่มีข้อมูลเงินทุน / No funds information</Text>
-      )}
+        )}
 
-      <View style={styles.fundsTotal}>
-        <Text style={styles.totalLabel}>ยอดรวม / Total:</Text>
-        <Text style={styles.totalAmount}>
-          {formatBilingualCurrency(totalFunds)}
-        </Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{config.labels.flightNumber}:</Text>
+          <Text style={styles.infoValue}>
+            {travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber || config.notProvided}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{config.labels.purpose}:</Text>
+          <Text style={styles.infoValue}>
+            {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || config.notProvided}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{config.labels.stayLocation}:</Text>
+          <Text style={styles.infoValue}>
+            {travelInfo?.hotelAddress || config.notProvided}
+          </Text>
+        </View>
+
+        {travelInfo?.lengthOfStay && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{config.labels.lengthOfStay}:</Text>
+            <Text style={styles.infoValue}>
+              {travelInfo.lengthOfStay}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
+
+  const renderFundsInfo = () => {
+    const proofPhotoText = country === 'malaysia'
+      ? '📸 Proof photo uploaded / Foto bukti dimuat naik'
+      : '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded';
+
+    const noDataText = country === 'malaysia'
+      ? 'No funds information / Tiada maklumat kewangan'
+      : 'ยังไม่มีข้อมูลเงินทุน / No funds information';
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>💰 {config.fundsTitle}</Text>
+
+        {funds && funds.length > 0 ? (
+          funds.map((fund, index) => (
+            <View key={index} style={styles.fundItem}>
+              <View style={styles.fundHeader}>
+                <Text style={styles.fundType}>
+                  {getFundTypeLabel(fund.type)}
+                </Text>
+                <Text style={styles.fundAmount}>
+                  {formatBilingualCurrency(fund.amount, fund.currency)}
+                </Text>
+              </View>
+
+              {(fund.details || fund.description) && (
+                <Text style={styles.fundDescription}>
+                  {fund.details || fund.description}
+                </Text>
+              )}
+
+              {(fund.photoUri || fund.proofPhoto) && (
+                <Text style={styles.fundProof}>
+                  {proofPhotoText}
+                </Text>
+              )}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noData}>{noDataText}</Text>
+        )}
+
+        <View style={styles.fundsTotal}>
+          <Text style={styles.totalLabel}>{config.labels.totalFunds}:</Text>
+          <Text style={styles.totalAmount}>
+            {formatBilingualCurrency(totalFunds)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   const renderTDACInfo = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>🛂 บัตรเข้าเมือง TDAC / TDAC Entry Card</Text>
+      <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
 
       {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
         <TDACInfoCard
           tdacSubmission={entryPack.tdacSubmission}
           isReadOnly={true}
+          country={country}
         />
       ) : (
         <View style={styles.tdacPlaceholder}>
@@ -290,18 +385,30 @@ const EntryPackDisplay = ({
             <Text style={styles.placeholderIconText}>📱</Text>
           </View>
           <Text style={styles.placeholderTitle}>
-            ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet
+            {country === 'malaysia'
+              ? `MDAC Not Submitted Yet / MDAC Belum Dihantar`
+              : 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet'
+            }
           </Text>
           <Text style={styles.placeholderDescription}>
-            กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival
+            {country === 'malaysia'
+              ? 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan'
+              : 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival'
+            }
           </Text>
           <View style={styles.qrPlaceholder}>
             <Text style={styles.qrPlaceholderText}>
-              จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission
+              {country === 'malaysia'
+                ? 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran'
+                : 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission'
+              }
             </Text>
           </View>
           <Text style={styles.placeholderNote}>
-            หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC
+            {country === 'malaysia'
+              ? 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen'
+              : 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC'
+            }
           </Text>
         </View>
       )}
@@ -353,6 +460,7 @@ const EntryPackDisplay = ({
       case 'funds':
         return renderFundsInfo();
       case 'tdac':
+      case 'mdac':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -361,20 +469,39 @@ const EntryPackDisplay = ({
     }
   };
 
-  const tabs = [
-    { key: 'tdac', label: 'บัตร TDAC', labelEn: 'TDAC' },
-    { key: 'personal', label: 'ข้อมูลส่วนตัว', labelEn: 'Personal' },
-    { key: 'travel', label: 'ข้อมูลการเดินทาง', labelEn: 'Travel' },
-    { key: 'funds', label: 'เงินทุน', labelEn: 'Funds' },
-    { key: 'tips', label: 'คำถาม-คำตอบ', labelEn: 'FAQs' },
-  ];
+  const tabsConfig = {
+    thailand: [
+      { key: 'tdac', label: 'บัตร TDAC', labelEn: 'TDAC' },
+      { key: 'personal', label: 'ข้อมูลส่วนตัว', labelEn: 'Personal' },
+      { key: 'travel', label: 'ข้อมูลการเดินทาง', labelEn: 'Travel' },
+      { key: 'funds', label: 'เงินทุน', labelEn: 'Funds' },
+    ],
+    malaysia: [
+      { key: 'mdac', label: 'MDAC', labelEn: 'MDAC' },
+      { key: 'personal', label: 'Personal', labelEn: 'Peribadi' },
+      { key: 'travel', label: 'Travel', labelEn: 'Perjalanan' },
+      { key: 'funds', label: 'Funds', labelEn: 'Kewangan' },
+    ]
+  };
+
+  const tabs = tabsConfig[country] || tabsConfig.thailand;
+
+  const headerTitles = {
+    thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
+    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan'
+  };
+
+  const headerSubtitles = {
+    thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
+    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen'
+  };
 
   return (
     <View style={[styles.container, isModal && styles.modalContainer]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack</Text>
-        <Text style={styles.subtitle}>ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer</Text>
+        <Text style={styles.title}>{headerTitles[country] || headerTitles.thailand}</Text>
+        <Text style={styles.subtitle}>{headerSubtitles[country] || headerSubtitles.thailand}</Text>
 
         {onClose && (
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
