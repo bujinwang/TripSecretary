@@ -1,6 +1,6 @@
 
 // 入境通 - Malaysia Travel Info Screen (马来西亚入境信息)
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,9 +21,13 @@ import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../com
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
+import DebouncedSave from '../../utils/DebouncedSave';
+import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
+import FieldStateManager from '../../utils/FieldStateManager';
 
 // Import secure data models and services
 import UserDataService from '../../services/data/UserDataService';
+
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -74,11 +78,31 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
 
 const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
+  const { t } = useLocale();
+
+  // Memoize passport to prevent infinite re-renders
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
+
+  // Memoize userId to prevent unnecessary re-renders
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
-  const { t } = useLocale();
+
+  // Smart defaults for common scenarios
+  const getSmartDefaults = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    return {
+      arrivalDate: tomorrow.toISOString().split('T')[0],
+      stayDuration: '7',
+    };
+  };
+
+  const smartDefaults = getSmartDefaults();
 
   // Data model instances
   const [passportData, setPassportData] = useState(null);
@@ -99,57 +123,267 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
-  // Travel Info State
+  // Travel Info State - with smart defaults
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalDate, setArrivalDate] = useState('');
+  const [arrivalDate, setArrivalDate] = useState(smartDefaults.arrivalDate);
   const [hotelAddress, setHotelAddress] = useState('');
-  const [stayDuration, setStayDuration] = useState('');
-
+  const [stayDuration, setStayDuration] = useState(smartDefaults.stayDuration);
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState(null);
 
+  // Auto-save state tracking
+  const [saveStatus, setSaveStatus] = useState(null); // 'pending', 'saving', 'saved', 'error', or null
+  const [lastEditedAt, setLastEditedAt] = useState(null);
+
+  // Completion tracking
+  const [completionMetrics, setCompletionMetrics] = useState(null);
+  const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
+
+  // User interaction tracking
+  const userInteractionTracker = useUserInteractionTracker('malaysia_travel_info');
+
+  // Session state tracking
+  const scrollViewRef = useRef(null);
+  const debouncedSaveRef = useRef(null);
+
+  // Initialize DebouncedSave
+  useEffect(() => {
+    debouncedSaveRef.current = new DebouncedSave(saveDataToSecureStorage, {
+      delay: 1000,
+      onSaveStart: () => {
+        setSaveStatus('saving');
+        console.log('🔄 Auto-save started...');
+      },
+      onSaveSuccess: () => {
+        setSaveStatus('saved');
+        setLastEditedAt(new Date().toISOString());
+        console.log('✅ Auto-save completed');
+        // Clear saved status after 2 seconds
+        setTimeout(() => setSaveStatus(null), 2000);
+      },
+      onSaveError: (error) => {
+        setSaveStatus('error');
+        console.error('❌ Auto-save failed:', error);
+        setTimeout(() => setSaveStatus(null), 3000);
+      },
+    });
+
+    return () => {
+      debouncedSaveRef.current?.cleanup();
+    };
+  }, []);
+
+  // Migration function to mark existing data as user-modified
+  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+    if (!userData || !userInteractionTracker.isInitialized) {
+      return;
+    }
+
+    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
+
+    const existingDataToMigrate = {};
+
+    // Migrate passport data
+    if (userData.passport) {
+      const passport = userData.passport;
+      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
+      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
+      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
+      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
+      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
+      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+    }
+
+    // Migrate personal info data
+    if (userData.personalInfo) {
+      const personalInfo = userData.personalInfo;
+      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
+      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
+      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+    }
+
+    // Migrate travel info data
+    if (userData.travelInfo) {
+      const travelInfo = userData.travelInfo;
+      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalDate = travelInfo.arrivalArrivalDate;
+      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
+      if (travelInfo.lengthOfStay) existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
+    }
+
+    console.log('Data to migrate:', existingDataToMigrate);
+    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
+
+    if (Object.keys(existingDataToMigrate).length > 0) {
+      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      console.log('✅ Migration completed - existing data marked as user-modified');
+    } else {
+      console.log('⚠️ No existing data found to migrate');
+    }
+  }, [userInteractionTracker]);
+
+  // Count filled fields for each section using FieldStateManager
   const getFieldCount = (section) => {
-    let filled = 0;
-    let total = 0;
+    // Build interaction state for FieldStateManager
+    const interactionState = {};
+    const allFieldNames = [
+      'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
+      'phoneCode', 'phoneNumber', 'email', 'occupation', 'residentCountry',
+      'arrivalFlightNumber', 'arrivalDate', 'hotelAddress', 'stayDuration'
+    ];
+
+    allFieldNames.forEach(fieldName => {
+      interactionState[fieldName] = {
+        isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
+        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+      };
+    });
 
     switch (section) {
       case 'passport':
-        const passportFields = [fullName, nationality, passportNo, dob, expiryDate];
-        total = passportFields.length;
-        filled = passportFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
-      
+        const passportFields = {
+          fullName: fullName,
+          nationality: nationality,
+          passportNo: passportNo,
+          dob: dob,
+          expiryDate: expiryDate
+        };
+
+        const passportFieldCount = FieldStateManager.getFieldCount(
+          passportFields,
+          interactionState,
+          Object.keys(passportFields)
+        );
+
+        return {
+          filled: passportFieldCount.totalWithValues,
+          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
+        };
+
       case 'personal':
-        const personalFields = [occupation, residentCountry, phoneCode, phoneNumber, email, sex];
-        total = personalFields.length;
-        filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
-        break;
-      
+        const personalFields = {
+          occupation: occupation,
+          residentCountry: residentCountry,
+          phoneCode: phoneCode,
+          phoneNumber: phoneNumber,
+          email: email,
+          sex: sex
+        };
+
+        const personalFieldCount = FieldStateManager.getFieldCount(
+          personalFields,
+          interactionState,
+          Object.keys(personalFields)
+        );
+
+        return {
+          filled: personalFieldCount.totalWithValues,
+          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
+        };
+
       case 'travel':
-        const travelFields = [
-          arrivalFlightNumber, arrivalDate,
-          hotelAddress,
-          stayDuration
-        ];
-        total = travelFields.length;
-        filled = travelFields.filter(field => {
-          if (typeof field === 'boolean') return field;
-          return field && field.toString().trim() !== '';
-        }).length;
-        break;
+        const travelFields = {
+          arrivalFlightNumber: arrivalFlightNumber,
+          arrivalDate: arrivalDate,
+          hotelAddress: hotelAddress,
+          stayDuration: stayDuration
+        };
+
+        const travelFieldCount = FieldStateManager.getFieldCount(
+          travelFields,
+          interactionState,
+          Object.keys(travelFields)
+        );
+
+        return {
+          filled: travelFieldCount.totalWithValues,
+          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+        };
     }
 
-    return { filled, total };
+    return { filled: 0, total: 0 };
   };
 
+  // Calculate completion metrics
+  const calculateCompletionMetrics = () => {
+    try {
+      const passportCount = getFieldCount('passport');
+      const personalCount = getFieldCount('personal');
+      const travelCount = getFieldCount('travel');
+
+      const passportComplete = passportCount.filled >= passportCount.total;
+      const personalComplete = personalCount.filled >= personalCount.total;
+      const travelComplete = travelCount.filled >= travelCount.total;
+
+      const completedSections = [
+        passportComplete,
+        personalComplete,
+        travelComplete,
+      ].filter(Boolean).length;
+
+      const totalSections = 3;
+      const totalPercent =
+        totalSections > 0
+          ? Math.round((completedSections / totalSections) * 100)
+          : 0;
+
+      const summary = {
+        totalPercent: totalPercent,
+        metrics: {
+          passport: {
+            completed: passportCount.filled,
+            total: passportCount.total,
+            percentage:
+              passportCount.total > 0
+                ? Math.round((passportCount.filled / passportCount.total) * 100)
+                : 0,
+          },
+          personal: {
+            completed: personalCount.filled,
+            total: personalCount.total,
+            percentage:
+              personalCount.total > 0
+                ? Math.round((personalCount.filled / personalCount.total) * 100)
+                : 0,
+          },
+          travel: {
+            completed: travelCount.filled,
+            total: travelCount.total,
+            percentage:
+              travelCount.total > 0
+                ? Math.round((travelCount.filled / travelCount.total) * 100)
+                : 0,
+          },
+        },
+        isReady: totalPercent === 100,
+      };
+
+      setCompletionMetrics(summary.metrics);
+      setTotalCompletionPercent(summary.totalPercent);
+
+      console.log('=== COMPLETION METRICS RECALCULATED ===');
+      console.log('Total completion:', summary.totalPercent + '%');
+      console.log('Metrics:', summary.metrics);
+
+      return summary;
+    } catch (error) {
+      console.error('Failed to calculate completion metrics:', error);
+      return { totalPercent: 0, metrics: null, isReady: false };
+    }
+  };
+
+  // Check if form is valid
   const isFormValid = () => {
     const passportCount = getFieldCount('passport');
     const personalCount = getFieldCount('personal');
     const travelCount = getFieldCount('travel');
 
-    const allFieldsFilled = 
+    const allFieldsFilled =
       passportCount.filled === passportCount.total &&
       personalCount.filled === personalCount.total &&
       travelCount.filled === travelCount.total;
@@ -159,12 +393,24 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     return allFieldsFilled && noErrors;
   };
 
+  // Recalculate completion metrics when fields change
+  useEffect(() => {
+    if (!isLoading && userInteractionTracker.isInitialized) {
+      calculateCompletionMetrics();
+    }
+  }, [
+    passportNo, fullName, nationality, dob, expiryDate, sex,
+    occupation, residentCountry, phoneCode, phoneNumber, email,
+    arrivalFlightNumber, arrivalDate, hotelAddress, stayDuration,
+    isLoading, userInteractionTracker.isInitialized
+  ]);
+
   useEffect(() => {
     const loadSavedData = async () => {
       try {
         setIsLoading(true);
         await UserDataService.initialize(userId);
-        
+
         const userData = await UserDataService.getAllUserData(userId);
 
         const passportInfo = userData?.passport;
@@ -187,14 +433,14 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
         if (personalInfo) {
           const loadedSex = passportInfo?.gender || passport?.sex || 'Male';
           setSex(loadedSex);
-          
+
           setOccupation(personalInfo.occupation || '');
           setResidentCountry(personalInfo.countryRegion || '');
           setPhoneNumber(personalInfo.phoneNumber || '');
           setEmail(personalInfo.email || '');
-          
+
           setPhoneCode(getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-          
+
           setPersonalInfoData(personalInfo);
         } else {
           setSex(passport?.sex || 'Male');
@@ -203,19 +449,42 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
         const destinationId = destination?.id || 'malaysia';
         let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-        
+
         if (!travelInfo && destination?.name) {
           travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
         }
-        
+
         if (travelInfo) {
           setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-          setArrivalDate(travelInfo.arrivalArrivalDate || '');
+          setArrivalDate(travelInfo.arrivalArrivalDate || smartDefaults.arrivalDate);
           setHotelAddress(travelInfo.hotelAddress || '');
-          setStayDuration(travelInfo.lengthOfStay || '');
+          setStayDuration(travelInfo.lengthOfStay || smartDefaults.stayDuration);
         }
-        
+
+        // Wait for interaction tracker to initialize, then migrate data
+        const checkInteractionTrackerAndMigrate = async () => {
+          let attempts = 0;
+          const maxAttempts = 50;
+
+          const checkInterval = setInterval(() => {
+            attempts++;
+            console.log(`Checking interaction tracker initialization (attempt ${attempts}/${maxAttempts})...`);
+
+            if (userInteractionTracker.isInitialized) {
+              console.log('✅ Interaction tracker initialized, migrating data...');
+              clearInterval(checkInterval);
+              migrateExistingDataToInteractionState(userData);
+            } else if (attempts >= maxAttempts) {
+              console.warn('⚠️ Interaction tracker initialization timeout, skipping migration');
+              clearInterval(checkInterval);
+            }
+          }, 100);
+        };
+
+        await checkInteractionTrackerAndMigrate();
+
       } catch (error) {
+        console.error('Failed to load saved data:', error);
         setPassportNo(passport?.passportNo || '');
         setFullName(passport?.nameEn || passport?.name || '');
         setNationality(passport?.nationality || '');
@@ -229,10 +498,13 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     };
 
     loadSavedData();
-  }, [userId, passport, destination?.id, destination?.name]);
+  }, [userId, passport, destination?.id, destination?.name, migrateExistingDataToInteractionState]);
 
-  const handleFieldBlur = async (fieldName, fieldValue) => {
-    await saveDataToSecureStorage();
+  const handleFieldChange = (fieldName, value, setter) => {
+    setter(value);
+    userInteractionTracker.markFieldAsUserModified(fieldName, value);
+    setSaveStatus('pending');
+    debouncedSaveRef.current?.scheduleSave();
   };
 
   const saveDataToSecureStorage = async () => {
@@ -271,36 +543,45 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       if (hotelAddress) travelInfoUpdates.hotelAddress = hotelAddress;
       if (stayDuration) travelInfoUpdates.lengthOfStay = stayDuration;
 
-
       if (Object.keys(travelInfoUpdates).length > 0) {
         const destinationId = destination?.id || 'malaysia';
         await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
       }
     } catch (error) {
       console.error('Failed to save data to secure storage:', error);
+      throw error;
     }
   };
 
   const handleContinue = () => {
     if (!isFormValid()) {
-      Alert.alert("Error", "Please fill all required fields.");
+      Alert.alert(
+        t('malaysia.travelInfo.alerts.incompleteTitle', { defaultValue: '信息不完整' }),
+        t('malaysia.travelInfo.alerts.incompleteMessage', { defaultValue: '请填写所有必填信息' })
+      );
       return;
     }
-    navigation.navigate('Result', {
-      destination: destination || { id: 'my' },
+
+    // Save before navigating
+    debouncedSaveRef.current?.saveImmediately();
+
+    navigation.navigate('MalaysiaEntryFlow', {
+      destination: destination || { id: 'my', name: 'Malaysia' },
+      passport: passport,
     });
   };
 
   const handleGoBack = async () => {
-    await saveDataToSecureStorage();
+    // Save immediately before going back
+    await debouncedSaveRef.current?.saveImmediately();
     navigation.goBack();
   };
 
   const renderGenderOptions = () => {
     const options = [
-      { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('thailand.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
+      { value: 'Female', label: t('malaysia.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
+      { value: 'Male', label: t('malaysia.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
+      { value: 'Undefined', label: t('malaysia.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
     ];
 
     return (
@@ -314,10 +595,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
                 styles.optionButton,
                 isActive && styles.optionButtonActive,
               ]}
-              onPress={async () => {
-                setSex(option.value);
-                await saveDataToSecureStorage();
-              }}
+              onPress={() => handleFieldChange('sex', option.value, setSex)}
             >
               <Text
                 style={[
@@ -330,6 +608,51 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           );
         })}
+      </View>
+    );
+  };
+
+  const renderProgressHeader = () => {
+    if (isLoading || !completionMetrics) {
+      return null;
+    }
+
+    const progressColor = totalCompletionPercent === 100
+      ? '#34C759'
+      : totalCompletionPercent >= 60
+        ? '#FF9500'
+        : colors.primary;
+
+    return (
+      <View style={styles.progressContainer}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressTitle}>
+            {t('malaysia.travelInfo.progress.title', { defaultValue: '完成进度' })}
+          </Text>
+          <Text style={[styles.progressPercent, { color: progressColor }]}>
+            {totalCompletionPercent}%
+          </Text>
+        </View>
+        <View style={styles.progressBarBackground}>
+          <View
+            style={[
+              styles.progressBarFill,
+              {
+                width: `${totalCompletionPercent}%`,
+                backgroundColor: progressColor
+              }
+            ]}
+          />
+        </View>
+        {saveStatus && (
+          <View style={styles.saveStatusContainer}>
+            <Text style={styles.saveStatusText}>
+              {saveStatus === 'saving' && '💾 保存中...'}
+              {saveStatus === 'saved' && '✅ 已保存'}
+              {saveStatus === 'error' && '❌ 保存失败'}
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -352,7 +675,11 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇲🇾</Text>
           <Text style={styles.title}>{t('malaysia.travelInfo.title', { defaultValue: '填写马来西亚入境信息' })}</Text>
@@ -366,16 +693,17 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           </Text>
         </View>
 
-        <CollapsibleSection 
-          title={t('malaysia.travelInfo.sections.passport', { defaultValue: '护照信息' })} 
+        {renderProgressHeader()}
+
+        <CollapsibleSection
+          title={t('malaysia.travelInfo.sections.passport', { defaultValue: '护照信息' })}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
            <PassportNameInput
              value={fullName}
-             onChangeText={setFullName}
-             onBlur={() => handleFieldBlur('fullName', fullName)}
+             onChangeText={(value) => handleFieldChange('fullName', value, setFullName)}
              helpText="请填写汉语拼音"
              error={!!errors.fullName}
              errorMessage={errors.fullName}
@@ -383,53 +711,63 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
            <NationalitySelector
              label="国籍"
              value={nationality}
-             onValueChange={(code) => {
-               setNationality(code);
-               handleFieldBlur('nationality', code);
-             }}
+             onValueChange={(code) => handleFieldChange('nationality', code, setNationality)}
              helpText="请选择您的国籍"
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
-           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" />
+           <Input
+             label="护照号"
+             value={passportNo}
+             onChangeText={(value) => handleFieldChange('passportNo', value, setPassportNo)}
+             helpText="请输入您的护照号码"
+             error={!!errors.passportNo}
+             errorMessage={errors.passportNo}
+             autoCapitalize="characters"
+           />
            <DateTimeInput
              label="出生日期"
              value={dob}
-             onChangeText={setDob}
+             onChangeText={(value) => handleFieldChange('dob', value, setDob)}
              mode="date"
              dateType="past"
              helpText="选择出生日期"
              error={!!errors.dob}
              errorMessage={errors.dob}
-             onBlur={() => handleFieldBlur('dob', dob)}
            />
            <DateTimeInput
              label="护照有效期"
              value={expiryDate}
-             onChangeText={setExpiryDate}
+             onChangeText={(value) => handleFieldChange('expiryDate', value, setExpiryDate)}
              mode="date"
              dateType="future"
              helpText="选择护照有效期"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
-             onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
            />
          </CollapsibleSection>
 
-        <CollapsibleSection 
+        <CollapsibleSection
           title={t('malaysia.travelInfo.sections.personal', { defaultValue: '个人信息' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
-           <Input label="职业" value={occupation} onChangeText={setOccupation} onBlur={() => handleFieldBlur('occupation', occupation)} helpText="请输入您的职业 (请使用英文)" error={!!errors.occupation} errorMessage={errors.occupation} autoCapitalize="words" />
+           <Input
+             label="职业"
+             value={occupation}
+             onChangeText={(value) => handleFieldChange('occupation', value, setOccupation)}
+             helpText="请输入您的职业 (请使用英文)"
+             error={!!errors.occupation}
+             errorMessage={errors.occupation}
+             autoCapitalize="words"
+           />
            <NationalitySelector
              label="居住国家"
              value={residentCountry}
              onValueChange={(code) => {
-               setResidentCountry(code);
+               handleFieldChange('residentCountry', code, setResidentCountry);
                setPhoneCode(getPhoneCode(code));
-               handleFieldBlur('residentCountry', code);
              }}
              helpText="请选择您居住的国家"
              error={!!errors.residentCountry}
@@ -439,8 +777,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
              <Input
                label="国家代码"
                value={phoneCode}
-               onChangeText={setPhoneCode}
-               onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
+               onChangeText={(value) => handleFieldChange('phoneCode', value, setPhoneCode)}
                keyboardType="phone-pad"
                maxLength={5}
                error={!!errors.phoneCode}
@@ -450,8 +787,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
              <Input
                label="电话号码"
                value={phoneNumber}
-               onChangeText={setPhoneNumber}
-               onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
+               onChangeText={(value) => handleFieldChange('phoneNumber', value, setPhoneNumber)}
                keyboardType="phone-pad"
                helpText="请输入您的电话号码"
                error={!!errors.phoneNumber}
@@ -459,57 +795,70 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
                style={styles.phoneInput}
              />
            </View>
-           <Input label="电子邮箱" value={email} onChangeText={setEmail} onBlur={() => handleFieldBlur('email', email)} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} />
+           <Input
+             label="电子邮箱"
+             value={email}
+             onChangeText={(value) => handleFieldChange('email', value, setEmail)}
+             keyboardType="email-address"
+             helpText="请输入您的电子邮箱地址"
+             error={!!errors.email}
+             errorMessage={errors.email}
+           />
            <View style={styles.fieldContainer}>
              <Text style={styles.fieldLabel}>性别</Text>
              {renderGenderOptions()}
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection 
-          title={t('malaysia.travelInfo.sections.travel', { defaultValue: 'Travel Information' })}
+        <CollapsibleSection
+          title={t('malaysia.travelInfo.sections.travel', { defaultValue: '旅行信息' })}
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
-          <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
-          <DateTimeInput 
-            label="抵达日期" 
-            value={arrivalDate} 
-            onChangeText={setArrivalDate} 
+          <Input
+            label="航班号"
+            value={arrivalFlightNumber}
+            onChangeText={(value) => handleFieldChange('arrivalFlightNumber', value, setArrivalFlightNumber)}
+            helpText="请输入您的抵达航班号"
+            error={!!errors.arrivalFlightNumber}
+            errorMessage={errors.arrivalFlightNumber}
+            autoCapitalize="characters"
+          />
+          <DateTimeInput
+            label="抵达日期"
+            value={arrivalDate}
+            onChangeText={(value) => handleFieldChange('arrivalDate', value, setArrivalDate)}
             mode="date"
             dateType="future"
             helpText="选择日期"
-            error={!!errors.arrivalDate} 
+            error={!!errors.arrivalDate}
             errorMessage={errors.arrivalDate}
-            onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
           />
-          <Input 
-            label="在马住址" 
-            value={hotelAddress} 
-            onChangeText={setHotelAddress} 
-            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-            multiline 
-            helpText="请输入详细地址" 
-            error={!!errors.hotelAddress} 
-            errorMessage={errors.hotelAddress} 
-            autoCapitalize="words" 
+          <Input
+            label="在马住址"
+            value={hotelAddress}
+            onChangeText={(value) => handleFieldChange('hotelAddress', value, setHotelAddress)}
+            multiline
+            helpText="请输入详细地址"
+            error={!!errors.hotelAddress}
+            errorMessage={errors.hotelAddress}
+            autoCapitalize="words"
           />
-          <Input 
-            label="停留天数" 
-            value={stayDuration} 
-            onChangeText={setStayDuration} 
-            onBlur={() => handleFieldBlur('stayDuration', stayDuration)} 
-            helpText="请输入停留天数" 
-            error={!!errors.stayDuration} 
-            errorMessage={errors.stayDuration} 
-            keyboardType="numeric" 
+          <Input
+            label="停留天数"
+            value={stayDuration}
+            onChangeText={(value) => handleFieldChange('stayDuration', value, setStayDuration)}
+            helpText="请输入停留天数"
+            error={!!errors.stayDuration}
+            errorMessage={errors.stayDuration}
+            keyboardType="numeric"
           />
         </CollapsibleSection>
 
         <View style={styles.buttonContainer}>
           <Button
-            title="生成入境包"
+            title={t('malaysia.travelInfo.buttons.continue', { defaultValue: '生成入境包' })}
             onPress={handleContinue}
             variant="primary"
             disabled={!isFormValid()}
@@ -568,6 +917,48 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  progressContainer: {
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  progressTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  progressPercent: {
+    ...typography.h3,
+    fontWeight: '700',
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  saveStatusContainer: {
+    marginTop: spacing.sm,
+    alignItems: 'center',
+  },
+  saveStatusText: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   sectionContainer: {
     backgroundColor: colors.white,
