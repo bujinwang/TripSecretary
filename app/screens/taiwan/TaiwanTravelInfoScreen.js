@@ -24,53 +24,15 @@ import { getPhoneCode } from '../../data/phoneCodes';
 
 // Import secure data models and services
 import UserDataService from '../../services/data/UserDataService';
+
+// Import Taiwan-specific utilities and components
+import { validateField } from '../../utils/taiwan/TaiwanValidationRules';
+import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/taiwan/TaiwanTravelComponents';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
-
-const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fieldCount }) => {
-  const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    onToggle();
-  };
-
-  const isComplete = fieldCount && fieldCount.filled === fieldCount.total;
-
-  return (
-    <View style={styles.sectionContainer}>
-      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>{title}</Text>
-          {fieldCount && (
-            <View style={[
-              styles.fieldCountBadge,
-              isComplete ? styles.fieldCountBadgeComplete : styles.fieldCountBadgeIncomplete
-            ]}>
-              <Text style={[
-                styles.fieldCountText,
-                isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
-              ]}>
-                {fieldCount.filled}/{fieldCount.total}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>扫描</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
-        </View>
-      </TouchableOpacity>
-      {isExpanded && <View style={styles.sectionContent}>{children}</View>}
-    </View>
-  );
-};
 
 const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
@@ -108,8 +70,10 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
 
 
   const [errors, setErrors] = useState({});
+  const [warnings, setWarnings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState(null);
+  const [lastEditedField, setLastEditedField] = useState(null);
 
   const getFieldCount = (section) => {
     let filled = 0;
@@ -355,6 +319,42 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   }, [userId]); // Only depend on userId, not the entire passport object
 
   const handleFieldBlur = async (fieldName, fieldValue) => {
+    setLastEditedField(fieldName);
+
+    // Perform field validation
+    const context = {
+      residentCountry,
+      arrivalDate,
+    };
+    const validation = validateField(fieldName, fieldValue, context);
+
+    if (validation.isWarning) {
+      setWarnings(prev => ({ ...prev, [fieldName]: validation.errorMessage }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    } else if (!validation.isValid) {
+      setErrors(prev => ({ ...prev, [fieldName]: validation.errorMessage }));
+      setWarnings(prev => {
+        const newWarnings = { ...prev };
+        delete newWarnings[fieldName];
+        return newWarnings;
+      });
+    } else {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+      setWarnings(prev => {
+        const newWarnings = { ...prev };
+        delete newWarnings[fieldName];
+        return newWarnings;
+      });
+    }
+
     await saveDataToSecureStorage();
   };
 
@@ -515,7 +515,22 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
-           <Input label="护照号" value={passportNo} onChangeText={setPassportNo} onBlur={() => handleFieldBlur('passportNo', passportNo)} helpText="请输入您的护照号码" error={!!errors.passportNo} errorMessage={errors.passportNo} autoCapitalize="characters" />
+           <InputWithValidation
+             label="护照号"
+             value={passportNo}
+             onChangeText={setPassportNo}
+             onBlur={() => handleFieldBlur('passportNo', passportNo)}
+             helpText="请输入您的护照号码"
+             error={!!errors.passportNo}
+             errorMessage={errors.passportNo}
+             warning={!!warnings.passportNo}
+             warningMessage={warnings.passportNo}
+             fieldName="passportNo"
+             lastEditedField={lastEditedField}
+             required
+             t={t}
+             autoCapitalize="characters"
+           />
            <DateTimeInput
              label="出生日期"
              value={dob}
@@ -546,7 +561,22 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
-           <Input label="职业" value={occupation} onChangeText={setOccupation} onBlur={() => handleFieldBlur('occupation', occupation)} helpText="请输入您的职业 (请使用英文)" error={!!errors.occupation} errorMessage={errors.occupation} autoCapitalize="words" />
+           <InputWithValidation
+             label="职业"
+             value={occupation}
+             onChangeText={setOccupation}
+             onBlur={() => handleFieldBlur('occupation', occupation)}
+             helpText="请输入您的职业 (请使用英文)"
+             error={!!errors.occupation}
+             errorMessage={errors.occupation}
+             warning={!!warnings.occupation}
+             warningMessage={warnings.occupation}
+             fieldName="occupation"
+             lastEditedField={lastEditedField}
+             required
+             t={t}
+             autoCapitalize="words"
+           />
            <NationalitySelector
              label="居住国家"
              value={residentCountry}
@@ -583,7 +613,22 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
                style={styles.phoneInput}
              />
            </View>
-           <Input label="电子邮箱" value={email} onChangeText={setEmail} onBlur={() => handleFieldBlur('email', email)} keyboardType="email-address" helpText="请输入您的电子邮箱地址" error={!!errors.email} errorMessage={errors.email} />
+           <InputWithValidation
+             label="电子邮箱"
+             value={email}
+             onChangeText={setEmail}
+             onBlur={() => handleFieldBlur('email', email)}
+             keyboardType="email-address"
+             helpText="请输入您的电子邮箱地址"
+             error={!!errors.email}
+             errorMessage={errors.email}
+             warning={!!warnings.email}
+             warningMessage={warnings.email}
+             fieldName="email"
+             lastEditedField={lastEditedField}
+             required
+             t={t}
+           />
            <View style={styles.fieldContainer}>
              <Text style={styles.fieldLabel}>性别</Text>
              {renderGenderOptions()}
@@ -596,7 +641,22 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
-          <Input label="航班号" value={arrivalFlightNumber} onChangeText={setArrivalFlightNumber} onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} helpText="请输入您的抵达航班号" error={!!errors.arrivalFlightNumber} errorMessage={errors.arrivalFlightNumber} autoCapitalize="characters" />
+          <InputWithValidation
+            label="航班号"
+            value={arrivalFlightNumber}
+            onChangeText={setArrivalFlightNumber}
+            onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
+            helpText="请输入您的抵达航班号 (例如: CI123)"
+            error={!!errors.arrivalFlightNumber}
+            errorMessage={errors.arrivalFlightNumber}
+            warning={!!warnings.arrivalFlightNumber}
+            warningMessage={warnings.arrivalFlightNumber}
+            fieldName="arrivalFlightNumber"
+            lastEditedField={lastEditedField}
+            required
+            t={t}
+            autoCapitalize="characters"
+          />
           <DateTimeInput 
             label="抵达日期" 
             value={arrivalDate} 
@@ -608,26 +668,38 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
             errorMessage={errors.arrivalDate}
             onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
           />
-          <Input 
-            label="在台住址" 
-            value={hotelAddress} 
-            onChangeText={setHotelAddress} 
-            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-            multiline 
-            helpText="请输入详细地址" 
-            error={!!errors.hotelAddress} 
-            errorMessage={errors.hotelAddress} 
-            autoCapitalize="words" 
+          <InputWithValidation
+            label="在台住址"
+            value={hotelAddress}
+            onChangeText={setHotelAddress}
+            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+            multiline
+            helpText="请输入详细地址"
+            error={!!errors.hotelAddress}
+            errorMessage={errors.hotelAddress}
+            warning={!!warnings.hotelAddress}
+            warningMessage={warnings.hotelAddress}
+            fieldName="hotelAddress"
+            lastEditedField={lastEditedField}
+            required
+            t={t}
+            autoCapitalize="words"
           />
-          <Input 
-            label="停留天数" 
-            value={stayDuration} 
-            onChangeText={setStayDuration} 
-            onBlur={() => handleFieldBlur('stayDuration', stayDuration)} 
-            helpText="请输入停留天数" 
-            error={!!errors.stayDuration} 
-            errorMessage={errors.stayDuration} 
-            keyboardType="numeric" 
+          <InputWithValidation
+            label="停留天数"
+            value={stayDuration}
+            onChangeText={setStayDuration}
+            onBlur={() => handleFieldBlur('stayDuration', stayDuration)}
+            helpText="请输入停留天数"
+            error={!!errors.stayDuration}
+            errorMessage={errors.stayDuration}
+            warning={!!warnings.stayDuration}
+            warningMessage={warnings.stayDuration}
+            fieldName="stayDuration"
+            lastEditedField={lastEditedField}
+            required
+            t={t}
+            keyboardType="numeric"
           />
         </CollapsibleSection>
 
@@ -735,85 +807,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  sectionContainer: {
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.text,
-    fontWeight: '600',
-  },
-  fieldCountBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: spacing.sm,
-  },
-  fieldCountBadgeComplete: {
-    backgroundColor: '#d4edda',
-  },
-  fieldCountBadgeIncomplete: {
-    backgroundColor: '#fff3cd',
-  },
-  fieldCountText: {
-    ...typography.caption,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  fieldCountTextComplete: {
-    color: '#155724',
-  },
-  fieldCountTextIncomplete: {
-    color: '#856404',
-  },
-  sectionIcon: {
-    ...typography.h3,
-    color: colors.textSecondary,
-    marginLeft: spacing.md,
-  },
-  sectionContent: {
-    padding: spacing.md,
-    paddingTop: 0,
-  },
   buttonContainer: {
     paddingHorizontal: spacing.md,
     marginTop: spacing.md,
-  },
-  scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  scanIcon: {
-    fontSize: 18,
-    marginRight: spacing.xs,
-  },
-  scanText: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
   },
   fieldContainer: {
     marginBottom: spacing.sm,
