@@ -94,6 +94,34 @@ const countryConfigs = {
       amount: 'Amount / 金额'
     },
     dateLocales: ['en-US', 'zh-CN']
+  },
+  taiwan: {
+    entryCardName: 'TWAC',
+    entryCardTab: 'twac',
+    entryCardTitle: '臺灣入境資料 / Taiwan Entry Information',
+    personalInfoTitle: '個人資料 / Personal Information',
+    travelInfoTitle: '旅行資料 / Travel Information',
+    fundsTitle: '資金證明 / Funds Information',
+    currency: 'TWD',
+    currencyName: '新台幣',
+    notProvided: '未提供 / Not provided',
+    fallbackHotelText: '請提供住宿地址 / Please provide accommodation address',
+    labels: {
+      fullName: '全名 / Full Name',
+      passportNumber: '護照號碼 / Passport Number',
+      nationality: '國籍 / Nationality',
+      dateOfBirth: '出生日期 / Date of Birth',
+      arrivalDate: '抵達日期 / Arrival Date',
+      departureDate: '離開日期 / Departure Date',
+      flightNumber: '航班號碼 / Flight Number',
+      stayLocation: '住宿地點 / Stay Location',
+      lengthOfStay: '停留時間 / Length of Stay',
+      purpose: '訪問目的 / Purpose of Visit',
+      totalFunds: '總資金 / Total Funds',
+      fundType: '類型 / Type',
+      amount: '金額 / Amount'
+    },
+    dateLocales: ['zh-TW', 'en-US']
   }
 };
 
@@ -255,6 +283,15 @@ const EntryPackDisplay = ({
         card: 'Bank Card / 银行卡',
         debit_card: 'Debit Card / 借记卡',
         other: 'Other / 其他'
+      },
+      taiwan: {
+        cash: '現金 / Cash',
+        credit_card: '信用卡 / Credit Card',
+        bank_balance: '銀行存款 / Bank Balance',
+        investment: '投資 / Investments',
+        card: '銀行卡 / Bank Card',
+        debit_card: '扣帳卡 / Debit Card',
+        other: '其他 / Other'
       }
     };
 
@@ -470,41 +507,69 @@ const EntryPackDisplay = ({
     );
   };
 
-  const renderImmigrationTips = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs</Text>
+  const renderImmigrationTips = () => {
+    const tipsConfig = {
+      thailand: {
+        title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'
+          },
+          {
+            q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?',
+            a: travelInfo?.lengthOfStay || '30 วัน / 30 days'
+          },
+          {
+            q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
+          }
+        ]
+      },
+      taiwan: {
+        title: '💡 臺灣入境處常見問題 / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: 您來臺灣的目的是什麼？ / What is the purpose of your visit to Taiwan?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '旅遊 / Tourism'
+          },
+          {
+            q: 'Q: 您會在臺灣停留多久？ / How long will you stay in Taiwan?',
+            a: travelInfo?.lengthOfStay || '7 天 / 7 days'
+          },
+          {
+            q: 'Q: 您會住在哪裡？ / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: 您帶了多少錢？ / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
+          }
+        ]
+      }
+    };
 
-      <View style={styles.tipsList}>
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'}
-          </Text>
-        </View>
+    const tips = tipsConfig[country] || tipsConfig.thailand;
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {travelInfo?.lengthOfStay || '30 วัน / 30 days'}
-          </Text>
-        </View>
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{tips.title}</Text>
 
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณจะพักที่ไหน? / Where will you be staying?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {stayLocationAnswer}
-          </Text>
-        </View>
-
-        <View style={styles.tipItem}>
-          <Text style={styles.tipQuestion}>Q: คุณมีเงินทุนเท่าไร? / How much money do you have?</Text>
-          <Text style={styles.tipAnswer}>
-            A: {formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)
-          </Text>
+        <View style={styles.tipsList}>
+          {tips.questions.map((tip, index) => (
+            <View key={index} style={styles.tipItem}>
+              <Text style={styles.tipQuestion}>{tip.q}</Text>
+              <Text style={styles.tipAnswer}>A: {tip.a}</Text>
+            </View>
+          ))}
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -517,6 +582,7 @@ const EntryPackDisplay = ({
       case 'tdac':
       case 'mdac':
       case 'sgac':
+      case 'twac':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -543,6 +609,12 @@ const EntryPackDisplay = ({
       { key: 'personal', label: 'Personal', labelEn: '个人' },
       { key: 'travel', label: 'Travel', labelEn: '旅行' },
       { key: 'funds', label: 'Funds', labelEn: '资金' },
+    ],
+    taiwan: [
+      { key: 'twac', label: '入境資料', labelEn: 'Entry Info' },
+      { key: 'personal', label: '個人資料', labelEn: 'Personal' },
+      { key: 'travel', label: '旅行資料', labelEn: 'Travel' },
+      { key: 'funds', label: '資金證明', labelEn: 'Funds' },
     ]
   };
 
@@ -551,13 +623,15 @@ const EntryPackDisplay = ({
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
     malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
-    singapore: '🇸🇬 Entry Pack / 入境信息包'
+    singapore: '🇸🇬 Entry Pack / 入境信息包',
+    taiwan: '🇹🇼 臺灣入境資料包 / Entry Pack'
   };
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
     malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
-    singapore: 'Important information for immigration officer / 重要入境信息'
+    singapore: 'Important information for immigration officer / 重要入境信息',
+    taiwan: '入境處重要資料 / Important information for immigration officer'
   };
 
   return (
@@ -604,6 +678,8 @@ const EntryPackDisplay = ({
             ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
             : country === 'singapore'
             ? 'Please show this entry pack to the immigration officer / 请向入境官员出示此信息包'
+            : country === 'taiwan'
+            ? '請向入境官員出示此資料包 / Please show this entry pack to the immigration officer'
             : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
           }
         </Text>
