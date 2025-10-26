@@ -56,6 +56,7 @@ import {
   SGArrivalGuideScreen,
   SGArrivalWebViewScreen,
   SingaporeTravelInfoScreen,
+  SingaporeEntryPackPreviewScreen,
   // Taiwan screens
   TaiwanInfoScreen,
   TaiwanRequirementsScreen,
@@ -83,6 +84,7 @@ import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
+import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 
@@ -672,7 +674,22 @@ const AppNavigator = React.forwardRef((props, ref) => {
             headerShown: false,
           }}
         />
-        
+        <Stack.Screen
+          name="SingaporeEntryGuide"
+          component={SingaporeEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SingaporeEntryPackPreview"
+          component={SingaporeEntryPackPreviewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+
         {/* Settings Screens */}
         <Stack.Screen
           name="NotificationSettings"
