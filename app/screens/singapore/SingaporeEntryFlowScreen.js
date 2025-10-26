@@ -653,6 +653,65 @@ const SingaporeEntryFlowScreen = ({ navigation, route }) => {
                 </View>
               </View>
             </View>
+
+            {/* Information Cards Section - Available when completion > 50% */}
+            {completionPercent > 50 && (
+              <View style={styles.infoCardsSection}>
+                <Text style={styles.sectionTitle}>
+                  新加坡入境资讯 📚
+                </Text>
+
+                <View style={styles.infoCardsContainer}>
+                  {/* Entry Guide Card */}
+                  <TouchableOpacity
+                    style={styles.infoCard}
+                    onPress={() => {
+                      navigation.navigate('SingaporeEntryGuide', {
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                        completionData: userData,
+                      });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.infoCardIcon}>📋</Text>
+                    <Text style={styles.infoCardTitle}>
+                      查看新加坡入境指引
+                    </Text>
+                    <Text style={styles.infoCardDescription}>
+                      完整6步骤入境流程，从SGAC提交到海关检查
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Entry Pack Preview Card */}
+                  <TouchableOpacity
+                    style={styles.infoCard}
+                    onPress={() => {
+                      navigation.navigate('SingaporeEntryPackPreview', {
+                        userData,
+                        passport: passportParam,
+                        destination: route.params?.destination,
+                        entryPackData: {
+                          personalInfo: userData?.personalInfo,
+                          travelInfo: userData?.travel,
+                          funds: userData?.funds,
+                          sgacSubmission: userData?.sgacSubmission || null,
+                        },
+                      });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.infoCardIcon}>📦</Text>
+                    <Text style={styles.infoCardTitle}>
+                      看看我的通关包
+                    </Text>
+                    <Text style={styles.infoCardDescription}>
+                      预览护照、SGAC二维码和资金证明
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
               </>
             )}
           </View>
@@ -890,6 +949,49 @@ const styles = StyleSheet.create({
   // Data Change Alert Styles
   dataChangeAlert: {
     marginBottom: spacing.md,
+  },
+
+  // Info Cards Section Styles
+  infoCardsSection: {
+    marginBottom: spacing.lg,
+  },
+  infoCardsContainer: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  infoCard: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  infoCardIcon: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  infoCardTitle: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  infoCardDescription: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });
 
