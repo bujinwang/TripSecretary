@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import FundItemDetailModal from '../../components/FundItemDetailModal';
 import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../components';
 
 import { colors, typography, spacing } from '../../theme';
@@ -106,6 +107,13 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
+  // Proof of Funds State
+  const [funds, setFunds] = useState([]);
+  const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
+  const [selectedFundItem, setSelectedFundItem] = useState(null);
+  const [currentFundItem, setCurrentFundItem] = useState(null);
+  const [newFundItemType, setNewFundItemType] = useState(null);
+
   // Travel Info State
   const [travelPurpose, setTravelPurpose] = useState('');
   const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
@@ -140,6 +148,12 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
         filled = personalFields.filter(field => field && field.toString().trim() !== '').length;
         break;
       
+      case 'funds':
+        // Funds section: at least 1 fund item required
+        total = 1;
+        filled = funds.length > 0 ? 1 : 0;
+        break;
+
       case 'travel':
         const travelFields = [
           travelPurpose,
@@ -166,11 +180,13 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
   const isFormValid = () => {
     const passportCount = getFieldCount('passport');
     const personalCount = getFieldCount('personal');
+    const fundsCount = getFieldCount('funds');
     const travelCount = getFieldCount('travel');
 
-    const allFieldsFilled = 
+    const allFieldsFilled =
       passportCount.filled === passportCount.total &&
       personalCount.filled === personalCount.total &&
+      fundsCount.filled === fundsCount.total &&
       travelCount.filled === travelCount.total;
 
     const noErrors = Object.keys(errors).length === 0;
@@ -240,7 +256,11 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
           setPreviousVisit(travelInfo.previousVisit || false);
           setLastVisitDate(travelInfo.lastVisitDate || '');
         }
-        
+
+        // Load fund items
+        const fundItems = await UserDataService.getFundItems(userId);
+        setFunds(fundItems || []);
+
       } catch (error) {
         setPassportNo(passport?.passportNo || '');
         setFullName(passport?.nameEn || passport?.name || '');
@@ -311,6 +331,61 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('Failed to save data to secure storage:', error);
+    }
+  };
+
+  // Fund handling functions
+  const addFund = (type) => {
+    setCurrentFundItem(null);
+    setNewFundItemType(type);
+    setFundItemModalVisible(true);
+  };
+
+  const handleFundItemPress = (fund) => {
+    setCurrentFundItem(fund);
+    setFundItemModalVisible(true);
+  };
+
+  const handleFundItemModalClose = () => {
+    setFundItemModalVisible(false);
+    setCurrentFundItem(null);
+  };
+
+  const handleFundItemUpdate = async (updatedItem) => {
+    try {
+      if (updatedItem) {
+        setSelectedFundItem(updatedItem);
+      }
+      // Reload funds
+      const fundItems = await UserDataService.getFundItems(userId);
+      setFunds(fundItems || []);
+    } catch (error) {
+      console.error('Failed to update fund item state:', error);
+    }
+  };
+
+  const handleFundItemCreate = async () => {
+    try {
+      // Reload funds
+      const fundItems = await UserDataService.getFundItems(userId);
+      setFunds(fundItems || []);
+    } catch (error) {
+      console.error('Failed to refresh fund items after creation:', error);
+    } finally {
+      handleFundItemModalClose();
+    }
+  };
+
+  const handleFundItemDelete = async (id) => {
+    try {
+      setFunds((prev) => prev.filter((fund) => fund.id !== id));
+      // Reload funds
+      const fundItems = await UserDataService.getFundItems(userId);
+      setFunds(fundItems || []);
+    } catch (error) {
+      console.error('Failed to refresh fund items after deletion:', error);
+    } finally {
+      handleFundItemModalClose();
     }
   };
 
@@ -498,6 +573,123 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
              {renderGenderOptions()}
            </View>
          </CollapsibleSection>
+
+        {/* Funds Section */}
+        <CollapsibleSection
+          title="💰 资金证明"
+          isExpanded={expandedSection === 'funds'}
+          onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
+          fieldCount={getFieldCount('funds')}
+        >
+          <View style={styles.sectionIntro}>
+            <Text style={styles.sectionIntroIcon}>💳</Text>
+            <Text style={styles.sectionIntroText}>
+              香港入境处建议旅客携带足够资金支付旅行费用，通常建议每天至少HKD 1,000。
+            </Text>
+          </View>
+          <View style={styles.fundActions}>
+            <Button title="添加现金" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
+            <Button title="添加信用卡照片" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
+            <Button title="添加银行账户余额" onPress={() => addFund('bank_balance')} variant="secondary" style={styles.fundButton} />
+          </View>
+
+          {funds.length === 0 ? (
+            <View style={styles.fundEmptyState}>
+              <Text style={styles.fundEmptyText}>
+                尚未添加资金证明，请先新建条目。
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.fundList}>
+              {funds.map((fund, index) => {
+                const isLast = index === funds.length - 1;
+                const typeKey = (fund.type || 'OTHER').toUpperCase();
+                const typeMeta = {
+                  CASH: { icon: '💵' },
+                  BANK_CARD: { icon: '💳' },
+                  CREDIT_CARD: { icon: '💳' },
+                  BANK_BALANCE: { icon: '🏦' },
+                  DOCUMENT: { icon: '📄' },
+                  INVESTMENT: { icon: '📈' },
+                  OTHER: { icon: '💰' },
+                };
+                const defaultTypeLabels = {
+                  CASH: 'Cash',
+                  BANK_CARD: 'Bank Card',
+                  CREDIT_CARD: 'Bank Card',
+                  BANK_BALANCE: 'Bank Balance',
+                  DOCUMENT: 'Supporting Document',
+                  INVESTMENT: 'Investment',
+                  OTHER: 'Funding',
+                };
+                const typeIcon = (typeMeta[typeKey] || typeMeta.OTHER).icon;
+                const typeLabel = t(`fundItem.types.${typeKey}`, {
+                  defaultValue: defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER,
+                });
+
+                const normalizeAmount = (value) => {
+                  if (value === null || value === undefined || value === '') return '';
+                  if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value.toLocaleString();
+                  }
+                  if (typeof value === 'string') {
+                    const trimmed = value.trim();
+                    if (!trimmed) return '';
+                    const parsed = Number(trimmed.replace(/,/g, ''));
+                    return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
+                  }
+                  return `${value}`;
+                };
+
+                const amountValue = normalizeAmount(fund.amount);
+                const currencyValue = fund.currency ? fund.currency.toUpperCase() : '';
+                const detailsValue = fund.details || '';
+                const notProvidedLabel = t('fundItem.detail.notProvided', { defaultValue: 'Not provided yet' });
+
+                let displayText;
+                if (typeKey === 'DOCUMENT') {
+                  displayText = detailsValue || notProvidedLabel;
+                } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
+                  const cardLabel = detailsValue || notProvidedLabel;
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
+                } else if (['CASH', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey)) {
+                  const amountLabel = amountValue || notProvidedLabel;
+                  const currencyLabel = currencyValue || notProvidedLabel;
+                  displayText = `${amountLabel} ${currencyLabel}`.trim();
+                } else {
+                  displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
+                }
+
+                if ((fund.photoUri || fund.photo) && typeKey !== 'CASH') {
+                  const photoLabel = t('fundItem.detail.photoAttached', { defaultValue: 'Photo attached' });
+                  displayText = `${displayText} • ${photoLabel}`;
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={fund.id}
+                    style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
+                    onPress={() => handleFundItemPress(fund)}
+                    accessibilityRole="button"
+                  >
+                    <View style={styles.fundListItemContent}>
+                      <Text style={styles.fundItemIcon}>{typeIcon}</Text>
+                      <View style={styles.fundItemDetails}>
+                        <Text style={styles.fundItemTitle}>{typeLabel}</Text>
+                        <Text style={styles.fundItemSubtitle} numberOfLines={2}>
+                          {displayText}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.fundListItemArrow}>›</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </CollapsibleSection>
 
         <CollapsibleSection
           title="旅行信息"
@@ -688,6 +880,18 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
           />
         </View>
       </ScrollView>
+
+      {/* Fund Item Modal */}
+      <FundItemDetailModal
+        visible={fundItemModalVisible}
+        fundItem={currentFundItem}
+        userId={userId}
+        newItemType={newFundItemType}
+        onClose={handleFundItemModalClose}
+        onUpdate={handleFundItemUpdate}
+        onCreate={handleFundItemCreate}
+        onDelete={handleFundItemDelete}
+      />
     </SafeAreaView>
   );
 };
@@ -906,6 +1110,93 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
+  },
+
+  // Funds Section Styles
+  sectionIntro: {
+    flexDirection: 'row',
+    backgroundColor: colors.primaryLight,
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  sectionIntroIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  sectionIntroText: {
+    ...typography.body2,
+    color: colors.text,
+    flex: 1,
+    lineHeight: 20,
+  },
+  fundActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  fundButton: {
+    flex: 1,
+    minWidth: '30%',
+  },
+  fundEmptyState: {
+    padding: spacing.lg,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  fundEmptyText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  fundList: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+  },
+  fundListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: colors.white,
+  },
+  fundListItemDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  fundListItemContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fundItemIcon: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  fundItemDetails: {
+    flex: 1,
+  },
+  fundItemTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  fundItemSubtitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  fundListItemArrow: {
+    fontSize: 24,
+    color: colors.textSecondary,
+    marginLeft: spacing.sm,
   },
 });
 
