@@ -69,6 +69,8 @@ import {
   // Korea screens
   KoreaInfoScreen,
   KoreaRequirementsScreen,
+  KoreaTravelInfoScreen,
+  KoreaEntryFlowScreen,
   // USA screens
   USAInfoScreen,
   USARequirementsScreen,
@@ -398,6 +400,20 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="KoreaRequirements"
           component={KoreaRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KoreaTravelInfo"
+          component={KoreaTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KoreaEntryFlow"
+          component={KoreaEntryFlowScreen}
           options={{
             headerShown: false,
           }}
