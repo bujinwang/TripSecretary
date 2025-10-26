@@ -38,16 +38,16 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>입국 정보 패키지 - 미리보기 / Entry Pack Preview</Text>
+        <Text style={styles.headerTitle}>入境信息包 - 预览 / Entry Pack Preview</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>미리보기 모드 / Preview Mode</Text>
+          <Text style={styles.previewTitle}>预览模式 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            이것은 귀하의 입국 정보 패키지 미리보기입니다. K-ETA를 신청한 후 전체 입국 정보가 포함됩니다. / This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.
+            这是您的入境信息包预览。申请K-ETA后将包含完整的入境信息。 / This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.
           </Text>
         </View>
 
@@ -72,7 +72,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              정보 계속 업데이트 ✏️ / Continue updating info
+              继续完善信息 ✏️ / Continue updating info
             </Text>
           </TouchableOpacity>
 
@@ -82,23 +82,23 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
               navigation.goBack();
               // Navigate to K-ETA application
               // TODO: Implement K-ETA application screen
-              alert('K-ETA 신청 화면이 곧 제공됩니다 / K-ETA application screen coming soon');
+              alert('K-ETA申请功能即将推出 / K-ETA application screen coming soon');
             }}
           >
             <Text style={styles.submitButtonText}>
-              K-ETA 신청하기 🇰🇷 / Apply for K-ETA
+              申请 K-ETA 🇰🇷 / Apply for K-ETA
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Info Card about K-ETA */}
         <View style={styles.ketaInfoCard}>
-          <Text style={styles.ketaInfoTitle}>📱 K-ETA 전자여행허가 정보</Text>
+          <Text style={styles.ketaInfoTitle}>📱 K-ETA 电子旅行许可信息</Text>
           <Text style={styles.ketaInfoText}>
-            • K-ETA는 도착 72시간 전에 신청해야 합니다{'\n'}
-            • 승인은 보통 24시간 이내에 완료됩니다{'\n'}
-            • 승인된 K-ETA는 2년간 유효합니다{'\n'}
-            • 신청 비용은 약 10,000 KRW입니다
+            • K-ETA必须在抵达前72小时申请{'\n'}
+            • 审批通常在24小时内完成{'\n'}
+            • 批准的K-ETA有效期为2年{'\n'}
+            • 申请费用约为10,000韩元
           </Text>
         </View>
       </ScrollView>
