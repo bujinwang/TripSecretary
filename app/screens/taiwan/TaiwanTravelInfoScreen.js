@@ -652,6 +652,37 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           </Text>
         )}
 
+        {/* Progress Overview Card */}
+        <View style={styles.progressOverviewCard}>
+          <Text style={styles.progressTitle}>准备进度 / Preparation Progress</Text>
+          <View style={styles.progressSteps}>
+            <View style={[styles.progressStep, totalCompletionPercent >= 25 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>👤</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 25 && styles.stepTextActive]}>
+                护照信息 {totalCompletionPercent >= 25 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 50 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>👤</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 50 && styles.stepTextActive]}>
+                个人信息 {totalCompletionPercent >= 50 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 75 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>✈️</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 75 && styles.stepTextActive]}>
+                旅行信息 {totalCompletionPercent >= 75 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 100 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>💰</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 100 && styles.stepTextActive]}>
+                资金证明 {totalCompletionPercent >= 100 ? '✓' : ''}
+              </Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
@@ -1238,6 +1269,52 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
     lineHeight: 20,
+  },
+  progressOverviewCard: {
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  progressSteps: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  progressStep: {
+    alignItems: 'center',
+    flex: 1,
+    opacity: 0.4,
+  },
+  progressStepActive: {
+    opacity: 1,
+  },
+  stepIcon: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
+  stepText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontSize: 11,
+  },
+  stepTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
