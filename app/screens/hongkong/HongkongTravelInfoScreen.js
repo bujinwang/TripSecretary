@@ -205,21 +205,21 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => {
 
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          const loadedSex = passportInfo?.gender || passport?.sex || 'Male';
-          setSex(loadedSex);
-          
           setOccupation(personalInfo.occupation || '');
           setResidentCountry(personalInfo.countryRegion || '');
           setPhoneNumber(personalInfo.phoneNumber || '');
           setEmail(personalInfo.email || '');
-          
+
           setPhoneCode(getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-          
+
           setPersonalInfoData(personalInfo);
         } else {
-          setSex(passport?.sex || 'Male');
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
+
+        // Gender - load from passport only (single source of truth)
+        const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || sex || 'Male';
+        setSex(loadedSex);
 
         const destinationId = destination?.id || 'hongkong';
         let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
