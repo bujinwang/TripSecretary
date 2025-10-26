@@ -47,6 +47,7 @@ import {
   MDACGuideScreen,
   MDACWebViewScreen,
   MalaysiaTravelInfoScreen,
+  MalaysiaEntryFlowScreen,
   // Singapore screens
   SingaporeInfoScreen,
   SingaporeRequirementsScreen,
@@ -591,6 +592,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="MalaysiaTravelInfo"
           component={MalaysiaTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MalaysiaEntryFlow"
+          component={MalaysiaEntryFlowScreen}
           options={{
             headerShown: false,
           }}
