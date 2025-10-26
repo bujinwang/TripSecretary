@@ -7,29 +7,28 @@
 
 /**
  * Predefined travel purpose options for Hong Kong entry
+ * Based on Hong Kong Immigration Department Form ID 1003A categories
+ * Note: As of Oct 2024, HK eliminated arrival cards, but these categories
+ * still apply for visa applications and immigration interviews
  */
 export const PREDEFINED_TRAVEL_PURPOSES = [
-  'TOURISM',
-  'BUSINESS',
-  'VISIT_FAMILY',
-  'TRANSIT',
-  'MEETING',
-  'CONVENTION',
-  'EDUCATION',
-  'MEDICAL',
-  'OTHER',
+  'TOURISM',        // Leisure Visit - sightseeing, vacation
+  'BUSINESS',       // Business Visit - meetings, presentations, contracts
+  'VISIT_FAMILY',   // Family Visit - visiting relatives in HK
+  'TRANSIT',        // Transit - passing through to another destination
+  'OTHER',          // Other purposes not covered above
 ];
 
 /**
  * Predefined accommodation type options for Hong Kong stay
+ * Simplified to match HK immigration typical requirements
  */
 export const PREDEFINED_ACCOMMODATION_TYPES = [
-  'HOTEL',
-  'SERVICED_APARTMENT',
-  'FRIEND_HOUSE',
-  'RELATIVE_HOUSE',
-  'HOSTEL',
-  'AIRBNB',
+  'HOTEL',              // Hotel or serviced apartment
+  'GUESTHOUSE',         // Guesthouse, hostel, or budget accommodation
+  'FRIEND_HOUSE',       // Staying with friends
+  'RELATIVE_HOUSE',     // Staying with family/relatives
+  'OTHER',              // Other accommodation arrangements
 ];
 
 /**
