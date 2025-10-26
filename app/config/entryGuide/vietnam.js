@@ -18,8 +18,32 @@ export const vietnamEntryGuide = {
     '注意交通拥堵，机场到市区可能需要2-3小时'
   ],
 
-  // 6步骤完整流程 (越南入境相对灵活但文件要求严格)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存越南紧急联系电话，以备不时之需',
+      descriptionZh: '保存越南紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察：113',
+        '救护车：115',
+        '旅游警察：1800-1524',
+        '中国大使馆：+84-24-3845-3866',
+        '美国大使馆：+84-24-3850-5000',
+        '韩国大使馆：+84-24-3831-5110',
+        '移民局：+84-24-3824-7795',
+        '机场服务：+84-24-3827-1515',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打'
+      ]
+    },
     {
       id: 'visa_application',
       title: '电子签证申请',
@@ -27,7 +51,7 @@ export const vietnamEntryGuide = {
       description: '申请越南电子签证或确认签证类型',
       descriptionZh: '申请越南电子签证或确认签证类型',
       category: 'pre-arrival',
-      priority: 1,
+      priority: 2,
       estimatedTime: '45分钟',
       icon: '📱',
       required: true,
@@ -50,7 +74,7 @@ export const vietnamEntryGuide = {
       description: '完成健康申报表，确认疫苗要求',
       descriptionZh: '完成健康申报表，确认疫苗要求',
       category: 'pre-flight',
-      priority: 2,
+      priority: 3,
       estimatedTime: '15分钟',
       icon: '🏥',
       required: true,
@@ -72,7 +96,7 @@ export const vietnamEntryGuide = {
       description: '关闭蜂窝网络，准备越南dong兑换',
       descriptionZh: '关闭蜂窝网络，准备越南dong兑换',
       category: 'post-landing',
-      priority: 3,
+      priority: 4,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -93,7 +117,7 @@ export const vietnamEntryGuide = {
       description: '出示护照和签证，完成入境检查',
       descriptionZh: '出示护照和签证，完成入境检查',
       category: 'immigration',
-      priority: 4,
+      priority: 5,
       estimatedTime: '20分钟',
       icon: '🛂',
       required: true,
@@ -111,7 +135,7 @@ export const vietnamEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 5,
+      priority: 6,
       estimatedTime: '20分钟',
       icon: '🧳',
       required: true,
@@ -128,7 +152,7 @@ export const vietnamEntryGuide = {
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 6,
+      priority: 7,
       estimatedTime: '15分钟',
       icon: '🔍',
       required: true,

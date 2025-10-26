@@ -18,8 +18,31 @@ export const usaEntryGuide = {
     '注意美国严苛的安检和海关检查程序'
   ],
 
-  // 6步骤完整流程 (美国入境严格但高效)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存美国紧急联系电话，以备不时之需',
+      descriptionZh: '保存美国紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察/救护车/火警：911',
+        '旅游警察：1-202-501-4444',
+        '中国大使馆：+1-202-495-2266',
+        '韩国大使馆：+1-202-939-5600',
+        '日本大使馆：+1-202-238-6700',
+        '移民局：+1-202-325-3535',
+        '机场服务：+1-800-882-8880',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打911'
+      ]
+    },
     {
       id: 'esta_application',
       title: 'ESTA电子旅行许可申请',
@@ -27,7 +50,7 @@ export const usaEntryGuide = {
       description: '抵达前72小时申请美国电子旅行许可',
       descriptionZh: '抵达前72小时申请美国电子旅行许可',
       category: 'pre-arrival',
-      priority: 1,
+      priority: 2,
       estimatedTime: '15分钟',
       icon: '📱',
       required: true,
@@ -50,7 +73,7 @@ export const usaEntryGuide = {
       description: '准备指纹和面部识别数据',
       descriptionZh: '准备指纹和面部识别数据',
       category: 'pre-flight',
-      priority: 2,
+      priority: 3,
       estimatedTime: '5分钟',
       icon: '👆',
       required: true,
@@ -68,7 +91,7 @@ export const usaEntryGuide = {
       description: '关闭蜂窝网络，准备美元兑换',
       descriptionZh: '关闭蜂窝网络，准备美元兑换',
       category: 'post-landing',
-      priority: 3,
+      priority: 4,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -89,7 +112,7 @@ export const usaEntryGuide = {
       description: '进行指纹和面部识别，提交入境卡',
       descriptionZh: '进行指纹和面部识别，提交入境卡',
       category: 'immigration',
-      priority: 4,
+      priority: 5,
       estimatedTime: '15分钟',
       icon: '🛂',
       required: true,
@@ -107,7 +130,7 @@ export const usaEntryGuide = {
       description: '认领行李并通过海关申报',
       descriptionZh: '认领行李并通过海关申报',
       category: 'baggage',
-      priority: 5,
+      priority: 6,
       estimatedTime: '20分钟',
       icon: '🧳',
       required: true,
@@ -124,7 +147,7 @@ export const usaEntryGuide = {
       description: '最终海关检查和物品验证',
       descriptionZh: '最终海关检查和物品验证',
       category: 'customs',
-      priority: 6,
+      priority: 7,
       estimatedTime: '10分钟',
       icon: '🔍',
       required: true,
