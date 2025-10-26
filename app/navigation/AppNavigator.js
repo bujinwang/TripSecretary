@@ -67,7 +67,12 @@ import {
   // Hong Kong screens
   HongKongInfoScreen,
   HongKongRequirementsScreen,
+  HDACSelectionScreen,
+  HDACGuideScreen,
+  HDACWebViewScreen,
   HongkongTravelInfoScreen,
+  HongKongEntryFlowScreen,
+  HongKongEntryPackPreviewScreen,
   // Korea screens
   KoreaInfoScreen,
   KoreaRequirementsScreen,
@@ -629,6 +634,43 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="HongkongTravelInfo"
           component={HongkongTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HDACSelection"
+          component={HDACSelectionScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="HDACGuide"
+          component={HDACGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HDACWebView"
+          component={HDACWebViewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="HongKongEntryFlow"
+          component={HongKongEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongKongEntryPackPreview"
+          component={HongKongEntryPackPreviewScreen}
           options={{
             headerShown: false,
           }}
