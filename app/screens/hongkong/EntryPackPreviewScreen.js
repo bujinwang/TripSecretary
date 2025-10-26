@@ -39,16 +39,19 @@ const HongKongEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>香港入境包 - 预览</Text>
+        <Text style={styles.headerTitle}>香港入境包 - 預覽 / Hong Kong Entry Pack - Preview</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式</Text>
+          <Text style={styles.previewTitle}>預覽模式 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            这是您的香港入境信息预览。所有信息将帮助您顺利通过香港入境检查。
+            這是您的香港入境信息預覽。所有信息將幫助您順利通過香港入境檢查。
+          </Text>
+          <Text style={styles.previewDescriptionEn}>
+            This is your Hong Kong entry information preview. All information will help you pass through Hong Kong immigration smoothly.
           </Text>
         </View>
 
@@ -74,7 +77,7 @@ const HongKongEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              继续完善信息 ✏️
+              繼續完善信息 ✏️ / Continue Editing
             </Text>
           </TouchableOpacity>
 
@@ -90,16 +93,21 @@ const HongKongEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.submitButtonText}>
-              前往入境准备 🇭🇰
+              前往入境準備 🇭🇰 / Go to Entry Preparation
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoSection}>
           <Text style={styles.infoIcon}>💡</Text>
-          <Text style={styles.infoText}>
-            提示：确保所有信息准确无误。香港入境通常比较快速，但建议提前准备好所有材料。
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.infoText}>
+              提示：確保所有信息準確無誤。香港入境通常比較快速，但建議提前準備好所有材料。
+            </Text>
+            <Text style={styles.infoTextEn}>
+              Tip: Ensure all information is accurate. Hong Kong immigration is usually quick, but it's recommended to prepare all materials in advance.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -170,6 +178,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  previewDescriptionEn: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    fontSize: 13,
+    marginTop: spacing.xs,
+  },
   actionSection: {
     margin: spacing.md,
   },
@@ -216,8 +232,14 @@ const styles = StyleSheet.create({
   infoText: {
     ...typography.body2,
     color: '#059669',
-    flex: 1,
     lineHeight: 20,
+  },
+  infoTextEn: {
+    ...typography.body2,
+    color: '#047857',
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: spacing.xs,
   },
 });
 
