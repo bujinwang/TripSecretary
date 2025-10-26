@@ -17,8 +17,31 @@ export const singaporeEntryGuide = {
     '地铁系统便捷但复杂，建议使用机场巴士或出租车'
   ],
 
-  // 6步骤完整流程 (新加坡入境相对高效)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存新加坡紧急联系电话，以备不时之需',
+      descriptionZh: '保存新加坡紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察：999',
+        '救护车：995',
+        '旅游警察：1800-736-2000',
+        '中国大使馆：+65-6471-5600',
+        '美国大使馆：+65-6476-9100',
+        '移民局：+65-6391-6100',
+        '樟宜机场：+65-6595-6868',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打'
+      ]
+    },
     {
       id: 'sgac_submission',
       title: 'SGAC数字入境卡提交',
@@ -26,7 +49,7 @@ export const singaporeEntryGuide = {
       description: '抵达前3天到抵达后15天提交新加坡数字入境卡',
       descriptionZh: '抵达前3天到抵达后15天提交新加坡数字入境卡',
       category: 'pre-arrival',
-      priority: 1,
+      priority: 2,
       estimatedTime: '15分钟',
       icon: '📱',
       required: true,
@@ -48,7 +71,7 @@ export const singaporeEntryGuide = {
       description: '整理通关包，确认SGAC状态和所有材料',
       descriptionZh: '整理通关包，确认SGAC状态和所有材料',
       category: 'in-flight',
-      priority: 2,
+      priority: 3,
       estimatedTime: '5分钟',
       icon: '📋',
       required: true,
@@ -65,7 +88,7 @@ export const singaporeEntryGuide = {
       description: '关闭蜂窝网络，准备新加坡eSIM卡',
       descriptionZh: '关闭蜂窝网络，准备新加坡eSIM卡',
       category: 'post-landing',
-      priority: 3,
+      priority: 4,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -85,7 +108,7 @@ export const singaporeEntryGuide = {
       description: '出示护照和SGAC，完成生物识别',
       descriptionZh: '出示护照和SGAC，完成生物识别',
       category: 'immigration',
-      priority: 4,
+      priority: 5,
       estimatedTime: '10分钟',
       icon: '🛂',
       required: true,
@@ -103,7 +126,7 @@ export const singaporeEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 5,
+      priority: 6,
       estimatedTime: '15分钟',
       icon: '🧳',
       required: true,
@@ -120,7 +143,7 @@ export const singaporeEntryGuide = {
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 6,
+      priority: 7,
       estimatedTime: '5分钟',
       icon: '🔍',
       required: true,

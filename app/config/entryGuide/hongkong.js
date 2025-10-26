@@ -18,8 +18,32 @@ export const hongkongEntryGuide = {
     '香港入境处理速度快，通常15-30分钟即可完成'
   ],
 
-  // 5步骤完整流程 (从飞机落地后开始)
+  // 6步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存香港紧急联系电话，以备不时之需',
+      descriptionZh: '保存香港紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察/救护车/火警：999',
+        '旅游热线：+852-2508-1234',
+        '入境事务处：+852-2824-6111',
+        '中国外交部驻港公署：+852-3413-2300',
+        '美国领事馆：+852-2523-9011',
+        '英国领事馆：+852-2901-3000',
+        '日本领事馆：+852-2522-1184',
+        '韩国领事馆：+852-2529-4141',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打999'
+      ]
+    },
     {
       id: 'landing_setup',
       title: '落地前准备',
@@ -27,7 +51,7 @@ export const hongkongEntryGuide = {
       description: '关闭蜂窝网络数据，激活香港eSIM卡或准备八达通',
       descriptionZh: '关闭蜂窝网络数据，激活香港eSIM卡或准备八达通',
       category: 'post-landing',
-      priority: 1,
+      priority: 2,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -47,7 +71,7 @@ export const hongkongEntryGuide = {
       description: '出示护照/港澳通行证，完成入境手续',
       descriptionZh: '出示护照/港澳通行证，完成入境手续',
       category: 'immigration',
-      priority: 2,
+      priority: 3,
       estimatedTime: '15分钟',
       icon: '🛂',
       required: true,
@@ -67,7 +91,7 @@ export const hongkongEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 3,
+      priority: 4,
       estimatedTime: '20分钟',
       icon: '🧳',
       required: true,
@@ -84,7 +108,7 @@ export const hongkongEntryGuide = {
       description: '行李检查，如需申报配合进行',
       descriptionZh: '行李检查，如需申报配合进行',
       category: 'customs',
-      priority: 4,
+      priority: 5,
       estimatedTime: '5分钟',
       icon: '🔍',
       required: true,
@@ -101,7 +125,7 @@ export const hongkongEntryGuide = {
       description: '选择机场快线、巴士或出租车前往市区',
       descriptionZh: '选择机场快线、巴士或出租车前往市区',
       category: 'transportation',
-      priority: 5,
+      priority: 6,
       estimatedTime: '30-60分钟',
       icon: '🚄',
       required: true,

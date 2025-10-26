@@ -18,8 +18,29 @@ export const thailandEntryGuide = {
     '只使用官方Public Taxi，避免黑车'
   ],
 
-  // 6步骤完整流程 (从飞机落地后开始)
+  // 7步骤完整流程 (包含紧急联系方式准备)
   steps: [
+    {
+      id: 'emergency_contacts',
+      title: '紧急联系方式',
+      titleZh: '紧急联系方式',
+      description: '保存泰国紧急联系电话，以备不时之需',
+      descriptionZh: '保存泰国紧急联系电话，以备不时之需',
+      category: 'pre-arrival',
+      priority: 1,
+      estimatedTime: '2分钟',
+      icon: '🆘',
+      required: false,
+      tips: [
+        '警察：191',
+        '救护车：1669',
+        '旅游警察：1155（有中文服务）',
+        '中国大使馆：+66-2-245-7033',
+        '将这些号码保存到手机通讯录',
+        '遇到紧急情况立即拨打',
+        '旅游警察提供中文服务'
+      ]
+    },
     {
       id: 'landing_setup',
       title: '落地前准备',
@@ -27,7 +48,7 @@ export const thailandEntryGuide = {
       description: '关闭蜂窝网络数据，激活泰国eSIM卡',
       descriptionZh: '关闭蜂窝网络数据，激活泰国eSIM卡',
       category: 'post-landing',
-      priority: 1,
+      priority: 2,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -47,7 +68,7 @@ export const thailandEntryGuide = {
       description: '出示通关包和TDAC QR码，核验护照和入境信息',
       descriptionZh: '出示通关包和TDAC QR码，核验护照和入境信息',
       category: 'immigration',
-      priority: 2,
+      priority: 3,
       estimatedTime: '15分钟',
       icon: '🛂',
       required: true,
@@ -68,7 +89,7 @@ export const thailandEntryGuide = {
       description: '找到行李转盘，认领行李，海关检查',
       descriptionZh: '找到行李转盘，认领行李，海关检查',
       category: 'baggage',
-      priority: 3,
+      priority: 4,
       estimatedTime: '20分钟',
       icon: '🧳',
       required: true,
@@ -85,7 +106,7 @@ export const thailandEntryGuide = {
       description: '行李X光机检查，如需人工检查配合进行',
       descriptionZh: '行李X光机检查，如需人工检查配合进行',
       category: 'customs',
-      priority: 4,
+      priority: 5,
       estimatedTime: '5分钟',
       icon: '🔍',
       required: true,
@@ -102,7 +123,7 @@ export const thailandEntryGuide = {
       description: '在到达大厅ATM机取款，推荐银行和操作步骤',
       descriptionZh: '在到达大厅ATM机取款，推荐银行和操作步骤',
       category: 'financial',
-      priority: 5,
+      priority: 6,
       estimatedTime: '10分钟',
       icon: '💰',
       required: true,
@@ -123,7 +144,7 @@ export const thailandEntryGuide = {
       description: '使用入境通APP司机页面，找官方Public Taxi',
       descriptionZh: '使用入境通APP司机页面，找官方Public Taxi',
       category: 'transportation',
-      priority: 6,
+      priority: 7,
       estimatedTime: '45分钟',
       icon: '🚕',
       required: true,
