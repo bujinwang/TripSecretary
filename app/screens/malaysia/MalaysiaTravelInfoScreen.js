@@ -165,8 +165,6 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       return;
     }
 
-    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
-
     const existingDataToMigrate = {};
 
     // Migrate passport data
@@ -199,15 +197,9 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       if (travelInfo.lengthOfStay) existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
     }
 
-    console.log('Data to migrate:', existingDataToMigrate);
-    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
-
     if (Object.keys(existingDataToMigrate).length > 0) {
       userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
       hasMigratedRef.current = true; // Mark migration as completed
-      console.log('✅ Migration completed - existing data marked as user-modified');
-    } else {
-      console.log('⚠️ No existing data found to migrate');
     }
   }, [userInteractionTracker]);
 
@@ -368,10 +360,6 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
       setCompletionMetrics(summary.metrics);
       setTotalCompletionPercent(summary.totalPercent);
-
-      console.log('=== COMPLETION METRICS RECALCULATED ===');
-      console.log('Total completion:', summary.totalPercent + '%');
-      console.log('Metrics:', summary.metrics);
 
       return summary;
     } catch (error) {
@@ -559,11 +547,11 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       retryDelay: 1000,
       onError: (error, retryCount) => {
         setSaveStatus('error');
-        console.error('❌ Auto-save failed:', error);
+        console.error('Auto-save failed:', error);
         setTimeout(() => setSaveStatus(null), 3000);
       },
       onRetry: (error, retryCount, maxRetries) => {
-        console.log(`🔄 Retrying save (attempt ${retryCount}/${maxRetries})...`);
+        // Retry in progress
       },
     }
   );
@@ -613,7 +601,6 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info with new fund item associations
-      console.log('💾 Triggering save after fund item update...');
       await DebouncedSave.flushPendingSave('malaysia_travel_info');
       debouncedSaveData();
     } catch (error) {
@@ -626,7 +613,6 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info with new fund item
-      console.log('💾 Triggering save after fund item creation...');
       await DebouncedSave.flushPendingSave('malaysia_travel_info');
       debouncedSaveData();
     } catch (error) {
@@ -642,7 +628,6 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info after fund item deletion
-      console.log('💾 Triggering save after fund item deletion...');
       await DebouncedSave.flushPendingSave('malaysia_travel_info');
       debouncedSaveData();
     } catch (error) {
@@ -658,10 +643,8 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       const currentStatus = DebouncedSave.getSaveState('malaysia_travel_info');
       if (currentStatus === 'saving') {
         setSaveStatus('saving');
-        console.log('🔄 Auto-save started...');
       } else if (currentStatus === 'saved') {
         setSaveStatus('saved');
-        console.log('✅ Auto-save completed');
         setTimeout(() => setSaveStatus(null), 2000);
       }
     }, 100);
