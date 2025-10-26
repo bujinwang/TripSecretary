@@ -7,25 +7,50 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
 
-const CompletionSummaryCard = ({ 
-  completionPercent = 0, 
+const CompletionSummaryCard = ({
+  completionPercent = 0,
   status = 'incomplete',
-  showProgressBar = true 
+  showProgressBar = true,
+  destination = 'thailand' // Default to thailand for backwards compatibility
 }) => {
+  // Get destination-specific emojis and texts
+  const getDestinationConfig = () => {
+    const configs = {
+      thailand: {
+        readyText: '泰国准备就绪！🌴',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去泰国了 🌺`,
+        completeText: '太棒了！泰国之旅准备就绪！🌴'
+      },
+      malaysia: {
+        readyText: '马来西亚准备就绪！🇲🇾',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去马来西亚了 🌺`,
+        completeText: '太棒了！马来西亚之旅准备就绪！🇲🇾'
+      },
+      hongkong: {
+        readyText: '香港准备就绪！🇭🇰',
+        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去香港了 ✨`,
+        completeText: '太棒了！香港之旅准备就绪！🇭🇰'
+      }
+    };
+    return configs[destination] || configs.thailand;
+  };
+
+  const destConfig = getDestinationConfig();
+
   // Determine status text and color based on completion percentage
   const getStatusInfo = () => {
     if (completionPercent === 100) {
       return {
-        text: 'Ready for Thailand! 🌴',
-        textKey: 'thailand.entryFlow.status.ready',
-        defaultText: '泰国准备就绪！🌴',
+        text: destConfig.readyText,
+        textKey: `${destination}.entryFlow.status.ready`,
+        defaultText: destConfig.readyText,
         color: colors.success,
         backgroundColor: '#E8F9F0', // Light green
       };
     } else if (completionPercent >= 50) {
       return {
         text: 'Great Progress! 💪',
-        textKey: 'thailand.entryFlow.status.mostlyComplete',
+        textKey: `${destination}.entryFlow.status.mostlyComplete`,
         defaultText: '进展不错！💪',
         color: colors.warning,
         backgroundColor: '#FFF7E6', // Light orange
@@ -33,7 +58,7 @@ const CompletionSummaryCard = ({
     } else {
       return {
         text: 'Let\'s Get Started! 🌺',
-        textKey: 'thailand.entryFlow.status.needsImprovement',
+        textKey: `${destination}.entryFlow.status.needsImprovement`,
         defaultText: '让我们开始吧！🌺',
         color: colors.primary,
         backgroundColor: '#F0F8FF', // Light blue
@@ -78,8 +103,8 @@ const CompletionSummaryCard = ({
           </View>
           <Text style={styles.progressText}>
             {completionPercent < 100
-              ? `继续加油！还差 ${100 - completionPercent}% 就能去泰国了 🌺`
-              : '太棒了！泰国之旅准备就绪！🌴'
+              ? destConfig.progressText(100 - completionPercent)
+              : destConfig.completeText
             }
           </Text>
         </View>

@@ -64,6 +64,8 @@ import {
   HongKongInfoScreen,
   HongKongRequirementsScreen,
   HongkongTravelInfoScreen,
+  HongKongEntryFlowScreen,
+  HongKongEntryPackPreviewScreen,
   // Korea screens
   KoreaInfoScreen,
   KoreaRequirementsScreen,
@@ -380,6 +382,34 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="HongKongRequirements"
           component={HongKongRequirementsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongkongTravelInfo"
+          component={HongkongTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongKongEntryFlow"
+          component={HongKongEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongKongEntryGuide"
+          component={require('../screens/entryGuide/HongKongEntryGuideScreen').default}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="HongKongEntryPackPreview"
+          component={HongKongEntryPackPreviewScreen}
           options={{
             headerShown: false,
           }}
