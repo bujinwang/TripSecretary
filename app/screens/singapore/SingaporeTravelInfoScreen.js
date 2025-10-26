@@ -40,7 +40,9 @@ import { parsePassportName } from '../../utils/NameParser';
 
 // Import constants
 import {
+  PREDEFINED_TRAVEL_PURPOSES,
   TRAVEL_PURPOSE_OPTIONS,
+  PREDEFINED_ACCOMMODATION_TYPES,
   ACCOMMODATION_TYPE_OPTIONS,
   GENDER_OPTIONS,
   STORAGE_KEYS,
@@ -547,9 +549,6 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
         // Personal Info - load from centralized data
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          // Load personal info (gender removed - using passport only)
-          // const loadedSex = personalInfo.gender || passportInfo?.gender || passport?.sex || sex || 'Male';
-
           setOccupation(personalInfo.occupation || '');
           setCityOfResidence(personalInfo.provinceCity || '');
           setResidentCountry(personalInfo.countryRegion || '');
@@ -562,10 +561,12 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
           // Store personal info data model instance
           setPersonalInfoData(personalInfo);
         } else {
-          // Fallback to passport data for gender
-          setSex(passport?.sex || 'Male');
           setPhoneCode(getPhoneCode(passport?.nationality || ''));
         }
+
+        // Gender - load from passport only (single source of truth)
+        const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || sex || 'Male';
+        setSex(loadedSex);
 
         await refreshFundItems();
 
@@ -591,7 +592,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
 
             // Check if travel purpose is a predefined option
-            const loadedPurpose = travelInfo.travelPurpose || '';
+            const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
             if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
               setTravelPurpose(loadedPurpose);
               setCustomTravelPurpose('');
@@ -612,7 +613,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
             setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
             setIsTransitPassenger(travelInfo.isTransitPassenger || false);
             // Load accommodation type
-            const loadedAccommodationType = travelInfo.accommodationType || '';
+            const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
             if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
               setAccommodationType(loadedAccommodationType);
               setCustomAccommodationType('');
@@ -732,7 +733,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
                 console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
 
                 // Update travel info state
-                const loadedPurpose = travelInfo.travelPurpose || '';
+                const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
                 if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
                   setTravelPurpose(loadedPurpose);
                   setCustomTravelPurpose('');
@@ -749,7 +750,7 @@ const SingaporeTravelInfoScreen = ({ navigation, route }) => {
                 setIsTransitPassenger(travelInfo.isTransitPassenger || false);
 
                 // Load accommodation type
-                const loadedAccommodationType = travelInfo.accommodationType || '';
+                const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
                 if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
                   setAccommodationType(loadedAccommodationType);
                   setCustomAccommodationType('');
