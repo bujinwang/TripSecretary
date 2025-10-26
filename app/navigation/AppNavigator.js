@@ -83,6 +83,7 @@ import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
+import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 
 import { colors } from '../theme';
@@ -417,6 +418,20 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="KoreaEntryFlow"
           component={KoreaEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KoreaEntryGuide"
+          component={KoreaEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KoreaEntryPackPreview"
+          component={KoreaEntryPackPreviewScreen}
           options={{
             headerShown: false,
           }}
