@@ -46,7 +46,7 @@ import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES } from './constants';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -127,6 +127,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Personal Info State (loaded from database)
   const [sex, setSex] = useState('');
   const [occupation, setOccupation] = useState('');
+  const [customOccupation, setCustomOccupation] = useState('');
   const [cityOfResidence, setCityOfResidence] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
   const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || '')); // Initialize phone code based on passport nationality or empty
@@ -689,7 +690,20 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         // Personal Info - load from centralized data
         const personalInfo = userData?.personalInfo;
         if (personalInfo) {
-          setOccupation(personalInfo.occupation || '');
+          // Handle occupation - check if it's in predefined list
+          const savedOccupation = personalInfo.occupation || '';
+          const isPredefin = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+          if (isPredefin) {
+            setOccupation(savedOccupation);
+            setCustomOccupation('');
+          } else if (savedOccupation) {
+            // Custom occupation - set to OTHER and populate custom field
+            setOccupation('OTHER');
+            setCustomOccupation(savedOccupation);
+          } else {
+            setOccupation('');
+            setCustomOccupation('');
+          }
           setCityOfResidence(personalInfo.provinceCity || '');
           setResidentCountry(personalInfo.countryRegion || '');
           setPhoneNumber(personalInfo.phoneNumber || '');
@@ -874,7 +888,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             // Update personal info if available
             const personalInfo = userData.personalInfo;
             if (personalInfo) {
-              setOccupation(personalInfo.occupation || occupation);
+              // Handle occupation - check if it's in predefined list
+              const savedOccupation = personalInfo.occupation || occupation;
+              const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+              if (isPredefined) {
+                setOccupation(savedOccupation);
+                setCustomOccupation('');
+              } else if (savedOccupation) {
+                // Custom occupation - set to OTHER and populate custom field
+                setOccupation('OTHER');
+                setCustomOccupation(savedOccupation);
+              }
               setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
               setResidentCountry(personalInfo.countryRegion || residentCountry);
               setPhoneNumber(personalInfo.phoneNumber || phoneNumber);
@@ -1682,9 +1706,12 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
     console.log('Existing passport:', existingPassport);
 
     // Prepare current state for the save operation
+    // For occupation, use custom value if "OTHER" is selected
+    const finalOccupation = occupation === 'OTHER' ? customOccupation : occupation;
+
     const currentState = {
       passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-      phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
+      phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
       travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
       arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
       isTransitPassenger, accommodationType, customAccommodationType, province, district,
@@ -1725,9 +1752,12 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
                  console.log('Cleared travel info. Retrying save...');
   
                  // Prepare current state for retry
+                 // For occupation, use custom value if "OTHER" is selected
+                 const finalOccupation = occupation === 'OTHER' ? customOccupation : occupation;
+
                  const currentState = {
                    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-                   phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
+                   phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
                    travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
                    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
                    isTransitPassenger, accommodationType, customAccommodationType, province, district,
@@ -2274,22 +2304,42 @@ const normalizeFundItem = useCallback((item) => ({
               提供你的基本个人信息，包括职业、居住地和联系方式，以便泰国海关了解你的情况。
             </Text>
           </View>
-           <InputWithValidation
-             label="职业"
-             value={occupation}
-             onChangeText={(text) => {
-               setOccupation(text.toUpperCase());
-             }}
-             onBlur={() => handleFieldBlur('occupation', occupation)}
-             helpText="填写你的工作职位，例如：软件工程师、学生、退休人员等（用英文）"
-             error={!!errors.occupation}
-             errorMessage={errors.occupation}
-             warning={!!warnings.occupation}
-             warningMessage={warnings.occupation}
-             fieldName="occupation"
-             lastEditedField={lastEditedField}
-             autoCapitalize="characters"
-           />
+           <View style={styles.fieldContainer}>
+             <Text style={styles.fieldLabel}>职业</Text>
+             <OptionSelector
+               options={OCCUPATION_OPTIONS}
+               value={occupation}
+               onSelect={(value) => {
+                 setOccupation(value);
+                 if (value !== 'OTHER') {
+                   setCustomOccupation('');
+                   // Trigger validation for the selected occupation
+                   handleFieldBlur('occupation', value);
+                 }
+                 // Trigger debounced save after occupation selection
+                 debouncedSaveData();
+               }}
+               customValue={customOccupation}
+               onCustomChange={(text) => {
+                 setCustomOccupation(text.toUpperCase());
+               }}
+               onCustomBlur={() => {
+                 // When custom occupation is entered, validate and save it
+                 const finalOccupation = customOccupation.trim() ? customOccupation : occupation;
+                 handleFieldBlur('occupation', finalOccupation);
+                 debouncedSaveData();
+               }}
+               customLabel="请输入您的职业"
+               customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
+               customHelpText="请用英文填写您的职业"
+             />
+             {errors.occupation && (
+               <Text style={styles.errorText}>{errors.occupation}</Text>
+             )}
+             {warnings.occupation && !errors.occupation && (
+               <Text style={styles.warningText}>{warnings.occupation}</Text>
+             )}
+           </View>
            <InputWithValidation
              label={cityOfResidenceLabel}
              value={cityOfResidence}
