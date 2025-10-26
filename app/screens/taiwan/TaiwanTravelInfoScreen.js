@@ -122,6 +122,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const [lastEditedField, setLastEditedField] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null); // null, 'pending', 'saving', 'saved', 'error'
+  const [lastEditedAt, setLastEditedAt] = useState(null);
 
   const getFieldCount = (section) => {
     let filled = 0;
@@ -465,6 +466,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
       }
 
       setSaveStatus('saved');
+      setLastEditedAt(new Date());
       // Clear saved status after 2 seconds
       setTimeout(() => setSaveStatus(null), 2000);
     } catch (error) {
@@ -608,6 +610,13 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           <Text style={styles.title}>{t('taiwan.travelInfo.title', { defaultValue: '填写台湾入境信息' })}</Text>
           <Text style={styles.subtitle}>{t('taiwan.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
         </View>
+
+        {/* Last Edited Timestamp */}
+        {lastEditedAt && (
+          <Text style={styles.lastEditedText}>
+            上次编辑时间: {lastEditedAt.toLocaleTimeString()} / Last edited: {lastEditedAt.toLocaleTimeString()}
+          </Text>
+        )}
 
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
@@ -1147,6 +1156,15 @@ const styles = StyleSheet.create({
   optionTextActive: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  lastEditedText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    fontSize: 11,
+    fontStyle: 'italic',
   },
   privacyBox: {
     flexDirection: 'row',
