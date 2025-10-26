@@ -12,8 +12,10 @@ import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
@@ -39,16 +41,16 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>马来西亚入境包 - 预览</Text>
+        <Text style={styles.headerTitle}>{t('malaysia.entryPackPreview.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式</Text>
+          <Text style={styles.previewTitle}>{t('malaysia.entryPackPreview.previewMode')}</Text>
           <Text style={styles.previewDescription}>
-            这是您的入境信息预览。提交MDAC数字入境卡后，将包含完整的入境卡详情。
+            {t('malaysia.entryPackPreview.previewDescription')}
           </Text>
         </View>
 
@@ -74,7 +76,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              继续完善信息 ✏️
+              {t('malaysia.entryPackPreview.continueButton')}
             </Text>
           </TouchableOpacity>
 
@@ -90,7 +92,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.submitButtonText}>
-              提交MDAC入境卡 🇲🇾
+              {t('malaysia.entryPackPreview.submitButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -98,7 +100,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <View style={styles.infoSection}>
           <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
-            提示：确保所有信息准确无误后再提交MDAC。入境卡需要在抵达前3天内提交。
+            {t('malaysia.entryPackPreview.infoTip')}
           </Text>
         </View>
       </ScrollView>

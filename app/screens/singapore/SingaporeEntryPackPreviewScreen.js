@@ -12,8 +12,10 @@ import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
@@ -38,16 +40,16 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>新加坡通关包 - 预览 / Entry Pack Preview</Text>
+        <Text style={styles.headerTitle}>{t('singapore.entryPackPreview.headerTitle')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式 / Preview Mode</Text>
+          <Text style={styles.previewTitle}>{t('singapore.entryPackPreview.previewMode')}</Text>
           <Text style={styles.previewDescription}>
-            这是您的通关包预览。提交SGAC后会包含完整的入境卡详情 / This is a preview of your entry pack. After submitting SGAC it will include the full entry card details.
+            {t('singapore.entryPackPreview.previewDescription')}
           </Text>
         </View>
 
@@ -57,6 +59,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds}
           isModal={false}
+          country="singapore"
         />
 
         <View style={styles.actionSection}>
@@ -72,7 +75,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              返回继续完善信息 ✏️ / Continue updating info
+              {t('singapore.entryPackPreview.continueButton')}
             </Text>
           </TouchableOpacity>
 
@@ -88,7 +91,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.submitButtonText}>
-              提交新加坡入境卡 SGAC 🌴 / Submit SGAC entry card
+              {t('singapore.entryPackPreview.submitButton')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -96,10 +99,10 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
         <View style={styles.infoBanner}>
           <Text style={styles.infoIcon}>ℹ️</Text>
           <Text style={styles.infoText}>
-            💡 提示：SGAC可在抵达前3天到抵达后15天内提交
+            {t('singapore.entryPackPreview.infoTip')}
           </Text>
           <Text style={styles.infoSubtext}>
-            Tip: SGAC can be submitted 3 days before to 15 days after arrival
+            {t('singapore.entryPackPreview.infoTipEn')}
           </Text>
         </View>
       </ScrollView>

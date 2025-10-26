@@ -66,6 +66,62 @@ const countryConfigs = {
       amount: 'Amount / Jumlah'
     },
     dateLocales: ['en-US', 'ms-MY']
+  },
+  singapore: {
+    entryCardName: 'SGAC',
+    entryCardTab: 'sgac',
+    entryCardTitle: 'SG Arrival Card (SGAC) / 新加坡入境卡',
+    personalInfoTitle: 'Personal Information / 个人信息',
+    travelInfoTitle: 'Travel Information / 旅行信息',
+    fundsTitle: 'Funds Information / 资金信息',
+    currency: 'SGD',
+    currencyName: 'Singapore Dollar',
+    notProvided: 'Not provided / 未提供',
+    fallbackHotelText: 'Please provide hotel address / 请提供酒店地址',
+    labels: {
+      fullName: 'Full Name / 姓名',
+      passportNumber: 'Passport Number / 护照号码',
+      nationality: 'Nationality / 国籍',
+      dateOfBirth: 'Date of Birth / 出生日期',
+      arrivalDate: 'Arrival Date / 抵达日期',
+      departureDate: 'Departure Date / 离境日期',
+      flightNumber: 'Flight Number / 航班号',
+      stayLocation: 'Stay Location / 住宿地址',
+      lengthOfStay: 'Length of Stay / 停留时长',
+      purpose: 'Purpose of Visit / 访问目的',
+      totalFunds: 'Total Funds / 总资金',
+      fundType: 'Type / 类型',
+      amount: 'Amount / 金额'
+    },
+    dateLocales: ['en-SG', 'zh-CN']
+  },
+  korea: {
+    entryCardName: 'K-ETA',
+    entryCardTab: 'keta',
+    entryCardTitle: 'K-ETA / 韩国电子旅行许可',
+    personalInfoTitle: 'Personal Information / 个人信息',
+    travelInfoTitle: 'Travel Information / 旅行信息',
+    fundsTitle: 'Funds Information / 资金信息',
+    currency: 'KRW',
+    currencyName: '원 / Won',
+    notProvided: 'Not provided / 未提供',
+    fallbackHotelText: 'Please provide hotel address / 请提供酒店地址',
+    labels: {
+      fullName: 'Full Name / 姓名',
+      passportNumber: 'Passport Number / 护照号码',
+      nationality: 'Nationality / 国籍',
+      dateOfBirth: 'Date of Birth / 出生日期',
+      arrivalDate: 'Arrival Date / 抵达日期',
+      departureDate: 'Departure Date / 离境日期',
+      flightNumber: 'Flight Number / 航班号',
+      stayLocation: 'Stay Location / 住宿地址',
+      lengthOfStay: 'Length of Stay / 停留时长',
+      purpose: 'Purpose of Visit / 访问目的',
+      totalFunds: 'Total Funds / 总资金',
+      fundType: 'Type / 类型',
+      amount: 'Amount / 金额'
+    },
+    dateLocales: ['ko-KR', 'en-US']
   }
 };
 
