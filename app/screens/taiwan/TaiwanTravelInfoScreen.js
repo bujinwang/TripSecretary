@@ -13,6 +13,7 @@ import {
   UIManager,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -605,11 +606,44 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.titleSection}>
-          <Text style={styles.flag}>🇹🇼</Text>
-          <Text style={styles.title}>{t('taiwan.travelInfo.title', { defaultValue: '填写台湾入境信息' })}</Text>
-          <Text style={styles.subtitle}>{t('taiwan.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
-        </View>
+        {/* Enhanced Hero Section for Taiwan Entry */}
+        <LinearGradient
+          colors={['#8B1820', '#5D0F14']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroSection}
+        >
+          <View style={styles.heroContent}>
+            <Text style={styles.heroFlag}>🇹🇼</Text>
+            <View style={styles.heroHeading}>
+              <Text style={styles.heroTitle}>台湾入境准备指南</Text>
+              <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
+            </View>
+
+            {/* Beginner-Friendly Value Proposition */}
+            <View style={styles.valueProposition}>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>⏱️</Text>
+                <Text style={styles.valueText}>3分钟完成</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🔒</Text>
+                <Text style={styles.valueText}>100%隐私保护</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🎯</Text>
+                <Text style={styles.valueText}>避免通关延误</Text>
+              </View>
+            </View>
+
+            <View style={styles.beginnerTip}>
+              <Text style={styles.tipIcon}>💡</Text>
+              <Text style={styles.tipText}>
+                第一次入境台湾？我们会一步步教你准备所有必需文件，确保顺利通关！
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
 
         {/* Last Edited Timestamp */}
         {lastEditedAt && (
@@ -1096,25 +1130,114 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: spacing.lg,
   },
-  titleSection: {
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+  heroSection: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 20,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    shadowColor: 'rgba(93, 15, 20, 0.6)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  flag: {
-    fontSize: 40,
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroFlag: {
+    fontSize: 48,
     marginBottom: spacing.sm,
   },
-  title: {
-    ...typography.h3,
-    color: colors.primary,
+  heroHeading: {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  heroTitle: {
+    ...typography.h2,
+    color: colors.white,
+    fontWeight: '700',
     marginBottom: spacing.xs,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
-  subtitle: {
+  heroSubtitle: {
     ...typography.body1,
-    color: colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+    marginBottom: spacing.md,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  valueProposition: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    padding: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  valueItem: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: spacing.xs,
+  },
+  valueIcon: {
+    fontSize: 20,
+    marginBottom: spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  valueText: {
+    ...typography.caption,
+    color: colors.white,
+    textAlign: 'center',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  beginnerTip: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'flex-start',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+  },
+  tipIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+    marginTop: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  tipText: {
+    ...typography.body2,
+    color: colors.white,
+    flex: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+    lineHeight: 20,
   },
   buttonContainer: {
     paddingHorizontal: spacing.md,
