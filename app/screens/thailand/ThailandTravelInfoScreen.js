@@ -48,6 +48,12 @@ import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
+
+// Import section components
+import PassportSection from './components/PassportSection';
+import PersonalInfoSection from './components/PersonalInfoSection';
+import FundsSection from './components/FundsSection';
+import TravelSection from './components/TravelSection';
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -416,7 +422,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   };
 
   // Calculate completion metrics using FieldStateManager
-  const calculateCompletionMetrics = () => {
+  // Wrapped in useCallback to prevent unnecessary recalculations
+  const calculateCompletionMetrics = useCallback(() => {
     try {
       const passportCount = getFieldCount('passport');
       const personalCount = getFieldCount('personal');
@@ -492,7 +499,14 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       console.error('Failed to calculate completion metrics:', error);
       return { totalPercent: 0, metrics: null, isReady: false };
     }
-  };
+  }, [
+    // Only depend on fields that truly affect completion
+    passportNo, surname, givenName, nationality, dob, expiryDate, sex,
+    occupation, email, phoneNumber,
+    funds.length,
+    travelPurpose, arrivalArrivalDate, province, accommodationType,
+    isTransitPassenger, userInteractionTracker
+  ]);
 
   // Check if all fields are filled and valid
   const isFormValid = () => {
@@ -1082,19 +1096,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   }, [isLoading, scrollPosition]);
 
   // Recalculate completion metrics when data changes
+  // Now optimized with useCallback - only depends on calculateCompletionMetrics and isLoading
   useEffect(() => {
     if (!isLoading) {
       calculateCompletionMetrics();
     }
-  }, [
-    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
-    funds,
-    travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry, hotelAddress,
-    accommodationType, customAccommodationType, province, district, subDistrict,
-    postalCode, isTransitPassenger, isLoading
-  ]);
+  }, [calculateCompletionMetrics, isLoading]);
 
   // Helper function to handle navigation with save error handling
   const handleNavigationWithSave = async (navigationAction, actionName = 'navigate') => {
@@ -1334,6 +1341,96 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       handleFieldBlur('postalCode', newPostalCode);
     }
   }, [handleFieldBlur, postalCode]);
+
+  // Wrapper handlers for section components
+  const handleTravelPurposeChange = useCallback((value) => {
+    setTravelPurpose(value);
+    if (value !== 'OTHER') {
+      setCustomTravelPurpose('');
+    }
+    debouncedSaveData();
+  }, [debouncedSaveData]);
+
+  const handleRecentStayCountryChange = useCallback((code) => {
+    setRecentStayCountry(code);
+    handleFieldBlur('recentStayCountry', code);
+  }, [handleFieldBlur]);
+
+  const handleBoardingCountryChange = useCallback((code) => {
+    setBoardingCountry(code);
+    handleFieldBlur('boardingCountry', code);
+  }, [handleFieldBlur]);
+
+  const handleArrivalDateChange = useCallback((newValue) => {
+    setArrivalArrivalDate(newValue);
+    handleFieldBlur('arrivalArrivalDate', newValue);
+  }, [handleFieldBlur]);
+
+  const handleDepartureDateChange = useCallback((newValue) => {
+    setDepartureDepartureDate(newValue);
+    setTimeout(() => {
+      handleFieldBlur('departureDepartureDate', newValue);
+    }, 0);
+  }, [handleFieldBlur]);
+
+  const handleTransitPassengerChange = useCallback(async () => {
+    const newValue = !isTransitPassenger;
+    setIsTransitPassenger(newValue);
+    if (newValue) {
+      setAccommodationType('HOTEL');
+      setCustomAccommodationType('');
+      setProvince('');
+      setDistrict('');
+      setDistrictId(null);
+      setSubDistrict('');
+      setSubDistrictId(null);
+      setPostalCode('');
+      setHotelAddress('');
+    }
+
+    // Save immediately with the new value
+    try {
+      const overrides = { isTransitPassenger: newValue };
+      if (newValue) {
+        // If becoming transit passenger, reset accommodation fields
+        overrides.accommodationType = 'HOTEL';
+        overrides.customAccommodationType = '';
+        overrides.province = '';
+        overrides.district = '';
+        overrides.subDistrict = '';
+        overrides.postalCode = '';
+        overrides.hotelAddress = '';
+      }
+
+      await saveDataToSecureStorageWithOverride(overrides);
+      setLastEditedAt(new Date());
+    } catch (error) {
+      console.error('Failed to save transit passenger status:', error);
+    }
+  }, [isTransitPassenger, saveDataToSecureStorageWithOverride]);
+
+  const handleAccommodationTypeChange = useCallback(async (value) => {
+    console.log('=== ACCOMMODATION TYPE SELECTED ===');
+    console.log('Selected option:', value);
+    console.log('Previous accommodationType:', accommodationType);
+
+    setAccommodationType(value);
+    if (value !== 'OTHER') {
+      setCustomAccommodationType('');
+    }
+
+    console.log('Saving immediately with new accommodation type...');
+    // Save immediately with the new value to avoid React state delay
+    try {
+      await saveDataToSecureStorageWithOverride({
+        accommodationType: value,
+        customAccommodationType: value !== 'OTHER' ? '' : customAccommodationType
+      });
+      setLastEditedAt(new Date());
+    } catch (error) {
+      console.error('Failed to save accommodation type:', error);
+    }
+  }, [accommodationType, customAccommodationType, saveDataToSecureStorageWithOverride]);
 
 // Helper method to perform the actual save operation
 const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
