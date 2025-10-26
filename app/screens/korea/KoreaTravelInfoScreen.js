@@ -143,6 +143,63 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('korea_travel_info');
 
+  // Migration function to mark existing data as user-modified
+  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+    if (!userData || !userInteractionTracker.isInitialized) {
+      return;
+    }
+
+    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE (KOREA) ===');
+
+    const existingDataToMigrate = {};
+
+    // Migrate passport data
+    if (userData.passport) {
+      const passport = userData.passport;
+      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
+      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
+      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
+      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
+      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
+      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+    }
+
+    // Migrate personal info data
+    if (userData.personalInfo) {
+      const personalInfo = userData.personalInfo;
+      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
+      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
+      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
+      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+    }
+
+    // Migrate travel info data
+    if (userData.travelInfo) {
+      const travelInfo = userData.travelInfo;
+      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
+      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
+      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
+      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
+      if (travelInfo.accommodationAddress) existingDataToMigrate.accommodationAddress = travelInfo.accommodationAddress;
+      if (travelInfo.accommodationPhone) existingDataToMigrate.accommodationPhone = travelInfo.accommodationPhone;
+      if (travelInfo.ketaNumber) existingDataToMigrate.ketaNumber = travelInfo.ketaNumber;
+    }
+
+    console.log('Data to migrate:', existingDataToMigrate);
+    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
+
+    if (Object.keys(existingDataToMigrate).length > 0) {
+      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      console.log('✅ Migration completed - existing data marked as user-modified');
+    } else {
+      console.log('⚠️ No existing data found to migrate');
+    }
+  }, [userInteractionTracker]);
+
   // Count filled fields for each section
   const getFieldCount = (section) => {
     const interactionState = {};
@@ -320,16 +377,31 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
   };
 
   // Load data on mount
-  useEffect(() => {
-    loadData();
-  }, [userId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       await UserDataService.initialize(userId);
 
       const allUserData = await UserDataService.getAllUserData(userId);
+
+      // Load travel info for migration
+      const destinationId = route.params?.destination?.id || 'korea';
+      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+      if (travelInfo) {
+        allUserData.travelInfo = travelInfo;
+      }
+
+      // Wait for interaction tracker to be initialized before migration
+      if (userInteractionTracker.isInitialized) {
+        await migrateExistingDataToInteractionState(allUserData);
+      } else {
+        // If not initialized yet, wait a bit and try again
+        setTimeout(async () => {
+          if (userInteractionTracker.isInitialized) {
+            await migrateExistingDataToInteractionState(allUserData);
+          }
+        }, 100);
+      }
 
       // Load passport data
       if (allUserData.passport) {
@@ -358,10 +430,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       const fundItems = await UserDataService.getFundItems(userId);
       setFunds(fundItems || []);
 
-      // Load Korea travel info
-      const destinationId = route.params?.destination?.id || 'korea';
-      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-
+      // Load Korea travel info (already loaded above for migration)
       if (travelInfo) {
         setTravelPurpose(travelInfo.travelPurpose || '');
         setBoardingCountry(travelInfo.boardingCountry || '');
@@ -375,13 +444,31 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
         setHasKeta(!!travelInfo.ketaNumber);
       }
 
-      calculateCompletionMetrics();
+      // Note: calculateCompletionMetrics() is called in separate useEffect
     } catch (error) {
       console.error('Failed to load Korea travel data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, userInteractionTracker, migrateExistingDataToInteractionState, route.params?.destination?.id]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Recalculate completion metrics when data changes
+  useEffect(() => {
+    if (!isLoading) {
+      calculateCompletionMetrics();
+    }
+  }, [
+    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
+    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
+    funds,
+    travelPurpose, boardingCountry, arrivalFlightNumber, arrivalArrivalDate,
+    departureFlightNumber, departureDepartureDate, accommodationAddress, accommodationPhone,
+    ketaNumber, hasKeta, isLoading
+  ]);
 
   const handleSave = async () => {
     try {
@@ -426,7 +513,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       });
 
       setSaveStatus('saved');
-      calculateCompletionMetrics();
+      // Note: calculateCompletionMetrics() is called automatically by useEffect
 
       setTimeout(() => setSaveStatus(null), 2000);
     } catch (error) {
@@ -759,7 +846,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           setSelectedFundItem(null);
           setCurrentFundItem(null);
           setNewFundItemType(null);
-          calculateCompletionMetrics();
+          // Note: calculateCompletionMetrics() is called automatically by useEffect
         }}
         onDelete={async (fundItemId) => {
           const updatedFunds = funds.filter(f => f.id !== fundItemId);
@@ -767,7 +854,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           await UserDataService.saveFundItems(userId, updatedFunds);
           setFundItemModalVisible(false);
           setSelectedFundItem(null);
-          calculateCompletionMetrics();
+          // Note: calculateCompletionMetrics() is called automatically by useEffect
         }}
       />
     </SafeAreaView>
