@@ -1,6 +1,6 @@
 # Entry Requirements Engine - Design Document
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2025-10-26
 **Status:** Design Phase
 
@@ -1753,47 +1753,48 @@ getChecklist(passportNationality, destinationCode, locale = 'en') {
 
 ### Phase 3: Expansion (Week 5-8)
 
-**Goal:** Expand to top 5 destinations × top 20 passport nationalities
+**Goal:** Expand to 20 destinations × top 5 passport nationalities
 
-**Top 5 Destinations:**
+**20 Destinations:**
 1. Thailand (TH)
 2. Singapore (SG)
 3. Japan (JP)
 4. Hong Kong (HK)
 5. USA (US)
+6. Canada (CA)
+7. Taiwan (TW)
+8. Malaysia (MY)
+9. Korea (KR)
+10. United Kingdom (UK)
+11. Australia (AU)
+12. New Zealand (NZ)
+13. Vietnam (VN)
+14. Indonesia (ID)
+15. Philippines (PH)
+16. UAE (AE) - Dubai
+17. France (FR)
+18. Germany (DE)
+19. Italy (IT)
+20. Spain (ES)
 
-**Top 20 Passport Nationalities:**
-1. CHN (China)
-2. USA (United States)
-3. IND (India)
-4. GBR (United Kingdom)
-5. CAN (Canada)
-6. AUS (Australia)
-7. DEU (Germany)
-8. FRA (France)
-9. JPN (Japan)
-10. KOR (South Korea)
-11. TWN (Taiwan)
-12. HKG (Hong Kong)
-13. SGP (Singapore)
-14. MYS (Malaysia)
-15. THA (Thailand)
-16. IDN (Indonesia)
-17. PHL (Philippines)
-18. VNM (Vietnam)
-19. RUS (Russia)
-20. BRA (Brazil)
+**Top 5 Passport Nationalities:**
+1. CHN (China) - Primary target market
+2. USA (United States) - Major international traveler base
+3. IND (India) - Large growing market
+4. GBR (United Kingdom) - Common international traveler
+5. CAN (Canada) - Frequent traveler demographic
 
 **Work Breakdown:**
-- Week 5: Configure Thailand (20 nationalities)
-- Week 6: Configure Singapore + Japan (20 nationalities each)
-- Week 7: Configure Hong Kong + USA (20 nationalities each)
-- Week 8: Testing, bug fixes, performance tuning
+- Week 5: Configure Asia-Pacific destinations (TH, SG, JP, HK, TW, MY, KR, VN, ID, PH) - 10 destinations × 5 nationalities
+- Week 6: Configure North America + Oceania (US, CA, AU, NZ) - 4 destinations × 5 nationalities
+- Week 7: Configure Europe + Middle East (UK, FR, DE, IT, ES, AE) - 6 destinations × 5 nationalities
+- Week 8: Testing, bug fixes, performance tuning across all 100 combinations
 
 **Deliverables:**
-- 5 destinations × 20 nationalities = 100 configurations
+- 20 destinations × 5 nationalities = 100 configurations
 - Integration tests for all 100 combinations
 - Performance benchmarks
+- Regional coverage across Asia-Pacific, North America, Europe, and Middle East
 
 ### Phase 4: Plugin System (Week 9-10)
 
@@ -2133,12 +2134,13 @@ This design document proposes a **scalable, maintainable, and extensible** archi
 1. **Review & Approve:** Stakeholders review this design
 2. **Proof of Concept:** Implement Phase 1-2 for Thailand as pilot
 3. **Iterate:** Gather feedback and refine
-4. **Scale:** Roll out to top 5 destinations × 20 nationalities
+4. **Scale:** Roll out to 20 destinations × 5 nationalities
 5. **Optimize:** Add remote config, analytics, A/B testing
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Last Updated:** 2025-10-26
 **Author:** Claude (AI Assistant)
 **Status:** 🟡 Awaiting Approval
+**Changelog:** v1.1 - Updated Phase 3 scope from "5 destinations × 20 nationalities" to "20 destinations × 5 nationalities" for broader destination coverage
