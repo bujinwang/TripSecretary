@@ -23,6 +23,7 @@ import Input from '../../components/Input';
 import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../components';
+import HongKongDistrictSelector from '../../components/HongKongDistrictSelector';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
 import { colors, typography, spacing } from '../../theme';
@@ -1353,6 +1354,33 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
       handleFieldBlur('postalCode', newPostalCode);
     }
   }, [handleFieldBlur, postalCode]);
+
+  // Handler for Hong Kong district selector (region + district combined)
+  const handleHongKongDistrictSelect = useCallback((selection) => {
+    if (!selection) return;
+
+    // Set region (stored in province field for compatibility)
+    setProvince(selection.region);
+    handleFieldBlur('province', selection.region);
+
+    // Set district
+    setDistrict(selection.district);
+    setDistrictId(selection.districtId);
+    handleFieldBlur('district', selection.district);
+
+    // Clear sub-district (Hong Kong doesn't have sub-districts)
+    if (subDistrict) {
+      setSubDistrict('');
+      setSubDistrictId(null);
+      handleFieldBlur('subDistrict', '');
+    }
+
+    // Clear postal code (Hong Kong doesn't use postal codes the same way)
+    if (postalCode) {
+      setPostalCode('');
+      handleFieldBlur('postalCode', '');
+    }
+  }, [handleFieldBlur, subDistrict, postalCode]);
 
 // Helper method to perform the actual save operation
 const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
@@ -2910,13 +2938,13 @@ const normalizeFundItem = useCallback((item) => ({
           {!isTransitPassenger && (
             accommodationType === 'HOTEL' ? (
               <>
-                <ProvinceSelector
-                  label="省"
-                  value={province}
-                  onValueChange={handleProvinceSelect}
-                  helpText="请选择香港的省份"
-                  error={!!errors.province}
-                  errorMessage={errors.province}
+                <HongKongDistrictSelector
+                  label="香港地區 / Hong Kong District"
+                  value={district}
+                  onSelect={handleHongKongDistrictSelect}
+                  helpText="請選擇香港地區（支持中英文搜索）/ Select Hong Kong district (supports Chinese/English search)"
+                  error={!!errors.district}
+                  errorMessage={errors.district}
                 />
                 <Input
                   label="地址"
@@ -2957,45 +2985,13 @@ const normalizeFundItem = useCallback((item) => ({
               </>
             ) : (
               <>
-                <ProvinceSelector
-                  label="省"
-                  value={province}
-                  onValueChange={handleProvinceSelect}
-                  helpText="请选择香港的省份"
-                  error={!!errors.province}
-                  errorMessage={errors.province}
-                />
-                <DistrictSelector
-                  label="区（地区）"
-                  provinceCode={province}
+                <HongKongDistrictSelector
+                  label="香港地區 / Hong Kong District"
                   value={district}
-                  selectedDistrictId={districtId}
-                  onSelect={handleDistrictSelect}
-                  helpText="请选择区或地区（支持中英文搜索）"
+                  onSelect={handleHongKongDistrictSelect}
+                  helpText="請選擇香港地區（支持中英文搜索）/ Select Hong Kong district (supports Chinese/English search)"
                   error={!!errors.district}
                   errorMessage={errors.district}
-                />
-                <SubDistrictSelector
-                  label="乡（子地区）"
-                  districtId={districtId}
-                  value={subDistrict}
-                  selectedSubDistrictId={subDistrictId}
-                  onSelect={handleSubDistrictSelect}
-                  helpText="选择后我们会自动匹配邮政编码"
-                  error={!!errors.subDistrict}
-                  errorMessage={errors.subDistrict}
-                />
-                <Input
-                  label="邮政编码"
-                  value={postalCode}
-                  onChangeText={(value) => {
-                    setPostalCode(value);
-                  }}
-                  onBlur={() => handleFieldBlur('postalCode', postalCode)}
-                  helpText="选择乡 / 街道后会自动填写，可手动修正"
-                  error={!!errors.postalCode}
-                  errorMessage={errors.postalCode}
-                  keyboardType="numeric"
                 />
                 <Input 
                   label="详细地址" 
