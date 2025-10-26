@@ -25,6 +25,7 @@ import {
   JapanRequirementsScreen,
   JapanProceduresScreen,
   JapanTravelInfoScreen,
+  JapanEntryFlowScreen,
   InteractiveImmigrationGuide,
   JapanInteractiveImmigrationGuide,
   // Thailand screens
@@ -488,6 +489,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="JapanTravelInfo"
           component={JapanTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanEntryFlow"
+          component={JapanEntryFlowScreen}
           options={{
             headerShown: false,
           }}
