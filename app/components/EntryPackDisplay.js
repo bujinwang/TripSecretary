@@ -5,6 +5,7 @@ import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import TDACInfoCard from './TDACInfoCard';
 import { thailandProvinces } from '../data/thailandProvinces';
+import { hongkongDistricts, getAllDistricts } from '../data/hongkongLocations';
 
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
@@ -66,6 +67,34 @@ const countryConfigs = {
       amount: 'Amount / Jumlah'
     },
     dateLocales: ['en-US', 'ms-MY']
+  },
+  hongkong: {
+    entryCardName: 'HDAC',
+    entryCardTab: 'hdac',
+    entryCardTitle: '香港入境資料 / Hong Kong Entry Information',
+    personalInfoTitle: '個人資料 / Personal Information',
+    travelInfoTitle: '旅行資料 / Travel Information',
+    fundsTitle: '資金證明 / Funds Information',
+    currency: 'HKD',
+    currencyName: '港幣',
+    notProvided: '未提供 / Not provided',
+    fallbackHotelText: '請提供住宿地址 / Please provide accommodation address',
+    labels: {
+      fullName: '全名 / Full Name',
+      passportNumber: '護照號碼 / Passport Number',
+      nationality: '國籍 / Nationality',
+      dateOfBirth: '出生日期 / Date of Birth',
+      arrivalDate: '抵達日期 / Arrival Date',
+      departureDate: '離開日期 / Departure Date',
+      flightNumber: '航班號碼 / Flight Number',
+      stayLocation: '住宿地點 / Stay Location',
+      lengthOfStay: '停留時間 / Length of Stay',
+      purpose: '訪問目的 / Purpose of Visit',
+      totalFunds: '總資金 / Total Funds',
+      fundType: '類型 / Type',
+      amount: '金額 / Amount'
+    },
+    dateLocales: ['zh-HK', 'en-US']
   }
 };
 
@@ -102,6 +131,43 @@ const EntryPackDisplay = ({
     const thaiName = province.nameTh || province.name || raw;
     const englishName = province.name || raw;
     return `${thaiName} / ${englishName}`;
+  };
+
+  const formatDistrictHongKongBilingual = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    const raw = value.trim();
+    if (!raw) return '';
+
+    // Get all Hong Kong districts
+    const allDistricts = getAllDistricts();
+
+    // Try to find by exact match (nameEn or nameZh)
+    let district = allDistricts.find(
+      d => d.nameEn === raw || d.nameZh === raw || d.nameEn.toLowerCase() === raw.toLowerCase()
+    );
+
+    if (!district) {
+      // Try partial match
+      district = allDistricts.find(
+        d => d.nameEn.toLowerCase().includes(raw.toLowerCase()) ||
+             d.nameZh.includes(raw)
+      );
+    }
+
+    if (!district) return raw; // Return original if not found
+
+    // Format as: 繁體中文 / English
+    return `${district.nameZh} / ${district.nameEn}`;
+  };
+
+  // Country-aware location formatter
+  const formatLocationBilingual = (value) => {
+    if (country === 'hongkong') {
+      return formatDistrictHongKongBilingual(value);
+    } else if (country === 'thailand') {
+      return formatProvinceThaiEnglish(value);
+    }
+    return value || '';
   };
 
   if (!entryPack) {
@@ -166,10 +232,11 @@ const EntryPackDisplay = ({
       travelInfo?.hotelProvince,
       travelInfo?.hotelProvinceCode,
       travelInfo?.state,
+      travelInfo?.district, // For Hong Kong
     ];
 
     for (const candidate of candidates) {
-      const display = formatProvinceThaiEnglish(candidate);
+      const display = formatLocationBilingual(candidate);
       if (display) return display;
     }
 
@@ -181,6 +248,7 @@ const EntryPackDisplay = ({
     travelInfo?.hotelProvince,
     travelInfo?.hotelProvinceCode,
     travelInfo?.state,
+    travelInfo?.district,
   ]);
 
   const stayLocationAnswer = useMemo(() => {
