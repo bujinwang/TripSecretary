@@ -5,7 +5,9 @@ This refactoring addresses the excessive complexity of `ThailandTravelInfoScreen
 
 ## Changes Made
 
-### Phase 1: Custom Hooks Extraction (Completed)
+### Phase 1: Custom Hooks Extraction ✅ (Completed)
+
+### Phase 2: UI Section Components Extraction ✅ (Completed)
 
 Created three custom hooks to separate concerns and reduce complexity:
 
@@ -123,9 +125,102 @@ const validation = useThailandValidation({
 - Testability: ✅ (can test hooks independently)
 - Maintainability: ✅ (easier to find and modify logic)
 
+### Phase 2: UI Section Components Extraction (Completed)
+
+Extracted all major form sections into reusable components:
+
+#### 1. **HeroSection.js** (app/components/thailand/sections/)
+**Size**: ~140 lines
+
+**What it does**:
+- Displays the introductory hero section with gradient background
+- Shows value propositions (3 minutes, privacy, avoid delays)
+- Beginner-friendly tips for first-time travelers
+
+**Benefits**:
+- Self-contained UI component
+- Easy to modify welcome messaging
+- Reusable design pattern
+
+#### 2. **PassportSection.js** (app/components/thailand/sections/)
+**Size**: ~310 lines
+
+**What it does**:
+- Passport information form (passport no, name, nationality, etc.)
+- Gender selection with inline options
+- All passport validation logic
+- Date inputs for DOB and expiry
+
+**Benefits**:
+- Clean separation of passport-related UI
+- Testable in isolation
+- Reusable for other country screens
+
+#### 3. **PersonalInfoSection.js** (app/components/thailand/sections/)
+**Size**: ~210 lines
+
+**What it does**:
+- Personal information form (occupation, residence, contact)
+- Phone number with country code
+- Email input with validation
+- Occupation selector with custom option
+
+**Benefits**:
+- Groups related personal fields
+- Easier to maintain contact info logic
+- Clear separation from passport data
+
+#### 4. **FundsSection.js** (app/components/thailand/sections/)
+**Size**: ~200 lines
+
+**What it does**:
+- Displays fund items list
+- Add fund buttons (cash, credit card, bank balance)
+- Empty state when no funds added
+- Fund item details with icons
+
+**Benefits**:
+- Encapsulates funds management UI
+- Easy to modify fund display logic
+- Testable fund list rendering
+
+#### 5. **TravelDetailsSection.js** (app/components/thailand/sections/)
+**Size**: ~730 lines
+
+**What it does**:
+- Travel purpose selection
+- Arrival and departure flight info
+- Document photo uploads (tickets, hotel)
+- Accommodation type and address
+- Transit passenger checkbox
+- Province/district/sub-district selectors
+
+**Note**: This is the largest component and could be further broken down into:
+- `FlightInfoSubSection.js`
+- `AccommodationSubSection.js`
+- `DateSelectionSubSection.js`
+
+**Benefits**:
+- Consolidates all travel-related fields
+- Conditional rendering for transit passengers
+- Handles complex accommodation logic
+
+### Phase 2 Impact
+
+**Sections extracted**: 5 major components totaling ~1,590 lines
+**Files created**: 6 files (5 components + 1 index)
+**Lines per component**: Average ~265 lines (vs 3,930 in original)
+
+**Benefits**:
+- **Modularity**: Each section is self-contained and reusable
+- **Maintainability**: Easier to find and modify specific form sections
+- **Testability**: Each section can be tested independently
+- **Readability**: Smaller, focused components are easier to understand
+- **Reusability**: Sections can be adapted for other country screens
+
 ## Next Steps (Recommended)
 
-### Phase 2: Component Extraction
+### Phase 3: Styles Extraction
 1. Extract form section components:
    - `PassportSection.js` - Passport fields UI
    - `PersonalInfoSection.js` - Personal info fields UI
