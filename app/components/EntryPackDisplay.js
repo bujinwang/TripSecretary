@@ -510,35 +510,33 @@ const EntryPackDisplay = ({
             country={country}
           />
         ) : (
-          <View style={styles.tdacPlaceholder}>
-            <View style={styles.placeholderIcon}>
-              <Text style={styles.placeholderIconText}>📱</Text>
-            </View>
-            <Text style={styles.placeholderTitle}>
-              {placeholderTitles[country] || placeholderTitles.thailand}
-            </Text>
-            <Text style={styles.placeholderDescription}>
-              {placeholderDescriptions[country] || placeholderDescriptions.thailand}
-            </Text>
-            <View style={styles.qrPlaceholder}>
-              <Text style={styles.qrPlaceholderText}>
-                {qrPlaceholderTexts[country] || qrPlaceholderTexts.thailand}
+          <>
+            <View style={styles.tdacPlaceholder}>
+              <View style={styles.placeholderIcon}>
+                <Text style={styles.placeholderIconText}>📱</Text>
+              </View>
+              <Text style={styles.placeholderTitle}>
+                {placeholderTitles[country] || placeholderTitles.thailand}
+              </Text>
+              <Text style={styles.placeholderDescription}>
+                {placeholderDescriptions[country] || placeholderDescriptions.thailand}
+              </Text>
+              <View style={styles.qrPlaceholder}>
+                <Text style={styles.qrPlaceholderText}>
+                  {qrPlaceholderTexts[country] || qrPlaceholderTexts.thailand}
+                </Text>
+              </View>
+              <Text style={styles.placeholderNote}>
+                {placeholderNotes[country] || placeholderNotes.thailand}
               </Text>
             </View>
             <Text style={styles.placeholderNote}>
-              {placeholderNotes[country] || placeholderNotes.thailand}
+              {country === 'malaysia'
+                ? 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen'
+                : 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC'
+              }
             </Text>
-          </View>
-          <Text style={styles.placeholderNote}>
-            {country === 'malaysia'
-              ? 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen'
-              : 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC'
-            }
-          </Text>
-        </View>
-      )}
-    </View>
-  );
+          </>
         )}
       </View>
     );
@@ -565,10 +563,6 @@ const EntryPackDisplay = ({
             q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
             a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
           }
-          { q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism' },
-          { q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?', a: travelInfo?.lengthOfStay || '30 วัน / 30 days' },
-          { q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?', a: stayLocationAnswer },
-          { q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)` }
         ]
       },
       malaysia: {
@@ -611,10 +605,6 @@ const EntryPackDisplay = ({
             q: 'Q: 你帶了多少錢？ / How much money do you have?',
             a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
           }
-          { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan' },
-          { q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?', a: travelInfo?.lengthOfStay || '7 days / 7 hari' },
-          { q: 'Q: Where will you be staying? / Di mana anda akan menginap?', a: stayLocationAnswer },
-          { q: 'Q: How much money do you have? / Berapa banyak wang yang anda bawa?', a: `${formatBilingualCurrency(totalFunds)} (Cash and cards / Tunai dan kad)` }
         ]
       },
       singapore: {
@@ -694,6 +684,7 @@ const EntryPackDisplay = ({
       { key: 'personal', label: '個人資料', labelEn: 'Personal' },
       { key: 'travel', label: '旅行資料', labelEn: 'Travel' },
       { key: 'funds', label: '資金證明', labelEn: 'Funds' },
+    ],
     singapore: [
       { key: 'sgac', label: 'SGAC', labelEn: '入境卡' },
       { key: 'personal', label: 'Personal', labelEn: '个人' },
@@ -713,7 +704,7 @@ const EntryPackDisplay = ({
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
     malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
-    hongkong: '🇭🇰 入境資料包 / Entry Pack'
+    hongkong: '🇭🇰 入境資料包 / Entry Pack',
     singapore: '🇸🇬 Entry Pack / 入境信息包',
     japan: '🇯🇵 入国情報パック / Entry Pack'
   };
@@ -721,7 +712,7 @@ const EntryPackDisplay = ({
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
     malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
-    hongkong: '入境處重要資料 / Important information for immigration officer'
+    hongkong: '入境處重要資料 / Important information for immigration officer',
     singapore: 'Important information for immigration officer / 重要入境信息',
     japan: '入国審査官への重要情報 / Important information for immigration officer'
   };
