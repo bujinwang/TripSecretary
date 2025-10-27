@@ -7,7 +7,7 @@ export const taiwanCities = [
   {
     "id": "taipei",
     "nameEn": "Taipei City",
-    "nameZh": "台北市",
+    "nameZh": "臺北市",
     "type": "special_municipality"
   },
   {
@@ -19,19 +19,19 @@ export const taiwanCities = [
   {
     "id": "taoyuan",
     "nameEn": "Taoyuan City",
-    "nameZh": "桃园市",
+    "nameZh": "桃園市",
     "type": "special_municipality"
   },
   {
     "id": "taichung",
     "nameEn": "Taichung City",
-    "nameZh": "台中市",
+    "nameZh": "臺中市",
     "type": "special_municipality"
   },
   {
     "id": "tainan",
     "nameEn": "Tainan City",
-    "nameZh": "台南市",
+    "nameZh": "臺南市",
     "type": "special_municipality"
   },
   {
@@ -55,85 +55,85 @@ export const taiwanCities = [
   {
     "id": "chiayi_city",
     "nameEn": "Chiayi City",
-    "nameZh": "嘉义市",
+    "nameZh": "嘉義市",
     "type": "provincial_city"
   },
   {
     "id": "hsinchu",
     "nameEn": "Hsinchu County",
-    "nameZh": "新竹县",
+    "nameZh": "新竹縣",
     "type": "county"
   },
   {
     "id": "miaoli",
     "nameEn": "Miaoli County",
-    "nameZh": "苗栗县",
+    "nameZh": "苗栗縣",
     "type": "county"
   },
   {
     "id": "changhua",
     "nameEn": "Changhua County",
-    "nameZh": "彰化县",
+    "nameZh": "彰化縣",
     "type": "county"
   },
   {
     "id": "nantou",
     "nameEn": "Nantou County",
-    "nameZh": "南投县",
+    "nameZh": "南投縣",
     "type": "county"
   },
   {
     "id": "yunlin",
     "nameEn": "Yunlin County",
-    "nameZh": "云林县",
+    "nameZh": "雲林縣",
     "type": "county"
   },
   {
     "id": "chiayi",
     "nameEn": "Chiayi County",
-    "nameZh": "嘉义县",
+    "nameZh": "嘉義縣",
     "type": "county"
   },
   {
     "id": "pingtung",
     "nameEn": "Pingtung County",
-    "nameZh": "屏东县",
+    "nameZh": "屏東縣",
     "type": "county"
   },
   {
     "id": "yilan",
     "nameEn": "Yilan County",
-    "nameZh": "宜兰县",
+    "nameZh": "宜蘭縣",
     "type": "county"
   },
   {
     "id": "hualien",
     "nameEn": "Hualien County",
-    "nameZh": "花莲县",
+    "nameZh": "花蓮縣",
     "type": "county"
   },
   {
     "id": "taitung",
     "nameEn": "Taitung County",
-    "nameZh": "台东县",
+    "nameZh": "臺東縣",
     "type": "county"
   },
   {
     "id": "penghu",
     "nameEn": "Penghu County",
-    "nameZh": "澎湖县",
+    "nameZh": "澎湖縣",
     "type": "county"
   },
   {
     "id": "kinmen",
     "nameEn": "Kinmen County",
-    "nameZh": "金门县",
+    "nameZh": "金門縣",
     "type": "county"
   },
   {
     "id": "lienchiang",
     "nameEn": "Lienchiang County",
-    "nameZh": "连江县",
+    "nameZh": "連江縣",
     "type": "county"
   }
 ];
