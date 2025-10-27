@@ -762,18 +762,18 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         
         // Restore expanded section
         if (sessionState.expandedSection) {
-          setExpandedSection(sessionState.expandedSection);
+          formState.setExpandedSection(sessionState.expandedSection);
         }
-        
+
         // Restore scroll position (will be applied after data loads)
         if (sessionState.scrollPosition) {
-          setScrollPosition(sessionState.scrollPosition);
+          formState.setScrollPosition(sessionState.scrollPosition);
           shouldRestoreScrollPosition.current = true;
         }
-        
+
         // Restore last edited field
         if (sessionState.lastEditedField) {
-          setLastEditedField(sessionState.lastEditedField);
+          formState.setLastEditedField(sessionState.lastEditedField);
         }
         
         return sessionState;
@@ -837,17 +837,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const handleNavigationWithSave = async (navigationAction, actionName = 'navigate') => {
     try {
       // Set saving state to show user that save is in progress
-      setSaveStatus('saving');
-      
+      formState.setSaveStatus('saving');
+
       // Flush any pending saves before navigation
       await DebouncedSave.flushPendingSave('thailand_travel_info');
-      
+
       // Execute the navigation action
       navigationAction();
     } catch (error) {
       console.error(`Failed to save data before ${actionName}:`, error);
-      setSaveStatus('error');
-      
+      formState.setSaveStatus('error');
+
       // Show error alert and ask user if they want to continue without saving
       Alert.alert(
         'Save Error',
@@ -867,7 +867,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           {
             text: 'Cancel',
             style: 'cancel',
-            onPress: () => setSaveStatus(null),
+            onPress: () => formState.setSaveStatus(null),
           },
         ]
       );
@@ -879,11 +879,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
   // Create debounced save function with error handling
-  const debouncedSaveData = DebouncedSave.debouncedSave(
+  const debouncedSaveDataLocal = DebouncedSave.debouncedSave(
     'thailand_travel_info',
     async () => {
       await saveDataToSecureStorage();
-      setLastEditedAt(new Date());
+      formState.setLastEditedAt(new Date());
     },
     300,
     {
@@ -1885,7 +1885,7 @@ const normalizeFundItem = useCallback((item) => ({
         contentContainerStyle={styles.scrollContainer}
         onScroll={(event) => {
           const currentScrollPosition = event.nativeEvent.contentOffset.y;
-          setScrollPosition(currentScrollPosition);
+          formState.setScrollPosition(currentScrollPosition);
         }}
         scrollEventThrottle={100}
       >
@@ -1975,10 +1975,10 @@ const normalizeFundItem = useCallback((item) => ({
                 {saveStatus === 'error' && t('thailand.travelInfo.saveStatus.error', { defaultValue: '保存失败' })}
               </Text>
               {saveStatus === 'error' && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.retryButton}
                   onPress={() => {
-                    setSaveStatus('saving');
+                    formState.setSaveStatus('saving');
                     debouncedSaveData();
                   }}
                 >
