@@ -91,6 +91,48 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('thailand_travel_info');
 
+  // Initialize persistence hook - handles data loading and saving
+  const persistence = useThailandDataPersistence({
+    passport,
+    destination,
+    userId,
+    formState,
+    userInteractionTracker,
+    navigation
+  });
+
+  // Initialize validation hook - handles field validation and completion tracking
+  const validation = useThailandValidation({
+    formState,
+    userInteractionTracker,
+    saveDataToSecureStorageWithOverride: persistence.saveDataToSecureStorage,
+    debouncedSaveData: persistence.debouncedSaveData
+  });
+
+  // Extract commonly used functions from hooks for easier access
+  const {
+    handleFieldBlur,
+    handleUserInteraction,
+    getFieldCount,
+    calculateCompletionMetrics,
+    isFormValid,
+    getSmartButtonConfig,
+    getProgressText,
+    getProgressColor
+  } = validation;
+
+  const {
+    loadData,
+    saveDataToSecureStorage: saveDataToSecureStorageWithOverride,
+    debouncedSaveData,
+    refreshFundItems,
+    initializeEntryInfo,
+    saveSessionState,
+    loadSessionState,
+    scrollViewRef,
+    shouldRestoreScrollPosition
+  } = persistence;
+
   // Handle district/subdistrict ID updates (cascade logic)
   useEffect(() => {
     if (!formState.province || !formState.district) {
@@ -504,246 +546,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  // Load saved data on component mount and when screen gains focus
+  // Load saved data on component mount - delegated to persistence hook
   useEffect(() => {
-    const loadSavedData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Initialize UserDataService and trigger migration if needed
-        try {
-          await UserDataService.initialize(userId);
-        } catch (initError) {
-          console.error('Failed to initialize UserDataService:', initError);
-          console.error('Error details:', initError.message, initError.stack);
-          // Log the error but re-throw it to prevent further operations
-          throw initError;
-        }
-        
-        // Load all user data from centralized service
-        const userData = await UserDataService.getAllUserData(userId);
-        console.log('=== LOADED USER DATA ===');
-        console.log('userData:', userData);
-        console.log('userData.passport:', userData?.passport);
-        console.log('userData.passport.dateOfBirth:', userData?.passport?.dateOfBirth);
-        console.log('userData.personalInfo:', userData?.personalInfo);
+    loadData();
+  }, [loadData]);
 
-        // Load travel info and add to userData for migration
-        try {
-          const destinationId = destination?.id || 'thailand';
-          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          if (travelInfo) {
-            userData.travelInfo = travelInfo;
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to load travel info for migration:', travelInfoError);
-        }
-
-        // Wait for interaction tracker to be initialized before migration
-        if (userInteractionTracker.isInitialized) {
-          await migrateExistingDataToInteractionState(userData);
-        } else {
-          // If not initialized yet, wait a bit and try again
-          setTimeout(async () => {
-            if (userInteractionTracker.isInitialized) {
-              await migrateExistingDataToInteractionState(userData);
-            }
-          }, 100);
-        }
-
-        // Passport Info - prioritize centralized data, fallback to route params
-        const passportInfo = userData?.passport;
-        if (passportInfo) {
-          console.log('Loading passport from database:', passportInfo);
-          setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
-          const nameToParse = passportInfo?.fullName || passport?.nameEn || passport?.name || '';
-          if (nameToParse) {
-            const { surname, middleName, givenName } = parsePassportName(nameToParse);
-            setSurname(surname);
-            setMiddleName(middleName);
-            setGivenName(givenName);
-          }
-          setNationality(passportInfo.nationality || passport?.nationality || '');
-          setDob(passportInfo.dateOfBirth || passport?.dob || '');
-          setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-
-          // Store passport data model instance
-          setPassportData(passportInfo);
-        } else {
-          console.log('No passport data in database, using route params');
-          // Fallback to route params if no centralized data
-          setPassportNo(passport?.passportNo || '');
-          const nameToParse = passport?.nameEn || passport?.name || '';
-          if (nameToParse) {
-            const { surname, middleName, givenName } = parsePassportName(nameToParse);
-            setSurname(surname);
-            setMiddleName(middleName);
-            setGivenName(givenName);
-          }
-          setNationality(passport?.nationality || '');
-          setDob(passport?.dob || '');
-          setExpiryDate(passport?.expiry || '');
-        }
-
-        // Personal Info - load from centralized data
-        const personalInfo = userData?.personalInfo;
-        if (personalInfo) {
-          // Handle occupation - check if it's in predefined list
-          const savedOccupation = personalInfo.occupation || '';
-          const isPredefin = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
-          if (isPredefin) {
-            setOccupation(savedOccupation);
-            setCustomOccupation('');
-          } else if (savedOccupation) {
-            // Custom occupation - set to OTHER and populate custom field
-            setOccupation('OTHER');
-            setCustomOccupation(savedOccupation);
-          } else {
-            setOccupation('');
-            setCustomOccupation('');
-          }
-          setCityOfResidence(personalInfo.provinceCity || '');
-          setResidentCountry(personalInfo.countryRegion || '');
-          setPhoneNumber(personalInfo.phoneNumber || '');
-          setEmail(personalInfo.email || '');
-          
-          // Set phone code based on resident country or nationality
-          setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-          
-          // Store personal info data model instance
-          setPersonalInfoData(personalInfo);
-        } else {
-          setPhoneCode(getPhoneCode(passport?.nationality || ''));
-        }
-
-        // Gender - load from passport only (single source of truth)
-        const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || sex || 'Male';
-        setSex(loadedSex);
-
-        await refreshFundItems();
-
-        // Travel Info - load from centralized data
-        try {
-          // Use destination.id for consistent lookup (not affected by localization)
-          const destinationId = destination?.id || 'thailand';
-          console.log('Loading travel info for destination:', destinationId);
-          let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          
-          // Fallback: try loading with localized name if id lookup fails
-          // This handles data saved before the fix
-          if (!travelInfo && destination?.name) {
-            console.log('Trying fallback with destination name:', destination.name);
-            travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
-          }
-          
-          if (travelInfo) {
-            console.log('=== LOADING SAVED TRAVEL INFO ===');
-            console.log('Travel info data:', JSON.stringify(travelInfo, null, 2));
-            console.log('Hotel name from DB:', travelInfo.hotelName);
-            console.log('Hotel address from DB:', travelInfo.hotelAddress);
-            console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
-            
-            // Check if travel purpose is a predefined option
-            const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
-            const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
-            if (predefinedPurposes.includes(loadedPurpose)) {
-              setTravelPurpose(loadedPurpose);
-              setCustomTravelPurpose('');
-            } else {
-              // Custom purpose - set to OTHER and store custom value
-              setTravelPurpose('OTHER');
-              setCustomTravelPurpose(loadedPurpose);
-            }
-            setBoardingCountry(travelInfo.boardingCountry || '');
-            setRecentStayCountry(travelInfo.recentStayCountry || '');
-            setVisaNumber(travelInfo.visaNumber || '');
-            setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-            setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-            setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
-            setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-            console.log('=== LOADING DEPARTURE DATE FROM DB ===');
-            console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
-            console.log('travelInfo object keys:', Object.keys(travelInfo));
-            setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-            setIsTransitPassenger(travelInfo.isTransitPassenger || false);
-            // Load accommodation type
-            const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
-            const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
-            if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
-            setAccommodationType(loadedAccommodationType);
-            setCustomAccommodationType('');
-          } else {
-            // Custom accommodation type - set to OTHER and store custom value
-            setAccommodationType('OTHER');
-            setCustomAccommodationType(loadedAccommodationType);
-          }
-          setProvince(travelInfo.province || '');
-          setDistrict(travelInfo.district || '');
-          const matchedDistrict = findDistrictOption(travelInfo.province || province, travelInfo.district || '');
-          setDistrictId(matchedDistrict?.id || null);
-          setSubDistrict(travelInfo.subDistrict || '');
-          const matchedSubDistrict = findSubDistrictOption(
-            matchedDistrict?.id || travelInfo.districtId || null,
-            travelInfo.subDistrict || ''
-          );
-          setSubDistrictId(matchedSubDistrict?.id || null);
-          setPostalCode(travelInfo.postalCode || '');
-          setHotelAddress(travelInfo.hotelAddress || '');
-
-          // Load document photos
-          setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
-          setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
-
-            console.log('Travel info loaded and state updated');
-            
-            // Initialize user interaction tracker with loaded travel info
-            userInteractionTracker.initializeWithExistingData({
-              travelPurpose: travelInfo.travelPurpose,
-              boardingCountry: travelInfo.boardingCountry,
-              accommodationType: travelInfo.accommodationType,
-              recentStayCountry: travelInfo.recentStayCountry,
-              arrivalFlightNumber: travelInfo.arrivalFlightNumber,
-              arrivalArrivalDate: travelInfo.arrivalArrivalDate,
-              departureFlightNumber: travelInfo.departureFlightNumber,
-              departureDepartureDate: travelInfo.departureDepartureDate,
-              province: travelInfo.province,
-              district: travelInfo.district,
-              subDistrict: travelInfo.subDistrict,
-              postalCode: travelInfo.postalCode,
-              hotelAddress: travelInfo.hotelAddress,
-              customTravelPurpose: travelInfo.travelPurpose && !predefinedPurposes.includes(travelInfo.travelPurpose) ? travelInfo.travelPurpose : '',
-              customAccommodationType: travelInfo.accommodationType && !predefinedAccommodationTypes.includes(travelInfo.accommodationType) ? travelInfo.accommodationType : ''
-            });
-          } else {
-            console.log('No saved travel info found');
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to load travel info:', travelInfoError);
-          // Continue without travel info
-        }
-        
-      } catch (error) {
-        // Fallback to route params on error
-        setPassportNo(passport?.passportNo || '');
-        const nameToParse = passport?.nameEn || passport?.name || '';
-        if (nameToParse) {
-          const { surname, middleName, givenName } = parsePassportName(nameToParse);
-          setSurname(surname);
-          setMiddleName(middleName);
-          setGivenName(givenName);
-        }
-        setNationality(passport?.nationality || '');
-        setDob(passport?.dob || '');
-        setExpiryDate(passport?.expiry || '');
-        setSex(passport?.sex || 'Male');
-        setPhoneCode(getPhoneCode(passport?.nationality || ''));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSavedData();
-  }, [userId]); // Only depend on userId, not the entire passport object or refreshFundItems
 
   // Add focus listener to reload data when returning to screen
   useEffect(() => {
