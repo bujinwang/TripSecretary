@@ -622,6 +622,7 @@ const EntryPackDisplay = ({
     );
   };
 
+  const getTipsConfig = () => {
   const renderImmigrationTips = () => {
     const tipsConfig = {
       thailand: {
@@ -701,7 +702,7 @@ const EntryPackDisplay = ({
           },
           {
             q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?',
-            a: travelInfo?.lengthOfStay || '30 days / 30 hari'
+            a: travelInfo?.lengthOfStay || '7 days / 7 hari'
           },
           {
             q: 'Q: Where will you be staying? / Di mana anda akan menginap?',
@@ -714,30 +715,37 @@ const EntryPackDisplay = ({
         ]
       },
       singapore: {
-        title: '💡 Immigration Officer FAQs / 入境處常見問題',
+        title: '💡 Immigration Officer FAQs / 入境官员常见问题',
         questions: [
           {
-            q: 'Q: What is the purpose of your visit? / 你來新加坡的目的是什麼？',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅遊'
+            q: 'Q: What is the purpose of your visit to Singapore? / 你来新加坡的目的是什么？',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游'
           },
           {
-            q: 'Q: How long will you stay? / 你會停留多久？',
-            a: travelInfo?.lengthOfStay || '7 days / 7 天'
+            q: 'Q: How long will you stay in Singapore? / 你会在新加坡停留多久？',
+            a: travelInfo?.lengthOfStay || '7 days / 7天'
           },
           {
-            q: 'Q: Where will you be staying? / 你會住在哪裡？',
+            q: 'Q: Where will you be staying? / 你会住在哪里？',
             a: stayLocationAnswer
           },
           {
-            q: 'Q: How much money do you have? / 你帶了多少錢？',
-            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 現金和銀行卡)`
+            q: 'Q: How much money do you have for your stay? / 你带了多少钱？',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 现金和银行卡)`
+          },
+          {
+            q: 'Q: Do you have a return ticket? / 你有回程机票吗？',
+            a: travelInfo?.departureFlightNumber ? `Yes, ${travelInfo.departureFlightNumber} / 有，${travelInfo.departureFlightNumber}` : 'Yes / 有'
           }
         ]
       }
     };
 
-    const tips = tipsConfig[country] || tipsConfig.thailand;
+    return tipsConfig[country] || tipsConfig.thailand;
+  };
 
+  const renderImmigrationTips = () => {
+    const tips = getTipsConfig();
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tips.title}</Text>

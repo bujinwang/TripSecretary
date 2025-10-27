@@ -38,16 +38,16 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>新加坡通关包 - 预览 / Entry Pack Preview</Text>
+        <Text style={styles.headerTitle}>Singapore Entry Pack - Preview / 新加坡入境包 - 预览</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式 / Preview Mode</Text>
+          <Text style={styles.previewTitle}>Preview Mode / 预览模式</Text>
           <Text style={styles.previewDescription}>
-            这是您的通关包预览。提交SGAC后会包含完整的入境卡详情 / This is a preview of your entry pack. After submitting SGAC it will include the full entry card details.
+            This is a preview of your entry pack. After submitting SGAC it will include the full entry card details. / 这是您的入境包预览。提交SGAC后会包含完整的入境卡详情。
           </Text>
         </View>
 
@@ -73,7 +73,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              返回继续完善信息 ✏️ / Continue updating info
+              Continue Editing ✏️ / 继续完善信息
             </Text>
           </TouchableOpacity>
 
@@ -89,7 +89,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.submitButtonText}>
-              提交新加坡入境卡 SGAC 🌴 / Submit SGAC entry card
+              Submit Singapore Entry Card (SGAC) 🇸🇬 / 提交新加坡入境卡
             </Text>
           </TouchableOpacity>
         </View>
@@ -97,10 +97,10 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
         <View style={styles.infoBanner}>
           <Text style={styles.infoIcon}>ℹ️</Text>
           <Text style={styles.infoText}>
-            💡 提示：SGAC可在抵达前3天到抵达后15天内提交
+            💡 Tip: SGAC can be submitted 3 days before to 15 days after arrival
           </Text>
           <Text style={styles.infoSubtext}>
-            Tip: SGAC can be submitted 3 days before to 15 days after arrival
+            提示：SGAC可在抵达前3天到抵达后15天内提交
           </Text>
         </View>
       </ScrollView>
