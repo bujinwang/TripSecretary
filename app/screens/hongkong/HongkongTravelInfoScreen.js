@@ -1551,44 +1551,8 @@ const normalizeFundItem = useCallback((item) => ({
         }}
         scrollEventThrottle={100}
       >
-        {/* Enhanced Hero Section for Border Crossing Beginners */}
-        <LinearGradient
-          colors={['#1a3568', '#102347']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroSection}
-        >
-          <View style={styles.heroContent}>
-            <Text style={styles.heroFlag}>🇭🇰</Text>
-            <View style={styles.heroHeading}>
-              <Text style={styles.heroTitle}>香港入境准备指南</Text>
-              <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
-            </View>
-
-            {/* Beginner-Friendly Value Proposition */}
-            <View style={styles.valueProposition}>
-              <View style={styles.valueItem}>
-                <Text style={styles.valueIcon}>⏱️</Text>
-                <Text style={styles.valueText}>3分钟完成</Text>
-              </View>
-              <View style={styles.valueItem}>
-                <Text style={styles.valueIcon}>🔒</Text>
-                <Text style={styles.valueText}>100%隐私保护</Text>
-              </View>
-              <View style={styles.valueItem}>
-                <Text style={styles.valueIcon}>🎯</Text>
-                <Text style={styles.valueText}>避免通关延误</Text>
-              </View>
-            </View>
-
-            <View style={styles.beginnerTip}>
-              <Text style={styles.tipIcon}>💡</Text>
-              <Text style={styles.tipText}>
-                第一次过香港海关？我们会一步步教你准备所有必需文件，确保顺利通关！
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
+        {/* Hero Section */}
+        <HeroSection t={t} styles={styles} />
 
         {/* Progress Overview Card */}
         <View style={styles.progressOverviewCard}>
@@ -1669,729 +1633,161 @@ const normalizeFundItem = useCallback((item) => ({
           </Text>
         </View>
 
-        {/* Enhanced Personal Information Section */}
-        <CollapsibleSection
-          title="👤 护照信息"
-          subtitle="香港海关需要核实你的身份"
+        {/* Passport Information Section */}
+        <PassportSection
+          t={t}
           isExpanded={formState.expandedSection === 'passport'}
           onToggle={() => formState.setExpandedSection(formState.expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
-        >
-          {/* Border Crossing Context for Personal Info */}
-          <View style={styles.sectionIntro}>
-            <Text style={styles.sectionIntroIcon}>🛂</Text>
-            <Text style={styles.sectionIntroText}>
-              海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！
-            </Text>
-          </View>
-           <View style={styles.inputWithValidationContainer}>
-             <View style={styles.inputLabelContainer}>
-               <Text style={styles.inputLabel}>护照上的姓名</Text>
-               <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!formState.errors.fullName} />
-             </View>
-             <PassportNameInput
-               surname={surname}
-               middleName={middleName}
-               givenName={givenName}
-               onSurnameChange={setSurname}
-               onMiddleNameChange={setMiddleName}
-               onGivenNameChange={setGivenName}
-               onBlur={() => handleFieldBlur('fullName', [surname, middleName, givenName].filter(Boolean).join(', '))}
-               helpText="填写护照上显示的英文姓名，例如：LI, MAO（姓在前，名在后）"
-               error={!!formState.errors.fullName}
-               errorMessage={ formState.errors.fullName}
-             />
-             { formState.warnings.fullName && !errors.fullName && (
-               <Text style={styles.warningText}>{ formState.warnings.fullName}</Text>
-             )}
-           </View>
-           <NationalitySelector
-             label="国籍"
-             value={formState.nationality}
-             onValueChange={(code) => {
-               formState.setNationality(code);
-               debouncedSaveData(); // Trigger debounced save when nationality changes
-             }}
-             helpText="请选择您的国籍"
-             error={!!formState.errors.nationality}
-             errorMessage={ formState.errors.nationality}
-           />
-           <InputWithValidation
-             label="护照号码"
-             value={formState.passportNo}
-             onChangeText={setPassportNo}
-             onBlur={() => handleFieldBlur('passportNo', passportNo)}
-             helpText="护照号码通常是8-9位字母和数字的组合，输入时会自动转大写"
-             error={!!formState.errors.passportNo}
-             errorMessage={ formState.errors.passportNo}
-             warning={!!warnings.passportNo}
-             warningMessage={ formState.warnings.passportNo}
-             required={true}
-             autoCapitalize="characters"
-             testID="passport-number-input"
-           />
-           <InputWithValidation
-             label="签证号（如有）"
-             value={formState.visaNumber}
-             onChangeText={(text) => formState.setVisaNumber(text.toUpperCase())}
-             onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
-             helpText="如有签证，请填写签证号码（仅限字母或数字）"
-             error={!!formState.errors.visaNumber}
-             errorMessage={ formState.errors.visaNumber}
-             warning={!!warnings.visaNumber}
-             warningMessage={ formState.warnings.visaNumber}
-             optional={true}
-             autoCapitalize="characters"
-             autoCorrect={false}
-             autoComplete="off"
-             spellCheck={false}
-             keyboardType="ascii-capable"
-           />
-           <DateTimeInput
-             label="出生日期"
-             value={formState.dob}
-             onChangeText={(newValue) => {
-               formState.setDob(newValue);
-               // Trigger validation and save immediately when value changes
-               handleFieldBlur('dob', newValue);
-             }}
-             mode="date"
-             dateType="past"
-             helpText="选择出生日期"
-             error={!!formState.errors.dob}
-             errorMessage={ formState.errors.dob}
-           />
-           <DateTimeInput
-             label="护照有效期"
-             value={formState.expiryDate}
-             onChangeText={(newValue) => {
-               formState.setExpiryDate(newValue);
-               // Trigger validation and save immediately when value changes
-               handleFieldBlur('expiryDate', newValue);
-             }}
-             mode="date"
-             dateType="future"
-             helpText="选择护照有效期"
-             error={!!formState.errors.expiryDate}
-             errorMessage={ formState.errors.expiryDate}
-           />
-           <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>性别</Text>
-             {renderGenderOptions()}
-           </View>
-         </CollapsibleSection>
+          // Form state
+          surname={formState.surname}
+          middleName={formState.middleName}
+          givenName={formState.givenName}
+          nationality={formState.nationality}
+          passportNo={formState.passportNo}
+          visaNumber={formState.visaNumber}
+          dob={formState.dob}
+          expiryDate={formState.expiryDate}
+          sex={formState.sex}
+          // Setters
+          setSurname={formState.setSurname}
+          setMiddleName={formState.setMiddleName}
+          setGivenName={formState.setGivenName}
+          setNationality={formState.setNationality}
+          setPassportNo={formState.setPassportNo}
+          setVisaNumber={formState.setVisaNumber}
+          setDob={formState.setDob}
+          setExpiryDate={formState.setExpiryDate}
+          setSex={formState.setSex}
+          // Validation
+          errors={formState.errors}
+          warnings={formState.warnings}
+          handleFieldBlur={handleFieldBlur}
+          lastEditedField={formState.lastEditedField}
+          // Actions
+          debouncedSaveData={debouncedSaveData}
+          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
+          setLastEditedAt={formState.setLastEditedAt}
+          // Styles
+          styles={styles}
+        />
 
-        {/* Enhanced Personal Information Section */}
-        <CollapsibleSection
-          title="👤 个人信息"
-          subtitle="香港需要了解你的基本信息"
+        {/* Personal Information Section */}
+        <PersonalInfoSection
+          t={t}
           isExpanded={formState.expandedSection === 'personal'}
           onToggle={() => formState.setExpandedSection(formState.expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
-        >
-          {/* Border Crossing Context for Personal Info */}
-          <View style={styles.sectionIntro}>
-            <Text style={styles.sectionIntroIcon}>📱</Text>
-            <Text style={styles.sectionIntroText}>
-              提供你的基本个人信息，包括职业、居住地和联系方式，以便香港海关了解你的情况。
-            </Text>
-          </View>
-           <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>职业</Text>
-             <OptionSelector
-               options={OCCUPATION_OPTIONS}
-               value={formState.occupation}
-               onSelect={(value) => {
-                 formState.setOccupation(value);
-                 if (value !== 'OTHER') {
-                   formState.setCustomOccupation('');
-                   // Trigger validation for the selected occupation
-                   handleFieldBlur('occupation', value);
-                 }
-                 // Trigger debounced save after occupation selection
-                 debouncedSaveData();
-               }}
-               customValue={customOccupation}
-               onCustomChange={(text) => {
-                 formState.setCustomOccupation(text.toUpperCase());
-               }}
-               onCustomBlur={() => {
-                 // When custom occupation is entered, validate and save it
-                 const finalOccupation = customOccupation.trim() ? customOccupation : occupation;
-                 handleFieldBlur('occupation', finalOccupation);
-                 debouncedSaveData();
-               }}
-               customLabel="请输入您的职业"
-               customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
-               customHelpText="请用英文填写您的职业"
-             />
-             { formState.errors.occupation && (
-               <Text style={styles.errorText}>{ formState.errors.occupation}</Text>
-             )}
-             { formState.warnings.occupation && !errors.occupation && (
-               <Text style={styles.warningText}>{ formState.warnings.occupation}</Text>
-             )}
-           </View>
-           <InputWithValidation
-             label={cityOfResidenceLabel}
-             value={formState.cityOfResidence}
-             onChangeText={(text) => {
-               formState.setCityOfResidence(text.toUpperCase());
-             }}
-             onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
-             helpText={cityOfResidenceHelpText}
-             error={!!formState.errors.cityOfResidence}
-             errorMessage={ formState.errors.cityOfResidence}
-             warning={!!warnings.cityOfResidence}
-             warningMessage={ formState.warnings.cityOfResidence}
-             fieldName="cityOfResidence"
-             lastEditedField={lastEditedField}
-             autoCapitalize="characters"
-             placeholder={cityOfResidencePlaceholder}
-           />
-           <NationalitySelector
-             label="居住国家"
-             value={formState.residentCountry}
-             onValueChange={(code) => {
-               formState.setResidentCountry(code);
-               formState.setPhoneCode(getPhoneCode(code));
-               debouncedSaveData();
-             }}
-             helpText="请选择您居住的国家"
-             error={!!formState.errors.residentCountry}
-             errorMessage={ formState.errors.residentCountry}
-           />
-           <View style={styles.phoneInputContainer}>
-             <Input
-               label="国家代码"
-               value={formState.phoneCode}
-               onChangeText={setPhoneCode}
-               onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
-               keyboardType="phone-pad"
-               maxLength={5} // e.g., +886
-               error={!!formState.errors.phoneCode}
-               errorMessage={ formState.errors.phoneCode}
-               style={styles.phoneCodeInput}
-             />
-             <Input
-               label="电话号码"
-               value={formState.phoneNumber}
-               onChangeText={setPhoneNumber}
-               onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
-               keyboardType="phone-pad"
-               helpText="请输入您的电话号码"
-               error={!!formState.errors.phoneNumber}
-               errorMessage={ formState.errors.phoneNumber}
-               style={styles.phoneInput}
-             />
-           </View>
-           <InputWithValidation
-             label="电子邮箱"
-             value={formState.email}
-             onChangeText={setEmail}
-             onBlur={() => handleFieldBlur('email', email)} 
-             keyboardType="email-address" 
-             helpText="请输入您的电子邮箱地址" 
-             error={!!formState.errors.email} 
-             errorMessage={ formState.errors.email}
-             warning={!!warnings.email}
-             warningMessage={ formState.warnings.email}
-             fieldName="email"
-             lastEditedField={lastEditedField}
-             testID="email-input" 
-           />
-         </CollapsibleSection>
-
-        {/* Enhanced Funds Section */}
-        <CollapsibleSection
-          title="💰 资金证明"
-          subtitle="证明你有足够资金在香港旅行"
+          // Form state
+          occupation={formState.occupation}
+          customOccupation={formState.customOccupation}
+          cityOfResidence={formState.cityOfResidence}
+          residentCountry={formState.residentCountry}
+          phoneCode={formState.phoneCode}
+          phoneNumber={formState.phoneNumber}
+          email={formState.email}
+          // Computed values
+          cityOfResidenceLabel={cityOfResidenceLabel}
+          cityOfResidenceHelpText={cityOfResidenceHelpText}
+          cityOfResidencePlaceholder={cityOfResidencePlaceholder}
+          // Setters
+          setOccupation={formState.setOccupation}
+          setCustomOccupation={formState.setCustomOccupation}
+          setCityOfResidence={formState.setCityOfResidence}
+          setResidentCountry={formState.setResidentCountry}
+          setPhoneCode={formState.setPhoneCode}
+          setPhoneNumber={formState.setPhoneNumber}
+          setEmail={formState.setEmail}
+          // Validation
+          errors={formState.errors}
+          warnings={formState.warnings}
+          handleFieldBlur={handleFieldBlur}
+          lastEditedField={formState.lastEditedField}
+          // Actions
+          debouncedSaveData={debouncedSaveData}
+          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
+          setLastEditedAt={formState.setLastEditedAt}
+          // Styles
+        {/* Funds Section */}
+        <FundsSection
+          t={t}
           isExpanded={formState.expandedSection === 'funds'}
           onToggle={() => formState.setExpandedSection(formState.expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
-        >
-          {/* Border Crossing Context for Funds */}
-          <View style={styles.sectionIntro}>
-            <Text style={styles.sectionIntroIcon}>💳</Text>
-            <Text style={styles.sectionIntroText}>
-              香港海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用，通常是每天至少500泰铢。
-            </Text>
-          </View>
-          <View style={styles.fundActions}>
-            <Button title="添加现金" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
-            <Button title="添加信用卡照片" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
-            <Button title="添加银行账户余额" onPress={() => addFund('bank_balance')} variant="secondary" style={styles.fundButton} />
-          </View>
+          // Form state
+          funds={formState.funds}
+          fundItemModalVisible={formState.fundItemModalVisible}
+          currentFundItem={formState.currentFundItem}
+          newFundItemType={formState.newFundItemType}
+          // Setters
+          setFunds={formState.setFunds}
+          setFundItemModalVisible={formState.setFundItemModalVisible}
+          setCurrentFundItem={formState.setCurrentFundItem}
+          setNewFundItemType={formState.setNewFundItemType}
+          // Actions
+          handleAddFundItem={handleAddFundItem}
+          handleEditFundItem={handleEditFundItem}
+          handleSaveFundItem={handleSaveFundItem}
+          handleDeleteFundItem={handleDeleteFundItem}
+          // Styles
+          styles={styles}
+        />
 
-          {formState.funds.length === 0 ? (
-            <View style={styles.fundEmptyState}>
-              <Text style={styles.fundEmptyText}>
-                {t('hongkong.travelInfo.funds.empty', { defaultValue: '尚未添加资金证明，请先新建条目。' })}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.fundList}>
-              {formState.funds.map((fund, index) => {
-                const isLast = index === formState.funds.length - 1;
-                const typeKey = (fund.type || 'OTHER').toUpperCase();
-                const typeMeta = {
-                  CASH: { icon: '💵' },
-                  BANK_CARD: { icon: '💳' },
-                  CREDIT_CARD: { icon: '💳' },
-                  BANK_BALANCE: { icon: '🏦' },
-                  DOCUMENT: { icon: '📄' },
-                  INVESTMENT: { icon: '📈' },
-                  OTHER: { icon: '💰' },
-                };
-                const defaultTypeLabels = {
-                  CASH: 'Cash',
-                  BANK_CARD: 'Bank Card',
-                  CREDIT_CARD: 'Bank Card',
-                  BANK_BALANCE: 'Bank Balance',
-                  DOCUMENT: 'Supporting Document',
-                  INVESTMENT: 'Investment',
-                  OTHER: 'Funding',
-                };
-                const typeIcon = (typeMeta[typeKey] || typeMeta.OTHER).icon;
-                const typeLabel = t(`fundItem.types.${typeKey}`, {
-                  defaultValue: defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER,
-                });
-                const notProvidedLabel = t('fundItem.detail.notProvided', {
-                  defaultValue: 'Not provided yet',
-                });
-
-                const normalizeAmount = (value) => {
-                  if (value === null || value === undefined || value === '') return '';
-                  if (typeof value === 'number' && Number.isFinite(value)) {
-                    return value.toLocaleString();
-                  }
-                  if (typeof value === 'string') {
-                    const trimmed = value.trim();
-                    if (!trimmed) return '';
-                    const parsed = Number(trimmed.replace(/,/g, ''));
-                    return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
-                  }
-                  return `${value}`;
-                };
-
-                const amountValue = normalizeAmount(fund.amount);
-                const currencyValue = fund.currency ? fund.currency.toUpperCase() : '';
-                const detailsValue = fund.details || '';
-
-                let displayText;
-                if (typeKey === 'DOCUMENT') {
-                  displayText = detailsValue || notProvidedLabel;
-                } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
-                  const cardLabel = detailsValue || notProvidedLabel;
-                  const amountLabel = amountValue || notProvidedLabel;
-                  const currencyLabel = currencyValue || notProvidedLabel;
-                  displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
-                } else if (['CASH', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey)) {
-                  const amountLabel = amountValue || notProvidedLabel;
-                  const currencyLabel = currencyValue || notProvidedLabel;
-                  displayText = `${amountLabel} ${currencyLabel}`.trim();
-                } else {
-                  displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
-                }
-
-                if ((fund.photoUri || fund.photo) && typeKey !== 'CASH') {
-                  const photoLabel = t('fundItem.detail.photoAttached', { defaultValue: 'Photo attached' });
-                  displayText = `${displayText} • ${photoLabel}`;
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={fund.id}
-                    style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
-                    onPress={() => handleFundItemPress(fund)}
-                    accessibilityRole="button"
-                  >
-                    <View style={styles.fundListItemContent}>
-                      <Text style={styles.fundItemIcon}>{typeIcon}</Text>
-                      <View style={styles.fundItemDetails}>
-                        <Text style={styles.fundItemTitle}>{typeLabel}</Text>
-                        <Text style={styles.fundItemSubtitle} numberOfLines={2}>
-                          {displayText}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.fundListItemArrow}>›</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-        </CollapsibleSection>
-
-        {/* Enhanced Travel Information Section */}
-        <CollapsibleSection
-          title="✈️ 旅行计划"
-          subtitle="告诉香港你的旅行安排"
+        {/* Travel Details Section */}
+        <TravelDetailsSection
+          t={t}
           isExpanded={formState.expandedSection === 'travel'}
           onToggle={() => formState.setExpandedSection(formState.expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
-        >
-          {/* Border Crossing Context for Travel Info */}
-          <View style={styles.sectionIntro}>
-            <Text style={styles.sectionIntroIcon}>✈️</Text>
-            <Text style={styles.sectionIntroText}>
-              海关想知道你为什么来香港、何时来、何时走、在哪里住。这有助于他们确认你是合法游客。
-            </Text>
-          </View>
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>为什么来香港？</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOLIDAY', label: '度假旅游', icon: '🏖️', tip: '最受欢迎的选择！' },
-                { value: 'MEETING', label: '会议', icon: '👔', tip: '商务会议或活动' },
-                { value: 'SPORTS', label: '体育活动', icon: '⚽', tip: '运动或比赛' },
-                { value: 'BUSINESS', label: '商务', icon: '💼', tip: '商务考察或工作' },
-                { value: 'INCENTIVE', label: '奖励旅游', icon: '🎁', tip: '公司奖励旅行' },
-                { value: 'CONVENTION', label: '会展', icon: '🎪', tip: '参加会议或展览' },
-                { value: 'EDUCATION', label: '教育', icon: '📚', tip: '学习或培训' },
-                { value: 'EMPLOYMENT', label: '就业', icon: '💻', tip: '工作签证' },
-                { value: 'EXHIBITION', label: '展览', icon: '🎨', tip: '参观展览或展会' },
-                { value: 'MEDICAL', label: '医疗', icon: '🏥', tip: '医疗旅游或治疗' },
-                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
-              ].map((option) => {
-                const isActive = travelPurpose === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={() => {
-                      formState.setTravelPurpose(option.value);
-                      if (option.value !== 'OTHER') {
-                        formState.setCustomTravelPurpose('');
-                      }
-                      // Trigger debounced save after purpose selection
-                      debouncedSaveData();
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {travelPurpose === 'OTHER' && (
-              <Input
-                label="请输入旅行目的"
-                value={formState.customTravelPurpose}
-                onChangeText={setCustomTravelPurpose}
-                onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
-                placeholder="请输入您的旅行目的"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
-          </View>
-
-          <NationalitySelector
-            label="过去14天停留国家或地区"
-            value={formState.recentStayCountry}
-            onValueChange={(code) => {
-              formState.setRecentStayCountry(code);
-              handleFieldBlur('recentStayCountry', code);
-            }}
-            placeholder="请选择最近停留的国家或地区"
-            helpText="用于健康申报，通常为您最后停留的国家或地区"
-          />
-
-          <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>来程机票（入境香港）</Text>
-          </View>
-          <NationalitySelector
-            label="登机国家或地区"
-            value={formState.boardingCountry}
-            onValueChange={(code) => {
-              formState.setBoardingCountry(code);
-              handleFieldBlur('boardingCountry', code);
-            }}
-            placeholder="请选择登机国家或地区"
-            helpText="请选择您登机的国家或地区"
-            error={!!formState.errors.boardingCountry}
-            errorMessage={ formState.errors.boardingCountry}
-          />
-          <InputWithValidation 
-            label="航班号" 
-            value={formState.arrivalFlightNumber} 
-            onChangeText={setArrivalFlightNumber} 
-            onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)} 
-            helpText="请输入您的抵达航班号" 
-            error={!!formState.errors.arrivalFlightNumber} 
-            errorMessage={ formState.errors.arrivalFlightNumber}
-            warning={!!warnings.arrivalFlightNumber}
-            warningMessage={ formState.warnings.arrivalFlightNumber}
-            fieldName="arrivalFlightNumber"
-            lastEditedField={lastEditedField}
-            autoCapitalize="characters" 
-          />
-          <DateTimeInput
-            label="抵达日期"
-            value={formState.arrivalArrivalDate}
-            onChangeText={(newValue) => {
-              formState.setArrivalArrivalDate(newValue);
-              // Trigger validation and save immediately when value changes
-              handleFieldBlur('arrivalArrivalDate', newValue);
-            }}
-            mode="date"
-            dateType="future"
-            helpText="格式: YYYY-MM-DD"
-            error={!!formState.errors.arrivalArrivalDate}
-            errorMessage={ formState.errors.arrivalArrivalDate}
-          />
-
-          {/* Flight Ticket Upload Section */}
-          <View style={styles.documentUploadSection}>
-            <Text style={styles.documentUploadLabel}>📷 机票照片（可选）</Text>
-            <Text style={styles.documentUploadNote}>
-              💡 提示：请上传英文版本的机票
-            </Text>
-            <TouchableOpacity
-              style={styles.uploadButton}
-              onPress={handleFlightTicketPhotoUpload}
-            >
-              <Text style={styles.uploadButtonText}>
-                {formState.flightTicketPhoto ? '✓ 已上传 - 点击更换' : '📤 上传机票照片'}
-              </Text>
-            </TouchableOpacity>
-            {formState.flightTicketPhoto && (
-              <View style={styles.photoPreview}>
-                <Image
-                  source={{ uri: formState.flightTicketPhoto }}
-                  style={styles.photoPreviewImage}
-                  resizeMode="cover"
-                />
-              </View>
-            )}
-          </View>
-
-          <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>去程机票（离开香港）</Text>
-          </View>
-          <Input label="航班号" value={formState.departureFlightNumber} onChangeText={setDepartureFlightNumber} onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)} helpText="请输入您的离开航班号" error={!!errors.departureFlightNumber} errorMessage={errors.departureFlightNumber} autoCapitalize="characters" />
-          <DateTimeInput
-            label="出发日期"
-            value={formState.departureDepartureDate}
-            onChangeText={(newValue) => {
-              formState.setDepartureDepartureDate(newValue);
-              setTimeout(() => {
-                handleFieldBlur('departureDepartureDate', newValue);
-              }, 0);
-            }}
-            mode="date"
-            dateType="future"
-            helpText="格式: YYYY-MM-DD"
-            error={!!formState.errors.departureDepartureDate} 
-            errorMessage={ formState.errors.departureDepartureDate}
-          />
-
-          <View style={styles.subSectionHeader}>
-              <Text style={styles.subSectionTitle}>住宿信息</Text>
-          </View>
-
-          {/* Transit Passenger Checkbox */}
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={async () => {
-              const newValue = !formState.isTransitPassenger;
-              formState.setIsTransitPassenger(newValue);
-              if (newValue) {
-                formState.setAccommodationType('HOTEL');
-                formState.setCustomAccommodationType('');
-                formState.setProvince('');
-                formState.setDistrict('');
-                formState.setDistrictId(null);
-                formState.setSubDistrict('');
-                formState.setSubDistrictId(null);
-                formState.setPostalCode('');
-                formState.setHotelAddress('');
-              }
-
-              // Save immediately with the new value
-              try {
-                const overrides = { isTransitPassenger: newValue };
-                if (newValue) {
-                  // If becoming transit passenger, reset accommodation fields
-                  overrides.accommodationType = 'HOTEL';
-                  overrides.customAccommodationType = '';
-                  overrides.province = '';
-                  overrides.district = '';
-                  overrides.subDistrict = '';
-                  overrides.postalCode = '';
-                  overrides.hotelAddress = '';
-                }
-                
-                await saveDataToSecureStorageWithOverride(overrides);
-                formState.setLastEditedAt(new Date());
-              } catch (error) {
-                console.error('Failed to save transit passenger status:', error);
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, isTransitPassenger && styles.checkboxChecked]}>
-              {isTransitPassenger && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.checkboxLabel}>
-              我是过境旅客，不在香港停留
-            </Text>
-          </TouchableOpacity>
-
-          {!formState.isTransitPassenger && (
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>住在哪里？</Text>
-            <View style={styles.optionsContainer}>
-              {[
-                { value: 'HOTEL', label: '酒店', icon: '🏨', tip: '最常见的选择' },
-                { value: 'YOUTH_HOSTEL', label: '青年旅舍', icon: '🏠', tip: '经济实惠，交朋友' },
-                { value: 'GUEST_HOUSE', label: '民宿', icon: '🏡', tip: '体验当地生活' },
-                { value: 'FRIEND_HOUSE', label: '朋友家', icon: '👥', tip: '住在朋友家' },
-                { value: 'APARTMENT', label: '公寓', icon: '🏢', tip: '短期租住民宿' },
-                { value: 'OTHER', label: '其他', icon: '✏️', tip: '请详细说明' },
-              ].map((option) => {
-                const isActive = accommodationType === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
-                    onPress={async () => {
-                      console.log('=== ACCOMMODATION TYPE SELECTED ===');
-                      console.log('Selected option:', option.value);
-                      console.log('Previous accommodationType:', accommodationType);
-                      
-                      formState.setAccommodationType(option.value);
-                      if (option.value !== 'OTHER') {
-                        formState.setCustomAccommodationType('');
-                      }
-                      
-                      console.log('Saving immediately with new accommodation type...');
-                      // Save immediately with the new value to avoid React state delay
-                      try {
-                        await saveDataToSecureStorageWithOverride({ 
-                          accommodationType: option.value,
-                          customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
-                        });
-                        formState.setLastEditedAt(new Date());
-                      } catch (error) {
-                        console.error('Failed to save accommodation type:', error);
-                      }
-                    }}
-                  >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {accommodationType === 'OTHER' && (
-              <Input
-                label="请输入住宿类型"
-                value={formState.customAccommodationType}
-                onChangeText={setCustomAccommodationType}
-                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-                placeholder="请输入您的住宿类型"
-                helpText="请用英文填写"
-                autoCapitalize="words"
-              />
-            )}
-          </View>
-          )}
-          
-          {!formState.isTransitPassenger && (
-            accommodationType === 'HOTEL' ? (
-              <>
-                <HongKongDistrictSelector
-                  label="香港地區 / Hong Kong District"
-                  value={formState.district}
-                  onSelect={handleHongKongDistrictSelect}
-                  helpText="請選擇香港地區（支持中英文搜索）/ Select Hong Kong district (supports Chinese/English search)"
-                  error={!!formState.errors.district}
-                  errorMessage={ formState.errors.district}
-                />
-                <Input
-                  label="地址"
-                  value={formState.hotelAddress}
-                  onChangeText={setHotelAddress}
-                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
-                  multiline
-                  helpText="请输入详细地址"
-                  error={!!formState.errors.hotelAddress}
-                  errorMessage={ formState.errors.hotelAddress}
-                  autoCapitalize="words"
-                />
-
-                {/* Hotel Reservation Upload Section */}
-                <View style={styles.documentUploadSection}>
-                  <Text style={styles.documentUploadLabel}>📷 酒店预订照片（可选）</Text>
-                  <Text style={styles.documentUploadNote}>
-                    💡 提示：请上传英文版本的酒店预订确认单
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.uploadButton}
-                    onPress={handleHotelReservationPhotoUpload}
-                  >
-                    <Text style={styles.uploadButtonText}>
-                      {formState.hotelReservationPhoto ? '✓ 已上传 - 点击更换' : '📤 上传预订照片'}
-                    </Text>
-                  </TouchableOpacity>
-                  {formState.hotelReservationPhoto && (
-                    <View style={styles.photoPreview}>
-                      <Image
-                        source={{ uri: formState.hotelReservationPhoto }}
-                        style={styles.photoPreviewImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                  )}
-                </View>
-              </>
-            ) : (
-              <>
-                <HongKongDistrictSelector
-                  label="香港地區 / Hong Kong District"
-                  value={formState.district}
-                  onSelect={handleHongKongDistrictSelect}
-                  helpText="請選擇香港地區（支持中英文搜索）/ Select Hong Kong district (supports Chinese/English search)"
-                  error={!!formState.errors.district}
-                  errorMessage={ formState.errors.district}
-                />
-                <Input 
-                  label="详细地址" 
-                  value={formState.hotelAddress} 
-                  onChangeText={setHotelAddress} 
-                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                  multiline 
-                  helpText="请输入详细地址（例如：ABC COMPLEX (BUILDING A, SOUTH ZONE), 120 MOO 3, CHAENG WATTANA ROAD）" 
-                  error={!!formState.errors.hotelAddress} 
-                  errorMessage={ formState.errors.hotelAddress} 
-                  autoCapitalize="words" 
-                />
-              </>
-            )
-          )}
-        </CollapsibleSection>
+          // Form state
+          travelPurpose={formState.travelPurpose}
+          customTravelPurpose={formState.customTravelPurpose}
+          boardingCountry={formState.boardingCountry}
+          recentStayCountry={formState.recentStayCountry}
+          arrivalFlightNumber={formState.arrivalFlightNumber}
+          arrivalArrivalDate={formState.arrivalArrivalDate}
+          flightTicketPhoto={formState.flightTicketPhoto}
+          departureFlightNumber={formState.departureFlightNumber}
+          departureDepartureDate={formState.departureDepartureDate}
+          isTransitPassenger={formState.isTransitPassenger}
+          accommodationType={formState.accommodationType}
+          customAccommodationType={formState.customAccommodationType}
+          province={formState.province}
+          district={formState.district}
+          hotelAddress={formState.hotelAddress}
+          hotelReservationPhoto={formState.hotelReservationPhoto}
+          // Setters
+          setTravelPurpose={formState.setTravelPurpose}
+          setCustomTravelPurpose={formState.setCustomTravelPurpose}
+          setBoardingCountry={formState.setBoardingCountry}
+          setRecentStayCountry={formState.setRecentStayCountry}
+          setArrivalFlightNumber={formState.setArrivalFlightNumber}
+          setArrivalArrivalDate={formState.setArrivalArrivalDate}
+          setDepartureFlightNumber={formState.setDepartureFlightNumber}
+          setDepartureDepartureDate={formState.setDepartureDepartureDate}
+          setIsTransitPassenger={formState.setIsTransitPassenger}
+          setAccommodationType={formState.setAccommodationType}
+          setCustomAccommodationType={formState.setCustomAccommodationType}
+          setProvince={formState.setProvince}
+          setDistrict={formState.setDistrict}
+          setHotelAddress={formState.setHotelAddress}
+          // Validation
+          errors={formState.errors}
+          warnings={formState.warnings}
+          handleFieldBlur={handleFieldBlur}
+          lastEditedField={formState.lastEditedField}
+          // Actions
+          debouncedSaveData={debouncedSaveData}
+          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
+          setLastEditedAt={formState.setLastEditedAt}
+          handleProvinceSelect={handleProvinceSelect}
+          handleDistrictSelect={handleDistrictSelect}
+          handleFlightTicketPhotoUpload={handleFlightTicketPhotoUpload}
+          handleHotelReservationPhotoUpload={handleHotelReservationPhotoUpload}
+          handleUserInteraction={handleUserInteraction}
+          // Styles
+          styles={styles}
+        />
 
         <View style={styles.buttonContainer}>
           {/* Enhanced Progress Indicator */}
