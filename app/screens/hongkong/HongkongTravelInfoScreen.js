@@ -179,33 +179,6 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode, formState]);
 
 
-  // Debug function to clear user data
-  const clearUserData = async () => {
-    try {
-      const userId = passport?.id || 'user_001';
-      console.log('Clearing user data for userId:', userId);
-      await SecureStorageService.clearUserData(userId);
-      console.log('User data cleared successfully');
-      
-      // Clear local state
-      formState.setDob('');
-      formState.setPassportNo('');
-      formState.setSurname('');
-      formState.setMiddleName('');
-      formState.setGivenName('');
-      formState.setNationality('');
-      formState.setExpiryDate('');
-      formState.setSex('Male');
-      
-      // Clear cache
-      UserDataService.clearCache();
-      
-      alert('User data cleared successfully');
-    } catch (error) {
-      console.error('Failed to clear user data:', error);
-      alert('Failed to clear user data: ' + error.message);
-    }
-  };
 
   // Load saved data on component mount - delegated to persistence hook
   useEffect(() => {
@@ -213,269 +186,11 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   }, [loadData]);
 
 
-  // Add focus listener to reload data when returning to screen
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      const reloadData = async () => {
-        try {
-          
-          // Reload data from UserDataService
-          const userData = await UserDataService.getAllUserData(userId);
 
-          if (userData) {
-            // Load travel info and add to userData for migration
-            try {
-              const destinationId = destination?.id || 'hongkong';
-              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-              if (travelInfo) {
-                userData.travelInfo = travelInfo;
-              }
-            } catch (travelInfoError) {
-              console.log('Failed to load travel info for migration on focus:', travelInfoError);
-            }
 
-            // Perform backward compatibility migration on focus reload
-            if (userInteractionTracker.isInitialized) {
-              await migrateExistingDataToInteractionState(userData);
-            }
-            // Update passport data if available
-            const passportInfo = userData.passport;
-            if (passportInfo) {
-              formState.setPassportNo(prev => passportInfo.passportNumber || prev);
-              const nameToParse = passportInfo?.fullName || '';
-              if (nameToParse) {
-                const { surname, middleName, givenName } = parsePassportName(nameToParse);
-                formState.setSurname(surname);
-                formState.setMiddleName(middleName);
-                formState.setGivenName(givenName);
-              }
-              formState.setNationality(prev => passportInfo.nationality || prev);
-              formState.setDob(prev => passportInfo.dateOfBirth || prev);
-              formState.setExpiryDate(prev => passportInfo.expiryDate || prev);
-            }
 
-            // Update personal info if available
-            const personalInfo = userData.personalInfo;
-            if (personalInfo) {
-              // Handle occupation - check if it's in predefined list
-              const savedOccupation = personalInfo.occupation || formState.occupation;
-              const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
-              if (isPredefined) {
-                formState.setOccupation(savedOccupation);
-                formState.setCustomOccupation('');
-              } else if (savedOccupation) {
-                // Custom occupation - set to OTHER and populate custom field
-                formState.setOccupation('OTHER');
-                formState.setCustomOccupation(savedOccupation);
-              }
-              formState.setCityOfResidence(personalInfo.provinceCity || formState.cityOfResidence);
-              formState.setResidentCountry(personalInfo.countryRegion || formState.residentCountry);
-              formState.setPhoneNumber(personalInfo.phoneNumber || formState.phoneNumber);
-              formState.setEmail(personalInfo.email || formState.email);
-              formState.setPhoneCode(personalInfo.phoneCode || formState.phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
-            }
 
-            // Gender - load from passport only (single source of truth)
-            formState.setSex(passportInfo?.gender || passport?.sex || passport?.gender || formState.sex);
 
-            await refreshFundItems({ forceRefresh: true });
-
-            // Reload travel info data as well
-            try {
-              const destinationId = destination?.id || 'hongkong';
-              const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-              
-              if (travelInfo) {
-                console.log('=== RELOADING TRAVEL INFO ON FOCUS ===');
-                console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
-                
-                // Update travel info state
-                const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
-                const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
-                if (predefinedPurposes.includes(loadedPurpose)) {
-                  formState.setTravelPurpose(loadedPurpose);
-                  formState.setCustomTravelPurpose('');
-                } else {
-                  formState.setTravelPurpose('OTHER');
-                  formState.setCustomTravelPurpose(loadedPurpose);
-                }
-                formState.setBoardingCountry(travelInfo.boardingCountry || '');
-                formState.setRecentStayCountry(travelInfo.recentStayCountry || '');
-                formState.setVisaNumber(travelInfo.visaNumber || '');
-                formState.setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-                formState.setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-                formState.setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-                formState.setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-                formState.setIsTransitPassenger(travelInfo.isTransitPassenger || false);
-                
-                // Load accommodation type
-                const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
-                const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
-                if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
-                  formState.setAccommodationType(loadedAccommodationType);
-                  formState.setCustomAccommodationType('');
-                } else {
-                  formState.setAccommodationType('OTHER');
-                  formState.setCustomAccommodationType(loadedAccommodationType);
-                }
-                formState.setProvince(travelInfo.province || '');
-                formState.setDistrict(travelInfo.district || '');
-                formState.setSubDistrict(travelInfo.subDistrict || '');
-                formState.setPostalCode(travelInfo.postalCode || '');
-                formState.setHotelAddress(travelInfo.hotelAddress || '');
-
-                // Load document photos
-                formState.setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
-                formState.setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
-              }
-            } catch (travelInfoError) {
-              console.log('Failed to reload travel info on focus:', travelInfoError);
-            }
-          }
-        } catch (error) {
-          // Failed to reload data on focus
-        }
-      };
-
-      reloadData();
-    });
-
-    return unsubscribe;
-  }, [navigation, passport, refreshFundItems]);
-
-  // Add blur listener to save data when leaving the screen
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
-      // Flush any pending saves when leaving the screen
-      DebouncedSave.flushPendingSave('hongkong_travel_info');
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
-  // Cleanup effect (equivalent to componentWillUnmount)
-  useEffect(() => {
-    return () => {
-      // Save data and session state when component is unmounted
-      try {
-        DebouncedSave.flushPendingSave('hongkong_travel_info');
-        saveSessionState();
-      } catch (error) {
-        console.error('Failed to save data on component unmount:', error);
-        // Log error but don't block unmounting
-      }
-    };
-  }, []);
-
-  // Monitor save status changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStatus = DebouncedSave.getSaveState('hongkong_travel_info');
-      formState.setSaveStatus(currentStatus);
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Initialize entry_info when screen loads and data is ready
-  useEffect(() => {
-    if (!isLoading && !entryInfoInitialized) {
-      // Initialize entry_info even if passport data doesn't exist yet
-      // The entry_info will be updated with passport/personal info IDs when data is saved
-      initializeEntryInfo();
-    }
-  }, [isLoading, entryInfoInitialized, initializeEntryInfo]);
-
-  // Session state management functions
-  const getSessionStateKey = () => {
-    const userId = passport?.id || 'user_001';
-    return `session_state_hongkong_${userId}`;
-  };
-
-  const saveSessionState = async () => {
-    try {
-      const sessionState = {
-        expandedSection,
-        scrollPosition,
-        lastEditedField,
-        timestamp: new Date().toISOString(),
-      };
-      
-      const key = getSessionStateKey();
-      await AsyncStorage.setItem(key, JSON.stringify(sessionState));
-      console.log('Session state saved:', sessionState);
-    } catch (error) {
-      console.error('Failed to save session state:', error);
-      // Don't show error to user as this is non-critical
-    }
-  };
-
-  const loadSessionState = async () => {
-    try {
-      const key = getSessionStateKey();
-      const sessionStateJson = await AsyncStorage.getItem(key);
-      
-      if (sessionStateJson) {
-        const sessionState = JSON.parse(sessionStateJson);
-        console.log('Session state loaded:', sessionState);
-        
-        // Restore expanded section
-        if (sessionState.expandedSection) {
-          formState.setExpandedSection(sessionState.expandedSection);
-        }
-        
-        // Restore scroll position (will be applied after data loads)
-        if (sessionState.scrollPosition) {
-          formState.setScrollPosition(sessionState.scrollPosition);
-          shouldRestoreScrollPosition.current = true;
-        }
-        
-        // Restore last edited field
-        if (sessionState.lastEditedField) {
-          formState.setLastEditedField(sessionState.lastEditedField);
-        }
-        
-        return sessionState;
-      }
-    } catch (error) {
-      console.error('Failed to load session state:', error);
-      // Continue without session state
-    }
-    return null;
-  };
-
-  // Save session state when expandedSection changes
-  useEffect(() => {
-    if (!isLoading) {
-      saveSessionState();
-    }
-  }, [expandedSection, lastEditedField]);
-
-  // Load session state on component mount
-  useEffect(() => {
-    loadSessionState();
-  }, []);
-
-  // Restore scroll position after data loads
-  useEffect(() => {
-    if (
-      !isLoading &&
-      shouldRestoreScrollPosition.current &&
-      scrollPosition > 0 &&
-      scrollViewRef.current
-    ) {
-      const targetScrollPosition = scrollPosition;
-      shouldRestoreScrollPosition.current = false;
-
-      // Use a small delay to ensure the ScrollView is fully rendered
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          y: targetScrollPosition,
-          animated: false,
-        });
-      }, 100);
-    }
-  }, [isLoading, scrollPosition]);
 
   // Recalculate completion metrics when data changes
   useEffect(() => {
@@ -537,31 +252,6 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
 
 
 
-  // Create debounced save function with error handling
-  const debouncedSaveData = DebouncedSave.debouncedSave(
-    'hongkong_travel_info',
-    async () => {
-      await saveDataToSecureStorage();
-      formState.setLastEditedAt(new Date());
-    },
-    300,
-    {
-      maxRetries: 3,
-      retryDelay: 1000,
-      onError: (error, retryCount) => {
-        console.error(`Save failed after ${retryCount} retries:`, error);
-        // Could show user notification here
-        Alert.alert(
-          '保存失败',
-          `数据保存失败，已重试 ${retryCount} 次。请检查网络连接或稍后再试。`,
-          [
-            { text: '稍后重试', style: 'cancel' },
-            { 
-              text: '立即重试', 
-              onPress: () => DebouncedSave.retrySave('hongkong_travel_info').catch(console.error)
-            }
-          ]
-        );
       },
       onRetry: (error, retryCount, maxRetries) => {
         console.warn(`Save retry ${retryCount}/${maxRetries}:`, error.message);
@@ -570,102 +260,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     }
   );
 
-  // Handle user interaction with tracking-enabled inputs
-  const handleUserInteraction = useCallback((fieldName, value) => {
-    // Mark field as user-modified
-    userInteractionTracker.markFieldAsModified(fieldName, value);
-    
-    // Update the appropriate state based on field name
-    switch (fieldName) {
-      case 'travelPurpose':
-        formState.setTravelPurpose(value);
-        if (value !== 'OTHER') {
-          formState.setCustomTravelPurpose('');
-        }
-        break;
-      case 'accommodationType':
-        formState.setAccommodationType(value);
-        if (value !== 'OTHER') {
-          formState.setCustomAccommodationType('');
-        }
-        break;
-      case 'boardingCountry':
-        formState.setBoardingCountry(value);
-        break;
-      default:
-        console.warn(`Unknown field for user interaction: ${fieldName}`);
-    }
-    
-    // Trigger debounced save
-    debouncedSaveData();
-  }, [userInteractionTracker, debouncedSaveData]);
 
-  const handleFieldBlur = async (fieldName, fieldValue) => {
-    try {
-      // Mark field as user-modified for interaction tracking
-      userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
-
-      // Track last edited field for session state
-      formState.setLastEditedField(fieldName);
-
-      // Brief highlight animation for last edited field
-      if (fieldName) {
-        if (window.highlightTimeout) {
-          clearTimeout(window.highlightTimeout);
-        }
-        window.highlightTimeout = setTimeout(() => {
-          formState.setLastEditedField(null);
-        }, 2000);
-      }
-
-      // Use centralized validation
-      const validationContext = {
-        arrivalArrivalDate,
-        residentCountry,
-        travelPurpose,
-        accommodationType,
-        isTransitPassenger
-      };
-
-      const { isValid, isWarning, errorMessage } = validateField(fieldName, fieldValue, validationContext);
-
-      // Handle province auto-correction for China
-      if (fieldName === 'cityOfResidence' && residentCountry === 'CHN' && fieldValue) {
-        const provinceMatch = findChinaProvince(fieldValue.trim());
-        if (provinceMatch && provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
-          formState.setCityOfResidence(provinceMatch.displayName.toUpperCase());
-        }
-      }
-
-      // Update errors and warnings state
-      formState.setErrors(prev => ({
-        ...prev,
-        [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
-      }));
-
-      formState.setWarnings(prev => ({
-        ...prev,
-        [fieldName]: isWarning ? errorMessage : ''
-      }));
-
-      // Save data if valid (including warnings)
-      if (isValid) {
-        try {
-          const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
-          if (immediateSaveFields.includes(fieldName)) {
-            await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
-            formState.setLastEditedAt(new Date());
-          } else {
-            debouncedSaveData();
-          }
-        } catch (saveError) {
-          console.error('Failed to trigger save:', saveError);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to validate and save field:', error);
-    }
-  };
 
   // Re-validate residence field whenever the selected country changes
   useEffect(() => {
@@ -758,25 +353,6 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     }
   }, [handleFieldBlur, subDistrict, postalCode]);
 
-// Helper method to perform the actual save operation
-const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
-  try {
-    const {
-      passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-      phoneCode, phoneNumber, email, occupation, cityOfResidence, residentCountry,
-      travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
-      arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
-      isTransitPassenger, accommodationType, customAccommodationType, province, district,
-      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
-      flightTicketPhoto, hotelReservationPhoto,
-      // Entry info tracking
-      entryInfoId, passportData, personalInfoData, funds
-    } = currentState;
-
-    // Helper function to get current value with overrides
-    const getCurrentValue = (fieldName, currentValue) => {
-      return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
-    };
 
     // Save passport data - filter based on user interaction
     const allPassportFields = {
@@ -1055,14 +631,6 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
   }
 };
 
-// Enhanced debug logging for personal info saving with user interaction filtering
-const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
-  const saveErrors = [];
-  const saveResults = {
-    passport: { success: false, error: null },
-    personalInfo: { success: false, error: null },
-    travelInfo: { success: false, error: null }
-  };
 
   try {
     const userId = passport?.id || 'user_001';
@@ -1219,10 +787,6 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 };
 
 
-  // Save all data to secure storage
-  const saveDataToSecureStorage = async () => {
-    return saveDataToSecureStorageWithOverride();
-  };
 
 const normalizeFundItem = useCallback((item) => ({
     id: item.id,
@@ -1307,7 +871,7 @@ const normalizeFundItem = useCallback((item) => ({
      }
    }, [userId, destination, entryInfoInitialized]);
 
-  // Handle flight ticket photo upload
+  // Handle flight ticket photo upload - delegates to persistence hook
   const handleFlightTicketPhotoUpload = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -1319,19 +883,16 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        formState.setFlightTicketPhoto(photoUri);
 
-        // Save to secure storage
-        try {
-          await saveDataToSecureStorageWithOverride({
-            flightTicketPhoto: photoUri
-          });
+        // Use persistence hook's savePhoto function
+        const saveResult = await savePhoto('flightTicket', photoUri);
+
+        if (saveResult.success) {
           Alert.alert(
             t('hongkong.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('hongkong.travelInfo.flightTicketUploaded', { defaultValue: '机票照片已上传' })
           );
-        } catch (error) {
-          console.error('Failed to save flight ticket photo:', error);
+        } else {
           Alert.alert(
             t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
             t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
@@ -1347,7 +908,7 @@ const normalizeFundItem = useCallback((item) => ({
     }
   };
 
-  // Handle hotel reservation photo upload
+  // Handle hotel reservation photo upload - delegates to persistence hook
   const handleHotelReservationPhotoUpload = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -1359,19 +920,16 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        formState.setHotelReservationPhoto(photoUri);
 
-        // Save to secure storage
-        try {
-          await saveDataToSecureStorageWithOverride({
-            hotelReservationPhoto: photoUri
-          });
+        // Use persistence hook's savePhoto function
+        const saveResult = await savePhoto('hotelReservation', photoUri);
+
+        if (saveResult.success) {
           Alert.alert(
             t('hongkong.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('hongkong.travelInfo.hotelReservationUploaded', { defaultValue: '酒店预订照片已上传' })
           );
-        } catch (error) {
-          console.error('Failed to save hotel reservation photo:', error);
+        } else {
           Alert.alert(
             t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
             t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
