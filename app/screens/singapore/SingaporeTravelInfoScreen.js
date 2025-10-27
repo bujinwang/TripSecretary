@@ -26,6 +26,7 @@ import SecureStorageService from '../../services/security/SecureStorageService';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
+import { singaporeRegions, getRegionDisplayNameBilingual } from '../../data/singaporeRegions';
 import DebouncedSave from '../../utils/DebouncedSave';
 import SoftValidation from '../../utils/SoftValidation';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
@@ -1803,34 +1804,29 @@ const normalizeFundItem = useCallback((item) => ({
     return null;
   };
 
-  // Helper function to extract province from address
+  // Helper function to extract region from address
   const extractProvinceFromAddress = (address) => {
     if (!address) return null;
-    
-    const thaiProvinces = [
-      'Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya', 'Krabi', 'Koh Samui',
-      'Hua Hin', 'Ayutthaya', 'Sukhothai', 'Chiang Rai', 'Kanchanaburi',
-      'Nakhon Ratchasima', 'Udon Thani', 'Khon Kaen', 'Surat Thani',
-      '曼谷', '清迈', '普吉', '芭提雅', '甲米', '苏梅岛'
+
+    // Common Singapore region/area names (English and Chinese)
+    const commonRegions = [
+      'Orchard', 'Marina Bay', 'Sentosa', 'Changi', 'Jurong', 'Woodlands',
+      'Tampines', 'Bedok', 'Hougang', 'Punggol', 'Sengkang', 'Yishun',
+      'Ang Mo Kio', 'Bishan', 'Clementi', 'Bukit Timah', 'Geylang',
+      '乌节', '滨海湾', '圣淘沙', '樟宜', '裕廊', '兀兰',
+      '淡滨尼', '勿洛', '后港', '榜鹅', '盛港', '义顺',
+      '宏茂桥', '碧山', '金文泰', '武吉知马', '芽笼'
     ];
 
-    for (const province of thaiProvinces) {
-      if (address.includes(province)) {
-        return province;
-      }
-    }
-
-    // If no specific province found, try to extract from common patterns
-    const provincePatterns = [
-      /(\w+)\s+Province/i,
-      /(\w+)府/,
-      /(\w+)\s+จังหวัด/
-    ];
-
-    for (const pattern of provincePatterns) {
-      const match = address.match(pattern);
-      if (match) {
-        return match[1];
+    // Try to match Singapore regions from address
+    for (const region of commonRegions) {
+      if (address.toLowerCase().includes(region.toLowerCase())) {
+        // Find the matching region code from singaporeRegions
+        const matchedRegion = singaporeRegions.find(r =>
+          r.name.toLowerCase() === region.toLowerCase() ||
+          r.nameZh === region
+        );
+        return matchedRegion ? matchedRegion.code : null;
       }
     }
 
@@ -2358,7 +2354,8 @@ const normalizeFundItem = useCallback((item) => ({
               
               setIsTransitPassenger(newValue);
               if (newValue) {
-                setAccommodationType('HOTEL');
+                // If transit passenger, set accommodation type to TRANSIT
+                setAccommodationType('TRANSIT');
                 setCustomAccommodationType('');
                 setProvince('');
                 setDistrict('');
@@ -2366,14 +2363,14 @@ const normalizeFundItem = useCallback((item) => ({
                 setPostalCode('');
                 setHotelAddress('');
               }
-              
+
               console.log('Saving immediately with new transit passenger status...');
               // Save immediately with the new value to avoid React state delay
               try {
                 const overrides = { isTransitPassenger: newValue };
                 if (newValue) {
-                  // If becoming transit passenger, reset accommodation fields
-                  overrides.accommodationType = 'HOTEL';
+                  // If becoming transit passenger, set to TRANSIT accommodation
+                  overrides.accommodationType = 'TRANSIT';
                   overrides.customAccommodationType = '';
                   overrides.province = '';
                   overrides.district = '';
@@ -2381,7 +2378,7 @@ const normalizeFundItem = useCallback((item) => ({
                   overrides.postalCode = '';
                   overrides.hotelAddress = '';
                 }
-                
+
                 await saveDataToSecureStorageWithOverride(overrides);
                 setLastEditedAt(new Date());
               } catch (error) {
@@ -2410,114 +2407,116 @@ const normalizeFundItem = useCallback((item) => ({
                 console.log('Previous accommodationType:', accommodationType);
 
                 setAccommodationType(value);
-                if (value !== 'OTHER') {
-                  setCustomAccommodationType('');
-                }
+
+                // Clear all accommodation fields when switching types
+                // Fields will be reused differently based on type
+                setCustomAccommodationType('');
+                setHotelAddress('');
+                setPostalCode('');
+                setDistrict('');
+                setSubDistrict('');
 
                 console.log('Saving immediately with new accommodation type...');
                 // Save immediately with the new value to avoid React state delay
                 try {
                   await saveDataToSecureStorageWithOverride({
                     accommodationType: value,
-                    customAccommodationType: value !== 'OTHER' ? '' : customAccommodationType
+                    customAccommodationType: '',
+                    hotelAddress: '',
+                    postalCode: '',
+                    district: '',
+                    subDistrict: ''
                   });
                   setLastEditedAt(new Date());
                 } catch (error) {
                   console.error('Failed to save accommodation type:', error);
                 }
               }}
-              customValue={customAccommodationType}
-              onCustomChange={setCustomAccommodationType}
-              onCustomBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
-              customLabel="请输入住宿类型"
-              customPlaceholder="请输入您的住宿类型"
-              customHelpText="请用英文填写"
             />
           </View>
           )}
           
-          {!isTransitPassenger && (
-            accommodationType === 'HOTEL' ? (
-              <>
-                <ProvinceSelector
-                  label="省"
-                  value={province}
-                  onValueChange={(code) => {
-                    setProvince(code);
-                    debouncedSaveData(); // Trigger debounced save when province changes
-                  }}
-                  helpText="请选择您在新加坡的区域"
-                  error={!!errors.province}
-                  errorMessage={errors.province}
-                />
-                <Input 
-                  label="地址" 
-                  value={hotelAddress} 
-                  onChangeText={setHotelAddress} 
-                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                  multiline 
-                  helpText="请输入详细地址" 
-                  error={!!errors.hotelAddress} 
-                  errorMessage={errors.hotelAddress} 
-                  autoCapitalize="words" 
-                />
-              </>
-            ) : (
-              <>
-                <ProvinceSelector
-                  label="省"
-                  value={province}
-                  onValueChange={(code) => {
-                    setProvince(code);
-                    debouncedSaveData(); // Trigger debounced save when province changes
-                  }}
-                  helpText="请选择您在新加坡的区域"
-                  error={!!errors.province}
-                  errorMessage={errors.province}
-                />
-                <Input 
-                  label="区（地区）" 
-                  value={district} 
-                  onChangeText={setDistrict} 
-                  onBlur={() => handleFieldBlur('district', district)} 
-                  helpText="请输入区或地区" 
-                  error={!!errors.district} 
-                  errorMessage={errors.district} 
-                  autoCapitalize="words" 
-                />
-                <Input 
-                  label="乡（子地区）" 
-                  value={subDistrict} 
-                  onChangeText={setSubDistrict} 
-                  onBlur={() => handleFieldBlur('subDistrict', subDistrict)} 
-                  helpText="请输入乡或子地区" 
-                  error={!!errors.subDistrict} 
-                  errorMessage={errors.subDistrict} 
-                  autoCapitalize="words" 
-                />
-                <Input 
-                  label="邮政编码" 
-                  value={postalCode} 
-                  onChangeText={setPostalCode} 
-                  onBlur={() => handleFieldBlur('postalCode', postalCode)} 
-                  helpText="请输入邮政编码" 
-                  error={!!errors.postalCode} 
-                  errorMessage={errors.postalCode} 
-                  keyboardType="numeric" 
-                />
-                <Input 
-                  label="详细地址" 
-                  value={hotelAddress} 
-                  onChangeText={setHotelAddress} 
-                  onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)} 
-                  multiline 
-                  helpText="请输入详细地址（例如：ABC COMPLEX (BUILDING A, SOUTH ZONE), 120 MOO 3, CHAENG WATTANA ROAD）" 
-                  error={!!errors.hotelAddress} 
-                  errorMessage={errors.hotelAddress} 
-                  autoCapitalize="words" 
-                />
-              </>
-            )
+          {/* Accommodation fields based on type - matching SGAC requirements */}
+          {!isTransitPassenger && accommodationType === 'HOTEL' && (
+            <>
+              <Input
+                label="酒店/旅舍名称"
+                value={customAccommodationType}
+                onChangeText={setCustomAccommodationType}
+                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
+                helpText="请输入酒店、宾馆或青旅名称"
+                error={!!errors.customAccommodationType}
+                errorMessage={errors.customAccommodationType}
+                autoCapitalize="words"
+              />
+              <Input
+                label="酒店地址"
+                value={hotelAddress}
+                onChangeText={setHotelAddress}
+                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+                multiline
+                helpText="请输入酒店完整地址"
+                error={!!errors.hotelAddress}
+                errorMessage={errors.hotelAddress}
+                autoCapitalize="words"
+              />
+            </>
+          )}
+
+          {!isTransitPassenger && accommodationType === 'RESIDENTIAL' && (
+            <>
+              <Input
+                label="邮政编码"
+                value={postalCode}
+                onChangeText={setPostalCode}
+                onBlur={() => handleFieldBlur('postalCode', postalCode)}
+                helpText="新加坡邮政编码（6位数字）"
+                error={!!errors.postalCode}
+                errorMessage={errors.postalCode}
+                keyboardType="numeric"
+                maxLength={6}
+              />
+              <Input
+                label="楼栋号"
+                value={district}
+                onChangeText={setDistrict}
+                onBlur={() => handleFieldBlur('district', district)}
+                helpText="Block Number（例如：123）"
+                error={!!errors.district}
+                errorMessage={errors.district}
+                autoCapitalize="words"
+              />
+              <Input
+                label="街道名称"
+                value={subDistrict}
+                onChangeText={setSubDistrict}
+                onBlur={() => handleFieldBlur('subDistrict', subDistrict)}
+                helpText="Street Name（例如：Orchard Road）"
+                error={!!errors.subDistrict}
+                errorMessage={errors.subDistrict}
+                autoCapitalize="words"
+              />
+              <Input
+                label="建筑名称"
+                value={customAccommodationType}
+                onChangeText={setCustomAccommodationType}
+                onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
+                helpText="Building Name（例如：Marina Bay Residences）"
+                error={!!errors.customAccommodationType}
+                errorMessage={errors.customAccommodationType}
+                autoCapitalize="words"
+              />
+              <Input
+                label="单元号"
+                value={hotelAddress}
+                onChangeText={setHotelAddress}
+                onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+                helpText="Unit Number（例如：#12-34）"
+                error={!!errors.hotelAddress}
+                errorMessage={errors.hotelAddress}
+                autoCapitalize="words"
+              />
+            </>
           )}
         </CollapsibleSection>
 

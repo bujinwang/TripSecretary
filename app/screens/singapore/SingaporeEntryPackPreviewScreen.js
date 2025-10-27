@@ -57,6 +57,7 @@ const SingaporeEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds}
           isModal={false}
+          country="singapore"
         />
 
         <View style={styles.actionSection}>

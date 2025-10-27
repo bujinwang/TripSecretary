@@ -209,11 +209,9 @@ const EntryPackDisplay = ({
       return `${amount} ${currency}`;
     }
 
-    const locale1Formatted = numericAmount.toLocaleString(config.dateLocales[0]);
-    const locale2Formatted = numericAmount.toLocaleString(config.dateLocales[1]);
-    const currencyName = config.currencyName;
-
-    return `${locale1Formatted} ${currencyName} / ${locale2Formatted} ${currency}`;
+    // Simply format the number with the currency code (no bilingual conversion)
+    const formattedAmount = numericAmount.toLocaleString('en-US');
+    return `${formattedAmount} ${currency}`;
   };
 
   const totalFunds = useMemo(() => {
@@ -297,6 +295,24 @@ const EntryPackDisplay = ({
         card: '銀行卡 / Bank Card',
         debit_card: '扣賬卡 / Debit Card',
         other: '其他 / Other'
+      },
+      singapore: {
+        cash: 'Cash / 现金',
+        credit_card: 'Credit Card / 信用卡',
+        bank_balance: 'Bank Balance / 银行存款',
+        investment: 'Investments / 投资',
+        card: 'Bank Card / 银行卡',
+        debit_card: 'Debit Card / 借记卡',
+        other: 'Other / 其他'
+      },
+      japan: {
+        cash: '現金 / Cash',
+        credit_card: 'クレジットカード / Credit Card',
+        bank_balance: '銀行残高 / Bank Balance',
+        investment: '投資 / Investments',
+        card: '銀行カード / Bank Card',
+        debit_card: 'デビットカード / Debit Card',
+        other: 'その他 / Other'
       }
     };
 
@@ -395,13 +411,21 @@ const EntryPackDisplay = ({
   );
 
   const renderFundsInfo = () => {
-    const proofPhotoText = country === 'malaysia'
-      ? '📸 Proof photo uploaded / Foto bukti dimuat naik'
-      : '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded';
+    const proofPhotoTexts = {
+      thailand: '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded',
+      malaysia: '📸 Proof photo uploaded / Foto bukti dimuat naik',
+      singapore: '📸 Proof photo uploaded / 已上传凭证照片',
+      japan: '📸 証明写真アップロード済み / Proof photo uploaded'
+    };
+    const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
 
-    const noDataText = country === 'malaysia'
-      ? 'No funds information / Tiada maklumat kewangan'
-      : 'ยังไม่มีข้อมูลเงินทุน / No funds information';
+    const noDataTexts = {
+      thailand: 'ยังไม่มีข้อมูลเงินทุน / No funds information',
+      malaysia: 'No funds information / Tiada maklumat kewangan',
+      singapore: 'No funds information / 未提供资金信息',
+      japan: '資金情報なし / No funds information'
+    };
+    const noDataText = noDataTexts[country] || noDataTexts.thailand;
 
     return (
       <View style={styles.section}>
@@ -446,39 +470,63 @@ const EntryPackDisplay = ({
     );
   };
 
-  const renderTDACInfo = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
+  const renderTDACInfo = () => {
+    const placeholderTitles = {
+      thailand: 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet',
+      malaysia: 'MDAC Not Submitted Yet / MDAC Belum Dihantar',
+      singapore: 'SGAC Not Submitted Yet / 新加坡入境卡尚未提交',
+      japan: '入国カード未提出 / Entry Card Not Submitted Yet'
+    };
 
-      {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
-        <TDACInfoCard
-          tdacSubmission={entryPack.tdacSubmission}
-          isReadOnly={true}
-          country={country}
-        />
-      ) : (
-        <View style={styles.tdacPlaceholder}>
-          <View style={styles.placeholderIcon}>
-            <Text style={styles.placeholderIconText}>📱</Text>
-          </View>
-          <Text style={styles.placeholderTitle}>
-            {country === 'malaysia'
-              ? `MDAC Not Submitted Yet / MDAC Belum Dihantar`
-              : 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet'
-            }
-          </Text>
-          <Text style={styles.placeholderDescription}>
-            {country === 'malaysia'
-              ? 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan'
-              : 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival'
-            }
-          </Text>
-          <View style={styles.qrPlaceholder}>
-            <Text style={styles.qrPlaceholderText}>
-              {country === 'malaysia'
-                ? 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran'
-                : 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission'
-              }
+    const placeholderDescriptions = {
+      thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival',
+      malaysia: 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan',
+      singapore: 'Please submit SGAC within 3 days before arrival / 请在抵达前3天内提交新加坡入境卡',
+      japan: '到着前にVisit Japan Webで入国カードを提出してください / Please submit entry card via Visit Japan Web before arrival'
+    };
+
+    const qrPlaceholderTexts = {
+      thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission',
+      malaysia: 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran',
+      singapore: 'DE Number will appear after submission / 提交后会显示DE编号',
+      japan: 'QRコードは提出後に表示されます / QR Code will appear after submission'
+    };
+
+    const placeholderNotes = {
+      thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC',
+      malaysia: 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen',
+      singapore: 'You can still show other information to immigration officer / 您仍可向入境官员出示其他信息',
+      japan: '入国カードがなくても、他の情報を入国審査官に提示できます / You can still show other information to immigration officer even without entry card'
+    };
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
+
+        {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
+          <TDACInfoCard
+            tdacSubmission={entryPack.tdacSubmission}
+            isReadOnly={true}
+            country={country}
+          />
+        ) : (
+          <View style={styles.tdacPlaceholder}>
+            <View style={styles.placeholderIcon}>
+              <Text style={styles.placeholderIconText}>📱</Text>
+            </View>
+            <Text style={styles.placeholderTitle}>
+              {placeholderTitles[country] || placeholderTitles.thailand}
+            </Text>
+            <Text style={styles.placeholderDescription}>
+              {placeholderDescriptions[country] || placeholderDescriptions.thailand}
+            </Text>
+            <View style={styles.qrPlaceholder}>
+              <Text style={styles.qrPlaceholderText}>
+                {qrPlaceholderTexts[country] || qrPlaceholderTexts.thailand}
+              </Text>
+            </View>
+            <Text style={styles.placeholderNote}>
+              {placeholderNotes[country] || placeholderNotes.thailand}
             </Text>
           </View>
           <Text style={styles.placeholderNote}>
@@ -491,6 +539,10 @@ const EntryPackDisplay = ({
       )}
     </View>
   );
+        )}
+      </View>
+    );
+  };
 
   const renderImmigrationTips = () => {
     const tipsConfig = {
@@ -513,6 +565,10 @@ const EntryPackDisplay = ({
             q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
             a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
           }
+          { q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism' },
+          { q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?', a: travelInfo?.lengthOfStay || '30 วัน / 30 days' },
+          { q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?', a: stayLocationAnswer },
+          { q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)` }
         ]
       },
       malaysia: {
@@ -555,6 +611,28 @@ const EntryPackDisplay = ({
             q: 'Q: 你帶了多少錢？ / How much money do you have?',
             a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
           }
+          { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan' },
+          { q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?', a: travelInfo?.lengthOfStay || '7 days / 7 hari' },
+          { q: 'Q: Where will you be staying? / Di mana anda akan menginap?', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have? / Berapa banyak wang yang anda bawa?', a: `${formatBilingualCurrency(totalFunds)} (Cash and cards / Tunai dan kad)` }
+        ]
+      },
+      singapore: {
+        title: '💡 Immigration Officer FAQs / 入境官员常见问题',
+        questions: [
+          { q: 'Q: What is the purpose of your visit? / 您来新加坡的目的是什么？', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游' },
+          { q: 'Q: How long will you stay in Singapore? / 您会在新加坡停留多久？', a: travelInfo?.lengthOfStay || '7 days / 7天' },
+          { q: 'Q: Where will you be staying? / 您会住在哪里？', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have? / 您带了多少钱？', a: `${formatBilingualCurrency(totalFunds)} (Cash and cards / 现金和银行卡)` }
+        ]
+      },
+      japan: {
+        title: '💡 入国審査官からのよくある質問 / Immigration Officer FAQs',
+        questions: [
+          { q: 'Q: 日本への渡航目的は何ですか？ / What is the purpose of your visit to Japan?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '観光 / Tourism' },
+          { q: 'Q: 日本にどのくらい滞在しますか？ / How long will you stay in Japan?', a: travelInfo?.lengthOfStay || '7日間 / 7 days' },
+          { q: 'Q: 日本での滞在先はどこですか？ / Where will you be staying in Japan?', a: stayLocationAnswer },
+          { q: 'Q: いくら所持していますか？ / How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (現金とカード / Cash and cards)` }
         ]
       }
     };
@@ -588,6 +666,8 @@ const EntryPackDisplay = ({
       case 'tdac':
       case 'mdac':
       case 'hdac':
+      case 'sgac':
+      case 'jdac':
         return renderTDACInfo();
       case 'tips':
         return renderImmigrationTips();
@@ -614,6 +694,17 @@ const EntryPackDisplay = ({
       { key: 'personal', label: '個人資料', labelEn: 'Personal' },
       { key: 'travel', label: '旅行資料', labelEn: 'Travel' },
       { key: 'funds', label: '資金證明', labelEn: 'Funds' },
+    singapore: [
+      { key: 'sgac', label: 'SGAC', labelEn: '入境卡' },
+      { key: 'personal', label: 'Personal', labelEn: '个人' },
+      { key: 'travel', label: 'Travel', labelEn: '旅行' },
+      { key: 'funds', label: 'Funds', labelEn: '资金' },
+    ],
+    japan: [
+      { key: 'jdac', label: '入国カード', labelEn: 'Entry Card' },
+      { key: 'personal', label: '個人情報', labelEn: 'Personal' },
+      { key: 'travel', label: '旅行情報', labelEn: 'Travel' },
+      { key: 'funds', label: '資金情報', labelEn: 'Funds' },
     ]
   };
 
@@ -623,12 +714,16 @@ const EntryPackDisplay = ({
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
     malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
     hongkong: '🇭🇰 入境資料包 / Entry Pack'
+    singapore: '🇸🇬 Entry Pack / 入境信息包',
+    japan: '🇯🇵 入国情報パック / Entry Pack'
   };
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
     malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
     hongkong: '入境處重要資料 / Important information for immigration officer'
+    singapore: 'Important information for immigration officer / 重要入境信息',
+    japan: '入国審査官への重要情報 / Important information for immigration officer'
   };
 
   return (
@@ -673,6 +768,10 @@ const EntryPackDisplay = ({
         <Text style={styles.footerText}>
           {country === 'malaysia'
             ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
+            : country === 'singapore'
+            ? 'Please show this entry pack to the immigration officer / 请向入境官员出示此信息包'
+            : country === 'japan'
+            ? 'この情報パックを入国審査官に提示してください / Please show this entry pack to the immigration officer'
             : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
           }
         </Text>

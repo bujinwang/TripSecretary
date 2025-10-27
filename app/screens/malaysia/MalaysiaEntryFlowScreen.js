@@ -57,7 +57,6 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
 
       // Load all user data
       const allUserData = await UserDataService.getAllUserData(currentUserId);
-      console.log('Loaded user data for Malaysia completion calculation:', allUserData);
 
       // Load travel info for Malaysia
       const destinationId = route.params?.destination?.id || 'malaysia';
@@ -84,7 +83,6 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
 
       // Calculate completion for Malaysia (no funds required)
       const completionSummary = calculateMalaysiaCompletion(entryInfo);
-      console.log('Malaysia completion summary:', completionSummary);
 
       // Update completion state
       setCompletionPercent(completionSummary.totalPercent);

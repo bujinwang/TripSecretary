@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
     marginBottom: spacing.sm,
+    marginHorizontal: -spacing.xs, // Negative margin to offset item margins
   },
   optionButton: {
     flexDirection: 'column',
@@ -132,7 +132,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.border,
     minWidth: 100,
-    flex: 1,
+    width: '31%', // Roughly 1/3 width to fit 3 columns with margins
+    marginHorizontal: spacing.xs,
+    marginBottom: spacing.md,
     minHeight: 80,
   },
   optionButtonActive: {
