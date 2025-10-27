@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
-
+import PreparedState from '../../components/thailand/PreparedState';
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing } from '../../theme';
@@ -244,6 +244,17 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
+  /**
+   * Load entry info status including DAC submissions and resubmission warnings
+   *
+   * Checks for existing entry info and digital arrival cards to determine:
+   * - Whether entry pack has been submitted
+   * - If DAC is superseded
+   * - Any pending resubmission warnings
+   *
+   * @param {string} userId - User ID to load entry info for
+   * @returns {Promise<void>}
+   */
   const loadEntryInfoStatus = async (userId) => {
     try {
       // Use EntryInfoService to check for entry info with DAC submissions
@@ -310,6 +321,20 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
+  /**
+   * Handle resubmission warning actions (resubmit or ignore)
+   *
+   * When data changes are detected after TDAC submission, this handles:
+   * - Marking entry pack as superseded
+   * - Clearing warnings
+   * - Navigating to edit screen for resubmission
+   *
+   * @param {Object} warning - Resubmission warning object
+   * @param {string} warning.entryPackId - ID of the entry pack
+   * @param {Object} warning.diffResult - Details of data changes
+   * @param {string} action - Action to take ('resubmit' or 'ignore')
+   * @returns {Promise<void>}
+   */
   const handleResubmissionWarning = async (warning, action) => {
     try {
       if (action === 'resubmit') {
@@ -499,6 +524,22 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
+  /**
+   * Get primary button state based on completion status and submission window
+   *
+   * Determines the appropriate button text, action, and enabled state based on:
+   * - Entry pack superseded status
+   * - Completion percentage
+   * - Submission window availability
+   * - Arrival date presence
+   *
+   * @returns {Object} Button configuration object
+   * @returns {string} returns.title - Button text to display
+   * @returns {string} returns.action - Action identifier (continue_improving, submit_tdac, etc.)
+   * @returns {boolean} returns.disabled - Whether button should be disabled
+   * @returns {string} returns.variant - Button variant (primary, secondary)
+   * @returns {string} [returns.subtitle] - Optional subtitle text
+   */
   const getPrimaryButtonState = () => {
     // Check if entry pack is superseded
     if (showSupersededStatus || entryPackStatus === 'superseded') {
@@ -627,133 +668,19 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   );
 
   const renderPreparedState = () => (
-    <View>
-      {/* Status Cards Section */}
-      <View style={styles.statusSection}>
-        <CompletionSummaryCard
-          completionPercent={completionPercent}
-          status={completionStatus}
-          showProgressBar={true}
-        />
-
-        {/* Additional Action Buttons - Show when completion is high */}
-        {completionPercent >= 80 && (
-          <View style={styles.additionalActionsContainer}>
-            <TouchableOpacity
-              style={styles.additionalActionButton}
-              onPress={handleEditInformation}
-            >
-              <Text style={styles.additionalActionIcon}>✏️</Text>
-              <Text style={styles.additionalActionText}>再改改</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.additionalActionButton}
-              onPress={() => {
-                // Show sharing options
-                Alert.alert(
-                  '寻求帮助',
-                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
-                  [
-                    {
-                      text: '截图分享',
-                      onPress: () => {
-                        // Here you could implement screenshot functionality
-                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
-                      }
-                    },
-                    { text: '取消', style: 'cancel' }
-                  ]
-                );
-              }}
-            >
-              <Text style={styles.additionalActionIcon}>👥</Text>
-              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {/* Integrated Countdown & Submission Section */}
-      <View style={styles.countdownSection}>
-        <Text style={styles.sectionTitle}>
-          最佳提交时间 ⏰
-        </Text>
-
-        {/* Submission Countdown */}
-        <SubmissionCountdown
-          arrivalDate={arrivalDate}
-          locale={t('locale', { defaultValue: 'zh' })}
-          showIcon={true}
-          updateInterval={1000} // Update every second for real-time countdown
-        />
-
-        {/* Smart Primary Action Button - Integrated with Countdown */}
-        <View style={styles.primaryActionContainer}>
-          {renderPrimaryAction()}
-        </View>
-      </View>
-
-      {/* Secondary Actions Section */}
-      <View style={styles.actionSection}>
-        {/* Entry Guide Button */}
-        <TouchableOpacity
-          style={styles.entryGuideButton}
-          onPress={() => navigation.navigate('ThailandEntryGuide', {
-            passport: passportParam,
-            destination: route.params?.destination,
-            completionData: userData
-          })}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#0BD67B', colors.primary]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.entryGuideGradient}
-          >
-            <View style={styles.entryGuideIconContainer}>
-              <Text style={styles.entryGuideIcon}>🗺️</Text>
-            </View>
-            <View style={styles.entryGuideContent}>
-              <Text style={styles.entryGuideTitle}>
-                查看泰国入境指引
-              </Text>
-              <Text style={styles.entryGuideSubtitle}>
-                6步骤完整入境流程指南
-              </Text>
-            </View>
-            <View style={styles.entryGuideChevron}>
-              <Text style={styles.entryGuideArrow}>›</Text>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Secondary Actions - Redesigned */}
-        {completionPercent > 50 && (
-          <View style={styles.secondaryActionsContainer}>
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={handlePreviewEntryCard}
-              activeOpacity={0.8}
-            >
-              <View style={styles.secondaryActionIconContainer}>
-                <Text style={styles.secondaryActionIcon}>👁️</Text>
-              </View>
-              <View style={styles.secondaryActionContent}>
-                <Text style={styles.secondaryActionTitle}>
-                  看看我的通关包
-                </Text>
-                <Text style={styles.secondaryActionSubtitle}>
-                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
-                </Text>
-              </View>
-              <Text style={styles.secondaryActionArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    </View>
+    <PreparedState
+      completionPercent={completionPercent}
+      completionStatus={completionStatus}
+      arrivalDate={arrivalDate}
+      t={t}
+      passportParam={passportParam}
+      destination={route.params?.destination}
+      userData={userData}
+      handleEditInformation={handleEditInformation}
+      handlePreviewEntryCard={handlePreviewEntryCard}
+      navigation={navigation}
+      renderPrimaryAction={renderPrimaryAction}
+    />
   );
 
   const renderContent = () => (

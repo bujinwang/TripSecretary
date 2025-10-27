@@ -9,7 +9,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../../components';
+import GenderSelector from '../../GenderSelector';
 import { CollapsibleSection, FieldWarningIcon, InputWithValidation } from '../ThailandTravelComponents';
+import { GENDER_OPTIONS } from '../../../screens/thailand/constants';
 
 const PassportSection = ({
   t,
@@ -51,49 +53,15 @@ const PassportSection = ({
   // Use parent styles if provided, otherwise use local styles
   const styles = parentStyles || localStyles;
 
-  const renderGenderOptions = () => {
-    const options = [
-      { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('thailand.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
-    ];
-
-    return (
-      <View style={styles.optionsContainer}>
-        {options.map((option) => {
-          const isActive = sex === option.value;
-          return (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.optionButton,
-                isActive && styles.optionButtonActive,
-              ]}
-              onPress={async () => {
-                const newSex = option.value;
-                setSex(newSex);
-                // Save immediately to ensure gender is saved without requiring other field interaction
-                try {
-                  await saveDataToSecureStorageWithOverride({ sex: newSex });
-                  setLastEditedAt(new Date());
-                } catch (error) {
-                  console.error('Failed to save gender:', error);
-                }
-              }}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  isActive && styles.optionTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
+  const handleGenderChange = async (newSex) => {
+    setSex(newSex);
+    // Save immediately to ensure gender is saved without requiring other field interaction
+    try {
+      await saveDataToSecureStorageWithOverride({ sex: newSex });
+      setLastEditedAt(new Date());
+    } catch (error) {
+      console.error('Failed to save gender:', error);
+    }
   };
 
   return (
@@ -209,7 +177,12 @@ const PassportSection = ({
 
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>性别</Text>
-        {renderGenderOptions()}
+        <GenderSelector
+          value={sex}
+          onChange={handleGenderChange}
+          t={t}
+          options={GENDER_OPTIONS}
+        />
       </View>
     </CollapsibleSection>
   );
