@@ -1602,13 +1602,13 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
     // Log current UI state values
     console.log('Current UI state:');
-    console.log('- phoneCode:', phoneCode);
-    console.log('- phoneNumber:', phoneNumber);
-    console.log('- email:', email);
-    console.log('- occupation:', occupation);
-    console.log('- cityOfResidence:', cityOfResidence);
-    console.log('- residentCountry:', residentCountry);
-    console.log('- sex:', sex);
+    console.log('- phoneCode:', formState.phoneCode);
+    console.log('- phoneNumber:', formState.phoneNumber);
+    console.log('- email:', formState.email);
+    console.log('- occupation:', formState.occupation);
+    console.log('- cityOfResidence:', formState.cityOfResidence);
+    console.log('- residentCountry:', formState.residentCountry);
+    console.log('- sex:', formState.sex);
 
     // Get existing passport first to ensure we're updating the right one
     const existingPassport = await UserDataService.getPassport(userId);
@@ -1616,18 +1616,50 @@ const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
 
     // Prepare current state for the save operation
     // For occupation, use custom value if "OTHER" is selected
-    const finalOccupation = occupation === 'OTHER' ? customOccupation : occupation;
+    const finalOccupation = formState.occupation === 'OTHER' ? formState.customOccupation : formState.occupation;
 
     const currentState = {
-      passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-      phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
-      travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
-      arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
-      isTransitPassenger, accommodationType, customAccommodationType, province, district,
-      subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
-      flightTicketPhoto, hotelReservationPhoto,
+      passportNo: formState.passportNo,
+      surname: formState.surname,
+      middleName: formState.middleName,
+      givenName: formState.givenName,
+      nationality: formState.nationality,
+      dob: formState.dob,
+      expiryDate: formState.expiryDate,
+      sex: formState.sex,
+      phoneCode: formState.phoneCode,
+      phoneNumber: formState.phoneNumber,
+      email: formState.email,
+      occupation: finalOccupation,
+      cityOfResidence: formState.cityOfResidence,
+      residentCountry: formState.residentCountry,
+      travelPurpose: formState.travelPurpose,
+      customTravelPurpose: formState.customTravelPurpose,
+      boardingCountry: formState.boardingCountry,
+      recentStayCountry: formState.recentStayCountry,
+      visaNumber: formState.visaNumber,
+      arrivalFlightNumber: formState.arrivalFlightNumber,
+      arrivalArrivalDate: formState.arrivalArrivalDate,
+      departureFlightNumber: formState.departureFlightNumber,
+      departureDepartureDate: formState.departureDepartureDate,
+      isTransitPassenger: formState.isTransitPassenger,
+      accommodationType: formState.accommodationType,
+      customAccommodationType: formState.customAccommodationType,
+      province: formState.province,
+      district: formState.district,
+      subDistrict: formState.subDistrict,
+      postalCode: formState.postalCode,
+      hotelAddress: formState.hotelAddress,
+      existingPassport,
+      interactionState,
+      destination,
+      flightTicketPhoto: formState.flightTicketPhoto,
+      hotelReservationPhoto: formState.hotelReservationPhoto,
       // Entry info tracking
-      entryInfoId, passportData, personalInfoData, funds
+      entryInfoId: formState.entryInfoId,
+      passportData: formState.passportData,
+      personalInfoData: formState.personalInfoData,
+      funds: formState.funds
     };
 
     // Perform the save operation using the helper method
