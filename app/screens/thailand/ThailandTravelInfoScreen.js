@@ -1108,31 +1108,31 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const handleUserInteraction = useCallback((fieldName, value) => {
     // Mark field as user-modified
     userInteractionTracker.markFieldAsModified(fieldName, value);
-    
+
     // Update the appropriate state based on field name
     switch (fieldName) {
       case 'travelPurpose':
-        setTravelPurpose(value);
+        formState.setTravelPurpose(value);
         if (value !== 'OTHER') {
-          setCustomTravelPurpose('');
+          formState.setCustomTravelPurpose('');
         }
         break;
       case 'accommodationType':
-        setAccommodationType(value);
+        formState.setAccommodationType(value);
         if (value !== 'OTHER') {
-          setCustomAccommodationType('');
+          formState.setCustomAccommodationType('');
         }
         break;
       case 'boardingCountry':
-        setBoardingCountry(value);
+        formState.setBoardingCountry(value);
         break;
       default:
         console.warn(`Unknown field for user interaction: ${fieldName}`);
     }
-    
+
     // Trigger debounced save
     debouncedSaveData();
-  }, [userInteractionTracker, debouncedSaveData]);
+  }, [userInteractionTracker, debouncedSaveData, formState]);
 
   const handleFieldBlur = async (fieldName, fieldValue) => {
     try {
@@ -1140,7 +1140,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
 
       // Track last edited field for session state
-      setLastEditedField(fieldName);
+      formState.setLastEditedField(fieldName);
 
       // Brief highlight animation for last edited field
       if (fieldName) {
@@ -1148,36 +1148,36 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           clearTimeout(window.highlightTimeout);
         }
         window.highlightTimeout = setTimeout(() => {
-          setLastEditedField(null);
+          formState.setLastEditedField(null);
         }, 2000);
       }
 
       // Use centralized validation
       const validationContext = {
-        arrivalArrivalDate,
-        residentCountry,
-        travelPurpose,
-        accommodationType,
-        isTransitPassenger
+        arrivalArrivalDate: formState.arrivalArrivalDate,
+        residentCountry: formState.residentCountry,
+        travelPurpose: formState.travelPurpose,
+        accommodationType: formState.accommodationType,
+        isTransitPassenger: formState.isTransitPassenger
       };
 
       const { isValid, isWarning, errorMessage } = validateField(fieldName, fieldValue, validationContext);
 
       // Handle province auto-correction for China
-      if (fieldName === 'cityOfResidence' && residentCountry === 'CHN' && fieldValue) {
+      if (fieldName === 'cityOfResidence' && formState.residentCountry === 'CHN' && fieldValue) {
         const provinceMatch = findChinaProvince(fieldValue.trim());
-        if (provinceMatch && provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
-          setCityOfResidence(provinceMatch.displayName.toUpperCase());
+        if (provinceMatch && provinceMatch.displayName.toUpperCase() !== formState.cityOfResidence) {
+          formState.setCityOfResidence(provinceMatch.displayName.toUpperCase());
         }
       }
 
       // Update errors and warnings state
-      setErrors(prev => ({
+      formState.setErrors(prev => ({
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
 
-      setWarnings(prev => ({
+      formState.setWarnings(prev => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
@@ -1188,7 +1188,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
           if (immediateSaveFields.includes(fieldName)) {
             await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
-            setLastEditedAt(new Date());
+            formState.setLastEditedAt(new Date());
           } else {
             debouncedSaveData();
           }
@@ -1216,54 +1216,54 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   }, [formState]);
 
   const handleProvinceSelect = useCallback((code) => {
-    setProvince(code);
+    formState.setProvince(code);
     resetDistrictSelection();
 
     handleFieldBlur('province', code);
 
-    if (district) {
+    if (formState.district) {
       handleFieldBlur('district', '');
     }
-    if (subDistrict) {
+    if (formState.subDistrict) {
       handleFieldBlur('subDistrict', '');
     }
-    if (postalCode) {
+    if (formState.postalCode) {
       handleFieldBlur('postalCode', '');
     }
-  }, [handleFieldBlur, resetDistrictSelection, district, subDistrict, postalCode]);
+  }, [handleFieldBlur, resetDistrictSelection, formState]);
 
   const handleDistrictSelect = useCallback((selection) => {
     if (!selection) return;
 
-    setDistrict(selection.nameEn);
-    setDistrictId(selection.id);
+    formState.setDistrict(selection.nameEn);
+    formState.setDistrictId(selection.id);
     handleFieldBlur('district', selection.nameEn);
 
-    if (subDistrict) {
-      setSubDistrict('');
-      setSubDistrictId(null);
+    if (formState.subDistrict) {
+      formState.setSubDistrict('');
+      formState.setSubDistrictId(null);
       handleFieldBlur('subDistrict', '');
     }
 
-    if (postalCode) {
-      setPostalCode('');
+    if (formState.postalCode) {
+      formState.setPostalCode('');
       handleFieldBlur('postalCode', '');
     }
-  }, [handleFieldBlur, subDistrict, postalCode]);
+  }, [handleFieldBlur, formState]);
 
   const handleSubDistrictSelect = useCallback((selection) => {
     if (!selection) return;
 
-    setSubDistrict(selection.nameEn);
-    setSubDistrictId(selection.id);
+    formState.setSubDistrict(selection.nameEn);
+    formState.setSubDistrictId(selection.id);
     handleFieldBlur('subDistrict', selection.nameEn);
 
     const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
-    if (newPostalCode || postalCode) {
-      setPostalCode(newPostalCode);
+    if (newPostalCode || formState.postalCode) {
+      formState.setPostalCode(newPostalCode);
       handleFieldBlur('postalCode', newPostalCode);
     }
-  }, [handleFieldBlur, postalCode]);
+  }, [handleFieldBlur, formState]);
 
 // Helper method to perform the actual save operation
 const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
@@ -1314,7 +1314,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
           console.log('Passport data updated successfully');
 
           // Update passportData state to track the correct passport ID
-          setPassportData(updated);
+          formState.setPassportData(updated);
           saveResults.passport.success = true;
         } else {
           console.log('Creating new passport for userId:', userId);
@@ -1322,7 +1322,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
           console.log('Passport data saved successfully');
 
           // Update passportData state to track the new passport ID
-          setPassportData(saved);
+          formState.setPassportData(saved);
           saveResults.passport.success = true;
         }
       } catch (passportError) {
@@ -1367,7 +1367,7 @@ const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErr
         console.log('✅ Personal info saved successfully');
 
         // Update personalInfoData state
-        setPersonalInfoData(savedPersonalInfo);
+        formState.setPersonalInfoData(savedPersonalInfo);
         saveResults.personalInfo.success = true;
 
         // Verify the save worked
@@ -1736,11 +1736,11 @@ const normalizeFundItem = useCallback((item) => ({
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
-      setFunds(normalized);
+      formState.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem]);
+  }, [userId, normalizeFundItem, formState]);
 
   /**
     * Initialize or load entry_info for this user and destination
@@ -1765,8 +1765,8 @@ const normalizeFundItem = useCallback((item) => ({
 
        if (existingEntryInfo) {
          console.log('✅ Found existing entry info:', existingEntryInfo.id);
-         setEntryInfoId(existingEntryInfo.id);
-         setEntryInfoInitialized(true);
+         formState.setEntryInfoId(existingEntryInfo.id);
+         formState.setEntryInfoInitialized(true);
          return existingEntryInfo.id;
        }
 
@@ -1794,8 +1794,8 @@ const normalizeFundItem = useCallback((item) => ({
        const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
        console.log('✅ Created new entry info:', savedEntryInfo.id, '(passport_id:', savedEntryInfo.passportId || 'NULL', ')');
 
-       setEntryInfoId(savedEntryInfo.id);
-       setEntryInfoInitialized(true);
+       formState.setEntryInfoId(savedEntryInfo.id);
+       formState.setEntryInfoInitialized(true);
        return savedEntryInfo.id;
      } catch (error) {
        console.error('❌ Failed to initialize entry info:', error);
@@ -1817,7 +1817,7 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        setFlightTicketPhoto(photoUri);
+        formState.setFlightTicketPhoto(photoUri);
 
         // Save to secure storage
         try {
@@ -1857,7 +1857,7 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        setHotelReservationPhoto(photoUri);
+        formState.setHotelReservationPhoto(photoUri);
 
         // Save to secure storage
         try {
@@ -1886,25 +1886,25 @@ const normalizeFundItem = useCallback((item) => ({
   };
 
   const addFund = (type) => {
-    setCurrentFundItem(null);
-    setNewFundItemType(type);
-    setFundItemModalVisible(true);
+    formState.setCurrentFundItem(null);
+    formState.setNewFundItemType(type);
+    formState.setFundItemModalVisible(true);
   };
 
   const handleFundItemPress = (fund) => {
-    setCurrentFundItem(fund);
-    setFundItemModalVisible(true);
+    formState.setCurrentFundItem(fund);
+    formState.setFundItemModalVisible(true);
   };
 
   const handleFundItemModalClose = () => {
-    setFundItemModalVisible(false);
-    setCurrentFundItem(null);
+    formState.setFundItemModalVisible(false);
+    formState.setCurrentFundItem(null);
   };
 
   const handleFundItemUpdate = async (updatedItem) => {
     try {
       if (updatedItem) {
-        setSelectedFundItem(normalizeFundItem(updatedItem));
+        formState.setSelectedFundItem(normalizeFundItem(updatedItem));
       }
       await refreshFundItems({ forceRefresh: true });
 
@@ -1934,7 +1934,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const handleFundItemDelete = async (id) => {
     try {
-      setFunds((prev) => prev.filter((fund) => fund.id !== id));
+      formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info after fund item deletion
@@ -1951,7 +1951,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const validate = () => {
     // Disable all required checks to support progressive entry info filling
-    setErrors({});
+    formState.setErrors({});
     return true;
   };
 
@@ -1987,7 +1987,7 @@ const normalizeFundItem = useCallback((item) => ({
     return (
       <View style={styles.optionsContainer}>
         {options.map((option) => {
-          const isActive = sex === option.value;
+          const isActive = formState.sex === option.value;
           return (
             <TouchableOpacity
               key={option.value}
@@ -1997,11 +1997,11 @@ const normalizeFundItem = useCallback((item) => ({
               ]}
               onPress={async () => {
                 const newSex = option.value;
-                setSex(newSex);
+                formState.setSex(newSex);
                 // Save immediately to ensure gender is saved without requiring other field interaction
                 try {
                   await saveDataToSecureStorageWithOverride({ sex: newSex });
-                  setLastEditedAt(new Date());
+                  formState.setLastEditedAt(new Date());
                 } catch (error) {
                   console.error('Failed to save gender:', error);
                 }
