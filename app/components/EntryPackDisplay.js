@@ -5,6 +5,7 @@ import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import TDACInfoCard from './TDACInfoCard';
 import { thailandProvinces } from '../data/thailandProvinces';
+import { hongkongDistricts, getAllDistricts } from '../data/hongkongLocations';
 
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
@@ -67,61 +68,33 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'ms-MY']
   },
-  singapore: {
-    entryCardName: 'SGAC',
-    entryCardTab: 'sgac',
-    entryCardTitle: 'SG Arrival Card (SGAC) / 新加坡入境卡',
-    personalInfoTitle: 'Personal Information / 个人信息',
-    travelInfoTitle: 'Travel Information / 旅行信息',
-    fundsTitle: 'Funds Information / 资金信息',
-    currency: 'SGD',
-    currencyName: '新元',
-    notProvided: 'Not provided / 未提供',
-    fallbackHotelText: 'Please provide accommodation address / 请提供住宿地址',
-    labels: {
-      fullName: 'Full Name / 全名',
-      passportNumber: 'Passport Number / 护照号码',
-      nationality: 'Nationality / 国籍',
-      dateOfBirth: 'Date of Birth / 出生日期',
-      arrivalDate: 'Arrival Date / 抵达日期',
-      departureDate: 'Departure Date / 离开日期',
-      flightNumber: 'Flight Number / 航班号',
-      stayLocation: 'Accommodation / 住宿地址',
-      lengthOfStay: 'Length of Stay / 停留时间',
-      purpose: 'Purpose of Visit / 访问目的',
-      totalFunds: 'Total Funds / 资金总额',
-      fundType: 'Type / 类型',
-      amount: 'Amount / 金额'
-    },
-    dateLocales: ['en-US', 'zh-CN']
-  },
-  japan: {
-    entryCardName: 'JDAC',
-    entryCardTab: 'jdac',
-    entryCardTitle: '入国カード / Japan Entry Card',
-    personalInfoTitle: '個人情報 / Personal Information',
-    travelInfoTitle: '旅行情報 / Travel Information',
-    fundsTitle: '資金情報 / Funds Information',
-    currency: 'JPY',
-    currencyName: '円',
+  hongkong: {
+    entryCardName: 'HDAC',
+    entryCardTab: 'hdac',
+    entryCardTitle: '香港入境資料 / Hong Kong Entry Information',
+    personalInfoTitle: '個人資料 / Personal Information',
+    travelInfoTitle: '旅行資料 / Travel Information',
+    fundsTitle: '資金證明 / Funds Information',
+    currency: 'HKD',
+    currencyName: '港幣',
     notProvided: '未提供 / Not provided',
-    fallbackHotelText: '宿泊先住所を入力してください / Please provide accommodation address',
+    fallbackHotelText: '請提供住宿地址 / Please provide accommodation address',
     labels: {
-      fullName: '氏名 / Full Name',
-      passportNumber: 'パスポート番号 / Passport Number',
-      nationality: '国籍 / Nationality',
-      dateOfBirth: '生年月日 / Date of Birth',
-      arrivalDate: '到着日 / Arrival Date',
-      departureDate: '出発日 / Departure Date',
-      flightNumber: '便名 / Flight Number',
-      stayLocation: '滞在先 / Accommodation',
-      lengthOfStay: '滞在期間 / Length of Stay',
-      purpose: '渡航目的 / Purpose of Visit',
-      totalFunds: '所持金合計 / Total Funds',
-      fundType: '種類 / Type',
+      fullName: '全名 / Full Name',
+      passportNumber: '護照號碼 / Passport Number',
+      nationality: '國籍 / Nationality',
+      dateOfBirth: '出生日期 / Date of Birth',
+      arrivalDate: '抵達日期 / Arrival Date',
+      departureDate: '離開日期 / Departure Date',
+      flightNumber: '航班號碼 / Flight Number',
+      stayLocation: '住宿地點 / Stay Location',
+      lengthOfStay: '停留時間 / Length of Stay',
+      purpose: '訪問目的 / Purpose of Visit',
+      totalFunds: '總資金 / Total Funds',
+      fundType: '類型 / Type',
       amount: '金額 / Amount'
     },
-    dateLocales: ['ja-JP', 'en-US']
+    dateLocales: ['zh-HK', 'en-US']
   }
 };
 
@@ -158,6 +131,43 @@ const EntryPackDisplay = ({
     const thaiName = province.nameTh || province.name || raw;
     const englishName = province.name || raw;
     return `${thaiName} / ${englishName}`;
+  };
+
+  const formatDistrictHongKongBilingual = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    const raw = value.trim();
+    if (!raw) return '';
+
+    // Get all Hong Kong districts
+    const allDistricts = getAllDistricts();
+
+    // Try to find by exact match (nameEn or nameZh)
+    let district = allDistricts.find(
+      d => d.nameEn === raw || d.nameZh === raw || d.nameEn.toLowerCase() === raw.toLowerCase()
+    );
+
+    if (!district) {
+      // Try partial match
+      district = allDistricts.find(
+        d => d.nameEn.toLowerCase().includes(raw.toLowerCase()) ||
+             d.nameZh.includes(raw)
+      );
+    }
+
+    if (!district) return raw; // Return original if not found
+
+    // Format as: 繁體中文 / English
+    return `${district.nameZh} / ${district.nameEn}`;
+  };
+
+  // Country-aware location formatter
+  const formatLocationBilingual = (value) => {
+    if (country === 'hongkong') {
+      return formatDistrictHongKongBilingual(value);
+    } else if (country === 'thailand') {
+      return formatProvinceThaiEnglish(value);
+    }
+    return value || '';
   };
 
   if (!entryPack) {
@@ -220,10 +230,11 @@ const EntryPackDisplay = ({
       travelInfo?.hotelProvince,
       travelInfo?.hotelProvinceCode,
       travelInfo?.state,
+      travelInfo?.district, // For Hong Kong
     ];
 
     for (const candidate of candidates) {
-      const display = formatProvinceThaiEnglish(candidate);
+      const display = formatLocationBilingual(candidate);
       if (display) return display;
     }
 
@@ -235,6 +246,7 @@ const EntryPackDisplay = ({
     travelInfo?.hotelProvince,
     travelInfo?.hotelProvinceCode,
     travelInfo?.state,
+    travelInfo?.district,
   ]);
 
   const stayLocationAnswer = useMemo(() => {
@@ -274,6 +286,15 @@ const EntryPackDisplay = ({
         card: 'Bank Card / Kad Bank',
         debit_card: 'Debit Card / Kad Debit',
         other: 'Other / Lain-lain'
+      },
+      hongkong: {
+        cash: '現金 / Cash',
+        credit_card: '信用卡 / Credit Card',
+        bank_balance: '銀行存款 / Bank Balance',
+        investment: '投資 / Investments',
+        card: '銀行卡 / Bank Card',
+        debit_card: '扣賬卡 / Debit Card',
+        other: '其他 / Other'
       },
       singapore: {
         cash: 'Cash / 现金',
@@ -508,6 +529,16 @@ const EntryPackDisplay = ({
               {placeholderNotes[country] || placeholderNotes.thailand}
             </Text>
           </View>
+          <Text style={styles.placeholderNote}>
+            {country === 'malaysia'
+              ? 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen'
+              : 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC'
+            }
+          </Text>
+        </View>
+      )}
+    </View>
+  );
         )}
       </View>
     );
@@ -518,6 +549,22 @@ const EntryPackDisplay = ({
       thailand: {
         title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
         questions: [
+          {
+            q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'
+          },
+          {
+            q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?',
+            a: travelInfo?.lengthOfStay || '30 วัน / 30 days'
+          },
+          {
+            q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: คุณมีเงินทุนเท่าไร? / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (เงินสดและบัตรธนาคาร / Cash and bank cards)`
+          }
           { q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism' },
           { q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?', a: travelInfo?.lengthOfStay || '30 วัน / 30 days' },
           { q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?', a: stayLocationAnswer },
@@ -527,6 +574,43 @@ const EntryPackDisplay = ({
       malaysia: {
         title: '💡 Immigration Officer FAQs / Soalan Lazim Pegawai Imigresen',
         questions: [
+          {
+            q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan'
+          },
+          {
+            q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?',
+            a: travelInfo?.lengthOfStay || '30 days / 30 hari'
+          },
+          {
+            q: 'Q: Where will you be staying? / Di mana anda akan menginap?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: How much money do you have? / Berapa banyak wang yang anda ada?',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / Tunai dan kad bank)`
+          }
+        ]
+      },
+      hongkong: {
+        title: '💡 入境處常見問題 / Immigration Officer FAQs',
+        questions: [
+          {
+            q: 'Q: 你來香港的目的是什麼？ / What is the purpose of your visit?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '旅遊 / Tourism'
+          },
+          {
+            q: 'Q: 你會在香港停留多久？ / How long will you stay in Hong Kong?',
+            a: travelInfo?.lengthOfStay || '7 天 / 7 days'
+          },
+          {
+            q: 'Q: 你會住在哪裡？ / Where will you be staying?',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: 你帶了多少錢？ / How much money do you have?',
+            a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
+          }
           { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan' },
           { q: 'Q: How long will you stay in Malaysia? / Berapa lama anda akan tinggal di Malaysia?', a: travelInfo?.lengthOfStay || '7 days / 7 hari' },
           { q: 'Q: Where will you be staying? / Di mana anda akan menginap?', a: stayLocationAnswer },
@@ -581,6 +665,7 @@ const EntryPackDisplay = ({
         return renderFundsInfo();
       case 'tdac':
       case 'mdac':
+      case 'hdac':
       case 'sgac':
       case 'jdac':
         return renderTDACInfo();
@@ -604,6 +689,11 @@ const EntryPackDisplay = ({
       { key: 'travel', label: 'Travel', labelEn: 'Perjalanan' },
       { key: 'funds', label: 'Funds', labelEn: 'Kewangan' },
     ],
+    hongkong: [
+      { key: 'hdac', label: '入境資料', labelEn: 'Entry Info' },
+      { key: 'personal', label: '個人資料', labelEn: 'Personal' },
+      { key: 'travel', label: '旅行資料', labelEn: 'Travel' },
+      { key: 'funds', label: '資金證明', labelEn: 'Funds' },
     singapore: [
       { key: 'sgac', label: 'SGAC', labelEn: '入境卡' },
       { key: 'personal', label: 'Personal', labelEn: '个人' },
@@ -623,6 +713,7 @@ const EntryPackDisplay = ({
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
     malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
+    hongkong: '🇭🇰 入境資料包 / Entry Pack'
     singapore: '🇸🇬 Entry Pack / 入境信息包',
     japan: '🇯🇵 入国情報パック / Entry Pack'
   };
@@ -630,6 +721,7 @@ const EntryPackDisplay = ({
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
     malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
+    hongkong: '入境處重要資料 / Important information for immigration officer'
     singapore: 'Important information for immigration officer / 重要入境信息',
     japan: '入国審査官への重要情報 / Important information for immigration officer'
   };
