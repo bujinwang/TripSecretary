@@ -1451,12 +1451,6 @@ const normalizeFundItem = useCallback((item) => ({
   };
 
 
-  const validate = () => {
-    // Disable all required checks to support progressive entry info filling
-    formState.setErrors({});
-    return true;
-  };
-
   const handleContinue = async () => {
     await handleNavigationWithSave(
       () => navigation.navigate('HongKongEntryFlow', {
@@ -1477,52 +1471,6 @@ const normalizeFundItem = useCallback((item) => ({
 
   
 
-
-
-  const renderGenderOptions = () => {
-    const options = [
-      { value: 'Female', label: t('hongkong.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('hongkong.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('hongkong.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
-    ];
-
-    return (
-      <View style={styles.optionsContainer}>
-        {options.map((option) => {
-          const isActive = sex === option.value;
-          return (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.optionButton,
-                isActive && styles.optionButtonActive,
-              ]}
-              onPress={async () => {
-                const newSex = option.value;
-                formState.setSex(newSex);
-                // Save immediately to ensure gender is saved without requiring other field interaction
-                try {
-                  await saveDataToSecureStorageWithOverride({ sex: newSex });
-                  formState.setLastEditedAt(new Date());
-                } catch (error) {
-                  console.error('Failed to save gender:', error);
-                }
-              }}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  isActive && styles.optionTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1709,6 +1657,9 @@ const normalizeFundItem = useCallback((item) => ({
           saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
           setLastEditedAt={formState.setLastEditedAt}
           // Styles
+          styles={styles}
+        />
+
         {/* Funds Section */}
         <FundsSection
           t={t}
@@ -1717,19 +1668,9 @@ const normalizeFundItem = useCallback((item) => ({
           fieldCount={getFieldCount('funds')}
           // Form state
           funds={formState.funds}
-          fundItemModalVisible={formState.fundItemModalVisible}
-          currentFundItem={formState.currentFundItem}
-          newFundItemType={formState.newFundItemType}
-          // Setters
-          setFunds={formState.setFunds}
-          setFundItemModalVisible={formState.setFundItemModalVisible}
-          setCurrentFundItem={formState.setCurrentFundItem}
-          setNewFundItemType={formState.setNewFundItemType}
           // Actions
-          handleAddFundItem={handleAddFundItem}
-          handleEditFundItem={handleEditFundItem}
-          handleSaveFundItem={handleSaveFundItem}
-          handleDeleteFundItem={handleDeleteFundItem}
+          addFund={addFund}
+          handleFundItemPress={handleFundItemPress}
           // Styles
           styles={styles}
         />
