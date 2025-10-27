@@ -421,8 +421,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         isReady: totalPercent === 100,
       };
 
-      setCompletionMetrics(summary.metrics);
-      setTotalCompletionPercent(summary.totalPercent);
+      formState.setCompletionMetrics(summary.metrics);
+      formState.setTotalCompletionPercent(summary.totalPercent);
 
       console.log('=== COMPLETION METRICS RECALCULATED ===');
       console.log('Total completion:', summary.totalPercent + '%');
@@ -712,11 +712,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentStatus = DebouncedSave.getSaveState('thailand_travel_info');
-      setSaveStatus(currentStatus);
+      formState.setSaveStatus(currentStatus);
     }, 100);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [formState]);
 
   // Initialize entry_info when screen loads and data is ready
   useEffect(() => {
