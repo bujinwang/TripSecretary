@@ -75,6 +75,7 @@ export const hongkongEntryGuide = {
       estimatedTime: '15分钟',
       icon: '🛂',
       required: true,
+      showEntryPack: true, // 显示通关包按钮
       tips: [
         '内地居民排队港澳居民通道',
         '其他旅客排队访港旅客通道',
