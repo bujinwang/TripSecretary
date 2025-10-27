@@ -16,16 +16,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
-
+import PreparedState from '../../components/thailand/PreparedState';
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
-import NoDataState from '../../components/thailand/NoDataState';
-import PreparedState from '../../components/thailand/PreparedState';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
-import { useThailandPrimaryButton } from '../../hooks/thailand';
 
 const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
@@ -48,47 +45,43 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   // Passport selection state
   const [userId, setUserId] = useState(null);
 
-  // Data change listener ref - fixed memory leak by using useRef
-  const dataChangeUnsubscribeRef = React.useRef(null);
 
-  // Primary button state - extracted to custom hook for better maintainability
-  const primaryButtonState = useThailandPrimaryButton({
-    completionPercent,
-    arrivalDate,
-    showSupersededStatus,
-    entryPackStatus,
-  });
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-
-      // Set up data change listener
-      dataChangeUnsubscribeRef.current = UserDataService.addDataChangeListener((event) => {
-        console.log('Data change event received in ThailandEntryFlowScreen:', event);
-
-        if (event.type === 'RESUBMISSION_WARNING') {
-          // Check if this warning is for the current entry pack
-          const currentEntryPackId = route.params?.entryPackId;
-          if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
-            setResubmissionWarning(event);
-          }
-        } else if (event.type === 'DATA_CHANGED') {
-          // Refresh data when changes are detected
-          loadData();
-        }
-      });
-
+      setupDataChangeListener();
+      
       return () => {
-        // Cleanup listener on unmount/blur
-        if (dataChangeUnsubscribeRef.current) {
-          dataChangeUnsubscribeRef.current();
-          dataChangeUnsubscribeRef.current = null;
+        // Cleanup listener on unmount
+        if (dataChangeUnsubscribe) {
+          dataChangeUnsubscribe();
         }
       };
     }, [])
   );
+
+  // Data change listener
+  let dataChangeUnsubscribe = null;
+
+  const setupDataChangeListener = () => {
+    // Add listener for data changes and resubmission warnings
+    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
+      console.log('Data change event received in ThailandEntryFlowScreen:', event);
+      
+      if (event.type === 'RESUBMISSION_WARNING') {
+        // Check if this warning is for the current entry pack
+        const currentEntryPackId = route.params?.entryPackId;
+        if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
+          setResubmissionWarning(event);
+        }
+      } else if (event.type === 'DATA_CHANGED') {
+        // Refresh data when changes are detected
+        loadData();
+      }
+    });
+  };
 
   const loadData = async () => {
     try {
@@ -251,6 +244,17 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
+  /**
+   * Load entry info status including DAC submissions and resubmission warnings
+   *
+   * Checks for existing entry info and digital arrival cards to determine:
+   * - Whether entry pack has been submitted
+   * - If DAC is superseded
+   * - Any pending resubmission warnings
+   *
+   * @param {string} userId - User ID to load entry info for
+   * @returns {Promise<void>}
+   */
   const loadEntryInfoStatus = async (userId) => {
     try {
       // Use EntryInfoService to check for entry info with DAC submissions
@@ -317,6 +321,20 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
+  /**
+   * Handle resubmission warning actions (resubmit or ignore)
+   *
+   * When data changes are detected after TDAC submission, this handles:
+   * - Marking entry pack as superseded
+   * - Clearing warnings
+   * - Navigating to edit screen for resubmission
+   *
+   * @param {Object} warning - Resubmission warning object
+   * @param {string} warning.entryPackId - ID of the entry pack
+   * @param {Object} warning.diffResult - Details of data changes
+   * @param {string} action - Action to take ('resubmit' or 'ignore')
+   * @returns {Promise<void>}
+   */
   const handleResubmissionWarning = async (warning, action) => {
     try {
       if (action === 'resubmit') {
@@ -393,7 +411,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
 
   const handlePrimaryAction = async () => {
-    const buttonState = primaryButtonState;
+    const buttonState = getPrimaryButtonState();
     
     switch (buttonState.action) {
       case 'continue_improving':
@@ -506,11 +524,99 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
+  /**
+   * Get primary button state based on completion status and submission window
+   *
+   * Determines the appropriate button text, action, and enabled state based on:
+   * - Entry pack superseded status
+   * - Completion percentage
+   * - Submission window availability
+   * - Arrival date presence
+   *
+   * @returns {Object} Button configuration object
+   * @returns {string} returns.title - Button text to display
+   * @returns {string} returns.action - Action identifier (continue_improving, submit_tdac, etc.)
+   * @returns {boolean} returns.disabled - Whether button should be disabled
+   * @returns {string} returns.variant - Button variant (primary, secondary)
+   * @returns {string} [returns.subtitle] - Optional subtitle text
+   */
+  const getPrimaryButtonState = () => {
+    // Check if entry pack is superseded
+    if (showSupersededStatus || entryPackStatus === 'superseded') {
+      return {
+        title: '更新我的泰国准备信息 🌺',
+        action: 'resubmit_tdac',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '你的信息有更新，让我们重新准备最新的入境卡'
+      };
+    }
+
+    // Check completion status
+    const isComplete = completionPercent === 100;
+    
+    // Check submission window status
+    let canSubmitNow = false;
+    if (arrivalDate) {
+      const window = require('../../utils/thailand/ArrivalWindowCalculator').default.getSubmissionWindow(arrivalDate);
+      canSubmitNow = window.canSubmit;
+    }
+
+    // If completion is high enough, show entry pack option
+    if (completionPercent >= 80 && isComplete && canSubmitNow) {
+      return {
+        title: '提交入境卡',
+        action: 'submit_tdac',
+        disabled: false,
+        variant: 'primary'
+      };
+    } else if (completionPercent >= 60) {
+      return {
+        title: '查看我的通关包 📋',
+        action: 'view_entry_pack',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '看看你已经准备好的入境信息'
+      };
+    } else if (!isComplete) {
+      return {
+        title: '继续准备我的泰国之旅 💪',
+        action: 'continue_improving',
+        disabled: false,
+        variant: 'secondary'
+      };
+    } else if (isComplete && !arrivalDate) {
+      return {
+        title: '告诉我你什么时候到泰国 ✈️',
+        action: 'continue_improving',
+        disabled: false,
+        variant: 'secondary',
+        subtitle: '设置抵达日期，我们就能帮你找到最佳提交时间'
+      };
+    } else if (isComplete && !canSubmitNow) {
+      return {
+        title: t('progressiveEntryFlow.countdown.preWindow', { defaultValue: '等待提交窗口' }),
+        action: 'wait_for_window',
+        disabled: true,
+        variant: 'primary',
+        subtitle: t('progressiveEntryFlow.countdown.preWindow', { 
+          defaultValue: '提交窗口尚未开启' 
+        })
+      };
+    } else {
+      return {
+        title: '提交入境卡',
+        action: 'submit_tdac',
+        disabled: false,
+        variant: 'primary'
+      };
+    }
+  };
 
   const hasNoEntryData = completionPercent === 0 && categories.every(cat => cat.completedCount === 0);
 
   const renderPrimaryAction = () => {
-    const buttonState = primaryButtonState;
+    const buttonState = getPrimaryButtonState();
     return (
       <View>
         <Button
@@ -529,7 +635,53 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     );
   };
 
+  const renderNoDataState = () => (
+    <View style={styles.noDataContainer}>
+      <Text style={styles.noDataIcon}>📝</Text>
+      <Text style={styles.noDataTitle}>
+        准备开始泰国之旅吧！🌴
+      </Text>
+      <Text style={styles.noDataDescription}>
+        你还没有填写泰国入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境泰国！
+      </Text>
 
+      {/* Example/Tutorial hints */}
+      <View style={styles.noDataHints}>
+        <Text style={styles.noDataHintsTitle}>
+          泰国入境需要准备这些信息 🌺
+        </Text>
+        <View style={styles.noDataHintsList}>
+          <Text style={styles.noDataHint}>• 📘 护照信息 - 让泰国认识你</Text>
+          <Text style={styles.noDataHint}>• 📞 联系方式 - 泰国怎么找到你</Text>
+          <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
+          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
+        </View>
+      </View>
+
+      <Button
+        title="开始我的泰国准备之旅！🇹🇭"
+        onPress={handleEditInformation}
+        variant="primary"
+        style={styles.noDataButton}
+      />
+    </View>
+  );
+
+  const renderPreparedState = () => (
+    <PreparedState
+      completionPercent={completionPercent}
+      completionStatus={completionStatus}
+      arrivalDate={arrivalDate}
+      t={t}
+      passportParam={passportParam}
+      destination={route.params?.destination}
+      userData={userData}
+      handleEditInformation={handleEditInformation}
+      handlePreviewEntryCard={handlePreviewEntryCard}
+      navigation={navigation}
+      renderPrimaryAction={renderPrimaryAction}
+    />
+  );
 
   const renderContent = () => (
     <View style={styles.contentContainer}>
@@ -565,28 +717,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         />
       )}
 
-      {hasNoEntryData ? (
-        <NoDataState
-          styles={styles}
-          onGetStarted={handleEditInformation}
-        />
-      ) : (
-        <PreparedState
-          styles={styles}
-          colors={colors}
-          completionPercent={completionPercent}
-          completionStatus={completionStatus}
-          arrivalDate={arrivalDate}
-          userData={userData}
-          passport={passportParam}
-          destination={route.params?.destination}
-          t={t}
-          onEditInformation={handleEditInformation}
-          onPreviewEntryCard={handlePreviewEntryCard}
-          onNavigateToGuide={(params) => navigation.navigate('ThailandEntryGuide', params)}
-          renderPrimaryAction={renderPrimaryAction}
-        />
-      )}
+      {hasNoEntryData ? renderNoDataState() : renderPreparedState()}
     </View>
   );
 

@@ -17,519 +17,109 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
 import BackButton from '../../components/BackButton';
 // Removed mockTDACData dependency - using pure user data
-import EntryInfoService from '../../services/EntryInfoService';
-import SnapshotService from '../../services/snapshot/SnapshotService';
-import UserDataService from '../../services/data/UserDataService';
-import TDACValidationService from '../../services/validation/TDACValidationService';
-import TDACErrorHandler from '../../services/error/TDACErrorHandler';
+import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
   const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
   
-  // Log incoming data for debugging
+  /**
+   * Sanitize sensitive data before logging
+   * Masks passport numbers, emails, and phone numbers for security
+   */
+  const sanitizeForLogging = (data) => {
+    if (!data) return data;
+
+    const sanitized = { ...data };
+    const sensitiveFields = ['passportNo', 'email', 'phoneNumber'];
+
+    sensitiveFields.forEach(field => {
+      if (sanitized[field]) {
+        const value = String(sanitized[field]);
+        if (value.length > 4) {
+          sanitized[field] = value.substring(0, 2) + '****' + value.substring(value.length - 2);
+        } else {
+          sanitized[field] = '****';
+        }
+      }
+    });
+
+    return sanitized;
+  };
+
+  // Log incoming data for debugging (sanitized)
   console.log('🔍 TDACSelectionScreen received travelerInfo:', {
     hasData: Object.keys(incomingTravelerInfo).length > 0,
     keys: Object.keys(incomingTravelerInfo),
-    passportNo: incomingTravelerInfo.passportNo,
-    familyName: incomingTravelerInfo.familyName,
-    firstName: incomingTravelerInfo.firstName,
-    arrivalDate: incomingTravelerInfo.arrivalDate,
-    email: incomingTravelerInfo.email
+    ...sanitizeForLogging({
+      passportNo: incomingTravelerInfo.passportNo,
+      familyName: incomingTravelerInfo.familyName,
+      firstName: incomingTravelerInfo.firstName,
+      arrivalDate: incomingTravelerInfo.arrivalDate,
+      email: incomingTravelerInfo.email
+    })
   });
-  
+
   // Use pure user data directly - no mock data fallbacks
   const travelerInfo = incomingTravelerInfo;
-  
-  // Log user data for debugging
-  console.log('🔍 Using pure user data:', {
+
+  // Log user data for debugging (sanitized)
+  console.log('🔍 Using pure user data:', sanitizeForLogging({
     passportNo: travelerInfo.passportNo,
     familyName: travelerInfo.familyName,
     firstName: travelerInfo.firstName,
     arrivalDate: travelerInfo.arrivalDate,
     email: travelerInfo.email,
     flightNo: travelerInfo.flightNo
-  });
+  }));
 
   /**
    * Handle successful TDAC submission by creating/updating entry pack
    * This is called when user returns from successful TDAC submission
    */
   const handleTDACSubmissionSuccess = async (submissionData) => {
-    try {
-      console.log('🎉 Handling TDAC submission success:', submissionData);
+    const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
 
-      // Task 4.2: Extract and validate all necessary fields from TDAC submission
-      const tdacSubmission = extractTDACSubmissionMetadata(submissionData);
-
-      // Validate metadata completeness (must have arrCardNo and qrUri)
-      if (!validateTDACSubmissionMetadata(tdacSubmission)) {
-        console.warn('⚠️ Invalid TDAC submission metadata:', tdacSubmission);
-        return;
-      }
-
-      // Record submission history
-      const submissionHistoryEntry = {
-        timestamp: tdacSubmission.submittedAt,
-        status: 'success',
-        method: tdacSubmission.submissionMethod,
-        arrCardNo: tdacSubmission.arrCardNo,
-        duration: submissionData.duration || null,
-        metadata: {
-          qrUri: tdacSubmission.qrUri,
-          pdfPath: tdacSubmission.pdfPath,
-          travelerName: submissionData.travelerName,
-          passportNo: submissionData.passportNo,
-          arrivalDate: submissionData.arrivalDate
-        }
-      };
-
-      console.log('📋 Submission history entry:', submissionHistoryEntry);
-
-      // Find or create entry info ID (placeholder - would need actual implementation)
-      const entryInfoId = await findOrCreateEntryInfoId(travelerInfo);
-
-      if (entryInfoId) {
-        // Create or update digital arrival card
-        const digitalArrivalCard = await UserDataService.saveDigitalArrivalCard({
-          entryInfoId: entryInfoId,
-          cardType: 'TDAC', // Default to TDAC, can be extended for other types
-          arrCardNo: tdacSubmission.arrCardNo,
-          qrUri: tdacSubmission.qrUri,
-          pdfUrl: tdacSubmission.pdfPath,
-          submittedAt: tdacSubmission.submittedAt,
-          submissionMethod: tdacSubmission.submissionMethod,
-          status: 'success'
-        });
-
-        console.log('✅ Digital arrival card created/updated:', {
-          cardId: digitalArrivalCard.id,
-          arrCardNo: tdacSubmission.arrCardNo,
-          status: digitalArrivalCard.status
-        });
-
-        // Task 4.2: Record submission history
-        await recordSubmissionHistory(digitalArrivalCard.id, submissionHistoryEntry);
-
-        // Task 4.3: Create entry info snapshot immediately after creating digital arrival card
-        await createEntryInfoSnapshot(entryInfoId, 'submission', {
-          appVersion: '1.0.0', // Would get from app config
-          deviceInfo: 'mobile', // Would get from device info
-          creationMethod: 'auto',
-          submissionMethod: tdacSubmission.submissionMethod
-        });
-
-        // Task 4.4: Update EntryInfo status from 'ready' to 'submitted'
-        await updateEntryInfoStatus(entryInfoId, tdacSubmission);
-        
-      } else {
-        console.warn('⚠️ Could not find or create entry info ID');
-      }
-
-    } catch (error) {
-      console.error('❌ Failed to handle TDAC submission success:', error);
-      
-      // Enhanced error handling with retry mechanisms and user-friendly reporting
-      const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
-        operation: 'digital_arrival_card_creation',
-        submissionMethod: tdacSubmission.submissionMethod,
-        arrCardNo: tdacSubmission.arrCardNo,
-        userAgent: 'TDACSelectionScreen'
-      }, 0);
-
-      console.log('📋 Error handling result:', errorResult);
-
-      // Show user-friendly error dialog
-      const errorDialog = TDACErrorHandler.createErrorDialog(errorResult);
-      
-      Alert.alert(
-        errorDialog.title,
-        `${errorDialog.message}\n\nError ID: ${errorResult.errorId}`,
-        [
-          {
-            text: 'Retry Later',
-            onPress: () => {
-              // Schedule retry or show instructions
-              console.log('User chose to retry later');
-            }
-          },
-          {
-            text: 'Continue Anyway',
-            onPress: () => {
-              console.log('User chose to continue despite error');
-            }
-          },
-          {
-            text: 'Contact Support',
-            onPress: async () => {
-              // Export error log for support
-              const errorLog = await TDACErrorHandler.exportErrorLog();
-              console.log('Error log exported for support:', errorResult.errorId);
-            }
-          }
-        ]
-      );
-      
-      // Record the failure with enhanced logging
-      try {
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        const failureLog = {
-          timestamp: new Date().toISOString(),
-          errorId: errorResult.errorId,
-          category: errorResult.category,
-          userMessage: errorResult.userMessage,
-          technicalMessage: errorResult.technicalMessage,
-          recoverable: errorResult.recoverable,
-          error: error.message,
-          stack: error.stack,
-          submissionData: JSON.stringify(arguments[0]),
-          suggestions: errorResult.suggestions
-        };
-        
-        await AsyncStorage.setItem('digital_arrival_card_creation_failures', JSON.stringify(failureLog));
-        console.log('📝 Enhanced digital arrival card creation failure logged:', errorResult.errorId);
-      } catch (logError) {
-        console.error('❌ Failed to log entry pack creation failure:', logError);
-      }
-    }
-  };
-
-  /**
-   * Task 4.2: Extract all necessary fields from TDAC API response
-   * Standardizes metadata from different submission methods (API/WebView/Hybrid)
-   */
-  const extractTDACSubmissionMetadata = (submissionData) => {
-    return {
-      arrCardNo: submissionData.arrCardNo || submissionData.cardNo,
-      qrUri: submissionData.qrUri || submissionData.fileUri || submissionData.src,
-      pdfPath: submissionData.pdfPath || submissionData.fileUri,
-      submittedAt: submissionData.submittedAt || submissionData.timestamp 
-        ? new Date(submissionData.submittedAt || submissionData.timestamp).toISOString()
-        : new Date().toISOString(),
-      submissionMethod: submissionData.submissionMethod || 'unknown'
-    };
-  };
-
-  /**
-   * Task 4.2: Enhanced TDAC submission metadata validation with comprehensive error handling
-   */
-  const validateTDACSubmissionMetadata = (tdacSubmission) => {
-    try {
-      console.log('🔍 Starting comprehensive TDAC validation...');
-      
-      // Use comprehensive validation service
-      const validationResult = TDACValidationService.validateTDACSubmission(tdacSubmission, {
-        strict: true,
-        checkFiles: false // Skip file checks for performance
-      });
-
-      if (!validationResult.isValid) {
-        console.error('❌ TDAC validation failed:', {
-          errors: validationResult.errors,
-          fieldErrors: validationResult.fieldErrors
-        });
-
-        // Show user-friendly error messages
-        const summary = TDACValidationService.getValidationSummary(validationResult);
-        
-        // Display validation errors to user
-        if (summary.criticalErrors.length > 0) {
-          console.error('🚨 Critical validation errors:', summary.criticalErrors);
-          
-          // Show alert with specific field errors
-          const fieldErrorMessages = Object.entries(validationResult.fieldErrors)
-            .map(([field, errors]) => {
-              const message = TDACValidationService.getFieldErrorMessage(field, errors);
-              return `• ${field}: ${message}`;
-            })
-            .join('\n');
-
-          if (fieldErrorMessages) {
-            Alert.alert(
-              '❌ Validation Failed',
-              `Please correct the following issues:\n\n${fieldErrorMessages}`,
-              [{ text: 'OK' }]
-            );
-          }
-        }
-
-        return false;
-      }
-
-      // Log warnings if any
-      if (validationResult.warnings.length > 0) {
-        console.warn('⚠️ TDAC validation warnings:', validationResult.warnings);
-      }
-
-      console.log('✅ TDAC validation passed');
-      return true;
-
-    } catch (error) {
-      console.error('❌ TDAC validation error:', error);
-      
-      // Fallback to basic validation
-      const required = ['arrCardNo', 'qrUri'];
-      const missing = required.filter(field => !tdacSubmission[field] || !tdacSubmission[field].trim());
-      
-      if (missing.length > 0) {
-        console.error('❌ Missing required TDAC submission fields:', missing);
-        Alert.alert(
-          '❌ Missing Information',
-          `Required fields missing: ${missing.join(', ')}`,
-          [{ text: 'OK' }]
-        );
-        return false;
-      }
-
-      return true;
-    }
-  };
-
-  /**
-    * Task 4.2: Record submission history to submissionHistory array
-    */
-   const recordSubmissionHistory = async (digitalArrivalCardId, submissionHistoryEntry) => {
-     try {
-       // This would integrate with DigitalArrivalCard model to append to submissionHistory array
-       console.log('📝 Recording submission history:', {
-         digitalArrivalCardId,
-         entry: submissionHistoryEntry
-       });
-
-       // For now, just log - actual implementation would update DigitalArrivalCard.submissionHistory
-       return true;
-     } catch (error) {
-       console.error('❌ Failed to record submission history:', error);
-       return false;
-     }
-   };
-
-  /**
-    * Task 4.3: Create entry info snapshot
-    * Creates immutable snapshot of entry info data after successful TDAC submission
-    */
-   const createEntryInfoSnapshot = async (entryInfoId, reason = 'submission', metadata = {}) => {
-     try {
-       console.log('📸 Creating entry info snapshot:', {
-         entryInfoId,
-         reason,
-         metadata
-       });
-
-       // Optional: Display snapshot creation progress
-       // This could be a toast or loading indicator
-       // For now, we'll just log the progress
-
-       console.log('📸 Starting snapshot creation process...');
-
-       // Call SnapshotService to create snapshot
-       const snapshot = await SnapshotService.createSnapshot(entryInfoId, reason, metadata);
-
-       if (snapshot) {
-         console.log('✅ Entry info snapshot created successfully:', {
-           snapshotId: snapshot.snapshotId,
-           entryInfoId: entryInfoId,
-           reason: reason,
-           photoCount: snapshot.getPhotoCount(),
-           createdAt: snapshot.createdAt
-         });
-
-         // Optional: Display success notification
-         // Toast.show({
-         //   type: 'success',
-         //   text1: 'Entry Info Saved',
-         //   text2: 'Your travel documents have been securely archived.',
-         //   position: 'bottom',
-         //   visibilityTime: 3000,
-         // });
-
-         return snapshot;
-       } else {
-         throw new Error('Snapshot creation returned null');
-       }
-
-     } catch (error) {
-       console.error('❌ Failed to create entry info snapshot:', error);
-
-       // Task 4.3: Handle snapshot creation failure gracefully
-       // Don't block the user flow, but log the error for debugging
-
-       try {
-         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-         const failureLog = {
-           timestamp: new Date().toISOString(),
-           entryInfoId,
-           reason,
-           error: error.message,
-           stack: error.stack,
-           metadata
-         };
-
-         await AsyncStorage.setItem('snapshot_creation_failures', JSON.stringify(failureLog));
-         console.log('📝 Snapshot creation failure logged');
-       } catch (logError) {
-         console.error('❌ Failed to log snapshot creation failure:', logError);
-       }
-
-       // Optional: Display non-blocking warning
-       // Toast.show({
-       //   type: 'info',
-       //   text1: 'Archive Warning',
-       //   text2: 'Documents saved but archival incomplete. Your TDAC is still valid.',
-       //   position: 'bottom',
-       //   visibilityTime: 4000,
-       // });
-
-       return null;
-     }
-   };
-
-  /**
-   * Find or create entry info ID for the traveler
-   * This implementation looks for existing EntryInfo or creates a new one
-   */
-  const findOrCreateEntryInfoId = async (travelerInfo) => {
-    try {
-      const userId = travelerInfo?.userId || 'current_user';
-      const destinationId = 'thailand';
-      
-      console.log('🔍 Looking for existing entry info...');
-      
-      // Try to find existing entry info for this user and destination
-      const UserDataService = require('../../services/data/UserDataService').default;
-      let entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
-      
-      if (entryInfo) {
-        console.log('✅ Found existing entry info:', entryInfo.id);
-        return entryInfo.id;
-      }
-      
-      console.log('📝 Creating new entry info...');
-      
-      const passport = await UserDataService.getPassport(userId);
-      if (!passport) {
-        throw new Error('User has no passport, cannot create entry info');
-      }
-
-      // Create new entry info if none exists
-      const entryInfoData = {
-        destinationId,
-        passportId: passport.id,
-        status: 'incomplete',
-        completionMetrics: {
-          passport: { complete: 0, total: 5, state: 'missing' },
-          personalInfo: { complete: 0, total: 6, state: 'missing' },
-          funds: { complete: 0, total: 1, state: 'missing' },
-          travel: { complete: 0, total: 6, state: 'missing' }
+    if (!result.success) {
+      // Show error dialog if submission failed
+      TDACSubmissionService.showErrorDialog(
+        result.errorResult,
+        () => {
+          // Retry later
+          console.log('User chose to retry later');
         },
-        lastUpdatedAt: new Date().toISOString()
-      };
-      
-      entryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
-      console.log('✅ Created new entry info:', entryInfo.id);
-      
-      return entryInfo.id;
-    } catch (error) {
-      console.error('❌ Failed to find/create entry info ID:', error);
-      return null;
-    }
-  };
-
-  /**
-   * Task 4.4: Update EntryInfo status from 'ready' to 'submitted'
-   * Ensures proper state transitions and triggers notification system
-   */
-  const updateEntryInfoStatus = async (entryInfoId, tdacSubmission) => {
-    try {
-      console.log('📋 Updating EntryInfo status to submitted...');
-      
-      const UserDataService = require('../../services/data/UserDataService').default;
-      
-      // Update EntryInfo status from 'ready' to 'submitted'
-      const updatedEntryInfo = await UserDataService.updateEntryInfoStatus(
-        entryInfoId,
-        'submitted',
-        {
-          reason: 'TDAC submission successful',
-          tdacSubmission: {
-            arrCardNo: tdacSubmission.arrCardNo,
-            qrUri: tdacSubmission.qrUri,
-            pdfPath: tdacSubmission.pdfPath,
-            submittedAt: tdacSubmission.submittedAt,
-            submissionMethod: tdacSubmission.submissionMethod
-          }
+        () => {
+          // Continue anyway
+          console.log('User chose to continue despite error');
+        },
+        async () => {
+          // Contact support
+          console.log('User chose to contact support');
         }
       );
-      
-      console.log('✅ EntryInfo status updated successfully:', {
-        entryInfoId: updatedEntryInfo.id,
-        oldStatus: 'ready',
-        newStatus: updatedEntryInfo.status,
-        submissionDate: updatedEntryInfo.submissionDate,
-        lastUpdatedAt: updatedEntryInfo.lastUpdatedAt
-      });
-      
-      // Trigger state change event for notification system
-      console.log('📢 State change event triggered for notification system');
-      
-      return updatedEntryInfo;
-    } catch (error) {
-      console.error('❌ Failed to update EntryInfo status:', error);
-      
-      // Log the failure but don't throw - this is a secondary operation
-      // The TDAC submission was successful, so we don't want to break the user flow
-      try {
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        const failureLog = {
-          timestamp: new Date().toISOString(),
-          entryInfoId,
-          error: error.message,
-          stack: error.stack,
-          tdacSubmission: JSON.stringify(tdacSubmission)
-        };
-        
-        await AsyncStorage.setItem('entry_info_status_update_failures', JSON.stringify(failureLog));
-        console.log('📝 EntryInfo status update failure logged');
-      } catch (logError) {
-        console.error('❌ Failed to log EntryInfo status update failure:', logError);
-      }
-      
-      return null;
     }
   };
 
-  // Listen for navigation focus to check for successful submissions
+  // Event-driven TDAC submission listener instead of polling AsyncStorage
   React.useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-      try {
-        // Check AsyncStorage for recent TDAC submissions
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        
-        // Check for recent submissions in the last 5 minutes
-        const recentSubmissionKey = 'recent_tdac_submission';
-        const recentSubmissionData = await AsyncStorage.getItem(recentSubmissionKey);
-        
-        if (recentSubmissionData) {
-          const submissionData = JSON.parse(recentSubmissionData);
-          const submissionTime = new Date(submissionData.timestamp || submissionData.submittedAt);
-          const now = new Date();
-          const timeDiff = now.getTime() - submissionTime.getTime();
-          
-          // If submission was within last 5 minutes, process it
-          if (timeDiff < 5 * 60 * 1000) {
-            console.log('🔍 Found recent TDAC submission:', submissionData);
-            await handleTDACSubmissionSuccess(submissionData);
-            
-            // Clear the recent submission flag
-            await AsyncStorage.removeItem(recentSubmissionKey);
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error checking for recent submissions:', error);
+    // Subscribe to TDAC submission events from UserDataService
+    const UserDataService = require('../../services/data/UserDataService').default;
+
+    const unsubscribe = UserDataService.addDataChangeListener((event) => {
+      console.log('📡 TDAC submission event received:', event.type);
+
+      if (event.type === 'TDAC_SUBMISSION_SUCCESS') {
+        // Handle TDAC submission success event
+        console.log('🎉 TDAC submission event received:', event.data);
+        handleTDACSubmissionSuccess(event.data);
       }
     });
 
-    return unsubscribe;
-  }, [navigation]);
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>

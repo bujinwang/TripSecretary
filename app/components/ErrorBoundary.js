@@ -1,226 +1,283 @@
 /**
  * ErrorBoundary Component
  *
- * React error boundary for catching and handling component errors
- * Prevents entire app from crashing when component errors occur
+ * React error boundary with retry functionality for graceful error handling.
+ * Catches JavaScript errors anywhere in the component tree and displays a fallback UI.
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTranslation } from '../i18n/LocaleContext';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { colors, typography, spacing } from '../theme';
 
-class ErrorBoundaryBase extends React.Component {
+class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: 0,
+    };
   }
 
   static getDerivedStateFromError(error) {
     // Update state so the next render will show the fallback UI
-    return { hasError: true, error };
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details for debugging (always log errors, even in production)
+    // Log error details
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.setState({ errorInfo });
+
+    this.setState({
+      error,
+      errorInfo,
+    });
+
+    // Call onError callback if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
-    if (this.props.onReset) {
-      this.props.onReset();
+  handleRetry = () => {
+    const { onRetry } = this.props;
+    const { retryCount } = this.state;
+
+    // Increment retry count
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: retryCount + 1,
+    });
+
+    // Call onRetry callback if provided
+    if (onRetry) {
+      onRetry(retryCount + 1);
     }
   };
 
+  handleReset = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: 0,
+    });
+  };
+
   render() {
-    if (this.state.hasError) {
-      // Custom fallback provided by parent
-      if (this.props.fallback) {
-        return this.props.fallback;
+    const { hasError, error, errorInfo, retryCount } = this.state;
+    const {
+      fallback,
+      children,
+      showDetails = false,
+      maxRetries = 3,
+      customMessage,
+    } = this.props;
+
+    if (hasError) {
+      // Use custom fallback if provided
+      if (fallback) {
+        return fallback({
+          error,
+          errorInfo,
+          retry: this.handleRetry,
+          reset: this.handleReset,
+          retryCount,
+        });
       }
 
       // Default fallback UI
       return (
-        <View
-          style={styles.container}
-          accessibilityRole="alert"
-          accessibilityLabel="Error screen"
-        >
-          <Text
-            style={styles.emoji}
-            accessibilityLabel="Warning icon"
+        <View style={styles.container}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            ⚠️
-          </Text>
-          <Text
-            style={styles.title}
-            accessibilityRole="header"
-          >
-            {this.props.translations?.title || 'Something went wrong'}
-          </Text>
-          <Text style={styles.message}>
-            {this.props.errorMessage || this.props.translations?.message || 'An unexpected error occurred. Please try again.'}
-          </Text>
-
-          {__DEV__ && this.state.error && (
-            <View style={styles.devInfo}>
-              <Text style={styles.devTitle}>Error Details (DEV mode):</Text>
-              <Text style={styles.devText}>{this.state.error.toString()}</Text>
+            <View style={styles.iconContainer}>
+              <Text style={styles.icon}>⚠️</Text>
             </View>
-          )}
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.handleReset}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Try again"
-            accessibilityHint="Attempts to recover from the error and reload the component"
-          >
-            <Text style={styles.buttonText}>
-              {this.props.translations?.tryAgain || 'Try Again'}
+            <Text style={styles.title}>出错了</Text>
+
+            <Text style={styles.message}>
+              {customMessage || '加载数据时出现问题，请重试。'}
             </Text>
-          </TouchableOpacity>
 
-          {this.props.onClose && (
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={this.props.onClose}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Close error message"
-              accessibilityHint="Closes the error screen and returns to the previous view"
-            >
-              <Text style={styles.closeButtonText}>
-                {this.props.translations?.close || 'Close'}
+            {retryCount > 0 && (
+              <Text style={styles.retryInfo}>
+                重试次数: {retryCount}/{maxRetries}
               </Text>
-            </TouchableOpacity>
-          )}
+            )}
+
+            <View style={styles.buttonContainer}>
+              {retryCount < maxRetries && (
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={this.handleRetry}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.retryButtonText}>🔄 重试</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={this.handleReset}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.resetButtonText}>返回</Text>
+              </TouchableOpacity>
+            </View>
+
+            {showDetails && error && (
+              <View style={styles.detailsContainer}>
+                <Text style={styles.detailsTitle}>错误详情:</Text>
+                <View style={styles.detailsContent}>
+                  <Text style={styles.detailsText}>
+                    {error.toString()}
+                  </Text>
+                  {errorInfo && errorInfo.componentStack && (
+                    <Text style={styles.detailsText}>
+                      {errorInfo.componentStack}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {retryCount >= maxRetries && (
+              <View style={styles.maxRetriesContainer}>
+                <Text style={styles.maxRetriesText}>
+                  已达到最大重试次数。请稍后再试，或联系技术支持。
+                </Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
       );
     }
 
-    return this.props.children;
+    return children;
   }
 }
-
-ErrorBoundaryBase.propTypes = {
-  children: PropTypes.node.isRequired,
-  fallback: PropTypes.node,
-  errorMessage: PropTypes.string,
-  onReset: PropTypes.func,
-  onClose: PropTypes.func,
-  translations: PropTypes.shape({
-    title: PropTypes.string,
-    message: PropTypes.string,
-    tryAgain: PropTypes.string,
-    close: PropTypes.string,
-  }),
-};
-
-ErrorBoundaryBase.defaultProps = {
-  fallback: null,
-  errorMessage: null,
-  onReset: null,
-  onClose: null,
-  translations: null,
-};
-
-// Functional wrapper component that uses i18n hooks
-const ErrorBoundary = (props) => {
-  const { t } = useTranslation();
-
-  const translations = {
-    title: t('thailand.tdacWebView.errorBoundary.title'),
-    message: t('thailand.tdacWebView.errorBoundary.message'),
-    tryAgain: t('thailand.tdacWebView.errorBoundary.tryAgain'),
-    close: t('thailand.tdacWebView.errorBoundary.close'),
-  };
-
-  return <ErrorBoundaryBase {...props} translations={translations} />;
-};
-
-ErrorBoundary.propTypes = {
-  children: PropTypes.node.isRequired,
-  fallback: PropTypes.node,
-  errorMessage: PropTypes.string,
-  onReset: PropTypes.func,
-  onClose: PropTypes.func,
-};
-
-ErrorBoundary.defaultProps = {
-  fallback: null,
-  errorMessage: null,
-  onReset: null,
-  onClose: null,
-};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f8f9fa',
+    padding: spacing.xl,
   },
-  emoji: {
+  iconContainer: {
+    marginBottom: spacing.lg,
+  },
+  icon: {
     fontSize: 64,
-    marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#212529',
-    marginBottom: 8,
+    ...typography.h2,
+    color: colors.text,
+    fontWeight: '700',
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   message: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginBottom: 24,
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+    lineHeight: 24,
+    paddingHorizontal: spacing.md,
+  },
+  retryInfo: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  retryButtonText: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  resetButton: {
+    backgroundColor: colors.white,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  resetButtonText: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  detailsContainer: {
+    width: '100%',
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  detailsTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  detailsContent: {
+    maxHeight: 200,
+  },
+  detailsText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontFamily: 'monospace',
+    lineHeight: 16,
+  },
+  maxRetriesContainer: {
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: '#FFF5F5',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  maxRetriesText: {
+    ...typography.body2,
+    color: colors.error,
     textAlign: 'center',
     lineHeight: 20,
-  },
-  devInfo: {
-    backgroundColor: '#fff3cd',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 20,
-    maxWidth: '100%',
-  },
-  devTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#856404',
-    marginBottom: 8,
-  },
-  devText: {
-    fontSize: 11,
-    color: '#856404',
-    fontFamily: 'monospace',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  closeButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  closeButtonText: {
-    color: '#6c757d',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

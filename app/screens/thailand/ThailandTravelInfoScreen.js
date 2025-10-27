@@ -22,6 +22,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
+import GenderSelector from '../../components/GenderSelector';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../components';
 
 import { colors, typography, spacing } from '../../theme';
@@ -47,7 +48,7 @@ import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from './constants';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS, GENDER_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
 
 // Import custom hooks for state, persistence, and validation
@@ -177,11 +178,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     loadData();
   }, [loadData]);
 
-  // Recalculate completion metrics whenever form data changes
+  // Debounced completion metrics calculation
+  // Prevents excessive recalculations when user is typing rapidly
   useEffect(() => {
-    const metrics = calculateCompletionMetrics();
-    setCompletionMetrics(metrics);
-    setTotalCompletionPercent(metrics?.percent || 0);
+    const debounceTimer = setTimeout(() => {
+      const metrics = calculateCompletionMetrics();
+      setCompletionMetrics(metrics);
+      setTotalCompletionPercent(metrics?.percent || 0);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
@@ -202,13 +208,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Photo upload handler wrappers (to pass t parameter)
   const wrappedHandleFlightTicketPhotoUpload = () => handleFlightTicketPhotoUpload(t);
   const wrappedHandleHotelReservationPhotoUpload = () => handleHotelReservationPhotoUpload(t);
-
-
-  const validate = () => {
-    // Disable all required checks to support progressive entry info filling
-    formState.setErrors({});
-    return true;
-  };
 
   const handleContinue = async () => {
     await handleNavigationWithSave(
@@ -231,90 +230,15 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
 
-  const renderGenderOptions = () => {
-    const options = [
-      { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('thailand.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
-    ];
-
-    return (
-      <View style={styles.optionsContainer}>
-        {options.map((option) => {
-          const isActive = formState.sex === option.value;
-          return (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.optionButton,
-                isActive && styles.optionButtonActive,
-              ]}
-              onPress={async () => {
-                const previousSex = formState.sex;
-                const newSex = option.value;
-
-                // Optimistically update UI
-                formState.setSex(newSex);
-
-                // Save immediately to ensure gender is saved without requiring other field interaction
-                try {
-                  await saveDataToSecureStorageWithOverride({ sex: newSex });
-                  formState.setLastEditedAt(new Date());
-                } catch (error) {
-                  console.error('Failed to save gender:', error);
-
-                  // Revert to previous value on failure
-                  formState.setSex(previousSex);
-
-                  // Inform user and provide retry option
-                  Alert.alert(
-                    t('thailand.travelInfo.saveError.title', { defaultValue: '保存失败' }),
-                    t('thailand.travelInfo.saveError.genderMessage', {
-                      defaultValue: '性别信息保存失败，请重试。'
-                    }),
-                    [
-                      {
-                        text: t('thailand.travelInfo.saveError.retry', { defaultValue: '重试' }),
-                        onPress: async () => {
-                          // Retry save
-                          formState.setSex(newSex);
-                          try {
-                            await saveDataToSecureStorageWithOverride({ sex: newSex });
-                            formState.setLastEditedAt(new Date());
-                          } catch (retryError) {
-                            console.error('Retry failed to save gender:', retryError);
-                            formState.setSex(previousSex);
-                            Alert.alert(
-                              t('thailand.travelInfo.saveError.title', { defaultValue: '保存失败' }),
-                              t('thailand.travelInfo.saveError.persistentFailure', {
-                                defaultValue: '保存失败，请检查网络连接或稍后重试。'
-                              })
-                            );
-                          }
-                        }
-                      },
-                      {
-                        text: t('common.cancel', { defaultValue: '取消' }),
-                        style: 'cancel'
-                      }
-                    ]
-                  );
-                }
-              }}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  isActive && styles.optionTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
+  const handleGenderChange = async (newSex) => {
+    formState.setSex(newSex);
+    // Save immediately to ensure gender is saved without requiring other field interaction
+    try {
+      await saveDataToSecureStorageWithOverride({ sex: newSex });
+      formState.setLastEditedAt(new Date());
+    } catch (error) {
+      console.error('Failed to save gender:', error);
+    }
   };
 
   return (
