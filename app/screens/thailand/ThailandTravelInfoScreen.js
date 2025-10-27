@@ -50,6 +50,23 @@ import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
+
+// Import custom hooks for state, persistence, and validation
+import {
+  useThailandFormState,
+  useThailandDataPersistence,
+  useThailandValidation
+} from '../../hooks/thailand';
+
+// Import section components
+import {
+  HeroSection,
+  PassportSection,
+  PersonalInfoSection,
+  FundsSection,
+  TravelDetailsSection
+} from '../../components/thailand/sections';
+
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -68,172 +85,47 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   // Memoize userId to prevent unnecessary re-renders
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
-  // Data model instances
-  const [passportData, setPassportData] = useState(null);
-  const [personalInfoData, setPersonalInfoData] = useState(null);
-  const [entryData, setEntryData] = useState(null);
-
-  // Smart defaults for common scenarios
-  const getSmartDefaults = () => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
-
-    return {
-      travelPurpose: 'HOLIDAY', // Most common purpose
-      accommodationType: 'HOTEL', // Most common accommodation
-      arrivalDate: tomorrow.toISOString().split('T')[0], // Default to tomorrow
-      departureDate: nextWeek.toISOString().split('T')[0], // Default to 1 week later
-      boardingCountry: passport?.nationality || 'CHN', // Default to passport nationality
-    };
-  };
-
-  // Auto-complete suggestions for common scenarios
-  const getAutoCompleteSuggestions = (fieldType, currentValue) => {
-    const suggestions = {
-      flightNumber: [
-        'TG123', 'TG456', 'CX123', 'CX456', 'MU123', 'MU456',
-        'CA123', 'CA456', 'ZH123', 'ZH456', 'MF123', 'MF456'
-      ],
-      hotelName: [
-        'Bangkok Marriott Hotel', 'Chiang Mai Night Bazaar Hotel',
-        'Phuket Patong Beach Hotel', 'Hua Hin Hilton Resort',
-        'Centara Grand', 'Anantara', 'Mandarin Oriental',
-        'Shangri-La Hotel', 'JW Marriott', 'Hilton'
-      ],
-      occupation: [
-        '软件工程师', '学生', '教师', '医生', '律师', '会计师',
-        '销售经理', '退休人员', '家庭主妇', '自由职业者'
-      ]
-    };
-
-    if (!currentValue || currentValue.length < 2) return [];
-
-    return suggestions[fieldType]?.filter(item =>
-      item.toLowerCase().includes(currentValue.toLowerCase())
-    ).slice(0, 5) || [];
-  };
-
-  // UI State (loaded from database, not from route params)
-  const [passportNo, setPassportNo] = useState('');
-  const [visaNumber, setVisaNumber] = useState('');
-  const [surname, setSurname] = useState('');
-  const [middleName, setMiddleName] = useState('');
-  const [givenName, setGivenName] = useState('');
-  const [nationality, setNationality] = useState('');
-  const [dob, setDob] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-
-  // Personal Info State (loaded from database)
-  const [sex, setSex] = useState('');
-  const [occupation, setOccupation] = useState('');
-  const [customOccupation, setCustomOccupation] = useState('');
-  const [cityOfResidence, setCityOfResidence] = useState('');
-  const [residentCountry, setResidentCountry] = useState('');
-  const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || '')); // Initialize phone code based on passport nationality or empty
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-
-  const isChineseResidence = residentCountry === 'CHN';
-  const cityOfResidenceLabel = isChineseResidence ? '居住省份' : '居住省份 / 城市';
-  const cityOfResidenceHelpText = isChineseResidence
-    ? '中国地址请填写所在省份（请使用英文，例如 Anhui）'
-    : '请输入您居住的省份或城市 (请使用英文)';
-  const cityOfResidencePlaceholder = isChineseResidence
-    ? '例如 Anhui, Guangdong'
-    : '例如 Anhui, Shanghai';
-
-  // Proof of Funds State
-  const [funds, setFunds] = useState([]);
-  const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
-  const [selectedFundItem, setSelectedFundItem] = useState(null);
-  const [currentFundItem, setCurrentFundItem] = useState(null);
-  const [newFundItemType, setNewFundItemType] = useState(null);
-
-  // Entry Info State - for tracking the entry pack
-  const [entryInfoId, setEntryInfoId] = useState(null);
-  const [entryInfoInitialized, setEntryInfoInitialized] = useState(false);
-
-  // Travel Info State - with smart defaults
-  const smartDefaults = getSmartDefaults();
-  const [travelPurpose, setTravelPurpose] = useState('');
-  const [customTravelPurpose, setCustomTravelPurpose] = useState('');
-  const [recentStayCountry, setRecentStayCountry] = useState('');
-  const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
-  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalArrivalDate, setArrivalArrivalDate] = useState(smartDefaults.arrivalDate);
-  const [previousArrivalDate, setPreviousArrivalDate] = useState('');
-  const [departureFlightNumber, setDepartureFlightNumber] = useState('');
-  const [departureDepartureDate, setDepartureDepartureDate] = useState(smartDefaults.departureDate);
-  const [isTransitPassenger, setIsTransitPassenger] = useState(false);
-  const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
-  const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
-  const [province, setProvince] = useState(''); // 省
-  const [district, setDistrict] = useState(''); // 区（地区）
-  const [districtId, setDistrictId] = useState(null); // 区ID
-  const [subDistrict, setSubDistrict] = useState(''); // 乡（子地区）
-  const [subDistrictId, setSubDistrictId] = useState(null); // 乡ID
-  const [postalCode, setPostalCode] = useState(''); // 邮政编码
-  const [hotelAddress, setHotelAddress] = useState('');
-
-  // Document photos
-  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
-  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
-
-  useEffect(() => {
-    if (!province || !district) {
-      if (districtId !== null) {
-        setDistrictId(null);
-      }
-      return;
-    }
-
-    const match = findDistrictOption(province, district);
-    if (match && match.id !== districtId) {
-      setDistrictId(match.id);
-    }
-  }, [province, district, districtId]);
-
-  useEffect(() => {
-    if (!districtId || !subDistrict) {
-      if (subDistrictId !== null) {
-        setSubDistrictId(null);
-      }
-      return;
-    }
-
-    const match = findSubDistrictOption(districtId, subDistrict);
-    if (match && match.id !== subDistrictId) {
-      setSubDistrictId(match.id);
-      if (!postalCode && match.postalCode) {
-        setPostalCode(String(match.postalCode));
-      }
-    }
-  }, [districtId, subDistrict, subDistrictId, postalCode]);
-
-  const [errors, setErrors] = useState({});
-  const [warnings, setWarnings] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [expandedSection, setExpandedSection] = useState(null); // 'passport', 'personal', 'funds', 'travel', or null
-  
-  // Auto-save state tracking
-  const [saveStatus, setSaveStatus] = useState(null); // 'pending', 'saving', 'saved', 'error', or null
-  const [lastEditedAt, setLastEditedAt] = useState(null);
-
-  // Session state tracking
-  const [lastEditedField, setLastEditedField] = useState(null);
-  const scrollViewRef = useRef(null);
-  const shouldRestoreScrollPosition = useRef(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  // Completion tracking
-  const [completionMetrics, setCompletionMetrics] = useState(null);
-  const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
+  // Initialize form state hook - consolidates all 57 useState declarations
+  const formState = useThailandFormState(passport);
 
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('thailand_travel_info');
+
+  // Handle district/subdistrict ID updates (cascade logic)
+  useEffect(() => {
+    if (!formState.province || !formState.district) {
+      if (formState.districtId !== null) {
+        formState.setDistrictId(null);
+      }
+      return;
+    }
+
+    const match = findDistrictOption(formState.province, formState.district);
+    if (match && match.id !== formState.districtId) {
+      formState.setDistrictId(match.id);
+    }
+  }, [formState.province, formState.district, formState.districtId, formState]);
+
+  useEffect(() => {
+    if (!formState.districtId || !formState.subDistrict) {
+      if (formState.subDistrictId !== null) {
+        formState.setSubDistrictId(null);
+      }
+      return;
+    }
+
+    const match = findSubDistrictOption(formState.districtId, formState.subDistrict);
+    if (match && match.id !== formState.subDistrictId) {
+      formState.setSubDistrictId(match.id);
+      if (!formState.postalCode && match.postalCode) {
+        formState.setPostalCode(String(match.postalCode));
+      }
+    }
+  }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode, formState]);
+
+  // Refs for scroll management
+  const scrollViewRef = useRef(null);
+  const shouldRestoreScrollPosition = useRef(false);
 
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
@@ -1316,12 +1208,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
   }, [residentCountry]);
 
   const resetDistrictSelection = useCallback(() => {
-    setDistrict('');
-    setDistrictId(null);
-    setSubDistrict('');
-    setSubDistrictId(null);
-    setPostalCode('');
-  }, []);
+    formState.setDistrict('');
+    formState.setDistrictId(null);
+    formState.setSubDistrict('');
+    formState.setSubDistrictId(null);
+    formState.setPostalCode('');
+  }, [formState]);
 
   const handleProvinceSelect = useCallback((code) => {
     setProvince(code);
