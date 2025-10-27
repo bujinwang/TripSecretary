@@ -1,7 +1,15 @@
 # TravelInfoScreen Migration Guide
 
+> **Note**: This is a practical, step-by-step implementation guide. For methodology, theory, and comprehensive examples, see the main refactoring guide.
+
+## Related Documentation
+
+- **📖 Methodology Guide**: [TRAVEL_INFO_SCREEN_REFACTORING_GUIDE.md](../../docs/TRAVEL_INFO_SCREEN_REFACTORING_GUIDE.md) - Learn the refactoring approach and best practices
+- **📊 Progress Tracker**: [TRAVEL_INFO_SCREEN_REFACTORING_TRACKER.md](../../docs/TRAVEL_INFO_SCREEN_REFACTORING_TRACKER.md) - See completed examples and status
+- **🔧 This Guide**: Practical step-by-step migration instructions
+
 ## Overview
-This guide explains how to upgrade TravelInfoScreens to match the comprehensive structure established in Thailand, Singapore, Hong Kong, and Malaysia. The reference implementation (Malaysia) has grown from ~1,474 lines to ~1,358 lines with advanced features.
+This guide explains how to upgrade TravelInfoScreens to match the comprehensive structure established in Thailand, Singapore, and US. The reference implementation (Thailand) was reduced from 3,930 lines to 1,285 lines (-67%) with significant improvements in maintainability.
 
 ## Why Upgrade?
 The comprehensive TravelInfoScreen provides:
