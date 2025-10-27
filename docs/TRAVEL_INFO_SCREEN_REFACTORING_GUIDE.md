@@ -1460,6 +1460,526 @@ This refactoring methodology provides a systematic, proven approach to transform
 
 ---
 
-**Document Version**: 1.0
+## Additional Refinement Phases (Post-Refactoring)
+
+After completing the initial 5-phase refactoring, additional optimization passes can further reduce duplication and improve code organization. These phases apply to screens that have already been refactored through Phases 1-5.
+
+### Refinement Phase 1: Remove Duplicate Definitions
+
+**Goal**: Identify and eliminate duplicate function definitions that exist both in the screen and in hooks.
+
+#### Common Duplicates to Remove:
+
+**1. Duplicate Refs**
+```javascript
+// BAD - Duplicate refs in screen when already provided by hook
+const scrollViewRef = useRef(null);
+const shouldRestoreScrollPosition = useRef(false);
+
+const persistence = useCountryDataPersistence({...});
+// persistence already provides: scrollViewRef, shouldRestoreScrollPosition
+
+// GOOD - Use refs from hook only
+const { scrollViewRef, shouldRestoreScrollPosition } = persistence;
+```
+
+**2. Duplicate Validation Functions**
+```javascript
+// BAD - Functions redefined locally when hook already provides them
+const getFieldCount = (section) => { /* 120 lines */ };
+const calculateCompletionMetrics = () => { /* 80 lines */ };
+const isFormValid = () => { /* 20 lines */ };
+
+const validation = useCountryValidation({...});
+// validation already provides: getFieldCount, calculateCompletionMetrics, isFormValid
+
+// GOOD - Use functions from hook only
+const {
+  getFieldCount,
+  calculateCompletionMetrics,
+  isFormValid,
+  getSmartButtonConfig,
+  getProgressText,
+  getProgressColor
+} = validation;
+```
+
+**3. Duplicate Session State Functions**
+```javascript
+// BAD - Functions redefined locally
+const saveSessionState = async () => { /* 15 lines */ };
+const loadSessionState = async () => { /* 30 lines */ };
+const getSessionStateKey = () => { /* 3 lines */ };
+
+const persistence = useCountryDataPersistence({...});
+// persistence already provides these
+
+// GOOD - Use from persistence hook
+const { saveSessionState, loadSessionState } = persistence;
+```
+
+**4. Duplicate Data Functions**
+```javascript
+// BAD - Functions redefined locally
+const refreshFundItems = async () => { /* 10 lines */ };
+const initializeEntryInfo = async () => { /* 60 lines */ };
+const normalizeFundItem = (item) => { /* 10 lines */ };
+
+const persistence = useCountryDataPersistence({...});
+// persistence already provides these
+
+// GOOD - Use from persistence hook
+const { refreshFundItems, initializeEntryInfo } = persistence;
+```
+
+**5. Duplicate Save Wrappers**
+```javascript
+// BAD - Unnecessary wrapper
+const saveDataToSecureStorage = async () => {
+  return saveDataToSecureStorageWithOverride();
+};
+
+// GOOD - Use the persistence hook's function directly
+const { saveDataToSecureStorage: saveDataToSecureStorageWithOverride } = persistence;
+```
+
+#### Implementation Steps:
+
+1. **Audit the Screen File**
+   - Search for duplicate function definitions
+   - Compare with hook exports
+   - Mark duplicates for removal
+
+2. **Remove Duplicates Systematically**
+   - Remove one category at a time (refs, validation, session, data)
+   - Update any usages to use hook versions
+   - Test after each removal
+
+3. **Verify Hook Exports**
+   - Ensure all needed functions are exported from hooks
+   - Add missing exports if needed
+   - Update hook return statements
+
+#### Expected Results:
+- **~500 lines removed** from duplicate definitions
+- **Clearer separation** between screen and hook responsibilities
+- **Single source of truth** for each function
+
+---
+
+### Refinement Phase 2: Consolidate Save Operations
+
+**Goal**: Move complex save operations from screen to persistence hook.
+
+#### Extract to Persistence Hook:
+
+**1. performSaveOperation Function (~300 lines)**
+```javascript
+// BAD - Complex save logic in screen component
+const performSaveOperation = async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
+  // 300 lines of:
+  // - Building field updates with FieldStateManager
+  // - Saving passport data
+  // - Saving personal info
+  // - Saving travel info
+  // - Saving entry info with fund links
+  // - Error handling and recovery
+};
+
+// GOOD - Move to persistence hook
+// In useCountryDataPersistence.js:
+const performSaveOperation = useCallback(async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
+  // Same 300 lines, but properly encapsulated in persistence layer
+  // Has access to: formState, userInteractionTracker, UserDataService
+}, [formState, userInteractionTracker]);
+```
+
+**2. saveDataToSecureStorageWithOverride Function (~180 lines)**
+```javascript
+// BAD - Save orchestration in screen
+const saveDataToSecureStorageWithOverride = async (fieldOverrides = {}) => {
+  // 180 lines of:
+  // - Building interaction state
+  // - Preparing current state
+  // - Calling performSaveOperation
+  // - Handling partial save failures
+  // - SQLite error recovery
+};
+
+// GOOD - Move to persistence hook
+// In useCountryDataPersistence.js:
+const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
+  // Same logic, properly placed in persistence layer
+  // Returns: { success, error } for UI feedback
+}, [userId, destination, formState, userInteractionTracker, performSaveOperation]);
+
+// Export from hook
+return {
+  loadData,
+  saveDataToSecureStorage, // Now includes override functionality
+  debouncedSaveData,
+  // ...
+};
+```
+
+#### Implementation Steps:
+
+1. **Identify Save Functions**
+   - Locate `performSaveOperation` in screen
+   - Locate `saveDataToSecureStorageWithOverride` in screen
+   - Note all dependencies (formState, userInteractionTracker, etc.)
+
+2. **Move to Persistence Hook**
+   - Copy functions to `useCountryDataPersistence.js`
+   - Convert to `useCallback` with proper dependencies
+   - Update any screen-specific references
+
+3. **Update Hook Return Statement**
+   - Export `performSaveOperation` (if needed externally)
+   - Export `saveDataToSecureStorage` (with override support)
+   - Remove old exports if any
+
+4. **Update Screen Component**
+   - Remove local function definitions
+   - Use hook's `saveDataToSecureStorage` directly
+   - Update any function calls
+
+5. **Test Save Operations**
+   - Verify data saves correctly
+   - Test error handling
+   - Test partial save scenarios
+
+#### Expected Results:
+- **~400 lines removed** from screen
+- **~200 lines added** to persistence hook (net: -200 lines)
+- **Better encapsulation** of save logic
+- **Easier to test** save operations in isolation
+
+---
+
+### Refinement Phase 3: Move Migration Logic
+
+**Goal**: Move data migration functions to persistence hook.
+
+#### Extract Migration Function:
+
+```javascript
+// BAD - Migration logic in screen component
+const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+  if (!userData || !userInteractionTracker.isInitialized) return;
+
+  const existingDataToMigrate = {};
+
+  // Migrate passport data
+  if (userData.passport) {
+    const passport = userData.passport;
+    if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
+    if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
+    // ... 20+ more fields
+  }
+
+  // Migrate personal info
+  if (userData.personalInfo) {
+    // ... 10+ more fields
+  }
+
+  // Migrate travel info
+  if (userData.travelInfo) {
+    // ... 15+ more fields
+  }
+
+  userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+}, [userInteractionTracker]);
+
+// GOOD - Move to persistence hook
+// In useCountryDataPersistence.js:
+const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+  // Same logic, properly placed in data persistence layer
+  // Already has access to userInteractionTracker
+}, [userInteractionTracker]);
+
+// Export from hook
+return {
+  loadData,
+  saveDataToSecureStorage,
+  migrateExistingDataToInteractionState, // Now exported
+  // ...
+};
+
+// In screen component:
+const { migrateExistingDataToInteractionState } = persistence;
+```
+
+#### Implementation Steps:
+
+1. **Locate Migration Function**
+   - Find `migrateExistingDataToInteractionState` in screen
+   - Note dependencies (userInteractionTracker)
+
+2. **Move to Persistence Hook**
+   - Copy function to `useCountryDataPersistence.js`
+   - Ensure userInteractionTracker is available
+   - Convert to useCallback with dependencies
+
+3. **Export from Hook**
+   - Add to return statement
+   - Update screen to use hook version
+
+4. **Remove from Screen**
+   - Delete local function definition
+   - Verify all usages work
+
+#### Expected Results:
+- **~60 lines removed** from screen
+- **~60 lines added** to persistence hook (net: 0 lines, but better organized)
+- **Data migration logic** properly encapsulated
+- **Easier to maintain** backward compatibility
+
+---
+
+### Refinement Phase 4: Extract Photo Upload Logic
+
+**Goal**: Separate photo persistence logic from UI interaction logic.
+
+#### Refactor Photo Upload Handlers:
+
+```javascript
+// BAD - Photo save logic mixed with UI interaction
+const handleFlightTicketPhotoUpload = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({...});
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const photoUri = result.assets[0].uri;
+      formState.setFlightTicketPhoto(photoUri);
+
+      // Save to secure storage
+      try {
+        await saveDataToSecureStorageWithOverride({
+          flightTicketPhoto: photoUri
+        });
+        Alert.alert('上传成功', '机票照片已上传');
+      } catch (error) {
+        Alert.alert('上传失败', '保存失败，请重试');
+      }
+    }
+  } catch (error) {
+    Alert.alert('上传失败', '选择照片失败，请重试');
+  }
+};
+
+// GOOD - Separate persistence logic from UI logic
+// In useCountryDataPersistence.js:
+const savePhoto = useCallback(async (photoType, photoUri) => {
+  try {
+    const fieldName = photoType === 'flightTicket'
+      ? 'flightTicketPhoto'
+      : 'hotelReservationPhoto';
+
+    // Update formState
+    if (photoType === 'flightTicket') {
+      formState.setFlightTicketPhoto(photoUri);
+    } else {
+      formState.setHotelReservationPhoto(photoUri);
+    }
+
+    // Save to secure storage
+    await saveDataToSecureStorage({ [fieldName]: photoUri });
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to save ${photoType} photo:`, error);
+    return { success: false, error };
+  }
+}, [formState, saveDataToSecureStorage]);
+
+// In screen component:
+const { savePhoto } = persistence;
+
+const handleFlightTicketPhotoUpload = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({...});
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const photoUri = result.assets[0].uri;
+
+      // Use persistence hook's savePhoto
+      const { success } = await savePhoto('flightTicket', photoUri);
+
+      if (success) {
+        Alert.alert('上传成功', '机票照片已上传');
+      } else {
+        Alert.alert('上传失败', '保存失败，请重试');
+      }
+    }
+  } catch (error) {
+    Alert.alert('上传失败', '选择照片失败，请重试');
+  }
+};
+```
+
+#### Key Principles:
+
+**Separation of Concerns**:
+- **Persistence Hook**: Data saving logic (`savePhoto`)
+- **Screen Component**: UI interaction logic (ImagePicker, Alert)
+- **Clear Interface**: Hook returns `{ success, error }` for UI feedback
+
+**Do NOT Move to Hook**:
+- ❌ ImagePicker calls (UI interaction)
+- ❌ Alert dialogs (UI feedback)
+- ❌ Localization (t function calls)
+
+**Do Move to Hook**:
+- ✅ Photo state updates
+- ✅ Save to secure storage
+- ✅ Error handling logic
+
+#### Implementation Steps:
+
+1. **Create savePhoto Helper in Persistence Hook**
+   - Accept photoType and photoUri
+   - Update appropriate formState
+   - Call saveDataToSecureStorage
+   - Return success status
+
+2. **Export from Hook**
+   - Add savePhoto to return statement
+
+3. **Simplify Photo Upload Handlers in Screen**
+   - Keep ImagePicker and Alert logic
+   - Replace state updates and save calls with savePhoto
+   - Handle success/error responses
+
+4. **Test Photo Upload Flow**
+   - Verify photos save correctly
+   - Test error scenarios
+   - Verify UI feedback works
+
+#### Expected Results:
+- **~20 lines removed** from screen (reduced duplication between handlers)
+- **~25 lines added** to persistence hook
+- **Better separation** of UI and persistence concerns
+- **Reusable photo save logic** for multiple photo types
+
+---
+
+## Complete Refinement Results (Thailand Example)
+
+### Before Refinement (After Initial 5 Phases):
+- **ThailandTravelInfoScreen.js**: 2,274 lines
+
+### After All 4 Refinement Phases:
+- **ThailandTravelInfoScreen.js**: 1,285 lines
+
+### Total Refinement Reduction:
+- **-989 lines** (-43.5% additional reduction)
+- **-595 lines** from duplicate removal (Phases 1-2)
+- **-60 lines** from migration logic (Phase 3)
+- **-334 lines** from various cleanups
+
+### Combined with Initial Refactoring:
+- **Original**: ~3,930 lines (monolithic)
+- **After 5 phases**: 2,274 lines (-42%)
+- **After 4 refinements**: 1,285 lines (-67% total)
+
+### Files Distribution:
+```
+app/
+├── screens/thailand/
+│   ├── ThailandTravelInfoScreen.js       # 1,285 lines (-67%)
+│   └── ThailandTravelInfoScreen.styles.js # 533 lines
+├── hooks/thailand/
+│   ├── useThailandFormState.js           # 380 lines
+│   ├── useThailandDataPersistence.js     # 805 lines (↑ from 475)
+│   └── useThailandValidation.js          # 387 lines
+└── components/thailand/sections/
+    ├── HeroSection.js                    # 133 lines
+    ├── PassportSection.js                # 308 lines
+    ├── PersonalInfoSection.js            # 211 lines
+    ├── FundsSection.js                   # 219 lines
+    └── TravelDetailsSection.js           # 307 lines
+```
+
+---
+
+## Refinement Checklist
+
+Use this checklist after completing the initial 5-phase refactoring:
+
+### Pre-Refinement Audit
+- [ ] **Identify duplicates**
+  - [ ] Compare screen functions with hook exports
+  - [ ] List all duplicate refs
+  - [ ] List all duplicate validation functions
+  - [ ] List all duplicate session state functions
+  - [ ] List all duplicate data functions
+
+- [ ] **Analyze save operations**
+  - [ ] Locate performSaveOperation
+  - [ ] Locate saveDataToSecureStorageWithOverride
+  - [ ] Document save operation complexity
+
+- [ ] **Find migration logic**
+  - [ ] Locate migration functions
+  - [ ] Document migration complexity
+
+- [ ] **Review photo handlers**
+  - [ ] Identify photo upload functions
+  - [ ] Separate UI logic from persistence logic
+
+### Refinement Phase 1: Remove Duplicates
+- [ ] Remove duplicate refs
+- [ ] Remove duplicate validation functions
+- [ ] Remove duplicate session state functions
+- [ ] Remove duplicate data functions
+- [ ] Remove unnecessary save wrappers
+- [ ] Test all functionality works
+- [ ] Commit: "Refinement Phase 1: Remove duplicate definitions"
+
+### Refinement Phase 2: Consolidate Save Operations
+- [ ] Move performSaveOperation to persistence hook
+- [ ] Move saveDataToSecureStorageWithOverride to hook
+- [ ] Update hook exports
+- [ ] Remove from screen
+- [ ] Test save operations
+- [ ] Commit: "Refinement Phase 2: Consolidate save operations"
+
+### Refinement Phase 3: Move Migration Logic
+- [ ] Move migration function to persistence hook
+- [ ] Export from hook
+- [ ] Update screen to use hook version
+- [ ] Test migration
+- [ ] Commit: "Refinement Phase 3: Move migration logic to hook"
+
+### Refinement Phase 4: Extract Photo Logic
+- [ ] Create savePhoto helper in persistence hook
+- [ ] Export savePhoto from hook
+- [ ] Simplify photo upload handlers in screen
+- [ ] Test photo upload flow
+- [ ] Commit: "Refinement Phase 4: Extract photo save logic"
+
+### Post-Refinement
+- [ ] **Final verification**
+  - [ ] Run full test suite
+  - [ ] Test all user interactions
+  - [ ] Verify data flows
+  - [ ] Check completion metrics
+
+- [ ] **Documentation**
+  - [ ] Update line count metrics
+  - [ ] Document reduction percentages
+  - [ ] Add to tracking doc
+
+- [ ] **Push to remote**
+  - [ ] Push all refinement commits
+  - [ ] Create or update pull request
+
+---
+
+**Document Version**: 2.0
 **Last Updated**: 2025-10-27
-**Reference Implementation**: ThailandTravelInfoScreen (3,930 → 2,274 lines, -42%)
+**Reference Implementations**:
+- ThailandTravelInfoScreen (3,930 → 2,274 lines, -42% initial)
+- ThailandTravelInfoScreen (2,274 → 1,285 lines, -43.5% refinement)
+- **Total Reduction**: 3,930 → 1,285 lines (-67%)

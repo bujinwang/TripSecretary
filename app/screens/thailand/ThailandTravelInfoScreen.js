@@ -132,6 +132,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     initializeEntryInfo,
     saveSessionState,
     loadSessionState,
+    migrateExistingDataToInteractionState,
+    savePhoto,
     scrollViewRef,
     shouldRestoreScrollPosition
   } = persistence;
@@ -167,69 +169,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       }
     }
   }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode, formState]);
-
-  // Migration function to mark existing data as user-modified
-  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
-      return;
-    }
-
-    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
-    
-    const existingDataToMigrate = {};
-
-    // Migrate passport data
-    if (userData.passport) {
-      const passport = userData.passport;
-      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
-      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
-      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
-      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
-      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
-      if (passport.gender) existingDataToMigrate.sex = passport.gender;
-    }
-
-    // Migrate personal info data
-    if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
-      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
-      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
-      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
-      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
-      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
-      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
-    }
-
-    // Migrate travel info data
-    if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
-      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
-      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
-      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
-      if (travelInfo.recentStayCountry) existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
-      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
-      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
-      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
-      if (travelInfo.province) existingDataToMigrate.province = travelInfo.province;
-      if (travelInfo.district) existingDataToMigrate.district = travelInfo.district;
-      if (travelInfo.subDistrict) existingDataToMigrate.subDistrict = travelInfo.subDistrict;
-      if (travelInfo.postalCode) existingDataToMigrate.postalCode = travelInfo.postalCode;
-      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
-      if (travelInfo.visaNumber) existingDataToMigrate.visaNumber = travelInfo.visaNumber;
-      if (travelInfo.isTransitPassenger !== undefined) existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
-    }
-
-    console.log('Data to migrate:', existingDataToMigrate);
-    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
-
-    if (Object.keys(existingDataToMigrate).length > 0) {
-      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
-      console.log('✅ Migration completed - existing data marked as user-modified');
-    } else {
-      console.log('⚠️ No existing data found to migrate');
-    }
-  }, [userInteractionTracker]);
 
   // Debug function to clear user data
   const clearUserData = async () => {
@@ -737,19 +676,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        formState.setFlightTicketPhoto(photoUri);
 
-        // Save to secure storage
-        try {
-          await saveDataToSecureStorageWithOverride({
-            flightTicketPhoto: photoUri
-          });
+        // Save photo using persistence hook
+        const { success } = await savePhoto('flightTicket', photoUri);
+
+        if (success) {
           Alert.alert(
             t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('thailand.travelInfo.flightTicketUploaded', { defaultValue: '机票照片已上传' })
           );
-        } catch (error) {
-          console.error('Failed to save flight ticket photo:', error);
+        } else {
           Alert.alert(
             t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
             t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
@@ -777,19 +713,16 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        formState.setHotelReservationPhoto(photoUri);
 
-        // Save to secure storage
-        try {
-          await saveDataToSecureStorageWithOverride({
-            hotelReservationPhoto: photoUri
-          });
+        // Save photo using persistence hook
+        const { success } = await savePhoto('hotelReservation', photoUri);
+
+        if (success) {
           Alert.alert(
             t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('thailand.travelInfo.hotelReservationUploaded', { defaultValue: '酒店预订照片已上传' })
           );
-        } catch (error) {
-          console.error('Failed to save hotel reservation photo:', error);
+        } else {
           Alert.alert(
             t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
             t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })

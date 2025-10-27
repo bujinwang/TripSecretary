@@ -167,6 +167,93 @@ export const useThailandDataPersistence = ({
     return null;
   }, [getSessionStateKey, formState]);
 
+  // Migration function to mark existing data as user-modified
+  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+    if (!userData || !userInteractionTracker.isInitialized) {
+      return;
+    }
+
+    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
+
+    const existingDataToMigrate = {};
+
+    // Migrate passport data
+    if (userData.passport) {
+      const passport = userData.passport;
+      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
+      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
+      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
+      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
+      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
+      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+    }
+
+    // Migrate personal info data
+    if (userData.personalInfo) {
+      const personalInfo = userData.personalInfo;
+      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
+      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
+      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
+      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+    }
+
+    // Migrate travel info data
+    if (userData.travelInfo) {
+      const travelInfo = userData.travelInfo;
+      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
+      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
+      if (travelInfo.recentStayCountry) existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
+      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
+      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
+      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
+      if (travelInfo.province) existingDataToMigrate.province = travelInfo.province;
+      if (travelInfo.district) existingDataToMigrate.district = travelInfo.district;
+      if (travelInfo.subDistrict) existingDataToMigrate.subDistrict = travelInfo.subDistrict;
+      if (travelInfo.postalCode) existingDataToMigrate.postalCode = travelInfo.postalCode;
+      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
+      if (travelInfo.visaNumber) existingDataToMigrate.visaNumber = travelInfo.visaNumber;
+      if (travelInfo.isTransitPassenger !== undefined) existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
+    }
+
+    console.log('Data to migrate:', existingDataToMigrate);
+    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
+
+    if (Object.keys(existingDataToMigrate).length > 0) {
+      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      console.log('✅ Migration completed - existing data marked as user-modified');
+    } else {
+      console.log('⚠️ No existing data found to migrate');
+    }
+  }, [userInteractionTracker]);
+
+  // Save photo to travel info
+  const savePhoto = useCallback(async (photoType, photoUri) => {
+    try {
+      const fieldName = photoType === 'flightTicket' ? 'flightTicketPhoto' : 'hotelReservationPhoto';
+
+      // Update formState
+      if (photoType === 'flightTicket') {
+        formState.setFlightTicketPhoto(photoUri);
+      } else {
+        formState.setHotelReservationPhoto(photoUri);
+      }
+
+      // Save to secure storage with override
+      await saveDataToSecureStorage({
+        [fieldName]: photoUri
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(`Failed to save ${photoType} photo:`, error);
+      return { success: false, error };
+    }
+  }, [formState, saveDataToSecureStorage]);
+
   // Load data from database
   const loadData = useCallback(async () => {
     try {
@@ -708,6 +795,8 @@ export const useThailandDataPersistence = ({
     initializeEntryInfo,
     saveSessionState,
     loadSessionState,
+    migrateExistingDataToInteractionState,
+    savePhoto,
     scrollViewRef,
     shouldRestoreScrollPosition,
   };
