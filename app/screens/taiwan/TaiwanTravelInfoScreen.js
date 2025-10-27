@@ -1,5 +1,5 @@
 
-// 入境通 - Taiwan Travel Info Screen (台湾入境信息)
+// 入境通 - Taiwan Travel Info Screen (臺灣入境資訊)
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -145,30 +145,30 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   const smartButtonConfig = useMemo(() => {
     if (totalCompletionPercent >= 100) {
       return {
-        label: '开始台湾之旅！🌸',
+        label: '開始臺灣之旅！🌸',
         variant: 'primary',
         icon: '🚀',
         action: 'submit'
       };
     } else if (totalCompletionPercent >= 80) {
       return {
-        label: '继续填写，即将完成！✨',
+        label: '繼續填寫，即將完成！✨',
         variant: 'secondary',
         icon: '🌺',
         action: 'edit'
       };
     } else if (totalCompletionPercent >= 40) {
       return {
-        label: '继续我的台湾准备之旅 💪',
+        label: '繼續我的臺灣準備之旅 💪',
         variant: 'secondary',
         icon: '🏖️',
         action: 'edit'
       };
     } else {
       return {
-        label: '开始准备台湾之旅吧！🇹🇼',
+        label: '開始準備臺灣之旅吧！🇹🇼',
         variant: 'outline',
-        icon: '�',
+        icon: '📝',
         action: 'start'
       };
     }
@@ -177,17 +177,17 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   // Get progress indicator text - traveler-friendly messaging
   const progressText = useMemo(() => {
     if (totalCompletionPercent >= 100) {
-      return '准备好迎接台湾之旅了！🌸';
+      return '準備好迎接臺灣之旅了！🌸';
     } else if (totalCompletionPercent >= 80) {
-      return '快完成了！台湾在向你招手 ✨';
+      return '快完成了！臺灣在向你招手 ✨';
     } else if (totalCompletionPercent >= 60) {
-      return '进展不错！继续加油 💪';
+      return '進展不錯！繼續加油 💪';
     } else if (totalCompletionPercent >= 40) {
-      return '已经完成一半了！🏖️';
+      return '已經完成一半了！🏖️';
     } else if (totalCompletionPercent >= 20) {
-      return '好的开始！台湾欢迎你 🌺';
+      return '好的開始！臺灣歡迎你 🌺';
     } else {
-      return '让我们开始准备台湾之旅吧！🇹�';
+      return '讓我們開始準備臺灣之旅吧！🇹🇼';
     }
   }, [totalCompletionPercent]);
 
@@ -205,28 +205,28 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
   // Get encouraging hint message
   const encouragingHint = useMemo(() => {
     if (totalCompletionPercent >= 100) return null;
-    
+
     if (totalCompletionPercent < 30) {
-      return '🌟 第一步，从介绍自己开始吧！';
+      return '🌟 第一步，從介紹自己開始吧！';
     } else if (totalCompletionPercent < 60) {
-      return '🎉 太棒了！继续保持这个节奏';
+      return '🎉 太棒了！繼續保持這個節奏';
     } else {
-      return '🚀 快要完成了，你的台湾之旅近在咫尺！';
+      return '🚀 快要完成了，你的臺灣之旅近在咫尺！';
     }
   }, [totalCompletionPercent]);
 
   // Get next step hint message
   const nextStepHint = useMemo(() => {
     if (totalCompletionPercent >= 100) return null;
-    
+
     if (totalCompletionPercent < 25) {
-      return '💡 从护照信息开始，告诉台湾你是谁';
+      return '💡 從護照資訊開始，告訴臺灣你是誰';
     } else if (totalCompletionPercent < 50) {
-      return '📞 添加联系方式，这样台湾就能找到你了';
+      return '📞 添加聯絡方式，這樣臺灣就能找到你了';
     } else if (totalCompletionPercent < 75) {
-      return '✈️ 分享你的旅行计划，台湾在等你！';
+      return '✈️ 分享你的旅行計劃，臺灣在等你！';
     } else {
-      return '🎯 最后一步，完成所有信息填写！';
+      return '🎯 最後一步，完成所有資訊填寫！';
     }
   }, [totalCompletionPercent]);
 
@@ -412,7 +412,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
     const options = [
       { value: 'Female', label: t('thailand.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
       { value: 'Male', label: t('thailand.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
+      { value: 'Undefined', label: t('thailand.travelInfo.fields.sex.options.undefined', { defaultValue: '未定義' }) }
     ];
 
     return (
@@ -454,32 +454,32 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('taiwan.travelInfo.headerTitle', { defaultValue: '台湾入境信息' })}</Text>
+        <Text style={styles.headerTitle}>{t('taiwan.travelInfo.headerTitle', { defaultValue: '臺灣入境資訊' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('taiwan.travelInfo.loading', { defaultValue: '正在加载数据...' })}</Text>
+          <Text style={styles.loadingText}>{t('taiwan.travelInfo.loading', { defaultValue: '正在載入資料...' })}</Text>
         </View>
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇹🇼</Text>
-          <Text style={styles.title}>{t('taiwan.travelInfo.title', { defaultValue: '填写台湾入境信息' })}</Text>
-          <Text style={styles.subtitle}>{t('taiwan.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
+          <Text style={styles.title}>{t('taiwan.travelInfo.title', { defaultValue: '填寫臺灣入境資訊' })}</Text>
+          <Text style={styles.subtitle}>{t('taiwan.travelInfo.subtitle', { defaultValue: '請提供以下資訊以完成入境卡生成' })}</Text>
         </View>
 
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
-            {t('taiwan.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
+            {t('taiwan.travelInfo.privacyNotice', { defaultValue: '所有資訊僅保存在您的手機本地' })}
           </Text>
         </View>
 
-        <CollapsibleSection 
-          title={t('taiwan.travelInfo.sections.passport', { defaultValue: '护照信息' })} 
+        <CollapsibleSection
+          title={t('taiwan.travelInfo.sections.passport', { defaultValue: '護照資訊' })} 
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
@@ -488,27 +488,27 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
              value={fullName}
              onChangeText={setFullName}
              onBlur={() => handleFieldBlur('fullName', fullName)}
-             helpText="请填写汉语拼音"
+             helpText="請填寫護照英文姓名"
              error={!!errors.fullName}
              errorMessage={errors.fullName}
            />
            <NationalitySelector
-             label="国籍"
+             label="國籍"
              value={nationality}
              onValueChange={(code) => {
                setNationality(code);
                handleFieldBlur('nationality', code);
              }}
-             helpText="请选择您的国籍"
+             helpText="請選擇您的國籍"
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
            <InputWithValidation
-             label="护照号"
+             label="護照號碼"
              value={passportNo}
              onChangeText={setPassportNo}
              onBlur={() => handleFieldBlur('passportNo', passportNo)}
-             helpText="请输入您的护照号码"
+             helpText="請輸入您的護照號碼"
              error={!!errors.passportNo}
              errorMessage={errors.passportNo}
              warning={!!warnings.passportNo}
@@ -525,36 +525,36 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
              onChangeText={setDob}
              mode="date"
              dateType="past"
-             helpText="选择出生日期"
+             helpText="選擇出生日期"
              error={!!errors.dob}
              errorMessage={errors.dob}
              onBlur={() => handleFieldBlur('dob', dob)}
            />
            <DateTimeInput
-             label="护照有效期"
+             label="護照有效期"
              value={expiryDate}
              onChangeText={setExpiryDate}
              mode="date"
              dateType="future"
-             helpText="选择护照有效期"
+             helpText="選擇護照有效期"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
              onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
            />
          </CollapsibleSection>
 
-        <CollapsibleSection 
-          title={t('taiwan.travelInfo.sections.personal', { defaultValue: '个人信息' })}
+        <CollapsibleSection
+          title={t('taiwan.travelInfo.sections.personal', { defaultValue: '個人資訊' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
            <InputWithValidation
-             label="职业"
+             label="職業"
              value={occupation}
              onChangeText={setOccupation}
              onBlur={() => handleFieldBlur('occupation', occupation)}
-             helpText="请输入您的职业 (请使用英文)"
+             helpText="請輸入您的職業 (請使用英文)"
              error={!!errors.occupation}
              errorMessage={errors.occupation}
              warning={!!warnings.occupation}
@@ -566,20 +566,20 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
              autoCapitalize="words"
            />
            <NationalitySelector
-             label="居住国家"
+             label="居住國家"
              value={residentCountry}
              onValueChange={(code) => {
                setResidentCountry(code);
                setPhoneCode(getPhoneCode(code));
                handleFieldBlur('residentCountry', code);
              }}
-             helpText="请选择您居住的国家"
+             helpText="請選擇您居住的國家"
              error={!!errors.residentCountry}
              errorMessage={errors.residentCountry}
            />
            <View style={styles.phoneInputContainer}>
              <Input
-               label="国家代码"
+               label="國家代碼"
                value={phoneCode}
                onChangeText={setPhoneCode}
                onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
@@ -590,24 +590,24 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
                style={styles.phoneCodeInput}
              />
              <Input
-               label="电话号码"
+               label="電話號碼"
                value={phoneNumber}
                onChangeText={setPhoneNumber}
                onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
                keyboardType="phone-pad"
-               helpText="请输入您的电话号码"
+               helpText="請輸入您的電話號碼"
                error={!!errors.phoneNumber}
                errorMessage={errors.phoneNumber}
                style={styles.phoneInput}
              />
            </View>
            <InputWithValidation
-             label="电子邮箱"
+             label="電子郵箱"
              value={email}
              onChangeText={setEmail}
              onBlur={() => handleFieldBlur('email', email)}
              keyboardType="email-address"
-             helpText="请输入您的电子邮箱地址"
+             helpText="請輸入您的電子郵箱地址"
              error={!!errors.email}
              errorMessage={errors.email}
              warning={!!warnings.email}
@@ -618,23 +618,23 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
              t={t}
            />
            <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>性别</Text>
+             <Text style={styles.fieldLabel}>性別</Text>
              {renderGenderOptions()}
            </View>
          </CollapsibleSection>
 
-        <CollapsibleSection 
-          title="旅行信息"
+        <CollapsibleSection
+          title="旅行資訊"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
           <InputWithValidation
-            label="航班号"
+            label="航班號碼"
             value={arrivalFlightNumber}
             onChangeText={setArrivalFlightNumber}
             onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
-            helpText="请输入您的抵达航班号 (例如: CI123)"
+            helpText="請輸入您的抵達航班號 (例如: CI123)"
             error={!!errors.arrivalFlightNumber}
             errorMessage={errors.arrivalFlightNumber}
             warning={!!warnings.arrivalFlightNumber}
@@ -645,14 +645,14 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
             t={t}
             autoCapitalize="characters"
           />
-          <DateTimeInput 
-            label="抵达日期" 
-            value={arrivalDate} 
-            onChangeText={setArrivalDate} 
+          <DateTimeInput
+            label="抵達日期"
+            value={arrivalDate}
+            onChangeText={setArrivalDate}
             mode="date"
             dateType="future"
-            helpText="选择日期"
-            error={!!errors.arrivalDate} 
+            helpText="選擇日期"
+            error={!!errors.arrivalDate}
             errorMessage={errors.arrivalDate}
             onBlur={() => handleFieldBlur('arrivalDate', arrivalDate)}
           />
@@ -662,7 +662,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
             onChangeText={setHotelAddress}
             onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
             multiline
-            helpText="请输入详细地址"
+            helpText="請輸入詳細地址"
             error={!!errors.hotelAddress}
             errorMessage={errors.hotelAddress}
             warning={!!warnings.hotelAddress}
@@ -674,11 +674,11 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
             autoCapitalize="words"
           />
           <InputWithValidation
-            label="停留天数"
+            label="停留天數"
             value={stayDuration}
             onChangeText={setStayDuration}
             onBlur={() => handleFieldBlur('stayDuration', stayDuration)}
-            helpText="请输入停留天数"
+            helpText="請輸入停留天數"
             error={!!errors.stayDuration}
             errorMessage={errors.stayDuration}
             warning={!!warnings.stayDuration}
@@ -708,7 +708,7 @@ const TaiwanTravelInfoScreen = ({ navigation, route }) => {
                 {/* Completion Badge */}
                 {totalCompletionPercent >= 100 && (
                   <View style={styles.completionBadge}>
-                    <Text style={styles.completionBadgeText}>台湾准备就绪！🌸</Text>
+                    <Text style={styles.completionBadgeText}>臺灣準備就緒！🌸</Text>
                   </View>
                 )}
               </View>
