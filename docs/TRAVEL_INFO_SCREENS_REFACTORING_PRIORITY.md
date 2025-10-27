@@ -19,7 +19,10 @@ This document analyzes all country Travel Info screens and establishes a priorit
 | **Singapore** | 3,153 | 48 | 🔴 URGENT | 1 | HIGH |
 | **Malaysia** | 1,474 | 30 | 🟡 MEDIUM | 2 | MEDIUM |
 | **Korea** | 988 | 45 | 🟢 LOW | 3 | MEDIUM |
-| **Japan** | 1,147 | 7 | 🔵 REVIEW | 4 | LOW |
+| **USA** | 1,112 | 7* | 🟣 PARTIAL | 4 | MEDIUM |
+| **Japan** | 1,147 | 7 | 🔵 REVIEW | 5 | LOW |
+
+*USA and Japan have low useState counts because they already use custom hooks
 
 ---
 
@@ -193,7 +196,70 @@ Phase 5 (Optional): Break down large sections
 
 ---
 
-## Priority 4: Japan (1,147 lines, 7 useState) 🔵
+## Priority 4: USA (1,112 lines, 7 useState) 🟣
+
+### Current State
+- **File size**: 1,112 lines (moderate)
+- **useState count**: 7 declarations (in main file - already uses custom hook!)
+- **Sections**: Passport, Personal, Funds, Travel
+- **Features**: `useUSTravelData` custom hook, `useFormProgress` from Japan
+- **Structure**: Partially refactored - uses `useUSTravelData` hook for state management
+
+### Why Priority 4?
+- ✅ **Already uses custom hooks** - `useUSTravelData` consolidates state
+- ✅ **Good state management** - only 7 useState in main file
+- ⚠️ **Monolithic hook** - single hook instead of 3 separate hooks (FormState, Persistence, Validation)
+- ⚠️ **No component extraction** - still has inline JSX for all sections
+- ⚠️ **Inline styles** - styles not extracted to separate file
+
+### Expected Outcome
+- Main file: 1,112 → ~700 lines (-37%)
+- Refactor `useUSTravelData` into 3 hooks: ~800 lines
+- Section components: ~800 lines
+- Styles file: ~300 lines
+
+### Refactoring Plan
+```
+Phase 1: Refactor Custom Hook (Different Approach)
+├── Split useUSTravelData.js into:
+│   ├── useUSFormState.js (~250 lines)
+│   ├── useUSDataPersistence.js (~300 lines)
+│   └── useUSValidation.js (~250 lines)
+└── Benefits: Better separation of concerns, matches Thailand pattern
+
+Phase 2: Section Components
+├── USHeroSection.js (~100 lines)
+├── PassportSection.js (~220 lines)
+├── PersonalInfoSection.js (~180 lines)
+├── FundsSection.js (~150 lines)
+└── TravelDetailsSection.js (~220 lines)
+
+Phase 3: Integration
+├── Phase 3a: Update imports to use 3 hooks
+├── Phase 3b: Update component to use refactored hooks
+└── Phase 3c: Replace JSX sections with components
+
+Phase 4: Styles Extraction
+└── USTravelInfoScreen.styles.js (~300 lines)
+
+Phase 5 (Optional): Break down large sections
+└── Likely not needed (no section > 500 lines)
+```
+
+### Estimated Effort
+- **Time**: 2.5-3 hours
+- **Risk**: Low (already has hooks, just need to reorganize)
+- **Benefit**: Medium-High (better organization, consistency with Thailand)
+
+### Special Considerations
+- **Already partially refactored** - good state management in place
+- **Focus on consistency** - make it match Thailand's 3-hook pattern
+- **Component extraction** - biggest opportunity for improvement
+- **Styles extraction** - secondary benefit
+
+---
+
+## Priority 5: Japan (1,147 lines, 7 useState) 🔵
 
 ### Current State
 - **File size**: 1,147 lines (moderate)
@@ -276,7 +342,14 @@ Day 2: Phase 2 (Section Components) + Phase 3 (Integration)
 Day 3: Phase 4 (Styles) + Testing & Documentation
 ```
 
-#### Week 4: Japan (Priority 4)
+#### Week 4: USA (Priority 4)
+```
+Day 1: Phase 1 (Refactor useUSTravelData into 3 hooks)
+Day 2: Phase 2 (Section Components) + Phase 3 (Integration)
+Day 3: Phase 4 (Styles) + Testing & Documentation
+```
+
+#### Week 5: Japan (Priority 5)
 ```
 Day 1: Analysis & decision
 Day 2: Execute necessary phases
@@ -292,12 +365,14 @@ Day 3: Testing & Documentation
 | Singapore | 🟢 LOW | 🟡 MEDIUM | 🟢 LOW | 🟢 LOW |
 | Malaysia | 🟢 LOW | 🟢 LOW | 🟢 LOW | 🟢 LOW |
 | Korea | 🟡 MEDIUM | 🟡 MEDIUM | 🟡 MEDIUM | 🟡 MEDIUM |
+| USA | 🟢 LOW | 🟢 LOW | 🟢 LOW | 🟢 LOW |
 | Japan | 🔵 UNKNOWN | 🔵 UNKNOWN | 🟢 LOW | 🟡 MEDIUM |
 
 **Risk Factors**:
 - **Singapore**: Low risk - most similar to Thailand reference implementation
 - **Malaysia**: Low risk - already has some features, fewer sections
 - **Korea**: Medium risk - unknown structure, high useState density needs analysis
+- **USA**: Low risk - already has hooks, just need to reorganize into 3-hook pattern
 - **Japan**: Unknown risk - very low useState suggests different architecture
 
 ---
@@ -326,9 +401,12 @@ Thailand:   3,930 lines, 57 useState (DONE - now 2,274 lines)
 Singapore:  3,153 lines, 48 useState
 Malaysia:   1,474 lines, 30 useState
 Korea:        988 lines, 45 useState
+USA:        1,112 lines,  7 useState*
 Japan:      1,147 lines,  7 useState
 ---
-Total:      8,762 lines, 130 useState (excluding Thailand)
+Total:      9,874 lines, 137 useState (excluding Thailand)
+
+*USA already uses useUSTravelData hook but needs restructuring
 ```
 
 ### After Refactoring (Estimated)
@@ -337,27 +415,28 @@ Thailand:   2,274 lines (✅ COMPLETE)
 Singapore:  ~1,900 lines (-40%)
 Malaysia:     ~900 lines (-39%)
 Korea:        ~600 lines (-39%)
-Japan:        ~700 lines (-39%) or less
+USA:          ~700 lines (-37%)
+Japan:        ~650 lines (-43%) or less
 ---
-Total:      ~4,100 lines (-53% reduction!)
+Total:      ~4,750 lines (-52% reduction!)
 
 Plus:
-- 12 custom hooks (~3,600 lines of reusable logic)
-- 16 section components (~2,800 lines of focused UI)
-- 4 styles files (~1,400 lines of organized styles)
+- 15 custom hooks (~4,200 lines of reusable logic)
+- 20 section components (~3,400 lines of focused UI)
+- 5 styles files (~1,700 lines of organized styles)
 ```
 
 ### Total Code Organization
 ```
-Main Screens:     ~4,100 lines (down from 8,762)
-Custom Hooks:     ~3,600 lines (extracted logic)
-Components:       ~2,800 lines (extracted UI)
-Styles:           ~1,400 lines (extracted styles)
+Main Screens:     ~4,750 lines (down from 9,874)
+Custom Hooks:     ~4,200 lines (extracted logic)
+Components:       ~3,400 lines (extracted UI)
+Styles:           ~1,700 lines (extracted styles)
 ---
-Total:           ~11,900 lines (organized across ~32 files)
+Total:           ~14,050 lines (organized across ~40 files)
 
-Net Change: +3,138 lines (+36%)
-BUT: Much better organization, reusability, and maintainability!
+Net Change: +4,176 lines (+42%)
+BUT: Much better organization, reusability, maintainability, and UX consistency!
 ```
 
 ---
@@ -368,18 +447,20 @@ BUT: Much better organization, reusability, and maintainability!
 1. ✅ **Start with Singapore** - Largest, highest impact, proven methodology
 2. ✅ **Continue with Malaysia** - Moderate size, straightforward application
 3. ✅ **Tackle Korea** - Analyze first due to high useState density
-4. ✅ **Finish with Japan** - Analyze to determine scope
+4. ✅ **Refactor USA** - Reorganize existing hooks, add components and styles
+5. ✅ **Finish with Japan** - Analyze to determine scope
 
 **Key Principles**:
 - Follow the 5-phase methodology from `TRAVEL_INFO_SCREEN_REFACTORING_GUIDE.md`
 - Commit after each phase for safety
 - Test thoroughly before moving to next phase
 - Document any country-specific adaptations
-- Maintain consistency with Thailand reference implementation
+- **Maintain consistency with Thailand** - Same UX design and patterns across all countries
+- Ensure all countries have the same user experience regardless of requirements
 
-**Expected Timeline**: 4 weeks total (1 week per country)
+**Expected Timeline**: 5 weeks total (1 week per country)
 
-**Expected Outcome**: ~53% reduction in main screen files, dramatically improved code organization and maintainability across all country screens.
+**Expected Outcome**: ~52% reduction in main screen files, dramatically improved code organization, maintainability, and **consistent UX** across all country screens.
 
 ---
 
