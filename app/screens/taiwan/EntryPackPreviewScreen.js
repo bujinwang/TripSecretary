@@ -13,7 +13,7 @@ import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
 
-const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
+const EntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
@@ -25,12 +25,11 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
   const mockEntryPack = {
     id: 'preview',
     status: 'preview',
-    mdacSubmission: entryPackData?.mdacSubmission || null,
+    tdacSubmission: entryPackData?.tdacSubmission || null,
     personalInfo: userData?.personalInfo || {},
     travel: userData?.travel || {},
-    funds: userData?.funds || entryPackData?.funds || [],
+    funds: userData?.funds || [],
     passport: userData?.passport || passport || {},
-    country: 'malaysia'
   };
 
   return (
@@ -39,19 +38,19 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Malaysia Entry Pack - Preview / Pakej Kemasukan Malaysia - Pratonton</Text>
+        <Text style={styles.headerTitle}>臺灣入境包 - 預覽 / Taiwan Entry Pack - Preview</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>Preview Mode / Mod Pratonton</Text>
+          <Text style={styles.previewTitle}>預覽模式 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            This is your Malaysia entry information preview. All information will help you pass through Malaysia immigration smoothly.
+            這是您的臺灣入境資訊預覽。所有資訊將幫助您順利通過臺灣入境檢查。
           </Text>
-          <Text style={styles.previewDescriptionMs}>
-            Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat akan membantu anda melalui imigresen Malaysia dengan lancar.
+          <Text style={styles.previewDescriptionEn}>
+            This is your Taiwan entry information preview. All information will help you pass through Taiwan immigration smoothly.
           </Text>
         </View>
 
@@ -59,9 +58,9 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
           entryPack={mockEntryPack}
           personalInfo={mockEntryPack.personalInfo}
           travelInfo={mockEntryPack.travel}
-          funds={mockEntryPack.funds || []}
+          funds={mockEntryPack.funds}
           isModal={false}
-          country="malaysia"
+          country="taiwan"
         />
 
         <View style={styles.actionSection}>
@@ -70,14 +69,14 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             onPress={() => {
               navigation.goBack();
               // Navigate to travel info to complete missing information
-              navigation.navigate('MalaysiaTravelInfo', {
+              navigation.navigate('TaiwanTravelInfo', {
                 passport,
                 destination,
               });
             }}
           >
             <Text style={styles.continueButtonText}>
-              Continue Editing ✏️ / Teruskan Edit
+              繼續完善資訊 ✏️ / Continue Editing
             </Text>
           </TouchableOpacity>
 
@@ -85,27 +84,17 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             style={styles.submitButton}
             onPress={() => {
               navigation.goBack();
-              // Navigate to MDAC submission
-              navigation.navigate('MDACSelection', {
+              // Navigate to entry preparation
+              navigation.navigate('TaiwanRequirements', {
                 passport,
                 destination,
               });
             }}
           >
             <Text style={styles.submitButtonText}>
-              Go to Entry Preparation 🇲🇾 / Persediaan Kemasukan
+              前往入境準備 🇹🇼 / Go to Entry Preparation
             </Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.infoIcon}>💡</Text>
-          <Text style={styles.infoText}>
-            Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.
-          </Text>
-          <Text style={styles.infoTextMs}>
-            Petua: Pastikan semua maklumat adalah tepat sebelum menghantar MDAC. Kad ketibaan mesti dihantar dalam 3 hari sebelum ketibaan.
-          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -167,80 +156,50 @@ const styles = StyleSheet.create({
   previewTitle: {
     ...typography.h3,
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: spacing.xs,
   },
   previewDescription: {
     ...typography.body2,
-    color: colors.text,
+    color: colors.primary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: spacing.xs,
   },
-  previewDescriptionMs: {
+  previewDescriptionEn: {
     ...typography.body2,
-    color: colors.textSecondary,
+    color: colors.primary,
     textAlign: 'center',
     lineHeight: 20,
-    fontStyle: 'italic',
   },
   actionSection: {
-    margin: spacing.md,
+    padding: spacing.md,
+    gap: spacing.md,
   },
   continueButton: {
     backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
     borderRadius: 12,
+    padding: spacing.md,
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
   continueButtonText: {
     ...typography.body1,
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   submitButton: {
     backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
     borderRadius: 12,
+    padding: spacing.md,
     alignItems: 'center',
   },
   submitButtonText: {
     ...typography.body1,
     color: colors.white,
-    fontWeight: '700',
-  },
-  infoSection: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    margin: spacing.md,
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
-  },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
-  },
-  infoText: {
-    ...typography.body2,
-    color: '#059669',
-    flex: 1,
-    lineHeight: 20,
-    marginBottom: spacing.xs,
-  },
-  infoTextMs: {
-    ...typography.body2,
-    color: '#047857',
-    flex: 1,
-    lineHeight: 20,
-    fontStyle: 'italic',
+    fontWeight: '600',
   },
 });
 
-export default MalaysiaEntryPackPreviewScreen;
+export default EntryPackPreviewScreen;

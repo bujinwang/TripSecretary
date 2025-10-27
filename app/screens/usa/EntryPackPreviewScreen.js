@@ -13,7 +13,7 @@ import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
 
-const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
+const USEntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
@@ -25,12 +25,12 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
   const mockEntryPack = {
     id: 'preview',
     status: 'preview',
-    mdacSubmission: entryPackData?.mdacSubmission || null,
+    i94Submission: entryPackData?.i94Submission || null,
     personalInfo: userData?.personalInfo || {},
     travel: userData?.travel || {},
     funds: userData?.funds || entryPackData?.funds || [],
     passport: userData?.passport || passport || {},
-    country: 'malaysia'
+    country: 'usa'
   };
 
   return (
@@ -39,19 +39,21 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Malaysia Entry Pack - Preview / Pakej Kemasukan Malaysia - Pratonton</Text>
+        <Text style={styles.headerTitle}>
+          美国入境包 - 预览 / US Entry Pack - Preview
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>Preview Mode / Mod Pratonton</Text>
+          <Text style={styles.previewTitle}>预览模式 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            This is your Malaysia entry information preview. All information will help you pass through Malaysia immigration smoothly.
+            这是您的美国入境信息预览。所有信息将帮助您顺利通过美国入境检查。
           </Text>
-          <Text style={styles.previewDescriptionMs}>
-            Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat akan membantu anda melalui imigresen Malaysia dengan lancar.
+          <Text style={styles.previewDescriptionEn}>
+            This is your United States entry information preview. All information will help you pass through US immigration smoothly.
           </Text>
         </View>
 
@@ -61,7 +63,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds || []}
           isModal={false}
-          country="malaysia"
+          country="usa"
         />
 
         <View style={styles.actionSection}>
@@ -70,14 +72,14 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             onPress={() => {
               navigation.goBack();
               // Navigate to travel info to complete missing information
-              navigation.navigate('MalaysiaTravelInfo', {
+              navigation.navigate('USTravelInfo', {
                 passport,
                 destination,
               });
             }}
           >
             <Text style={styles.continueButtonText}>
-              Continue Editing ✏️ / Teruskan Edit
+              继续完善信息 ✏️ / Continue Editing
             </Text>
           </TouchableOpacity>
 
@@ -85,27 +87,27 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             style={styles.submitButton}
             onPress={() => {
               navigation.goBack();
-              // Navigate to MDAC submission
-              navigation.navigate('MDACSelection', {
-                passport,
-                destination,
-              });
+              // Navigate to US Entry Flow
+              // Note: I-94 is completed at the airport, not online
+              // This could navigate to entry preparation screen
             }}
           >
             <Text style={styles.submitButtonText}>
-              Go to Entry Preparation 🇲🇾 / Persediaan Kemasukan
+              前往入境准备 🇺🇸 / Go to Entry Preparation
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoSection}>
           <Text style={styles.infoIcon}>💡</Text>
-          <Text style={styles.infoText}>
-            Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.
-          </Text>
-          <Text style={styles.infoTextMs}>
-            Petua: Pastikan semua maklumat adalah tepat sebelum menghantar MDAC. Kad ketibaan mesti dihantar dalam 3 hari sebelum ketibaan.
-          </Text>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.infoText}>
+              提示：I-94入境记录将在抵达美国机场时填写。请确保所有信息准确，并准备好向海关及边境保护局(CBP)官员展示。
+            </Text>
+            <Text style={styles.infoTextEn}>
+              Tip: The I-94 arrival/departure record will be completed at the airport upon arrival in the US. Ensure all information is accurate and ready to show to CBP officers.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -144,6 +146,8 @@ const styles = StyleSheet.create({
     ...typography.h3,
     color: colors.text,
     fontWeight: '600',
+    textAlign: 'center',
+    flex: 1,
   },
   headerRight: {
     width: 32,
@@ -177,12 +181,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: spacing.xs,
   },
-  previewDescriptionMs: {
+  previewDescriptionEn: {
     ...typography.body2,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    fontStyle: 'italic',
+    fontSize: 12,
   },
   actionSection: {
     margin: spacing.md,
@@ -227,20 +231,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginRight: spacing.sm,
   },
+  infoTextContainer: {
+    flex: 1,
+  },
   infoText: {
     ...typography.body2,
     color: '#059669',
-    flex: 1,
     lineHeight: 20,
     marginBottom: spacing.xs,
   },
-  infoTextMs: {
-    ...typography.body2,
-    color: '#047857',
-    flex: 1,
-    lineHeight: 20,
-    fontStyle: 'italic',
+  infoTextEn: {
+    ...typography.caption,
+    color: '#059669',
+    lineHeight: 18,
+    fontSize: 11,
   },
 });
 
-export default MalaysiaEntryPackPreviewScreen;
+export default USEntryPackPreviewScreen;

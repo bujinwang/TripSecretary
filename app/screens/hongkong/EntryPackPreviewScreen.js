@@ -13,7 +13,7 @@ import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
 
-const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
+const HongKongEntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
@@ -25,12 +25,12 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
   const mockEntryPack = {
     id: 'preview',
     status: 'preview',
-    mdacSubmission: entryPackData?.mdacSubmission || null,
+    hdacSubmission: entryPackData?.hdacSubmission || null,
     personalInfo: userData?.personalInfo || {},
     travel: userData?.travel || {},
     funds: userData?.funds || entryPackData?.funds || [],
     passport: userData?.passport || passport || {},
-    country: 'malaysia'
+    country: 'hongkong'
   };
 
   return (
@@ -39,19 +39,19 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Malaysia Entry Pack - Preview / Pakej Kemasukan Malaysia - Pratonton</Text>
+        <Text style={styles.headerTitle}>香港入境包 - 預覽 / Hong Kong Entry Pack - Preview</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>Preview Mode / Mod Pratonton</Text>
+          <Text style={styles.previewTitle}>預覽模式 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            This is your Malaysia entry information preview. All information will help you pass through Malaysia immigration smoothly.
+            這是您的香港入境信息預覽。所有信息將幫助您順利通過香港入境檢查。
           </Text>
-          <Text style={styles.previewDescriptionMs}>
-            Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat akan membantu anda melalui imigresen Malaysia dengan lancar.
+          <Text style={styles.previewDescriptionEn}>
+            This is your Hong Kong entry information preview. All information will help you pass through Hong Kong immigration smoothly.
           </Text>
         </View>
 
@@ -61,7 +61,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds || []}
           isModal={false}
-          country="malaysia"
+          country="hongkong"
         />
 
         <View style={styles.actionSection}>
@@ -70,14 +70,14 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             onPress={() => {
               navigation.goBack();
               // Navigate to travel info to complete missing information
-              navigation.navigate('MalaysiaTravelInfo', {
+              navigation.navigate('HongkongTravelInfo', {
                 passport,
                 destination,
               });
             }}
           >
             <Text style={styles.continueButtonText}>
-              Continue Editing ✏️ / Teruskan Edit
+              繼續完善信息 ✏️ / Continue Editing
             </Text>
           </TouchableOpacity>
 
@@ -85,27 +85,29 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             style={styles.submitButton}
             onPress={() => {
               navigation.goBack();
-              // Navigate to MDAC submission
-              navigation.navigate('MDACSelection', {
+              // Navigate to HDAC submission
+              navigation.navigate('HDACSelection', {
                 passport,
                 destination,
               });
             }}
           >
             <Text style={styles.submitButtonText}>
-              Go to Entry Preparation 🇲🇾 / Persediaan Kemasukan
+              前往入境準備 🇭🇰 / Go to Entry Preparation
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoSection}>
           <Text style={styles.infoIcon}>💡</Text>
-          <Text style={styles.infoText}>
-            Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.
-          </Text>
-          <Text style={styles.infoTextMs}>
-            Petua: Pastikan semua maklumat adalah tepat sebelum menghantar MDAC. Kad ketibaan mesti dihantar dalam 3 hari sebelum ketibaan.
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.infoText}>
+              提示：確保所有信息準確無誤。香港入境通常比較快速，但建議提前準備好所有材料。
+            </Text>
+            <Text style={styles.infoTextEn}>
+              Tip: Ensure all information is accurate. Hong Kong immigration is usually quick, but it's recommended to prepare all materials in advance.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -152,13 +154,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   previewBanner: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: '#FFEBEE',
     margin: spacing.md,
     padding: spacing.md,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: '#D32F2F',
   },
   previewIcon: {
     fontSize: 32,
@@ -166,7 +168,7 @@ const styles = StyleSheet.create({
   },
   previewTitle: {
     ...typography.h3,
-    color: colors.primary,
+    color: '#D32F2F',
     fontWeight: '700',
     marginBottom: spacing.xs,
   },
@@ -175,14 +177,14 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: spacing.xs,
   },
-  previewDescriptionMs: {
+  previewDescriptionEn: {
     ...typography.body2,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    fontStyle: 'italic',
+    lineHeight: 18,
+    fontSize: 13,
+    marginTop: spacing.xs,
   },
   actionSection: {
     margin: spacing.md,
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
   continueButton: {
     backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: '#D32F2F',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: 12,
@@ -199,11 +201,11 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     ...typography.body1,
-    color: colors.primary,
+    color: '#D32F2F',
     fontWeight: '700',
   },
   submitButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#D32F2F',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: 12,
@@ -230,17 +232,15 @@ const styles = StyleSheet.create({
   infoText: {
     ...typography.body2,
     color: '#059669',
-    flex: 1,
     lineHeight: 20,
-    marginBottom: spacing.xs,
   },
-  infoTextMs: {
+  infoTextEn: {
     ...typography.body2,
     color: '#047857',
-    flex: 1,
-    lineHeight: 20,
-    fontStyle: 'italic',
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: spacing.xs,
   },
 });
 
-export default MalaysiaEntryPackPreviewScreen;
+export default HongKongEntryPackPreviewScreen;
