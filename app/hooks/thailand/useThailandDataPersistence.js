@@ -86,6 +86,9 @@ export const useThailandDataPersistence = ({
     setHotelAddress,
     setFlightTicketPhoto,
     setHotelReservationPhoto,
+    entryInfoInitialized,
+    setEntryInfoId,
+    setEntryInfoInitialized,
     expandedSection,
     scrollPosition,
     lastEditedField,
@@ -95,6 +98,7 @@ export const useThailandDataPersistence = ({
     setSaveStatus,
     setLastEditedAt,
     getFormValues,
+    isLoading,
   } = formState;
   const {
     initializeWithExistingData,
