@@ -152,6 +152,81 @@ export const ANIMATION_CONFIG = {
   },
 };
 
+/**
+ * Timeout values in milliseconds
+ */
+export const TIMEOUTS = {
+  CLOUDFLARE_DETECTION: 1000, // Time to wait for Cloudflare checkbox to appear
+  CLOUDFLARE_POLLING_INTERVAL: 500, // Interval for checking Cloudflare token
+  CLOUDFLARE_MAX_WAIT: 30000, // Maximum time to wait for Cloudflare
+  SUBMISSION_WINDOW: 5 * 60 * 1000, // 5 minutes submission window
+  DEBOUNCE_DELAY: 300, // Debounce delay for form inputs
+  RETRY_DELAY_BASE: 2000, // Base delay for exponential backoff retry
+};
+
+/**
+ * Supported languages for TDAC submission
+ */
+export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English', native: 'English' },
+  { code: 'zh', label: 'Chinese', native: '中文' },
+  { code: 'ja', label: 'Japanese', native: '日本語' },
+  { code: 'ko', label: 'Korean', native: '한국어' },
+  { code: 'ru', label: 'Russian', native: 'Русский' },
+];
+
+/**
+ * Travel mode identifiers for TDAC API
+ */
+export const TRAVEL_MODES = {
+  AIR: { id: '1', name: 'Air', label: '飞机' },
+  SEA: { id: '2', name: 'Sea', label: '船舶' },
+  LAND: { id: '3', name: 'Land', label: '陆路' },
+  TRAIN: { id: '4', name: 'Train', label: '火车' },
+};
+
+/**
+ * Retry configuration
+ */
+export const RETRY_CONFIG = {
+  MAX_RETRIES: 3,
+  INITIAL_DELAY: 2000, // 2 seconds
+  MAX_DELAY: 16000, // 16 seconds
+  EXPONENTIAL_BASE: 2, // For exponential backoff: 2s, 4s, 8s, 16s
+};
+
+/**
+ * Validation rules
+ */
+export const VALIDATION = {
+  PASSPORT_NO_MIN_LENGTH: 6,
+  PASSPORT_NO_MAX_LENGTH: 20,
+  PHONE_NUMBER_MIN_LENGTH: 8,
+  PHONE_NUMBER_MAX_LENGTH: 15,
+  NAME_MIN_LENGTH: 1,
+  NAME_MAX_LENGTH: 50,
+};
+
+/**
+ * TDAC submission stages
+ */
+export const TDAC_STAGES = {
+  LOADING: 'loading',
+  EXTRACTING: 'extracting',
+  SUBMITTING: 'submitting',
+  SUCCESS: 'success',
+  ERROR: 'error',
+};
+
+/**
+ * QR code configuration
+ */
+export const QR_CODE = {
+  SIZE: 300, // QR code size in pixels
+  ERROR_CORRECTION_LEVEL: 'M', // Error correction level (L, M, Q, H)
+  MARGIN: 4, // Quiet zone margin
+};
+
 export default {
   PREDEFINED_TRAVEL_PURPOSES,
   PREDEFINED_ACCOMMODATION_TYPES,
@@ -162,4 +237,11 @@ export default {
   FIELD_NAMES,
   DEFAULT_VALUES,
   ANIMATION_CONFIG,
+  TIMEOUTS,
+  SUPPORTED_LANGUAGES,
+  TRAVEL_MODES,
+  RETRY_CONFIG,
+  VALIDATION,
+  TDAC_STAGES,
+  QR_CODE,
 };
