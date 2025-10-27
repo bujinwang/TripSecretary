@@ -57,6 +57,7 @@ export const useSingaporeFormState = (passport) => {
   const [selectedFundItem, setSelectedFundItem] = useState(null);
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState(null);
+  const [currentFundItem, setCurrentFundItem] = useState(null);
 
   // ========== Data Model State ==========
   const [passportData, setPassportData] = useState(null);
@@ -222,6 +223,7 @@ export const useSingaporeFormState = (passport) => {
 
     // Funds section
     funds, setFunds,
+    currentFundItem, setCurrentFundItem,
     fundItemModalVisible, setFundItemModalVisible,
     selectedFundItem, setSelectedFundItem,
     isCreatingFundItem, setIsCreatingFundItem,

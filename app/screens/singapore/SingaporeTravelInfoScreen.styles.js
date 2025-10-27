@@ -1,9 +1,3 @@
-/**
- * Singapore Travel Info Screen Styles
- *
- * Extracted styles for better organization and maintainability
- */
-
 import { StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 
@@ -32,514 +26,257 @@ export const styles = StyleSheet.create({
   },
   headerRight: {
     width: 40,
+    alignItems: 'flex-end',
+  },
+  saveStatus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundLight,
+  },
+  saveStatusSuccess: {
+    backgroundColor: '#d4edda',
+  },
+  saveStatusError: {
+    backgroundColor: '#f8d7da',
   },
   scrollContainer: {
-    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xl,
   },
   titleSection: {
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
   },
   flag: {
-    fontSize: 40,
+    fontSize: 48,
     marginBottom: spacing.sm,
   },
   title: {
     ...typography.h3,
-    color: colors.primary,
-    marginBottom: spacing.xs,
+    color: colors.text,
+    fontWeight: '700',
     textAlign: 'center',
+    marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body1,
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  sectionContainer: {
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-    // Enhanced visual feedback
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.text,
-    fontWeight: '600',
-  },
-  fieldCountBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: spacing.sm,
-  },
-  fieldCountBadgeComplete: {
-    backgroundColor: '#d4edda', // Light green
-  },
-  fieldCountBadgeIncomplete: {
-    backgroundColor: '#fff3cd', // Light yellow
-  },
-  fieldCountText: {
-    ...typography.caption,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  fieldCountTextComplete: {
-    color: '#155724', // Dark green
-  },
-  fieldCountTextIncomplete: {
-    color: '#856404', // Dark yellow/orange
-  },
-  sectionIcon: {
-    ...typography.h3,
-    color: colors.textSecondary,
-    marginLeft: spacing.md,
-  },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.primary,
-    fontSize: 12,
-    marginTop: 2,
-    fontStyle: 'italic',
-  },
-  sectionContent: {
-    padding: spacing.md,
-    paddingTop: 0,
-  },
-  dateTimeRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: 0,
-  },
-  dateTimeField: {
-    flex: 1,
-  },
-  placeholderText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    lineHeight: 24,
-  },
-  buttonContainer: {
-    paddingHorizontal: spacing.md,
-    marginTop: spacing.md,
-  },
   progressContainer: {
-    marginBottom: spacing.md,
     alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   progressBarContainer: {
     width: '100%',
     height: 8,
-    backgroundColor: colors.border,
     borderRadius: 4,
     overflow: 'hidden',
+    backgroundColor: colors.backgroundLight,
     marginBottom: spacing.sm,
   },
   progressBar: {
     height: '100%',
     borderRadius: 4,
-    transition: 'width 0.3s ease',
   },
   progressText: {
-    ...typography.body2,
+    ...typography.body1,
     fontWeight: '600',
-    textAlign: 'center',
+    color: colors.text,
   },
   completionHint: {
     ...typography.caption,
     color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    fontStyle: 'italic',
+    marginTop: spacing.xs,
   },
-  encouragingHint: {
-    ...typography.body2,
-    color: colors.primary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    fontWeight: '600',
-    fontSize: 14,
+  sectionContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  subSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  subSectionTitle: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '600',
+  sectionContent: {
+    padding: spacing.md,
+    paddingTop: 0,
   },
   fieldContainer: {
-    marginBottom: spacing.sm,
+    marginTop: spacing.md,
   },
   fieldLabel: {
-    ...typography.body1,
+    ...typography.body2,
     color: colors.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
-  optionsContainer: {
+  warningText: {
+    ...typography.caption,
+    color: '#FF9500',
+    marginTop: spacing.xs,
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  genderButton: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  genderButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  genderButtonText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  genderButtonTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  optionButtonsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
+    gap: spacing.sm,
   },
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 12,
     backgroundColor: colors.white,
-    margin: spacing.xs,
   },
   optionButtonActive: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryLight,
   },
-  optionText: {
-    ...typography.body2,
-    color: colors.text,
-    fontSize: 12,
+  optionIcon: {
+    marginRight: spacing.xs,
+    fontSize: 18,
   },
-  optionTextActive: {
+  optionButtonText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  optionButtonTextActive: {
     color: colors.primary,
     fontWeight: '600',
   },
-  optionIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
+  customInputContainer: {
+    marginTop: spacing.sm,
   },
-  fundActions: {
-    flexDirection: 'column',
-    marginBottom: spacing.sm,
-  },
-  fundButton: {
-    marginVertical: spacing.xs,
-  },
-  fundEmptyState: {
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.background,
-    marginBottom: spacing.sm,
-  },
-  fundEmptyText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-  fundList: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-    overflow: 'hidden',
-  },
-  fundListItem: {
+  toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
   },
-  fundListItemDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  fundListItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  fundItemIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  fundItemDetails: {
-    flex: 1,
-  },
-  fundItemTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  fundItemSubtitle: {
+  helperText: {
     ...typography.caption,
     color: colors.textSecondary,
-    lineHeight: 18,
-  },
-  fundListItemArrow: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    fontSize: 18,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    marginRight: spacing.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  checkboxLabel: {
-    ...typography.body1,
-    color: colors.text,
-    flex: 1,
-  },
-  privacyBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    padding: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 6,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
-  },
-  privacyIcon: {
-    fontSize: 14,
-    marginRight: spacing.xs,
-  },
-  privacyText: {
-    fontSize: 12,
-    color: '#34C759',
-    flex: 1,
-    lineHeight: 16,
+    marginTop: spacing.xs,
   },
   phoneInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  phoneCodeContainer: {
+    width: 80,
   },
   phoneCodeInput: {
-    width: '30%',
-    marginRight: spacing.sm,
+    textAlign: 'center',
   },
-  phoneInput: {
+  phoneNumberContainer: {
     flex: 1,
   },
-  loadingContainer: {
-    padding: spacing.md,
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  loadingText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-  },
-  saveStatusBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 16,
+  fundsList: {
     marginTop: spacing.sm,
-    alignSelf: 'center',
   },
-  saveStatusPending: {
-    backgroundColor: '#fff3cd',
+  fundItem: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ffeaa7',
-  },
-  saveStatusSaving: {
-    backgroundColor: '#d1ecf1',
-    borderWidth: 1,
-    borderColor: '#bee5eb',
-  },
-  saveStatusSaved: {
-    backgroundColor: '#d4edda',
-    borderWidth: 1,
-    borderColor: '#c3e6cb',
-  },
-  saveStatusError: {
-    backgroundColor: '#f8d7da',
-    borderWidth: 1,
-    borderColor: '#f5c6cb',
-  },
-  saveStatusIcon: {
-    fontSize: 14,
-    marginRight: spacing.xs,
-  },
-  saveStatusText: {
-    ...typography.caption,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  retryButton: {
-    marginLeft: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 4,
-  },
-  retryButtonText: {
-    ...typography.caption,
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#e74c3c',
-  },
-  lastEditedText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-    fontSize: 11,
-  },
-  // New validation styles
-  inputWithValidationContainer: {
+    borderColor: colors.border,
+    padding: spacing.md,
     marginBottom: spacing.sm,
   },
-  inputLabelContainer: {
+  fundItemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
-  inputLabel: {
+  fundItemType: {
     ...typography.body1,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  fieldWarningIcon: {
-    fontSize: 16,
-    color: '#f39c12', // Orange warning color
-  },
-  fieldErrorIcon: {
-    fontSize: 16,
-    color: '#e74c3c', // Red error color
-  },
-  warningText: {
-    ...typography.caption,
-    color: '#f39c12', // Orange warning color
-    marginTop: spacing.xs,
-    fontSize: 12,
-    fontStyle: 'italic',
-  },
-  lastEditedField: {
-    backgroundColor: 'rgba(52, 199, 89, 0.05)', // Very light green background
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
-    padding: spacing.xs,
-  },
-  lastEditedLabel: {
-    color: '#34C759', // Green color for last edited label
     fontWeight: '600',
+    color: colors.text,
   },
-  lastEditedIndicator: {
-    ...typography.caption,
-    color: '#34C759',
-    fontSize: 11,
-    fontStyle: 'italic',
-    textAlign: 'right',
-    marginTop: spacing.xs,
+  fundItemAmount: {
+    ...typography.body2,
+    color: colors.primary,
   },
-  // New button styles for state-based buttons
-  primaryButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderColor: colors.primary,
-    borderWidth: 2,
-  },
-  nextStepHint: {
+  fundItemDetails: {
     ...typography.caption,
     color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    fontStyle: 'italic',
-    fontSize: 12,
-    paddingHorizontal: spacing.md,
   },
-  // Enhanced visual feedback styles
-  sectionContainerActive: {
-    borderColor: colors.primary,
-    borderWidth: 2,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  progressBarEnhanced: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.backgroundLight,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 5,
-    transition: 'width 0.5s ease-in-out',
-  },
-  completionBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: colors.success,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  completionBadgeText: {
+  fundItemPhoto: {
     ...typography.caption,
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  addFundContainer: {
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+  addFundTitle: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+  fundTypeButtonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  fundTypeButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  fundTypeButtonText: {
+    ...typography.caption,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  helperTextContainer: {
+    marginTop: spacing.sm,
+  },
+  helperTextHighlight: {
+    ...typography.caption,
+    color: colors.primary,
+  },
+  buttonContainer: {
+    marginTop: spacing.lg,
+  },
+  continueButton: {
+    marginTop: spacing.sm,
   },
 });
-
-export default styles;

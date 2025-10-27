@@ -8,13 +8,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Switch } from 'react-native';
 import Input from '../../Input';
 import { NationalitySelector, DateTimeInput, SingaporeDistrictSelector } from '../..';
-import { useLocale } from '../../../i18n/LocaleContext';
+import { CollapsibleSection } from '../../thailand/ThailandTravelComponents';
 import {
   TRAVEL_PURPOSE_OPTIONS,
   ACCOMMODATION_TYPE_OPTIONS,
 } from '../../../screens/singapore/constants';
 
 const TravelDetailsSection = ({
+  // Section state
+  isExpanded,
+  onToggle,
+  fieldCount,
+
   // Form state
   travelPurpose,
   customTravelPurpose,
@@ -52,16 +57,23 @@ const TravelDetailsSection = ({
   // Validation
   errors,
   warnings,
+  handleFieldChange,
   handleFieldBlur,
   handleUserInteraction,
+
+  // i18n
+  t,
 
   // Styles
   styles,
 }) => {
-  const { t } = useLocale();
-
   return (
-    <View>
+    <CollapsibleSection
+      title={t('singapore.travelInfo.sections.travel', { defaultValue: '🛫 行程信息' })}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      fieldCount={fieldCount}
+    >
       {/* Travel Purpose */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>
@@ -76,7 +88,7 @@ const TravelDetailsSection = ({
                 travelPurpose === option.value && styles.optionButtonActive,
               ]}
               onPress={() => {
-                setTravelPurpose(option.value);
+                handleFieldChange('travelPurpose', option.value, setTravelPurpose);
                 handleUserInteraction('travelPurpose', option.value);
               }}
               activeOpacity={0.7}
@@ -97,7 +109,7 @@ const TravelDetailsSection = ({
           <View style={styles.customInputContainer}>
             <Input
               value={customTravelPurpose}
-              onChangeText={setCustomTravelPurpose}
+              onChangeText={(value) => handleFieldChange('customTravelPurpose', value, setCustomTravelPurpose)}
               onBlur={() => handleFieldBlur('customTravelPurpose', customTravelPurpose)}
               placeholder={t('singapore.travelInfo.customTravelPurposePlaceholder', {
                 defaultValue: '请说明访问目的'
@@ -117,7 +129,7 @@ const TravelDetailsSection = ({
         <NationalitySelector
           value={boardingCountry}
           onChange={(value) => {
-            setBoardingCountry(value);
+            handleFieldChange('boardingCountry', value, setBoardingCountry);
             handleUserInteraction('boardingCountry', value);
           }}
           onBlur={() => handleFieldBlur('boardingCountry', boardingCountry)}
@@ -133,7 +145,7 @@ const TravelDetailsSection = ({
         </Text>
         <Input
           value={arrivalFlightNumber}
-          onChangeText={setArrivalFlightNumber}
+          onChangeText={(value) => handleFieldChange('arrivalFlightNumber', value, setArrivalFlightNumber)}
           onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
           placeholder="SQ123"
           autoCapitalize="characters"
@@ -149,7 +161,7 @@ const TravelDetailsSection = ({
         </Text>
         <DateTimeInput
           value={arrivalArrivalDate}
-          onChange={setArrivalArrivalDate}
+          onChange={(value) => handleFieldChange('arrivalArrivalDate', value, setArrivalArrivalDate)}
           onBlur={() => handleFieldBlur('arrivalArrivalDate', arrivalArrivalDate)}
           mode="date"
           placeholder="YYYY-MM-DD"
@@ -165,7 +177,7 @@ const TravelDetailsSection = ({
         </Text>
         <Input
           value={departureFlightNumber}
-          onChangeText={setDepartureFlightNumber}
+          onChangeText={(value) => handleFieldChange('departureFlightNumber', value, setDepartureFlightNumber)}
           onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)}
           placeholder="SQ456"
           autoCapitalize="characters"
@@ -181,7 +193,7 @@ const TravelDetailsSection = ({
         </Text>
         <DateTimeInput
           value={departureDepartureDate}
-          onChange={setDepartureDepartureDate}
+          onChange={(value) => handleFieldChange('departureDepartureDate', value, setDepartureDepartureDate)}
           onBlur={() => handleFieldBlur('departureDepartureDate', departureDepartureDate)}
           mode="date"
           placeholder="YYYY-MM-DD"
@@ -199,7 +211,7 @@ const TravelDetailsSection = ({
           <Switch
             value={isTransitPassenger}
             onValueChange={(value) => {
-              setIsTransitPassenger(value);
+              handleFieldChange('isTransitPassenger', value, setIsTransitPassenger);
               handleUserInteraction('isTransitPassenger', value);
             }}
             trackColor={{ false: '#767577', true: '#34C759' }}
@@ -230,7 +242,7 @@ const TravelDetailsSection = ({
                     accommodationType === option.value && styles.optionButtonActive,
                   ]}
                   onPress={() => {
-                    setAccommodationType(option.value);
+                    handleFieldChange('accommodationType', option.value, setAccommodationType);
                     handleUserInteraction('accommodationType', option.value);
                   }}
                   activeOpacity={0.7}
@@ -251,7 +263,7 @@ const TravelDetailsSection = ({
               <View style={styles.customInputContainer}>
                 <Input
                   value={customAccommodationType}
-                  onChangeText={setCustomAccommodationType}
+                  onChangeText={(value) => handleFieldChange('customAccommodationType', value, setCustomAccommodationType)}
                   onBlur={() => handleFieldBlur('customAccommodationType', customAccommodationType)}
                   placeholder={t('singapore.travelInfo.customAccommodationPlaceholder', {
                     defaultValue: '请说明住宿类型'
@@ -269,10 +281,13 @@ const TravelDetailsSection = ({
               {t('singapore.travelInfo.location', { defaultValue: '新加坡地区' })}
             </Text>
             <SingaporeDistrictSelector
-              selectedProvince={province}
-              selectedDistrict={district}
-              onProvinceSelect={setProvince}
-              onDistrictSelect={setDistrict}
+              value={province || district}
+              onSelect={(selection) => {
+                if (!selection) return;
+                handleFieldChange('province', selection.name, setProvince);
+                handleFieldChange('district', selection.name, setDistrict);
+                handleUserInteraction('district', selection.name);
+              }}
               error={!!errors.district}
               errorMessage={errors.district}
             />
@@ -285,7 +300,7 @@ const TravelDetailsSection = ({
             </Text>
             <Input
               value={hotelAddress}
-              onChangeText={setHotelAddress}
+              onChangeText={(value) => handleFieldChange('hotelAddress', value, setHotelAddress)}
               onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
               placeholder={t('singapore.travelInfo.addressPlaceholder', {
                 defaultValue: '请输入详细地址'
@@ -307,7 +322,7 @@ const TravelDetailsSection = ({
             </Text>
             <Input
               value={postalCode}
-              onChangeText={setPostalCode}
+              onChangeText={(value) => handleFieldChange('postalCode', value, setPostalCode)}
               onBlur={() => handleFieldBlur('postalCode', postalCode)}
               placeholder="123456"
               keyboardType="numeric"
@@ -318,7 +333,7 @@ const TravelDetailsSection = ({
           </View>
         </>
       )}
-    </View>
+    </CollapsibleSection>
   );
 };
 

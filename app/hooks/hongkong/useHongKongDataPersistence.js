@@ -16,6 +16,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from '../../screens/hongkong/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
+import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 
 /**
  * Custom hook to manage Hong Kong travel form data persistence
@@ -59,7 +60,7 @@ export const useHongKongDataPersistence = ({
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem, formState]);
+  }, [userId, normalizeFundItem, formState.setFunds]);
 
   // Initialize entry_info for this user and destination
   const initializeEntryInfo = useCallback(async () => {
@@ -115,7 +116,7 @@ export const useHongKongDataPersistence = ({
       console.error('Failed to initialize entry info:', error);
       throw error;
     }
-  }, [userId, destination, formState]);
+  }, [userId, destination, formState.entryInfoInitialized, formState.setEntryInfoId, formState.setEntryInfoInitialized]);
 
   // Session state management
   const getSessionStateKey = useCallback(() => {
@@ -732,7 +733,7 @@ export const useHongKongDataPersistence = ({
 
   // Debounced save function
   const debouncedSaveData = useCallback(() => {
-    DebouncedSave.saveWithDebounce(
+    DebouncedSave.debouncedSave(
       'hongkong_travel_info',
       async () => {
         try {
@@ -745,75 +746,50 @@ export const useHongKongDataPersistence = ({
         }
       },
       2000
-    );
+    )();
   }, [saveDataToSecureStorage, formState]);
 
-  // Setup navigation listeners
-  useEffect(() => {
-    // Focus listener - reload data when screen comes into focus
-    const unsubscribeFocus = navigation.addListener('focus', async () => {
-      try {
-        // Reload passport and personal info
-        const passportInfo = await UserDataService.getPassport(userId);
-        const personalInfo = await UserDataService.getPersonalInfo(userId);
+  // Setup navigation persistence and auto-save
+  useNavigationPersistence({
+    navigation,
+    saveKey: 'hongkong_travel_info',
+    onFocus: async () => {
+      // Reload passport and personal info
+      const passportInfo = await UserDataService.getPassport(userId);
+      const personalInfo = await UserDataService.getPersonalInfo(userId);
 
-        if (passportInfo) {
-          formState.setPassportData(passportInfo);
-        }
-
-        if (personalInfo) {
-          formState.setPersonalInfoData(personalInfo);
-        }
-
-        await refreshFundItems({ forceRefresh: true });
-
-        // Reload travel info
-        try {
-          const destinationId = destination?.id || 'hongkong';
-          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          if (travelInfo) {
-            // Update travel info state...
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to reload travel info on focus:', travelInfoError);
-        }
-      } catch (error) {
-        console.error('Failed to reload data on focus:', error);
+      if (passportInfo) {
+        formState.setPassportData(passportInfo);
       }
-    });
 
-    // Blur listener - save data when leaving screen
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      DebouncedSave.flushPendingSave('hongkong_travel_info');
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigation, userId, destination, formState, refreshFundItems]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      try {
-        DebouncedSave.flushPendingSave('hongkong_travel_info');
-        saveSessionState();
-      } catch (error) {
-        console.error('Failed to save data on component unmount:', error);
+      if (personalInfo) {
+        formState.setPersonalInfoData(personalInfo);
       }
-    };
-  }, [saveSessionState]);
 
-  // Monitor save status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStatus = DebouncedSave.getSaveState('hongkong_travel_info');
-      formState.setSaveStatus(currentStatus);
-    }, 100);
+      await refreshFundItems({ forceRefresh: true });
 
-    return () => clearInterval(interval);
-  }, [formState]);
+      // Reload travel info
+      try {
+        const destinationId = destination?.id || 'hongkong';
+        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+        if (travelInfo) {
+          // Update travel info state...
+        }
+      } catch (travelInfoError) {
+        console.log('Failed to reload travel info on focus:', travelInfoError);
+      }
+    },
+    onBlur: async () => {
+      await saveSessionState();
+    },
+    dependencies: [userId, destination?.id, refreshFundItems]
+  });
+
+  // Monitor save status with optimized polling
+  useSaveStatusMonitor({
+    saveKey: 'hongkong_travel_info',
+    onStatusChange: formState.setSaveStatus
+  });
 
   // Initialize entry info when data is loaded
   useEffect(() => {
@@ -827,6 +803,7 @@ export const useHongKongDataPersistence = ({
     saveDataToSecureStorage,
     debouncedSaveData,
     refreshFundItems,
+    normalizeFundItem,
     initializeEntryInfo,
     saveSessionState,
     loadSessionState,

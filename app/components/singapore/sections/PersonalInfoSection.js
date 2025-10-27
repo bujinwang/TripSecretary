@@ -8,11 +8,15 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Input from '../../Input';
 import { NationalitySelector } from '../..';
-import { useLocale } from '../../../i18n/LocaleContext';
+import { CollapsibleSection } from '../../thailand/ThailandTravelComponents';
 
 const PersonalInfoSection = ({
+  // Section state
+  isExpanded,
+  onToggle,
+  fieldCount,
+
   // Form state
-  sex,
   occupation,
   cityOfResidence,
   residentCountry,
@@ -21,7 +25,6 @@ const PersonalInfoSection = ({
   email,
 
   // Setters
-  setSex,
   setOccupation,
   setCityOfResidence,
   setResidentCountry,
@@ -32,16 +35,22 @@ const PersonalInfoSection = ({
   // Validation
   errors,
   warnings,
+  handleFieldChange,
   handleFieldBlur,
-  lastEditedField,
+
+  // i18n
+  t,
 
   // Styles
   styles,
 }) => {
-  const { t } = useLocale();
-
   return (
-    <View>
+    <CollapsibleSection
+      title={t('singapore.travelInfo.sections.personal', { defaultValue: '🙋 个人信息' })}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      fieldCount={fieldCount}
+    >
       {/* Occupation */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>
@@ -49,7 +58,7 @@ const PersonalInfoSection = ({
         </Text>
         <Input
           value={occupation}
-          onChangeText={setOccupation}
+          onChangeText={(value) => handleFieldChange('occupation', value, setOccupation)}
           onBlur={() => handleFieldBlur('occupation', occupation)}
           placeholder={t('singapore.travelInfo.occupationPlaceholder', { defaultValue: '请输入职业 (英文)' })}
           error={!!errors.occupation}
@@ -67,7 +76,7 @@ const PersonalInfoSection = ({
         </Text>
         <Input
           value={cityOfResidence}
-          onChangeText={setCityOfResidence}
+          onChangeText={(value) => handleFieldChange('cityOfResidence', value, setCityOfResidence)}
           onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
           placeholder={t('singapore.travelInfo.cityOfResidencePlaceholder', { defaultValue: '请输入居住城市 (英文)' })}
           error={!!errors.cityOfResidence}
@@ -85,7 +94,7 @@ const PersonalInfoSection = ({
         </Text>
         <NationalitySelector
           value={residentCountry}
-          onChange={setResidentCountry}
+          onChange={(value) => handleFieldChange('residentCountry', value, setResidentCountry)}
           onBlur={() => handleFieldBlur('residentCountry', residentCountry)}
           error={!!errors.residentCountry}
           errorMessage={errors.residentCountry}
@@ -104,7 +113,7 @@ const PersonalInfoSection = ({
           <View style={styles.phoneCodeContainer}>
             <Input
               value={phoneCode}
-              onChangeText={setPhoneCode}
+              onChangeText={(value) => handleFieldChange('phoneCode', value, setPhoneCode)}
               onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
               placeholder="+86"
               style={styles.phoneCodeInput}
@@ -114,7 +123,7 @@ const PersonalInfoSection = ({
           <View style={styles.phoneNumberContainer}>
             <Input
               value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              onChangeText={(value) => handleFieldChange('phoneNumber', value, setPhoneNumber)}
               onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
               placeholder={t('singapore.travelInfo.phoneNumberPlaceholder', { defaultValue: '请输入手机号' })}
               keyboardType="phone-pad"
@@ -135,7 +144,7 @@ const PersonalInfoSection = ({
         </Text>
         <Input
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(value) => handleFieldChange('email', value, setEmail)}
           onBlur={() => handleFieldBlur('email', email)}
           placeholder={t('singapore.travelInfo.emailPlaceholder', { defaultValue: '请输入邮箱地址' })}
           keyboardType="email-address"
@@ -147,7 +156,7 @@ const PersonalInfoSection = ({
           <Text style={styles.warningText}>{warnings.email}</Text>
         )}
       </View>
-    </View>
+    </CollapsibleSection>
   );
 };
 

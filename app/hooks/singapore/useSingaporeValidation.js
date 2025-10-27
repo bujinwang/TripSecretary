@@ -18,6 +18,16 @@ export const useSingaporeValidation = ({
   saveDataToSecureStorage,
   debouncedSaveData,
 }) => {
+  // ========== Field Change Handler ==========
+
+  const handleFieldChange = useCallback((fieldName, value, setter) => {
+    setter(value);
+    travelInfoForm.handleUserInteraction(fieldName, value);
+    formState.setLastEditedField(fieldName);
+    formState.setLastEditedAt(new Date().toISOString());
+    debouncedSaveData();
+  }, [formState, travelInfoForm, debouncedSaveData]);
+
   // ========== Field Validation ==========
 
   const validateField = useCallback((fieldName, fieldValue) => {
@@ -357,9 +367,12 @@ export const useSingaporeValidation = ({
     // Use the travel info form utility to handle user interaction
     travelInfoForm.handleUserInteraction(fieldName, value);
 
+    formState.setLastEditedField(fieldName);
+    formState.setLastEditedAt(new Date().toISOString());
+
     // Trigger debounced save
     debouncedSaveData();
-  }, [travelInfoForm, debouncedSaveData]);
+  }, [travelInfoForm, debouncedSaveData, formState]);
 
   // ========== Field Count Calculation ==========
 
@@ -400,7 +413,8 @@ export const useSingaporeValidation = ({
     };
 
     return travelInfoForm.getFieldCount(section, allFields);
-  }, [formState, travelInfoForm]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [travelInfoForm]);
 
   // ========== Completion Metrics ==========
 
@@ -437,16 +451,13 @@ export const useSingaporeValidation = ({
         funds: formState.funds
       };
 
-      const summary = travelInfoForm.calculateCompletionMetrics(allFields);
-      formState.setCompletionMetrics(summary.metrics);
-      formState.setTotalCompletionPercent(summary.totalPercent);
-
-      return summary;
+      return travelInfoForm.calculateCompletionMetrics(allFields);
     } catch (error) {
       console.error('Failed to calculate completion metrics:', error);
       return { totalPercent: 0, metrics: null, isReady: false };
     }
-  }, [formState, travelInfoForm]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [travelInfoForm]);
 
   // ========== Form Validity Check ==========
 
@@ -533,6 +544,7 @@ export const useSingaporeValidation = ({
 
   return {
     // Validation
+    handleFieldChange,
     validateField,
     handleFieldBlur,
     handleUserInteraction,

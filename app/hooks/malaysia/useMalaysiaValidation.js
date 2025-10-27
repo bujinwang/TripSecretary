@@ -304,7 +304,8 @@ export const useMalaysiaValidation = ({
     }
 
     return { filled: 0, total: 0 };
-  }, [formState, userInteractionTracker]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userInteractionTracker]);
 
   /**
    * Calculate completion metrics for all sections

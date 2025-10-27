@@ -6,12 +6,17 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Input from '../../Input';
 import { NationalitySelector, DateTimeInput } from '../..';
-import { useLocale } from '../../../i18n/LocaleContext';
+import { CollapsibleSection } from '../../thailand/ThailandTravelComponents';
 
 const PassportSection = ({
+  // Section state
+  isExpanded,
+  onToggle,
+  fieldCount,
+
   // Form state
   passportNo,
   visaNumber,
@@ -33,16 +38,23 @@ const PassportSection = ({
   // Validation
   errors,
   warnings,
+  handleFieldChange,
+  handleUserInteraction,
   handleFieldBlur,
-  lastEditedField,
+
+  // i18n
+  t,
 
   // Styles
   styles,
 }) => {
-  const { t } = useLocale();
-
   return (
-    <View>
+    <CollapsibleSection
+      title={t('singapore.travelInfo.sections.passport', { defaultValue: '📘 护照信息' })}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      fieldCount={fieldCount}
+    >
       {/* Passport Number */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>
@@ -50,7 +62,7 @@ const PassportSection = ({
         </Text>
         <Input
           value={passportNo}
-          onChangeText={setPassportNo}
+          onChangeText={(value) => handleFieldChange('passportNo', value, setPassportNo)}
           onBlur={() => handleFieldBlur('passportNo', passportNo)}
           placeholder={t('singapore.travelInfo.passportNoPlaceholder', { defaultValue: '请输入护照号码' })}
           error={!!errors.passportNo}
@@ -68,7 +80,7 @@ const PassportSection = ({
         </Text>
         <Input
           value={visaNumber}
-          onChangeText={setVisaNumber}
+          onChangeText={(value) => handleFieldChange('visaNumber', value, setVisaNumber)}
           onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
           placeholder={t('singapore.travelInfo.visaNumberPlaceholder', { defaultValue: '如有签证请输入' })}
           error={!!errors.visaNumber}
@@ -83,7 +95,7 @@ const PassportSection = ({
         </Text>
         <Input
           value={fullName}
-          onChangeText={setFullName}
+          onChangeText={(value) => handleFieldChange('fullName', value, setFullName)}
           onBlur={() => handleFieldBlur('fullName', fullName)}
           placeholder={t('singapore.travelInfo.fullNamePlaceholder', { defaultValue: 'SURNAME, Given Names' })}
           error={!!errors.fullName}
@@ -101,7 +113,7 @@ const PassportSection = ({
         </Text>
         <NationalitySelector
           value={nationality}
-          onChange={setNationality}
+          onChange={(code) => handleFieldChange('nationality', code, setNationality)}
           onBlur={() => handleFieldBlur('nationality', nationality)}
           error={!!errors.nationality}
           errorMessage={errors.nationality}
@@ -118,7 +130,7 @@ const PassportSection = ({
         </Text>
         <DateTimeInput
           value={dob}
-          onChange={setDob}
+          onChange={(value) => handleFieldChange('dob', value, setDob)}
           onBlur={() => handleFieldBlur('dob', dob)}
           mode="date"
           placeholder={t('singapore.travelInfo.dobPlaceholder', { defaultValue: 'YYYY-MM-DD' })}
@@ -137,7 +149,7 @@ const PassportSection = ({
         </Text>
         <DateTimeInput
           value={expiryDate}
-          onChange={setExpiryDate}
+          onChange={(value) => handleFieldChange('expiryDate', value, setExpiryDate)}
           onBlur={() => handleFieldBlur('expiryDate', expiryDate)}
           mode="date"
           placeholder={t('singapore.travelInfo.expiryDatePlaceholder', { defaultValue: 'YYYY-MM-DD' })}
@@ -163,7 +175,8 @@ const PassportSection = ({
                 sex === gender && styles.genderButtonActive,
               ]}
               onPress={() => {
-                setSex(gender);
+                handleFieldChange('sex', gender, setSex);
+                handleUserInteraction?.('sex', gender);
                 handleFieldBlur('sex', gender);
               }}
             >
@@ -177,7 +190,7 @@ const PassportSection = ({
           ))}
         </View>
       </View>
-    </View>
+    </CollapsibleSection>
   );
 };
 

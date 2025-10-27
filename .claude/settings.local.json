@@ -38,7 +38,13 @@
       "Bash(do echo \"=== $file ===\")",
       "Bash(do if [ -f \"$file\" ])",
       "Bash(fi)",
-      "Bash(do echo \"=== $country ===\")"
+      "Bash(do echo \"=== $country ===\")",
+      "Bash(do [ -f \"$file\" ])",
+      "Bash(echo:*)",
+      "Bash(while read file)",
+      "Bash(rm:*)",
+      "Read(//private/tmp/**)",
+      "Bash(do echo)"
     ],
     "deny": [],
     "ask": []

@@ -6,9 +6,14 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { useLocale } from '../../../i18n/LocaleContext';
+import { CollapsibleSection } from '../../thailand/ThailandTravelComponents';
 
 const FundsSection = ({
+  // Section state
+  isExpanded,
+  onToggle,
+  fieldCount,
+
   // Form state
   funds,
 
@@ -16,11 +21,12 @@ const FundsSection = ({
   onAddFund,
   onFundItemPress,
 
+  // i18n
+  t,
+
   // Styles
   styles,
 }) => {
-  const { t } = useLocale();
-
   const fundTypeLabels = {
     cash: '💵 现金',
     bank_card: '💳 银行卡',
@@ -63,7 +69,12 @@ const FundsSection = ({
   );
 
   return (
-    <View>
+    <CollapsibleSection
+      title={t('singapore.travelInfo.sections.funds', { defaultValue: '💰 资金证明' })}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      fieldCount={fieldCount}
+    >
       {/* Fund Items List */}
       {funds && funds.length > 0 && (
         <FlatList
@@ -99,10 +110,10 @@ const FundsSection = ({
         <Text style={styles.helperText}>
           💡 {t('singapore.travelInfo.fundsHelper', {
             defaultValue: '建议准备至少 SGD 500/天的资金证明'
-          })}
+        })}
         </Text>
       </View>
-    </View>
+    </CollapsibleSection>
   );
 };
 

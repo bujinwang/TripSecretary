@@ -15,7 +15,55 @@ import FundItemDetailModal from '../../components/FundItemDetailModal';
 
 import { colors, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import styles from './MalaysiaTravelInfoScreen.styles';
+
+// Inline styles
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    marginLeft: -spacing.sm,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerRight: {
+    width: 40,
+  },
+  saveStatus: {
+    fontSize: 16,
+  },
+  saveStatusSuccess: {
+    color: colors.success,
+  },
+  saveStatusError: {
+    color: colors.error,
+  },
+  scrollContainer: {
+    paddingBottom: spacing.xl,
+  },
+  bottomActions: {
+    padding: spacing.md,
+  },
+  continueButton: {
+    marginBottom: spacing.sm,
+  },
+};
 
 // Import custom hooks (Phase 1)
 import { useMalaysiaFormState } from '../../hooks/malaysia/useMalaysiaFormState';
@@ -109,18 +157,28 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     loadData();
   }, [loadData]);
 
+  // Destructure stable setters and values for useEffect
+  const { setCompletionMetrics, setTotalCompletionPercent } = formState;
+  const {
+    passportNo, fullName, nationality, dob, expiryDate, sex,
+    occupation, residentCountry, phoneCode, phoneNumber, email,
+    travelPurpose, customTravelPurpose, arrivalFlightNumber, arrivalDate,
+    accommodationType, customAccommodationType, hotelAddress, stayDuration,
+    funds
+  } = formState;
+
   // Recalculate completion metrics whenever form data changes
   useEffect(() => {
     const metrics = calculateCompletionMetrics();
-    formState.setCompletionMetrics(metrics);
-    formState.setTotalCompletionPercent(metrics?.percent || 0);
+    setCompletionMetrics(metrics);
+    setTotalCompletionPercent(metrics?.percent || 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    formState.passportNo, formState.fullName, formState.nationality, formState.dob, formState.expiryDate, formState.sex,
-    formState.occupation, formState.residentCountry, formState.phoneCode, formState.phoneNumber, formState.email,
-    formState.travelPurpose, formState.customTravelPurpose, formState.arrivalFlightNumber, formState.arrivalDate,
-    formState.accommodationType, formState.customAccommodationType, formState.hotelAddress, formState.stayDuration,
-    formState.funds,
-    calculateCompletionMetrics,
+    passportNo, fullName, nationality, dob, expiryDate, sex,
+    occupation, residentCountry, phoneCode, phoneNumber, email,
+    travelPurpose, customTravelPurpose, arrivalFlightNumber, arrivalDate,
+    accommodationType, customAccommodationType, hotelAddress, stayDuration,
+    funds,
   ]);
 
   // Save session state when user navigates away

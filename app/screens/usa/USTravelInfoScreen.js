@@ -36,8 +36,93 @@ import {
   FundsSection
 } from '../../components/usa/sections';
 
-// Import styles
-import styles from './USTravelInfoScreen.styles';
+// Inline styles
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    marginLeft: -spacing.sm,
+  },
+  headerTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  headerRight: {
+    width: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+  },
+  scrollContainer: {
+    paddingBottom: spacing.xl,
+  },
+  saveStatusBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    borderRadius: 8,
+  },
+  saveStatusPending: {
+    backgroundColor: '#fef3c7',
+  },
+  saveStatusSaving: {
+    backgroundColor: '#dbeafe',
+  },
+  saveStatusSaved: {
+    backgroundColor: '#d1fae5',
+  },
+  saveStatusError: {
+    backgroundColor: '#fee2e2',
+  },
+  saveStatusIcon: {
+    fontSize: 16,
+    marginRight: spacing.sm,
+  },
+  saveStatusText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  retryButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  lastEditedText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+  },
+});
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {

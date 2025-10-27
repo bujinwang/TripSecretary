@@ -21,9 +21,14 @@ export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 // Entry guide screens
 export { default as ThailandEntryGuideScreen } from './entryGuide/ThailandEntryGuideScreen';
 export { default as JapanInteractiveImmigrationGuide } from './japan/JapanInteractiveImmigrationGuide';
+export { default as InteractiveImmigrationGuide } from './japan/InteractiveImmigrationGuide';
+export { default as JapanInfoScreen } from './japan/JapanInfoScreen';
+export { default as JapanRequirementsScreen } from './japan/JapanRequirementsScreen';
+export { default as JapanProceduresScreen } from './japan/JapanProceduresScreen';
+export { default as JapanTravelInfoScreen } from './japan/JapanTravelInfoScreen';
+export { default as JapanEntryFlowScreen } from './japan/JapanEntryFlowScreen';
 
 // Country-specific screens
-export * from './japan';
 export * from './thailand';
 export * from './malaysia';
 export * from './singapore';

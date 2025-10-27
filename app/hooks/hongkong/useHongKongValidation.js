@@ -248,7 +248,8 @@ export const useHongKongValidation = ({
       default:
         return { filled: 0, total: 0 };
     }
-  }, [formState, userInteractionTracker]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userInteractionTracker]);
 
   // Calculate completion metrics
   const calculateCompletionMetrics = useCallback(() => {
@@ -260,20 +261,17 @@ export const useHongKongValidation = ({
     const totalFilled = passportCount.filled + personalCount.filled + fundsCount.filled + travelCount.filled;
     const totalFields = passportCount.total + personalCount.total + fundsCount.total + travelCount.total;
 
-    const totalPercent = totalFields > 0 ? Math.round((totalFilled / totalFields) * 100) : 0;
+    const percent = totalFields > 0 ? Math.round((totalFilled / totalFields) * 100) : 0;
 
-    const metrics = {
+    return {
       passport: passportCount,
       personal: personalCount,
       funds: fundsCount,
       travel: travelCount,
+      percent,
+      isReady: percent >= 100
     };
-
-    formState.setCompletionMetrics(metrics);
-    formState.setTotalCompletionPercent(totalPercent);
-
-    return { totalPercent, metrics, isReady: totalPercent >= 100 };
-  }, [getFieldCount, formState]);
+  }, [getFieldCount]);
 
   // Check if all fields are filled and valid
   const isFormValid = useCallback(() => {
@@ -359,6 +357,7 @@ export const useHongKongValidation = ({
     if (!formState.isLoading) {
       calculateCompletionMetrics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     formState.passportNo, formState.surname, formState.middleName, formState.givenName,
     formState.nationality, formState.dob, formState.expiryDate, formState.sex,
@@ -371,7 +370,7 @@ export const useHongKongValidation = ({
     formState.accommodationType, formState.customAccommodationType, formState.province,
     formState.district, formState.subDistrict, formState.postalCode,
     formState.isTransitPassenger, formState.isLoading,
-    calculateCompletionMetrics,
+    // Note: calculateCompletionMetrics intentionally excluded to prevent infinite loop
   ]);
 
   return {

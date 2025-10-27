@@ -1,73 +1,42 @@
-
-// 入境通 - HongKong Travel Info Screen (香港入境信息)
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+// 入境通 - Hong Kong Travel Info Screen (香港入境信息)
+// Refactored to align with the modular Malaysia/Singapore travel info architecture
+import React, { useEffect, useMemo, useCallback } from 'react';
 import {
   View,
-  Text,
-  StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
-  LayoutAnimation,
   Platform,
   UIManager,
   Alert,
-  Image,
+  Text,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
-import Input from '../../components/Input';
-import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
-import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../components';
-import HongKongDistrictSelector from '../../components/HongKongDistrictSelector';
-import SecureStorageService from '../../services/security/SecureStorageService';
 
-import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import styles from './styles';
-import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
-import SoftValidation from '../../utils/SoftValidation';
-import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
-import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
-import SuggestionProviders from '../../utils/SuggestionProviders';
-import FieldStateManager from '../../utils/FieldStateManager';
-import { getDistrictsByProvince, getSubDistrictsByDistrictId } from '../../data/hongkongLocations';
-
-// Import secure data models and services
-import Passport from '../../models/Passport';
-import PersonalInfo from '../../models/PersonalInfo';
-import EntryData from '../../models/EntryData';
-import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../../services/data/UserDataService';
+import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
+import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 
-// Import HongKong custom hooks
 import {
   useHongKongFormState,
   useHongKongDataPersistence,
-  useHongKongValidation
+  useHongKongValidation,
 } from '../../hooks/hongkong';
 
-// Import HongKong section components
 import {
   HeroSection,
   PassportSection,
   PersonalInfoSection,
   FundsSection,
-  TravelDetailsSection
+  TravelDetailsSection,
 } from '../../components/hongkong/sections';
 
-// Import HongKong-specific utilities
-import { validateField } from '../../utils/thailand/ThailandValidationRules';
-import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
-import { parsePassportName } from '../../utils/NameParser';
-import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from './constants';
-import OptionSelector from '../../components/thailand/OptionSelector';
+import { styles } from './HongKongTravelInfoScreen.styles';
+
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -77,66 +46,113 @@ if (Platform.OS === 'android') {
 const HongKongTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
-  
-  // Memoize passport to prevent infinite re-renders
+
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
-  
-  // Memoize userId to prevent unnecessary re-renders
+
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
-  // Initialize form state hook - consolidates all useState declarations
-  const formState = useHongKongFormState(passport);
-
-  // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('hongkong_travel_info');
 
-  // Initialize persistence hook - handles data loading and saving
+  const formState = useHongKongFormState(passport);
   const persistence = useHongKongDataPersistence({
     passport,
     destination,
     userId,
     formState,
     userInteractionTracker,
-    navigation
+    navigation,
   });
 
-  // Initialize validation hook - handles field validation and completion tracking
+  const {
+    loadData,
+    refreshFundItems,
+    normalizeFundItem,
+    initializeEntryInfo,
+    saveSessionState,
+    loadSessionState,
+    savePhoto,
+    scrollViewRef,
+    shouldRestoreScrollPosition,
+    debouncedSaveData,
+    saveDataToSecureStorage,
+  } = persistence;
+
   const validation = useHongKongValidation({
     formState,
     userInteractionTracker,
-    saveDataToSecureStorageWithOverride: persistence.saveDataToSecureStorage,
-    debouncedSaveData: persistence.debouncedSaveData
+    saveDataToSecureStorageWithOverride: saveDataToSecureStorage,
+    debouncedSaveData,
   });
 
-  // Extract commonly used functions from hooks for easier access
   const {
     handleFieldBlur,
     handleUserInteraction,
     getFieldCount,
     calculateCompletionMetrics,
-    isFormValid,
     getSmartButtonConfig,
     getProgressText,
-    getProgressColor
+    getProgressColor,
   } = validation;
 
-  const {
-    loadData,
-    saveDataToSecureStorage: saveDataToSecureStorageWithOverride,
-    debouncedSaveData,
-    refreshFundItems,
-    initializeEntryInfo,
-    saveSessionState,
-    loadSessionState,
-    migrateExistingDataToInteractionState,
-    savePhoto,
-    scrollViewRef,
-    shouldRestoreScrollPosition
-  } = persistence;
+  // Data loading + initialization
+  useEffect(() => {
+    loadData();
+    loadSessionState();
+  }, [loadData, loadSessionState]);
 
-  // Computed values for city of residence
+  useEffect(() => {
+    if (!formState.isLoading && !formState.entryInfoInitialized) {
+      initializeEntryInfo();
+    }
+  }, [formState.isLoading, formState.entryInfoInitialized, initializeEntryInfo]);
+
+  // Destructure stable setters and values for useEffect
+  const { setCompletionMetrics, setTotalCompletionPercent } = formState;
+  const {
+    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
+    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
+    travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
+    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry,
+    hotelAddress, accommodationType, customAccommodationType, province, district,
+    subDistrict, postalCode, isTransitPassenger, funds, visaNumber
+  } = formState;
+
+  // Completion metrics
+  useEffect(() => {
+    const metrics = calculateCompletionMetrics();
+    setCompletionMetrics(metrics);
+    setTotalCompletionPercent(metrics?.percent || 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
+    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
+    travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
+    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry,
+    hotelAddress, accommodationType, customAccommodationType, province, district,
+    subDistrict, postalCode, isTransitPassenger, funds, visaNumber,
+  ]);
+
+  // Session persistence
+  useEffect(() => {
+    return () => {
+      saveSessionState();
+    };
+  }, [saveSessionState]);
+
+  // Restore scroll position after load
+  useEffect(() => {
+    if (shouldRestoreScrollPosition.current && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({
+        y: formState.scrollPosition || 0,
+        animated: false,
+      });
+      shouldRestoreScrollPosition.current = false;
+    }
+  }, [shouldRestoreScrollPosition, scrollViewRef, formState.scrollPosition]);
+
+  // Residence helpers
   const isChineseResidence = formState.residentCountry === 'CHN';
   const cityOfResidenceLabel = isChineseResidence ? '居住省份' : '居住省份 / 城市';
   const cityOfResidenceHelpText = isChineseResidence
@@ -146,733 +162,93 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     ? '例如 Anhui, Guangdong'
     : '例如 Anhui, Shanghai';
 
-  // Handle district/subdistrict ID updates (cascade logic)
+  useEffect(() => {
+    if (!formState.residentCountry) return;
+    handleFieldBlur('cityOfResidence', formState.cityOfResidence);
+  }, [formState.residentCountry, formState.cityOfResidence, handleFieldBlur]);
+
+  // Location cascade
   useEffect(() => {
     if (!formState.province || !formState.district) {
       if (formState.districtId !== null) {
-        formState.formState.setDistrictId(null);
+        formState.setDistrictId(null);
       }
       return;
     }
 
     const match = findDistrictOption(formState.province, formState.district);
     if (match && match.id !== formState.districtId) {
-      formState.formState.setDistrictId(match.id);
+      formState.setDistrictId(match.id);
     }
-  }, [formState.province, formState.district, formState.districtId, formState]);
+  }, [formState.province, formState.district, formState.districtId]);
 
   useEffect(() => {
     if (!formState.districtId || !formState.subDistrict) {
       if (formState.subDistrictId !== null) {
-        formState.formState.setSubDistrictId(null);
+        formState.setSubDistrictId(null);
       }
       return;
     }
 
     const match = findSubDistrictOption(formState.districtId, formState.subDistrict);
     if (match && match.id !== formState.subDistrictId) {
-      formState.formState.setSubDistrictId(match.id);
+      formState.setSubDistrictId(match.id);
       if (!formState.postalCode && match.postalCode) {
-        formState.formState.setPostalCode(String(match.postalCode));
+        formState.setPostalCode(String(match.postalCode));
       }
     }
-  }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode, formState]);
+  }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode]);
 
-
-
-  // Load saved data on component mount - delegated to persistence hook
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-
-
-
-
-
-
-
-  // Recalculate completion metrics when data changes
-  useEffect(() => {
-    if (!isLoading) {
-      calculateCompletionMetrics();
-    }
-  }, [
-    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
-    funds,
-    travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry, hotelAddress,
-    accommodationType, customAccommodationType, province, district, subDistrict,
-    postalCode, isTransitPassenger, isLoading
-  ]);
-
-  // Helper function to handle navigation with save error handling
-  const handleNavigationWithSave = async (navigationAction, actionName = 'navigate') => {
-    try {
-      // Set saving state to show user that save is in progress
-      formState.setSaveStatus('saving');
-      
-      // Flush any pending saves before navigation
-      await DebouncedSave.flushPendingSave('hongkong_travel_info');
-      
-      // Execute the navigation action
-      navigationAction();
-    } catch (error) {
-      console.error(`Failed to save data before ${actionName}:`, error);
-      formState.setSaveStatus('error');
-      
-      // Show error alert and ask user if they want to continue without saving
-      Alert.alert(
-        'Save Error',
-        `Failed to save your data. Do you want to ${actionName} without saving?`,
-        [
-          {
-            text: 'Retry Save',
-            onPress: () => handleNavigationWithSave(navigationAction, actionName), // Retry
-          },
-          {
-            text: `${actionName.charAt(0).toUpperCase() + actionName.slice(1)} Anyway`,
-            onPress: () => {
-              // Execute navigation without saving
-              navigationAction();
-            },
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => formState.setSaveStatus(null),
-          },
-        ]
-      );
-    }
-  };
-
-
-
-
-
-      },
-      onRetry: (error, retryCount, maxRetries) => {
-        console.warn(`Save retry ${retryCount}/${maxRetries}:`, error.message);
-        // Could show retry indicator in UI
-      }
-    }
-  );
-
-
-
-  // Re-validate residence field whenever the selected country changes
-  useEffect(() => {
-    if (!residentCountry) return;
-    handleFieldBlur('cityOfResidence', cityOfResidence);
-  }, [residentCountry]);
-
+  // Location handlers
   const resetDistrictSelection = useCallback(() => {
     formState.setDistrict('');
     formState.setDistrictId(null);
     formState.setSubDistrict('');
     formState.setSubDistrictId(null);
     formState.setPostalCode('');
-  }, []);
+  }, [formState]);
 
-  const handleProvinceSelect = useCallback((code) => {
-    formState.setProvince(code);
-    resetDistrictSelection();
+  const handleProvinceSelect = useCallback(
+    (value) => {
+      formState.setProvince(value);
+      resetDistrictSelection();
+      handleFieldBlur('province', value);
+    },
+    [formState, resetDistrictSelection, handleFieldBlur]
+  );
 
-    handleFieldBlur('province', code);
+  const handleDistrictSelect = useCallback(
+    (selection) => {
+      if (!selection) return;
+      formState.setDistrict(selection.nameEn);
+      formState.setDistrictId(selection.id);
+      handleFieldBlur('district', selection.nameEn);
 
-    if (district) {
-      handleFieldBlur('district', '');
-    }
-    if (subDistrict) {
-      handleFieldBlur('subDistrict', '');
-    }
-    if (postalCode) {
-      handleFieldBlur('postalCode', '');
-    }
-  }, [handleFieldBlur, resetDistrictSelection, district, subDistrict, postalCode]);
-
-  const handleDistrictSelect = useCallback((selection) => {
-    if (!selection) return;
-
-    formState.setDistrict(selection.nameEn);
-    formState.setDistrictId(selection.id);
-    handleFieldBlur('district', selection.nameEn);
-
-    if (subDistrict) {
       formState.setSubDistrict('');
       formState.setSubDistrictId(null);
-      handleFieldBlur('subDistrict', '');
-    }
-
-    if (postalCode) {
       formState.setPostalCode('');
-      handleFieldBlur('postalCode', '');
-    }
-  }, [handleFieldBlur, subDistrict, postalCode]);
-
-  const handleSubDistrictSelect = useCallback((selection) => {
-    if (!selection) return;
-
-    formState.setSubDistrict(selection.nameEn);
-    formState.setSubDistrictId(selection.id);
-    handleFieldBlur('subDistrict', selection.nameEn);
-
-    const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
-    if (newPostalCode || postalCode) {
-      formState.setPostalCode(newPostalCode);
-      handleFieldBlur('postalCode', newPostalCode);
-    }
-  }, [handleFieldBlur, postalCode]);
-
-  // Handler for Hong Kong district selector (region + district combined)
-  const handleHongKongDistrictSelect = useCallback((selection) => {
-    if (!selection) return;
-
-    // Set region (stored in province field for compatibility)
-    formState.setProvince(selection.region);
-    handleFieldBlur('province', selection.region);
-
-    // Set district
-    formState.setDistrict(selection.district);
-    formState.setDistrictId(selection.districtId);
-    handleFieldBlur('district', selection.district);
-
-    // Clear sub-district (Hong Kong doesn't have sub-districts)
-    if (subDistrict) {
-      formState.setSubDistrict('');
-      formState.setSubDistrictId(null);
       handleFieldBlur('subDistrict', '');
-    }
-
-    // Clear postal code (Hong Kong doesn't use postal codes the same way)
-    if (postalCode) {
-      formState.setPostalCode('');
       handleFieldBlur('postalCode', '');
-    }
-  }, [handleFieldBlur, subDistrict, postalCode]);
-
-
-    // Save passport data - filter based on user interaction
-    const allPassportFields = {
-      passportNumber: getCurrentValue('passportNo', passportNo),
-      fullName: [getCurrentValue('surname', surname), getCurrentValue('middleName', middleName), getCurrentValue('givenName', givenName)].filter(Boolean).join(', '),
-      nationality: getCurrentValue('nationality', nationality),
-      dateOfBirth: getCurrentValue('dob', dob),
-      expiryDate: getCurrentValue('expiryDate', expiryDate),
-      gender: getCurrentValue('sex', sex)
-    };
-
-    // Use FieldStateManager to filter only user-modified fields
-    const passportUpdates = FieldStateManager.filterSaveableFields(
-      allPassportFields,
-      interactionState,
-      {
-        preserveExisting: true, // Preserve existing data for backward compatibility
-        alwaysSaveFields: [] // No fields are always saved for passport
-      }
-    );
-
-    if (Object.keys(passportUpdates).length > 0) {
-      try {
-        console.log('Saving passport updates:', passportUpdates);
-        if (existingPassport && existingPassport.id) {
-          console.log('Updating existing passport with ID:', existingPassport.id);
-          const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
-          console.log('Passport data updated successfully');
-
-          // Update passportData state to track the correct passport ID
-          setPassportData(updated);
-          saveResults.passport.success = true;
-        } else {
-          console.log('Creating new passport for userId:', userId);
-          const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
-          console.log('Passport data saved successfully');
-
-          // Update passportData state to track the new passport ID
-          setPassportData(saved);
-          saveResults.passport.success = true;
-        }
-      } catch (passportError) {
-        console.error('Failed to save passport data:', passportError);
-        saveResults.passport.error = passportError;
-        saveErrors.push({ section: 'passport', error: passportError });
-
-        // Don't throw immediately - try to save other sections
-      }
-    } else {
-      saveResults.passport.success = true; // No data to save counts as success
-    }
-
-    // Save personal info data - filter based on user interaction
-    const allPersonalInfoFields = {
-      phoneCode: getCurrentValue('phoneCode', phoneCode),
-      phoneNumber: getCurrentValue('phoneNumber', phoneNumber),
-      email: getCurrentValue('email', email),
-      occupation: getCurrentValue('occupation', occupation),
-      provinceCity: getCurrentValue('cityOfResidence', cityOfResidence),
-      countryRegion: getCurrentValue('residentCountry', residentCountry)
-      // NOTE: gender removed from personalInfo - stored in passport only
-    };
-
-    // Use FieldStateManager to filter only user-modified fields
-    const personalInfoUpdates = FieldStateManager.filterSaveableFields(
-      allPersonalInfoFields,
-      interactionState,
-      {
-        preserveExisting: true, // Preserve existing data for backward compatibility
-        alwaysSaveFields: [] // No fields are always saved for personal info
-      }
-    );
-
-    // Enhanced validation - check if there are user-modified fields to save
-    const hasValidData = Object.keys(personalInfoUpdates).length > 0;
-
-    if (hasValidData) {
-      try {
-        console.log('Saving personal info updates:', personalInfoUpdates);
-        const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-        console.log('✅ Personal info saved successfully');
-
-        // Update personalInfoData state
-        setPersonalInfoData(savedPersonalInfo);
-        saveResults.personalInfo.success = true;
-
-        // Verify the save worked
-        console.log('=== 🔍 SAVE VERIFICATION ===');
-        const verifyData = await UserDataService.getPersonalInfo(userId);
-        console.log('Verification - loaded from database:', verifyData);
-
-        if (verifyData) {
-          console.log('✅ Save verification successful');
-        } else {
-          console.error('❌ Save verification failed - no data returned');
-          // This is a warning, not a failure
-        }
-
-      } catch (saveError) {
-        console.error('❌ Failed to save personal info:', saveError);
-        console.error('Error details:', saveError.message, saveError.stack);
-        saveResults.personalInfo.error = saveError;
-        saveErrors.push({ section: 'personalInfo', error: saveError });
-
-        // Don't throw immediately - try to save other sections
-      }
-    } else {
-      console.log('⚠️ No personal info fields to save - all fields are empty or invalid');
-      saveResults.personalInfo.success = true; // No data to save counts as success
-
-      // Log which fields are empty for debugging
-      console.log('Empty field analysis:');
-      console.log('- phoneCode:', phoneCode, 'Valid:', !!(phoneCode && phoneCode.trim()));
-      console.log('- phoneNumber:', phoneNumber, 'Valid:', !!(phoneNumber && phoneNumber.trim()));
-      console.log('- email:', email, 'Valid:', !!(email && email.trim()));
-      console.log('- occupation:', occupation, 'Valid:', !!(occupation && occupation.trim()));
-      console.log('- cityOfResidence:', cityOfResidence, 'Valid:', !!(cityOfResidence && cityOfResidence.trim()));
-      console.log('- residentCountry:', residentCountry, 'Valid:', !!(residentCountry && residentCountry.trim()));
-      console.log('- sex:', sex, 'Valid:', !!(sex && sex.trim()));
-    }
-
-    // Save travel info data - filter based on user interaction
-    const destinationId = destination?.id || 'hongkong';
-
-    // Get current values with overrides applied for travel info
-    const currentTravelPurpose = getCurrentValue('travelPurpose', travelPurpose);
-    const currentCustomTravelPurpose = getCurrentValue('customTravelPurpose', customTravelPurpose);
-    const currentBoardingCountry = getCurrentValue('boardingCountry', boardingCountry);
-    const currentRecentStayCountry = getCurrentValue('recentStayCountry', recentStayCountry);
-    const currentVisaNumber = getCurrentValue('visaNumber', visaNumber);
-    const currentArrivalFlightNumber = getCurrentValue('arrivalFlightNumber', arrivalFlightNumber);
-    const currentArrivalArrivalDate = getCurrentValue('arrivalArrivalDate', arrivalArrivalDate);
-    const currentDepartureFlightNumber = getCurrentValue('departureFlightNumber', departureFlightNumber);
-    const currentDepartureDepartureDate = getCurrentValue('departureDepartureDate', departureDepartureDate);
-    const currentIsTransitPassenger = getCurrentValue('isTransitPassenger', isTransitPassenger);
-    const currentAccommodationType = getCurrentValue('accommodationType', accommodationType);
-    const currentCustomAccommodationType = getCurrentValue('customAccommodationType', customAccommodationType);
-    const currentProvince = getCurrentValue('province', province);
-    const currentDistrict = getCurrentValue('district', district);
-    const currentSubDistrict = getCurrentValue('subDistrict', subDistrict);
-    const currentPostalCode = getCurrentValue('postalCode', postalCode);
-    const currentHotelAddress = getCurrentValue('hotelAddress', hotelAddress);
-
-    // Build travel purpose (handle custom purpose)
-    const finalTravelPurpose = currentTravelPurpose === 'OTHER' ? currentCustomTravelPurpose : currentTravelPurpose;
-
-    // Build accommodation type (handle custom type)
-    const finalAccommodationType = currentAccommodationType === 'OTHER' ? currentCustomAccommodationType : currentAccommodationType;
-
-    const allTravelInfoFields = {
-      travelPurpose: finalTravelPurpose,
-      boardingCountry: currentBoardingCountry,
-      recentStayCountry: currentRecentStayCountry,
-      visaNumber: currentVisaNumber,
-      arrivalFlightNumber: currentArrivalFlightNumber,
-      arrivalArrivalDate: currentArrivalArrivalDate,
-      departureFlightNumber: currentDepartureFlightNumber,
-      departureDepartureDate: currentDepartureDepartureDate,
-      isTransitPassenger: currentIsTransitPassenger,
-      accommodationType: finalAccommodationType,
-      province: currentProvince,
-      district: currentDistrict,
-      subDistrict: currentSubDistrict,
-      postalCode: currentPostalCode,
-      hotelAddress: currentHotelAddress,
-      flightTicketPhoto: getCurrentValue('flightTicketPhoto', flightTicketPhoto),
-      hotelReservationPhoto: getCurrentValue('hotelReservationPhoto', hotelReservationPhoto)
-    };
-
-    // Use FieldStateManager to filter only user-modified fields
-    const travelInfoUpdates = FieldStateManager.filterSaveableFields(
-      allTravelInfoFields,
-      interactionState,
-      {
-        preserveExisting: true, // Preserve existing data for backward compatibility
-        alwaysSaveFields: [] // No fields are always saved for travel info
-      }
-    );
-
-    // Save travel info if there are fields to update
-    if (Object.keys(travelInfoUpdates).length > 0) {
-      try {
-        console.log('Saving travel info updates:', travelInfoUpdates);
-        // Add destination to the travel data object
-        const travelDataWithDestination = {
-          ...travelInfoUpdates,
-          destination: destinationId
-        };
-
-        const savedTravelInfo = await UserDataService.saveTravelInfo(userId, travelDataWithDestination);
-        console.log('✅ Travel info saved successfully');
-        saveResults.travelInfo.success = true;
-
-        // Verify the save worked
-        console.log('=== 🔍 TRAVEL INFO SAVE VERIFICATION ===');
-        const verifyTravelData = await UserDataService.getTravelInfo(userId, destinationId);
-        console.log('Verification - loaded travel info from database:', verifyTravelData);
-
-        if (verifyTravelData) {
-          console.log('✅ Travel info save verification successful');
-        } else {
-          console.error('❌ Travel info save verification failed - no data returned');
-          // This is a warning, not a failure
-        }
-
-      } catch (travelSaveError) {
-        console.error('❌ Failed to save travel info:', travelSaveError);
-        console.error('Error details:', travelSaveError.message, travelSaveError.stack);
-        saveResults.travelInfo.error = travelSaveError;
-        saveErrors.push({ section: 'travelInfo', error: travelSaveError });
-
-        // Don't throw immediately - continue to error handling
-      }
-    } else {
-      console.log('⚠️ No travel info fields to save - all fields are empty or invalid');
-      saveResults.travelInfo.success = true; // No data to save counts as success
-    }
-
-    // Save entry_info with linked fund items if entry_info is initialized
-    if (entryInfoId) {
-      try {
-        console.log('📦 Updating entry info with fund items...');
-
-        // Get the latest passport and personal info from database
-        // This ensures we have the correct IDs even if they were just created
-        const latestPassport = await UserDataService.getPassport(userId);
-        const latestPersonalInfo = await UserDataService.getPersonalInfo(userId);
-
-        // Get travel_info_id if it was just saved
-        const destinationId = destination?.id || 'hongkong';
-        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-
-        // Allow entry_info update even without passport (passport can be added later)
-        console.log('Passport lookup result:', latestPassport ? `Found passport ${latestPassport.id}` : 'No passport found - proceeding with null passport_id');
-
-        const entryInfoUpdateData = {
-          id: entryInfoId,
-          userId,
-          passportId: latestPassport?.id || null, // Nullable - can be null initially
-          personalInfoId: latestPersonalInfo?.id || null,
-          travelInfoId: travelInfo?.id || null,
-          destinationId,
-          status: 'incomplete', // Will be updated to 'ready' when all fields are complete
-          fundItemIds: formState.funds.map(f => f.id), // Link all current fund items
-          lastUpdatedAt: new Date().toISOString()
-        };
-
-        console.log('Entry info update data:', {
-          entryInfoId,
-          passportId: latestPassport?.id || 'NULL',
-          personalInfoId: latestPersonalInfo?.id || 'NULL',
-          travelInfoId: travelInfo?.id || 'NULL',
-          fundItemCount: formState.funds.length,
-          fundItemIds: formState.funds.map(f => f.id)
-        });
-
-        await UserDataService.saveEntryInfo(entryInfoUpdateData, userId);
-        console.log('✅ Entry info updated successfully with fund items');
-        saveResults.entryInfo = { success: true, error: null };
-      } catch (entryInfoError) {
-        console.error('❌ Failed to save entry info:', entryInfoError);
-        console.error('Error details:', entryInfoError.message, entryInfoError.stack);
-        saveResults.entryInfo = { success: false, error: entryInfoError };
-        saveErrors.push({ section: 'entryInfo', error: entryInfoError });
-        // Don't fail the entire save operation if entry_info update fails
-      }
-    } else {
-      console.log('⚠️ Skipping entry info save - entry info not initialized');
-      console.log('  - entryInfoId:', entryInfoId);
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Save operation failed:', error);
-    return { success: false, error };
-  }
-};
-
-
-  try {
-    const userId = passport?.id || 'user_001';
-    console.log('=== 🔍 PERSONAL INFO SAVE DEBUG WITH INTERACTION FILTERING ===');
-    console.log('userId:', userId);
-    console.log('fieldOverrides:', fieldOverrides);
-
-    // Get current interaction state
-    const interactionState = {};
-    const allFieldNames = [
-      'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
-      'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
-      'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
-      'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
-      'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
-      'subDistrict', 'postalCode', 'hotelAddress'
-    ];
-
-    // Build interaction state for FieldStateManager
-    allFieldNames.forEach(fieldName => {
-      interactionState[fieldName] = {
-        isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
-      };
-    });
-
-    console.log('User interaction state:', interactionState);
-    console.log('Modified fields:', userInteractionTracker.getModifiedFields());
-
-    // Log current UI state values
-    console.log('Current UI state:');
-    console.log('- phoneCode:', phoneCode);
-    console.log('- phoneNumber:', phoneNumber);
-    console.log('- email:', email);
-    console.log('- occupation:', occupation);
-    console.log('- cityOfResidence:', cityOfResidence);
-    console.log('- residentCountry:', residentCountry);
-    console.log('- sex:', sex);
-
-    // Get existing passport first to ensure we're updating the right one
-    const existingPassport = await UserDataService.getPassport(userId);
-    console.log('Existing passport:', existingPassport);
-
-    // Prepare current state for the save operation
-    // For occupation, use custom value if "OTHER" is selected
-    const finalOccupation = formState.occupation === 'OTHER' ? formState.customOccupation : formState.occupation;
-
-    const currentState = {
-      passportNo: formState.passportNo, surname: formState.surname, middleName: formState.middleName,
-      givenName: formState.givenName, nationality: formState.nationality, dob: formState.dob,
-      expiryDate: formState.expiryDate, sex: formState.sex,
-      phoneCode: formState.phoneCode, phoneNumber: formState.phoneNumber, email: formState.email,
-      occupation: finalOccupation, cityOfResidence: formState.cityOfResidence, residentCountry: formState.residentCountry,
-      travelPurpose: formState.travelPurpose, customTravelPurpose: formState.customTravelPurpose,
-      boardingCountry: formState.boardingCountry, recentStayCountry: formState.recentStayCountry,
-      visaNumber: formState.visaNumber,
-      arrivalFlightNumber: formState.arrivalFlightNumber, arrivalArrivalDate: formState.arrivalArrivalDate,
-      departureFlightNumber: formState.departureFlightNumber, departureDepartureDate: formState.departureDepartureDate,
-      isTransitPassenger: formState.isTransitPassenger, accommodationType: formState.accommodationType,
-      customAccommodationType: formState.customAccommodationType, province: formState.province,
-      district: formState.district, subDistrict: formState.subDistrict, postalCode: formState.postalCode,
-      hotelAddress: formState.hotelAddress,
-      existingPassport, interactionState, destination,
-      flightTicketPhoto: formState.flightTicketPhoto, hotelReservationPhoto: formState.hotelReservationPhoto,
-      // Entry info tracking
-      entryInfoId: formState.entryInfoId, funds: formState.funds
-    };
-
-    // Perform the save operation using the helper method
-    await performSaveOperation(userId, fieldOverrides, saveResults, saveErrors, currentState);
-
-    // Handle partial save failures
-    if (saveErrors.length > 0) {
-       console.error('=== SAVE OPERATION COMPLETED WITH ERRORS ===');
-       console.error('Save results:', saveResults);
-       console.error('Errors encountered:', saveErrors);
-
-       // Determine if this is a complete failure or partial success
-       const successfulSaves = Object.values(saveResults).filter(result => result.success).length;
-       const totalSaves = Object.keys(saveResults).length;
-
-       if (successfulSaves === 0) {
-         // Complete failure - check for SQLite errors and provide recovery
-         const firstError = saveErrors[0];
-         const isSQLiteError = firstError.error.code === 'ERR_INTERNAL_SQLITE_ERROR' ||
-                              firstError.error.message.includes('SQLite') ||
-                              firstError.error.message.includes('database');
-
-         if (isSQLiteError) {
-           console.error('SQLite error detected. Attempting recovery...');
-
-           // For SQLite errors, try to recover by clearing problematic data
-             if (firstError.section === 'travelInfo') {
-               console.log('Attempting to clear travel info and retry...');
-               try {
-                 // Clear travel info for this user and destination
-                 await UserDataService.clearTravelInfo(userId, destination?.id || 'hongkong');
-                 console.log('Cleared travel info. Retrying save...');
-  
-                 // Prepare current state for retry
-                 // For occupation, use custom value if "OTHER" is selected
-                 const finalOccupation = formState.occupation === 'OTHER' ? formState.customOccupation : formState.occupation;
-
-                 const currentState = {
-                   passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-                   phoneCode, phoneNumber, email, occupation: finalOccupation, cityOfResidence, residentCountry,
-                   travelPurpose, customTravelPurpose, boardingCountry, recentStayCountry, visaNumber,
-                   arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
-                   isTransitPassenger, accommodationType, customAccommodationType, province, district,
-                   subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
-                   flightTicketPhoto, hotelReservationPhoto,
-                   // Entry info tracking
-                   entryInfoId, passportData, personalInfoData, funds
-                 };
-  
-                 // Retry the save operation once
-                 const retryResult = await performSaveOperation(userId, fieldOverrides, saveResults, saveErrors, currentState);
-                 if (retryResult.success) {
-                   console.log('✅ Recovery successful: Save completed after clearing data');
-                   return;
-                 }
-               } catch (recoveryError) {
-                 console.error('❌ Recovery failed:', recoveryError);
-               }
-             }
-
-           // If recovery failed or not applicable, throw with helpful message
-           throw new Error(`Database error: ${firstError.error.message}. Please try restarting the app or clearing data.`);
-         } else {
-           throw new Error(`Complete save failure: ${firstError.error.message}`);
-         }
-       } else {
-         // Partial success - log warning but don't throw
-         console.warn(`Partial save success: ${successfulSaves}/${totalSaves} sections saved successfully`);
-
-         // Preserve interaction state for failed sections to prevent data loss
-         saveErrors.forEach(({ section, error }) => {
-           console.warn(`Failed to save ${section}, interaction state preserved:`, error.message);
-         });
-       }
-     } else {
-       console.log('✅ All save operations completed successfully');
-     }
-
-  } catch (error) {
-    console.error('Failed to save data to secure storage:', error);
-    
-    // Preserve interaction state on complete failure
-    console.warn('Preserving interaction state due to save failure');
-    
-    throw error; // Re-throw to allow caller to handle
-  }
-};
-
-
-
-const normalizeFundItem = useCallback((item) => ({
-    id: item.id,
-    type: item.type || item.itemType || 'cash',
-    amount: item.amount,
-    currency: item.currency,
-    details: item.details || item.description || '',
-    photoUri: item.photoUri || item.photo || null,
-    userId: item.userId || userId,
-  }), [userId]);
-
-  const refreshFundItems = useCallback(async (options = {}) => {
-    try {
-      const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = fundItems.map(normalizeFundItem);
-      formState.setFunds(normalized);
-    } catch (error) {
-      console.error('Failed to refresh fund items:', error);
-    }
-  }, [userId, normalizeFundItem]);
-
-  /**
-    * Initialize or load entry_info for this user and destination
-    * Creates entry_info on first visit to ensure data is properly tracked
-    * Now allows creation without passport (passport can be added later)
-    */
-   const initializeEntryInfo = useCallback(async () => {
-     try {
-       if (entryInfoInitialized) {
-         console.log('Entry info already initialized');
-         return;
-       }
-
-       const destinationId = destination?.id || 'hongkong';
-       console.log('🔍 Initializing entry info for destination:', destinationId);
-
-       // Try to find existing entry_info for this user and destination
-       const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
-       const existingEntryInfo = existingEntryInfos?.find(
-         entry => entry.destinationId === destinationId
-       );
-
-       if (existingEntryInfo) {
-         console.log('✅ Found existing entry info:', existingEntryInfo.id);
-         formState.setEntryInfoId(existingEntryInfo.id);
-         formState.setEntryInfoInitialized(true);
-         return existingEntryInfo.id;
-       }
-
-       // Try to get passport, but don't require it for entry_info creation
-       const passport = await UserDataService.getPassport(userId);
-       console.log('Passport lookup result:', passport ? `Found passport ${passport.id}` : 'No passport found');
-
-       // Create new entry_info even without passport (passport can be added later)
-       console.log('📝 Creating new entry info for user:', userId, '(passport optional)');
-       const entryInfoData = {
-         userId,
-         passportId: passport?.id || null, // Nullable - can be null initially
-         destinationId,
-         status: 'incomplete',
-         completionMetrics: {
-           passport: { complete: 0, total: 5, state: 'missing' },
-           personalInfo: { complete: 0, total: 6, state: 'missing' },
-           funds: { complete: 0, total: 1, state: 'missing' },
-           travel: { complete: 0, total: 6, state: 'missing' }
-         },
-         fundItemIds: [], // Will be updated when saving
-         lastUpdatedAt: new Date().toISOString()
-       };
-
-       const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
-       console.log('✅ Created new entry info:', savedEntryInfo.id, '(passport_id:', savedEntryInfo.passportId || 'NULL', ')');
-
-       formState.setEntryInfoId(savedEntryInfo.id);
-       formState.setEntryInfoInitialized(true);
-       return savedEntryInfo.id;
-     } catch (error) {
-       console.error('❌ Failed to initialize entry info:', error);
-       console.error('Error details:', error.message, error.stack);
-       // Don't throw - allow the app to continue even if entry_info creation fails
-       return null;
-     }
-   }, [userId, destination, entryInfoInitialized]);
-
-  // Handle flight ticket photo upload - delegates to persistence hook
-  const handleFlightTicketPhotoUpload = async () => {
+    },
+    [formState, handleFieldBlur]
+  );
+
+  const handleSubDistrictSelect = useCallback(
+    (selection) => {
+      if (!selection) return;
+      formState.setSubDistrict(selection.nameEn);
+      formState.setSubDistrictId(selection.id);
+      handleFieldBlur('subDistrict', selection.nameEn);
+
+      const postal = selection.postalCode ? String(selection.postalCode) : '';
+      formState.setPostalCode(postal);
+      handleFieldBlur('postalCode', postal);
+    },
+    [formState, handleFieldBlur]
+  );
+
+  // Photo handlers
+  const handleFlightTicketPhotoUpload = useCallback(async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -881,35 +257,28 @@ const normalizeFundItem = useCallback((item) => ({
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
-
-        // Use persistence hook's savePhoto function
-        const saveResult = await savePhoto('flightTicket', photoUri);
-
+      if (!result.canceled && result.assets?.length) {
+        const uri = result.assets[0].uri;
+        const saveResult = await savePhoto('flightTicket', uri);
         if (saveResult.success) {
           Alert.alert(
             t('hongkong.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('hongkong.travelInfo.flightTicketUploaded', { defaultValue: '机票照片已上传' })
           );
         } else {
-          Alert.alert(
-            t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
-            t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
-          );
+          throw new Error('save_failed');
         }
       }
     } catch (error) {
-      console.error('Error picking flight ticket photo:', error);
+      console.error('Flight ticket photo upload failed:', error);
       Alert.alert(
         t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
-        t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+        t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
       );
     }
-  };
+  }, [savePhoto, t]);
 
-  // Handle hotel reservation photo upload - delegates to persistence hook
-  const handleHotelReservationPhotoUpload = async () => {
+  const handleHotelReservationPhotoUpload = useCallback(async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -918,470 +287,366 @@ const normalizeFundItem = useCallback((item) => ({
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
-
-        // Use persistence hook's savePhoto function
-        const saveResult = await savePhoto('hotelReservation', photoUri);
-
+      if (!result.canceled && result.assets?.length) {
+        const uri = result.assets[0].uri;
+        const saveResult = await savePhoto('hotelReservation', uri);
         if (saveResult.success) {
           Alert.alert(
             t('hongkong.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
             t('hongkong.travelInfo.hotelReservationUploaded', { defaultValue: '酒店预订照片已上传' })
           );
         } else {
-          Alert.alert(
-            t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
-            t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
-          );
+          throw new Error('save_failed');
         }
       }
     } catch (error) {
-      console.error('Error picking hotel reservation photo:', error);
+      console.error('Hotel reservation photo upload failed:', error);
       Alert.alert(
         t('hongkong.travelInfo.uploadError', { defaultValue: '上传失败' }),
-        t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+        t('hongkong.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
       );
     }
-  };
+  }, [savePhoto, t]);
 
-  const addFund = (type) => {
-    formState.setCurrentFundItem(null);
-    formState.setNewFundItemType(type);
-    formState.setFundItemModalVisible(true);
-  };
-
-  const handleFundItemPress = (fund) => {
-    formState.setCurrentFundItem(fund);
-    formState.setFundItemModalVisible(true);
-  };
-
-  const handleFundItemModalClose = () => {
+  // Fund helpers
+  const closeFundModal = useCallback(() => {
     formState.setFundItemModalVisible(false);
     formState.setCurrentFundItem(null);
-  };
+    formState.setNewFundItemType(null);
+  }, [formState]);
 
-  const handleFundItemUpdate = async (updatedItem) => {
-    try {
-      if (updatedItem) {
-        formState.setSelectedFundItem(normalizeFundItem(updatedItem));
+  const addFund = useCallback(
+    (type) => {
+      formState.setCurrentFundItem(null);
+      formState.setNewFundItemType(type);
+      formState.setFundItemModalVisible(true);
+    },
+    [formState]
+  );
+
+  const editFund = useCallback(
+    (fund) => {
+      formState.setCurrentFundItem(fund);
+      formState.setFundItemModalVisible(true);
+    },
+    [formState]
+  );
+
+  const handleFundItemUpdate = useCallback(
+    async (updatedItem) => {
+      try {
+        if (updatedItem) {
+          const normalized = normalizeFundItem(updatedItem);
+          formState.setFunds((prev) => {
+            const exists = prev.some((item) => item.id === normalized.id);
+            if (exists) {
+              return prev.map((item) => (item.id === normalized.id ? normalized : item));
+            }
+            return [...prev, normalized];
+          });
+        }
+        await refreshFundItems({ forceRefresh: true });
+        closeFundModal();
+      } catch (error) {
+        console.error('Failed to update fund item:', error);
       }
-      await refreshFundItems({ forceRefresh: true });
+    },
+    [normalizeFundItem, formState, refreshFundItems, closeFundModal]
+  );
 
-      // Trigger save to update entry_info with new fund item associations
-      console.log('💾 Triggering save after fund item update...');
-      await DebouncedSave.flushPendingSave('hongkong_travel_info');
-      debouncedSaveData();
-    } catch (error) {
-      console.error('Failed to update fund item state:', error);
-    }
-  };
+  const handleFundItemCreate = useCallback(
+    async (createdItem) => {
+      try {
+        if (createdItem) {
+          const normalized = normalizeFundItem(createdItem);
+          formState.setFunds((prev) => [...prev, normalized]);
+        }
+        await refreshFundItems({ forceRefresh: true });
+      } catch (error) {
+        console.error('Failed to refresh fund items after creation:', error);
+      } finally {
+        closeFundModal();
+      }
+    },
+    [normalizeFundItem, formState, refreshFundItems, closeFundModal]
+  );
 
-  const handleFundItemCreate = async () => {
-    try {
-      await refreshFundItems({ forceRefresh: true });
+  const handleFundItemDelete = useCallback(
+    async (id) => {
+      try {
+        formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
+        await refreshFundItems({ forceRefresh: true });
+      } catch (error) {
+        console.error('Failed to refresh fund items after deletion:', error);
+      } finally {
+        closeFundModal();
+      }
+    },
+    [formState, refreshFundItems, closeFundModal]
+  );
 
-      // Trigger save to update entry_info with new fund item
-      console.log('💾 Triggering save after fund item creation...');
-      await DebouncedSave.flushPendingSave('hongkong_travel_info');
-      debouncedSaveData();
-    } catch (error) {
-      console.error('Failed to refresh fund items after creation:', error);
-    } finally {
-      handleFundItemModalClose();
-    }
-  };
+  // Navigation helpers
+  const handleNavigationWithSave = useCallback(
+    async (navigationAction, actionName = 'navigate') => {
+      try {
+        formState.setSaveStatus('saving');
+        await DebouncedSave.flushPendingSave('hongkong_travel_info');
+        navigationAction();
+      } catch (error) {
+        console.error(`Failed to save data before ${actionName}:`, error);
+        formState.setSaveStatus('error');
 
-  const handleFundItemDelete = async (id) => {
-    try {
-      formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
-      await refreshFundItems({ forceRefresh: true });
+        Alert.alert(
+          t('hongkong.travelInfo.saveError.title', { defaultValue: '保存失败' }),
+          t('hongkong.travelInfo.saveError.message', { defaultValue: '数据保存遇到问题，是否继续？' }),
+          [
+            {
+              text: t('hongkong.travelInfo.saveError.retry', { defaultValue: '重试' }),
+              onPress: () => handleNavigationWithSave(navigationAction, actionName),
+            },
+            {
+              text: t('hongkong.travelInfo.saveError.continue', { defaultValue: '继续' }),
+              onPress: navigationAction,
+            },
+            {
+              text: t('common.cancel', { defaultValue: '取消' }),
+              style: 'cancel',
+            },
+          ]
+        );
+      }
+    },
+    [formState, t]
+  );
 
-      // Trigger save to update entry_info after fund item deletion
-      console.log('💾 Triggering save after fund item deletion...');
-      await DebouncedSave.flushPendingSave('hongkong_travel_info');
-      debouncedSaveData();
-    } catch (error) {
-      console.error('Failed to refresh fund items after deletion:', error);
-    } finally {
-      handleFundItemModalClose();
-    }
-  };
-
-
-  const handleContinue = async () => {
-    await handleNavigationWithSave(
-      () => navigation.navigate('HongKongEntryFlow', {
-        passport,
-        destination,
-        entryInfoId: entryInfoId // Pass entryInfoId for viewing entry pack details
-      }),
+  const handleContinue = useCallback(() => {
+    handleNavigationWithSave(
+      () =>
+        navigation.navigate('HongKongEntryFlow', {
+          passport,
+          destination,
+          entryInfoId: formState.entryInfoId,
+        }),
       'continue'
     );
-  };
+  }, [handleNavigationWithSave, navigation, passport, destination, formState.entryInfoId]);
 
-  const handleGoBack = async () => {
-    await handleNavigationWithSave(
-      () => navigation.goBack(),
-      'go back'
-    );
-  };
+  const handleGoBack = useCallback(() => {
+    handleNavigationWithSave(() => navigation.goBack(), 'go back');
+  }, [handleNavigationWithSave, navigation]);
 
-  
-
+  // Derived UI helpers
+  const progressText = getProgressText();
+  const progressColor = getProgressColor();
+  const smartButtonConfig =
+    getSmartButtonConfig() || {
+      label: t('hongkong.travelInfo.actions.continue', { defaultValue: '继续前往下一步' }),
+      variant: 'primary',
+    };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <BackButton
           onPress={handleGoBack}
-          label={t('common.back')}
+          label={t('common.back', { defaultValue: '返回' })}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('hongkong.travelInfo.headerTitle', { defaultValue: '香港入境信息' })}</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>
+          {t('hongkong.travelInfo.headerTitle', { defaultValue: '香港入境信息' })}
+        </Text>
+        <View style={styles.headerRight}>
+          {formState.saveStatus && (
+            <View
+              style={[
+                styles.saveStatus,
+                formState.saveStatus === 'saved' && styles.saveStatusSuccess,
+                formState.saveStatus === 'error' && styles.saveStatusError,
+              ]}
+            >
+              {formState.saveStatus === 'saving' && '💾'}
+              {formState.saveStatus === 'saved' && '✅'}
+              {formState.saveStatus === 'error' && '❌'}
+            </View>
+          )}
+        </View>
       </View>
 
-      {isLoading && (
+      {formState.isLoading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('hongkong.travelInfo.loading', { defaultValue: '正在加载数据...' })}</Text>
-        </View>
-      )}
-
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-        onScroll={(event) => {
-          const currentScrollPosition = event.nativeEvent.contentOffset.y;
-          formState.setScrollPosition(currentScrollPosition);
-        }}
-        scrollEventThrottle={100}
-      >
-        {/* Hero Section */}
-        <HeroSection t={t} styles={styles} />
-
-        {/* Progress Overview Card */}
-        <View style={styles.progressOverviewCard}>
-          <Text style={styles.progressTitle}>准备进度</Text>
-          <View style={styles.progressSteps}>
-            <View style={[styles.progressStep, formState.totalCompletionPercent >= 25 && styles.progressStepActive]}>
-              <Text style={styles.stepIcon}>👤</Text>
-              <Text style={[styles.stepText, formState.totalCompletionPercent >= 25 && styles.stepTextActive]}>
-                护照信息 {formState.totalCompletionPercent >= 25 ? '✓' : ''}
-              </Text>
-            </View>
-            <View style={[styles.progressStep, formState.totalCompletionPercent >= 50 && styles.progressStepActive]}>
-              <Text style={styles.stepIcon}>✈️</Text>
-              <Text style={[styles.stepText, formState.totalCompletionPercent >= 50 && styles.stepTextActive]}>
-                旅行信息 {formState.totalCompletionPercent >= 50 ? '✓' : ''}
-              </Text>
-            </View>
-            <View style={[styles.progressStep, formState.totalCompletionPercent >= 75 && styles.progressStepActive]}>
-              <Text style={styles.stepIcon}>🏨</Text>
-              <Text style={[styles.stepText, formState.totalCompletionPercent >= 75 && styles.stepTextActive]}>
-                住宿信息 {formState.totalCompletionPercent >= 75 ? '✓' : ''}
-              </Text>
-            </View>
-            <View style={[styles.progressStep, formState.totalCompletionPercent >= 100 && styles.progressStepActive]}>
-              <Text style={styles.stepIcon}>💰</Text>
-              <Text style={[styles.stepText, formState.totalCompletionPercent >= 100 && styles.stepTextActive]}>
-                资金证明 {formState.totalCompletionPercent >= 100 ? '✓' : ''}
-              </Text>
-            </View>
-          </View>
-        </View>
-          
-          {/* Enhanced Save Status Indicator */}
-          {formState.saveStatus && (
-            <View style={[styles.saveStatusBar, styles[`saveStatus${formState.saveStatus.charAt(0).toUpperCase() + formState.saveStatus.slice(1)}`]]}>
-              <Text style={styles.saveStatusIcon}>
-                {formState.saveStatus === 'pending' && '⏳'}
-                {formState.saveStatus === 'saving' && '💾'}
-                {formState.saveStatus === 'saved' && '✅'}
-                {formState.saveStatus === 'error' && '❌'}
-              </Text>
-              <Text style={styles.saveStatusText}>
-                {formState.saveStatus === 'pending' && t('hongkong.travelInfo.saveStatus.pending', { defaultValue: '等待保存...' })}
-                {formState.saveStatus === 'saving' && t('hongkong.travelInfo.saveStatus.saving', { defaultValue: '正在保存...' })}
-                {formState.saveStatus === 'saved' && t('hongkong.travelInfo.saveStatus.saved', { defaultValue: '已保存' })}
-                {formState.saveStatus === 'error' && t('hongkong.travelInfo.saveStatus.error', { defaultValue: '保存失败' })}
-              </Text>
-              {formState.saveStatus === 'error' && (
-                <TouchableOpacity 
-                  style={styles.retryButton}
-                  onPress={() => {
-                    formState.setSaveStatus('saving');
-                    debouncedSaveData();
-                  }}
-                >
-                  <Text style={styles.retryButtonText}>
-                    {t('hongkong.travelInfo.formState.saveStatus.retry', { defaultValue: '重试' })}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          {/* Last Edited Timestamp */}
-          {formState.lastEditedAt && (
-            <Text style={styles.lastEditedText}>
-              {t('hongkong.travelInfo.lastEdited', { 
-                defaultValue: 'Last edited: {{time}}',
-                time: formState.lastEditedAt.toLocaleTimeString()
-              })}
-            </Text>
-          )}
-
-        {/* Privacy Notice */}
-        <View style={styles.privacyBox}>
-          <Text style={styles.privacyIcon}>💾</Text>
-          <Text style={styles.privacyText}>
-            {t('hongkong.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
+          <Text style={styles.loadingText}>
+            {t('hongkong.travelInfo.loading', { defaultValue: '正在加载数据…' })}
           </Text>
         </View>
+      ) : (
+        <ScrollView
+          ref={scrollViewRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+          onScroll={(event) => formState.setScrollPosition(event.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
+        >
+          <HeroSection t={t} />
 
-        {/* Passport Information Section */}
-        <PassportSection
-          t={t}
-          isExpanded={formState.expandedSection === 'passport'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'passport' ? null : 'passport')}
-          fieldCount={getFieldCount('passport')}
-          // Form state
-          surname={formState.surname}
-          middleName={formState.middleName}
-          givenName={formState.givenName}
-          nationality={formState.nationality}
-          passportNo={formState.passportNo}
-          visaNumber={formState.visaNumber}
-          dob={formState.dob}
-          expiryDate={formState.expiryDate}
-          sex={formState.sex}
-          // Setters
-          setSurname={formState.setSurname}
-          setMiddleName={formState.setMiddleName}
-          setGivenName={formState.setGivenName}
-          setNationality={formState.setNationality}
-          setPassportNo={formState.setPassportNo}
-          setVisaNumber={formState.setVisaNumber}
-          setDob={formState.setDob}
-          setExpiryDate={formState.setExpiryDate}
-          setSex={formState.setSex}
-          // Validation
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldBlur={handleFieldBlur}
-          lastEditedField={formState.lastEditedField}
-          // Actions
-          debouncedSaveData={debouncedSaveData}
-          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
-          setLastEditedAt={formState.setLastEditedAt}
-          // Styles
-          styles={styles}
-        />
+          <PassportSection
+            t={t}
+            isExpanded={formState.expandedSection === 'passport'}
+            onToggle={() =>
+              formState.setExpandedSection(
+                formState.expandedSection === 'passport' ? null : 'passport'
+              )
+            }
+            fieldCount={getFieldCount('passport')}
+            surname={formState.surname}
+            middleName={formState.middleName}
+            givenName={formState.givenName}
+            nationality={formState.nationality}
+            passportNo={formState.passportNo}
+            visaNumber={formState.visaNumber}
+            dob={formState.dob}
+            expiryDate={formState.expiryDate}
+            sex={formState.sex}
+            setSurname={formState.setSurname}
+            setMiddleName={formState.setMiddleName}
+            setGivenName={formState.setGivenName}
+            setNationality={formState.setNationality}
+            setPassportNo={formState.setPassportNo}
+            setVisaNumber={formState.setVisaNumber}
+            setDob={formState.setDob}
+            setExpiryDate={formState.setExpiryDate}
+            setSex={formState.setSex}
+            errors={formState.errors}
+            warnings={formState.warnings}
+            handleFieldBlur={handleFieldBlur}
+            lastEditedField={formState.lastEditedField}
+            debouncedSaveData={debouncedSaveData}
+            saveDataToSecureStorageWithOverride={saveDataToSecureStorage}
+            setLastEditedAt={formState.setLastEditedAt}
+          />
 
-        {/* Personal Information Section */}
-        <PersonalInfoSection
-          t={t}
-          isExpanded={formState.expandedSection === 'personal'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'personal' ? null : 'personal')}
-          fieldCount={getFieldCount('personal')}
-          // Form state
-          occupation={formState.occupation}
-          customOccupation={formState.customOccupation}
-          cityOfResidence={formState.cityOfResidence}
-          residentCountry={formState.residentCountry}
-          phoneCode={formState.phoneCode}
-          phoneNumber={formState.phoneNumber}
-          email={formState.email}
-          // Computed values
-          cityOfResidenceLabel={cityOfResidenceLabel}
-          cityOfResidenceHelpText={cityOfResidenceHelpText}
-          cityOfResidencePlaceholder={cityOfResidencePlaceholder}
-          // Setters
-          setOccupation={formState.setOccupation}
-          setCustomOccupation={formState.setCustomOccupation}
-          setCityOfResidence={formState.setCityOfResidence}
-          setResidentCountry={formState.setResidentCountry}
-          setPhoneCode={formState.setPhoneCode}
-          setPhoneNumber={formState.setPhoneNumber}
-          setEmail={formState.setEmail}
-          // Validation
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldBlur={handleFieldBlur}
-          lastEditedField={formState.lastEditedField}
-          // Actions
-          debouncedSaveData={debouncedSaveData}
-          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
-          setLastEditedAt={formState.setLastEditedAt}
-          // Styles
-          styles={styles}
-        />
+          <PersonalInfoSection
+            t={t}
+            isExpanded={formState.expandedSection === 'personal'}
+            onToggle={() =>
+              formState.setExpandedSection(
+                formState.expandedSection === 'personal' ? null : 'personal'
+              )
+            }
+            fieldCount={getFieldCount('personal')}
+            occupation={formState.occupation}
+            customOccupation={formState.customOccupation}
+            cityOfResidence={formState.cityOfResidence}
+            residentCountry={formState.residentCountry}
+            phoneCode={formState.phoneCode}
+            phoneNumber={formState.phoneNumber}
+            email={formState.email}
+            cityOfResidenceLabel={cityOfResidenceLabel}
+            cityOfResidenceHelpText={cityOfResidenceHelpText}
+            cityOfResidencePlaceholder={cityOfResidencePlaceholder}
+            setOccupation={formState.setOccupation}
+            setCustomOccupation={formState.setCustomOccupation}
+            setCityOfResidence={formState.setCityOfResidence}
+            setResidentCountry={formState.setResidentCountry}
+            setPhoneCode={formState.setPhoneCode}
+            setPhoneNumber={formState.setPhoneNumber}
+            setEmail={formState.setEmail}
+            errors={formState.errors}
+            warnings={formState.warnings}
+            handleFieldBlur={handleFieldBlur}
+            lastEditedField={formState.lastEditedField}
+            debouncedSaveData={debouncedSaveData}
+          />
 
-        {/* Funds Section */}
-        <FundsSection
-          t={t}
-          isExpanded={formState.expandedSection === 'funds'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'funds' ? null : 'funds')}
-          fieldCount={getFieldCount('funds')}
-          // Form state
-          funds={formState.funds}
-          // Actions
-          addFund={addFund}
-          handleFundItemPress={handleFundItemPress}
-          // Styles
-          styles={styles}
-        />
+          <FundsSection
+            t={t}
+            isExpanded={formState.expandedSection === 'funds'}
+            onToggle={() =>
+              formState.setExpandedSection(formState.expandedSection === 'funds' ? null : 'funds')
+            }
+            fieldCount={getFieldCount('funds')}
+            funds={formState.funds}
+            addFund={addFund}
+            handleFundItemPress={editFund}
+          />
 
-        {/* Travel Details Section */}
-        <TravelDetailsSection
-          t={t}
-          isExpanded={formState.expandedSection === 'travel'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'travel' ? null : 'travel')}
-          fieldCount={getFieldCount('travel')}
-          // Form state
-          travelPurpose={formState.travelPurpose}
-          customTravelPurpose={formState.customTravelPurpose}
-          boardingCountry={formState.boardingCountry}
-          recentStayCountry={formState.recentStayCountry}
-          arrivalFlightNumber={formState.arrivalFlightNumber}
-          arrivalArrivalDate={formState.arrivalArrivalDate}
-          flightTicketPhoto={formState.flightTicketPhoto}
-          departureFlightNumber={formState.departureFlightNumber}
-          departureDepartureDate={formState.departureDepartureDate}
-          isTransitPassenger={formState.isTransitPassenger}
-          accommodationType={formState.accommodationType}
-          customAccommodationType={formState.customAccommodationType}
-          province={formState.province}
-          district={formState.district}
-          hotelAddress={formState.hotelAddress}
-          hotelReservationPhoto={formState.hotelReservationPhoto}
-          // Setters
-          setTravelPurpose={formState.setTravelPurpose}
-          setCustomTravelPurpose={formState.setCustomTravelPurpose}
-          setBoardingCountry={formState.setBoardingCountry}
-          setRecentStayCountry={formState.setRecentStayCountry}
-          setArrivalFlightNumber={formState.setArrivalFlightNumber}
-          setArrivalArrivalDate={formState.setArrivalArrivalDate}
-          setDepartureFlightNumber={formState.setDepartureFlightNumber}
-          setDepartureDepartureDate={formState.setDepartureDepartureDate}
-          setIsTransitPassenger={formState.setIsTransitPassenger}
-          setAccommodationType={formState.setAccommodationType}
-          setCustomAccommodationType={formState.setCustomAccommodationType}
-          setProvince={formState.setProvince}
-          setDistrict={formState.setDistrict}
-          setHotelAddress={formState.setHotelAddress}
-          // Validation
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldBlur={handleFieldBlur}
-          lastEditedField={formState.lastEditedField}
-          // Actions
-          debouncedSaveData={debouncedSaveData}
-          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
-          setLastEditedAt={formState.setLastEditedAt}
-          handleProvinceSelect={handleProvinceSelect}
-          handleDistrictSelect={handleDistrictSelect}
-          handleFlightTicketPhotoUpload={handleFlightTicketPhotoUpload}
-          handleHotelReservationPhotoUpload={handleHotelReservationPhotoUpload}
-          handleUserInteraction={handleUserInteraction}
-          // Styles
-          styles={styles}
-        />
+          <TravelDetailsSection
+            t={t}
+            isExpanded={formState.expandedSection === 'travel'}
+            onToggle={() =>
+              formState.setExpandedSection(
+                formState.expandedSection === 'travel' ? null : 'travel'
+              )
+            }
+            fieldCount={getFieldCount('travel')}
+            travelPurpose={formState.travelPurpose}
+            customTravelPurpose={formState.customTravelPurpose}
+            recentStayCountry={formState.recentStayCountry}
+            boardingCountry={formState.boardingCountry}
+            arrivalFlightNumber={formState.arrivalFlightNumber}
+            arrivalArrivalDate={formState.arrivalArrivalDate}
+            flightTicketPhoto={formState.flightTicketPhoto}
+            departureFlightNumber={formState.departureFlightNumber}
+            departureDepartureDate={formState.departureDepartureDate}
+            isTransitPassenger={formState.isTransitPassenger}
+            accommodationType={formState.accommodationType}
+            customAccommodationType={formState.customAccommodationType}
+            province={formState.province}
+            district={formState.district}
+            districtId={formState.districtId}
+            subDistrict={formState.subDistrict}
+            subDistrictId={formState.subDistrictId}
+            postalCode={formState.postalCode}
+            hotelAddress={formState.hotelAddress}
+            hotelReservationPhoto={formState.hotelReservationPhoto}
+            setTravelPurpose={formState.setTravelPurpose}
+            setCustomTravelPurpose={formState.setCustomTravelPurpose}
+            setRecentStayCountry={formState.setRecentStayCountry}
+            setBoardingCountry={formState.setBoardingCountry}
+            setArrivalFlightNumber={formState.setArrivalFlightNumber}
+            setArrivalArrivalDate={formState.setArrivalArrivalDate}
+            setDepartureFlightNumber={formState.setDepartureFlightNumber}
+            setDepartureDepartureDate={formState.setDepartureDepartureDate}
+            setIsTransitPassenger={formState.setIsTransitPassenger}
+            setAccommodationType={formState.setAccommodationType}
+            setCustomAccommodationType={formState.setCustomAccommodationType}
+            setProvince={formState.setProvince}
+            setDistrict={formState.setDistrict}
+            setDistrictId={formState.setDistrictId}
+            setSubDistrict={formState.setSubDistrict}
+            setSubDistrictId={formState.setSubDistrictId}
+            setPostalCode={formState.setPostalCode}
+            setHotelAddress={formState.setHotelAddress}
+            errors={formState.errors}
+            warnings={formState.warnings}
+            handleFieldBlur={handleFieldBlur}
+            lastEditedField={formState.lastEditedField}
+            debouncedSaveData={debouncedSaveData}
+            saveDataToSecureStorageWithOverride={saveDataToSecureStorage}
+            setLastEditedAt={formState.setLastEditedAt}
+            handleProvinceSelect={handleProvinceSelect}
+            handleDistrictSelect={handleDistrictSelect}
+            handleSubDistrictSelect={handleSubDistrictSelect}
+            handleFlightTicketPhotoUpload={handleFlightTicketPhotoUpload}
+            handleHotelReservationPhotoUpload={handleHotelReservationPhotoUpload}
+            handleUserInteraction={handleUserInteraction}
+          />
 
-        <View style={styles.buttonContainer}>
-          {/* Enhanced Progress Indicator */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBarEnhanced}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${totalCompletionPercent}%`,
-                      backgroundColor: getProgressColor()
-                    }
-                  ]}
-                />
-                {/* Completion Badge */}
-                {formState.totalCompletionPercent >= 100 && (
-                  <View style={styles.completionBadge}>
-                    <Text style={styles.completionBadgeText}>香港准备就绪！🌴</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-            <Text style={[styles.progressText, { color: getProgressColor() }]}>
-              {getProgressText()}
-            </Text>
+          <View style={styles.buttonContainer}>
+            <Button
+              title={smartButtonConfig.label}
+              onPress={handleContinue}
+              variant={smartButtonConfig.variant || 'primary'}
+            />
           </View>
-
-          {/* Smart Button with Dynamic Configuration */}
-          {(() => {
-            const buttonConfig = getSmartButtonConfig();
-            return (
-              <Button
-                title={`${buttonConfig.icon} ${buttonConfig.label}`}
-                onPress={handleContinue}
-                variant={buttonConfig.variant}
-                disabled={false}
-                style={buttonConfig.style}
-              />
-            );
-          })()}
-          
-          {/* Encouraging Progress Messages */}
-          {formState.totalCompletionPercent < 100 && (
-            <Text style={styles.encouragingHint}>
-              {formState.totalCompletionPercent < 20
-                ? '🌟 第一步，从介绍自己开始吧！'
-                : totalCompletionPercent < 40
-                ? '好的开始！香港欢迎你 🌺'
-                : totalCompletionPercent < 60
-                ? '继续我的香港准备之旅 🏖️'
-                : '🚀 快要完成了，你的香港之旅近在咫尺！'
-              }
-            </Text>
-          )}
-
-          {/* Travel-Focused Next Steps */}
-          {formState.totalCompletionPercent < 100 && (
-            <Text style={styles.nextStepHint}>
-              {formState.totalCompletionPercent < 25
-                ? '💡 从护照信息开始，告诉香港你是谁'
-                : totalCompletionPercent < 50
-                ? '👤 填写个人信息，让香港更了解你'
-                : totalCompletionPercent < 75
-                ? '💰 展示你的资金证明，香港想确保你玩得开心'
-                : totalCompletionPercent < 100
-                ? '✈️ 最后一步，分享你的旅行计划吧！'
-                : ''
-              }
-            </Text>
-          )}
-
-          {/* Cultural Tips for Border Crossing Beginners */}
-          {formState.formState.totalCompletionPercent >= 80 && (
-            <View style={styles.culturalTipsCard}>
-              <Text style={styles.culturalTipsTitle}>🧡 通关小贴士</Text>
-              <Text style={styles.culturalTipsText}>
-                • 海关官员可能会问你来香港的目的，保持微笑礼貌回答{'\n'}
-                • 准备好返程机票证明你不会逾期停留{'\n'}
-                • 保持冷静，海关检查是正常程序{'\n'}
-                • 如果听不懂，可以礼貌地说"Can you speak English?"
-              </Text>
-            </View>
-          )}
-
-
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <FundItemDetailModal
         visible={formState.fundItemModalVisible}
         fundItem={formState.currentFundItem}
-        createItemType={newFundItemType}
-        onClose={handleFundItemModalClose}
+        isCreateMode={!formState.currentFundItem && !!formState.newFundItemType}
+        createItemType={formState.newFundItemType}
+        onClose={closeFundModal}
         onUpdate={handleFundItemUpdate}
         onCreate={handleFundItemCreate}
         onDelete={handleFundItemDelete}

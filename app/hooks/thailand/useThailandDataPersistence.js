@@ -6,7 +6,9 @@
  */
 
 import { useEffect, useCallback, useRef } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import DebouncedSave from '../../utils/DebouncedSave';
 import UserDataService from '../../services/data/UserDataService';
 import { parsePassportName } from '../../utils/NameParser';
@@ -14,6 +16,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from '../../screens/thailand/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
+import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 
 /**
  * Custom hook to manage Thailand travel form data persistence
@@ -36,6 +39,49 @@ export const useThailandDataPersistence = ({
 }) => {
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
+  const {
+    setIsLoading,
+    setPassportNo,
+    setSurname,
+    setMiddleName,
+    setGivenName,
+    setNationality,
+    setDob,
+    setExpiryDate,
+    setPassportData,
+    setOccupation,
+    setCustomOccupation,
+    setCityOfResidence,
+    setResidentCountry,
+    setPhoneCode,
+    setPhoneNumber,
+    setEmail,
+    setPersonalInfoData,
+    setSex,
+    setTravelPurpose,
+    setCustomTravelPurpose,
+    setBoardingCountry,
+    setRecentStayCountry,
+    setVisaNumber,
+    setArrivalFlightNumber,
+    setArrivalArrivalDate,
+    setPreviousArrivalDate,
+    setDepartureFlightNumber,
+    setDepartureDepartureDate,
+    setIsTransitPassenger,
+    setAccommodationType,
+    setCustomAccommodationType,
+    setProvince,
+    setDistrict,
+    setDistrictId,
+    setSubDistrict,
+    setSubDistrictId,
+    setPostalCode,
+    setHotelAddress,
+    setFlightTicketPhoto,
+    setHotelReservationPhoto,
+  } = formState;
+  const { initializeWithExistingData } = userInteractionTracker;
 
   // Normalize fund item
   const normalizeFundItem = useCallback((item) => ({
@@ -57,7 +103,7 @@ export const useThailandDataPersistence = ({
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem, formState]);
+  }, [userId, normalizeFundItem, formState.setFunds]);
 
   // Initialize entry_info for this user and destination
   const initializeEntryInfo = useCallback(async () => {
@@ -113,7 +159,7 @@ export const useThailandDataPersistence = ({
       console.error('Failed to initialize entry info:', error);
       throw error;
     }
-  }, [userId, destination, formState]);
+  }, [userId, destination, formState.entryInfoInitialized, formState.setEntryInfoId, formState.setEntryInfoInitialized]);
 
   // Session state management
   const getSessionStateKey = useCallback(() => {
@@ -254,43 +300,154 @@ export const useThailandDataPersistence = ({
     }
   }, [formState, saveDataToSecureStorage]);
 
+  // Handle flight ticket photo upload
+  const handleFlightTicketPhotoUpload = useCallback(async (t) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        const { success } = await savePhoto('flightTicket', photoUri);
+
+        if (success) {
+          Alert.alert(
+            t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
+            t('thailand.travelInfo.flightTicketUploaded', { defaultValue: '机票照片已上传' })
+          );
+        } else {
+          Alert.alert(
+            t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+            t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error picking flight ticket photo:', error);
+      Alert.alert(
+        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+      );
+    }
+  }, [savePhoto]);
+
+  // Handle hotel reservation photo upload
+  const handleHotelReservationPhotoUpload = useCallback(async (t) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        const { success } = await savePhoto('hotelReservation', photoUri);
+
+        if (success) {
+          Alert.alert(
+            t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
+            t('thailand.travelInfo.hotelReservationUploaded', { defaultValue: '酒店预订照片已上传' })
+          );
+        } else {
+          Alert.alert(
+            t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+            t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error picking hotel reservation photo:', error);
+      Alert.alert(
+        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+      );
+    }
+  }, [savePhoto]);
+
+  // Handle navigation with save error handling
+  const handleNavigationWithSave = useCallback(async (navigationAction, actionName = 'navigate') => {
+    try {
+      // Set saving state to show user that save is in progress
+      formState.setSaveStatus('saving');
+
+      // Flush any pending saves before navigation
+      await DebouncedSave.flushPendingSave('thailand_travel_info');
+
+      // Execute the navigation action
+      navigationAction();
+    } catch (error) {
+      console.error(`Failed to save data before ${actionName}:`, error);
+      formState.setSaveStatus('error');
+
+      // Show error alert and ask user if they want to continue without saving
+      Alert.alert(
+        'Save Error',
+        `Failed to save your data. Do you want to ${actionName} without saving?`,
+        [
+          {
+            text: 'Retry Save',
+            onPress: () => handleNavigationWithSave(navigationAction, actionName), // Retry
+          },
+          {
+            text: `${actionName.charAt(0).toUpperCase() + actionName.slice(1)} Anyway`,
+            onPress: () => {
+              // Execute navigation without saving
+              navigationAction();
+            },
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => formState.setSaveStatus(null),
+          },
+        ]
+      );
+    }
+  }, [formState]);
+
   // Load data from database
   const loadData = useCallback(async () => {
     try {
       console.log('=== LOADING DATA FROM DATABASE ===');
-      formState.setIsLoading(true);
+      setIsLoading(true);
 
       // Load passport data
       const passportInfo = await UserDataService.getPassport(userId);
       if (passportInfo) {
         console.log('Passport info loaded:', passportInfo);
-        formState.setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
+        setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
 
         // Parse full name from passportInfo
         if (passportInfo.fullName) {
           const { surname, middleName, givenName } = parsePassportName(passportInfo.fullName);
-          formState.setSurname(surname);
-          formState.setMiddleName(middleName);
-          formState.setGivenName(givenName);
+          setSurname(surname);
+          setMiddleName(middleName);
+          setGivenName(givenName);
         }
 
-        formState.setNationality(passportInfo.nationality || passport?.nationality || '');
-        formState.setDob(passportInfo.dateOfBirth || passport?.dob || '');
-        formState.setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-        formState.setPassportData(passportInfo);
+        setNationality(passportInfo.nationality || passport?.nationality || '');
+        setDob(passportInfo.dateOfBirth || passport?.dob || '');
+        setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
+        setPassportData(passportInfo);
       } else {
         // Fallback to route params
-        formState.setPassportNo(passport?.passportNo || '');
+        setPassportNo(passport?.passportNo || '');
         const nameToParse = passport?.nameEn || passport?.name || '';
         if (nameToParse) {
           const { surname, middleName, givenName } = parsePassportName(nameToParse);
-          formState.setSurname(surname);
-          formState.setMiddleName(middleName);
-          formState.setGivenName(givenName);
+          setSurname(surname);
+          setMiddleName(middleName);
+          setGivenName(givenName);
         }
-        formState.setNationality(passport?.nationality || '');
-        formState.setDob(passport?.dob || '');
-        formState.setExpiryDate(passport?.expiry || '');
+        setNationality(passport?.nationality || '');
+        setDob(passport?.dob || '');
+        setExpiryDate(passport?.expiry || '');
       }
 
       // Load personal info
@@ -302,26 +459,26 @@ export const useThailandDataPersistence = ({
         const savedOccupation = personalInfo.occupation || '';
         const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
         if (isPredefined) {
-          formState.setOccupation(savedOccupation);
-          formState.setCustomOccupation('');
+          setOccupation(savedOccupation);
+          setCustomOccupation('');
         } else if (savedOccupation) {
-          formState.setOccupation('OTHER');
-          formState.setCustomOccupation(savedOccupation);
+          setOccupation('OTHER');
+          setCustomOccupation(savedOccupation);
         }
 
-        formState.setCityOfResidence(personalInfo.provinceCity || '');
-        formState.setResidentCountry(personalInfo.countryRegion || '');
-        formState.setPhoneNumber(personalInfo.phoneNumber || '');
-        formState.setEmail(personalInfo.email || '');
-        formState.setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-        formState.setPersonalInfoData(personalInfo);
+        setCityOfResidence(personalInfo.provinceCity || '');
+        setResidentCountry(personalInfo.countryRegion || '');
+        setPhoneNumber(personalInfo.phoneNumber || '');
+        setEmail(personalInfo.email || '');
+        setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
+        setPersonalInfoData(personalInfo);
       } else {
-        formState.setPhoneCode(getPhoneCode(passport?.nationality || ''));
+        setPhoneCode(getPhoneCode(passport?.nationality || ''));
       }
 
       // Load gender from passport
       const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || 'Male';
-      formState.setSex(loadedSex);
+      setSex(loadedSex);
 
       // Load fund items
       await refreshFundItems();
@@ -345,52 +502,52 @@ export const useThailandDataPersistence = ({
           // Handle travel purpose
           const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
           if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
-            formState.setTravelPurpose(loadedPurpose);
-            formState.setCustomTravelPurpose('');
+            setTravelPurpose(loadedPurpose);
+            setCustomTravelPurpose('');
           } else {
-            formState.setTravelPurpose('OTHER');
-            formState.setCustomTravelPurpose(loadedPurpose);
+            setTravelPurpose('OTHER');
+            setCustomTravelPurpose(loadedPurpose);
           }
 
-          formState.setBoardingCountry(travelInfo.boardingCountry || '');
-          formState.setRecentStayCountry(travelInfo.recentStayCountry || '');
-          formState.setVisaNumber(travelInfo.visaNumber || '');
-          formState.setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-          formState.setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-          formState.setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
-          formState.setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-          formState.setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-          formState.setIsTransitPassenger(travelInfo.isTransitPassenger || false);
+          setBoardingCountry(travelInfo.boardingCountry || '');
+          setRecentStayCountry(travelInfo.recentStayCountry || '');
+          setVisaNumber(travelInfo.visaNumber || '');
+          setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+          setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
+          setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
+          setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+          setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+          setIsTransitPassenger(travelInfo.isTransitPassenger || false);
 
           // Handle accommodation type
           const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
           if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
-            formState.setAccommodationType(loadedAccommodationType);
-            formState.setCustomAccommodationType('');
+            setAccommodationType(loadedAccommodationType);
+            setCustomAccommodationType('');
           } else {
-            formState.setAccommodationType('OTHER');
-            formState.setCustomAccommodationType(loadedAccommodationType);
+            setAccommodationType('OTHER');
+            setCustomAccommodationType(loadedAccommodationType);
           }
 
-          formState.setProvince(travelInfo.province || '');
-          formState.setDistrict(travelInfo.district || '');
+          setProvince(travelInfo.province || '');
+          setDistrict(travelInfo.district || '');
           const matchedDistrict = findDistrictOption(travelInfo.province || '', travelInfo.district || '');
-          formState.setDistrictId(matchedDistrict?.id || null);
-          formState.setSubDistrict(travelInfo.subDistrict || '');
+          setDistrictId(matchedDistrict?.id || null);
+          setSubDistrict(travelInfo.subDistrict || '');
           const matchedSubDistrict = findSubDistrictOption(
             matchedDistrict?.id || travelInfo.districtId || null,
             travelInfo.subDistrict || ''
           );
-          formState.setSubDistrictId(matchedSubDistrict?.id || null);
-          formState.setPostalCode(travelInfo.postalCode || '');
-          formState.setHotelAddress(travelInfo.hotelAddress || '');
+          setSubDistrictId(matchedSubDistrict?.id || null);
+          setPostalCode(travelInfo.postalCode || '');
+          setHotelAddress(travelInfo.hotelAddress || '');
 
           // Load document photos
-          formState.setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
-          formState.setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
+          setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
+          setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
 
           // Initialize user interaction tracker
-          userInteractionTracker.initializeWithExistingData({
+          initializeWithExistingData({
             travelPurpose: travelInfo.travelPurpose,
             boardingCountry: travelInfo.boardingCountry,
             accommodationType: travelInfo.accommodationType,
@@ -417,23 +574,23 @@ export const useThailandDataPersistence = ({
     } catch (error) {
       console.error('Failed to load data:', error);
       // Fallback to route params on error
-      formState.setPassportNo(passport?.passportNo || '');
+      setPassportNo(passport?.passportNo || '');
       const nameToParse = passport?.nameEn || passport?.name || '';
       if (nameToParse) {
         const { surname, middleName, givenName } = parsePassportName(nameToParse);
-        formState.setSurname(surname);
-        formState.setMiddleName(middleName);
-        formState.setGivenName(givenName);
+        setSurname(surname);
+        setMiddleName(middleName);
+        setGivenName(givenName);
       }
-      formState.setNationality(passport?.nationality || '');
-      formState.setDob(passport?.dob || '');
-      formState.setExpiryDate(passport?.expiry || '');
-      formState.setSex(passport?.sex || 'Male');
-      formState.setPhoneCode(getPhoneCode(passport?.nationality || ''));
+      setNationality(passport?.nationality || '');
+      setDob(passport?.dob || '');
+      setExpiryDate(passport?.expiry || '');
+      setSex(passport?.sex || 'Male');
+      setPhoneCode(getPhoneCode(passport?.nationality || ''));
     } finally {
-      formState.setIsLoading(false);
+      setIsLoading(false);
     }
-  }, [userId, passport, destination, formState, userInteractionTracker, refreshFundItems]);
+  }, [userId, passport, destination, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setHotelReservationPhoto]);
 
   // Helper function to perform the actual save operation
   const performSaveOperation = useCallback(async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
@@ -695,7 +852,7 @@ export const useThailandDataPersistence = ({
 
   // Debounced save function
   const debouncedSaveData = useCallback(() => {
-    DebouncedSave.saveWithDebounce(
+    DebouncedSave.debouncedSave(
       'thailand_travel_info',
       async () => {
         try {
@@ -708,77 +865,50 @@ export const useThailandDataPersistence = ({
         }
       },
       2000
-    );
+    )();
   }, [saveDataToSecureStorage, formState]);
 
-  // Setup navigation listeners
-  useEffect(() => {
-    // Focus listener - reload data when screen comes into focus
-    const unsubscribeFocus = navigation.addListener('focus', async () => {
-      try {
-        // Reload passport and personal info
-        const passportInfo = await UserDataService.getPassport(userId);
-        const personalInfo = await UserDataService.getPersonalInfo(userId);
+  // Setup navigation persistence and auto-save
+  useNavigationPersistence({
+    navigation,
+    saveKey: 'thailand_travel_info',
+    onFocus: async () => {
+      // Reload passport and personal info
+      const passportInfo = await UserDataService.getPassport(userId);
+      const personalInfo = await UserDataService.getPersonalInfo(userId);
 
-        if (passportInfo) {
-          formState.setPassportData(passportInfo);
-          // Update relevant state...
-        }
-
-        if (personalInfo) {
-          formState.setPersonalInfoData(personalInfo);
-          // Update relevant state...
-        }
-
-        await refreshFundItems({ forceRefresh: true });
-
-        // Reload travel info
-        try {
-          const destinationId = destination?.id || 'thailand';
-          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          if (travelInfo) {
-            // Update travel info state...
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to reload travel info on focus:', travelInfoError);
-        }
-      } catch (error) {
-        console.error('Failed to reload data on focus:', error);
+      if (passportInfo) {
+        formState.setPassportData(passportInfo);
       }
-    });
 
-    // Blur listener - save data when leaving screen
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      DebouncedSave.flushPendingSave('thailand_travel_info');
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigation, userId, destination, formState, refreshFundItems]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      try {
-        DebouncedSave.flushPendingSave('thailand_travel_info');
-        saveSessionState();
-      } catch (error) {
-        console.error('Failed to save data on component unmount:', error);
+      if (personalInfo) {
+        formState.setPersonalInfoData(personalInfo);
       }
-    };
-  }, [saveSessionState]);
 
-  // Monitor save status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStatus = DebouncedSave.getSaveState('thailand_travel_info');
-      formState.setSaveStatus(currentStatus);
-    }, 100);
+      await refreshFundItems({ forceRefresh: true });
 
-    return () => clearInterval(interval);
-  }, [formState]);
+      // Reload travel info
+      try {
+        const destinationId = destination?.id || 'thailand';
+        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+        if (travelInfo) {
+          // Update travel info state...
+        }
+      } catch (travelInfoError) {
+        console.log('Failed to reload travel info on focus:', travelInfoError);
+      }
+    },
+    onBlur: async () => {
+      await saveSessionState();
+    },
+    dependencies: [userId, destination?.id, refreshFundItems]
+  });
+
+  // Monitor save status with optimized polling
+  useSaveStatusMonitor({
+    saveKey: 'thailand_travel_info',
+    onStatusChange: formState.setSaveStatus
+  });
 
   // Initialize entry info when data is loaded
   useEffect(() => {
@@ -797,6 +927,9 @@ export const useThailandDataPersistence = ({
     loadSessionState,
     migrateExistingDataToInteractionState,
     savePhoto,
+    handleFlightTicketPhotoUpload,
+    handleHotelReservationPhotoUpload,
+    handleNavigationWithSave,
     scrollViewRef,
     shouldRestoreScrollPosition,
   };

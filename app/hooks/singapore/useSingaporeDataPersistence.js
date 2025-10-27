@@ -118,6 +118,17 @@ export const useSingaporeDataPersistence = ({
     }
   }, [userId, normalizeFundItem, formState]);
 
+  const saveFundItems = useCallback(async (fundItems) => {
+    try {
+      await UserDataService.updateFundItems(userId, fundItems);
+      formState.setFunds(fundItems);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to save fund items:', error);
+      return { success: false, error };
+    }
+  }, [userId, formState]);
+
   // ========== Save Operations ==========
 
   const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
@@ -524,6 +535,7 @@ export const useSingaporeDataPersistence = ({
 
     // Fund items
     refreshFundItems,
+    saveFundItems,
     normalizeFundItem,
 
     // Migration
