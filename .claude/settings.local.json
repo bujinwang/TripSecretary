@@ -34,7 +34,11 @@
       "WebSearch",
       "Bash(pkill:*)",
       "Bash(npx expo start --clear)",
-      "Bash(node test-currency-conversion.js:*)"
+      "Bash(node test-currency-conversion.js:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(fi)",
+      "Bash(do echo \"=== $country ===\")"
     ],
     "deny": [],
     "ask": []

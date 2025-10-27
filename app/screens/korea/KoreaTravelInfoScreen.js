@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -571,26 +572,74 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>准备你的韩国之旅 🇰🇷</Text>
-          <Text style={styles.subtitle}>
-            填写入境信息，我们会帮你准备好一切
-          </Text>
-          {totalCompletionPercent > 0 && (
-            <View style={styles.progressContainer}>
-              <Text style={styles.progressText}>
-                完成度：{totalCompletionPercent}%
-              </Text>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${totalCompletionPercent}%` }
-                  ]}
-                />
+        {/* Enhanced Hero Section for Border Crossing Beginners */}
+        <LinearGradient
+          colors={['#1a3568', '#102347']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroSection}
+        >
+          <View style={styles.heroContent}>
+            <Text style={styles.heroFlag}>🇰🇷</Text>
+            <View style={styles.heroHeading}>
+              <Text style={styles.heroTitle}>韩国入境准备指南</Text>
+              <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
+            </View>
+
+            {/* Beginner-Friendly Value Proposition */}
+            <View style={styles.valueProposition}>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>⏱️</Text>
+                <Text style={styles.valueText}>3分钟完成</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🔒</Text>
+                <Text style={styles.valueText}>100%隐私保护</Text>
+              </View>
+              <View style={styles.valueItem}>
+                <Text style={styles.valueIcon}>🎯</Text>
+                <Text style={styles.valueText}>避免通关延误</Text>
               </View>
             </View>
-          )}
+
+            <View style={styles.beginnerTip}>
+              <Text style={styles.tipIcon}>💡</Text>
+              <Text style={styles.tipText}>
+                第一次过韩国海关？我们会一步步教你准备所有必需文件，确保顺利通关！
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
+
+        {/* Progress Overview Card */}
+        <View style={styles.progressOverviewCard}>
+          <Text style={styles.progressTitle}>准备进度</Text>
+          <View style={styles.progressSteps}>
+            <View style={[styles.progressStep, totalCompletionPercent >= 25 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>📘</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 25 && styles.stepTextActive]}>
+                护照信息 {totalCompletionPercent >= 25 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 50 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>👤</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 50 && styles.stepTextActive]}>
+                个人信息 {totalCompletionPercent >= 50 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 75 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>✈️</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 75 && styles.stepTextActive]}>
+                旅行信息 {totalCompletionPercent >= 75 ? '✓' : ''}
+              </Text>
+            </View>
+            <View style={[styles.progressStep, totalCompletionPercent >= 100 && styles.progressStepActive]}>
+              <Text style={styles.stepIcon}>💰</Text>
+              <Text style={[styles.stepText, totalCompletionPercent >= 100 && styles.stepTextActive]}>
+                资金证明 {totalCompletionPercent >= 100 ? '✓' : ''}
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Passport Section */}
@@ -598,7 +647,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           title="护照信息 📘"
           isExpanded={expandedSection === 'passport'}
           onToggle={() => toggleSection('passport')}
-          completionStatus={getFieldCount('passport')}
+          fieldCount={getFieldCount('passport')}
         >
           <View style={styles.sectionContent}>
             <Input
@@ -646,7 +695,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           title="个人信息 👤"
           isExpanded={expandedSection === 'personal'}
           onToggle={() => toggleSection('personal')}
-          completionStatus={getFieldCount('personal')}
+          fieldCount={getFieldCount('personal')}
         >
           <View style={styles.sectionContent}>
             <Input
@@ -697,7 +746,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           title="旅行信息 ✈️"
           isExpanded={expandedSection === 'travel'}
           onToggle={() => toggleSection('travel')}
-          completionStatus={getFieldCount('travel')}
+          fieldCount={getFieldCount('travel')}
         >
           <View style={styles.sectionContent}>
             <Input
@@ -776,7 +825,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           title="资金证明 💰"
           isExpanded={expandedSection === 'funds'}
           onToggle={() => toggleSection('funds')}
-          completionStatus={getFieldCount('funds')}
+          fieldCount={getFieldCount('funds')}
         >
           <View style={styles.sectionContent}>
             <Text style={styles.fundsHint}>
@@ -893,41 +942,163 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: spacing.xl,
   },
-  titleSection: {
-    alignItems: 'center',
+  // Enhanced Hero Section Styles
+  heroSection: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 20,
     paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
+    shadowColor: 'rgba(16, 35, 71, 0.6)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  title: {
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroFlag: {
+    fontSize: 48,
+    marginBottom: spacing.sm,
+  },
+  heroHeading: {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  heroTitle: {
     ...typography.h2,
-    color: colors.primary,
+    color: colors.white,
+    fontWeight: '700',
     marginBottom: spacing.xs,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
-  subtitle: {
+  heroSubtitle: {
     ...typography.body1,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  valueProposition: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    padding: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  valueItem: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: spacing.xs,
+  },
+  valueIcon: {
+    fontSize: 20,
+    marginBottom: spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  valueText: {
+    ...typography.caption,
+    color: colors.white,
+    textAlign: 'center',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  beginnerTip: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'flex-start',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+  },
+  tipIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+    marginTop: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  tipText: {
+    ...typography.body2,
+    color: colors.white,
+    flex: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+    lineHeight: 20,
+  },
+  // Progress Overview Card Styles
+  progressOverviewCard: {
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  progressSteps: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  progressStep: {
+    alignItems: 'center',
+    flex: 1,
+    opacity: 0.4,
+  },
+  progressStepActive: {
+    opacity: 1,
+  },
+  stepIcon: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
+  stepText: {
+    ...typography.caption,
     color: colors.textSecondary,
     textAlign: 'center',
+    fontSize: 11,
   },
-  progressContainer: {
-    width: '100%',
-    marginTop: spacing.md,
-  },
-  progressText: {
-    ...typography.body2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 4,
+  stepTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   sectionContent: {
     padding: spacing.md,

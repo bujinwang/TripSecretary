@@ -1,4 +1,4 @@
-// 入境通 - Malaysia Entry Flow Screen (马来西亚入境准备状态)
+// 入境通 - Taiwan Entry Flow Screen (臺灣入境準備狀態)
 import React, { useState, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -20,9 +20,10 @@ import SubmissionCountdown from '../../components/SubmissionCountdown';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 
-const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
+const TaiwanEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,31 +60,34 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       // Load all user data
       const allUserData = await UserDataService.getAllUserData(currentUserId);
 
-      // Load travel info for Malaysia
-      const destinationId = route.params?.destination?.id || 'malaysia';
+      // Load fund items (Taiwan doesn't require funds, but keep for consistency)
+      const fundItems = await UserDataService.getFundItems(currentUserId);
+
+      // Load travel info for Taiwan
+      const destinationId = route.params?.destination?.id || 'taiwan';
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
 
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
       const personalInfoFromStore = allUserData.personalInfo || {};
-      const fundsInfo = allUserData.funds || [];
+      const normalizedPersonalInfo = { ...personalInfoFromStore };
 
       const entryInfo = {
         passport: passportInfo,
-        personalInfo: personalInfoFromStore,
+        personalInfo: normalizedPersonalInfo,
+        funds: fundItems || [],
         travel: travelInfo || {},
-        funds: fundsInfo,
         lastUpdatedAt: new Date().toISOString()
       };
 
       setUserData(entryInfo);
 
-      // Extract arrival date for display
-      const arrivalDateFromTravel = travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate;
+      // Extract arrival date
+      const arrivalDateFromTravel = travelInfo?.arrivalDate;
       setArrivalDate(arrivalDateFromTravel);
 
-      // Calculate completion for Malaysia (no funds required)
-      const completionSummary = calculateMalaysiaCompletion(entryInfo);
+      // Calculate completion - Taiwan specific (no funds required)
+      const completionSummary = calculateTaiwanCompletion(entryInfo);
 
       // Update completion state
       setCompletionPercent(completionSummary.totalPercent);
@@ -100,7 +104,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       const categoryData = [
         {
           id: 'passport',
-          name: t('malaysia.entryFlow.categories.passport', { defaultValue: '护照信息' }),
+          name: t('taiwan.entryFlow.categories.passport', { defaultValue: '護照資訊' }),
           icon: '📘',
           status: completionSummary.categorySummary.passport.state,
           completedCount: completionSummary.categorySummary.passport.completed,
@@ -109,7 +113,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: t('malaysia.entryFlow.categories.personal', { defaultValue: '个人信息' }),
+          name: t('taiwan.entryFlow.categories.personal', { defaultValue: '個人資訊' }),
           icon: '👤',
           status: completionSummary.categorySummary.personalInfo.state,
           completedCount: completionSummary.categorySummary.personalInfo.completed,
@@ -118,7 +122,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'travel',
-          name: t('malaysia.entryFlow.categories.travel', { defaultValue: '旅行信息' }),
+          name: t('taiwan.entryFlow.categories.travel', { defaultValue: '旅行資訊' }),
           icon: '✈️',
           status: completionSummary.categorySummary.travel.state,
           completedCount: completionSummary.categorySummary.travel.completed,
@@ -128,9 +132,8 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       ];
 
       setCategories(categoryData);
-
     } catch (error) {
-      console.error('Failed to load Malaysia entry flow data:', error);
+      console.error('Failed to load entry flow data:', error);
 
       // Fallback to empty state on error
       setCompletionPercent(0);
@@ -138,7 +141,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       setCategories([
         {
           id: 'passport',
-          name: '护照信息',
+          name: '護照資訊',
           icon: '📘',
           status: 'incomplete',
           completedCount: 0,
@@ -147,7 +150,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: '个人信息',
+          name: '個人資訊',
           icon: '👤',
           status: 'incomplete',
           completedCount: 0,
@@ -156,12 +159,12 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'travel',
-          name: '旅行信息',
+          name: '旅行資訊',
           icon: '✈️',
           status: 'incomplete',
           completedCount: 0,
           totalCount: 4,
-          missingFields: ['arrivalDate', 'flightNumber', 'hotelAddress', 'stayDuration'],
+          missingFields: ['arrivalDate', 'flightNumber', 'accommodation', 'stayDuration'],
         },
       ]);
     } finally {
@@ -169,8 +172,8 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
-  // Calculate Malaysia-specific completion (no funds section)
-  const calculateMalaysiaCompletion = (entryInfo) => {
+  // Calculate Taiwan-specific completion (no funds section)
+  const calculateTaiwanCompletion = (entryInfo) => {
     const passport = entryInfo.passport || {};
     const personalInfo = entryInfo.personalInfo || {};
     const travel = entryInfo.travel || {};
@@ -193,7 +196,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       occupation: personalInfo.occupation,
       phoneNumber: personalInfo.phoneNumber,
       email: personalInfo.email,
-      gender: passport.gender, // Gender stored in passport
+      gender: passport.gender,
       residentCountry: personalInfo.countryRegion,
       phoneCode: personalInfo.phoneCode,
     };
@@ -204,17 +207,17 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
 
     // Travel info fields
     const travelFields = {
-      arrivalDate: travel.arrivalArrivalDate || travel.arrivalDate,
+      arrivalDate: travel.arrivalDate,
       flightNumber: travel.arrivalFlightNumber,
       hotelAddress: travel.hotelAddress,
-      stayDuration: travel.lengthOfStay,
+      stayDuration: travel.stayDuration || travel.lengthOfStay,
     };
 
     const travelCompleted = Object.values(travelFields).filter(v => v && String(v).trim()).length;
     const travelTotal = Object.keys(travelFields).length;
     const travelMissing = Object.keys(travelFields).filter(k => !travelFields[k] || !String(travelFields[k]).trim());
 
-    // Calculate overall completion (3 sections for Malaysia)
+    // Calculate overall completion (3 sections for Taiwan)
     const totalCompleted = passportCompleted + personalCompleted + travelCompleted;
     const totalFields = passportTotal + personalTotal + travelTotal;
     const totalPercent = totalFields > 0 ? Math.round((totalCompleted / totalFields) * 100) : 0;
@@ -257,8 +260,8 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const handleEditInformation = () => {
-    // Navigate back to MalaysiaTravelInfoScreen
-    navigation.navigate('MalaysiaTravelInfo', {
+    // Navigate back to TaiwanTravelInfoScreen
+    navigation.navigate('TaiwanTravelInfo', {
       passport: passportParam,
       destination: route.params?.destination,
     });
@@ -266,7 +269,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
 
   const handlePreviewEntryCard = () => {
     // Navigate to Entry Pack Preview
-    navigation.navigate('MalaysiaEntryPackPreview', {
+    navigation.navigate('EntryPackPreview', {
       userData,
       passport: passportParam,
       destination: route.params?.destination,
@@ -274,14 +277,13 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         personalInfo: userData?.personalInfo,
         travelInfo: userData?.travel,
         funds: userData?.funds || [],
-        mdacSubmission: null,
       },
     });
   };
 
   const handleCategoryPress = (category) => {
-    // Navigate back to MalaysiaTravelInfoScreen with the specific section expanded
-    navigation.navigate('MalaysiaTravelInfo', {
+    // Navigate back to TaiwanTravelInfoScreen with the specific section expanded
+    navigation.navigate('TaiwanTravelInfo', {
       expandSection: category.id,
       passport: passportParam,
       destination: route.params?.destination,
@@ -293,15 +295,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
 
     switch (buttonState.action) {
       case 'continue_improving':
-        // Navigate back to MalaysiaTravelInfoScreen
-        navigation.navigate('MalaysiaTravelInfo', {
-          passport: passportParam,
-          destination: route.params?.destination,
-        });
-        break;
-      case 'submit_mdac':
-        // Navigate to MDAC submission screen
-        navigation.navigate('MDACSelection', {
+        navigation.navigate('TaiwanTravelInfo', {
           passport: passportParam,
           destination: route.params?.destination,
         });
@@ -311,42 +305,40 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         handlePreviewEntryCard();
         break;
       default:
-        // Button is disabled, no action
         break;
     }
   };
 
   const getPrimaryButtonState = () => {
-    // Check completion status
     const isComplete = completionPercent === 100;
 
-    // If completion is high enough, show entry pack option
     if (completionPercent >= 80 && isComplete) {
       return {
-        title: '提交入境卡',
-        action: 'submit_mdac',
-        disabled: false,
-        variant: 'primary'
-      };
-    } else if (completionPercent >= 60) {
-      return {
-        title: '查看我的通关包 📋',
+        title: '查看我的通關包 📋',
         action: 'view_entry_pack',
         disabled: false,
         variant: 'primary',
-        subtitle: '看看你已经准备好的入境信息'
+        subtitle: '準備好了！隨時可以使用'
+      };
+    } else if (completionPercent >= 60) {
+      return {
+        title: '查看我的通關包 📋',
+        action: 'view_entry_pack',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '看看你已經準備好的入境資訊'
       };
     } else if (!isComplete) {
       return {
-        title: '继续准备我的马来西亚之旅 💪',
+        title: '繼續準備我的臺灣之旅 💪',
         action: 'continue_improving',
         disabled: false,
         variant: 'secondary'
       };
     } else {
       return {
-        title: '提交入境卡',
-        action: 'submit_mdac',
+        title: '查看我的通關包',
+        action: 'view_entry_pack',
         disabled: false,
         variant: 'primary'
       };
@@ -379,26 +371,26 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
     <View style={styles.noDataContainer}>
       <Text style={styles.noDataIcon}>📝</Text>
       <Text style={styles.noDataTitle}>
-        准备开始马来西亚之旅吧！🌴
+        準備開始臺灣之旅吧！🇹🇼
       </Text>
       <Text style={styles.noDataDescription}>
-        你还没有填写马来西亚入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境马来西亚！
+        你還沒有填寫臺灣入境資訊，別擔心，我們會一步步幫你準備好所有需要的資料，讓你輕鬆入境臺灣！
       </Text>
 
       {/* Example/Tutorial hints */}
       <View style={styles.noDataHints}>
         <Text style={styles.noDataHintsTitle}>
-          马来西亚入境需要准备这些信息 🌺
+          臺灣入境需要準備這些資訊 🌺
         </Text>
         <View style={styles.noDataHintsList}>
-          <Text style={styles.noDataHint}>• 📘 护照信息 - 让马来西亚认识你</Text>
-          <Text style={styles.noDataHint}>• 📞 联系方式 - 马来西亚怎么找到你</Text>
-          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
+          <Text style={styles.noDataHint}>• 📘 護照資訊 - 讓臺灣認識你</Text>
+          <Text style={styles.noDataHint}>• 📞 聯絡方式 - 臺灣怎麼找到你</Text>
+          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行計劃</Text>
         </View>
       </View>
 
       <Button
-        title="开始我的马来西亚准备之旅！🇲🇾"
+        title="開始我的臺灣準備之旅！🇹🇼"
         onPress={handleEditInformation}
         variant="primary"
         style={styles.noDataButton}
@@ -432,13 +424,13 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
               onPress={() => {
                 // Show sharing options
                 Alert.alert(
-                  '寻求帮助',
-                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
+                  '尋求幫助',
+                  '您可以截圖分享給親友，讓他們幫您檢查資訊是否正確。',
                   [
                     {
-                      text: '截图分享',
+                      text: '截圖分享',
                       onPress: () => {
-                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
+                        Alert.alert('提示', '請使用手機截圖功能分享給親友查看');
                       }
                     },
                     { text: '取消', style: 'cancel' }
@@ -447,7 +439,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
               }}
             >
               <Text style={styles.additionalActionIcon}>👥</Text>
-              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+              <Text style={styles.additionalActionText}>找親友幫忙修改</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -456,7 +448,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       {/* Integrated Countdown & Submission Section */}
       <View style={styles.countdownSection}>
         <Text style={styles.sectionTitle}>
-          最佳提交时间 ⏰
+          最佳提交時間 ⏰
         </Text>
 
         {/* Submission Countdown */}
@@ -478,7 +470,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
         {/* Entry Guide Button */}
         <TouchableOpacity
           style={styles.entryGuideButton}
-          onPress={() => navigation.navigate('MalaysiaEntryGuide', {
+          onPress={() => navigation.navigate('TaiwanEntryGuide', {
             passport: passportParam,
             destination: route.params?.destination,
             completionData: userData
@@ -486,7 +478,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#0BD67B', colors.primary]}
+            colors={['#FF6B6B', '#FFA500']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.entryGuideGradient}
@@ -496,7 +488,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.entryGuideContent}>
               <Text style={styles.entryGuideTitle}>
-                查看马来西亚入境指引
+                查看臺灣入境指引
               </Text>
               <Text style={styles.entryGuideSubtitle}>
                 完整入境流程指南
@@ -521,10 +513,10 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
               </View>
               <View style={styles.secondaryActionContent}>
                 <Text style={styles.secondaryActionTitle}>
-                  看看我的通关包
+                  看看我的通關包
                 </Text>
                 <Text style={styles.secondaryActionSubtitle}>
-                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途資料' })}
                 </Text>
               </View>
               <Text style={styles.secondaryActionArrow}>›</Text>
@@ -550,7 +542,7 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
           style={styles.backButton}
         />
         <Text style={styles.headerTitle}>
-          我的马来西亚之旅 🌴
+          我的臺灣之旅 🇹🇼
         </Text>
         <View style={styles.headerRight} />
       </View>
@@ -569,19 +561,19 @@ const MalaysiaEntryFlowScreen = ({ navigation, route }) => {
       >
 
         <View style={styles.titleSection}>
-          <Text style={styles.flag}>🇲🇾</Text>
+          <Text style={styles.flag}>🇹🇼</Text>
           <Text style={styles.title}>
-            我的马来西亚之旅准备好了吗？🌴
+            我的臺灣之旅準備好了嗎？
           </Text>
           <Text style={styles.subtitle}>
-            看看你准备得怎么样，一起迎接马来西亚冒险！
+            看看你準備得怎麼樣，一起迎接臺灣冒險！
           </Text>
         </View>
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>
-              {t('malaysia.entryFlow.loading', { defaultValue: '正在加载准备状态...' })}
+              {t('taiwan.entryFlow.loading', { defaultValue: '正在載入準備狀態...' })}
             </Text>
           </View>
         ) : (
@@ -683,9 +675,6 @@ const styles = StyleSheet.create({
   actionSection: {
     marginBottom: spacing.lg,
   },
-  actionButtonsContainer: {
-    gap: spacing.md,
-  },
   primaryActionContainer: {
     marginTop: spacing.md,
     paddingTop: spacing.md,
@@ -717,7 +706,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(7, 193, 96, 0.15)',
+    borderColor: 'rgba(255, 107, 107, 0.15)',
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
@@ -901,4 +890,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MalaysiaEntryFlowScreen;
+export default TaiwanEntryFlowScreen;

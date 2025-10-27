@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import CompletionSummaryCard from '../../components/CompletionSummaryCard';
+import SubmissionCountdown from '../../components/SubmissionCountdown';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
@@ -404,7 +405,27 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         )}
       </View>
 
-      {/* Action Section */}
+      {/* Integrated Countdown & Submission Section */}
+      <View style={styles.countdownSection}>
+        <Text style={styles.sectionTitle}>
+          最佳提交时间 ⏰
+        </Text>
+
+        {/* Submission Countdown */}
+        <SubmissionCountdown
+          arrivalDate={arrivalDate}
+          locale={t('locale', { defaultValue: 'zh' })}
+          showIcon={true}
+          updateInterval={1000}
+        />
+
+        {/* Smart Primary Action Button - Integrated with Countdown */}
+        <View style={styles.primaryActionContainer}>
+          {renderPrimaryAction()}
+        </View>
+      </View>
+
+      {/* Secondary Actions Section */}
       <View style={styles.actionSection}>
         {/* Entry Guide Button */}
         <TouchableOpacity
@@ -462,11 +483,6 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Primary Action Container */}
-        <View style={styles.primaryActionContainer}>
-          {renderPrimaryAction()}
-        </View>
 
         {/* K-ETA Information Card */}
         <TouchableOpacity
@@ -627,12 +643,35 @@ const styles = StyleSheet.create({
   statusSection: {
     marginBottom: spacing.lg,
   },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+  },
+
+  // Integrated Countdown & Submission Section Styles
+  countdownSection: {
+    marginBottom: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Action Section Styles (now only for secondary actions)
   actionSection: {
     marginBottom: spacing.lg,
   },
   primaryActionContainer: {
-    marginBottom: spacing.md,
     marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   primaryActionButton: {
     marginBottom: spacing.xs,

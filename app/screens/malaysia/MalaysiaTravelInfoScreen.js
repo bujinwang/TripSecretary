@@ -1,5 +1,5 @@
-
 // 入境通 - Malaysia Travel Info Screen (马来西亚入境信息)
+// Comprehensive version matching Thailand's structure
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
@@ -12,22 +12,39 @@ import {
   Platform,
   UIManager,
   Alert,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
 import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../components';
+import SecureStorageService from '../../services/security/SecureStorageService';
 
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
+import SoftValidation from '../../utils/SoftValidation';
 import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
 import FieldStateManager from '../../utils/FieldStateManager';
 
 // Import secure data models and services
+import Passport from '../../models/Passport';
+import PersonalInfo from '../../models/PersonalInfo';
+import EntryData from '../../models/EntryData';
+import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../../services/data/UserDataService';
+
+// Import Malaysia-specific utilities and constants
+import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
+import { parsePassportName } from '../../utils/NameParser';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, GENDER_OPTIONS, FUND_REQUIREMENTS } from './constants';
+import OptionSelector from '../../components/thailand/OptionSelector';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -35,50 +52,8 @@ if (Platform.OS === 'android') {
   }
 }
 
-const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fieldCount }) => {
-  const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    onToggle();
-  };
-
-  const isComplete = fieldCount && fieldCount.filled === fieldCount.total;
-
-  return (
-    <View style={styles.sectionContainer}>
-      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>{title}</Text>
-          {fieldCount && (
-            <View style={[
-              styles.fieldCountBadge,
-              isComplete ? styles.fieldCountBadgeComplete : styles.fieldCountBadgeIncomplete
-            ]}>
-              <Text style={[
-                styles.fieldCountText,
-                isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
-              ]}>
-                {fieldCount.filled}/{fieldCount.total}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          {onScan && (
-            <TouchableOpacity style={styles.scanButton} onPress={onScan}>
-              <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>Scan / Imbas</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
-        </View>
-      </TouchableOpacity>
-      {isExpanded && <View style={styles.sectionContent}>{children}</View>}
-    </View>
-  );
-};
-
 const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
-  const { passport: rawPassport, destination: rawDestination } = route.params || {};
+  const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
 
   // Memoize passport to prevent infinite re-renders
@@ -86,11 +61,13 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
 
-  // Memoize destination to prevent unnecessary re-renders
-  const destination = useMemo(() => rawDestination, [rawDestination?.id, rawDestination?.name]);
-
   // Memoize userId to prevent unnecessary re-renders
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
+
+  // Data model instances
+  const [passportData, setPassportData] = useState(null);
+  const [personalInfoData, setPersonalInfoData] = useState(null);
+  const [entryData, setEntryData] = useState(null);
 
   // Smart defaults for common scenarios
   const getSmartDefaults = () => {
@@ -101,16 +78,39 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     nextWeek.setDate(nextWeek.getDate() + 7);
 
     return {
-      arrivalDate: tomorrow.toISOString().split('T')[0],
-      stayDuration: '7',
+      travelPurpose: 'TOURISM', // Most common purpose for Malaysia
+      accommodationType: 'HOTEL', // Most common accommodation
+      arrivalDate: tomorrow.toISOString().split('T')[0], // Default to tomorrow
+      stayDuration: '7', // Default 1 week stay
+      boardingCountry: passport?.nationality || 'CHN', // Default to passport nationality
     };
   };
 
-  const smartDefaults = getSmartDefaults();
+  // Auto-complete suggestions for common scenarios
+  const getAutoCompleteSuggestions = (fieldType, currentValue) => {
+    const suggestions = {
+      flightNumber: [
+        'MH123', 'MH370', 'AK123', 'AK456', 'CX123', 'CX456',
+        'SQ123', 'SQ456', 'MU123', 'MU456', 'CA123', 'CA456'
+      ],
+      hotelName: [
+        'Kuala Lumpur Hilton', 'Penang Shangri-La',
+        'Langkawi Marriott', 'Malacca Holiday Inn',
+        'Petronas Towers Hotel', 'Grand Hyatt KL',
+        'The Ritz-Carlton', 'Mandarin Oriental'
+      ],
+      occupation: [
+        '软件工程师', '学生', '教师', '医生', '律师', '会计师',
+        '销售经理', '退休人员', '家庭主妇', '自由职业者'
+      ]
+    };
 
-  // Data model instances
-  const [passportData, setPassportData] = useState(null);
-  const [personalInfoData, setPersonalInfoData] = useState(null);
+    if (!currentValue || currentValue.length < 2) return [];
+
+    return suggestions[fieldType]?.filter(item =>
+      item.toLowerCase().includes(currentValue.toLowerCase())
+    ).slice(0, 5) || [];
+  };
 
   // UI State (loaded from database, not from route params)
   const [passportNo, setPassportNo] = useState('');
@@ -122,16 +122,11 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   // Personal Info State (loaded from database)
   const [sex, setSex] = useState('');
   const [occupation, setOccupation] = useState('');
+  const [customOccupation, setCustomOccupation] = useState('');
   const [residentCountry, setResidentCountry] = useState('');
   const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || ''));
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
-
-  // Travel Info State - with smart defaults
-  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalDate, setArrivalDate] = useState(smartDefaults.arrivalDate);
-  const [hotelAddress, setHotelAddress] = useState('');
-  const [stayDuration, setStayDuration] = useState(smartDefaults.stayDuration);
 
   // Proof of Funds State
   const [funds, setFunds] = useState([]);
@@ -140,13 +135,39 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   const [currentFundItem, setCurrentFundItem] = useState(null);
   const [newFundItemType, setNewFundItemType] = useState(null);
 
+  // Entry Info State - for tracking the entry pack
+  const [entryInfoId, setEntryInfoId] = useState(null);
+  const [entryInfoInitialized, setEntryInfoInitialized] = useState(false);
+
+  // Travel Info State - with smart defaults
+  const smartDefaults = getSmartDefaults();
+  const [travelPurpose, setTravelPurpose] = useState('');
+  const [customTravelPurpose, setCustomTravelPurpose] = useState('');
+  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
+  const [arrivalDate, setArrivalDate] = useState(smartDefaults.arrivalDate);
+  const [accommodationType, setAccommodationType] = useState('HOTEL');
+  const [customAccommodationType, setCustomAccommodationType] = useState('');
+  const [hotelAddress, setHotelAddress] = useState('');
+  const [stayDuration, setStayDuration] = useState(smartDefaults.stayDuration);
+
+  // Document photos
+  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
+  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
+
   const [errors, setErrors] = useState({});
+  const [warnings, setWarnings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState(null);
 
   // Auto-save state tracking
-  const [saveStatus, setSaveStatus] = useState(null); // 'pending', 'saving', 'saved', 'error', or null
+  const [saveStatus, setSaveStatus] = useState(null);
   const [lastEditedAt, setLastEditedAt] = useState(null);
+
+  // Session state tracking
+  const [lastEditedField, setLastEditedField] = useState(null);
+  const scrollViewRef = useRef(null);
+  const shouldRestoreScrollPosition = useRef(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   // Completion tracking
   const [completionMetrics, setCompletionMetrics] = useState(null);
@@ -155,15 +176,13 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('malaysia_travel_info');
 
-  // Session state tracking
-  const scrollViewRef = useRef(null);
-  const hasMigratedRef = useRef(false);
-
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized || hasMigratedRef.current) {
+    if (!userData || !userInteractionTracker.isInitialized) {
       return;
     }
+
+    console.log('=== MIGRATING MALAYSIA EXISTING DATA TO INTERACTION STATE ===');
 
     const existingDataToMigrate = {};
 
@@ -191,15 +210,22 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     // Migrate travel info data
     if (userData.travelInfo) {
       const travelInfo = userData.travelInfo;
+      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
       if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalDate = travelInfo.arrivalArrivalDate;
+      if (travelInfo.arrivalDate) existingDataToMigrate.arrivalDate = travelInfo.arrivalDate;
       if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
       if (travelInfo.lengthOfStay) existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
     }
 
+    console.log('Data to migrate:', existingDataToMigrate);
+    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
+
     if (Object.keys(existingDataToMigrate).length > 0) {
       userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
-      hasMigratedRef.current = true; // Mark migration as completed
+      console.log('✅ Migration completed - existing data marked as user-modified');
+    } else {
+      console.log('⚠️ No existing data found to migrate');
     }
   }, [userInteractionTracker]);
 
@@ -210,7 +236,8 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
     const allFieldNames = [
       'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
       'phoneCode', 'phoneNumber', 'email', 'occupation', 'residentCountry',
-      'arrivalFlightNumber', 'arrivalDate', 'hotelAddress', 'stayDuration'
+      'travelPurpose', 'customTravelPurpose', 'arrivalFlightNumber', 'arrivalDate',
+      'accommodationType', 'customAccommodationType', 'hotelAddress', 'stayDuration'
     ];
 
     allFieldNames.forEach(fieldName => {
@@ -228,17 +255,19 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           nationality: nationality,
           passportNo: passportNo,
           dob: dob,
-          expiryDate: expiryDate
+          expiryDate: expiryDate,
+          sex: sex
         };
 
-        // Count fields that have values (not just user-modified)
-        const passportFilledCount = Object.values(passportFields).filter(
-          value => value !== null && value !== undefined && value !== ''
-        ).length;
+        const passportFieldCount = FieldStateManager.getFieldCount(
+          passportFields,
+          interactionState,
+          Object.keys(passportFields)
+        );
 
         return {
-          filled: passportFilledCount,
-          total: Object.keys(passportFields).length
+          filled: passportFieldCount.totalWithValues,
+          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
         };
 
       case 'personal':
@@ -247,47 +276,58 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           residentCountry: residentCountry,
           phoneCode: phoneCode,
           phoneNumber: phoneNumber,
-          email: email,
-          sex: sex
+          email: email
         };
 
-        // Count fields that have values (not just user-modified)
-        const personalFilledCount = Object.values(personalFields).filter(
-          value => value !== null && value !== undefined && value !== ''
-        ).length;
+        const personalFieldCount = FieldStateManager.getFieldCount(
+          personalFields,
+          interactionState,
+          Object.keys(personalFields)
+        );
 
         return {
-          filled: personalFilledCount,
-          total: Object.keys(personalFields).length
-        };
-
-      case 'travel':
-        const travelFields = {
-          arrivalFlightNumber: arrivalFlightNumber,
-          arrivalDate: arrivalDate,
-          hotelAddress: hotelAddress,
-          stayDuration: stayDuration
-        };
-
-        // Count fields that have values (not just user-modified)
-        const filledCount = Object.values(travelFields).filter(
-          value => value !== null && value !== undefined && value !== ''
-        ).length;
-
-        return {
-          filled: filledCount,
-          total: Object.keys(travelFields).length
+          filled: personalFieldCount.totalWithValues,
+          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
         };
 
       case 'funds':
         // For funds, show actual count with minimum requirement of 1
-        // Funds are not tracked by interaction state, so use existing logic
         const fundItemCount = funds.length;
         if (fundItemCount === 0) {
           return { filled: 0, total: 1 };
         } else {
           return { filled: fundItemCount, total: fundItemCount };
         }
+
+      case 'travel':
+        // Build travel fields with proper handling of custom values
+        const purposeFilled = travelPurpose === 'OTHER'
+          ? (customTravelPurpose && customTravelPurpose.trim() !== '')
+          : (travelPurpose && travelPurpose.trim() !== '');
+
+        const accommodationTypeFilled = accommodationType === 'OTHER'
+          ? (customAccommodationType && customAccommodationType.trim() !== '')
+          : (accommodationType && accommodationType.trim() !== '');
+
+        const travelFields = {
+          travelPurpose: purposeFilled ? (travelPurpose === 'OTHER' ? customTravelPurpose : travelPurpose) : '',
+          arrivalFlightNumber: arrivalFlightNumber,
+          arrivalDate: arrivalDate,
+          accommodationType: accommodationTypeFilled ? (accommodationType === 'OTHER' ? customAccommodationType : accommodationType) : '',
+          hotelAddress: hotelAddress,
+          stayDuration: stayDuration
+        };
+
+        const travelFieldCount = FieldStateManager.getFieldCount(
+          travelFields,
+          interactionState,
+          Object.keys(travelFields)
+        );
+
+        return {
+          filled: travelFieldCount.totalWithValues,
+          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+        };
     }
 
     return { filled: 0, total: 0 };
@@ -301,508 +341,346 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       const fundsCount = getFieldCount('funds');
       const travelCount = getFieldCount('travel');
 
-      const passportComplete = passportCount.filled >= passportCount.total;
-      const personalComplete = personalCount.filled >= personalCount.total;
-      const fundsComplete = fundsCount.filled >= fundsCount.total;
-      const travelComplete = travelCount.filled >= travelCount.total;
+      const totalFields = passportCount.total + personalCount.total + fundsCount.total + travelCount.total;
+      const filledFields = passportCount.filled + personalCount.filled + fundsCount.filled + travelCount.filled;
 
-      const completedSections = [
-        passportComplete,
-        personalComplete,
-        fundsComplete,
-        travelComplete,
-      ].filter(Boolean).length;
+      const percent = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
 
-      const totalSections = 4;
-      const totalPercent =
-        totalSections > 0
-          ? Math.round((completedSections / totalSections) * 100)
-          : 0;
-
-      const summary = {
-        totalPercent: totalPercent,
-        metrics: {
-          passport: {
-            completed: passportCount.filled,
-            total: passportCount.total,
-            percentage:
-              passportCount.total > 0
-                ? Math.round((passportCount.filled / passportCount.total) * 100)
-                : 0,
-          },
-          personal: {
-            completed: personalCount.filled,
-            total: personalCount.total,
-            percentage:
-              personalCount.total > 0
-                ? Math.round((personalCount.filled / personalCount.total) * 100)
-                : 0,
-          },
-          funds: {
-            completed: fundsCount.filled,
-            total: fundsCount.total,
-            percentage:
-              fundsCount.total > 0
-                ? Math.round((fundsCount.filled / fundsCount.total) * 100)
-                : 0,
-          },
-          travel: {
-            completed: travelCount.filled,
-            total: travelCount.total,
-            percentage:
-              travelCount.total > 0
-                ? Math.round((travelCount.filled / travelCount.total) * 100)
-                : 0,
-          },
-        },
-        isReady: totalPercent === 100,
-      };
-
-      setCompletionMetrics(summary.metrics);
-      setTotalCompletionPercent(summary.totalPercent);
-
-      return summary;
+      setTotalCompletionPercent(percent);
+      setCompletionMetrics({
+        passport: passportCount,
+        personal: personalCount,
+        funds: fundsCount,
+        travel: travelCount,
+        total: { filled: filledFields, total: totalFields },
+        percent: percent
+      });
     } catch (error) {
-      console.error('Failed to calculate completion metrics:', error);
-      return { totalPercent: 0, metrics: null, isReady: false };
+      console.error('Error calculating completion metrics:', error);
     }
   };
 
-  // Check if form is valid
-  const isFormValid = () => {
-    const passportCount = getFieldCount('passport');
-    const personalCount = getFieldCount('personal');
-    const fundsCount = getFieldCount('funds');
-    const travelCount = getFieldCount('travel');
-
-    const allFieldsFilled =
-      passportCount.filled === passportCount.total &&
-      personalCount.filled === personalCount.total &&
-      fundsCount.filled === fundsCount.total &&
-      travelCount.filled === travelCount.total;
-
-    const noErrors = Object.keys(errors).length === 0;
-
-    return allFieldsFilled && noErrors;
-  };
-
-  // Recalculate completion metrics when fields change
+  // Recalculate completion whenever form data changes
   useEffect(() => {
-    if (!isLoading && userInteractionTracker.isInitialized) {
-      calculateCompletionMetrics();
-    }
+    calculateCompletionMetrics();
   }, [
     passportNo, fullName, nationality, dob, expiryDate, sex,
     occupation, residentCountry, phoneCode, phoneNumber, email,
-    funds,
-    arrivalFlightNumber, arrivalDate, hotelAddress, stayDuration,
-    isLoading, userInteractionTracker.isInitialized
+    travelPurpose, customTravelPurpose, arrivalFlightNumber, arrivalDate,
+    accommodationType, customAccommodationType, hotelAddress, stayDuration,
+    funds
   ]);
 
+  // Load data from UserDataService
   useEffect(() => {
-    const loadSavedData = async () => {
-      try {
-        setIsLoading(true);
-        await UserDataService.initialize(userId);
-
-        const userData = await UserDataService.getAllUserData(userId);
-
-        const passportInfo = userData?.passport;
-        if (passportInfo) {
-          setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
-          setFullName(passportInfo.fullName || passport?.nameEn || passport?.name || '');
-          setNationality(passportInfo.nationality || passport?.nationality || '');
-          setDob(passportInfo.dateOfBirth || passport?.dob || '');
-          setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-          setPassportData(passportInfo);
-        } else {
-          setPassportNo(passport?.passportNo || '');
-          setFullName(passport?.nameEn || passport?.name || '');
-          setNationality(passport?.nationality || '');
-          setDob(passport?.dob || '');
-          setExpiryDate(passport?.expiry || '');
-        }
-
-        const personalInfo = userData?.personalInfo;
-        if (personalInfo) {
-          const loadedSex = passportInfo?.gender || passport?.sex || 'Male';
-          setSex(loadedSex);
-
-          setOccupation(personalInfo.occupation || '');
-          setResidentCountry(personalInfo.countryRegion || '');
-          setPhoneNumber(personalInfo.phoneNumber || '');
-          setEmail(personalInfo.email || '');
-
-          setPhoneCode(getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-
-          setPersonalInfoData(personalInfo);
-        } else {
-          setSex(passport?.sex || 'Male');
-          setPhoneCode(getPhoneCode(passport?.nationality || ''));
-        }
-
-        const destinationId = destination?.id || 'malaysia';
-        let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-
-        if (!travelInfo && destination?.name) {
-          travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
-        }
-
-        if (travelInfo) {
-          setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-          setArrivalDate(travelInfo.arrivalArrivalDate || smartDefaults.arrivalDate);
-          setHotelAddress(travelInfo.hotelAddress || '');
-          setStayDuration(travelInfo.lengthOfStay || smartDefaults.stayDuration);
-        }
-
-        // Load funds
-        await refreshFundItems();
-
-        // Trigger migration (will only happen once due to hasMigratedRef check)
-        if (userInteractionTracker.isInitialized && !hasMigratedRef.current) {
-          migrateExistingDataToInteractionState(userData);
-        }
-
-      } catch (error) {
-        console.error('Failed to load saved data:', error);
-        setPassportNo(passport?.passportNo || '');
-        setFullName(passport?.nameEn || passport?.name || '');
-        setNationality(passport?.nationality || '');
-        setDob(passport?.dob || '');
-        setExpiryDate(passport?.expiry || '');
-        setSex(passport?.sex || 'Male');
-        setPhoneCode(getPhoneCode(passport?.nationality || ''));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSavedData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadData();
   }, [userId]);
 
-  const handleFieldChange = (fieldName, value, setter) => {
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+
+      await UserDataService.initialize(userId);
+
+      // Load all user data
+      const allUserData = await UserDataService.getAllUserData(userId);
+
+      // Load travel info
+      const destinationId = destination?.id || 'malaysia';
+      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+
+      // Load fund items
+      const fundItems = await UserDataService.getFundItems(userId);
+
+      // Populate form fields
+      if (allUserData.passport) {
+        setPassportNo(allUserData.passport.passportNumber || '');
+        setFullName(allUserData.passport.fullName || '');
+        setNationality(allUserData.passport.nationality || '');
+        setDob(allUserData.passport.dateOfBirth || '');
+        setExpiryDate(allUserData.passport.expiryDate || '');
+        setSex(allUserData.passport.gender || '');
+      }
+
+      if (allUserData.personalInfo) {
+        setOccupation(allUserData.personalInfo.occupation || '');
+        setResidentCountry(allUserData.personalInfo.countryRegion || '');
+        setPhoneCode(allUserData.personalInfo.phoneCode || getPhoneCode(passport?.nationality || ''));
+        setPhoneNumber(allUserData.personalInfo.phoneNumber || '');
+        setEmail(allUserData.personalInfo.email || '');
+      }
+
+      if (travelInfo) {
+        setTravelPurpose(travelInfo.travelPurpose || '');
+        setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+        setArrivalDate(travelInfo.arrivalDate || travelInfo.arrivalArrivalDate || smartDefaults.arrivalDate);
+        setAccommodationType(travelInfo.accommodationType || 'HOTEL');
+        setHotelAddress(travelInfo.hotelAddress || '');
+        setStayDuration(travelInfo.lengthOfStay || travelInfo.stayDuration || smartDefaults.stayDuration);
+      }
+
+      if (fundItems && fundItems.length > 0) {
+        setFunds(fundItems);
+      }
+
+      // Migrate existing data to interaction state
+      const userData = {
+        passport: allUserData.passport,
+        personalInfo: allUserData.personalInfo,
+        travelInfo: travelInfo
+      };
+      await migrateExistingDataToInteractionState(userData);
+
+    } catch (error) {
+      console.error('Failed to load Malaysia travel info data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle field changes with user tracking
+  const handleFieldChange = useCallback((fieldName, value, setter) => {
     setter(value);
     userInteractionTracker.markFieldAsUserModified(fieldName, value);
-    setSaveStatus('pending');
-    debouncedSaveData();
-  };
+    setLastEditedField(fieldName);
+    setLastEditedAt(new Date().toISOString());
 
-  const saveDataToSecureStorage = async () => {
+    // Trigger auto-save
+    debouncedSave();
+  }, [userInteractionTracker]);
+
+  // Debounced save function
+  const debouncedSave = DebouncedSave.create(async () => {
     try {
-      const existingPassport = await UserDataService.getPassport(userId);
+      setSaveStatus('saving');
 
-      const passportUpdates = {};
-      if (passportNo) passportUpdates.passportNumber = passportNo;
-      if (fullName) passportUpdates.fullName = fullName;
-      if (nationality) passportUpdates.nationality = nationality;
-      if (dob) passportUpdates.dateOfBirth = dob;
-      if (expiryDate) passportUpdates.expiryDate = expiryDate;
-      if (sex) passportUpdates.gender = sex;
+      // Save passport data
+      await UserDataService.updatePassport(userId, {
+        passportNumber: passportNo,
+        fullName: fullName,
+        nationality: nationality,
+        dateOfBirth: dob,
+        expiryDate: expiryDate,
+        gender: sex,
+      });
 
-      if (Object.keys(passportUpdates).length > 0) {
-        if (existingPassport && existingPassport.id) {
-          await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
-        } else {
-          await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+      // Save personal info
+      await UserDataService.updatePersonalInfo(userId, {
+        occupation: occupation,
+        countryRegion: residentCountry,
+        phoneCode: phoneCode,
+        phoneNumber: phoneNumber,
+        email: email,
+      });
+
+      // Save travel info
+      const destinationId = destination?.id || 'malaysia';
+      await UserDataService.updateTravelInfo(userId, destinationId, {
+        travelPurpose: travelPurpose,
+        arrivalFlightNumber: arrivalFlightNumber,
+        arrivalDate: arrivalDate,
+        accommodationType: accommodationType,
+        hotelAddress: hotelAddress,
+        lengthOfStay: stayDuration,
+      });
+
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(null), 2000);
+    } catch (error) {
+      console.error('Failed to save Malaysia travel info:', error);
+      setSaveStatus('error');
+    }
+  }, 1000);
+
+  // Handle photo upload
+  const handlePhotoUpload = async (photoType) => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to upload documents.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        if (photoType === 'flight') {
+          setFlightTicketPhoto(result.assets[0].uri);
+        } else if (photoType === 'hotel') {
+          setHotelReservationPhoto(result.assets[0].uri);
         }
       }
-
-      const personalInfoUpdates = {};
-      if (phoneNumber) personalInfoUpdates.phoneNumber = phoneNumber;
-      if (email) personalInfoUpdates.email = email;
-      if (occupation) personalInfoUpdates.occupation = occupation;
-      if (residentCountry) personalInfoUpdates.countryRegion = residentCountry;
-
-      if (Object.keys(personalInfoUpdates).length > 0) {
-        await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-      }
-
-      const travelInfoUpdates = {};
-      if (arrivalFlightNumber) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
-      if (arrivalDate) travelInfoUpdates.arrivalArrivalDate = arrivalDate;
-      if (hotelAddress) travelInfoUpdates.hotelAddress = hotelAddress;
-      if (stayDuration) travelInfoUpdates.lengthOfStay = stayDuration;
-
-      if (Object.keys(travelInfoUpdates).length > 0) {
-        const destinationId = destination?.id || 'malaysia';
-        await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
-      }
     } catch (error) {
-      console.error('Failed to save data to secure storage:', error);
-      throw error;
+      console.error('Error uploading photo:', error);
+      Alert.alert('Error', 'Failed to upload photo. Please try again.');
     }
   };
 
-  // Create debounced save function with error handling (using singleton pattern)
-  const debouncedSaveData = DebouncedSave.debouncedSave(
-    'malaysia_travel_info',
-    async () => {
-      await saveDataToSecureStorage();
-      setLastEditedAt(new Date().toISOString());
-    },
-    1000,
-    {
-      maxRetries: 3,
-      retryDelay: 1000,
-      onError: (error, retryCount) => {
-        setSaveStatus('error');
-        console.error('Auto-save failed:', error);
-        setTimeout(() => setSaveStatus(null), 3000);
-      },
-      onRetry: (error, retryCount, maxRetries) => {
-        // Retry in progress
-      },
-    }
-  );
-
   // Fund management functions
-  const normalizeFundItem = useCallback((item) => ({
-    id: item.id,
-    type: item.type || item.itemType || 'cash',
-    amount: item.amount,
-    currency: item.currency,
-    details: item.details || item.description || '',
-    photoUri: item.photoUri || item.photo || null,
-    userId: item.userId || userId,
-  }), [userId]);
-
-  const refreshFundItems = useCallback(async (options = {}) => {
-    try {
-      const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = fundItems.map(normalizeFundItem);
-      setFunds(normalized);
-    } catch (error) {
-      console.error('Failed to refresh fund items:', error);
-    }
-  }, [userId, normalizeFundItem]);
-
   const addFund = (type) => {
-    setCurrentFundItem(null);
+    const newFund = {
+      id: `fund_${Date.now()}`,
+      type: type,
+      amount: '',
+      currency: 'MYR',
+      description: '',
+    };
+    setCurrentFundItem(newFund);
     setNewFundItemType(type);
     setFundItemModalVisible(true);
   };
 
-  const handleFundItemPress = (fund) => {
+  const editFund = (fund) => {
+    setSelectedFundItem(fund);
     setCurrentFundItem(fund);
     setFundItemModalVisible(true);
   };
 
-  const handleFundItemModalClose = () => {
-    setFundItemModalVisible(false);
-    setCurrentFundItem(null);
-  };
-
-  const handleFundItemUpdate = async (updatedItem) => {
+  const saveFundItem = async (fundItem) => {
     try {
-      if (updatedItem) {
-        setSelectedFundItem(normalizeFundItem(updatedItem));
+      if (selectedFundItem) {
+        // Update existing fund
+        const updatedFunds = funds.map(f => f.id === fundItem.id ? fundItem : f);
+        setFunds(updatedFunds);
+        await UserDataService.updateFundItems(userId, updatedFunds);
+      } else {
+        // Add new fund
+        const updatedFunds = [...funds, fundItem];
+        setFunds(updatedFunds);
+        await UserDataService.updateFundItems(userId, updatedFunds);
       }
-      await refreshFundItems({ forceRefresh: true });
-
-      // Trigger save to update entry_info with new fund item associations
-      await DebouncedSave.flushPendingSave('malaysia_travel_info');
-      debouncedSaveData();
+      setFundItemModalVisible(false);
+      setSelectedFundItem(null);
+      setCurrentFundItem(null);
+      setNewFundItemType(null);
     } catch (error) {
-      console.error('Failed to update fund item state:', error);
+      console.error('Error saving fund item:', error);
+      Alert.alert('Error', 'Failed to save fund item. Please try again.');
     }
   };
 
-  const handleFundItemCreate = async () => {
+  const deleteFundItem = async (fundId) => {
     try {
-      await refreshFundItems({ forceRefresh: true });
-
-      // Trigger save to update entry_info with new fund item
-      await DebouncedSave.flushPendingSave('malaysia_travel_info');
-      debouncedSaveData();
+      const updatedFunds = funds.filter(f => f.id !== fundId);
+      setFunds(updatedFunds);
+      await UserDataService.updateFundItems(userId, updatedFunds);
+      setFundItemModalVisible(false);
+      setSelectedFundItem(null);
+      setCurrentFundItem(null);
     } catch (error) {
-      console.error('Failed to refresh fund items after creation:', error);
-    } finally {
-      handleFundItemModalClose();
+      console.error('Error deleting fund item:', error);
+      Alert.alert('Error', 'Failed to delete fund item. Please try again.');
     }
   };
 
-  const handleFundItemDelete = async (id) => {
-    try {
-      setFunds((prev) => prev.filter((fund) => fund.id !== id));
-      await refreshFundItems({ forceRefresh: true });
+  // Render functions
+  const renderProgressHeader = () => {
+    if (!completionMetrics) return null;
 
-      // Trigger save to update entry_info after fund item deletion
-      await DebouncedSave.flushPendingSave('malaysia_travel_info');
-      debouncedSaveData();
-    } catch (error) {
-      console.error('Failed to refresh fund items after deletion:', error);
-    } finally {
-      handleFundItemModalClose();
-    }
-  };
+    const { percent } = completionMetrics;
+    const progressColor = percent >= 100 ? '#34C759' : percent >= 50 ? '#FF9500' : colors.primary;
+    const progressText = percent >= 100 ? '✅ 完成!' : percent >= 50 ? '进展不错 💪' : '继续加油 🌺';
 
-  // Monitor save status changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStatus = DebouncedSave.getSaveState('malaysia_travel_info');
-      if (currentStatus === 'saving') {
-        setSaveStatus('saving');
-      } else if (currentStatus === 'saved') {
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus(null), 2000);
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Add blur listener to save data when leaving the screen
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
-      DebouncedSave.flushPendingSave('malaysia_travel_info');
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      try {
-        DebouncedSave.flushPendingSave('malaysia_travel_info');
-      } catch (error) {
-        console.error('Failed to save data on component unmount:', error);
-      }
-    };
-  }, []);
-
-  const handleContinue = async () => {
-    if (!isFormValid()) {
-      Alert.alert(
-        t('malaysia.travelInfo.alerts.incompleteTitle', { defaultValue: 'Incomplete Information / Maklumat Tidak Lengkap' }),
-        t('malaysia.travelInfo.alerts.incompleteMessage', { defaultValue: 'Please fill in all required information / Sila lengkapkan semua maklumat yang diperlukan' })
-      );
-      return;
-    }
-
-    // Save before navigating
-    await DebouncedSave.flushPendingSave('malaysia_travel_info');
-
-    navigation.navigate('MalaysiaEntryFlow', {
-      destination: destination || { id: 'my', name: 'Malaysia' },
-      passport: passport,
-    });
-  };
-
-  const handleGoBack = async () => {
-    // Save immediately before going back
-    await DebouncedSave.flushPendingSave('malaysia_travel_info');
-    navigation.goBack();
+    return (
+      <View style={styles.progressHeader}>
+        <View style={styles.progressTextContainer}>
+          <Text style={styles.progressLabel}>完成度</Text>
+          <Text style={[styles.progressText, { color: progressColor }]}>{progressText}</Text>
+        </View>
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarFill, { width: `${percent}%`, backgroundColor: progressColor }]} />
+          </View>
+          <Text style={styles.progressPercent}>{percent}%</Text>
+        </View>
+        <Text style={styles.progressStats}>
+          {completionMetrics.total.filled} / {completionMetrics.total.total} 项已填写
+        </Text>
+      </View>
+    );
   };
 
   const renderGenderOptions = () => {
-    const options = [
-      { value: 'Female', label: t('malaysia.travelInfo.fields.sex.options.female', { defaultValue: 'Female / Perempuan' }) },
-      { value: 'Male', label: t('malaysia.travelInfo.fields.sex.options.male', { defaultValue: 'Male / Lelaki' }) },
-      { value: 'Undefined', label: t('malaysia.travelInfo.fields.sex.options.undefined', { defaultValue: 'Not Specified / Tidak Dinyatakan' }) }
-    ];
-
     return (
-      <View style={styles.optionsContainer}>
-        {options.map((option) => {
-          const isActive = sex === option.value;
-          return (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.optionButton,
-                isActive && styles.optionButtonActive,
-              ]}
-              onPress={() => handleFieldChange('sex', option.value, setSex)}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  isActive && styles.optionTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+      <View style={styles.genderOptions}>
+        {GENDER_OPTIONS.map((gender) => (
+          <TouchableOpacity
+            key={gender.value}
+            style={[
+              styles.genderOption,
+              sex === gender.value && styles.genderOptionSelected
+            ]}
+            onPress={() => handleFieldChange('sex', gender.value, setSex)}
+          >
+            <View style={[
+              styles.genderRadio,
+              sex === gender.value && styles.genderRadioSelected
+            ]}>
+              {sex === gender.value && <View style={styles.genderRadioInner} />}
+            </View>
+            <Text style={[
+              styles.genderLabel,
+              sex === gender.value && styles.genderLabelSelected
+            ]}>
+              {gender.labelEn} / {gender.labelMs}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
     );
   };
 
-  const renderProgressHeader = () => {
-    if (isLoading || !completionMetrics) {
-      return null;
-    }
-
-    const progressColor = totalCompletionPercent === 100
-      ? '#34C759'
-      : totalCompletionPercent >= 60
-        ? '#FF9500'
-        : colors.primary;
-
-    return (
-      <View style={styles.progressContainer}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressTitle}>
-            {t('malaysia.travelInfo.progress.title', { defaultValue: 'Completion / Kemajuan' })}
-          </Text>
-          <Text style={[styles.progressPercent, { color: progressColor }]}>
-            {totalCompletionPercent}%
-          </Text>
-        </View>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarFill,
-              {
-                width: `${totalCompletionPercent}%`,
-                backgroundColor: progressColor
-              }
-            ]}
-          />
-        </View>
-        {saveStatus && (
-          <View style={styles.saveStatusContainer}>
-            <Text style={styles.saveStatusText}>
-              {saveStatus === 'saving' && '💾 Saving / Menyimpan...'}
-              {saveStatus === 'saved' && '✅ Saved / Disimpan'}
-              {saveStatus === 'error' && '❌ Save Failed / Gagal Disimpan'}
-            </Text>
-          </View>
-        )}
-      </View>
-    );
+  const handleContinue = () => {
+    navigation.navigate('MalaysiaEntryFlow', {
+      passport: passport,
+      destination: destination,
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <BackButton
-          onPress={handleGoBack}
+          onPress={() => navigation.goBack()}
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('malaysia.travelInfo.headerTitle', { defaultValue: 'Malaysia Entry Info / Maklumat Kemasukan' })}</Text>
-        <View style={styles.headerRight} />
-      </View>
-
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('malaysia.travelInfo.loading', { defaultValue: 'Loading data / Memuatkan data...' })}</Text>
+        <Text style={styles.headerTitle}>Malaysia Entry Info</Text>
+        <View style={styles.headerRight}>
+          {saveStatus && (
+            <Text style={[
+              styles.saveStatus,
+              saveStatus === 'saved' && styles.saveStatusSuccess,
+              saveStatus === 'error' && styles.saveStatusError
+            ]}>
+              {saveStatus === 'saving' && '💾'}
+              {saveStatus === 'saved' && '✅'}
+              {saveStatus === 'error' && '❌'}
+            </Text>
+          )}
         </View>
-      )}
+      </View>
 
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
+        onScroll={(e) => setScrollPosition(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
       >
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇲🇾</Text>
-          <Text style={styles.title}>{t('malaysia.travelInfo.title', { defaultValue: 'Malaysia Entry Information / Maklumat Kemasukan Malaysia' })}</Text>
-          <Text style={styles.subtitle}>{t('malaysia.travelInfo.subtitle', { defaultValue: 'Please provide the following information / Sila berikan maklumat berikut' })}</Text>
+          <Text style={styles.title}>
+            {t('malaysia.travelInfo.title', { defaultValue: 'Malaysia Entry Information / Maklumat Kemasukan Malaysia' })}
+          </Text>
+          <Text style={styles.subtitle}>
+            {t('malaysia.travelInfo.subtitle', { defaultValue: 'Please provide the following information / Sila berikan maklumat berikut' })}
+          </Text>
         </View>
 
         <View style={styles.privacyBox}>
@@ -814,128 +692,156 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
         {renderProgressHeader()}
 
+        {/* Passport Section */}
         <CollapsibleSection
           title={t('malaysia.travelInfo.sections.passport', { defaultValue: '📘 Passport Info / Maklumat Pasport' })}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
-           <PassportNameInput
-             value={fullName}
-             onChangeText={(value) => handleFieldChange('fullName', value, setFullName)}
-             helpText="Please fill in English / Sila isi dalam Bahasa Inggeris"
-             error={!!errors.fullName}
-             errorMessage={errors.fullName}
-           />
-           <NationalitySelector
-             label="Nationality / Warganegara"
-             value={nationality}
-             onValueChange={(code) => handleFieldChange('nationality', code, setNationality)}
-             helpText="Select your nationality / Pilih kewarganegaraan anda"
-             error={!!errors.nationality}
-             errorMessage={errors.nationality}
-           />
-           <Input
-             label="Passport No / No Pasport"
-             value={passportNo}
-             onChangeText={(value) => handleFieldChange('passportNo', value, setPassportNo)}
-             helpText="Enter passport number / Masukkan nombor pasport"
-             error={!!errors.passportNo}
-             errorMessage={errors.passportNo}
-             autoCapitalize="characters"
-           />
-           <DateTimeInput
-             label="Date of Birth / Tarikh Lahir"
-             value={dob}
-             onChangeText={(value) => handleFieldChange('dob', value, setDob)}
-             mode="date"
-             dateType="past"
-             helpText="Select date of birth / Pilih tarikh lahir"
-             error={!!errors.dob}
-             errorMessage={errors.dob}
-           />
-           <DateTimeInput
-             label="Passport Expiry / Tamat Pasport"
-             value={expiryDate}
-             onChangeText={(value) => handleFieldChange('expiryDate', value, setExpiryDate)}
-             mode="date"
-             dateType="future"
-             helpText="Select expiry date / Pilih tarikh tamat"
-             error={!!errors.expiryDate}
-             errorMessage={errors.expiryDate}
-           />
-         </CollapsibleSection>
+          <PassportNameInput
+            value={fullName}
+            onChangeText={(value) => handleFieldChange('fullName', value, setFullName)}
+            helpText="Please fill in English / Sila isi dalam Bahasa Inggeris"
+            error={!!errors.fullName}
+            errorMessage={errors.fullName}
+          />
+          <NationalitySelector
+            label="Nationality / Warganegara"
+            value={nationality}
+            onValueChange={(code) => handleFieldChange('nationality', code, setNationality)}
+            helpText="Select your nationality / Pilih kewarganegaraan anda"
+            error={!!errors.nationality}
+            errorMessage={errors.nationality}
+          />
+          <InputWithUserTracking
+            label="Passport No / No Pasport"
+            value={passportNo}
+            onChangeText={(value) => handleFieldChange('passportNo', value, setPassportNo)}
+            helpText="Enter passport number / Masukkan nombor pasport"
+            error={!!errors.passportNo}
+            errorMessage={errors.passportNo}
+            autoCapitalize="characters"
+            fieldName="passportNo"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
+          />
+          <DateTimeInput
+            label="Date of Birth / Tarikh Lahir"
+            value={dob}
+            onChangeText={(value) => handleFieldChange('dob', value, setDob)}
+            mode="date"
+            dateType="past"
+            helpText="Select date of birth / Pilih tarikh lahir"
+            error={!!errors.dob}
+            errorMessage={errors.dob}
+          />
+          <DateTimeInput
+            label="Passport Expiry / Tamat Pasport"
+            value={expiryDate}
+            onChangeText={(value) => handleFieldChange('expiryDate', value, setExpiryDate)}
+            mode="date"
+            dateType="future"
+            helpText="Select expiry date / Pilih tarikh tamat"
+            error={!!errors.expiryDate}
+            errorMessage={errors.expiryDate}
+          />
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Gender / Jantina</Text>
+            {renderGenderOptions()}
+          </View>
+        </CollapsibleSection>
 
+        {/* Personal Info Section */}
         <CollapsibleSection
           title={t('malaysia.travelInfo.sections.personal', { defaultValue: '👤 Personal Info / Maklumat Peribadi' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
-           <Input
-             label="Occupation / Pekerjaan"
-             value={occupation}
-             onChangeText={(value) => handleFieldChange('occupation', value, setOccupation)}
-             helpText="Enter your occupation (in English) / Masukkan pekerjaan anda (dalam Bahasa Inggeris)"
-             error={!!errors.occupation}
-             errorMessage={errors.occupation}
-             autoCapitalize="words"
-           />
-           <NationalitySelector
-             label="Resident Country / Negara Kediaman"
-             value={residentCountry}
-             onValueChange={(code) => {
-               handleFieldChange('residentCountry', code, setResidentCountry);
-               setPhoneCode(getPhoneCode(code));
-             }}
-             helpText="Select resident country / Pilih negara kediaman"
-             error={!!errors.residentCountry}
-             errorMessage={errors.residentCountry}
-           />
-           <View style={styles.phoneInputContainer}>
-             <Input
-               label="Country Code / Kod Negara"
-               value={phoneCode}
-               onChangeText={(value) => handleFieldChange('phoneCode', value, setPhoneCode)}
-               keyboardType="phone-pad"
-               maxLength={5}
-               error={!!errors.phoneCode}
-               errorMessage={errors.phoneCode}
-               style={styles.phoneCodeInput}
-             />
-             <Input
-               label="Phone Number / Nombor Telefon"
-               value={phoneNumber}
-               onChangeText={(value) => handleFieldChange('phoneNumber', value, setPhoneNumber)}
-               keyboardType="phone-pad"
-               helpText="Enter phone number / Masukkan nombor telefon"
-               error={!!errors.phoneNumber}
-               errorMessage={errors.phoneNumber}
-               style={styles.phoneInput}
-             />
-           </View>
-           <Input
-             label="Email / E-mel"
-             value={email}
-             onChangeText={(value) => handleFieldChange('email', value, setEmail)}
-             keyboardType="email-address"
-             helpText="Enter email address / Masukkan alamat e-mel"
-             error={!!errors.email}
-             errorMessage={errors.email}
-           />
-           <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>Gender / Jantina</Text>
-             {renderGenderOptions()}
-           </View>
-         </CollapsibleSection>
+          <InputWithUserTracking
+            label="Occupation / Pekerjaan"
+            value={occupation}
+            onChangeText={(value) => handleFieldChange('occupation', value, setOccupation)}
+            helpText="Enter your occupation (in English) / Masukkan pekerjaan anda (dalam Bahasa Inggeris)"
+            error={!!errors.occupation}
+            errorMessage={errors.occupation}
+            autoCapitalize="words"
+            fieldName="occupation"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
+          />
+          <NationalitySelector
+            label="Resident Country / Negara Kediaman"
+            value={residentCountry}
+            onValueChange={(code) => {
+              handleFieldChange('residentCountry', code, setResidentCountry);
+              setPhoneCode(getPhoneCode(code));
+            }}
+            helpText="Select resident country / Pilih negara kediaman"
+            error={!!errors.residentCountry}
+            errorMessage={errors.residentCountry}
+          />
+          <View style={styles.phoneInputContainer}>
+            <InputWithUserTracking
+              label="Country Code / Kod Negara"
+              value={phoneCode}
+              onChangeText={(value) => handleFieldChange('phoneCode', value, setPhoneCode)}
+              keyboardType="phone-pad"
+              maxLength={5}
+              error={!!errors.phoneCode}
+              errorMessage={errors.phoneCode}
+              style={styles.phoneCodeInput}
+              fieldName="phoneCode"
+              userInteractionTracker={userInteractionTracker}
+              lastEditedField={lastEditedField}
+            />
+            <InputWithUserTracking
+              label="Phone Number / Nombor Telefon"
+              value={phoneNumber}
+              onChangeText={(value) => handleFieldChange('phoneNumber', value, setPhoneNumber)}
+              keyboardType="phone-pad"
+              helpText="Enter phone number / Masukkan nombor telefon"
+              error={!!errors.phoneNumber}
+              errorMessage={errors.phoneNumber}
+              style={styles.phoneInput}
+              fieldName="phoneNumber"
+              userInteractionTracker={userInteractionTracker}
+              lastEditedField={lastEditedField}
+            />
+          </View>
+          <InputWithUserTracking
+            label="Email / E-mel"
+            value={email}
+            onChangeText={(value) => handleFieldChange('email', value, setEmail)}
+            keyboardType="email-address"
+            helpText="Enter email address / Masukkan alamat e-mel"
+            error={!!errors.email}
+            errorMessage={errors.email}
+            fieldName="email"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
+          />
+        </CollapsibleSection>
 
+        {/* Travel Info Section */}
         <CollapsibleSection
           title={t('malaysia.travelInfo.sections.travel', { defaultValue: '✈️ Travel Info / Maklumat Perjalanan' })}
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
-          <Input
+          <OptionSelector
+            label="Travel Purpose / Tujuan Perjalanan"
+            options={PREDEFINED_TRAVEL_PURPOSES}
+            selectedValue={travelPurpose}
+            onSelect={(value) => handleFieldChange('travelPurpose', value, setTravelPurpose)}
+            customValue={customTravelPurpose}
+            onCustomChange={(value) => handleFieldChange('customTravelPurpose', value, setCustomTravelPurpose)}
+            customPlaceholder="Enter custom purpose / Masukkan tujuan lain"
+          />
+
+          <InputWithUserTracking
             label="Flight Number / Nombor Penerbangan"
             value={arrivalFlightNumber}
             onChangeText={(value) => handleFieldChange('arrivalFlightNumber', value, setArrivalFlightNumber)}
@@ -943,7 +849,11 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             error={!!errors.arrivalFlightNumber}
             errorMessage={errors.arrivalFlightNumber}
             autoCapitalize="characters"
+            fieldName="arrivalFlightNumber"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
           />
+
           <DateTimeInput
             label="Arrival Date / Tarikh Ketibaan"
             value={arrivalDate}
@@ -954,7 +864,18 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             error={!!errors.arrivalDate}
             errorMessage={errors.arrivalDate}
           />
-          <Input
+
+          <OptionSelector
+            label="Accommodation Type / Jenis Penginapan"
+            options={PREDEFINED_ACCOMMODATION_TYPES}
+            selectedValue={accommodationType}
+            onSelect={(value) => handleFieldChange('accommodationType', value, setAccommodationType)}
+            customValue={customAccommodationType}
+            onCustomChange={(value) => handleFieldChange('customAccommodationType', value, setCustomAccommodationType)}
+            customPlaceholder="Enter custom accommodation / Masukkan jenis penginapan lain"
+          />
+
+          <InputWithUserTracking
             label="Address in Malaysia / Alamat di Malaysia"
             value={hotelAddress}
             onChangeText={(value) => handleFieldChange('hotelAddress', value, setHotelAddress)}
@@ -963,8 +884,12 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             error={!!errors.hotelAddress}
             errorMessage={errors.hotelAddress}
             autoCapitalize="words"
+            fieldName="hotelAddress"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
           />
-          <Input
+
+          <InputWithUserTracking
             label="Length of Stay (days) / Tempoh Penginapan (hari)"
             value={stayDuration}
             onChangeText={(value) => handleFieldChange('stayDuration', value, setStayDuration)}
@@ -972,7 +897,41 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             error={!!errors.stayDuration}
             errorMessage={errors.stayDuration}
             keyboardType="numeric"
+            fieldName="stayDuration"
+            userInteractionTracker={userInteractionTracker}
+            lastEditedField={lastEditedField}
           />
+
+          {/* Document Photos */}
+          <View style={styles.documentSection}>
+            <Text style={styles.documentSectionTitle}>Supporting Documents (Optional)</Text>
+
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={() => handlePhotoUpload('flight')}
+            >
+              <Text style={styles.uploadButtonIcon}>✈️</Text>
+              <View style={styles.uploadButtonContent}>
+                <Text style={styles.uploadButtonTitle}>Flight Ticket</Text>
+                <Text style={styles.uploadButtonSubtitle}>
+                  {flightTicketPhoto ? 'Uploaded ✓' : 'Tap to upload'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={() => handlePhotoUpload('hotel')}
+            >
+              <Text style={styles.uploadButtonIcon}>🏨</Text>
+              <View style={styles.uploadButtonContent}>
+                <Text style={styles.uploadButtonTitle}>Hotel Reservation</Text>
+                <Text style={styles.uploadButtonSubtitle}>
+                  {hotelReservationPhoto ? 'Uploaded ✓' : 'Tap to upload'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </CollapsibleSection>
 
         {/* Funds Section */}
@@ -982,20 +941,35 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
         >
-          {/* Malaysia Funds Context */}
           <View style={styles.sectionIntro}>
             <Text style={styles.sectionIntroIcon}>💳</Text>
             <Text style={styles.sectionIntroText}>
-              Malaysia immigration requires proof of sufficient funds for your stay. The minimum requirement is approximately MYR 350 (~500 THB or ~$100 USD) per day.
+              Malaysia immigration requires proof of sufficient funds for your stay. The minimum requirement is approximately MYR {FUND_REQUIREMENTS.MINIMUM_PER_DAY_MYR} (~{FUND_REQUIREMENTS.MINIMUM_PER_DAY_THB} THB or ~${FUND_REQUIREMENTS.MINIMUM_PER_DAY_USD} USD) per day.
             </Text>
             <Text style={styles.sectionIntroTextSecondary}>
-              Imigresen Malaysia memerlukan bukti dana yang mencukupi untuk penginapan anda. Keperluan minimum adalah kira-kira MYR 350 sehari.
+              Imigresen Malaysia memerlukan bukti dana yang mencukupi untuk penginapan anda. Keperluan minimum adalah kira-kira MYR {FUND_REQUIREMENTS.MINIMUM_PER_DAY_MYR} sehari.
             </Text>
           </View>
+
           <View style={styles.fundActions}>
-            <Button title="Add Cash / Tambah Tunai" onPress={() => addFund('cash')} variant="secondary" style={styles.fundButton} />
-            <Button title="Add Credit Card / Tambah Kad Kredit" onPress={() => addFund('credit_card')} variant="secondary" style={styles.fundButton} />
-            <Button title="Add Bank Balance / Tambah Baki Bank" onPress={() => addFund('bank_balance')} variant="secondary" style={styles.fundButton} />
+            <Button
+              title="Add Cash / Tambah Tunai"
+              onPress={() => addFund('cash')}
+              variant="secondary"
+              style={styles.fundButton}
+            />
+            <Button
+              title="Add Credit Card / Tambah Kad Kredit"
+              onPress={() => addFund('credit_card')}
+              variant="secondary"
+              style={styles.fundButton}
+            />
+            <Button
+              title="Add Bank Balance / Tambah Baki Bank"
+              onPress={() => addFund('bank_balance')}
+              variant="secondary"
+              style={styles.fundButton}
+            />
           </View>
 
           {funds.length === 0 ? (
@@ -1009,112 +983,54 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
             </View>
           ) : (
             <View style={styles.fundList}>
-              {funds.map((fund, index) => {
-                const isLast = index === funds.length - 1;
-                const typeKey = (fund.type || 'OTHER').toUpperCase();
-                const typeMeta = {
-                  CASH: { icon: '💵' },
-                  BANK_CARD: { icon: '💳' },
-                  CREDIT_CARD: { icon: '💳' },
-                  BANK_BALANCE: { icon: '🏦' },
-                  DOCUMENT: { icon: '📄' },
-                  INVESTMENT: { icon: '📈' },
-                  OTHER: { icon: '💰' },
-                };
-                const defaultTypeLabels = {
-                  CASH: 'Cash / Tunai',
-                  BANK_CARD: 'Bank Card / Kad Bank',
-                  CREDIT_CARD: 'Credit Card / Kad Kredit',
-                  BANK_BALANCE: 'Bank Balance / Baki Bank',
-                  DOCUMENT: 'Supporting Document / Dokumen Sokongan',
-                  INVESTMENT: 'Investment / Pelaburan',
-                  OTHER: 'Funding / Dana',
-                };
-                const typeIcon = (typeMeta[typeKey] || typeMeta.OTHER).icon;
-                const typeLabel = defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER;
-                const notProvidedLabel = 'Not provided yet / Belum diberikan';
-
-                const normalizeAmount = (value) => {
-                  if (value === null || value === undefined || value === '') return '';
-                  if (typeof value === 'number' && Number.isFinite(value)) {
-                    return value.toLocaleString();
-                  }
-                  if (typeof value === 'string') {
-                    const trimmed = value.trim();
-                    if (!trimmed) return '';
-                    const parsed = Number(trimmed.replace(/,/g, ''));
-                    return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
-                  }
-                  return `${value}`;
-                };
-
-                const amountValue = normalizeAmount(fund.amount);
-                const currencyValue = fund.currency ? fund.currency.toUpperCase() : '';
-                const detailsValue = fund.details || '';
-
-                let displayText;
-                if (typeKey === 'DOCUMENT') {
-                  displayText = detailsValue || notProvidedLabel;
-                } else if (typeKey === 'BANK_CARD' || typeKey === 'CREDIT_CARD') {
-                  const cardLabel = detailsValue || notProvidedLabel;
-                  const amountLabel = amountValue || notProvidedLabel;
-                  const currencyLabel = currencyValue || notProvidedLabel;
-                  displayText = `${cardLabel} • ${amountLabel} ${currencyLabel}`.trim();
-                } else if (['CASH', 'BANK_BALANCE', 'INVESTMENT'].includes(typeKey)) {
-                  const amountLabel = amountValue || notProvidedLabel;
-                  const currencyLabel = currencyValue || notProvidedLabel;
-                  displayText = `${amountLabel} ${currencyLabel}`.trim();
-                } else {
-                  displayText = detailsValue || amountValue || currencyValue || notProvidedLabel;
-                }
-
-                if ((fund.photoUri || fund.photo) && typeKey !== 'CASH') {
-                  const photoLabel = 'Photo attached / Foto dilampirkan';
-                  displayText = `${displayText} • ${photoLabel}`;
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={fund.id}
-                    style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
-                    onPress={() => handleFundItemPress(fund)}
-                    accessibilityRole="button"
-                  >
-                    <View style={styles.fundListItemContent}>
-                      <Text style={styles.fundItemIcon}>{typeIcon}</Text>
-                      <View style={styles.fundItemDetails}>
-                        <Text style={styles.fundItemTitle}>{typeLabel}</Text>
-                        <Text style={styles.fundItemSubtitle} numberOfLines={2}>
-                          {displayText}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.fundListItemArrow}>›</Text>
-                  </TouchableOpacity>
-                );
-              })}
+              {funds.map((fund) => (
+                <TouchableOpacity
+                  key={fund.id}
+                  style={styles.fundItem}
+                  onPress={() => editFund(fund)}
+                >
+                  <Text style={styles.fundItemIcon}>
+                    {fund.type === 'cash' ? '💵' : fund.type === 'credit_card' ? '💳' : '🏦'}
+                  </Text>
+                  <View style={styles.fundItemContent}>
+                    <Text style={styles.fundItemType}>
+                      {fund.type === 'cash' ? 'Cash / Tunai' :
+                       fund.type === 'credit_card' ? 'Credit Card / Kad Kredit' :
+                       'Bank Balance / Baki Bank'}
+                    </Text>
+                    <Text style={styles.fundItemAmount}>
+                      {fund.currency} {fund.amount || 'Not specified'}
+                    </Text>
+                  </View>
+                  <Text style={styles.fundItemArrow}>›</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           )}
         </CollapsibleSection>
 
-        <View style={styles.buttonContainer}>
+        <View style={styles.bottomActions}>
           <Button
-            title={t('malaysia.travelInfo.buttons.continue', { defaultValue: 'Generate Entry Pack / Jana Pakej Kemasukan' })}
+            title="Continue to Entry Flow →"
             onPress={handleContinue}
             variant="primary"
-            disabled={!isFormValid()}
+            style={styles.continueButton}
           />
         </View>
       </ScrollView>
 
+      {/* Fund Item Modal */}
       <FundItemDetailModal
         visible={fundItemModalVisible}
         fundItem={currentFundItem}
-        createItemType={newFundItemType}
-        onClose={handleFundItemModalClose}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
+        onSave={saveFundItem}
+        onDelete={selectedFundItem ? () => deleteFundItem(selectedFundItem.id) : null}
+        onCancel={() => {
+          setFundItemModalVisible(false);
+          setSelectedFundItem(null);
+          setCurrentFundItem(null);
+          setNewFundItemType(null);
+        }}
       />
     </SafeAreaView>
   );
@@ -1142,12 +1058,24 @@ const styles = StyleSheet.create({
     ...typography.body2,
     fontWeight: '600',
     color: colors.text,
+    flex: 1,
+    textAlign: 'center',
   },
   headerRight: {
     width: 40,
+    alignItems: 'flex-end',
+  },
+  saveStatus: {
+    fontSize: 16,
+  },
+  saveStatusSuccess: {
+    color: colors.success,
+  },
+  saveStatusError: {
+    color: colors.error,
   },
   scrollContainer: {
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   titleSection: {
     alignItems: 'center',
@@ -1160,7 +1088,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h3,
-    color: colors.primary,
+    color: colors.text,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },
@@ -1169,246 +1097,211 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  progressContainer: {
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+  privacyBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
     padding: spacing.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 8,
+  },
+  privacyIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+  },
+  privacyText: {
+    ...typography.body2,
+    color: colors.primary,
+    flex: 1,
+  },
+  progressHeader: {
+    backgroundColor: colors.white,
+    padding: spacing.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  progressHeader: {
+  progressTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
-  progressTitle: {
+  progressLabel: {
     ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
+    color: colors.textSecondary,
   },
-  progressPercent: {
-    ...typography.h3,
-    fontWeight: '700',
+  progressText: {
+    ...typography.body1,
+    fontWeight: '600',
+  },
+  progressBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   progressBarBackground: {
+    flex: 1,
     height: 8,
-    backgroundColor: colors.border,
+    backgroundColor: colors.backgroundLight,
     borderRadius: 4,
     overflow: 'hidden',
+    marginRight: spacing.sm,
   },
   progressBarFill: {
     height: '100%',
     borderRadius: 4,
   },
-  saveStatusContainer: {
-    marginTop: spacing.sm,
-    alignItems: 'center',
+  progressPercent: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    minWidth: 40,
+    textAlign: 'right',
   },
-  saveStatusText: {
+  progressStats: {
     ...typography.caption,
     color: colors.textSecondary,
-  },
-  sectionContainer: {
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.text,
-    fontWeight: '600',
-  },
-  fieldCountBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: spacing.sm,
-  },
-  fieldCountBadgeComplete: {
-    backgroundColor: '#d4edda',
-  },
-  fieldCountBadgeIncomplete: {
-    backgroundColor: '#fff3cd',
-  },
-  fieldCountText: {
-    ...typography.caption,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  fieldCountTextComplete: {
-    color: '#155724',
-  },
-  fieldCountTextIncomplete: {
-    color: '#856404',
-  },
-  sectionIcon: {
-    ...typography.h3,
-    color: colors.textSecondary,
-    marginLeft: spacing.md,
-  },
-  sectionContent: {
-    padding: spacing.md,
-    paddingTop: 0,
-  },
-  buttonContainer: {
-    paddingHorizontal: spacing.md,
-    marginTop: spacing.md,
-  },
-  scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  scanIcon: {
-    fontSize: 18,
-    marginRight: spacing.xs,
-  },
-  scanText: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  fieldContainer: {
-    marginBottom: spacing.sm,
-  },
-  fieldLabel: {
-    ...typography.body1,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
-  },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    margin: spacing.xs,
-  },
-  optionButtonActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  optionText: {
-    ...typography.body2,
-    color: colors.text,
-    fontSize: 12,
-  },
-  optionTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  privacyBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    padding: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 6,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
-  },
-  privacyIcon: {
-    fontSize: 14,
-    marginRight: spacing.xs,
-  },
-  privacyText: {
-    fontSize: 12,
-    color: '#34C759',
-    flex: 1,
-    lineHeight: 16,
   },
   phoneInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
   phoneCodeInput: {
-    width: '30%',
-    marginRight: spacing.sm,
+    flex: 0.3,
   },
   phoneInput: {
+    flex: 0.7,
+  },
+  fieldContainer: {
+    marginBottom: spacing.md,
+  },
+  fieldLabel: {
+    ...typography.body2,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    fontWeight: '500',
+  },
+  genderOptions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  genderOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  genderOptionSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  genderRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginRight: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  genderRadioSelected: {
+    borderColor: colors.primary,
+  },
+  genderRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
+  genderLabel: {
+    ...typography.body2,
+    color: colors.text,
+  },
+  genderLabelSelected: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  documentSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  documentSectionTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  uploadButtonIcon: {
+    fontSize: 24,
+    marginRight: spacing.md,
+  },
+  uploadButtonContent: {
     flex: 1,
   },
-  loadingContainer: {
-    padding: spacing.md,
-    alignItems: 'center',
-    backgroundColor: colors.background,
+  uploadButtonTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
   },
-  loadingText: {
-    ...typography.body1,
+  uploadButtonSubtitle: {
+    ...typography.caption,
     color: colors.textSecondary,
   },
-  // Funds Section Styles
   sectionIntro: {
-    backgroundColor: 'rgba(52, 199, 89, 0.05)',
+    backgroundColor: colors.backgroundLight,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.1)',
   },
   sectionIntroIcon: {
     fontSize: 24,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   sectionIntroText: {
     ...typography.body2,
     color: colors.text,
     lineHeight: 20,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   sectionIntroTextSecondary: {
-    ...typography.body2,
+    ...typography.caption,
     color: colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
+    lineHeight: 18,
   },
   fundActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   fundButton: {
-    marginBottom: spacing.sm,
+    flex: 1,
+    minWidth: 100,
   },
   fundEmptyState: {
     padding: spacing.lg,
     alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
   },
   fundEmptyText: {
     ...typography.body2,
@@ -1417,57 +1310,47 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   fundEmptyTextSecondary: {
-    ...typography.body2,
-    color: colors.textTertiary,
+    ...typography.caption,
+    color: colors.textSecondary,
     textAlign: 'center',
-    fontStyle: 'italic',
-    fontSize: 13,
   },
   fundList: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
+    gap: spacing.sm,
   },
-  fundListItem: {
+  fundItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: spacing.md,
     backgroundColor: colors.white,
-  },
-  fundListItemDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  fundListItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   fundItemIcon: {
     fontSize: 24,
     marginRight: spacing.md,
   },
-  fundItemDetails: {
+  fundItemContent: {
     flex: 1,
   },
-  fundItemTitle: {
-    ...typography.body1,
+  fundItemType: {
+    ...typography.body2,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.xs / 2,
   },
-  fundItemSubtitle: {
-    ...typography.body2,
+  fundItemAmount: {
+    ...typography.caption,
     color: colors.textSecondary,
-    lineHeight: 18,
   },
-  fundListItemArrow: {
-    fontSize: 20,
-    color: colors.textTertiary,
-    marginLeft: spacing.sm,
+  fundItemArrow: {
+    ...typography.body1,
+    color: colors.textSecondary,
+  },
+  bottomActions: {
+    padding: spacing.md,
+  },
+  continueButton: {
+    marginBottom: spacing.sm,
   },
 });
 

@@ -11,10 +11,16 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import BackButton from '../../components/BackButton';
+import Button from '../../components/Button';
+import CompletionSummaryCard from '../../components/CompletionSummaryCard';
+import SubmissionCountdown from '../../components/SubmissionCountdown';
+
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 
 const JapanEntryFlowScreen = ({ navigation, route }) => {
@@ -23,12 +29,14 @@ const JapanEntryFlowScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
 
-  // Completion state
+  // Completion state - calculated from real user data
   const [completionPercent, setCompletionPercent] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [japanTravelerData, setJapanTravelerData] = useState(null);
+  const [completionStatus, setCompletionStatus] = useState('incomplete');
+  const [categories, setCategories] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [arrivalDate, setArrivalDate] = useState(null);
 
+  // Passport selection state
   const [userId, setUserId] = useState(null);
 
   // Load data on component mount and when screen gains focus
@@ -46,65 +54,154 @@ const JapanEntryFlowScreen = ({ navigation, route }) => {
       const currentUserId = passportParam?.id || 'user_001';
       setUserId(currentUserId);
 
-      // Load Japan traveler data
-      const JapanTravelerContextBuilder = require('../../services/japan/JapanTravelerContextBuilder').default;
-      const result = await JapanTravelerContextBuilder.buildContext(currentUserId);
+      // Initialize UserDataService
+      await UserDataService.initialize(currentUserId);
 
-      if (result.success) {
-        console.log('Japan traveler data loaded successfully');
-        setJapanTravelerData(result.payload);
+      // Load all user data
+      const allUserData = await UserDataService.getAllUserData(currentUserId);
 
-        // Calculate completion
-        const requiredFields = [
-          'passportNo',
-          'fullName',
-          'nationality',
-          'dateOfBirth',
-          'occupation',
-          'email',
-          'arrivalDate',
-          'arrivalFlightNumber',
-          'accommodationAddress',
-          'accommodationPhone',
-          'lengthOfStay',
-        ];
+      // Load fund items
+      const fundItems = await UserDataService.getFundItems(currentUserId);
 
-        let completed = requiredFields.filter((field) => {
-          const value = result.payload[field];
-          if (value === null || value === undefined) return false;
-          if (typeof value === 'number') return !Number.isNaN(value);
-          return String(value).trim().length > 0;
-        }).length;
+      // Load travel info for Japan
+      const destinationId = route.params?.destination?.id || 'japan';
+      const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
 
-        const total = requiredFields.length + 1;
-        if (Array.isArray(result.payload.fundItems) && result.payload.fundItems.length > 0) {
-          completed += 1;
-        }
+      // Prepare entry info for completion calculation
+      const passportInfo = allUserData.passport || {};
+      const personalInfoFromStore = allUserData.personalInfo || {};
+      const normalizedPersonalInfo = { ...personalInfoFromStore };
 
-        const percent = total === 0 ? 0 : Math.min(100, Math.round((completed / total) * 100));
+      const entryInfo = {
+        passport: passportInfo,
+        personalInfo: normalizedPersonalInfo,
+        funds: fundItems || [],
+        travel: travelInfo || {},
+        lastUpdatedAt: new Date().toISOString()
+      };
 
-        setCompletedCount(completed);
-        setTotalCount(total);
-        setCompletionPercent(percent);
+      setUserData(entryInfo);
+
+      // Extract arrival date
+      const arrivalDateFromTravel = travelInfo?.arrivalDate;
+      setArrivalDate(arrivalDateFromTravel);
+
+      // Calculate completion using EntryCompletionCalculator
+      const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
+
+      // Update completion state
+      setCompletionPercent(completionSummary.totalPercent);
+
+      if (completionSummary.totalPercent === 100) {
+        setCompletionStatus('ready');
+      } else if (completionSummary.totalPercent >= 50) {
+        setCompletionStatus('mostly_complete');
       } else {
-        console.log('Failed to load Japan traveler data:', result.errors);
+        setCompletionStatus('needs_improvement');
       }
 
+      // Create category data from completion metrics
+      const categoryData = [
+        {
+          id: 'passport',
+          name: t('progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
+          icon: '📘',
+          status: completionSummary.categorySummary.passport.state,
+          completedCount: completionSummary.categorySummary.passport.completed,
+          totalCount: completionSummary.categorySummary.passport.total,
+          missingFields: completionSummary.missingFields.passport || [],
+        },
+        {
+          id: 'personal',
+          name: t('progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
+          icon: '👤',
+          status: completionSummary.categorySummary.personalInfo.state,
+          completedCount: completionSummary.categorySummary.personalInfo.completed,
+          totalCount: completionSummary.categorySummary.personalInfo.total,
+          missingFields: completionSummary.missingFields.personalInfo || [],
+        },
+        {
+          id: 'funds',
+          name: t('progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
+          icon: '💰',
+          status: completionSummary.categorySummary.funds.state,
+          completedCount: completionSummary.categorySummary.funds.validFunds,
+          totalCount: 1,
+          missingFields: completionSummary.missingFields.funds || [],
+        },
+        {
+          id: 'travel',
+          name: t('progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
+          icon: '✈️',
+          status: completionSummary.categorySummary.travel.state,
+          completedCount: completionSummary.categorySummary.travel.completed,
+          totalCount: completionSummary.categorySummary.travel.total,
+          missingFields: completionSummary.missingFields.travel || [],
+        },
+      ];
+
+      setCategories(categoryData);
     } catch (error) {
       console.error('Failed to load entry flow data:', error);
+
+      // Fallback to empty state on error
       setCompletionPercent(0);
+      setCompletionStatus('needs_improvement');
+      setCategories([
+        {
+          id: 'passport',
+          name: '护照信息',
+          icon: '📘',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 5,
+          missingFields: ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'],
+        },
+        {
+          id: 'personal',
+          name: '个人信息',
+          icon: '👤',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 4,
+          missingFields: ['occupation', 'phoneNumber', 'email', 'gender'],
+        },
+        {
+          id: 'funds',
+          name: '资金证明',
+          icon: '💰',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 1,
+          missingFields: ['fundItems'],
+        },
+        {
+          id: 'travel',
+          name: '旅行信息',
+          icon: '✈️',
+          status: 'incomplete',
+          completedCount: 0,
+          totalCount: 4,
+          missingFields: ['arrivalDate', 'flightNumber', 'accommodation', 'lengthOfStay'],
+        },
+      ]);
     } finally {
       setIsLoading(false);
-      setRefreshing(false);
     }
   };
 
-  const onRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-    loadData();
+    await loadData();
+    setRefreshing(false);
   };
 
-  const handleEditInfo = () => {
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
+  const handleEditInformation = () => {
+    // Navigate back to JapanTravelInfoScreen
     navigation.navigate('JapanTravelInfo', {
       passport: passportParam,
       destination: route.params?.destination,
@@ -112,229 +209,336 @@ const JapanEntryFlowScreen = ({ navigation, route }) => {
     });
   };
 
-  const handleViewFillingGuide = () => {
+  const handlePreviewEntryCard = () => {
+    // Navigate to Result screen (Japan uses a different preview system)
     navigation.navigate('Result', {
       passport: passportParam,
       destination: route.params?.destination,
       userId: userId,
-      context: 'manual_entry_guide',
-      initialAction: 'guide',
+      context: 'entry_pack_preview',
     });
   };
 
-  const handleInteractiveGuide = () => {
-    navigation.navigate('ImmigrationGuide', {
+  const handleCategoryPress = (category) => {
+    // Navigate back to JapanTravelInfoScreen with the specific section expanded
+    navigation.navigate('JapanTravelInfo', {
+      expandSection: category.id,
       passport: passportParam,
       destination: route.params?.destination,
-      japanTravelerData,
       userId: userId,
     });
   };
 
-  const handleShare = () => {
-    Alert.alert(
-      '分享给亲友',
-      '分享功能开发中，敬请期待！',
-      [{ text: '确定' }]
-    );
+  const handlePrimaryAction = async () => {
+    const buttonState = getPrimaryButtonState();
+
+    switch (buttonState.action) {
+      case 'continue_improving':
+        navigation.navigate('JapanTravelInfo', {
+          passport: passportParam,
+          destination: route.params?.destination,
+          userId: userId,
+        });
+        break;
+      case 'view_filling_guide':
+        // Navigate to filling guide
+        navigation.navigate('Result', {
+          passport: passportParam,
+          destination: route.params?.destination,
+          userId: userId,
+          context: 'manual_entry_guide',
+          initialAction: 'guide',
+        });
+        break;
+      case 'view_entry_pack':
+        // Navigate to entry pack preview screen
+        handlePreviewEntryCard();
+        break;
+      default:
+        break;
+    }
   };
 
-  const isReady = completionPercent === 100;
-  const statusVariant = !japanTravelerData
-    ? 'loading'
-    : isReady
-      ? 'complete'
-      : completionPercent >= 80
-        ? 'almost'
-        : 'incomplete';
+  const getPrimaryButtonState = () => {
+    const isComplete = completionPercent === 100;
 
-  const themeMap = {
-    complete: {
-      color: '#0BD67B',
-      background: 'rgba(11, 214, 123, 0.12)',
-      border: 'rgba(11, 214, 123, 0.25)',
-      statusText: '日本入境准备就绪！🌸',
-      subtitle: '所有资料整理完成，随时可以在机场出示。',
-    },
-    almost: {
-      color: '#FF9500',
-      background: 'rgba(255, 149, 0, 0.12)',
-      border: 'rgba(255, 149, 0, 0.2)',
-      statusText: '再检查一下信息～',
-      subtitle: '还有少量信息待确认，完成后更安心出行。',
-    },
-    incomplete: {
-      color: colors.primary,
-      background: 'rgba(10, 132, 255, 0.12)',
-      border: 'rgba(10, 132, 255, 0.2)',
-      statusText: '继续完善资料吧！',
-      subtitle: '完成所有资料即可生成完整的日本入境包。',
-    },
-    loading: {
-      color: colors.textSecondary,
-      background: 'rgba(0, 0, 0, 0.04)',
-      border: 'rgba(0, 0, 0, 0.08)',
-      statusText: '正在加载您的资料…',
-      subtitle: '请稍候，我们正在整理旅客信息。',
-    },
+    if (completionPercent >= 80 && isComplete) {
+      return {
+        title: '查看入境卡填写指南 📋',
+        action: 'view_filling_guide',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '准备好了！查看完整填写指南'
+      };
+    } else if (completionPercent >= 60) {
+      return {
+        title: '查看我的通关包 📋',
+        action: 'view_entry_pack',
+        disabled: false,
+        variant: 'primary',
+        subtitle: '看看你已经准备好的入境信息'
+      };
+    } else if (!isComplete) {
+      return {
+        title: '继续准备我的日本之旅 💪',
+        action: 'continue_improving',
+        disabled: false,
+        variant: 'secondary'
+      };
+    } else {
+      return {
+        title: '查看入境卡填写指南',
+        action: 'view_filling_guide',
+        disabled: false,
+        variant: 'primary'
+      };
+    }
   };
 
-  const theme = themeMap[statusVariant];
-  const progressWidth = japanTravelerData ? `${completionPercent}%` : '0%';
+  const hasNoEntryData = completionPercent === 0 && categories.every(cat => cat.completedCount === 0);
 
-  const actionCards = [
-    {
-      id: 'edit',
-      icon: '✏️',
-      title: '修改我的信息',
-      subtitle: '编辑护照、行程、住宿等资料',
-      onPress: handleEditInfo,
-      color: '#007AFF',
-    },
-    {
-      id: 'guide',
-      icon: '📋',
-      title: '查看填写指南',
-      subtitle: '离线查看所有入境卡填写信息',
-      onPress: handleViewFillingGuide,
-      color: '#34C759',
-    },
-    {
-      id: 'interactive',
-      icon: '🛬',
-      title: '互动入境指南',
-      subtitle: '分步骤指导，大字体模式',
-      onPress: handleInteractiveGuide,
-      color: '#FF9500',
-    },
-    {
-      id: 'share',
-      icon: '👥',
-      title: '分享给亲友',
-      subtitle: '让家人帮忙核对信息',
-      onPress: handleShare,
-      color: '#5856D6',
-    },
-  ];
-
-  if (isLoading && !japanTravelerData) {
+  const renderPrimaryAction = () => {
+    const buttonState = getPrimaryButtonState();
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <BackButton
-            onPress={() => navigation.goBack()}
-            label={t('common.back')}
-            style={styles.backButton}
-          />
-          <Text style={styles.headerTitle}>日本入境准备</Text>
-          <View style={styles.headerRight} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>正在加载...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <BackButton
-          onPress={() => navigation.goBack()}
-          label={t('common.back')}
-          style={styles.backButton}
+      <View>
+        <Button
+          title={buttonState.title}
+          onPress={handlePrimaryAction}
+          variant={buttonState.variant}
+          disabled={buttonState.disabled}
+          style={styles.primaryActionButton}
         />
-        <Text style={styles.headerTitle}>日本入境准备</Text>
-        <View style={styles.headerRight} />
+        {buttonState.subtitle && (
+          <Text style={styles.primaryActionSubtitle}>
+            {buttonState.subtitle}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderNoDataState = () => (
+    <View style={styles.noDataContainer}>
+      <Text style={styles.noDataIcon}>📝</Text>
+      <Text style={styles.noDataTitle}>
+        准备开始日本之旅吧！🌸
+      </Text>
+      <Text style={styles.noDataDescription}>
+        你还没有填写日本入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境日本！
+      </Text>
+
+      {/* Example/Tutorial hints */}
+      <View style={styles.noDataHints}>
+        <Text style={styles.noDataHintsTitle}>
+          日本入境需要准备这些信息 🌸
+        </Text>
+        <View style={styles.noDataHintsList}>
+          <Text style={styles.noDataHint}>• 📘 护照信息 - 让日本认识你</Text>
+          <Text style={styles.noDataHint}>• 📞 联系方式 - 日本怎么找到你</Text>
+          <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
+          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
+          <Text style={styles.noDataHint}>• ✍️ 纸质入境卡 - 需要手写填写</Text>
+        </View>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Hero Progress Card */}
-        <View style={styles.heroContainer}>
-          <Text style={styles.heroTitle}>
-            我的日本之旅准备好了吗？🌸
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            看看你准备得怎么样，一起迎接日本冒险！
-          </Text>
+      <Button
+        title="开始我的日本准备之旅！🇯🇵"
+        onPress={handleEditInformation}
+        variant="primary"
+        style={styles.noDataButton}
+      />
+    </View>
+  );
 
-          <View
-            style={[
-              styles.heroCard,
-              { backgroundColor: theme.background, borderColor: theme.border },
-            ]}
-          >
-            <View style={styles.heroProgressSection}>
-              <Text style={[styles.heroPercent, { color: theme.color }]}>
-                {japanTravelerData ? `${completionPercent}%` : '--'}
-              </Text>
-              <Text style={styles.heroPercentLabel}>准备进度</Text>
-              <View style={styles.heroProgressBar}>
-                <View
-                  style={[
-                    styles.heroProgressFill,
-                    { width: progressWidth, backgroundColor: theme.color },
-                  ]}
-                />
-              </View>
-              <Text style={[styles.heroStatus, { color: theme.color }]}>
-                {theme.statusText}
-              </Text>
-              <Text style={styles.heroSubtitleText}>
-                {theme.subtitle}
-              </Text>
-              {japanTravelerData && totalCount > 0 && (
-                <Text style={styles.heroMeta}>
-                  已完成 {completedCount}/{totalCount} 项资料
-                </Text>
-              )}
-            </View>
-          </View>
-        </View>
+  const renderPreparedState = () => (
+    <View>
+      {/* Status Cards Section */}
+      <View style={styles.statusSection}>
+        <CompletionSummaryCard
+          completionPercent={completionPercent}
+          status={completionStatus}
+          showProgressBar={true}
+        />
 
-        {/* Action Cards */}
-        <View style={styles.actionsContainer}>
-          <Text style={styles.actionsTitle}>快速操作</Text>
-          {actionCards.map((card) => (
+        {/* Additional Action Buttons - Show when completion is high */}
+        {completionPercent >= 80 && (
+          <View style={styles.additionalActionsContainer}>
             <TouchableOpacity
-              key={card.id}
-              style={styles.actionCard}
-              onPress={card.onPress}
-              activeOpacity={0.7}
+              style={styles.additionalActionButton}
+              onPress={handleEditInformation}
             >
-              <View style={[styles.actionIconContainer, { backgroundColor: `${card.color}15` }]}>
-                <Text style={styles.actionIcon}>{card.icon}</Text>
-              </View>
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.actionTitle}>{card.title}</Text>
-                <Text style={styles.actionSubtitle}>{card.subtitle}</Text>
-              </View>
-              <Text style={[styles.actionArrow, { color: card.color }]}>›</Text>
+              <Text style={styles.additionalActionIcon}>✏️</Text>
+              <Text style={styles.additionalActionText}>再改改</Text>
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Info Box */}
+            <TouchableOpacity
+              style={styles.additionalActionButton}
+              onPress={() => {
+                // Show sharing options
+                Alert.alert(
+                  '寻求帮助',
+                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
+                  [
+                    {
+                      text: '截图分享',
+                      onPress: () => {
+                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
+                      }
+                    },
+                    { text: '取消', style: 'cancel' }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.additionalActionIcon}>👥</Text>
+              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Integrated Countdown & Submission Section */}
+      <View style={styles.countdownSection}>
+        <Text style={styles.sectionTitle}>
+          最佳提交时间 ⏰
+        </Text>
+
+        {/* Submission Countdown */}
+        <SubmissionCountdown
+          arrivalDate={arrivalDate}
+          locale={t('locale', { defaultValue: 'zh' })}
+          showIcon={true}
+          updateInterval={1000}
+        />
+
+        {/* Smart Primary Action Button - Integrated with Countdown */}
+        <View style={styles.primaryActionContainer}>
+          {renderPrimaryAction()}
+        </View>
+      </View>
+
+      {/* Secondary Actions Section */}
+      <View style={styles.actionSection}>
+        {/* Interactive Guide Button - Japan Specific */}
+        <TouchableOpacity
+          style={styles.entryGuideButton}
+          onPress={() => navigation.navigate('ImmigrationGuide', {
+            passport: passportParam,
+            destination: route.params?.destination,
+            userId: userId,
+          })}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#FF6B9D', '#C06AE8']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.entryGuideGradient}
+          >
+            <View style={styles.entryGuideIconContainer}>
+              <Text style={styles.entryGuideIcon}>🛬</Text>
+            </View>
+            <View style={styles.entryGuideContent}>
+              <Text style={styles.entryGuideTitle}>
+                互动入境指南
+              </Text>
+              <Text style={styles.entryGuideSubtitle}>
+                分步骤指导，大字体模式
+              </Text>
+            </View>
+            <View style={styles.entryGuideChevron}>
+              <Text style={styles.entryGuideArrow}>›</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Secondary Actions - Redesigned */}
+        {completionPercent > 50 && (
+          <View style={styles.secondaryActionsContainer}>
+            <TouchableOpacity
+              style={styles.secondaryActionButton}
+              onPress={handlePreviewEntryCard}
+              activeOpacity={0.8}
+            >
+              <View style={styles.secondaryActionIconContainer}>
+                <Text style={styles.secondaryActionIcon}>👁️</Text>
+              </View>
+              <View style={styles.secondaryActionContent}>
+                <Text style={styles.secondaryActionTitle}>
+                  看看我的通关包
+                </Text>
+                <Text style={styles.secondaryActionSubtitle}>
+                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+                </Text>
+              </View>
+              <Text style={styles.secondaryActionArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Japan-specific Info Card */}
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
             日本需要手写纸质入境卡，建议提前准备好黑/蓝色签字笔，并保存填写指南截图以便随时查看。
           </Text>
         </View>
+      </View>
+    </View>
+  );
 
-        {/* Privacy Box */}
-        <View style={styles.privacyBox}>
-          <Text style={styles.privacyIcon}>💾</Text>
-          <Text style={styles.privacyText}>
-            所有信息仅保存在您的手机本地
+  const renderContent = () => (
+    <View style={styles.contentContainer}>
+      {hasNoEntryData ? renderNoDataState() : renderPreparedState()}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <BackButton
+          onPress={handleGoBack}
+          label={t('common.back')}
+          style={styles.backButton}
+        />
+        <Text style={styles.headerTitle}>
+          我的日本之旅 🌸
+        </Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+      >
+
+        <View style={styles.titleSection}>
+          <Text style={styles.flag}>🇯🇵</Text>
+          <Text style={styles.title}>
+            我的日本之旅准备好了吗？🌸
+          </Text>
+          <Text style={styles.subtitle}>
+            看看你准备得怎么样，一起迎接日本冒险！
           </Text>
         </View>
+
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>
+              {t('japan.entryFlow.loading', { defaultValue: '正在加载准备状态...' })}
+            </Text>
+          </View>
+        ) : (
+          renderContent()
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -362,187 +566,308 @@ const styles = StyleSheet.create({
     ...typography.body2,
     fontWeight: '600',
     color: colors.text,
+    textAlign: 'center',
+    flex: 1,
   },
   headerRight: {
     width: 40,
   },
+  scrollContainer: {
+    paddingBottom: spacing.lg,
+  },
+
+  titleSection: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  flag: {
+    fontSize: 40,
+    marginBottom: spacing.sm,
+  },
+  title: {
+    ...typography.h3,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  subtitle: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    padding: spacing.md,
     alignItems: 'center',
   },
   loadingText: {
     ...typography.body1,
     color: colors.textSecondary,
   },
-  scrollContent: {
-    paddingBottom: spacing.xl,
+  contentContainer: {
+    paddingHorizontal: spacing.md,
   },
-  heroContainer: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.lg,
+  // Status Section Styles
+  statusSection: {
+    marginBottom: spacing.lg,
   },
-  heroTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+  sectionTitle: {
+    ...typography.h3,
     color: colors.text,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginTop: spacing.xs,
+    fontWeight: '600',
     marginBottom: spacing.md,
   },
-  heroCard: {
-    borderRadius: 22,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    borderWidth: 1,
+
+  // Integrated Countdown & Submission Section Styles
+  countdownSection: {
+    marginBottom: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
-  heroProgressSection: {
-    alignItems: 'center',
+
+  // Action Section Styles (now only for secondary actions)
+  actionSection: {
+    marginBottom: spacing.lg,
   },
-  heroPercent: {
-    fontSize: 48,
-    fontWeight: '700',
-    lineHeight: 52,
-  },
-  heroPercentLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  heroProgressBar: {
-    width: '100%',
-    height: 10,
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    borderRadius: 5,
-    overflow: 'hidden',
+  primaryActionContainer: {
     marginTop: spacing.md,
-    marginBottom: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  heroProgressFill: {
-    height: '100%',
-    borderRadius: 5,
+  primaryActionButton: {
+    marginBottom: spacing.xs,
   },
-  heroStatus: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  heroSubtitleText: {
-    fontSize: 14,
+  primaryActionSubtitle: {
+    ...typography.body2,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    marginTop: spacing.xs,
+    lineHeight: 16,
   },
-  heroMeta: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-  actionsContainer: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.xl,
-  },
-  actionsTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.text,
+  secondaryActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
     marginBottom: spacing.md,
   },
-  actionCard: {
+  secondaryActionButton: {
+    flex: 1,
+    minWidth: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 16,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    borderColor: 'rgba(255, 107, 157, 0.15)',
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
   },
-  actionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  secondaryActionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  actionIcon: {
+  secondaryActionIcon: {
     fontSize: 24,
   },
-  actionTextContainer: {
+  secondaryActionContent: {
     flex: 1,
   },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  secondaryActionTitle: {
+    ...typography.body1,
     color: colors.text,
-    marginBottom: 2,
+    fontWeight: '600',
   },
-  actionSubtitle: {
-    fontSize: 13,
+  secondaryActionSubtitle: {
+    ...typography.caption,
     color: colors.textSecondary,
+    marginTop: 4,
   },
-  actionArrow: {
-    fontSize: 28,
-    fontWeight: '400',
+  secondaryActionArrow: {
+    ...typography.body2,
+    color: colors.primaryDark,
+    fontWeight: '700',
+    fontSize: 18,
     marginLeft: spacing.sm,
   },
-  infoBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-    padding: spacing.md,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.lg,
+  // No Data Styles
+  noDataContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  noDataIcon: {
+    fontSize: 64,
+    marginBottom: spacing.lg,
+  },
+  noDataTitle: {
+    ...typography.h2,
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    fontWeight: '600',
+  },
+  noDataDescription: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+  },
+  noDataHints: {
+    backgroundColor: colors.primaryLight,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(33, 150, 243, 0.2)',
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    width: '100%',
   },
-  infoIcon: {
-    fontSize: 16,
-    marginRight: spacing.sm,
+  noDataHintsTitle: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
   },
-  infoText: {
-    fontSize: 13,
-    color: '#1565C0',
-    flex: 1,
+  noDataHintsList: {
+    gap: spacing.xs,
+  },
+  noDataHint: {
+    ...typography.body2,
+    color: colors.primary,
     lineHeight: 18,
   },
-  privacyBox: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-    padding: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 199, 89, 0.2)',
+  noDataButton: {
+    minWidth: 200,
   },
-  privacyIcon: {
+
+  // Entry Guide Button Styles (Japan-specific gradient)
+  entryGuideButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  entryGuideGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  entryGuideIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  entryGuideContent: {
+    flex: 1,
+  },
+  entryGuideTitle: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  entryGuideSubtitle: {
+    ...typography.caption,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 4,
+  },
+  entryGuideIcon: {
+    fontSize: 24,
+  },
+  entryGuideChevron: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.md,
+  },
+  entryGuideArrow: {
+    ...typography.body1,
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
+  // Additional action buttons styles
+  additionalActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  additionalActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  additionalActionIcon: {
     fontSize: 16,
     marginRight: spacing.xs,
   },
-  privacyText: {
+  additionalActionText: {
+    ...typography.body2,
+    color: colors.text,
+    fontWeight: '500',
     fontSize: 13,
-    color: '#34C759',
+  },
+
+  // Japan-specific info box
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+    padding: spacing.md,
+    marginTop: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 149, 0, 0.2)',
+  },
+  infoIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
+  },
+  infoText: {
     flex: 1,
+    fontSize: 13,
+    color: '#D97706',
     lineHeight: 18,
   },
 });
