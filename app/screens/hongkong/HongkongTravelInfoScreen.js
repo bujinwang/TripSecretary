@@ -44,6 +44,22 @@ import EntryData from '../../models/EntryData';
 import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../../services/data/UserDataService';
 
+// Import HongKong custom hooks
+import {
+  useHongKongFormState,
+  useHongKongDataPersistence,
+  useHongKongValidation
+} from '../../hooks/hongkong';
+
+// Import HongKong section components
+import {
+  HeroSection,
+  PassportSection,
+  PersonalInfoSection,
+  FundsSection,
+  TravelDetailsSection
+} from '../../components/hongkong/sections';
+
 // Import HongKong-specific utilities
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
@@ -69,75 +85,58 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   // Memoize userId to prevent unnecessary re-renders
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
-  // Data model instances
-  const [passportData, setPassportData] = useState(null);
-  const [personalInfoData, setPersonalInfoData] = useState(null);
-  const [entryData, setEntryData] = useState(null);
+  // Initialize form state hook - consolidates all useState declarations
+  const formState = useHongKongFormState(passport);
 
-  // Smart defaults for common scenarios
-  const getSmartDefaults = () => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
+  // User interaction tracking
+  const userInteractionTracker = useUserInteractionTracker('hongkong_travel_info');
 
-    return {
-      travelPurpose: 'HOLIDAY', // Most common purpose
-      accommodationType: 'HOTEL', // Most common accommodation
-      arrivalDate: tomorrow.toISOString().split('T')[0], // Default to tomorrow
-      departureDate: nextWeek.toISOString().split('T')[0], // Default to 1 week later
-      boardingCountry: passport?.nationality || 'CHN', // Default to passport nationality
-    };
-  };
+  // Initialize persistence hook - handles data loading and saving
+  const persistence = useHongKongDataPersistence({
+    passport,
+    destination,
+    userId,
+    formState,
+    userInteractionTracker,
+    navigation
+  });
 
-  // Auto-complete suggestions for common scenarios
-  const getAutoCompleteSuggestions = (fieldType, currentValue) => {
-    const suggestions = {
-      flightNumber: [
-        'TG123', 'TG456', 'CX123', 'CX456', 'MU123', 'MU456',
-        'CA123', 'CA456', 'ZH123', 'ZH456', 'MF123', 'MF456'
-      ],
-      hotelName: [
-        'Hong Kong Marriott Hotel', 'Kowloon Night Bazaar Hotel',
-        'Tsim Sha Tsui Patong Beach Hotel', 'Hua Hin Hilton Resort',
-        'Centara Grand', 'Anantara', 'Mandarin Oriental',
-        'Shangri-La Hotel', 'JW Marriott', 'Hilton'
-      ],
-      occupation: [
-        '软件工程师', '学生', '教师', '医生', '律师', '会计师',
-        '销售经理', '退休人员', '家庭主妇', '自由职业者'
-      ]
-    };
+  // Initialize validation hook - handles field validation and completion tracking
+  const validation = useHongKongValidation({
+    formState,
+    userInteractionTracker,
+    saveDataToSecureStorageWithOverride: persistence.saveDataToSecureStorage,
+    debouncedSaveData: persistence.debouncedSaveData
+  });
 
-    if (!currentValue || currentValue.length < 2) return [];
+  // Extract commonly used functions from hooks for easier access
+  const {
+    handleFieldBlur,
+    handleUserInteraction,
+    getFieldCount,
+    calculateCompletionMetrics,
+    isFormValid,
+    getSmartButtonConfig,
+    getProgressText,
+    getProgressColor
+  } = validation;
 
-    return suggestions[fieldType]?.filter(item =>
-      item.toLowerCase().includes(currentValue.toLowerCase())
-    ).slice(0, 5) || [];
-  };
+  const {
+    loadData,
+    saveDataToSecureStorage: saveDataToSecureStorageWithOverride,
+    debouncedSaveData,
+    refreshFundItems,
+    initializeEntryInfo,
+    saveSessionState,
+    loadSessionState,
+    migrateExistingDataToInteractionState,
+    savePhoto,
+    scrollViewRef,
+    shouldRestoreScrollPosition
+  } = persistence;
 
-  // UI State (loaded from database, not from route params)
-  const [passportNo, setPassportNo] = useState('');
-  const [visaNumber, setVisaNumber] = useState('');
-  const [surname, setSurname] = useState('');
-  const [middleName, setMiddleName] = useState('');
-  const [givenName, setGivenName] = useState('');
-  const [nationality, setNationality] = useState('');
-  const [dob, setDob] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-
-  // Personal Info State (loaded from database)
-  const [sex, setSex] = useState('');
-  const [occupation, setOccupation] = useState('');
-  const [customOccupation, setCustomOccupation] = useState('');
-  const [cityOfResidence, setCityOfResidence] = useState('');
-  const [residentCountry, setResidentCountry] = useState('');
-  const [phoneCode, setPhoneCode] = useState(getPhoneCode(passport?.nationality || '')); // Initialize phone code based on passport nationality or empty
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-
-  const isChineseResidence = residentCountry === 'CHN';
+  // Computed values for city of residence
+  const isChineseResidence = formState.residentCountry === 'CHN';
   const cityOfResidenceLabel = isChineseResidence ? '居住省份' : '居住省份 / 城市';
   const cityOfResidenceHelpText = isChineseResidence
     ? '中国地址请填写所在省份（请使用英文，例如 Anhui）'
@@ -146,427 +145,38 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     ? '例如 Anhui, Guangdong'
     : '例如 Anhui, Shanghai';
 
-  // Proof of Funds State
-  const [funds, setFunds] = useState([]);
-  const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
-  const [selectedFundItem, setSelectedFundItem] = useState(null);
-  const [currentFundItem, setCurrentFundItem] = useState(null);
-  const [newFundItemType, setNewFundItemType] = useState(null);
+  // Handle district/subdistrict ID updates (cascade logic)
+  useEffect(() => {
+    if (!formState.province || !formState.district) {
+      if (formState.districtId !== null) {
+        formState.formState.setDistrictId(null);
+      }
+      return;
+    }
 
-  // Entry Info State - for tracking the entry pack
-  const [entryInfoId, setEntryInfoId] = useState(null);
-  const [entryInfoInitialized, setEntryInfoInitialized] = useState(false);
-
-  // Travel Info State - with smart defaults
-  const smartDefaults = getSmartDefaults();
-  const [travelPurpose, setTravelPurpose] = useState('');
-  const [customTravelPurpose, setCustomTravelPurpose] = useState('');
-  const [recentStayCountry, setRecentStayCountry] = useState('');
-  const [boardingCountry, setBoardingCountry] = useState(''); // 登机国家或地区
-  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
-  const [arrivalArrivalDate, setArrivalArrivalDate] = useState(smartDefaults.arrivalDate);
-  const [previousArrivalDate, setPreviousArrivalDate] = useState('');
-  const [departureFlightNumber, setDepartureFlightNumber] = useState('');
-  const [departureDepartureDate, setDepartureDepartureDate] = useState(smartDefaults.departureDate);
-  const [isTransitPassenger, setIsTransitPassenger] = useState(false);
-  const [accommodationType, setAccommodationType] = useState('HOTEL'); // 住宿类型
-  const [customAccommodationType, setCustomAccommodationType] = useState(''); // 自定义住宿类型
-  const [province, setProvince] = useState(''); // 省
-  const [district, setDistrict] = useState(''); // 区（地区）
-  const [districtId, setDistrictId] = useState(null); // 区ID
-  const [subDistrict, setSubDistrict] = useState(''); // 乡（子地区）
-  const [subDistrictId, setSubDistrictId] = useState(null); // 乡ID
-  const [postalCode, setPostalCode] = useState(''); // 邮政编码
-  const [hotelAddress, setHotelAddress] = useState('');
-
-  // Document photos
-  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
-  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
+    const match = findDistrictOption(formState.province, formState.district);
+    if (match && match.id !== formState.districtId) {
+      formState.formState.setDistrictId(match.id);
+    }
+  }, [formState.province, formState.district, formState.districtId, formState]);
 
   useEffect(() => {
-    if (!province || !district) {
-      if (districtId !== null) {
-        setDistrictId(null);
+    if (!formState.districtId || !formState.subDistrict) {
+      if (formState.subDistrictId !== null) {
+        formState.formState.setSubDistrictId(null);
       }
       return;
     }
 
-    const match = findDistrictOption(province, district);
-    if (match && match.id !== districtId) {
-      setDistrictId(match.id);
-    }
-  }, [province, district, districtId]);
-
-  useEffect(() => {
-    if (!districtId || !subDistrict) {
-      if (subDistrictId !== null) {
-        setSubDistrictId(null);
-      }
-      return;
-    }
-
-    const match = findSubDistrictOption(districtId, subDistrict);
-    if (match && match.id !== subDistrictId) {
-      setSubDistrictId(match.id);
-      if (!postalCode && match.postalCode) {
-        setPostalCode(String(match.postalCode));
+    const match = findSubDistrictOption(formState.districtId, formState.subDistrict);
+    if (match && match.id !== formState.subDistrictId) {
+      formState.formState.setSubDistrictId(match.id);
+      if (!formState.postalCode && match.postalCode) {
+        formState.formState.setPostalCode(String(match.postalCode));
       }
     }
-  }, [districtId, subDistrict, subDistrictId, postalCode]);
+  }, [formState.districtId, formState.subDistrict, formState.subDistrictId, formState.postalCode, formState]);
 
-  const [errors, setErrors] = useState({});
-  const [warnings, setWarnings] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [expandedSection, setExpandedSection] = useState(null); // 'passport', 'personal', 'funds', 'travel', or null
-  
-  // Auto-save state tracking
-  const [saveStatus, setSaveStatus] = useState(null); // 'pending', 'saving', 'saved', 'error', or null
-  const [lastEditedAt, setLastEditedAt] = useState(null);
-
-  // Session state tracking
-  const [lastEditedField, setLastEditedField] = useState(null);
-  const scrollViewRef = useRef(null);
-  const shouldRestoreScrollPosition = useRef(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  // Completion tracking
-  const [completionMetrics, setCompletionMetrics] = useState(null);
-  const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
-
-  // User interaction tracking
-  const userInteractionTracker = useUserInteractionTracker('hongkong_travel_info');
-
-  // Migration function to mark existing data as user-modified
-  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
-      return;
-    }
-
-    console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
-    
-    const existingDataToMigrate = {};
-
-    // Migrate passport data
-    if (userData.passport) {
-      const passport = userData.passport;
-      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
-      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
-      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
-      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
-      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
-      if (passport.gender) existingDataToMigrate.sex = passport.gender;
-    }
-
-    // Migrate personal info data
-    if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
-      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
-      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
-      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
-      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
-      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
-      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
-    }
-
-    // Migrate travel info data
-    if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
-      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
-      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
-      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
-      if (travelInfo.recentStayCountry) existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
-      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
-      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
-      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
-      if (travelInfo.province) existingDataToMigrate.province = travelInfo.province;
-      if (travelInfo.district) existingDataToMigrate.district = travelInfo.district;
-      if (travelInfo.subDistrict) existingDataToMigrate.subDistrict = travelInfo.subDistrict;
-      if (travelInfo.postalCode) existingDataToMigrate.postalCode = travelInfo.postalCode;
-      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
-      if (travelInfo.visaNumber) existingDataToMigrate.visaNumber = travelInfo.visaNumber;
-      if (travelInfo.isTransitPassenger !== undefined) existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
-    }
-
-    console.log('Data to migrate:', existingDataToMigrate);
-    console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
-
-    if (Object.keys(existingDataToMigrate).length > 0) {
-      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
-      console.log('✅ Migration completed - existing data marked as user-modified');
-    } else {
-      console.log('⚠️ No existing data found to migrate');
-    }
-  }, [userInteractionTracker]);
-
-  // Count filled fields for each section using FieldStateManager
-  const getFieldCount = (section) => {
-    // Build interaction state for FieldStateManager
-    const interactionState = {};
-    const allFieldNames = [
-      'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
-      'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
-      'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
-      'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
-      'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
-      'subDistrict', 'postalCode', 'hotelAddress'
-    ];
-
-    allFieldNames.forEach(fieldName => {
-      interactionState[fieldName] = {
-        isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
-      };
-    });
-
-    switch (section) {
-      case 'passport':
-        // Hong Kong passport fields - count individual name fields for clarity
-        const passportFields = {
-          surname: surname,
-          givenName: givenName,
-          // middleName is optional, only count if provided
-          nationality: nationality,
-          passportNo: passportNo,
-          dob: dob,
-          expiryDate: expiryDate,
-          sex: sex
-        };
-
-        // Add middleName to count if provided
-        if (middleName) {
-          passportFields.middleName = middleName;
-        }
-
-        // Simple counting: just count filled vs total fields
-        const filledPassportFields = Object.values(passportFields).filter(
-          value => value && String(value).trim() !== ''
-        ).length;
-
-        return {
-          filled: filledPassportFields,
-          total: Object.keys(passportFields).length
-        };
-      
-      case 'personal':
-        // Hong Kong personal info fields
-        const personalFields = {
-          occupation: occupation,
-          cityOfResidence: cityOfResidence,
-          residentCountry: residentCountry,
-          phoneNumber: phoneNumber,
-          email: email
-        };
-
-        // Simple counting: count filled vs total
-        const filledPersonalFields = Object.values(personalFields).filter(
-          value => value && String(value).trim() !== ''
-        ).length;
-
-        return {
-          filled: filledPersonalFields,
-          total: Object.keys(personalFields).length
-        };
-      
-      case 'funds':
-        // For funds, show actual count with minimum requirement of 1
-        // Funds are not tracked by interaction state, so use existing logic
-        const fundItemCount = funds.length;
-        if (fundItemCount === 0) {
-          return { filled: 0, total: 1 };
-        } else {
-          return { filled: fundItemCount, total: fundItemCount };
-        }
-      
-      case 'travel':
-        // Hong Kong travel info fields - simplified for clarity
-        const travelFields = {
-          travelPurpose: travelPurpose,
-          arrivalFlightNumber: arrivalFlightNumber,
-          arrivalArrivalDate: arrivalArrivalDate,
-          departureFlightNumber: departureFlightNumber,
-          departureDepartureDate: departureDepartureDate,
-          hotelAddress: hotelAddress,
-        };
-
-        // Simple counting: count filled vs total
-        const filledTravelFields = Object.values(travelFields).filter(
-          value => value && String(value).trim() !== ''
-        ).length;
-
-        return {
-          filled: filledTravelFields,
-          total: Object.keys(travelFields).length
-        };
-    }
-
-    return { filled: 0, total: 0 };
-  };
-
-  // Calculate completion metrics using FieldStateManager
-  const calculateCompletionMetrics = () => {
-    try {
-      const passportCount = getFieldCount('passport');
-      const personalCount = getFieldCount('personal');
-      const fundsCount = getFieldCount('funds');
-      const travelCount = getFieldCount('travel');
-
-      const passportComplete = passportCount.filled >= passportCount.total;
-      const personalComplete = personalCount.filled >= personalCount.total;
-      const fundsComplete = fundsCount.filled >= fundsCount.total;
-      const travelComplete = travelCount.filled >= travelCount.total;
-
-      const completedSections = [
-        passportComplete,
-        personalComplete,
-        fundsComplete,
-        travelComplete,
-      ].filter(Boolean).length;
-
-      const totalSections = 4;
-      const totalPercent =
-        totalSections > 0
-          ? Math.round((completedSections / totalSections) * 100)
-          : 0;
-
-      const summary = {
-        totalPercent: totalPercent,
-        metrics: {
-          passport: {
-            completed: passportCount.filled,
-            total: passportCount.total,
-            percentage:
-              passportCount.total > 0
-                ? Math.round((passportCount.filled / passportCount.total) * 100)
-                : 0,
-          },
-          personal: {
-            completed: personalCount.filled,
-            total: personalCount.total,
-            percentage:
-              personalCount.total > 0
-                ? Math.round((personalCount.filled / personalCount.total) * 100)
-                : 0,
-          },
-          travel: {
-            completed: travelCount.filled,
-            total: travelCount.total,
-            percentage:
-              travelCount.total > 0
-                ? Math.round((travelCount.filled / travelCount.total) * 100)
-                : 0,
-          },
-          funds: {
-            completed: fundsCount.filled,
-            total: fundsCount.total,
-            percentage:
-              fundsCount.total > 0
-                ? Math.round((fundsCount.filled / fundsCount.total) * 100)
-                : 0,
-          },
-        },
-        isReady: totalPercent === 100,
-      };
-
-      setCompletionMetrics(summary.metrics);
-      setTotalCompletionPercent(summary.totalPercent);
-
-      console.log('=== COMPLETION METRICS RECALCULATED ===');
-      console.log('Total completion:', summary.totalPercent + '%');
-      console.log('Metrics:', summary.metrics);
-
-      return summary;
-    } catch (error) {
-      console.error('Failed to calculate completion metrics:', error);
-      return { totalPercent: 0, metrics: null, isReady: false };
-    }
-  };
-
-  // Check if all fields are filled and valid
-  const isFormValid = () => {
-    // Check all sections are complete
-    const passportCount = getFieldCount('passport');
-    const personalCount = getFieldCount('personal');
-    const fundsCount = getFieldCount('funds');
-    const travelCount = getFieldCount('travel');
-
-    const allFieldsFilled = 
-      passportCount.filled === passportCount.total &&
-      personalCount.filled === personalCount.total &&
-      fundsCount.filled === fundsCount.total &&
-      travelCount.filled === travelCount.total;
-
-    // Check no validation errors exist
-    const noErrors = Object.keys(errors).length === 0;
-
-    return allFieldsFilled && noErrors;
-  };
-
-  // Get smart button configuration based on journey progress
-  const getSmartButtonConfig = () => {
-    if (totalCompletionPercent >= 100) {
-      return {
-        label: '准备入境包',
-        variant: 'primary',
-        style: styles.primaryButton,
-        icon: '🚀',
-        action: 'submit'
-      };
-    } else if (totalCompletionPercent >= 80) {
-      return {
-        label: '继续填写，即将完成！✨',
-        variant: 'secondary',
-        style: styles.secondaryButton,
-        icon: '🌺',
-        action: 'edit'
-      };
-    } else if (totalCompletionPercent >= 40) {
-      return {
-        label: '继续我的香港准备之旅 💪',
-        variant: 'secondary',
-        style: styles.secondaryButton,
-        icon: '🏖️',
-        action: 'edit'
-      };
-    } else {
-      return {
-        label: '开始准备香港之旅吧！🇭🇰',
-        variant: 'outline',
-        style: styles.outlineButton,
-        icon: '🌸',
-        action: 'start'
-      };
-    }
-  };
-
-  // Get progress indicator text - traveler-friendly messaging
-  const getProgressText = () => {
-    if (totalCompletionPercent >= 100) {
-      return '准备好迎接香港之旅了！🌴';
-    } else if (totalCompletionPercent >= 80) {
-      return '快完成了！香港在向你招手 ✨';
-    } else if (totalCompletionPercent >= 60) {
-      return '进展不错！继续加油 💪';
-    } else if (totalCompletionPercent >= 40) {
-      return '继续我的香港准备之旅 🏖️';
-    } else if (totalCompletionPercent >= 20) {
-      return '好的开始！香港欢迎你 🌺';
-    } else {
-      return '让我们开始准备香港之旅吧！🇭🇰';
-    }
-  };
-
-  // Get progress color based on completion
-  const getProgressColor = () => {
-    if (totalCompletionPercent >= 100) {
-      return '#34C759'; // Green
-    } else if (totalCompletionPercent >= 50) {
-      return '#FF9500'; // Orange
-    } else {
-      return '#FF3B30'; // Red
-    }
-  };
 
   // Debug function to clear user data
   const clearUserData = async () => {
@@ -577,12 +187,12 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
       console.log('User data cleared successfully');
       
       // Clear local state
-      setDob('');
-      setPassportNo('');
+      formState.setDob('');
+      formState.setPassportNo('');
       setFullName('');
-      setNationality('');
-      setExpiryDate('');
-      setSex('Male');
+      formState.setNationality('');
+      formState.setExpiryDate('');
+      formState.setSex('Male');
       
       // Clear cache
       UserDataService.clearCache();
@@ -594,246 +204,11 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  // Load saved data on component mount and when screen gains focus
+  // Load saved data on component mount - delegated to persistence hook
   useEffect(() => {
-    const loadSavedData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Initialize UserDataService and trigger migration if needed
-        try {
-          await UserDataService.initialize(userId);
-        } catch (initError) {
-          console.error('Failed to initialize UserDataService:', initError);
-          console.error('Error details:', initError.message, initError.stack);
-          // Log the error but re-throw it to prevent further operations
-          throw initError;
-        }
-        
-        // Load all user data from centralized service
-        const userData = await UserDataService.getAllUserData(userId);
-        console.log('=== LOADED USER DATA ===');
-        console.log('userData:', userData);
-        console.log('userData.passport:', userData?.passport);
-        console.log('userData.passport.dateOfBirth:', userData?.passport?.dateOfBirth);
-        console.log('userData.personalInfo:', userData?.personalInfo);
+    loadData();
+  }, [loadData]);
 
-        // Load travel info and add to userData for migration
-        try {
-          const destinationId = destination?.id || 'hongkong';
-          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          if (travelInfo) {
-            userData.travelInfo = travelInfo;
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to load travel info for migration:', travelInfoError);
-        }
-
-        // Wait for interaction tracker to be initialized before migration
-        if (userInteractionTracker.isInitialized) {
-          await migrateExistingDataToInteractionState(userData);
-        } else {
-          // If not initialized yet, wait a bit and try again
-          setTimeout(async () => {
-            if (userInteractionTracker.isInitialized) {
-              await migrateExistingDataToInteractionState(userData);
-            }
-          }, 100);
-        }
-
-        // Passport Info - prioritize centralized data, fallback to route params
-        const passportInfo = userData?.passport;
-        if (passportInfo) {
-          console.log('Loading passport from database:', passportInfo);
-          setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
-          const nameToParse = passportInfo?.fullName || passport?.nameEn || passport?.name || '';
-          if (nameToParse) {
-            const { surname, middleName, givenName } = parsePassportName(nameToParse);
-            setSurname(surname);
-            setMiddleName(middleName);
-            setGivenName(givenName);
-          }
-          setNationality(passportInfo.nationality || passport?.nationality || '');
-          setDob(passportInfo.dateOfBirth || passport?.dob || '');
-          setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-
-          // Store passport data model instance
-          setPassportData(passportInfo);
-        } else {
-          console.log('No passport data in database, using route params');
-          // Fallback to route params if no centralized data
-          setPassportNo(passport?.passportNo || '');
-          const nameToParse = passport?.nameEn || passport?.name || '';
-          if (nameToParse) {
-            const { surname, middleName, givenName } = parsePassportName(nameToParse);
-            setSurname(surname);
-            setMiddleName(middleName);
-            setGivenName(givenName);
-          }
-          setNationality(passport?.nationality || '');
-          setDob(passport?.dob || '');
-          setExpiryDate(passport?.expiry || '');
-        }
-
-        // Personal Info - load from centralized data
-        const personalInfo = userData?.personalInfo;
-        if (personalInfo) {
-          // Handle occupation - check if it's in predefined list
-          const savedOccupation = personalInfo.occupation || '';
-          const isPredefin = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
-          if (isPredefin) {
-            setOccupation(savedOccupation);
-            setCustomOccupation('');
-          } else if (savedOccupation) {
-            // Custom occupation - set to OTHER and populate custom field
-            setOccupation('OTHER');
-            setCustomOccupation(savedOccupation);
-          } else {
-            setOccupation('');
-            setCustomOccupation('');
-          }
-          setCityOfResidence(personalInfo.provinceCity || '');
-          setResidentCountry(personalInfo.countryRegion || '');
-          setPhoneNumber(personalInfo.phoneNumber || '');
-          setEmail(personalInfo.email || '');
-          
-          // Set phone code based on resident country or nationality
-          setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-          
-          // Store personal info data model instance
-          setPersonalInfoData(personalInfo);
-        } else {
-          setPhoneCode(getPhoneCode(passport?.nationality || ''));
-        }
-
-        // Gender - load from passport only (single source of truth)
-        const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || sex || 'Male';
-        setSex(loadedSex);
-
-        await refreshFundItems();
-
-        // Travel Info - load from centralized data
-        try {
-          // Use destination.id for consistent lookup (not affected by localization)
-          const destinationId = destination?.id || 'hongkong';
-          console.log('Loading travel info for destination:', destinationId);
-          let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-          
-          // Fallback: try loading with localized name if id lookup fails
-          // This handles data saved before the fix
-          if (!travelInfo && destination?.name) {
-            console.log('Trying fallback with destination name:', destination.name);
-            travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
-          }
-          
-          if (travelInfo) {
-            console.log('=== LOADING SAVED TRAVEL INFO ===');
-            console.log('Travel info data:', JSON.stringify(travelInfo, null, 2));
-            console.log('Hotel name from DB:', travelInfo.hotelName);
-            console.log('Hotel address from DB:', travelInfo.hotelAddress);
-            console.log('Flight number from DB:', travelInfo.arrivalFlightNumber);
-            
-            // Check if travel purpose is a predefined option
-            const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
-            const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
-            if (predefinedPurposes.includes(loadedPurpose)) {
-              setTravelPurpose(loadedPurpose);
-              setCustomTravelPurpose('');
-            } else {
-              // Custom purpose - set to OTHER and store custom value
-              setTravelPurpose('OTHER');
-              setCustomTravelPurpose(loadedPurpose);
-            }
-            setBoardingCountry(travelInfo.boardingCountry || '');
-            setRecentStayCountry(travelInfo.recentStayCountry || '');
-            setVisaNumber(travelInfo.visaNumber || '');
-            setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-            setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-            setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
-            setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-            console.log('=== LOADING DEPARTURE DATE FROM DB ===');
-            console.log('travelInfo.departureDepartureDate:', travelInfo.departureDepartureDate);
-            console.log('travelInfo object keys:', Object.keys(travelInfo));
-            setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-            setIsTransitPassenger(travelInfo.isTransitPassenger || false);
-            // Load accommodation type
-            const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
-            const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
-            if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
-            setAccommodationType(loadedAccommodationType);
-            setCustomAccommodationType('');
-          } else {
-            // Custom accommodation type - set to OTHER and store custom value
-            setAccommodationType('OTHER');
-            setCustomAccommodationType(loadedAccommodationType);
-          }
-          setProvince(travelInfo.province || '');
-          setDistrict(travelInfo.district || '');
-          const matchedDistrict = findDistrictOption(travelInfo.province || province, travelInfo.district || '');
-          setDistrictId(matchedDistrict?.id || null);
-          setSubDistrict(travelInfo.subDistrict || '');
-          const matchedSubDistrict = findSubDistrictOption(
-            matchedDistrict?.id || travelInfo.districtId || null,
-            travelInfo.subDistrict || ''
-          );
-          setSubDistrictId(matchedSubDistrict?.id || null);
-          setPostalCode(travelInfo.postalCode || '');
-          setHotelAddress(travelInfo.hotelAddress || '');
-
-          // Load document photos
-          setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
-          setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
-
-            console.log('Travel info loaded and state updated');
-            
-            // Initialize user interaction tracker with loaded travel info
-            userInteractionTracker.initializeWithExistingData({
-              travelPurpose: travelInfo.travelPurpose,
-              boardingCountry: travelInfo.boardingCountry,
-              accommodationType: travelInfo.accommodationType,
-              recentStayCountry: travelInfo.recentStayCountry,
-              arrivalFlightNumber: travelInfo.arrivalFlightNumber,
-              arrivalArrivalDate: travelInfo.arrivalArrivalDate,
-              departureFlightNumber: travelInfo.departureFlightNumber,
-              departureDepartureDate: travelInfo.departureDepartureDate,
-              province: travelInfo.province,
-              district: travelInfo.district,
-              subDistrict: travelInfo.subDistrict,
-              postalCode: travelInfo.postalCode,
-              hotelAddress: travelInfo.hotelAddress,
-              customTravelPurpose: travelInfo.travelPurpose && !predefinedPurposes.includes(travelInfo.travelPurpose) ? travelInfo.travelPurpose : '',
-              customAccommodationType: travelInfo.accommodationType && !predefinedAccommodationTypes.includes(travelInfo.accommodationType) ? travelInfo.accommodationType : ''
-            });
-          } else {
-            console.log('No saved travel info found');
-          }
-        } catch (travelInfoError) {
-          console.log('Failed to load travel info:', travelInfoError);
-          // Continue without travel info
-        }
-        
-      } catch (error) {
-        // Fallback to route params on error
-        setPassportNo(passport?.passportNo || '');
-        const nameToParse = passport?.nameEn || passport?.name || '';
-        if (nameToParse) {
-          const { surname, middleName, givenName } = parsePassportName(nameToParse);
-          setSurname(surname);
-          setMiddleName(middleName);
-          setGivenName(givenName);
-        }
-        setNationality(passport?.nationality || '');
-        setDob(passport?.dob || '');
-        setExpiryDate(passport?.expiry || '');
-        setSex(passport?.sex || 'Male');
-        setPhoneCode(getPhoneCode(passport?.nationality || ''));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSavedData();
-  }, [userId]); // Only depend on userId, not the entire passport object or refreshFundItems
 
   // Add focus listener to reload data when returning to screen
   useEffect(() => {
@@ -863,17 +238,17 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
             // Update passport data if available
             const passportInfo = userData.passport;
             if (passportInfo) {
-              setPassportNo(prev => passportInfo.passportNumber || prev);
+              formState.setPassportNo(prev => passportInfo.passportNumber || prev);
               const nameToParse = passportInfo?.fullName || '';
               if (nameToParse) {
                 const { surname, middleName, givenName } = parsePassportName(nameToParse);
-                setSurname(surname);
-                setMiddleName(middleName);
-                setGivenName(givenName);
+                formState.setSurname(surname);
+                formState.setMiddleName(middleName);
+                formState.setGivenName(givenName);
               }
-              setNationality(prev => passportInfo.nationality || prev);
-              setDob(prev => passportInfo.dateOfBirth || prev);
-              setExpiryDate(prev => passportInfo.expiryDate || prev);
+              formState.setNationality(prev => passportInfo.nationality || prev);
+              formState.setDob(prev => passportInfo.dateOfBirth || prev);
+              formState.setExpiryDate(prev => passportInfo.expiryDate || prev);
               setPassportData(passportInfo);
             }
 
@@ -884,23 +259,23 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
               const savedOccupation = personalInfo.occupation || occupation;
               const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
               if (isPredefined) {
-                setOccupation(savedOccupation);
-                setCustomOccupation('');
+                formState.setOccupation(savedOccupation);
+                formState.setCustomOccupation('');
               } else if (savedOccupation) {
                 // Custom occupation - set to OTHER and populate custom field
-                setOccupation('OTHER');
-                setCustomOccupation(savedOccupation);
+                formState.setOccupation('OTHER');
+                formState.setCustomOccupation(savedOccupation);
               }
-              setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
-              setResidentCountry(personalInfo.countryRegion || residentCountry);
-              setPhoneNumber(personalInfo.phoneNumber || phoneNumber);
-              setEmail(personalInfo.email || email);
-              setPhoneCode(personalInfo.phoneCode || phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
+              formState.setCityOfResidence(personalInfo.provinceCity || cityOfResidence);
+              formState.setResidentCountry(personalInfo.countryRegion || residentCountry);
+              formState.setPhoneNumber(personalInfo.phoneNumber || phoneNumber);
+              formState.setEmail(personalInfo.email || email);
+              formState.setPhoneCode(personalInfo.phoneCode || phoneCode || getPhoneCode(personalInfo.countryRegion || passportInfo?.nationality || passport?.nationality || ''));
               setPersonalInfoData(personalInfo);
             }
             
             // Gender - load from passport only (single source of truth)
-            setSex(passportInfo?.gender || passport?.sex || passport?.gender || sex);
+            formState.setSex(passportInfo?.gender || passport?.sex || passport?.gender || sex);
 
             await refreshFundItems({ forceRefresh: true });
 
@@ -917,40 +292,40 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
                 const predefinedPurposes = PREDEFINED_TRAVEL_PURPOSES;
                 const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
                 if (predefinedPurposes.includes(loadedPurpose)) {
-                  setTravelPurpose(loadedPurpose);
-                  setCustomTravelPurpose('');
+                  formState.setTravelPurpose(loadedPurpose);
+                  formState.setCustomTravelPurpose('');
                 } else {
-                  setTravelPurpose('OTHER');
-                  setCustomTravelPurpose(loadedPurpose);
+                  formState.setTravelPurpose('OTHER');
+                  formState.setCustomTravelPurpose(loadedPurpose);
                 }
-                setBoardingCountry(travelInfo.boardingCountry || '');
-                setRecentStayCountry(travelInfo.recentStayCountry || '');
-                setVisaNumber(travelInfo.visaNumber || '');
-                setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-                setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-                setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-                setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-                setIsTransitPassenger(travelInfo.isTransitPassenger || false);
+                formState.setBoardingCountry(travelInfo.boardingCountry || '');
+                formState.setRecentStayCountry(travelInfo.recentStayCountry || '');
+                formState.setVisaNumber(travelInfo.visaNumber || '');
+                formState.setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+                formState.setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
+                formState.setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+                formState.setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+                formState.setIsTransitPassenger(travelInfo.isTransitPassenger || false);
                 
                 // Load accommodation type
                 const predefinedAccommodationTypes = PREDEFINED_ACCOMMODATION_TYPES;
                 const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
                 if (predefinedAccommodationTypes.includes(loadedAccommodationType)) {
-                  setAccommodationType(loadedAccommodationType);
-                  setCustomAccommodationType('');
+                  formState.setAccommodationType(loadedAccommodationType);
+                  formState.setCustomAccommodationType('');
                 } else {
-                  setAccommodationType('OTHER');
-                  setCustomAccommodationType(loadedAccommodationType);
+                  formState.setAccommodationType('OTHER');
+                  formState.setCustomAccommodationType(loadedAccommodationType);
                 }
-                setProvince(travelInfo.province || '');
-                setDistrict(travelInfo.district || '');
-                setSubDistrict(travelInfo.subDistrict || '');
-                setPostalCode(travelInfo.postalCode || '');
-                setHotelAddress(travelInfo.hotelAddress || '');
+                formState.setProvince(travelInfo.province || '');
+                formState.setDistrict(travelInfo.district || '');
+                formState.setSubDistrict(travelInfo.subDistrict || '');
+                formState.setPostalCode(travelInfo.postalCode || '');
+                formState.setHotelAddress(travelInfo.hotelAddress || '');
 
                 // Load document photos
-                setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
-                setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
+                formState.setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
+                formState.setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
               }
             } catch (travelInfoError) {
               console.log('Failed to reload travel info on focus:', travelInfoError);
@@ -995,7 +370,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentStatus = DebouncedSave.getSaveState('hongkong_travel_info');
-      setSaveStatus(currentStatus);
+      formState.setSaveStatus(currentStatus);
     }, 100);
 
     return () => clearInterval(interval);
@@ -1045,18 +420,18 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
         
         // Restore expanded section
         if (sessionState.expandedSection) {
-          setExpandedSection(sessionState.expandedSection);
+          formState.setExpandedSection(sessionState.expandedSection);
         }
         
         // Restore scroll position (will be applied after data loads)
         if (sessionState.scrollPosition) {
-          setScrollPosition(sessionState.scrollPosition);
+          formState.setScrollPosition(sessionState.scrollPosition);
           shouldRestoreScrollPosition.current = true;
         }
         
         // Restore last edited field
         if (sessionState.lastEditedField) {
-          setLastEditedField(sessionState.lastEditedField);
+          formState.setLastEditedField(sessionState.lastEditedField);
         }
         
         return sessionState;
@@ -1120,7 +495,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   const handleNavigationWithSave = async (navigationAction, actionName = 'navigate') => {
     try {
       // Set saving state to show user that save is in progress
-      setSaveStatus('saving');
+      formState.setSaveStatus('saving');
       
       // Flush any pending saves before navigation
       await DebouncedSave.flushPendingSave('hongkong_travel_info');
@@ -1129,7 +504,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
       navigationAction();
     } catch (error) {
       console.error(`Failed to save data before ${actionName}:`, error);
-      setSaveStatus('error');
+      formState.setSaveStatus('error');
       
       // Show error alert and ask user if they want to continue without saving
       Alert.alert(
@@ -1150,7 +525,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
           {
             text: 'Cancel',
             style: 'cancel',
-            onPress: () => setSaveStatus(null),
+            onPress: () => formState.setSaveStatus(null),
           },
         ]
       );
@@ -1166,7 +541,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     'hongkong_travel_info',
     async () => {
       await saveDataToSecureStorage();
-      setLastEditedAt(new Date());
+      formState.setLastEditedAt(new Date());
     },
     300,
     {
@@ -1202,19 +577,19 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     // Update the appropriate state based on field name
     switch (fieldName) {
       case 'travelPurpose':
-        setTravelPurpose(value);
+        formState.setTravelPurpose(value);
         if (value !== 'OTHER') {
-          setCustomTravelPurpose('');
+          formState.setCustomTravelPurpose('');
         }
         break;
       case 'accommodationType':
-        setAccommodationType(value);
+        formState.setAccommodationType(value);
         if (value !== 'OTHER') {
-          setCustomAccommodationType('');
+          formState.setCustomAccommodationType('');
         }
         break;
       case 'boardingCountry':
-        setBoardingCountry(value);
+        formState.setBoardingCountry(value);
         break;
       default:
         console.warn(`Unknown field for user interaction: ${fieldName}`);
@@ -1230,7 +605,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
       userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
 
       // Track last edited field for session state
-      setLastEditedField(fieldName);
+      formState.setLastEditedField(fieldName);
 
       // Brief highlight animation for last edited field
       if (fieldName) {
@@ -1238,7 +613,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
           clearTimeout(window.highlightTimeout);
         }
         window.highlightTimeout = setTimeout(() => {
-          setLastEditedField(null);
+          formState.setLastEditedField(null);
         }, 2000);
       }
 
@@ -1257,17 +632,17 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
       if (fieldName === 'cityOfResidence' && residentCountry === 'CHN' && fieldValue) {
         const provinceMatch = findChinaProvince(fieldValue.trim());
         if (provinceMatch && provinceMatch.displayName.toUpperCase() !== cityOfResidence) {
-          setCityOfResidence(provinceMatch.displayName.toUpperCase());
+          formState.setCityOfResidence(provinceMatch.displayName.toUpperCase());
         }
       }
 
       // Update errors and warnings state
-      setErrors(prev => ({
+      formState.setErrors(prev => ({
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
 
-      setWarnings(prev => ({
+      formState.setWarnings(prev => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
@@ -1278,7 +653,7 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
           const immediateSaveFields = ['dob', 'expiryDate', 'arrivalArrivalDate', 'departureDepartureDate', 'recentStayCountry'];
           if (immediateSaveFields.includes(fieldName)) {
             await saveDataToSecureStorageWithOverride({ [fieldName]: fieldValue });
-            setLastEditedAt(new Date());
+            formState.setLastEditedAt(new Date());
           } else {
             debouncedSaveData();
           }
@@ -1298,15 +673,15 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   }, [residentCountry]);
 
   const resetDistrictSelection = useCallback(() => {
-    setDistrict('');
-    setDistrictId(null);
-    setSubDistrict('');
-    setSubDistrictId(null);
-    setPostalCode('');
+    formState.setDistrict('');
+    formState.setDistrictId(null);
+    formState.setSubDistrict('');
+    formState.setSubDistrictId(null);
+    formState.setPostalCode('');
   }, []);
 
   const handleProvinceSelect = useCallback((code) => {
-    setProvince(code);
+    formState.setProvince(code);
     resetDistrictSelection();
 
     handleFieldBlur('province', code);
@@ -1325,18 +700,18 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   const handleDistrictSelect = useCallback((selection) => {
     if (!selection) return;
 
-    setDistrict(selection.nameEn);
-    setDistrictId(selection.id);
+    formState.setDistrict(selection.nameEn);
+    formState.setDistrictId(selection.id);
     handleFieldBlur('district', selection.nameEn);
 
     if (subDistrict) {
-      setSubDistrict('');
-      setSubDistrictId(null);
+      formState.setSubDistrict('');
+      formState.setSubDistrictId(null);
       handleFieldBlur('subDistrict', '');
     }
 
     if (postalCode) {
-      setPostalCode('');
+      formState.setPostalCode('');
       handleFieldBlur('postalCode', '');
     }
   }, [handleFieldBlur, subDistrict, postalCode]);
@@ -1344,13 +719,13 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
   const handleSubDistrictSelect = useCallback((selection) => {
     if (!selection) return;
 
-    setSubDistrict(selection.nameEn);
-    setSubDistrictId(selection.id);
+    formState.setSubDistrict(selection.nameEn);
+    formState.setSubDistrictId(selection.id);
     handleFieldBlur('subDistrict', selection.nameEn);
 
     const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
     if (newPostalCode || postalCode) {
-      setPostalCode(newPostalCode);
+      formState.setPostalCode(newPostalCode);
       handleFieldBlur('postalCode', newPostalCode);
     }
   }, [handleFieldBlur, postalCode]);
@@ -1360,24 +735,24 @@ const HongKongTravelInfoScreen = ({ navigation, route }) => {
     if (!selection) return;
 
     // Set region (stored in province field for compatibility)
-    setProvince(selection.region);
+    formState.setProvince(selection.region);
     handleFieldBlur('province', selection.region);
 
     // Set district
-    setDistrict(selection.district);
-    setDistrictId(selection.districtId);
+    formState.setDistrict(selection.district);
+    formState.setDistrictId(selection.districtId);
     handleFieldBlur('district', selection.district);
 
     // Clear sub-district (Hong Kong doesn't have sub-districts)
     if (subDistrict) {
-      setSubDistrict('');
-      setSubDistrictId(null);
+      formState.setSubDistrict('');
+      formState.setSubDistrictId(null);
       handleFieldBlur('subDistrict', '');
     }
 
     // Clear postal code (Hong Kong doesn't use postal codes the same way)
     if (postalCode) {
-      setPostalCode('');
+      formState.setPostalCode('');
       handleFieldBlur('postalCode', '');
     }
   }, [handleFieldBlur, subDistrict, postalCode]);
@@ -1853,7 +1228,7 @@ const normalizeFundItem = useCallback((item) => ({
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
-      setFunds(normalized);
+      formState.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
@@ -1882,8 +1257,8 @@ const normalizeFundItem = useCallback((item) => ({
 
        if (existingEntryInfo) {
          console.log('✅ Found existing entry info:', existingEntryInfo.id);
-         setEntryInfoId(existingEntryInfo.id);
-         setEntryInfoInitialized(true);
+         formState.setEntryInfoId(existingEntryInfo.id);
+         formState.setEntryInfoInitialized(true);
          return existingEntryInfo.id;
        }
 
@@ -1911,8 +1286,8 @@ const normalizeFundItem = useCallback((item) => ({
        const savedEntryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
        console.log('✅ Created new entry info:', savedEntryInfo.id, '(passport_id:', savedEntryInfo.passportId || 'NULL', ')');
 
-       setEntryInfoId(savedEntryInfo.id);
-       setEntryInfoInitialized(true);
+       formState.setEntryInfoId(savedEntryInfo.id);
+       formState.setEntryInfoInitialized(true);
        return savedEntryInfo.id;
      } catch (error) {
        console.error('❌ Failed to initialize entry info:', error);
@@ -1934,7 +1309,7 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        setFlightTicketPhoto(photoUri);
+        formState.setFlightTicketPhoto(photoUri);
 
         // Save to secure storage
         try {
@@ -1974,7 +1349,7 @@ const normalizeFundItem = useCallback((item) => ({
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const photoUri = result.assets[0].uri;
-        setHotelReservationPhoto(photoUri);
+        formState.setHotelReservationPhoto(photoUri);
 
         // Save to secure storage
         try {
@@ -2003,25 +1378,25 @@ const normalizeFundItem = useCallback((item) => ({
   };
 
   const addFund = (type) => {
-    setCurrentFundItem(null);
-    setNewFundItemType(type);
-    setFundItemModalVisible(true);
+    formState.setCurrentFundItem(null);
+    formState.setNewFundItemType(type);
+    formState.setFundItemModalVisible(true);
   };
 
   const handleFundItemPress = (fund) => {
-    setCurrentFundItem(fund);
-    setFundItemModalVisible(true);
+    formState.setCurrentFundItem(fund);
+    formState.setFundItemModalVisible(true);
   };
 
   const handleFundItemModalClose = () => {
-    setFundItemModalVisible(false);
-    setCurrentFundItem(null);
+    formState.setFundItemModalVisible(false);
+    formState.setCurrentFundItem(null);
   };
 
   const handleFundItemUpdate = async (updatedItem) => {
     try {
       if (updatedItem) {
-        setSelectedFundItem(normalizeFundItem(updatedItem));
+        formState.setSelectedFundItem(normalizeFundItem(updatedItem));
       }
       await refreshFundItems({ forceRefresh: true });
 
@@ -2051,7 +1426,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const handleFundItemDelete = async (id) => {
     try {
-      setFunds((prev) => prev.filter((fund) => fund.id !== id));
+      formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info after fund item deletion
@@ -2068,7 +1443,7 @@ const normalizeFundItem = useCallback((item) => ({
 
   const validate = () => {
     // Disable all required checks to support progressive entry info filling
-    setErrors({});
+    formState.setErrors({});
     return true;
   };
 
@@ -2114,11 +1489,11 @@ const normalizeFundItem = useCallback((item) => ({
               ]}
               onPress={async () => {
                 const newSex = option.value;
-                setSex(newSex);
+                formState.setSex(newSex);
                 // Save immediately to ensure gender is saved without requiring other field interaction
                 try {
                   await saveDataToSecureStorageWithOverride({ sex: newSex });
-                  setLastEditedAt(new Date());
+                  formState.setLastEditedAt(new Date());
                 } catch (error) {
                   console.error('Failed to save gender:', error);
                 }
@@ -2163,7 +1538,7 @@ const normalizeFundItem = useCallback((item) => ({
         contentContainerStyle={styles.scrollContainer}
         onScroll={(event) => {
           const currentScrollPosition = event.nativeEvent.contentOffset.y;
-          setScrollPosition(currentScrollPosition);
+          formState.setScrollPosition(currentScrollPosition);
         }}
         scrollEventThrottle={100}
       >
@@ -2256,7 +1631,7 @@ const normalizeFundItem = useCallback((item) => ({
                 <TouchableOpacity 
                   style={styles.retryButton}
                   onPress={() => {
-                    setSaveStatus('saving');
+                    formState.setSaveStatus('saving');
                     debouncedSaveData();
                   }}
                 >
@@ -2290,7 +1665,7 @@ const normalizeFundItem = useCallback((item) => ({
           title="👤 护照信息"
           subtitle="香港海关需要核实你的身份"
           isExpanded={expandedSection === 'passport'}
-          onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
+          onToggle={() => formState.setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
         >
           {/* Border Crossing Context for Personal Info */}
@@ -2325,7 +1700,7 @@ const normalizeFundItem = useCallback((item) => ({
              label="国籍"
              value={nationality}
              onValueChange={(code) => {
-               setNationality(code);
+               formState.setNationality(code);
                debouncedSaveData(); // Trigger debounced save when nationality changes
              }}
              helpText="请选择您的国籍"
@@ -2349,7 +1724,7 @@ const normalizeFundItem = useCallback((item) => ({
            <InputWithValidation
              label="签证号（如有）"
              value={visaNumber}
-             onChangeText={(text) => setVisaNumber(text.toUpperCase())}
+             onChangeText={(text) => formState.setVisaNumber(text.toUpperCase())}
              onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
              helpText="如有签证，请填写签证号码（仅限字母或数字）"
              error={!!errors.visaNumber}
@@ -2367,7 +1742,7 @@ const normalizeFundItem = useCallback((item) => ({
              label="出生日期"
              value={dob}
              onChangeText={(newValue) => {
-               setDob(newValue);
+               formState.setDob(newValue);
                // Trigger validation and save immediately when value changes
                handleFieldBlur('dob', newValue);
              }}
@@ -2381,7 +1756,7 @@ const normalizeFundItem = useCallback((item) => ({
              label="护照有效期"
              value={expiryDate}
              onChangeText={(newValue) => {
-               setExpiryDate(newValue);
+               formState.setExpiryDate(newValue);
                // Trigger validation and save immediately when value changes
                handleFieldBlur('expiryDate', newValue);
              }}
@@ -2402,7 +1777,7 @@ const normalizeFundItem = useCallback((item) => ({
           title="👤 个人信息"
           subtitle="香港需要了解你的基本信息"
           isExpanded={expandedSection === 'personal'}
-          onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
+          onToggle={() => formState.setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
           {/* Border Crossing Context for Personal Info */}
@@ -2418,9 +1793,9 @@ const normalizeFundItem = useCallback((item) => ({
                options={OCCUPATION_OPTIONS}
                value={occupation}
                onSelect={(value) => {
-                 setOccupation(value);
+                 formState.setOccupation(value);
                  if (value !== 'OTHER') {
-                   setCustomOccupation('');
+                   formState.setCustomOccupation('');
                    // Trigger validation for the selected occupation
                    handleFieldBlur('occupation', value);
                  }
@@ -2429,7 +1804,7 @@ const normalizeFundItem = useCallback((item) => ({
                }}
                customValue={customOccupation}
                onCustomChange={(text) => {
-                 setCustomOccupation(text.toUpperCase());
+                 formState.setCustomOccupation(text.toUpperCase());
                }}
                onCustomBlur={() => {
                  // When custom occupation is entered, validate and save it
@@ -2452,7 +1827,7 @@ const normalizeFundItem = useCallback((item) => ({
              label={cityOfResidenceLabel}
              value={cityOfResidence}
              onChangeText={(text) => {
-               setCityOfResidence(text.toUpperCase());
+               formState.setCityOfResidence(text.toUpperCase());
              }}
              onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
              helpText={cityOfResidenceHelpText}
@@ -2469,8 +1844,8 @@ const normalizeFundItem = useCallback((item) => ({
              label="居住国家"
              value={residentCountry}
              onValueChange={(code) => {
-               setResidentCountry(code);
-               setPhoneCode(getPhoneCode(code));
+               formState.setResidentCountry(code);
+               formState.setPhoneCode(getPhoneCode(code));
                debouncedSaveData();
              }}
              helpText="请选择您居住的国家"
@@ -2523,7 +1898,7 @@ const normalizeFundItem = useCallback((item) => ({
           title="💰 资金证明"
           subtitle="证明你有足够资金在香港旅行"
           isExpanded={expandedSection === 'funds'}
-          onToggle={() => setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
+          onToggle={() => formState.setExpandedSection(expandedSection === 'funds' ? null : 'funds')}
           fieldCount={getFieldCount('funds')}
         >
           {/* Border Crossing Context for Funds */}
@@ -2644,7 +2019,7 @@ const normalizeFundItem = useCallback((item) => ({
           title="✈️ 旅行计划"
           subtitle="告诉香港你的旅行安排"
           isExpanded={expandedSection === 'travel'}
-          onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
+          onToggle={() => formState.setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
           {/* Border Crossing Context for Travel Info */}
@@ -2679,9 +2054,9 @@ const normalizeFundItem = useCallback((item) => ({
                       isActive && styles.optionButtonActive,
                     ]}
                     onPress={() => {
-                      setTravelPurpose(option.value);
+                      formState.setTravelPurpose(option.value);
                       if (option.value !== 'OTHER') {
-                        setCustomTravelPurpose('');
+                        formState.setCustomTravelPurpose('');
                       }
                       // Trigger debounced save after purpose selection
                       debouncedSaveData();
@@ -2717,7 +2092,7 @@ const normalizeFundItem = useCallback((item) => ({
             label="过去14天停留国家或地区"
             value={recentStayCountry}
             onValueChange={(code) => {
-              setRecentStayCountry(code);
+              formState.setRecentStayCountry(code);
               handleFieldBlur('recentStayCountry', code);
             }}
             placeholder="请选择最近停留的国家或地区"
@@ -2731,7 +2106,7 @@ const normalizeFundItem = useCallback((item) => ({
             label="登机国家或地区"
             value={boardingCountry}
             onValueChange={(code) => {
-              setBoardingCountry(code);
+              formState.setBoardingCountry(code);
               handleFieldBlur('boardingCountry', code);
             }}
             placeholder="请选择登机国家或地区"
@@ -2757,7 +2132,7 @@ const normalizeFundItem = useCallback((item) => ({
             label="抵达日期"
             value={arrivalArrivalDate}
             onChangeText={(newValue) => {
-              setArrivalArrivalDate(newValue);
+              formState.setArrivalArrivalDate(newValue);
               // Trigger validation and save immediately when value changes
               handleFieldBlur('arrivalArrivalDate', newValue);
             }}
@@ -2801,7 +2176,7 @@ const normalizeFundItem = useCallback((item) => ({
             label="出发日期"
             value={departureDepartureDate}
             onChangeText={(newValue) => {
-              setDepartureDepartureDate(newValue);
+              formState.setDepartureDepartureDate(newValue);
               setTimeout(() => {
                 handleFieldBlur('departureDepartureDate', newValue);
               }, 0);
@@ -2822,17 +2197,17 @@ const normalizeFundItem = useCallback((item) => ({
             style={styles.checkboxContainer}
             onPress={async () => {
               const newValue = !isTransitPassenger;
-              setIsTransitPassenger(newValue);
+              formState.setIsTransitPassenger(newValue);
               if (newValue) {
-                setAccommodationType('HOTEL');
-                setCustomAccommodationType('');
-                setProvince('');
-                setDistrict('');
-                setDistrictId(null);
-                setSubDistrict('');
-                setSubDistrictId(null);
-                setPostalCode('');
-                setHotelAddress('');
+                formState.setAccommodationType('HOTEL');
+                formState.setCustomAccommodationType('');
+                formState.setProvince('');
+                formState.setDistrict('');
+                formState.setDistrictId(null);
+                formState.setSubDistrict('');
+                formState.setSubDistrictId(null);
+                formState.setPostalCode('');
+                formState.setHotelAddress('');
               }
 
               // Save immediately with the new value
@@ -2850,7 +2225,7 @@ const normalizeFundItem = useCallback((item) => ({
                 }
                 
                 await saveDataToSecureStorageWithOverride(overrides);
-                setLastEditedAt(new Date());
+                formState.setLastEditedAt(new Date());
               } catch (error) {
                 console.error('Failed to save transit passenger status:', error);
               }
@@ -2890,9 +2265,9 @@ const normalizeFundItem = useCallback((item) => ({
                       console.log('Selected option:', option.value);
                       console.log('Previous accommodationType:', accommodationType);
                       
-                      setAccommodationType(option.value);
+                      formState.setAccommodationType(option.value);
                       if (option.value !== 'OTHER') {
-                        setCustomAccommodationType('');
+                        formState.setCustomAccommodationType('');
                       }
                       
                       console.log('Saving immediately with new accommodation type...');
@@ -2902,7 +2277,7 @@ const normalizeFundItem = useCallback((item) => ({
                           accommodationType: option.value,
                           customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
                         });
-                        setLastEditedAt(new Date());
+                        formState.setLastEditedAt(new Date());
                       } catch (error) {
                         console.error('Failed to save accommodation type:', error);
                       }
