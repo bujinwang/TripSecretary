@@ -358,8 +358,8 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const handlePreviewEntryCard = () => {
-    // Navigate to EntryPackPreview to show the complete entry pack preview
-    navigation.navigate('EntryPackPreview', {
+    // Navigate to HongKongEntryPackPreview to show the complete entry pack preview
+    navigation.navigate('HongKongEntryPackPreview', {
       userData,
       passport: passportParam,
       destination: route.params?.destination,

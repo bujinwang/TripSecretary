@@ -35,6 +35,7 @@ import * as Brightness from 'expo-brightness';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
+import { calculateTotalFundsInCurrency, convertCurrency } from '../../utils/currencyConverter';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -561,32 +562,25 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         
         {fundData && fundData.length > 0 ? (
           <>
-            {/* Calculate and display total by currency */}
+            {/* Calculate and display total in THB (all currencies converted) */}
             {(() => {
-              const totals = {};
-              fundData.forEach(fund => {
-                const currency = fund.currency || 'THB';
-                const amount = parseFloat(fund.amount) || 0;
-                totals[currency] = (totals[currency] || 0) + amount;
-              });
-              
-              return Object.entries(totals).map(([currency, total]) => (
-                <View key={currency} style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>
-                    {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount') : 
-                     language === 'thai' ? 'จำนวนรวม' : 
-                     `จำนวนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')}`} ({currency}):
+              const totalInTHB = calculateTotalFundsInCurrency(fundData, 'THB');
+
+              return (
+                <View style={styles.totalFundsContainer}>
+                  <Text style={styles.totalFundsLabel}>
+                    {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount') :
+                     language === 'thai' ? 'จำนวนรวม' :
+                     `จำนวนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')}`}:
                   </Text>
-                  <Text style={[styles.infoValue, styles.fundAmount]}>
+                  <Text style={styles.totalFundsAmount}>
                     {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: currency,
                       minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(total)}
+                      maximumFractionDigits: 2
+                    }).format(totalInTHB)} THB
                   </Text>
                 </View>
-              ));
+              );
             })()}
             
             {/* Individual Fund Items */}
@@ -597,21 +591,36 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
                  `รายการเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems')}`}:
               </Text>
               
-              {fundData.map((fund, index) => (
-                <View key={index} style={styles.fundItem}>
-                  <View style={styles.fundItemHeader}>
-                    <Text style={styles.fundItemType}>
-                      {fund.type || 'Cash'}
-                    </Text>
-                    <Text style={styles.fundItemAmount}>
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: fund.currency || 'THB',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                      }).format(parseFloat(fund.amount) || 0)}
-                    </Text>
-                  </View>
+              {fundData.map((fund, index) => {
+                const originalAmount = parseFloat(fund.amount) || 0;
+                const originalCurrency = fund.currency || 'THB';
+                const convertedAmount = convertCurrency(originalAmount, originalCurrency, 'THB');
+
+                return (
+                  <View key={index} style={styles.fundItem}>
+                    <View style={styles.fundItemHeader}>
+                      <Text style={styles.fundItemType}>
+                        {fund.type || 'Cash'}
+                      </Text>
+                      <View style={styles.fundItemAmounts}>
+                        <Text style={styles.fundItemAmount}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: originalCurrency,
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                          }).format(originalAmount)}
+                        </Text>
+                        {originalCurrency !== 'THB' && (
+                          <Text style={styles.fundItemConvertedAmount}>
+                            ≈ {new Intl.NumberFormat('en-US', {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2
+                            }).format(convertedAmount)} THB
+                          </Text>
+                        )}
+                      </View>
+                    </View>
                   
                   {fund.photoUri && (
                     <TouchableOpacity 
@@ -640,8 +649,9 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
                       </Text>
                     </TouchableOpacity>
                   )}
-                </View>
-              ))}
+                  </View>
+                );
+              })}
             </View>
           </>
         ) : (
@@ -1503,11 +1513,44 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     opacity: 0.8,
   },
+  fundItemAmounts: {
+    alignItems: 'flex-end',
+  },
   fundItemAmount: {
     color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+  },
+  fundItemConvertedAmount: {
+    color: colors.white,
+    fontSize: 13,
+    opacity: 0.7,
+    marginTop: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+  },
+  totalFundsContainer: {
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    padding: spacing.md,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(76, 175, 80, 0.4)',
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  totalFundsLabel: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  totalFundsAmount: {
+    color: '#4CAF50',
+    fontSize: 28,
+    fontWeight: 'bold',
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+    textAlign: 'center',
   },
   fundPhotoContainer: {
     alignItems: 'center',

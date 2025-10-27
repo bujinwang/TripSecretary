@@ -33,7 +33,8 @@
       "Bash(npx expo start)",
       "WebSearch",
       "Bash(pkill:*)",
-      "Bash(npx expo start --clear)"
+      "Bash(npx expo start --clear)",
+      "Bash(node test-currency-conversion.js:*)"
     ],
     "deny": [],
     "ask": []
