@@ -19,10 +19,13 @@ import CompletionSummaryCard from '../../components/CompletionSummaryCard';
 
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
+import NoDataState from '../../components/thailand/NoDataState';
+import PreparedState from '../../components/thailand/PreparedState';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
+import { useThailandPrimaryButton } from '../../hooks/thailand';
 
 const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
@@ -45,43 +48,47 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   // Passport selection state
   const [userId, setUserId] = useState(null);
 
+  // Data change listener ref - fixed memory leak by using useRef
+  const dataChangeUnsubscribeRef = React.useRef(null);
 
+  // Primary button state - extracted to custom hook for better maintainability
+  const primaryButtonState = useThailandPrimaryButton({
+    completionPercent,
+    arrivalDate,
+    showSupersededStatus,
+    entryPackStatus,
+  });
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-      setupDataChangeListener();
-      
+
+      // Set up data change listener
+      dataChangeUnsubscribeRef.current = UserDataService.addDataChangeListener((event) => {
+        console.log('Data change event received in ThailandEntryFlowScreen:', event);
+
+        if (event.type === 'RESUBMISSION_WARNING') {
+          // Check if this warning is for the current entry pack
+          const currentEntryPackId = route.params?.entryPackId;
+          if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
+            setResubmissionWarning(event);
+          }
+        } else if (event.type === 'DATA_CHANGED') {
+          // Refresh data when changes are detected
+          loadData();
+        }
+      });
+
       return () => {
-        // Cleanup listener on unmount
-        if (dataChangeUnsubscribe) {
-          dataChangeUnsubscribe();
+        // Cleanup listener on unmount/blur
+        if (dataChangeUnsubscribeRef.current) {
+          dataChangeUnsubscribeRef.current();
+          dataChangeUnsubscribeRef.current = null;
         }
       };
     }, [])
   );
-
-  // Data change listener
-  let dataChangeUnsubscribe = null;
-
-  const setupDataChangeListener = () => {
-    // Add listener for data changes and resubmission warnings
-    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
-      console.log('Data change event received in ThailandEntryFlowScreen:', event);
-      
-      if (event.type === 'RESUBMISSION_WARNING') {
-        // Check if this warning is for the current entry pack
-        const currentEntryPackId = route.params?.entryPackId;
-        if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
-          setResubmissionWarning(event);
-        }
-      } else if (event.type === 'DATA_CHANGED') {
-        // Refresh data when changes are detected
-        loadData();
-      }
-    });
-  };
 
   const loadData = async () => {
     try {
@@ -386,7 +393,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
 
   const handlePrimaryAction = async () => {
-    const buttonState = getPrimaryButtonState();
+    const buttonState = primaryButtonState;
     
     switch (buttonState.action) {
       case 'continue_improving':
@@ -499,83 +506,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
-  const getPrimaryButtonState = () => {
-    // Check if entry pack is superseded
-    if (showSupersededStatus || entryPackStatus === 'superseded') {
-      return {
-        title: '更新我的泰国准备信息 🌺',
-        action: 'resubmit_tdac',
-        disabled: false,
-        variant: 'primary',
-        subtitle: '你的信息有更新，让我们重新准备最新的入境卡'
-      };
-    }
-
-    // Check completion status
-    const isComplete = completionPercent === 100;
-    
-    // Check submission window status
-    let canSubmitNow = false;
-    if (arrivalDate) {
-      const window = require('../../utils/thailand/ArrivalWindowCalculator').default.getSubmissionWindow(arrivalDate);
-      canSubmitNow = window.canSubmit;
-    }
-
-    // If completion is high enough, show entry pack option
-    if (completionPercent >= 80 && isComplete && canSubmitNow) {
-      return {
-        title: '提交入境卡',
-        action: 'submit_tdac',
-        disabled: false,
-        variant: 'primary'
-      };
-    } else if (completionPercent >= 60) {
-      return {
-        title: '查看我的通关包 📋',
-        action: 'view_entry_pack',
-        disabled: false,
-        variant: 'primary',
-        subtitle: '看看你已经准备好的入境信息'
-      };
-    } else if (!isComplete) {
-      return {
-        title: '继续准备我的泰国之旅 💪',
-        action: 'continue_improving',
-        disabled: false,
-        variant: 'secondary'
-      };
-    } else if (isComplete && !arrivalDate) {
-      return {
-        title: '告诉我你什么时候到泰国 ✈️',
-        action: 'continue_improving',
-        disabled: false,
-        variant: 'secondary',
-        subtitle: '设置抵达日期，我们就能帮你找到最佳提交时间'
-      };
-    } else if (isComplete && !canSubmitNow) {
-      return {
-        title: t('progressiveEntryFlow.countdown.preWindow', { defaultValue: '等待提交窗口' }),
-        action: 'wait_for_window',
-        disabled: true,
-        variant: 'primary',
-        subtitle: t('progressiveEntryFlow.countdown.preWindow', { 
-          defaultValue: '提交窗口尚未开启' 
-        })
-      };
-    } else {
-      return {
-        title: '提交入境卡',
-        action: 'submit_tdac',
-        disabled: false,
-        variant: 'primary'
-      };
-    }
-  };
 
   const hasNoEntryData = completionPercent === 0 && categories.every(cat => cat.completedCount === 0);
 
   const renderPrimaryAction = () => {
-    const buttonState = getPrimaryButtonState();
+    const buttonState = primaryButtonState;
     return (
       <View>
         <Button
@@ -594,167 +529,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     );
   };
 
-  const renderNoDataState = () => (
-    <View style={styles.noDataContainer}>
-      <Text style={styles.noDataIcon}>📝</Text>
-      <Text style={styles.noDataTitle}>
-        准备开始泰国之旅吧！🌴
-      </Text>
-      <Text style={styles.noDataDescription}>
-        你还没有填写泰国入境信息，别担心，我们会一步步帮你准备好所有需要的资料，让你轻松入境泰国！
-      </Text>
 
-      {/* Example/Tutorial hints */}
-      <View style={styles.noDataHints}>
-        <Text style={styles.noDataHintsTitle}>
-          泰国入境需要准备这些信息 🌺
-        </Text>
-        <View style={styles.noDataHintsList}>
-          <Text style={styles.noDataHint}>• 📘 护照信息 - 让泰国认识你</Text>
-          <Text style={styles.noDataHint}>• 📞 联系方式 - 泰国怎么找到你</Text>
-          <Text style={styles.noDataHint}>• 💰 资金证明 - 证明你能好好玩</Text>
-          <Text style={styles.noDataHint}>• ✈️ 航班和住宿 - 你的旅行计划</Text>
-        </View>
-      </View>
-
-      <Button
-        title="开始我的泰国准备之旅！🇹🇭"
-        onPress={handleEditInformation}
-        variant="primary"
-        style={styles.noDataButton}
-      />
-    </View>
-  );
-
-  const renderPreparedState = () => (
-    <View>
-      {/* Status Cards Section */}
-      <View style={styles.statusSection}>
-        <CompletionSummaryCard
-          completionPercent={completionPercent}
-          status={completionStatus}
-          showProgressBar={true}
-        />
-
-        {/* Additional Action Buttons - Show when completion is high */}
-        {completionPercent >= 80 && (
-          <View style={styles.additionalActionsContainer}>
-            <TouchableOpacity
-              style={styles.additionalActionButton}
-              onPress={handleEditInformation}
-            >
-              <Text style={styles.additionalActionIcon}>✏️</Text>
-              <Text style={styles.additionalActionText}>再改改</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.additionalActionButton}
-              onPress={() => {
-                // Show sharing options
-                Alert.alert(
-                  '寻求帮助',
-                  '您可以截图分享给亲友，让他们帮您检查信息是否正确。',
-                  [
-                    {
-                      text: '截图分享',
-                      onPress: () => {
-                        // Here you could implement screenshot functionality
-                        Alert.alert('提示', '请使用手机截图功能分享给亲友查看');
-                      }
-                    },
-                    { text: '取消', style: 'cancel' }
-                  ]
-                );
-              }}
-            >
-              <Text style={styles.additionalActionIcon}>👥</Text>
-              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {/* Integrated Countdown & Submission Section */}
-      <View style={styles.countdownSection}>
-        <Text style={styles.sectionTitle}>
-          最佳提交时间 ⏰
-        </Text>
-
-        {/* Submission Countdown */}
-        <SubmissionCountdown
-          arrivalDate={arrivalDate}
-          locale={t('locale', { defaultValue: 'zh' })}
-          showIcon={true}
-          updateInterval={1000} // Update every second for real-time countdown
-        />
-
-        {/* Smart Primary Action Button - Integrated with Countdown */}
-        <View style={styles.primaryActionContainer}>
-          {renderPrimaryAction()}
-        </View>
-      </View>
-
-      {/* Secondary Actions Section */}
-      <View style={styles.actionSection}>
-        {/* Entry Guide Button */}
-        <TouchableOpacity
-          style={styles.entryGuideButton}
-          onPress={() => navigation.navigate('ThailandEntryGuide', {
-            passport: passportParam,
-            destination: route.params?.destination,
-            completionData: userData
-          })}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#0BD67B', colors.primary]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.entryGuideGradient}
-          >
-            <View style={styles.entryGuideIconContainer}>
-              <Text style={styles.entryGuideIcon}>🗺️</Text>
-            </View>
-            <View style={styles.entryGuideContent}>
-              <Text style={styles.entryGuideTitle}>
-                查看泰国入境指引
-              </Text>
-              <Text style={styles.entryGuideSubtitle}>
-                6步骤完整入境流程指南
-              </Text>
-            </View>
-            <View style={styles.entryGuideChevron}>
-              <Text style={styles.entryGuideArrow}>›</Text>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Secondary Actions - Redesigned */}
-        {completionPercent > 50 && (
-          <View style={styles.secondaryActionsContainer}>
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={handlePreviewEntryCard}
-              activeOpacity={0.8}
-            >
-              <View style={styles.secondaryActionIconContainer}>
-                <Text style={styles.secondaryActionIcon}>👁️</Text>
-              </View>
-              <View style={styles.secondaryActionContent}>
-                <Text style={styles.secondaryActionTitle}>
-                  看看我的通关包
-                </Text>
-                <Text style={styles.secondaryActionSubtitle}>
-                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
-                </Text>
-              </View>
-              <Text style={styles.secondaryActionArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    </View>
-  );
 
   const renderContent = () => (
     <View style={styles.contentContainer}>
@@ -790,7 +565,28 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         />
       )}
 
-      {hasNoEntryData ? renderNoDataState() : renderPreparedState()}
+      {hasNoEntryData ? (
+        <NoDataState
+          styles={styles}
+          onGetStarted={handleEditInformation}
+        />
+      ) : (
+        <PreparedState
+          styles={styles}
+          colors={colors}
+          completionPercent={completionPercent}
+          completionStatus={completionStatus}
+          arrivalDate={arrivalDate}
+          userData={userData}
+          passport={passportParam}
+          destination={route.params?.destination}
+          t={t}
+          onEditInformation={handleEditInformation}
+          onPreviewEntryCard={handlePreviewEntryCard}
+          onNavigateToGuide={(params) => navigation.navigate('ThailandEntryGuide', params)}
+          renderPrimaryAction={renderPrimaryAction}
+        />
+      )}
     </View>
   );
 

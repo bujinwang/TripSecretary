@@ -250,14 +250,55 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 isActive && styles.optionButtonActive,
               ]}
               onPress={async () => {
+                const previousSex = formState.sex;
                 const newSex = option.value;
+
+                // Optimistically update UI
                 formState.setSex(newSex);
+
                 // Save immediately to ensure gender is saved without requiring other field interaction
                 try {
                   await saveDataToSecureStorageWithOverride({ sex: newSex });
                   formState.setLastEditedAt(new Date());
                 } catch (error) {
                   console.error('Failed to save gender:', error);
+
+                  // Revert to previous value on failure
+                  formState.setSex(previousSex);
+
+                  // Inform user and provide retry option
+                  Alert.alert(
+                    t('thailand.travelInfo.saveError.title', { defaultValue: '保存失败' }),
+                    t('thailand.travelInfo.saveError.genderMessage', {
+                      defaultValue: '性别信息保存失败，请重试。'
+                    }),
+                    [
+                      {
+                        text: t('thailand.travelInfo.saveError.retry', { defaultValue: '重试' }),
+                        onPress: async () => {
+                          // Retry save
+                          formState.setSex(newSex);
+                          try {
+                            await saveDataToSecureStorageWithOverride({ sex: newSex });
+                            formState.setLastEditedAt(new Date());
+                          } catch (retryError) {
+                            console.error('Retry failed to save gender:', retryError);
+                            formState.setSex(previousSex);
+                            Alert.alert(
+                              t('thailand.travelInfo.saveError.title', { defaultValue: '保存失败' }),
+                              t('thailand.travelInfo.saveError.persistentFailure', {
+                                defaultValue: '保存失败，请检查网络连接或稍后重试。'
+                              })
+                            );
+                          }
+                        }
+                      },
+                      {
+                        text: t('common.cancel', { defaultValue: '取消' }),
+                        style: 'cancel'
+                      }
+                    ]
+                  );
                 }
               }}
             >
