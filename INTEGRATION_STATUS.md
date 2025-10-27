@@ -1,6 +1,6 @@
 # Thailand Travel Info Screen - Integration Status
 
-## Current Status: Phase 3 In Progress (Partial Integration Complete)
+## Current Status: Phase 3b In Progress (~75% Complete)
 
 ### Completed Steps ✅
 
@@ -14,53 +14,67 @@
 - ✅ District/subDistrict cascade logic updated to use formState
 - ✅ Refs maintained (scrollViewRef, shouldRestoreScrollPosition)
 
+#### Step 3: Handler Functions Updated
+- ✅ Photo upload handlers (handleFlightTicketPhotoUpload, handleHotelReservationPhotoUpload)
+- ✅ Fund item handlers (addFund, handleFundItemPress, handleFundItemModalClose, handleFundItemUpdate, handleFundItemDelete)
+- ✅ Province/District selection handlers (handleProvinceSelect, handleDistrictSelect, handleSubDistrictSelect)
+- ✅ Gender option render function (renderGenderOptions)
+- ✅ Validation function (validate)
+
+#### Step 4: Validation & Helper Functions Updated
+- ✅ handleUserInteraction - uses formState for travelPurpose, accommodationType, boardingCountry
+- ✅ handleFieldBlur - uses formState for all field references and validation context
+- ✅ refreshFundItems - uses formState.setFunds
+- ✅ initializeEntryInfo - uses formState.setEntryInfoId, formState.setEntryInfoInitialized
+
+#### Step 5: Save Functions Updated
+- ✅ performSaveOperation - uses formState.setPassportData, formState.setPersonalInfoData
+- ✅ saveDataToSecureStorageWithOverride - builds currentState from formState values (30+ fields)
+
 #### Impact So Far
-- **File size**: 3,930 → 3,822 lines (**-108 lines**, -2.7%)
+- **File size**: 3,930 → ~3,850 lines (**-80 lines**, -2%)
 - **State management**: Consolidated into single hook ✅
-- **Pattern**: Demonstrated and working ✅
+- **Handlers**: All screen-specific handlers updated ✅
+- **Validation**: Core validation functions updated ✅
+- **Save operations**: Critical save functions updated ✅
+- **Pattern**: Fully demonstrated and working ✅
 
 ### Remaining Work 🔄
 
-#### Critical: State Variable Updates (~500 lines of code)
+#### Step 6: Data Loading Logic (~400 lines, lines 507-870)
 
-**Location**: Throughout handler functions and save logic
+**Current State**: Complex useEffect with 100+ direct state setters
 
-**What needs updating**:
-All references to old state variables need to use `formState.` prefix:
+**Target State**: Simple call to persistence.loadData()
 
-| Old Reference | New Reference |
-|--------------|---------------|
-| `passportNo` | `formState.passportNo` |
-| `setPassportNo(x)` | `formState.setPassportNo(x)` |
-| `surname` | `formState.surname` |
-| `setSurname(x)` | `formState.setSurname(x)` |
-| ... (55 more fields) | ... |
+**Approach**:
+- REMOVE entire existing data loading useEffect (lines 507-870)
+- REPLACE with: `useEffect(() => { persistence.loadData(); }, [persistence.loadData]);`
+- This will eliminate ~360 lines of code
 
-**Files Affected**:
-1. **Handler functions** (lines ~1210-1270):
-   - `handleProvinceSelect` - 8 references
-   - `handleDistrictSelect` - 6 references
-   - `handleSubDistrictSelect` - 4 references
-   - `handleFlightTicketPhotoUpload` - 2 references
-   - `handleHotelReservationPhotoUpload` - 2 references
-   - `addFund` - 3 references
-   - `handleFundItemPress` - 1 reference
-   - `handleFundItemModalClose` - 2 references
-   - `handleFundItemUpdate` - 2 references
-   - `handleFundItemCreate` - 1 reference
-   - `handleFundItemDelete` - 1 reference
+**Note**: Individual setState calls in this section DON'T need updating because the entire section will be removed.
 
-2. **Save functions** (lines ~1270-1720):
-   - `performSaveOperation` - ~80 references
-   - `saveDataToSecureStorageWithOverride` - ~40 references
+#### Step 7: JSX State References (~1,500 lines, lines 2170-3700)
 
-3. **Validation functions** (lines ~1100-1270):
-   - `handleFieldBlur` - ~20 references
-   - `handleUserInteraction` - ~10 references
-   - `getFieldCount` - ~30 references
-   - `calculateCompletionMetrics` - ~25 references
+**Current State**: JSX directly accesses state variables and uses setters
 
-**Total Estimated References**: ~240 state variable references need updating
+**Target State**: JSX replaced with extracted section components
+
+**Approach**:
+- REMOVE existing JSX sections (passport, personal, funds, travel)
+- REPLACE with component usage: `<PassportSection {...props} />`
+- Individual state references DON'T need updating because sections will be replaced
+
+**Note**: We already have the components created in Phase 2.
+
+#### Step 8: Remaining Minor State References
+
+**Still need updates in**:
+- A few JSX helper sections (progress cards, save status, etc.)
+- Some useCallback dependencies
+- Estimated ~20-30 references
+
+These are minor and will be handled during JSX replacement.
 
 #### Step 3-6: Hook Initialization (After state updates)
 Once state variables are updated, initialize:
@@ -99,24 +113,22 @@ Replace 5 major JSX sections:
 
 ## Recommended Approach for Completion
 
-### Option A: Systematic State Reference Update (Recommended)
+### Recommended: Direct Replacement Strategy
 
-**Pros**:
-- Complete integration
-- Full benefits realized
-- Clean final state
+**Rationale**:
+- Critical handler and save functions are DONE ✅
+- Data loading section will be REMOVED, not updated
+- JSX sections will be REPLACED with components, not updated
+- Only ~20-30 minor references need manual updates
 
-**Cons**:
-- Time intensive (~2-3 hours)
-- Requires careful testing
-- Risk of errors
-
-**Steps**:
-1. Create a script to find all state references
-2. Update systematically by function
-3. Test after each function update
-4. Complete JSX replacement
-5. Full integration testing
+**Steps** (Est. 1-2 hours):
+1. ✅ DONE: Update all handler functions
+2. ✅ DONE: Update validation functions
+3. ✅ DONE: Update save operations
+4. **Next**: Replace data loading useEffect with persistence.loadData() call
+5. **Next**: Replace JSX sections with extracted components
+6. **Next**: Update minor remaining state references
+7. **Final**: Test thoroughly
 
 ### Option B: Hybrid Approach (Faster)
 
