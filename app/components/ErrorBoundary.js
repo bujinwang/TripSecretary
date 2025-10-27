@@ -8,8 +8,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from '../i18n/LocaleContext';
 
-class ErrorBoundary extends React.Component {
+class ErrorBoundaryBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -57,10 +58,10 @@ class ErrorBoundary extends React.Component {
             style={styles.title}
             accessibilityRole="header"
           >
-            Something went wrong
+            {this.props.translations?.title || 'Something went wrong'}
           </Text>
           <Text style={styles.message}>
-            {this.props.errorMessage || 'An unexpected error occurred. Please try again.'}
+            {this.props.errorMessage || this.props.translations?.message || 'An unexpected error occurred. Please try again.'}
           </Text>
 
           {__DEV__ && this.state.error && (
@@ -78,7 +79,9 @@ class ErrorBoundary extends React.Component {
             accessibilityLabel="Try again"
             accessibilityHint="Attempts to recover from the error and reload the component"
           >
-            <Text style={styles.buttonText}>Try Again</Text>
+            <Text style={styles.buttonText}>
+              {this.props.translations?.tryAgain || 'Try Again'}
+            </Text>
           </TouchableOpacity>
 
           {this.props.onClose && (
@@ -90,7 +93,9 @@ class ErrorBoundary extends React.Component {
               accessibilityLabel="Close error message"
               accessibilityHint="Closes the error screen and returns to the previous view"
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>
+                {this.props.translations?.close || 'Close'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -100,6 +105,42 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+ErrorBoundaryBase.propTypes = {
+  children: PropTypes.node.isRequired,
+  fallback: PropTypes.node,
+  errorMessage: PropTypes.string,
+  onReset: PropTypes.func,
+  onClose: PropTypes.func,
+  translations: PropTypes.shape({
+    title: PropTypes.string,
+    message: PropTypes.string,
+    tryAgain: PropTypes.string,
+    close: PropTypes.string,
+  }),
+};
+
+ErrorBoundaryBase.defaultProps = {
+  fallback: null,
+  errorMessage: null,
+  onReset: null,
+  onClose: null,
+  translations: null,
+};
+
+// Functional wrapper component that uses i18n hooks
+const ErrorBoundary = (props) => {
+  const { t } = useTranslation();
+
+  const translations = {
+    title: t('thailand.tdacWebView.errorBoundary.title'),
+    message: t('thailand.tdacWebView.errorBoundary.message'),
+    tryAgain: t('thailand.tdacWebView.errorBoundary.tryAgain'),
+    close: t('thailand.tdacWebView.errorBoundary.close'),
+  };
+
+  return <ErrorBoundaryBase {...props} translations={translations} />;
+};
 
 ErrorBoundary.propTypes = {
   children: PropTypes.node.isRequired,

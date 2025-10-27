@@ -207,6 +207,17 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
           </View>
         )}
 
+        {/* Cultural Tips for Border Crossing */}
+        <View style={styles.culturalTipsCard}>
+          <Text style={styles.culturalTipsTitle}>🧡 通关小贴士</Text>
+          <Text style={styles.culturalTipsText}>
+            • 海关官员可能会问你来泰国的目的，保持微笑礼貌回答{'\n'}
+            • 准备好返程机票证明你不会逾期停留{'\n'}
+            • 保持冷静，海关检查是正常程序{'\n'}
+            • 如果听不懂，可以礼貌地说"Can you speak English?"
+          </Text>
+        </View>
+
       </View>
     );
   };
@@ -543,6 +554,25 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.white,
     fontWeight: '600',
+  },
+  culturalTipsCard: {
+    backgroundColor: '#FFF5E6',
+    borderWidth: 1,
+    borderColor: '#FFB347',
+    borderRadius: 8,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  culturalTipsTitle: {
+    ...typography.body2,
+    color: '#D2691E',
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  culturalTipsText: {
+    ...typography.body2,
+    color: '#8B4513',
+    lineHeight: 20,
   },
 });
 

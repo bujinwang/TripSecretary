@@ -214,8 +214,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     await handleNavigationWithSave(
       () => navigation.navigate('ThailandEntryFlow', {
         passport,
-        destination,
-        entryInfoId: entryInfoId // Pass entryInfoId for viewing entry pack details
+        destination
       }),
       'continue'
     );
@@ -590,19 +589,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 : ''
               }
             </Text>
-          )}
-
-          {/* Cultural Tips for Border Crossing Beginners */}
-          {formState.totalCompletionPercent >= 80 && (
-            <View style={styles.culturalTipsCard}>
-              <Text style={styles.culturalTipsTitle}>🧡 通关小贴士</Text>
-              <Text style={styles.culturalTipsText}>
-                • 海关官员可能会问你来泰国的目的，保持微笑礼貌回答{'\n'}
-                • 准备好返程机票证明你不会逾期停留{'\n'}
-                • 保持冷静，海关检查是正常程序{'\n'}
-                • 如果听不懂，可以礼貌地说"Can you speak English?"
-              </Text>
-            </View>
           )}
 
 

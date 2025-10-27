@@ -9,8 +9,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { View, Text, Modal, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -20,12 +23,12 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
       <SafeAreaView style={styles.modalContainer}>
         {/* Modal Header */}
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>复制助手</Text>
+          <Text style={styles.modalTitle}>{t('thailand.tdacWebView.helperModal.title')}</Text>
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
           >
-            <Text style={styles.closeButtonText}>✕ 关闭</Text>
+            <Text style={styles.closeButtonText}>{t('thailand.tdacWebView.helperModal.close')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -35,7 +38,7 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
           <View style={styles.instructionBanner}>
             <Text style={styles.instructionIcon}>💡</Text>
             <Text style={styles.instructionText}>
-              点击⚡尝试自动填充网页，失败则点"复制"手动粘贴
+              {t('thailand.tdacWebView.helperModal.instruction')}
             </Text>
           </View>
 
@@ -76,21 +79,18 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
           <View style={styles.noteCard}>
             <Text style={styles.noteIcon}>⚠️</Text>
             <View style={styles.noteContent}>
-              <Text style={styles.noteTitle}>Step 4: Health Declaration</Text>
+              <Text style={styles.noteTitle}>{t('thailand.tdacWebView.helperModal.healthDeclaration.title')}</Text>
               <Text style={styles.noteText}>
-                健康声明部分请根据实际情况在网页中选择 Yes 或 No
+                {t('thailand.tdacWebView.helperModal.healthDeclaration.note')}
               </Text>
             </View>
           </View>
 
           {/* Final Tips */}
           <View style={styles.tipsCard}>
-            <Text style={styles.tipsTitle}>💡 完成后记得：</Text>
+            <Text style={styles.tipsTitle}>{t('thailand.tdacWebView.helperModal.tips.title')}</Text>
             <Text style={styles.tipsText}>
-              • 提交后会收到确认邮件{'\n'}
-              • 邮件中包含QR码{'\n'}
-              • 截图保存QR码{'\n'}
-              • 入境时出示QR码和护照
+              {t('thailand.tdacWebView.helperModal.tips.items')}
             </Text>
           </View>
 

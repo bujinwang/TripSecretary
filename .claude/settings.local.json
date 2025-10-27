@@ -44,7 +44,8 @@
       "Bash(while read file)",
       "Bash(rm:*)",
       "Read(//private/tmp/**)",
-      "Bash(do echo)"
+      "Bash(do echo)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

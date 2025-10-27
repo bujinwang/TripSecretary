@@ -31,6 +31,16 @@ export const useSingaporeDataPersistence = ({
   // Refs for scroll position management
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
+  const formStateRef = useRef(formState);
+  const travelInfoFormRef = useRef(travelInfoForm);
+
+  useEffect(() => {
+    formStateRef.current = formState;
+  }, [formState]);
+
+  useEffect(() => {
+    travelInfoFormRef.current = travelInfoForm;
+  }, [travelInfoForm]);
 
   // ========== Session State Management ==========
 
@@ -39,11 +49,15 @@ export const useSingaporeDataPersistence = ({
   }, [userId]);
 
   const saveSessionState = useCallback(async () => {
+    const currentState = formStateRef.current;
+    if (!currentState) {
+      return;
+    }
     try {
       const sessionState = {
-        expandedSection: formState.expandedSection,
-        scrollPosition: formState.scrollPosition,
-        lastEditedField: formState.lastEditedField,
+        expandedSection: currentState.expandedSection,
+        scrollPosition: currentState.scrollPosition,
+        lastEditedField: currentState.lastEditedField,
         timestamp: new Date().toISOString(),
       };
 
@@ -53,7 +67,7 @@ export const useSingaporeDataPersistence = ({
     } catch (error) {
       console.error('Failed to save session state:', error);
     }
-  }, [formState.expandedSection, formState.scrollPosition, formState.lastEditedField, getSessionStateKey]);
+  }, [getSessionStateKey]);
 
   const loadSessionState = useCallback(async () => {
     try {
@@ -63,18 +77,21 @@ export const useSingaporeDataPersistence = ({
       if (sessionStateJson) {
         const sessionState = JSON.parse(sessionStateJson);
         console.log('Session state loaded:', sessionState);
+        const currentState = formStateRef.current;
 
-        if (sessionState.expandedSection) {
-          formState.setExpandedSection(sessionState.expandedSection);
-        }
+        if (currentState) {
+          if (sessionState.expandedSection) {
+            currentState.setExpandedSection(sessionState.expandedSection);
+          }
 
-        if (sessionState.scrollPosition) {
-          formState.setScrollPosition(sessionState.scrollPosition);
-          shouldRestoreScrollPosition.current = true;
-        }
+          if (sessionState.scrollPosition) {
+            currentState.setScrollPosition(sessionState.scrollPosition);
+            shouldRestoreScrollPosition.current = true;
+          }
 
-        if (sessionState.lastEditedField) {
-          formState.setLastEditedField(sessionState.lastEditedField);
+          if (sessionState.lastEditedField) {
+            currentState.setLastEditedField(sessionState.lastEditedField);
+          }
         }
 
         return sessionState;
@@ -83,18 +100,19 @@ export const useSingaporeDataPersistence = ({
       console.error('Failed to load session state:', error);
     }
     return null;
-  }, [getSessionStateKey, formState]);
+  }, [getSessionStateKey]);
 
   // ========== Migration Logic ==========
 
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !travelInfoForm.isInitialized) {
+    const currentForm = travelInfoFormRef.current;
+    if (!userData || !currentForm?.isInitialized) {
       return;
     }
 
     console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE (SINGAPORE) ===');
-    await travelInfoForm.initializeWithExistingData(userData);
-  }, [travelInfoForm]);
+    await currentForm.initializeWithExistingData(userData);
+  }, []);
 
   // ========== Fund Items Management ==========
 
@@ -112,26 +130,32 @@ export const useSingaporeDataPersistence = ({
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
-      formState.setFunds(normalized);
+      formStateRef.current?.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem, formState]);
+  }, [userId, normalizeFundItem]);
 
   const saveFundItems = useCallback(async (fundItems) => {
     try {
       await UserDataService.updateFundItems(userId, fundItems);
-      formState.setFunds(fundItems);
+      formStateRef.current?.setFunds(fundItems);
       return { success: true };
     } catch (error) {
       console.error('Failed to save fund items:', error);
       return { success: false, error };
     }
-  }, [userId, formState]);
+  }, [userId]);
 
   // ========== Save Operations ==========
 
   const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
+    const state = formStateRef.current;
+    const interactionForm = travelInfoFormRef.current;
+    if (!state || !interactionForm) {
+      console.warn('Form state not ready, aborting save');
+      return { success: false, error: new Error('Form state not initialized') };
+    }
     try {
       console.log('=== SAVING DATA TO SECURE STORAGE (SINGAPORE) ===');
       console.log('userId:', userId);
@@ -145,40 +169,40 @@ export const useSingaporeDataPersistence = ({
       // Build all fields object for filtering
       const allFields = {
         // Passport fields
-        passportNo: getCurrentValue('passportNo', formState.passportNo),
-        fullName: getCurrentValue('fullName', formState.fullName),
-        nationality: getCurrentValue('nationality', formState.nationality),
-        dob: getCurrentValue('dob', formState.dob),
-        expiryDate: getCurrentValue('expiryDate', formState.expiryDate),
-        sex: getCurrentValue('sex', formState.sex),
+        passportNo: getCurrentValue('passportNo', state.passportNo),
+        fullName: getCurrentValue('fullName', state.fullName),
+        nationality: getCurrentValue('nationality', state.nationality),
+        dob: getCurrentValue('dob', state.dob),
+        expiryDate: getCurrentValue('expiryDate', state.expiryDate),
+        sex: getCurrentValue('sex', state.sex),
         // Personal fields
-        occupation: getCurrentValue('occupation', formState.occupation),
-        cityOfResidence: getCurrentValue('cityOfResidence', formState.cityOfResidence),
-        residentCountry: getCurrentValue('residentCountry', formState.residentCountry),
-        phoneCode: getCurrentValue('phoneCode', formState.phoneCode),
-        phoneNumber: getCurrentValue('phoneNumber', formState.phoneNumber),
-        email: getCurrentValue('email', formState.email),
+        occupation: getCurrentValue('occupation', state.occupation),
+        cityOfResidence: getCurrentValue('cityOfResidence', state.cityOfResidence),
+        residentCountry: getCurrentValue('residentCountry', state.residentCountry),
+        phoneCode: getCurrentValue('phoneCode', state.phoneCode),
+        phoneNumber: getCurrentValue('phoneNumber', state.phoneNumber),
+        email: getCurrentValue('email', state.email),
         // Travel fields
-        travelPurpose: getCurrentValue('travelPurpose', formState.travelPurpose),
-        customTravelPurpose: getCurrentValue('customTravelPurpose', formState.customTravelPurpose),
-        boardingCountry: getCurrentValue('boardingCountry', formState.boardingCountry),
-        arrivalFlightNumber: getCurrentValue('arrivalFlightNumber', formState.arrivalFlightNumber),
-        arrivalArrivalDate: getCurrentValue('arrivalArrivalDate', formState.arrivalArrivalDate),
-        departureFlightNumber: getCurrentValue('departureFlightNumber', formState.departureFlightNumber),
-        departureDepartureDate: getCurrentValue('departureDepartureDate', formState.departureDepartureDate),
-        isTransitPassenger: getCurrentValue('isTransitPassenger', formState.isTransitPassenger),
-        accommodationType: getCurrentValue('accommodationType', formState.accommodationType),
-        customAccommodationType: getCurrentValue('customAccommodationType', formState.customAccommodationType),
-        province: getCurrentValue('province', formState.province),
-        district: getCurrentValue('district', formState.district),
-        subDistrict: getCurrentValue('subDistrict', formState.subDistrict),
-        postalCode: getCurrentValue('postalCode', formState.postalCode),
-        hotelAddress: getCurrentValue('hotelAddress', formState.hotelAddress),
-        visaNumber: getCurrentValue('visaNumber', formState.visaNumber)
+        travelPurpose: getCurrentValue('travelPurpose', state.travelPurpose),
+        customTravelPurpose: getCurrentValue('customTravelPurpose', state.customTravelPurpose),
+        boardingCountry: getCurrentValue('boardingCountry', state.boardingCountry),
+        arrivalFlightNumber: getCurrentValue('arrivalFlightNumber', state.arrivalFlightNumber),
+        arrivalArrivalDate: getCurrentValue('arrivalArrivalDate', state.arrivalArrivalDate),
+        departureFlightNumber: getCurrentValue('departureFlightNumber', state.departureFlightNumber),
+        departureDepartureDate: getCurrentValue('departureDepartureDate', state.departureDepartureDate),
+        isTransitPassenger: getCurrentValue('isTransitPassenger', state.isTransitPassenger),
+        accommodationType: getCurrentValue('accommodationType', state.accommodationType),
+        customAccommodationType: getCurrentValue('customAccommodationType', state.customAccommodationType),
+        province: getCurrentValue('province', state.province),
+        district: getCurrentValue('district', state.district),
+        subDistrict: getCurrentValue('subDistrict', state.subDistrict),
+        postalCode: getCurrentValue('postalCode', state.postalCode),
+        hotelAddress: getCurrentValue('hotelAddress', state.hotelAddress),
+        visaNumber: getCurrentValue('visaNumber', state.visaNumber)
       };
 
       // Filter fields based on user interaction
-      const fieldsToSave = travelInfoForm.filterFieldsForSave(allFields);
+      const fieldsToSave = interactionForm.filterFieldsForSave(allFields);
       console.log('Fields to save after filtering:', Object.keys(fieldsToSave).length, 'fields');
 
       // Get existing passport first
@@ -197,10 +221,10 @@ export const useSingaporeDataPersistence = ({
         console.log('Saving passport updates:', Object.keys(passportUpdates));
         if (existingPassport?.id) {
           const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
-          formState.setPassportData(updated);
+          state.setPassportData(updated);
         } else {
           const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
-          formState.setPassportData(saved);
+          state.setPassportData(saved);
         }
       }
 
@@ -217,7 +241,7 @@ export const useSingaporeDataPersistence = ({
       if (Object.keys(personalInfoUpdates).length > 0) {
         console.log('Saving personal info updates:', Object.keys(personalInfoUpdates));
         const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-        formState.setPersonalInfoData(savedPersonalInfo);
+        state.setPersonalInfoData(savedPersonalInfo);
       }
 
       // Save travel info data - only user-modified fields
@@ -258,8 +282,8 @@ export const useSingaporeDataPersistence = ({
           await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
 
           // Handle arrival date change notifications
-          if (travelInfoUpdates.arrivalArrivalDate && travelInfoUpdates.arrivalArrivalDate !== formState.previousArrivalDate) {
-            formState.setPreviousArrivalDate(travelInfoUpdates.arrivalArrivalDate);
+          if (travelInfoUpdates.arrivalArrivalDate && travelInfoUpdates.arrivalArrivalDate !== state.previousArrivalDate) {
+            state.setPreviousArrivalDate(travelInfoUpdates.arrivalArrivalDate);
           }
         } catch (travelInfoError) {
           console.error('Failed to save travel info:', travelInfoError);
@@ -272,7 +296,7 @@ export const useSingaporeDataPersistence = ({
       console.error('Failed to save data to secure storage:', error);
       return { success: false, error };
     }
-  }, [userId, destination, formState, travelInfoForm]);
+  }, [userId, destination]);
 
   // Debounced save function
   const debouncedSaveData = useCallback(() => {
@@ -280,17 +304,23 @@ export const useSingaporeDataPersistence = ({
       'singapore_travel_info',
       async () => {
         await saveDataToSecureStorage();
-        formState.setLastEditedAt(new Date());
+        formStateRef.current?.setLastEditedAt(new Date());
       },
       300
     )();
-  }, [saveDataToSecureStorage, formState]);
+  }, [saveDataToSecureStorage]);
 
   // ========== Data Loading ==========
 
   const loadData = useCallback(async () => {
+    const state = formStateRef.current;
+    const interactionForm = travelInfoFormRef.current;
+    if (!state) {
+      console.warn('Form state unavailable during loadData');
+      return;
+    }
     try {
-      formState.setIsLoading(true);
+      state.setIsLoading(true);
 
       // Initialize UserDataService
       await UserDataService.initialize(userId);
@@ -311,11 +341,12 @@ export const useSingaporeDataPersistence = ({
       }
 
       // Perform migration if interaction tracker is initialized
-      if (travelInfoForm.isInitialized) {
+      if (interactionForm?.isInitialized) {
         await migrateExistingDataToInteractionState(userData);
       } else {
         setTimeout(async () => {
-          if (travelInfoForm.isInitialized) {
+          const latestForm = travelInfoFormRef.current;
+          if (latestForm?.isInitialized) {
             await migrateExistingDataToInteractionState(userData);
           }
         }, 100);
@@ -325,48 +356,48 @@ export const useSingaporeDataPersistence = ({
       const passportInfo = userData?.passport;
       if (passportInfo) {
         console.log('Loading passport from database');
-        formState.setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
+        state.setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
 
         // Smart full name loading with fallbacks
         if (passportInfo.fullName?.trim()) {
-          formState.setFullName(passportInfo.fullName);
+          state.setFullName(passportInfo.fullName);
         } else if (passport?.nameEn?.trim()) {
-          formState.setFullName(passport.nameEn);
+          state.setFullName(passport.nameEn);
         } else if (passport?.name?.trim()) {
-          formState.setFullName(passport.name);
+          state.setFullName(passport.name);
         }
 
-        formState.setNationality(passportInfo.nationality || passport?.nationality || '');
-        formState.setDob(passportInfo.dateOfBirth || passport?.dob || '');
-        formState.setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-        formState.setPassportData(passportInfo);
+        state.setNationality(passportInfo.nationality || passport?.nationality || '');
+        state.setDob(passportInfo.dateOfBirth || passport?.dob || '');
+        state.setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
+        state.setPassportData(passportInfo);
       } else {
         // Fallback to route params
         console.log('No passport data in database, using route params');
-        formState.setPassportNo(passport?.passportNo || '');
-        formState.setFullName(passport?.nameEn || passport?.name || '');
-        formState.setNationality(passport?.nationality || '');
-        formState.setDob(passport?.dob || '');
-        formState.setExpiryDate(passport?.expiry || '');
+        state.setPassportNo(passport?.passportNo || '');
+        state.setFullName(passport?.nameEn || passport?.name || '');
+        state.setNationality(passport?.nationality || '');
+        state.setDob(passport?.dob || '');
+        state.setExpiryDate(passport?.expiry || '');
       }
 
       // Load personal info
       const personalInfo = userData?.personalInfo;
       if (personalInfo) {
-        formState.setOccupation(personalInfo.occupation || '');
-        formState.setCityOfResidence(personalInfo.provinceCity || '');
-        formState.setResidentCountry(personalInfo.countryRegion || '');
-        formState.setPhoneNumber(personalInfo.phoneNumber || '');
-        formState.setEmail(personalInfo.email || '');
-        formState.setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-        formState.setPersonalInfoData(personalInfo);
+        state.setOccupation(personalInfo.occupation || '');
+        state.setCityOfResidence(personalInfo.provinceCity || '');
+        state.setResidentCountry(personalInfo.countryRegion || '');
+        state.setPhoneNumber(personalInfo.phoneNumber || '');
+        state.setEmail(personalInfo.email || '');
+        state.setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
+        state.setPersonalInfoData(personalInfo);
       } else {
-        formState.setPhoneCode(getPhoneCode(passport?.nationality || ''));
+        state.setPhoneCode(getPhoneCode(passport?.nationality || ''));
       }
 
       // Load gender (single source of truth: passport)
       const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || 'Male';
-      formState.setSex(loadedSex);
+      state.setSex(loadedSex);
 
       // Load fund items
       await refreshFundItems();
@@ -388,37 +419,37 @@ export const useSingaporeDataPersistence = ({
           // Load travel purpose (handle predefined vs custom)
           const loadedPurpose = travelInfo.travelPurpose || '';
           if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
-            formState.setTravelPurpose(loadedPurpose);
-            formState.setCustomTravelPurpose('');
+            state.setTravelPurpose(loadedPurpose);
+            state.setCustomTravelPurpose('');
           } else if (loadedPurpose) {
-            formState.setTravelPurpose('OTHER');
-            formState.setCustomTravelPurpose(loadedPurpose);
+            state.setTravelPurpose('OTHER');
+            state.setCustomTravelPurpose(loadedPurpose);
           }
 
-          formState.setBoardingCountry(travelInfo.boardingCountry || '');
-          formState.setVisaNumber(travelInfo.visaNumber || '');
-          formState.setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
-          formState.setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
-          formState.setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
-          formState.setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
-          formState.setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
-          formState.setIsTransitPassenger(travelInfo.isTransitPassenger || false);
+          state.setBoardingCountry(travelInfo.boardingCountry || '');
+          state.setVisaNumber(travelInfo.visaNumber || '');
+          state.setArrivalFlightNumber(travelInfo.arrivalFlightNumber || '');
+          state.setArrivalArrivalDate(travelInfo.arrivalArrivalDate || '');
+          state.setPreviousArrivalDate(travelInfo.arrivalArrivalDate || '');
+          state.setDepartureFlightNumber(travelInfo.departureFlightNumber || '');
+          state.setDepartureDepartureDate(travelInfo.departureDepartureDate || '');
+          state.setIsTransitPassenger(travelInfo.isTransitPassenger || false);
 
           // Load accommodation type (handle predefined vs custom)
           const loadedAccommodationType = travelInfo.accommodationType || '';
           if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
-            formState.setAccommodationType(loadedAccommodationType);
-            formState.setCustomAccommodationType('');
+            state.setAccommodationType(loadedAccommodationType);
+            state.setCustomAccommodationType('');
           } else if (loadedAccommodationType) {
-            formState.setAccommodationType('OTHER');
-            formState.setCustomAccommodationType(loadedAccommodationType);
+            state.setAccommodationType('OTHER');
+            state.setCustomAccommodationType(loadedAccommodationType);
           }
 
-          formState.setProvince(travelInfo.province || '');
-          formState.setDistrict(travelInfo.district || '');
-          formState.setSubDistrict(travelInfo.subDistrict || '');
-          formState.setPostalCode(travelInfo.postalCode || '');
-          formState.setHotelAddress(travelInfo.hotelAddress || '');
+          state.setProvince(travelInfo.province || '');
+          state.setDistrict(travelInfo.district || '');
+          state.setSubDistrict(travelInfo.subDistrict || '');
+          state.setPostalCode(travelInfo.postalCode || '');
+          state.setHotelAddress(travelInfo.hotelAddress || '');
 
           console.log('Travel info loaded successfully');
         } else {
@@ -431,23 +462,28 @@ export const useSingaporeDataPersistence = ({
     } catch (error) {
       console.error('Failed to load data:', error);
       // Fallback to route params on error
-      formState.setPassportNo(passport?.passportNo || '');
-      formState.setFullName(passport?.nameEn || passport?.name || '');
-      formState.setNationality(passport?.nationality || '');
-      formState.setDob(passport?.dob || '');
-      formState.setExpiryDate(passport?.expiry || '');
-      formState.setSex(passport?.sex || 'Male');
-      formState.setPhoneCode(getPhoneCode(passport?.nationality || ''));
+      state.setPassportNo(passport?.passportNo || '');
+      state.setFullName(passport?.nameEn || passport?.name || '');
+      state.setNationality(passport?.nationality || '');
+      state.setDob(passport?.dob || '');
+      state.setExpiryDate(passport?.expiry || '');
+      state.setSex(passport?.sex || 'Male');
+      state.setPhoneCode(getPhoneCode(passport?.nationality || ''));
     } finally {
-      formState.setIsLoading(false);
+      state.setIsLoading(false);
     }
-  }, [userId, passport, destination, formState, travelInfoForm, migrateExistingDataToInteractionState, refreshFundItems]);
+  }, [userId, passport, destination, migrateExistingDataToInteractionState, refreshFundItems]);
 
   // Setup listeners for navigation events
   useEffect(() => {
     // Focus listener: reload data when returning to screen
     const unsubscribeFocus = navigation.addListener('focus', async () => {
       try {
+        const state = formStateRef.current;
+        const interactionForm = travelInfoFormRef.current;
+        if (!state) {
+          return;
+        }
         const userData = await UserDataService.getAllUserData(userId);
         if (userData) {
           // Reload and migrate data
@@ -461,35 +497,35 @@ export const useSingaporeDataPersistence = ({
             console.log('Failed to load travel info on focus:', err);
           }
 
-          if (travelInfoForm.isInitialized) {
+          if (interactionForm?.isInitialized) {
             await migrateExistingDataToInteractionState(userData);
           }
 
           // Refresh all data
           const passportInfo = userData.passport;
           if (passportInfo) {
-            formState.setPassportNo(passportInfo.passportNumber || formState.passportNo);
+            state.setPassportNo(passportInfo.passportNumber || state.passportNo);
             if (passportInfo.fullName?.trim()) {
-              formState.setFullName(passportInfo.fullName);
+              state.setFullName(passportInfo.fullName);
             }
-            formState.setNationality(passportInfo.nationality || formState.nationality);
-            formState.setDob(passportInfo.dateOfBirth || formState.dob);
-            formState.setExpiryDate(passportInfo.expiryDate || formState.expiryDate);
-            formState.setPassportData(passportInfo);
+            state.setNationality(passportInfo.nationality || state.nationality);
+            state.setDob(passportInfo.dateOfBirth || state.dob);
+            state.setExpiryDate(passportInfo.expiryDate || state.expiryDate);
+            state.setPassportData(passportInfo);
           }
 
           const personalInfo = userData.personalInfo;
           if (personalInfo) {
-            formState.setOccupation(personalInfo.occupation || formState.occupation);
-            formState.setCityOfResidence(personalInfo.provinceCity || formState.cityOfResidence);
-            formState.setResidentCountry(personalInfo.countryRegion || formState.residentCountry);
-            formState.setPhoneNumber(personalInfo.phoneNumber || formState.phoneNumber);
-            formState.setEmail(personalInfo.email || formState.email);
-            formState.setPhoneCode(personalInfo.phoneCode || formState.phoneCode);
-            formState.setPersonalInfoData(personalInfo);
+            state.setOccupation(personalInfo.occupation || state.occupation);
+            state.setCityOfResidence(personalInfo.provinceCity || state.cityOfResidence);
+            state.setResidentCountry(personalInfo.countryRegion || state.residentCountry);
+            state.setPhoneNumber(personalInfo.phoneNumber || state.phoneNumber);
+            state.setEmail(personalInfo.email || state.email);
+            state.setPhoneCode(personalInfo.phoneCode || state.phoneCode);
+            state.setPersonalInfoData(personalInfo);
           }
 
-          formState.setSex(passportInfo?.gender || passport?.sex || formState.sex);
+          state.setSex(passportInfo?.gender || passport?.sex || state.sex);
           await refreshFundItems({ forceRefresh: true });
         }
       } catch (error) {
@@ -506,7 +542,7 @@ export const useSingaporeDataPersistence = ({
       unsubscribeFocus();
       unsubscribeBlur();
     };
-  }, [navigation, userId, destination, formState, passport, travelInfoForm, migrateExistingDataToInteractionState, refreshFundItems]);
+  }, [navigation, userId, destination, passport, migrateExistingDataToInteractionState, refreshFundItems]);
 
   // Cleanup on unmount
   useEffect(() => {

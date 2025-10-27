@@ -9,8 +9,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { View, Text, Modal, Image, TouchableOpacity } from 'react-native';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -21,12 +24,12 @@ const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum 
       <View style={styles.qrModalOverlay}>
         <View style={styles.qrModalContainer}>
           <View style={styles.qrModalHeader}>
-            <Text style={styles.qrModalTitle}>🎫 TDAC 入境卡</Text>
+            <Text style={styles.qrModalTitle}>{t('thailand.tdacWebView.qrCodeModal.title')}</Text>
             <TouchableOpacity
               onPress={onClose}
               style={styles.qrCloseButton}
             >
-              <Text style={styles.qrCloseButtonText}>✕</Text>
+              <Text style={styles.qrCloseButtonText}>{t('thailand.tdacWebView.qrCodeModal.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -38,20 +41,20 @@ const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum 
                 resizeMode="contain"
               />
               <Text style={styles.qrHint}>
-                向海关出示此QR码即可快速入境
+                {t('thailand.tdacWebView.qrCodeModal.hint')}
               </Text>
               <Text style={styles.qrSubHint}>
-                Show this QR code to immigration
+                {t('thailand.tdacWebView.qrCodeModal.subHint')}
               </Text>
 
               <View style={styles.qrInfo}>
-                <Text style={styles.qrInfoLabel}>姓名 Name:</Text>
+                <Text style={styles.qrInfoLabel}>{t('thailand.tdacWebView.qrCodeModal.nameLabel')}</Text>
                 <Text style={styles.qrInfoValue}>{passport?.nameEn || passport?.name}</Text>
 
-                <Text style={styles.qrInfoLabel}>护照号 Passport:</Text>
+                <Text style={styles.qrInfoLabel}>{t('thailand.tdacWebView.qrCodeModal.passportLabel')}</Text>
                 <Text style={styles.qrInfoValue}>{passport?.passportNo}</Text>
 
-                <Text style={styles.qrInfoLabel}>保存时间 Saved:</Text>
+                <Text style={styles.qrInfoLabel}>{t('thailand.tdacWebView.qrCodeModal.savedTimeLabel')}</Text>
                 <Text style={styles.qrInfoValue}>
                   {qrCodeData.timestamp ? new Date(qrCodeData.timestamp).toLocaleString('zh-CN') : ''}
                 </Text>
@@ -61,7 +64,7 @@ const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum 
                 style={styles.qrSaveAgainButton}
                 onPress={() => saveToPhotoAlbum(qrCodeData.src)}
               >
-                <Text style={styles.qrSaveAgainButtonText}>📷 再次保存到相册</Text>
+                <Text style={styles.qrSaveAgainButtonText}>{t('thailand.tdacWebView.qrCodeModal.saveAgain')}</Text>
               </TouchableOpacity>
             </View>
           )}

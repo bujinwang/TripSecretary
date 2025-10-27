@@ -11,11 +11,13 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryInfoService from '../../services/EntryInfoService';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 export const useQRCodeHandler = ({ passport, route }) => {
   const [qrCodeData, setQrCodeData] = useState(null);
   const [showQrCode, setShowQrCode] = useState(false);
   const isMountedRef = useRef(true);
+  const { t } = useTranslation();
 
   // Cleanup on unmount to prevent memory leaks
   useEffect(() => {
@@ -38,7 +40,10 @@ export const useQRCodeHandler = ({ passport, route }) => {
       const { status } = await MediaLibrary.requestPermissionsAsync();
 
       if (status !== 'granted') {
-        Alert.alert('需要相册权限', '请在设置中允许访问相册');
+        Alert.alert(
+          t('thailand.tdacWebView.qrCodeHandler.permissionTitle'),
+          t('thailand.tdacWebView.qrCodeHandler.permissionMessage')
+        );
         return false;
       }
 
@@ -171,18 +176,18 @@ export const useQRCodeHandler = ({ passport, route }) => {
 
       if (saved && isMountedRef.current) {
         Alert.alert(
-          '🎉 QR码已保存！',
-          'QR码已保存到:\n1. App内（可在"我的旅程"查看）\n2. 手机相册\n\n入境时向海关出示即可！',
+          t('thailand.tdacWebView.qrCodeHandler.qrSavedSuccess.title'),
+          t('thailand.tdacWebView.qrCodeHandler.qrSavedSuccess.message'),
           [
             {
-              text: '查看QR码',
+              text: t('thailand.tdacWebView.qrCodeHandler.qrSavedSuccess.viewQR'),
               onPress: () => {
                 if (isMountedRef.current) {
                   setShowQrCode(true);
                 }
               }
             },
-            { text: '好的' }
+            { text: t('thailand.tdacWebView.qrCodeHandler.qrSavedSuccess.ok') }
           ]
         );
       }
@@ -194,7 +199,10 @@ export const useQRCodeHandler = ({ passport, route }) => {
 
     } catch (error) {
       console.error('保存QR码失败:', error);
-      Alert.alert('保存失败', '无法保存QR码，请截图保存');
+      Alert.alert(
+        t('thailand.tdacWebView.qrCodeHandler.saveFailed.title'),
+        t('thailand.tdacWebView.qrCodeHandler.saveFailed.message')
+      );
     }
   };
 

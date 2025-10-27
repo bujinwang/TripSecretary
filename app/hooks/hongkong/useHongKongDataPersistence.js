@@ -39,6 +39,16 @@ export const useHongKongDataPersistence = ({
 }) => {
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
+  const formStateRef = useRef(formState);
+  const interactionTrackerRef = useRef(userInteractionTracker);
+
+  useEffect(() => {
+    formStateRef.current = formState;
+  }, [formState]);
+
+  useEffect(() => {
+    interactionTrackerRef.current = userInteractionTracker;
+  }, [userInteractionTracker]);
 
   // Normalize fund item
   const normalizeFundItem = useCallback((item) => ({
@@ -56,16 +66,21 @@ export const useHongKongDataPersistence = ({
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
-      formState.setFunds(normalized);
+      formStateRef.current?.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem, formState.setFunds]);
+  }, [userId, normalizeFundItem]);
 
   // Initialize entry_info for this user and destination
   const initializeEntryInfo = useCallback(async () => {
+    const state = formStateRef.current;
+    if (!state) {
+      console.warn('Form state unavailable during initializeEntryInfo');
+      return;
+    }
     try {
-      if (formState.entryInfoInitialized) {
+      if (state.entryInfoInitialized) {
         console.log('Entry info already initialized');
         return;
       }
@@ -81,8 +96,8 @@ export const useHongKongDataPersistence = ({
 
       if (existingEntryInfo) {
         console.log('✅ Found existing entry info:', existingEntryInfo.id);
-        formState.setEntryInfoId(existingEntryInfo.id);
-        formState.setEntryInfoInitialized(true);
+        state.setEntryInfoId(existingEntryInfo.id);
+        state.setEntryInfoInitialized(true);
         return existingEntryInfo.id;
       }
 
@@ -109,14 +124,14 @@ export const useHongKongDataPersistence = ({
 
       const newEntryInfo = await UserDataService.createEntryInfo(entryInfoData);
       console.log('✅ Created new entry info:', newEntryInfo.id);
-      formState.setEntryInfoId(newEntryInfo.id);
-      formState.setEntryInfoInitialized(true);
+      state.setEntryInfoId(newEntryInfo.id);
+      state.setEntryInfoInitialized(true);
       return newEntryInfo.id;
     } catch (error) {
       console.error('Failed to initialize entry info:', error);
       throw error;
     }
-  }, [userId, destination, formState.entryInfoInitialized, formState.setEntryInfoId, formState.setEntryInfoInitialized]);
+  }, [userId, destination]);
 
   // Session state management
   const getSessionStateKey = useCallback(() => {
@@ -124,11 +139,15 @@ export const useHongKongDataPersistence = ({
   }, [userId]);
 
   const saveSessionState = useCallback(async () => {
+    const state = formStateRef.current;
+    if (!state) {
+      return;
+    }
     try {
       const sessionState = {
-        expandedSection: formState.expandedSection,
-        scrollPosition: formState.scrollPosition,
-        lastEditedField: formState.lastEditedField,
+        expandedSection: state.expandedSection,
+        scrollPosition: state.scrollPosition,
+        lastEditedField: state.lastEditedField,
         timestamp: new Date().toISOString(),
       };
 
@@ -138,7 +157,7 @@ export const useHongKongDataPersistence = ({
     } catch (error) {
       console.error('Failed to save session state:', error);
     }
-  }, [formState.expandedSection, formState.scrollPosition, formState.lastEditedField, getSessionStateKey]);
+  }, [getSessionStateKey]);
 
   const loadSessionState = useCallback(async () => {
     try {
@@ -148,18 +167,21 @@ export const useHongKongDataPersistence = ({
       if (sessionStateJson) {
         const sessionState = JSON.parse(sessionStateJson);
         console.log('Session state loaded:', sessionState);
+        const state = formStateRef.current;
 
-        if (sessionState.expandedSection) {
-          formState.setExpandedSection(sessionState.expandedSection);
-        }
+        if (state) {
+          if (sessionState.expandedSection) {
+            state.setExpandedSection(sessionState.expandedSection);
+          }
 
-        if (sessionState.scrollPosition) {
-          formState.setScrollPosition(sessionState.scrollPosition);
-          shouldRestoreScrollPosition.current = true;
-        }
+          if (sessionState.scrollPosition) {
+            state.setScrollPosition(sessionState.scrollPosition);
+            shouldRestoreScrollPosition.current = true;
+          }
 
-        if (sessionState.lastEditedField) {
-          formState.setLastEditedField(sessionState.lastEditedField);
+          if (sessionState.lastEditedField) {
+            state.setLastEditedField(sessionState.lastEditedField);
+          }
         }
 
         return sessionState;
@@ -168,11 +190,12 @@ export const useHongKongDataPersistence = ({
       console.error('Failed to load session state:', error);
     }
     return null;
-  }, [getSessionStateKey, formState]);
+  }, [getSessionStateKey]);
 
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
+    const tracker = interactionTrackerRef.current;
+    if (!userData || !tracker?.isInitialized) {
       return;
     }
 
@@ -226,23 +249,27 @@ export const useHongKongDataPersistence = ({
     console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
 
     if (Object.keys(existingDataToMigrate).length > 0) {
-      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      tracker.initializeWithExistingData(existingDataToMigrate);
       console.log('✅ Migration completed - existing data marked as user-modified');
     } else {
       console.log('⚠️ No existing data found to migrate');
     }
-  }, [userInteractionTracker]);
+  }, []);
 
   // Save photo to travel info
   const savePhoto = useCallback(async (photoType, photoUri) => {
+    const state = formStateRef.current;
+    if (!state) {
+      return { success: false, error: new Error('Form state not initialized') };
+    }
     try {
       const fieldName = photoType === 'flightTicket' ? 'flightTicketPhoto' : 'hotelReservationPhoto';
 
       // Update formState
       if (photoType === 'flightTicket') {
-        formState.setFlightTicketPhoto(photoUri);
+        state.setFlightTicketPhoto(photoUri);
       } else {
-        formState.setHotelReservationPhoto(photoUri);
+        state.setHotelReservationPhoto(photoUri);
       }
 
       // Save to secure storage with override
@@ -255,13 +282,19 @@ export const useHongKongDataPersistence = ({
       console.error(`Failed to save ${photoType} photo:`, error);
       return { success: false, error };
     }
-  }, [formState]);
+  }, [saveDataToSecureStorage]);
 
   // Load data from database
   const loadData = useCallback(async () => {
+    const state = formStateRef.current;
+    const tracker = interactionTrackerRef.current;
+    if (!state) {
+      console.warn('Form state unavailable during loadData');
+      return;
+    }
     try {
       console.log('=== LOADING DATA FROM DATABASE ===');
-      formState.setIsLoading(true);
+      state.setIsLoading(true);
 
       // Initialize UserDataService
       try {
@@ -288,11 +321,12 @@ export const useHongKongDataPersistence = ({
       }
 
       // Wait for interaction tracker initialization
-      if (userInteractionTracker.isInitialized) {
+      if (tracker?.isInitialized) {
         await migrateExistingDataToInteractionState(userData);
       } else {
         setTimeout(async () => {
-          if (userInteractionTracker.isInitialized) {
+          const latestTracker = interactionTrackerRef.current;
+          if (latestTracker?.isInitialized) {
             await migrateExistingDataToInteractionState(userData);
           }
         }, 100);
@@ -302,35 +336,35 @@ export const useHongKongDataPersistence = ({
       const passportInfo = userData?.passport;
       if (passportInfo) {
         console.log('Loading passport from database:', passportInfo);
-        formState.setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
+        state.setPassportNo(passportInfo.passportNumber || passport?.passportNo || '');
 
         const nameToParse = passportInfo?.fullName || passport?.nameEn || passport?.name || '';
         if (nameToParse) {
           const { surname, middleName, givenName } = parsePassportName(nameToParse);
-          formState.setSurname(surname);
-          formState.setMiddleName(middleName);
-          formState.setGivenName(givenName);
+          state.setSurname(surname);
+          state.setMiddleName(middleName);
+          state.setGivenName(givenName);
         }
 
-        formState.setNationality(passportInfo.nationality || passport?.nationality || '');
-        formState.setDob(passportInfo.dateOfBirth || passport?.dob || '');
-        formState.setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
-        formState.setPassportData(passportInfo);
+        state.setNationality(passportInfo.nationality || passport?.nationality || '');
+        state.setDob(passportInfo.dateOfBirth || passport?.dob || '');
+        state.setExpiryDate(passportInfo.expiryDate || passport?.expiry || '');
+        state.setPassportData(passportInfo);
       } else {
         console.log('No passport data in database, using route params');
-        formState.setPassportNo(passport?.passportNo || '');
+        state.setPassportNo(passport?.passportNo || '');
 
         const nameToParse = passport?.nameEn || passport?.name || '';
         if (nameToParse) {
           const { surname, middleName, givenName } = parsePassportName(nameToParse);
-          formState.setSurname(surname);
-          formState.setMiddleName(middleName);
-          formState.setGivenName(givenName);
+          state.setSurname(surname);
+          state.setMiddleName(middleName);
+          state.setGivenName(givenName);
         }
 
-        formState.setNationality(passport?.nationality || '');
-        formState.setDob(passport?.dob || '');
-        formState.setExpiryDate(passport?.expiry || '');
+        state.setNationality(passport?.nationality || '');
+        state.setDob(passport?.dob || '');
+        state.setExpiryDate(passport?.expiry || '');
       }
 
       // Load personal info
@@ -340,26 +374,26 @@ export const useHongKongDataPersistence = ({
         const savedOccupation = personalInfo.occupation || '';
         const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
         if (isPredefined) {
-          formState.setOccupation(savedOccupation);
-          formState.setCustomOccupation('');
+          state.setOccupation(savedOccupation);
+          state.setCustomOccupation('');
         } else if (savedOccupation) {
-          formState.setOccupation('OTHER');
-          formState.setCustomOccupation(savedOccupation);
+          state.setOccupation('OTHER');
+          state.setCustomOccupation(savedOccupation);
         }
 
-        formState.setCityOfResidence(personalInfo.provinceCity || '');
-        formState.setResidentCountry(personalInfo.countryRegion || '');
-        formState.setPhoneNumber(personalInfo.phoneNumber || '');
-        formState.setEmail(personalInfo.email || '');
-        formState.setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
-        formState.setPersonalInfoData(personalInfo);
+        state.setCityOfResidence(personalInfo.provinceCity || '');
+        state.setResidentCountry(personalInfo.countryRegion || '');
+        state.setPhoneNumber(personalInfo.phoneNumber || '');
+        state.setEmail(personalInfo.email || '');
+        state.setPhoneCode(personalInfo.phoneCode || getPhoneCode(personalInfo.countryRegion || passport?.nationality || ''));
+        state.setPersonalInfoData(personalInfo);
       } else {
-        formState.setPhoneCode(getPhoneCode(passport?.nationality || ''));
+        state.setPhoneCode(getPhoneCode(passport?.nationality || ''));
       }
 
       // Load gender from passport
       const loadedSex = passportInfo?.gender || passport?.sex || passport?.gender || 'Male';
-      formState.setSex(loadedSex);
+      state.setSex(loadedSex);
 
       // Load fund items
       await refreshFundItems();

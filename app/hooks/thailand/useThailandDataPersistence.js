@@ -39,8 +39,14 @@ export const useThailandDataPersistence = ({
 }) => {
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
+  const interactionTrackerRef = useRef(userInteractionTracker);
+
+  useEffect(() => {
+    interactionTrackerRef.current = userInteractionTracker;
+  }, [userInteractionTracker]);
   const {
     setIsLoading,
+    setFunds,
     setPassportNo,
     setSurname,
     setMiddleName,
@@ -80,8 +86,22 @@ export const useThailandDataPersistence = ({
     setHotelAddress,
     setFlightTicketPhoto,
     setHotelReservationPhoto,
+    expandedSection,
+    scrollPosition,
+    lastEditedField,
+    setExpandedSection,
+    setScrollPosition,
+    setLastEditedField,
+    setSaveStatus,
+    setLastEditedAt,
+    getFormValues,
   } = formState;
-  const { initializeWithExistingData } = userInteractionTracker;
+  const {
+    initializeWithExistingData,
+    isInitialized: interactionTrackerInitialized,
+    isFieldUserModified,
+    getFieldInteractionDetails
+  } = userInteractionTracker;
 
   // Normalize fund item
   const normalizeFundItem = useCallback((item) => ({
@@ -99,16 +119,17 @@ export const useThailandDataPersistence = ({
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
-      formState.setFunds(normalized);
+      setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
-  }, [userId, normalizeFundItem, formState.setFunds]);
+  }, [userId, normalizeFundItem, setFunds]);
 
   // Initialize entry_info for this user and destination
   const initializeEntryInfo = useCallback(async () => {
     try {
-      if (formState.entryInfoInitialized) {
+      // Safely check if already initialized
+      if (entryInfoInitialized) {
         console.log('Entry info already initialized');
         return;
       }
@@ -124,8 +145,8 @@ export const useThailandDataPersistence = ({
 
       if (existingEntryInfo) {
         console.log('✅ Found existing entry info:', existingEntryInfo.id);
-        formState.setEntryInfoId(existingEntryInfo.id);
-        formState.setEntryInfoInitialized(true);
+        setEntryInfoId(existingEntryInfo.id);
+        setEntryInfoInitialized(true);
         return existingEntryInfo.id;
       }
 
@@ -152,14 +173,14 @@ export const useThailandDataPersistence = ({
 
       const newEntryInfo = await UserDataService.createEntryInfo(entryInfoData);
       console.log('✅ Created new entry info:', newEntryInfo.id);
-      formState.setEntryInfoId(newEntryInfo.id);
-      formState.setEntryInfoInitialized(true);
+      setEntryInfoId(newEntryInfo.id);
+      setEntryInfoInitialized(true);
       return newEntryInfo.id;
     } catch (error) {
       console.error('Failed to initialize entry info:', error);
       throw error;
     }
-  }, [userId, destination, formState.entryInfoInitialized, formState.setEntryInfoId, formState.setEntryInfoInitialized]);
+  }, [userId, destination?.id, entryInfoInitialized, setEntryInfoId, setEntryInfoInitialized]);
 
   // Session state management
   const getSessionStateKey = useCallback(() => {
@@ -169,9 +190,9 @@ export const useThailandDataPersistence = ({
   const saveSessionState = useCallback(async () => {
     try {
       const sessionState = {
-        expandedSection: formState.expandedSection,
-        scrollPosition: formState.scrollPosition,
-        lastEditedField: formState.lastEditedField,
+        expandedSection,
+        scrollPosition,
+        lastEditedField,
         timestamp: new Date().toISOString(),
       };
 
@@ -181,7 +202,7 @@ export const useThailandDataPersistence = ({
     } catch (error) {
       console.error('Failed to save session state:', error);
     }
-  }, [formState.expandedSection, formState.scrollPosition, formState.lastEditedField, getSessionStateKey]);
+  }, [expandedSection, scrollPosition, lastEditedField, getSessionStateKey]);
 
   const loadSessionState = useCallback(async () => {
     try {
@@ -193,16 +214,16 @@ export const useThailandDataPersistence = ({
         console.log('Session state loaded:', sessionState);
 
         if (sessionState.expandedSection) {
-          formState.setExpandedSection(sessionState.expandedSection);
+          setExpandedSection(sessionState.expandedSection);
         }
 
         if (sessionState.scrollPosition) {
-          formState.setScrollPosition(sessionState.scrollPosition);
+          setScrollPosition(sessionState.scrollPosition);
           shouldRestoreScrollPosition.current = true;
         }
 
         if (sessionState.lastEditedField) {
-          formState.setLastEditedField(sessionState.lastEditedField);
+          setLastEditedField(sessionState.lastEditedField);
         }
 
         return sessionState;
@@ -211,11 +232,11 @@ export const useThailandDataPersistence = ({
       console.error('Failed to load session state:', error);
     }
     return null;
-  }, [getSessionStateKey, formState]);
+  }, [getSessionStateKey, setExpandedSection, setScrollPosition, setLastEditedField]);
 
   // Migration function to mark existing data as user-modified
   const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
+    if (!userData || !interactionTrackerInitialized) {
       return;
     }
 
@@ -269,12 +290,12 @@ export const useThailandDataPersistence = ({
     console.log('Number of fields to migrate:', Object.keys(existingDataToMigrate).length);
 
     if (Object.keys(existingDataToMigrate).length > 0) {
-      userInteractionTracker.initializeWithExistingData(existingDataToMigrate);
+      initializeWithExistingData(existingDataToMigrate);
       console.log('✅ Migration completed - existing data marked as user-modified');
     } else {
       console.log('⚠️ No existing data found to migrate');
     }
-  }, [userInteractionTracker]);
+  }, [interactionTrackerInitialized, initializeWithExistingData]);
 
   // Save photo to travel info
   const savePhoto = useCallback(async (photoType, photoUri) => {
@@ -283,9 +304,9 @@ export const useThailandDataPersistence = ({
 
       // Update formState
       if (photoType === 'flightTicket') {
-        formState.setFlightTicketPhoto(photoUri);
+        setFlightTicketPhoto(photoUri);
       } else {
-        formState.setHotelReservationPhoto(photoUri);
+        setHotelReservationPhoto(photoUri);
       }
 
       // Save to secure storage with override
@@ -298,7 +319,7 @@ export const useThailandDataPersistence = ({
       console.error(`Failed to save ${photoType} photo:`, error);
       return { success: false, error };
     }
-  }, [formState, saveDataToSecureStorage]);
+  }, [setFlightTicketPhoto, setHotelReservationPhoto, saveDataToSecureStorage]);
 
   // Handle flight ticket photo upload
   const handleFlightTicketPhotoUpload = useCallback(async (t) => {
@@ -374,7 +395,7 @@ export const useThailandDataPersistence = ({
   const handleNavigationWithSave = useCallback(async (navigationAction, actionName = 'navigate') => {
     try {
       // Set saving state to show user that save is in progress
-      formState.setSaveStatus('saving');
+      setSaveStatus('saving');
 
       // Flush any pending saves before navigation
       await DebouncedSave.flushPendingSave('thailand_travel_info');
@@ -383,7 +404,7 @@ export const useThailandDataPersistence = ({
       navigationAction();
     } catch (error) {
       console.error(`Failed to save data before ${actionName}:`, error);
-      formState.setSaveStatus('error');
+      setSaveStatus('error');
 
       // Show error alert and ask user if they want to continue without saving
       Alert.alert(
@@ -404,12 +425,12 @@ export const useThailandDataPersistence = ({
           {
             text: 'Cancel',
             style: 'cancel',
-            onPress: () => formState.setSaveStatus(null),
+            onPress: () => setSaveStatus(null),
           },
         ]
       );
     }
-  }, [formState]);
+  }, [setSaveStatus]);
 
   // Load data from database
   const loadData = useCallback(async () => {
@@ -602,8 +623,7 @@ export const useThailandDataPersistence = ({
         arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
         isTransitPassenger, accommodationType, customAccommodationType, province, district,
         subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
-        flightTicketPhoto, hotelReservationPhoto,
-        entryInfoId, passportData, personalInfoData, funds
+        flightTicketPhoto, hotelReservationPhoto
       } = currentState;
 
       const getCurrentValue = (fieldName, currentValue) => {
@@ -630,11 +650,11 @@ export const useThailandDataPersistence = ({
         try {
           if (existingPassport && existingPassport.id) {
             const updated = await UserDataService.updatePassport(existingPassport.id, passportUpdates, { skipValidation: true });
-            formState.setPassportData(updated);
+            setPassportData(updated);
             saveResults.passport.success = true;
           } else {
             const saved = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
-            formState.setPassportData(saved);
+            setPassportData(saved);
             saveResults.passport.success = true;
           }
         } catch (passportError) {
@@ -665,7 +685,7 @@ export const useThailandDataPersistence = ({
       if (Object.keys(personalInfoUpdates).length > 0) {
         try {
           const savedPersonalInfo = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
-          formState.setPersonalInfoData(savedPersonalInfo);
+          setPersonalInfoData(savedPersonalInfo);
           saveResults.personalInfo.success = true;
         } catch (saveError) {
           console.error('Failed to save personal info:', saveError);
@@ -725,40 +745,12 @@ export const useThailandDataPersistence = ({
         saveResults.travelInfo.success = true;
       }
 
-      // Save entry_info with linked fund items
-      if (entryInfoId) {
-        try {
-          const latestPassport = await UserDataService.getPassport(userId);
-          const latestPersonalInfo = await UserDataService.getPersonalInfo(userId);
-          const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
-
-          const entryInfoUpdateData = {
-            id: entryInfoId,
-            userId,
-            passportId: latestPassport?.id || null,
-            personalInfoId: latestPersonalInfo?.id || null,
-            travelInfoId: travelInfo?.id || null,
-            destinationId,
-            status: 'incomplete',
-            fundItemIds: funds.map(f => f.id),
-            lastUpdatedAt: new Date().toISOString()
-          };
-
-          await UserDataService.saveEntryInfo(entryInfoUpdateData, userId);
-          saveResults.entryInfo = { success: true, error: null };
-        } catch (entryInfoError) {
-          console.error('Failed to save entry info:', entryInfoError);
-          saveResults.entryInfo = { success: false, error: entryInfoError };
-          saveErrors.push({ section: 'entryInfo', error: entryInfoError });
-        }
-      }
-
       return { success: true };
     } catch (error) {
       console.error('Save operation failed:', error);
       return { success: false, error };
     }
-  }, [formState]);
+  }, [destination?.id, setPassportData, setPersonalInfoData]);
 
   // Save data to secure storage with field overrides
   const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
@@ -782,57 +774,57 @@ export const useThailandDataPersistence = ({
       ];
 
       allFieldNames.forEach(fieldName => {
+        const fieldDetails = getFieldInteractionDetails(fieldName);
         interactionState[fieldName] = {
-          isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-          lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-          initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+          isUserModified: isFieldUserModified(fieldName),
+          lastModified: fieldDetails?.lastModified || null,
+          initialValue: fieldDetails?.initialValue || null
         };
       });
 
       const existingPassport = await UserDataService.getPassport(userId);
-      const finalOccupation = formState.occupation === 'OTHER' ? formState.customOccupation : formState.occupation;
+      const latestValues = getFormValues();
+      const finalOccupation = latestValues.occupation === 'OTHER'
+        ? latestValues.customOccupation
+        : latestValues.occupation;
 
       const currentState = {
-        passportNo: formState.passportNo,
-        surname: formState.surname,
-        middleName: formState.middleName,
-        givenName: formState.givenName,
-        nationality: formState.nationality,
-        dob: formState.dob,
-        expiryDate: formState.expiryDate,
-        sex: formState.sex,
-        phoneCode: formState.phoneCode,
-        phoneNumber: formState.phoneNumber,
-        email: formState.email,
+        passportNo: latestValues.passportNo,
+        surname: latestValues.surname,
+        middleName: latestValues.middleName,
+        givenName: latestValues.givenName,
+        nationality: latestValues.nationality,
+        dob: latestValues.dob,
+        expiryDate: latestValues.expiryDate,
+        sex: latestValues.sex,
+        phoneCode: latestValues.phoneCode,
+        phoneNumber: latestValues.phoneNumber,
+        email: latestValues.email,
         occupation: finalOccupation,
-        cityOfResidence: formState.cityOfResidence,
-        residentCountry: formState.residentCountry,
-        travelPurpose: formState.travelPurpose,
-        customTravelPurpose: formState.customTravelPurpose,
-        boardingCountry: formState.boardingCountry,
-        recentStayCountry: formState.recentStayCountry,
-        visaNumber: formState.visaNumber,
-        arrivalFlightNumber: formState.arrivalFlightNumber,
-        arrivalArrivalDate: formState.arrivalArrivalDate,
-        departureFlightNumber: formState.departureFlightNumber,
-        departureDepartureDate: formState.departureDepartureDate,
-        isTransitPassenger: formState.isTransitPassenger,
-        accommodationType: formState.accommodationType,
-        customAccommodationType: formState.customAccommodationType,
-        province: formState.province,
-        district: formState.district,
-        subDistrict: formState.subDistrict,
-        postalCode: formState.postalCode,
-        hotelAddress: formState.hotelAddress,
+        cityOfResidence: latestValues.cityOfResidence,
+        residentCountry: latestValues.residentCountry,
+        travelPurpose: latestValues.travelPurpose,
+        customTravelPurpose: latestValues.customTravelPurpose,
+        boardingCountry: latestValues.boardingCountry,
+        recentStayCountry: latestValues.recentStayCountry,
+        visaNumber: latestValues.visaNumber,
+        arrivalFlightNumber: latestValues.arrivalFlightNumber,
+        arrivalArrivalDate: latestValues.arrivalArrivalDate,
+        departureFlightNumber: latestValues.departureFlightNumber,
+        departureDepartureDate: latestValues.departureDepartureDate,
+        isTransitPassenger: latestValues.isTransitPassenger,
+        accommodationType: latestValues.accommodationType,
+        customAccommodationType: latestValues.customAccommodationType,
+        province: latestValues.province,
+        district: latestValues.district,
+        subDistrict: latestValues.subDistrict,
+        postalCode: latestValues.postalCode,
+        hotelAddress: latestValues.hotelAddress,
         existingPassport,
         interactionState,
         destination,
-        flightTicketPhoto: formState.flightTicketPhoto,
-        hotelReservationPhoto: formState.hotelReservationPhoto,
-        entryInfoId: formState.entryInfoId,
-        passportData: formState.passportData,
-        personalInfoData: formState.personalInfoData,
-        funds: formState.funds
+        flightTicketPhoto: latestValues.flightTicketPhoto,
+        hotelReservationPhoto: latestValues.hotelReservationPhoto
       };
 
       await performSaveOperation(userId, fieldOverrides, saveResults, saveErrors, currentState);
@@ -848,7 +840,7 @@ export const useThailandDataPersistence = ({
       console.error('Failed to save data to secure storage:', error);
       throw error;
     }
-  }, [userId, destination, formState, userInteractionTracker, performSaveOperation]);
+  }, [userId, destination, getFormValues, isFieldUserModified, getFieldInteractionDetails, performSaveOperation]);
 
   // Debounced save function
   const debouncedSaveData = useCallback(() => {
@@ -856,7 +848,7 @@ export const useThailandDataPersistence = ({
       'thailand_travel_info',
       async () => {
         try {
-          formState.setLastEditedAt(new Date());
+          setLastEditedAt(new Date());
           await saveDataToSecureStorage();
           console.log('✅ Debounced save completed successfully');
         } catch (error) {
@@ -866,7 +858,7 @@ export const useThailandDataPersistence = ({
       },
       2000
     )();
-  }, [saveDataToSecureStorage, formState]);
+  }, [saveDataToSecureStorage, setLastEditedAt]);
 
   // Setup navigation persistence and auto-save
   useNavigationPersistence({
@@ -878,11 +870,11 @@ export const useThailandDataPersistence = ({
       const personalInfo = await UserDataService.getPersonalInfo(userId);
 
       if (passportInfo) {
-        formState.setPassportData(passportInfo);
+        setPassportData(passportInfo);
       }
 
       if (personalInfo) {
-        formState.setPersonalInfoData(personalInfo);
+        setPersonalInfoData(personalInfo);
       }
 
       await refreshFundItems({ forceRefresh: true });
@@ -907,15 +899,15 @@ export const useThailandDataPersistence = ({
   // Monitor save status with optimized polling
   useSaveStatusMonitor({
     saveKey: 'thailand_travel_info',
-    onStatusChange: formState.setSaveStatus
+    onStatusChange: setSaveStatus
   });
 
   // Initialize entry info when data is loaded
   useEffect(() => {
-    if (!formState.isLoading && !formState.entryInfoInitialized) {
+    if (!isLoading && !entryInfoInitialized) {
       initializeEntryInfo();
     }
-  }, [formState.isLoading, formState.entryInfoInitialized, initializeEntryInfo]);
+  }, [isLoading, entryInfoInitialized, initializeEntryInfo]);
 
   return {
     loadData,
