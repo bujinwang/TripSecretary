@@ -66,7 +66,7 @@ const CollapsibleSection = ({ title, children, onScan, isExpanded, onToggle, fie
           {onScan && (
             <TouchableOpacity style={styles.scanButton} onPress={onScan}>
               <Text style={styles.scanIcon}>📸</Text>
-              <Text style={styles.scanText}>扫描</Text>
+              <Text style={styles.scanText}>Scan / Imbas</Text>
             </TouchableOpacity>
           )}
           <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
@@ -675,8 +675,8 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
   const handleContinue = async () => {
     if (!isFormValid()) {
       Alert.alert(
-        t('malaysia.travelInfo.alerts.incompleteTitle', { defaultValue: '信息不完整' }),
-        t('malaysia.travelInfo.alerts.incompleteMessage', { defaultValue: '请填写所有必填信息' })
+        t('malaysia.travelInfo.alerts.incompleteTitle', { defaultValue: 'Incomplete Information / Maklumat Tidak Lengkap' }),
+        t('malaysia.travelInfo.alerts.incompleteMessage', { defaultValue: 'Please fill in all required information / Sila lengkapkan semua maklumat yang diperlukan' })
       );
       return;
     }
@@ -698,9 +698,9 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
   const renderGenderOptions = () => {
     const options = [
-      { value: 'Female', label: t('malaysia.travelInfo.fields.sex.options.female', { defaultValue: '女性' }) },
-      { value: 'Male', label: t('malaysia.travelInfo.fields.sex.options.male', { defaultValue: '男性' }) },
-      { value: 'Undefined', label: t('malaysia.travelInfo.fields.sex.options.undefined', { defaultValue: '未定义' }) }
+      { value: 'Female', label: t('malaysia.travelInfo.fields.sex.options.female', { defaultValue: 'Female / Perempuan' }) },
+      { value: 'Male', label: t('malaysia.travelInfo.fields.sex.options.male', { defaultValue: 'Male / Lelaki' }) },
+      { value: 'Undefined', label: t('malaysia.travelInfo.fields.sex.options.undefined', { defaultValue: 'Not Specified / Tidak Dinyatakan' }) }
     ];
 
     return (
@@ -746,7 +746,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       <View style={styles.progressContainer}>
         <View style={styles.progressHeader}>
           <Text style={styles.progressTitle}>
-            {t('malaysia.travelInfo.progress.title', { defaultValue: '完成进度' })}
+            {t('malaysia.travelInfo.progress.title', { defaultValue: 'Completion / Kemajuan' })}
           </Text>
           <Text style={[styles.progressPercent, { color: progressColor }]}>
             {totalCompletionPercent}%
@@ -766,9 +766,9 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
         {saveStatus && (
           <View style={styles.saveStatusContainer}>
             <Text style={styles.saveStatusText}>
-              {saveStatus === 'saving' && '💾 保存中...'}
-              {saveStatus === 'saved' && '✅ 已保存'}
-              {saveStatus === 'error' && '❌ 保存失败'}
+              {saveStatus === 'saving' && '💾 Saving / Menyimpan...'}
+              {saveStatus === 'saved' && '✅ Saved / Disimpan'}
+              {saveStatus === 'error' && '❌ Save Failed / Gagal Disimpan'}
             </Text>
           </View>
         )}
@@ -784,13 +784,13 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
           label={t('common.back')}
           style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('malaysia.travelInfo.headerTitle', { defaultValue: '马来西亚入境信息' })}</Text>
+        <Text style={styles.headerTitle}>{t('malaysia.travelInfo.headerTitle', { defaultValue: 'Malaysia Entry Info / Maklumat Kemasukan' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('malaysia.travelInfo.loading', { defaultValue: '正在加载数据...' })}</Text>
+          <Text style={styles.loadingText}>{t('malaysia.travelInfo.loading', { defaultValue: 'Loading data / Memuatkan data...' })}</Text>
         </View>
       )}
 
@@ -801,21 +801,21 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
       >
         <View style={styles.titleSection}>
           <Text style={styles.flag}>🇲🇾</Text>
-          <Text style={styles.title}>{t('malaysia.travelInfo.title', { defaultValue: '填写马来西亚入境信息' })}</Text>
-          <Text style={styles.subtitle}>{t('malaysia.travelInfo.subtitle', { defaultValue: '请提供以下信息以完成入境卡生成' })}</Text>
+          <Text style={styles.title}>{t('malaysia.travelInfo.title', { defaultValue: 'Malaysia Entry Information / Maklumat Kemasukan Malaysia' })}</Text>
+          <Text style={styles.subtitle}>{t('malaysia.travelInfo.subtitle', { defaultValue: 'Please provide the following information / Sila berikan maklumat berikut' })}</Text>
         </View>
 
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
-            {t('malaysia.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
+            {t('malaysia.travelInfo.privacyNotice', { defaultValue: 'All information is stored locally on your device / Semua maklumat disimpan secara tempatan di peranti anda' })}
           </Text>
         </View>
 
         {renderProgressHeader()}
 
         <CollapsibleSection
-          title={t('malaysia.travelInfo.sections.passport', { defaultValue: '护照信息' })}
+          title={t('malaysia.travelInfo.sections.passport', { defaultValue: '📘 Passport Info / Maklumat Pasport' })}
           isExpanded={expandedSection === 'passport'}
           onToggle={() => setExpandedSection(expandedSection === 'passport' ? null : 'passport')}
           fieldCount={getFieldCount('passport')}
@@ -823,78 +823,78 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
            <PassportNameInput
              value={fullName}
              onChangeText={(value) => handleFieldChange('fullName', value, setFullName)}
-             helpText="请填写汉语拼音"
+             helpText="Please fill in English / Sila isi dalam Bahasa Inggeris"
              error={!!errors.fullName}
              errorMessage={errors.fullName}
            />
            <NationalitySelector
-             label="国籍"
+             label="Nationality / Warganegara"
              value={nationality}
              onValueChange={(code) => handleFieldChange('nationality', code, setNationality)}
-             helpText="请选择您的国籍"
+             helpText="Select your nationality / Pilih kewarganegaraan anda"
              error={!!errors.nationality}
              errorMessage={errors.nationality}
            />
            <Input
-             label="护照号"
+             label="Passport No / No Pasport"
              value={passportNo}
              onChangeText={(value) => handleFieldChange('passportNo', value, setPassportNo)}
-             helpText="请输入您的护照号码"
+             helpText="Enter passport number / Masukkan nombor pasport"
              error={!!errors.passportNo}
              errorMessage={errors.passportNo}
              autoCapitalize="characters"
            />
            <DateTimeInput
-             label="出生日期"
+             label="Date of Birth / Tarikh Lahir"
              value={dob}
              onChangeText={(value) => handleFieldChange('dob', value, setDob)}
              mode="date"
              dateType="past"
-             helpText="选择出生日期"
+             helpText="Select date of birth / Pilih tarikh lahir"
              error={!!errors.dob}
              errorMessage={errors.dob}
            />
            <DateTimeInput
-             label="护照有效期"
+             label="Passport Expiry / Tamat Pasport"
              value={expiryDate}
              onChangeText={(value) => handleFieldChange('expiryDate', value, setExpiryDate)}
              mode="date"
              dateType="future"
-             helpText="选择护照有效期"
+             helpText="Select expiry date / Pilih tarikh tamat"
              error={!!errors.expiryDate}
              errorMessage={errors.expiryDate}
            />
          </CollapsibleSection>
 
         <CollapsibleSection
-          title={t('malaysia.travelInfo.sections.personal', { defaultValue: '个人信息' })}
+          title={t('malaysia.travelInfo.sections.personal', { defaultValue: '👤 Personal Info / Maklumat Peribadi' })}
           isExpanded={expandedSection === 'personal'}
           onToggle={() => setExpandedSection(expandedSection === 'personal' ? null : 'personal')}
           fieldCount={getFieldCount('personal')}
         >
            <Input
-             label="职业"
+             label="Occupation / Pekerjaan"
              value={occupation}
              onChangeText={(value) => handleFieldChange('occupation', value, setOccupation)}
-             helpText="请输入您的职业 (请使用英文)"
+             helpText="Enter your occupation (in English) / Masukkan pekerjaan anda (dalam Bahasa Inggeris)"
              error={!!errors.occupation}
              errorMessage={errors.occupation}
              autoCapitalize="words"
            />
            <NationalitySelector
-             label="居住国家"
+             label="Resident Country / Negara Kediaman"
              value={residentCountry}
              onValueChange={(code) => {
                handleFieldChange('residentCountry', code, setResidentCountry);
                setPhoneCode(getPhoneCode(code));
              }}
-             helpText="请选择您居住的国家"
+             helpText="Select resident country / Pilih negara kediaman"
              error={!!errors.residentCountry}
              errorMessage={errors.residentCountry}
            />
            <View style={styles.phoneInputContainer}>
              <Input
-               label="国家代码"
+               label="Country Code / Kod Negara"
                value={phoneCode}
                onChangeText={(value) => handleFieldChange('phoneCode', value, setPhoneCode)}
                keyboardType="phone-pad"
@@ -904,71 +904,71 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
                style={styles.phoneCodeInput}
              />
              <Input
-               label="电话号码"
+               label="Phone Number / Nombor Telefon"
                value={phoneNumber}
                onChangeText={(value) => handleFieldChange('phoneNumber', value, setPhoneNumber)}
                keyboardType="phone-pad"
-               helpText="请输入您的电话号码"
+               helpText="Enter phone number / Masukkan nombor telefon"
                error={!!errors.phoneNumber}
                errorMessage={errors.phoneNumber}
                style={styles.phoneInput}
              />
            </View>
            <Input
-             label="电子邮箱"
+             label="Email / E-mel"
              value={email}
              onChangeText={(value) => handleFieldChange('email', value, setEmail)}
              keyboardType="email-address"
-             helpText="请输入您的电子邮箱地址"
+             helpText="Enter email address / Masukkan alamat e-mel"
              error={!!errors.email}
              errorMessage={errors.email}
            />
            <View style={styles.fieldContainer}>
-             <Text style={styles.fieldLabel}>性别</Text>
+             <Text style={styles.fieldLabel}>Gender / Jantina</Text>
              {renderGenderOptions()}
            </View>
          </CollapsibleSection>
 
         <CollapsibleSection
-          title={t('malaysia.travelInfo.sections.travel', { defaultValue: '旅行信息' })}
+          title={t('malaysia.travelInfo.sections.travel', { defaultValue: '✈️ Travel Info / Maklumat Perjalanan' })}
           isExpanded={expandedSection === 'travel'}
           onToggle={() => setExpandedSection(expandedSection === 'travel' ? null : 'travel')}
           fieldCount={getFieldCount('travel')}
         >
           <Input
-            label="航班号"
+            label="Flight Number / Nombor Penerbangan"
             value={arrivalFlightNumber}
             onChangeText={(value) => handleFieldChange('arrivalFlightNumber', value, setArrivalFlightNumber)}
-            helpText="请输入您的抵达航班号"
+            helpText="Enter arrival flight number / Masukkan nombor penerbangan ketibaan"
             error={!!errors.arrivalFlightNumber}
             errorMessage={errors.arrivalFlightNumber}
             autoCapitalize="characters"
           />
           <DateTimeInput
-            label="抵达日期"
+            label="Arrival Date / Tarikh Ketibaan"
             value={arrivalDate}
             onChangeText={(value) => handleFieldChange('arrivalDate', value, setArrivalDate)}
             mode="date"
             dateType="future"
-            helpText="选择日期"
+            helpText="Select date / Pilih tarikh"
             error={!!errors.arrivalDate}
             errorMessage={errors.arrivalDate}
           />
           <Input
-            label="在马住址"
+            label="Address in Malaysia / Alamat di Malaysia"
             value={hotelAddress}
             onChangeText={(value) => handleFieldChange('hotelAddress', value, setHotelAddress)}
             multiline
-            helpText="请输入详细地址"
+            helpText="Enter full address / Masukkan alamat lengkap"
             error={!!errors.hotelAddress}
             errorMessage={errors.hotelAddress}
             autoCapitalize="words"
           />
           <Input
-            label="停留天数"
+            label="Length of Stay (days) / Tempoh Penginapan (hari)"
             value={stayDuration}
             onChangeText={(value) => handleFieldChange('stayDuration', value, setStayDuration)}
-            helpText="请输入停留天数"
+            helpText="Enter number of days / Masukkan bilangan hari"
             error={!!errors.stayDuration}
             errorMessage={errors.stayDuration}
             keyboardType="numeric"
@@ -1099,7 +1099,7 @@ const MalaysiaTravelInfoScreen = ({ navigation, route }) => {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={t('malaysia.travelInfo.buttons.continue', { defaultValue: '生成入境包' })}
+            title={t('malaysia.travelInfo.buttons.continue', { defaultValue: 'Generate Entry Pack / Jana Pakej Kemasukan' })}
             onPress={handleContinue}
             variant="primary"
             disabled={!isFormValid()}

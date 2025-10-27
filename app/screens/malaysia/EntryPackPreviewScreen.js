@@ -39,16 +39,19 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>马来西亚入境包 - 预览</Text>
+        <Text style={styles.headerTitle}>Malaysia Entry Pack - Preview / Pakej Kemasukan Malaysia - Pratonton</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式</Text>
+          <Text style={styles.previewTitle}>Preview Mode / Mod Pratonton</Text>
           <Text style={styles.previewDescription}>
-            这是您的入境信息预览。提交MDAC数字入境卡后，将包含完整的入境卡详情。
+            This is your Malaysia entry information preview. All information will help you pass through Malaysia immigration smoothly.
+          </Text>
+          <Text style={styles.previewDescriptionMs}>
+            Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat akan membantu anda melalui imigresen Malaysia dengan lancar.
           </Text>
         </View>
 
@@ -74,7 +77,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              继续完善信息 ✏️
+              Continue Editing ✏️ / Teruskan Edit
             </Text>
           </TouchableOpacity>
 
@@ -90,7 +93,7 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.submitButtonText}>
-              提交MDAC入境卡 🇲🇾
+              Go to Entry Preparation 🇲🇾 / Persediaan Kemasukan
             </Text>
           </TouchableOpacity>
         </View>
@@ -98,7 +101,10 @@ const MalaysiaEntryPackPreviewScreen = ({ route, navigation }) => {
         <View style={styles.infoSection}>
           <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
-            提示：确保所有信息准确无误后再提交MDAC。入境卡需要在抵达前3天内提交。
+            Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.
+          </Text>
+          <Text style={styles.infoTextMs}>
+            Petua: Pastikan semua maklumat adalah tepat sebelum menghantar MDAC. Kad ketibaan mesti dihantar dalam 3 hari sebelum ketibaan.
           </Text>
         </View>
       </ScrollView>
@@ -169,6 +175,14 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: spacing.xs,
+  },
+  previewDescriptionMs: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
   actionSection: {
     margin: spacing.md,
@@ -218,6 +232,14 @@ const styles = StyleSheet.create({
     color: '#059669',
     flex: 1,
     lineHeight: 20,
+    marginBottom: spacing.xs,
+  },
+  infoTextMs: {
+    ...typography.body2,
+    color: '#047857',
+    flex: 1,
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
 });
 

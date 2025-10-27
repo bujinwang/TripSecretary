@@ -663,7 +663,6 @@ const EntryPackDisplay = ({
           {
             q: 'Q: 您帶了多少錢？ / How much money do you have?',
             a: `${formatBilingualCurrency(totalFunds)} (現金和銀行卡 / Cash and bank cards)`
-          }
           },
           { q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism' },
           { q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?', a: travelInfo?.lengthOfStay || '30 วัน / 30 days' },
@@ -714,6 +713,34 @@ const EntryPackDisplay = ({
           }
         ]
       },
+      singapore: {
+        title: '💡 Immigration Officer FAQs / 入境處常見問題',
+        questions: [
+          {
+            q: 'Q: What is the purpose of your visit? / 你來新加坡的目的是什麼？',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅遊'
+          },
+          {
+            q: 'Q: How long will you stay? / 你會停留多久？',
+            a: travelInfo?.lengthOfStay || '7 days / 7 天'
+          },
+          {
+            q: 'Q: Where will you be staying? / 你會住在哪裡？',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: How much money do you have? / 你帶了多少錢？',
+            a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 現金和銀行卡)`
+          }
+        ]
+      }
+    };
+
+    const tips = tipsConfig[country] || tipsConfig.thailand;
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{tips.title}</Text>
       hongkong: {
         title: '💡 入境處常見問題 / Immigration Officer FAQs',
         questions: [
