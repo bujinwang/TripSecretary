@@ -10,8 +10,12 @@ export {
   Heading,
   Paragraph,
   Button,
+  Card,
   useTheme,
   SizableText,
   Separator,
   ScrollView,
+  Input,
+  Label,
+  Spinner,
 } from 'tamagui';
