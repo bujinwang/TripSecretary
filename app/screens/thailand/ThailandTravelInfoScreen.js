@@ -48,7 +48,7 @@ import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS, GENDER_OPTIONS } from './constants';
+import { GENDER_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 

@@ -11,7 +11,6 @@ import { colors, typography, spacing } from '../../../../theme';
 import { ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../../../components';
 import { InputWithValidation } from '../../ThailandTravelComponents';
 import Input from '../../../../components/Input';
-import { PREDEFINED_ACCOMMODATION_TYPES } from '../../../../screens/thailand/constants';
 
 const AccommodationSubSection = ({
   // Form state
