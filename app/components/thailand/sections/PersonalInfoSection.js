@@ -9,10 +9,20 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector } from '../../../components';
-import { CollapsibleSection, InputWithValidation } from '../ThailandTravelComponents';
+import { InputWithValidation } from '../ThailandTravelComponents';
 import OccupationSelector from '../../OccupationSelector';
 import Input from '../../../components/Input';
 import { getPhoneCode } from '../../../data/phoneCodes';
+
+// Import Tamagui shared components
+import {
+  YStack,
+  XStack,
+  CollapsibleSection,
+  BaseCard,
+  BaseInput,
+  Text as TamaguiText,
+} from '../../tamagui';
 
 const PersonalInfoSection = ({
   t,
@@ -54,19 +64,26 @@ const PersonalInfoSection = ({
 
   return (
     <CollapsibleSection
-      title={t('thailand.travelInfo.sectionTitles.personal')}
-      subtitle={t('thailand.travelInfo.sectionTitles.personalSubtitle')}
-      isExpanded={isExpanded}
+      title={t('thailand.travelInfo.sectionTitles.personal', { defaultValue: 'Personal Information' })}
+      subtitle={t('thailand.travelInfo.sectionTitles.personalSubtitle', { defaultValue: 'Contact and occupation details' })}
+      icon="👤"
+      badge={`${fieldCount.filled}/${fieldCount.total}`}
+      badgeVariant={fieldCount.filled === fieldCount.total ? 'success' : fieldCount.filled > 0 ? 'warning' : 'danger'}
+      expanded={isExpanded}
       onToggle={onToggle}
-      fieldCount={fieldCount}
+      variant="default"
     >
-      {/* Border Crossing Context for Personal Info */}
-      <View style={styles.sectionIntro}>
-        <Text style={styles.sectionIntroIcon}>📱</Text>
-        <Text style={styles.sectionIntroText}>
-          {t('thailand.travelInfo.sectionIntros.personal')}
-        </Text>
-      </View>
+      {/* Contact Context Info - Using Tamagui BaseCard */}
+      <BaseCard variant="flat" padding="md" backgroundColor="#F0F7FF" marginBottom="$lg" borderLeftWidth={4} borderLeftColor="$primary">
+        <XStack gap="$sm" alignItems="flex-start">
+          <TamaguiText fontSize={24}>📱</TamaguiText>
+          <TamaguiText fontSize="$2" color="#2C5AA0" flex={1} lineHeight={20}>
+            {t('thailand.travelInfo.sectionIntros.personal', {
+              defaultValue: 'Contact information for immigration purposes'
+            })}
+          </TamaguiText>
+        </XStack>
+      </BaseCard>
 
       <OccupationSelector
         label={t('thailand.travelInfo.fields.occupation.label')}
@@ -96,23 +113,25 @@ const PersonalInfoSection = ({
         errorMessage={errors.occupation}
       />
 
-      <InputWithValidation
-        label={cityOfResidenceLabel}
-        value={cityOfResidence}
-        onChangeText={(text) => {
-          setCityOfResidence(text.toUpperCase());
-        }}
-        onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
-        helpText={cityOfResidenceHelpText}
-        error={!!errors.cityOfResidence}
-        errorMessage={errors.cityOfResidence}
-        warning={!!warnings.cityOfResidence}
-        warningMessage={warnings.cityOfResidence}
-        fieldName="cityOfResidence"
-        lastEditedField={lastEditedField}
-        autoCapitalize="characters"
-        placeholder={cityOfResidencePlaceholder}
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label={cityOfResidenceLabel}
+          value={cityOfResidence}
+          onChangeText={(text) => {
+            setCityOfResidence(text.toUpperCase());
+          }}
+          onBlur={() => handleFieldBlur('cityOfResidence', cityOfResidence)}
+          helperText={cityOfResidenceHelpText}
+          error={errors.cityOfResidence}
+          autoCapitalize="characters"
+          placeholder={cityOfResidencePlaceholder}
+        />
+        {warnings.cityOfResidence && !errors.cityOfResidence && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.cityOfResidence}
+          </TamaguiText>
+        )}
+      </YStack>
 
       <NationalitySelector
         label={t('thailand.travelInfo.fields.residentCountry.label')}
@@ -127,46 +146,50 @@ const PersonalInfoSection = ({
         errorMessage={errors.residentCountry}
       />
 
-      <View style={styles.phoneInputContainer}>
-        <Input
-          label={t('thailand.travelInfo.fields.phoneCode.label')}
-          value={phoneCode}
-          onChangeText={setPhoneCode}
-          onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
-          keyboardType="phone-pad"
-          maxLength={5}
-          error={!!errors.phoneCode}
-          errorMessage={errors.phoneCode}
-          style={styles.phoneCodeInput}
-        />
-        <Input
-          label={t('thailand.travelInfo.fields.phoneNumber.label')}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
-          keyboardType="phone-pad"
-          helpText={t('thailand.travelInfo.fields.phoneNumber.help')}
-          error={!!errors.phoneNumber}
-          errorMessage={errors.phoneNumber}
-          style={styles.phoneInput}
-        />
-      </View>
+      <XStack gap="$md" marginBottom="$md">
+        <YStack flex={0.3}>
+          <BaseInput
+            label={t('thailand.travelInfo.fields.phoneCode.label', { defaultValue: 'Code' })}
+            value={phoneCode}
+            onChangeText={setPhoneCode}
+            onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
+            keyboardType="phone-pad"
+            maxLength={5}
+            error={errors.phoneCode}
+            fullWidth={false}
+          />
+        </YStack>
+        <YStack flex={0.7}>
+          <BaseInput
+            label={t('thailand.travelInfo.fields.phoneNumber.label', { defaultValue: 'Phone Number' })}
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
+            keyboardType="phone-pad"
+            helperText={t('thailand.travelInfo.fields.phoneNumber.help', { defaultValue: 'Your contact number' })}
+            error={errors.phoneNumber}
+            fullWidth={false}
+          />
+        </YStack>
+      </XStack>
 
-      <InputWithValidation
-        label={t('thailand.travelInfo.fields.email.label')}
-        value={email}
-        onChangeText={setEmail}
-        onBlur={() => handleFieldBlur('email', email)}
-        keyboardType="email-address"
-        helpText={t('thailand.travelInfo.fields.email.help')}
-        error={!!errors.email}
-        errorMessage={errors.email}
-        warning={!!warnings.email}
-        warningMessage={warnings.email}
-        fieldName="email"
-        lastEditedField={lastEditedField}
-        testID="email-input"
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label={t('thailand.travelInfo.fields.email.label', { defaultValue: 'Email Address' })}
+          value={email}
+          onChangeText={setEmail}
+          onBlur={() => handleFieldBlur('email', email)}
+          keyboardType="email-address"
+          helperText={t('thailand.travelInfo.fields.email.help', { defaultValue: 'Your email address' })}
+          error={errors.email}
+          testID="email-input"
+        />
+        {warnings.email && !errors.email && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.email}
+          </TamaguiText>
+        )}
+      </YStack>
     </CollapsibleSection>
   );
 };
