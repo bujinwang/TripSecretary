@@ -1,4 +1,12 @@
 {
-  "compilerOptions": {},
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["tamagui"],
+    "paths": {
+      "@app/*": ["app/*"],
+      "@tamagui/*": ["app/tamagui/*"],
+      "@tamaguiConfig": ["tamagui.config"]
+    }
+  }
 }

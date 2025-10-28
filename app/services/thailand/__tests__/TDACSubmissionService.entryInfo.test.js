@@ -187,6 +187,7 @@ describe('TDACSubmissionService - Entry Info Creation', () => {
       expect(result.digitalArrivalCard.id).toBe('dac_123');
       expect(mockSaveDigitalArrivalCard).toHaveBeenCalledWith(
         expect.objectContaining({
+          userId: 'user_001',                // ← NOW INCLUDED
           entryInfoId: 'entry_1761348094096_5kg7bla7e',
           cardType: 'TDAC',
           arrCardNo: '387778D',

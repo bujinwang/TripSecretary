@@ -4,7 +4,7 @@
  * Tests fund item management including add, update, delete, and modal state
  */
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useThailandFundManagement } from '../useThailandFundManagement';
 
 // Mock DebouncedSave

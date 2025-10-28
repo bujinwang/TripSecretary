@@ -34,6 +34,7 @@ import { colors, typography, spacing, shadows } from '../../theme';
  * @param {Function} props.handlePreviewEntryCard - Handler for preview entry card action
  * @param {Function} props.navigation - Navigation object
  * @param {Function} props.renderPrimaryAction - Function to render primary action button
+ * @param {string} props.entryPackStatus - Status of entry pack: 'submitted', 'in_progress', null
  */
 const PreparedState = ({
   completionPercent,
@@ -47,19 +48,23 @@ const PreparedState = ({
   handlePreviewEntryCard,
   navigation,
   renderPrimaryAction,
+  entryPackStatus,
 }) => {
   return (
     <View>
       {/* Status Cards Section */}
       <View style={styles.statusSection}>
-        <CompletionSummaryCard
-          completionPercent={completionPercent}
-          status={completionStatus}
-          showProgressBar={true}
-        />
+        {/* Only show completion card if not submitted */}
+        {entryPackStatus !== 'submitted' && (
+          <CompletionSummaryCard
+            completionPercent={completionPercent}
+            status={completionStatus}
+            showProgressBar={true}
+          />
+        )}
 
-        {/* Quick Action Buttons - Vertical Layout for Better Hierarchy */}
-        {completionPercent >= 80 && (
+        {/* Pre-Submission Actions: Only show BEFORE submission */}
+        {entryPackStatus !== 'submitted' && completionPercent >= 80 && (
           <View style={styles.quickActionsContainer}>
             <TouchableOpacity
               style={styles.quickActionButton}
@@ -108,37 +113,94 @@ const PreparedState = ({
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Post-Submission Actions: Show AFTER submission */}
+        {entryPackStatus === 'submitted' && (
+          <View style={styles.quickActionsContainer}>
+            <TouchableOpacity
+              style={styles.quickActionButton}
+              onPress={() => {
+                // Share QR code with travel companions
+                Alert.alert(
+                  '分享入境卡',
+                  '您可以分享入境卡给同行的家人或朋友参考',
+                  [
+                    {
+                      text: '分享',
+                      onPress: () => {
+                        Alert.alert('提示', '请使用手机分享功能');
+                      }
+                    },
+                    { text: '取消', style: 'cancel' }
+                  ]
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.quickActionIconWrapper}>
+                <Text style={styles.quickActionIcon}>📤</Text>
+              </View>
+              <View style={styles.quickActionContent}>
+                <Text style={styles.quickActionTitle}>分享入境卡</Text>
+                <Text style={styles.quickActionSubtitle}>发送给同行的家人朋友</Text>
+              </View>
+              <Text style={styles.quickActionArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Integrated Countdown & Submission Section */}
-      <View style={styles.countdownSection}>
-        <Text style={styles.sectionTitle}>
-          最佳提交时间 ⏰
-        </Text>
+      {entryPackStatus === 'submitted' ? (
+        // Success State - TDAC has been submitted
+        <View style={styles.countdownSection}>
+          <View style={styles.successBanner}>
+            <Text style={styles.successIcon}>🎉</Text>
+            <Text style={styles.successTitle}>
+              太棒了！泰国之旅准备就绪！🌴
+            </Text>
+            <Text style={styles.successMessage}>
+              入境卡已成功提交，可以查看您的入境信息
+            </Text>
+          </View>
 
-        {/* Submission Countdown */}
-        <SubmissionCountdown
-          arrivalDate={arrivalDate}
-          locale={t('locale', { defaultValue: 'zh' })}
-          showIcon={true}
-          updateInterval={1000} // Update every second for real-time countdown
-        />
-
-        {/* Smart Primary Action Button - Integrated with Countdown */}
-        <View style={styles.primaryActionContainer}>
-          {renderPrimaryAction()}
+          {/* Smart Primary Action Button */}
+          <View style={styles.primaryActionContainer}>
+            {renderPrimaryAction()}
+          </View>
         </View>
-      </View>
+      ) : (
+        // Default State - Show countdown
+        <View style={styles.countdownSection}>
+          <Text style={styles.sectionTitle}>
+            最佳提交时间 ⏰
+          </Text>
+
+          {/* Submission Countdown */}
+          <SubmissionCountdown
+            arrivalDate={arrivalDate}
+            locale={t('locale', { defaultValue: 'zh' })}
+            showIcon={true}
+            updateInterval={1000} // Update every second for real-time countdown
+          />
+
+          {/* Smart Primary Action Button - Integrated with Countdown */}
+          <View style={styles.primaryActionContainer}>
+            {renderPrimaryAction()}
+          </View>
+        </View>
+      )}
 
       {/* Secondary Actions Section - Vertically Stacked */}
       <View style={styles.actionSection}>
-        {/* Entry Guide Button */}
+        {/* Entry Guide Button - Always shown, text changes based on submission state */}
         <TouchableOpacity
           style={styles.entryGuideButton}
           onPress={() => navigation.navigate('ThailandEntryGuide', {
             passport: passportParam,
             destination: destination,
-            completionData: userData
+            completionData: userData,
+            showSubmittedTips: entryPackStatus === 'submitted'
           })}
           activeOpacity={0.8}
         >
@@ -149,14 +211,22 @@ const PreparedState = ({
             style={styles.entryGuideGradient}
           >
             <View style={styles.entryGuideIconContainer}>
-              <Text style={styles.entryGuideIcon}>🗺️</Text>
+              <Text style={styles.entryGuideIcon}>
+                {entryPackStatus === 'submitted' ? '🛂' : '🗺️'}
+              </Text>
             </View>
             <View style={styles.entryGuideContent}>
               <Text style={styles.entryGuideTitle}>
-                查看泰国入境指引
+                {entryPackStatus === 'submitted'
+                  ? '入境通关完整指南'
+                  : '查看泰国入境指引'
+                }
               </Text>
               <Text style={styles.entryGuideSubtitle}>
-                6步骤完整入境流程指南
+                {entryPackStatus === 'submitted'
+                  ? '如何在机场使用入境卡'
+                  : '6步骤完整入境流程指南'
+                }
               </Text>
             </View>
             <View style={styles.entryGuideChevron}>
@@ -165,8 +235,8 @@ const PreparedState = ({
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Preview Entry Pack Button */}
-        {completionPercent > 50 && (
+        {/* Preview Entry Pack Button - Only show BEFORE submission */}
+        {entryPackStatus !== 'submitted' && completionPercent > 50 && (
           <TouchableOpacity
             style={styles.secondaryActionButton}
             onPress={handlePreviewEntryCard}
@@ -212,6 +282,32 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: spacing.lg,
     ...shadows.card,
+  },
+
+  // Success Banner Styles
+  successBanner: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  successIcon: {
+    fontSize: 48,
+    marginBottom: spacing.sm,
+  },
+  successTitle: {
+    ...typography.h3,
+    color: '#2E7D32',
+    fontWeight: '700',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  successMessage: {
+    ...typography.body2,
+    color: '#558B2F',
+    textAlign: 'center',
+    fontSize: 14,
   },
 
   // Action Section Styles - Vertically stacked with better spacing

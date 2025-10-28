@@ -22,8 +22,8 @@ import DigitalArrivalCard from '../../models/DigitalArrivalCard';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
 import EntryPackStatusBanner from '../../components/EntryPackStatusBanner';
 import TDACInfoCard from '../../components/TDACInfoCard';
-import { Button } from '../../components/Button';
-import { BackButton } from '../../components/BackButton';
+import Button from '../../components/Button';
+import BackButton from '../../components/BackButton';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
@@ -42,9 +42,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
   const loadData = useCallback(async () => {
     try {
       setError(null);
-      
+
       // Check if biometric authentication is required
-      const authResult = await BiometricAuthService.authenticateForEntryInfoView(entryInfoId);
+      const authResult = await BiometricAuthService.authenticateForEntryPackView(entryInfoId);
       
       if (!authResult.success && !authResult.skipped) {
         setAuthenticationRequired(true);
@@ -710,17 +710,25 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
           isReadOnly={isReadOnly}
         />
 
-        {/* Digital Arrival Card Information Card */}
+        {/* Digital Arrival Card Information Card - PRIMARY */}
         {entryInfo.digitalArrivalCard && (
-          <TDACInfoCard
-            tdacSubmission={entryInfo.digitalArrivalCard}
-            isReadOnly={isReadOnly}
-          />
+          <>
+            <View style={styles.primaryCardNotice}>
+              <Text style={styles.primaryCardNoticeText}>
+                🎫 这是您的泰国数字入境卡，请在入境时出示QR码
+              </Text>
+            </View>
+            <TDACInfoCard
+              tdacSubmission={entryInfo.digitalArrivalCard}
+              isReadOnly={isReadOnly}
+            />
+          </>
         )}
 
-        {/* Snapshot Data Viewing Section */}
+        {/* Snapshot Data Viewing Section - SECONDARY */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>入境信息</Text>
+          <Text style={styles.sectionTitle}>📋 详细信息</Text>
+          <Text style={styles.sectionSubtitle}>提交时的完整旅行信息记录</Text>
           
           {/* Passport Information */}
           <View style={styles.dataCard}>
@@ -922,14 +930,36 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
   },
-  section: {
+  primaryCardNotice: {
+    backgroundColor: '#E3F2FD',
+    marginHorizontal: spacing.md,
     marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  primaryCardNoticeText: {
+    ...typography.body,
+    color: '#1565C0',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  section: {
+    marginTop: spacing.lg,
   },
   sectionTitle: {
     ...typography.h3,
     color: colors.text,
     marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  sectionSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   dataCard: {
     backgroundColor: colors.surface,

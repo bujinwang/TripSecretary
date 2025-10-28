@@ -226,17 +226,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
           `入境卡号: ${result.arrCardNo}\n用时: ${result.duration}秒\n\nQR码已保存到相册和历史记录中`,
           [
             {
-              text: '查看历史',
+              text: '完成',
               onPress: () => {
-                // Dismiss modal and navigate to History tab
-                navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-              }
-            },
-            {
-              text: '返回首页',
-              onPress: () => {
-                // Dismiss modal and navigate to Home tab
-                navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+                // Pop back to ThailandEntryFlowScreen
+                navigation.pop(2);
               },
               style: 'default'
             }
@@ -359,17 +352,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
         `入境卡号: ${mockArrCardNo}\n用时: ${mockDuration}秒\n\nQR码已保存到相册和历史记录中`,
         [
           {
-            text: '查看历史',
+            text: '完成',
             onPress: () => {
-              // Dismiss modal and navigate to History tab
-              navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-            }
-          },
-          {
-            text: '返回首页',
-            onPress: () => {
-              // Dismiss modal and navigate to Home tab
-              navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+              // Pop back to ThailandEntryFlowScreen
+              navigation.pop(2);
             },
             style: 'default'
           }

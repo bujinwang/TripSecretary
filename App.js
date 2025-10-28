@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { AppState, Platform } from 'react-native';
 import AppNavigator from './app/navigation/AppNavigator';
 import { LocaleProvider } from './app/i18n/LocaleContext';
+import { TamaguiProvider, Theme } from 'tamagui';
+import tamaguiConfig from './tamagui.config';
 import { NotificationService } from './app/services/notification';
 import BackgroundJobService from './app/services/background/BackgroundJobService';
 import DataSyncService from './app/services/DataSyncService';
@@ -74,12 +76,16 @@ export default function App() {
   };
 
   return (
-    <LocaleProvider>
-      <StatusBar style="dark" />
-      <AppNavigator 
-        ref={navigationRef}
-        onReady={onNavigationReady}
-      />
-    </LocaleProvider>
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+      <Theme name="light">
+        <LocaleProvider>
+          <StatusBar style="dark" />
+          <AppNavigator
+            ref={navigationRef}
+            onReady={onNavigationReady}
+          />
+        </LocaleProvider>
+      </Theme>
+    </TamaguiProvider>
   );
 }

@@ -44,7 +44,7 @@ const Button = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? colors.white : colors.primary}
+          color={variant === 'primary' || variant === 'success' ? colors.white : colors.primary}
         />
       ) : (
         <View style={styles.content}>
@@ -74,6 +74,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.primary,
+  },
+  success: {
+    backgroundColor: '#4CAF50',
+    ...shadows.button,
   },
   text: {
     backgroundColor: 'transparent',
@@ -109,6 +113,9 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     color: colors.primary,
+  },
+  successText: {
+    color: colors.white,
   },
   textText: {
     color: colors.secondary,

@@ -20,7 +20,7 @@ import { typography } from '../theme/typography';
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
-const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) => {
+const DigitalArrivalCardInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
   const [qrError, setQrError] = useState(false);
 
   if (!tdacSubmission) {
@@ -33,7 +33,7 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
     pdfUrl,
     submittedAt,
     submissionMethod,
-  } = digitalArrivalCard;
+  } = tdacSubmission;
 
   const formatSubmissionMethod = (method) => {
     switch (method) {
@@ -118,14 +118,14 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
   };
 
   const handleViewPDF = async () => {
-    if (!pdfPath) {
+    if (!pdfUrl) {
       Alert.alert('提示', 'PDF文件不可用');
       return;
     }
 
     try {
       // Check if file exists
-      const fileInfo = await FileSystem.getInfoAsync(pdfPath);
+      const fileInfo = await FileSystem.getInfoAsync(pdfUrl);
       if (!fileInfo.exists) {
         Alert.alert('错误', 'PDF文件不存在，可能已被删除');
         return;
@@ -145,7 +145,7 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
             onPress: async () => {
               try {
                 await Share.share({
-                  url: Platform.OS === 'ios' ? pdfPath : `file://${pdfPath}`,
+                  url: Platform.OS === 'ios' ? pdfUrl : `file://${pdfUrl}`,
                   title: '泰国入境卡PDF',
                   message: `入境卡号: ${arrCardNo}`,
                 });
@@ -165,7 +165,7 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
                   return;
                 }
 
-                const asset = await MediaLibrary.createAssetAsync(pdfPath);
+                const asset = await MediaLibrary.createAssetAsync(pdfUrl);
                 await MediaLibrary.createAlbumAsync('入境卡', asset, false);
                 Alert.alert('成功', 'PDF已保存到相册');
               } catch (saveErr) {
@@ -243,7 +243,7 @@ const DigitalArrivalCardInfoCard = ({ digitalArrivalCard, isReadOnly = false }) 
       )}
 
       {/* PDF Button */}
-      {pdfPath && (
+      {pdfUrl && (
         <TouchableOpacity
           style={[styles.actionButton, styles.pdfButton]}
           onPress={handleViewPDF}

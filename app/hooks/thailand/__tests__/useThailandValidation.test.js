@@ -4,7 +4,7 @@
  * Tests validation logic, error handling, completion metrics, and smart button configuration
  */
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useThailandValidation } from '../useThailandValidation';
 
 // Mock dependencies

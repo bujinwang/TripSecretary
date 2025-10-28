@@ -71,12 +71,14 @@ class TDACSubmissionService {
 
       // Find or create entry info ID
       const entryInfoId = await this.findOrCreateEntryInfoId(travelerInfo);
+      const userId = travelerInfo?.userId || 'current_user';
 
       if (entryInfoId) {
         // Create or update digital arrival card
         // Note: Currently qrUri and pdfUrl both point to PDF file path
         // Future: qrUri should point to extracted QR image, pdfUrl to full PDF
         const digitalArrivalCard = await UserDataService.saveDigitalArrivalCard({
+          userId: userId,                     // Required by repository
           entryInfoId: entryInfoId,
           cardType: 'TDAC',
           arrCardNo: tdacSubmission.arrCardNo,
@@ -95,6 +97,9 @@ class TDACSubmissionService {
 
         // Record submission history
         await this.recordSubmissionHistory(digitalArrivalCard.id, submissionHistoryEntry);
+
+        // Populate entry info with traveler data before creating snapshot
+        await this.populateEntryInfoWithTravelerData(entryInfoId, travelerInfo, userId);
 
         // Create entry info snapshot immediately after creating digital arrival card
         await this.createEntryInfoSnapshot(entryInfoId, 'submission', {
@@ -431,6 +436,56 @@ class TDACSubmissionService {
         console.error('❌ Failed to log EntryInfo status update failure:', logError);
       }
 
+      return null;
+    }
+  }
+
+  /**
+   * Populate entry info with traveler data
+   * Updates the entry info with actual traveler data before creating snapshot
+   *
+   * @param {string} entryInfoId - ID of the entry info
+   * @param {Object} travelerInfo - Traveler information context
+   * @param {string} userId - User ID
+   * @returns {Promise<Object|null>} Updated entry info or null if failed
+   */
+  static async populateEntryInfoWithTravelerData(entryInfoId, travelerInfo, userId) {
+    try {
+      console.log('📝 Populating entry info with traveler data...');
+
+      // Build entry info data from traveler context
+      const entryInfoData = {
+        passport: {
+          fullName: `${travelerInfo.firstName || ''} ${travelerInfo.familyName || ''}`.trim(),
+          passportNumber: travelerInfo.passportNo || '',
+          nationality: travelerInfo.nationality || '',
+          dateOfBirth: travelerInfo.birthDate
+            ? `${travelerInfo.birthDate.year}-${String(travelerInfo.birthDate.month).padStart(2, '0')}-${String(travelerInfo.birthDate.day).padStart(2, '0')}`
+            : ''
+        },
+        personalInfo: {
+          occupation: travelerInfo.occupation || '',
+          phoneNumber: travelerInfo.phoneNo ? `+${travelerInfo.phoneCode} ${travelerInfo.phoneNo}` : '',
+          email: travelerInfo.email || ''
+        },
+        travel: {
+          arrivalDate: travelerInfo.arrivalDate || '',
+          flightNumber: travelerInfo.flightNo || '',
+          travelPurpose: travelerInfo.purpose || '',
+          accommodation: travelerInfo.address || '',
+          departureDate: travelerInfo.departureDate || ''
+        },
+        funds: []
+      };
+
+      // Update the entry info with the populated data
+      const updatedEntryInfo = await UserDataService.updateEntryInfo(entryInfoId, entryInfoData, userId);
+
+      console.log('✅ Entry info populated with traveler data successfully');
+      return updatedEntryInfo;
+    } catch (error) {
+      console.error('❌ Failed to populate entry info with traveler data:', error);
+      // Don't throw - this is a secondary operation
       return null;
     }
   }

@@ -227,17 +227,12 @@ const TDACHybridScreen = ({ navigation, route }) => {
             `入境卡号: ${result.arrCardNo}\n总用时: ${totalTime}秒\n\nQR码已保存到相册和历史记录中`,
             [
               {
-                text: '查看历史',
+                text: '完成',
                 onPress: () => {
-                  // Dismiss modal and navigate to History tab
-                  navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-                }
-              },
-              {
-                text: '返回首页',
-                onPress: () => {
-                  // Dismiss modal and navigate to Home tab
-                  navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+                  // Pop back twice to return to ThailandEntryFlowScreen
+                  // TDACHybridScreen (modal) -> TDACSelectionScreen (modal) -> ThailandEntryFlowScreen
+                  // The flow screen will reload via useFocusEffect and show the submitted state
+                  navigation.pop(2);
                 },
                 style: 'default'
               }
@@ -500,23 +495,11 @@ const TDACHybridScreen = ({ navigation, route }) => {
               <TouchableOpacity
                 style={styles.successButton}
                 onPress={() => {
-                  // Dismiss modal and navigate to Home tab
-                  navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+                  // Pop back to ThailandEntryFlowScreen
+                  navigation.pop(2);
                 }}
               >
-                <Text style={styles.successButtonText}>✅ 返回首页</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.successButton, styles.secondaryButton]}
-                onPress={() => {
-                  // Dismiss modal and navigate to History tab
-                  navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-                }}
-              >
-                <Text style={[styles.successButtonText, styles.secondaryButtonText]}>
-                  📋 查看历史记录
-                </Text>
+                <Text style={styles.successButtonText}>✅ 完成</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -564,17 +547,10 @@ const TDACHybridScreen = ({ navigation, route }) => {
         `入境卡号: ${mockArrCardNo}\n总用时: ${mockTotalTime}秒\n\nQR码已保存到相册和历史记录中`,
         [
           {
-            text: '查看历史',
+            text: '完成',
             onPress: () => {
-              // Dismiss modal and navigate to History tab
-              navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-            }
-          },
-          {
-            text: '返回首页',
-            onPress: () => {
-              // Dismiss modal and navigate to Home tab
-              navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+              // Pop back to ThailandEntryFlowScreen
+              navigation.pop(2);
             },
             style: 'default'
           }

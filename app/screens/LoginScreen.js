@@ -1,761 +1,613 @@
-// BorderBuddy - Login Screen
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
-} from 'react-native';
+'use client';
+
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import Button from '../components/Button';
-import { colors, typography, spacing } from '../theme';
-import api from '../services/api';
-import { useLocale, getLanguageOptions } from '../i18n/LocaleContext';
+import { useNavigation } from '@react-navigation/native';
+import { useLocale } from '../i18n/LocaleContext';
 
-const DEFAULT_DESTINATIONS = [
-  { id: 'jp', name: 'Japan', flag: '🇯🇵', popularity: 92 },
-  { id: 'th', name: 'Thailand', flag: '🇹🇭', popularity: 98 },
-  { id: 'kr', name: 'South Korea', flag: '🇰🇷', popularity: 86 },
-  { id: 'sg', name: 'Singapore', flag: '🇸🇬', popularity: 81 },
-  { id: 'my', name: 'Malaysia', flag: '🇲🇾', popularity: 77 },
-  { id: 'ae', name: 'United Arab Emirates', flag: '🇦🇪', popularity: 72 },
-  { id: 'us', name: 'United States', flag: '🇺🇸', popularity: 83 },
+const isWeb = Platform.OS === 'web';
+const motionModule = isWeb ? require('framer-motion') : null;
+const lucideModule = isWeb ? require('lucide-react') : null;
+const motion = motionModule?.motion;
+const { FileText, Package, Mic, Navigation: NavigationIcon } = lucideModule || {};
+
+const cn = (...classes) => classes.filter(Boolean).join(' ');
+
+// Minimal shadcn/ui-inspired primitives to keep the web screen self-contained.
+const buttonVariants = {
+  default:
+    'bg-emerald-500 text-white hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2',
+  ghost: 'bg-transparent hover:bg-emerald-50 text-emerald-600',
+};
+
+const buttonSizes = {
+  default: 'h-11 px-5 py-2',
+  sm: 'h-9 px-4 py-2 text-sm',
+};
+
+const Button = React.forwardRef(
+  ({ className = '', variant = 'default', size = 'default', ...props }, ref) => (
+    <button
+      ref={ref}
+      className={cn(
+        'inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+        buttonVariants[variant] || buttonVariants.default,
+        buttonSizes[size] || buttonSizes.default,
+        className
+      )}
+      {...props}
+    />
+  )
+);
+
+Button.displayName = 'Button';
+
+const badgeVariants = {
+  default: 'bg-emerald-50 text-emerald-600',
+  secondary: 'bg-emerald-100 text-emerald-700',
+};
+
+const Badge = ({ className = '', variant = 'default', children, ...props }) => (
+  <span
+    className={cn(
+      'inline-flex items-center rounded-md border border-transparent px-3 py-1 text-xs font-semibold',
+      badgeVariants[variant] || badgeVariants.default,
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </span>
+);
+
+const Card = ({ className = '', children, ...props }) => (
+  <div
+    className={cn(
+      'rounded-2xl border bg-white text-emerald-900 shadow-sm',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
+const CardContent = ({ className = '', children, ...props }) => (
+  <div className={cn('p-6', className)} {...props}>
+    {children}
+  </div>
+);
+
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'zh-TW', label: '繁體中文' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
 ];
 
-const DESTINATION_NAME_I18N = {
-  en: {
-    jp: 'Japan',
-    th: 'Thailand',
-    kr: 'South Korea',
-    sg: 'Singapore',
-    my: 'Malaysia',
-    ae: 'United Arab Emirates',
-    us: 'United States',
-  },
-  'zh-CN': {
-    jp: '日本',
-    th: '泰国',
-    kr: '韩国',
-    sg: '新加坡',
-    my: '马来西亚',
-    ae: '阿联酋',
-    us: '美国',
-  },
-  'zh-TW': {
-    jp: '日本',
-    th: '泰國',
-    kr: '韓國',
-    sg: '新加坡',
-    my: '馬來西亞',
-    ae: '阿聯酋',
-    us: '美國',
-  },
-  'zh-HK': {
-    jp: '日本',
-    th: '泰國',
-    kr: '韓國',
-    sg: '新加坡',
-    my: '馬來西亞',
-    ae: '阿聯酋',
-    us: '美國',
-  },
-  zh: {
-    jp: '日本',
-    th: '泰国',
-    kr: '韩国',
-    sg: '新加坡',
-    my: '马来西亚',
-    ae: '阿联酋',
-    us: '美国',
-  },
-  fr: {
-    jp: 'Japon',
-    th: 'Thaïlande',
-    kr: 'Corée du Sud',
-    sg: 'Singapour',
-    my: 'Malaisie',
-    ae: 'Émirats Arabes Unis',
-    us: 'États-Unis',
-  },
-  de: {
-    jp: 'Japan',
-    th: 'Thailand',
-    kr: 'Südkorea',
-    sg: 'Singapur',
-    my: 'Malaysia',
-    ae: 'Vereinigte Arabische Emirate',
-    us: 'Vereinigte Staaten',
-  },
-  es: {
-    jp: 'Japón',
-    th: 'Tailandia',
-    kr: 'Corea del Sur',
-    sg: 'Singapur',
-    my: 'Malasia',
-    ae: 'Emiratos Árabes Unidos',
-    us: 'Estados Unidos',
-  },
+const softSpring = {
+  type: 'spring',
+  stiffness: 140,
+  damping: 18,
 };
 
-const toPopularity = (value) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : 0;
-};
-
-const decorateDestinations = (items) => {
-  if (!Array.isArray(items) || items.length === 0) {
-    return [];
+const WebLoginScreen = ({
+  languages,
+  activeLanguage,
+  setActiveLanguage,
+  whisperVisible,
+  onExperience,
+  t,
+}) => {
+  if (!motion) {
+    return null;
   }
-
-  const cleaned = items
-    .map((item) => ({
-      id: item?.id || item?.code || item?.key || item?.countryCode,
-      name: item?.name || item?.country || item?.displayName,
-      flag: item?.flag || item?.flagEmoji,
-      popularity: toPopularity(
-        item?.popularity ?? item?.score ?? item?.visitorCount ?? item?.count
-      ),
-    }))
-    .filter((item) => (item.id || item.name) && item.flag);
-
-  if (cleaned.length === 0) {
-    return [];
-  }
-
-  const popularityList = cleaned.map((item) => item.popularity);
-
-  const max = Math.max(...popularityList);
-  const min = Math.min(...popularityList);
-  const spread = max - min || 1;
-  const baseSize = 68;
-  const maxSize = 104;
-
-  return cleaned.map((item) => {
-    const weight = item.popularity - min;
-    const ratio = Math.max(0, weight / spread);
-    const size = Math.round(baseSize + ratio * (maxSize - baseSize));
-
-    return {
-      ...item,
-      size,
-    };
-  });
-};
-
-const getLocalizedDestinationName = (destination, language) => {
-  const langKey = DESTINATION_NAME_I18N[language] ? language : 'en';
-  const id = destination?.id;
-  const byId = (dictionary) => (id && dictionary[id]) || null;
-
-  const localized = byId(DESTINATION_NAME_I18N[langKey]);
-  if (localized) {
-    return localized;
-  }
-
-  const englishFallback = id ? byId(DESTINATION_NAME_I18N.en) : null;
-  if (englishFallback) {
-    return englishFallback;
-  }
-
-  return destination?.name || '';
-};
-
-const LoginScreen = ({ navigation }) => {
-  const [destinations, setDestinations] = useState(
-    decorateDestinations(DEFAULT_DESTINATIONS)
-  );
-  const { language: selectedLanguage, setLanguage, t } = useLocale();
-  const languageOptions = useMemo(() => getLanguageOptions(t), [t]);
-  const appName = t('common.appName');
-  const tagline = t('login.tagline');
-  const benefitFree = t('login.benefits.free');
-  const benefitNoRegistration = t('login.benefits.noRegistration');
-  const benefitInstant = t('login.benefits.instant');
-  const ctaTitle = t('login.ctaTitle');
-  const ctaSubtitle = t('login.ctaSubtitle');
-  const buttonText = t('login.buttonText');
-  const buttonSubtext = t('login.buttonSubtext');
-  const hotlistLabel = t('login.hotlistLabel');
-  const hotlistDescription = t('login.hotlistDescription');
-  const enterCta = t('common.enterCta');
-  const footerCopy = t('common.footerMessage');
-
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const buttonScale = useRef(new Animated.Value(1)).current;
-
-  const { width } = Dimensions.get('window');
-
-  const groupedDestinations = useMemo(() => {
-    const chunkSize = 3;
-    const result = [];
-    for (let i = 0; i < destinations.length; i += chunkSize) {
-      result.push(destinations.slice(i, i + chunkSize));
-    }
-    return result;
-  }, [destinations]);
-
-  const handleEnter = () => {
-    console.log('Free entry pressed');
-    navigation.replace('MainTabs');
-  };
-
-  const handleButtonPress = () => {
-    // Button press animation
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      handleEnter();
-    });
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    // Staggered animations for entrance
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Slide animation with delay
-    setTimeout(() => {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }).start();
-    }, 200);
-
-    const loadDestinations = async () => {
-      try {
-        const result = await api.getTrendingDestinations({
-          campaign: 'national-day',
-          limit: 12,
-        });
-
-        const payload =
-          Array.isArray(result?.destinations) ? result.destinations : result;
-
-        const decorated = decorateDestinations(payload);
-
-        if (isMounted && decorated.length > 0) {
-          setDestinations(decorated);
-        }
-      } catch (error) {
-        if (error?.status !== 404) {
-          console.warn('Failed to load trending destinations, using default data:', error.message);
-        }
-      }
-    };
-
-    loadDestinations();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#E8F9F0', '#F8FFFE', '#E8F9F0']}
-        style={styles.gradientBackground}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Animated.ScrollView
-          style={[
-            styles.scrollContainer,
-            {
-              opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim },
-                { scale: scaleAnim }
-              ]
-            }
-          ]}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
+    <motion.main
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...softSpring, delay: 0.05 }}
+      className="min-h-screen w-full bg-gradient-to-b from-emerald-50 via-white to-emerald-50 px-5 py-10"
+    >
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-10">
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="flex flex-wrap items-center justify-center gap-3 rounded-full bg-white/80 p-3 shadow-md backdrop-blur"
         >
-          {/* Language Selector */}
-          <Animated.View
-            style={[
-              styles.languageBarWrapper,
-              {
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
+          {languages.map(({ code, label }) => (
+            <Button
+              key={code}
+              size="sm"
+              variant="ghost"
+              onClick={() => setActiveLanguage(code)}
+              className={cn(
+                'rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2',
+                activeLanguage === code
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-500'
+                  : 'bg-white text-emerald-600 hover:bg-emerald-100'
+              )}
+            >
+              {label}
+            </Button>
+          ))}
+        </motion.div>
+
+        <motion.header
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="text-center"
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="text-3xl font-black text-emerald-700 sm:text-4xl"
           >
-            {languageOptions.map(({ code, label }, index) => {
-              const isActive = selectedLanguage === code;
-              return (
-                <TouchableOpacity
-                  key={code}
-                  style={[
-                    styles.languageOption,
-                    isActive && styles.languageOptionActive,
-                  ]}
-                  onPress={() => setLanguage(code)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.languageLabel,
-                      isActive && styles.languageLabelActive,
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </Animated.View>
-
-          {/* Main Content */}
-          <Animated.View
-            style={[
-              styles.mainContent,
-              {
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
+            ✈️ {t('common.appName')}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: -24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+            className="mt-3 text-base text-emerald-600 sm:text-lg"
           >
-            {/* App Name with Enhanced Styling */}
-            <View style={styles.appNameContainer}>
-              <Text style={styles.appName}>{appName}</Text>
-              <Text style={styles.tagline}>{tagline}</Text>
-            </View>
+            {t('login.tagline')}
+          </motion.p>
+        </motion.header>
 
-            {/* Value Proposition */}
-            <View style={styles.valueProposition}>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>💫</Text>
-                <Text style={styles.benefitText}>{benefitFree}</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>🚀</Text>
-                <Text style={styles.benefitText}>{benefitNoRegistration}</Text>
-              </View>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>⚡</Text>
-                <Text style={styles.benefitText}>{benefitInstant}</Text>
-              </View>
-            </View>
+        <motion.section
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...softSpring, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-3"
+        >
+          {[t('login.benefits.free'), t('login.benefits.noRegistration'), t('login.benefits.instant')].map((label) => (
+            <Badge
+              key={label}
+              variant="secondary"
+              className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm shadow-emerald-100"
+            >
+              {label}
+            </Badge>
+          ))}
+        </motion.section>
 
-            {/* Enhanced CTA Section */}
-            <View style={styles.ctaSection}>
-              <Text style={styles.ctaTitle}>{ctaTitle}</Text>
-              <Text style={styles.ctaSubtitle}>
-                {ctaSubtitle}
-              </Text>
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ ...softSpring, delay: 0.15 }}
+        >
+          <Card className="border-emerald-200 bg-white/90 shadow-lg shadow-emerald-100">
+            <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shadow-inner">
+                {FileText ? <FileText className="h-9 w-9" /> : <span className="text-3xl">🗂️</span>}
+              </div>
+              <div className="space-y-2 text-center sm:text-left">
+                <h3 className="text-xl font-semibold text-emerald-800">
+                  {t('login.heroCard.title')}
+                </h3>
+                <p className="text-sm leading-relaxed text-emerald-600 sm:text-base">
+                  {t('login.heroCard.description')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.section>
 
-              <Animated.View
-                style={[
-                  styles.buttonContainer,
-                  {
-                    transform: [{ scale: buttonScale }]
-                  }
-                ]}
-              >
-                <TouchableOpacity
-                  style={styles.enhancedButton}
-                  onPress={handleButtonPress}
-                  activeOpacity={0.9}
-                >
-                  <LinearGradient
-                    colors={['#07C160', '#06AD56']}
-                    style={styles.buttonGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <Text style={styles.buttonIcon}>✈️</Text>
-                    <Text style={styles.buttonText}>{buttonText}</Text>
-                    <Text style={styles.buttonSubtext}>{buttonSubtext}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
+          className="grid grid-cols-1 gap-4 text-center sm:grid-cols-3"
+        >
+          {[
+            {
+              icon: Package ? <Package className="h-8 w-8 text-emerald-500" /> : null,
+              title: t('login.features.digitalPack'),
+              emoji: '📦',
+            },
+            {
+              icon: Mic ? <Mic className="h-8 w-8 text-emerald-500" /> : null,
+              title: t('login.features.voiceAssistant'),
+              emoji: '🗣️',
+            },
+            {
+              icon: NavigationIcon ? <NavigationIcon className="h-8 w-8 text-emerald-500" /> : null,
+              title: t('login.features.entryNavigation'),
+              emoji: '🧭',
+            },
+          ].map(({ icon, title, emoji }) => (
+            <motion.div
+              key={title}
+              whileHover={{ y: -4 }}
+              className="flex flex-col items-center gap-2 rounded-2xl bg-white/80 p-6 shadow-md shadow-emerald-100"
+            >
+              <div className="flex items-center justify-center gap-2 text-emerald-600">
+                {icon}
+                <span className="text-xl">{emoji}</span>
+              </div>
+              <p className="text-sm font-medium text-emerald-700 sm:text-base">
+                {title}
+              </p>
+            </motion.div>
+          ))}
+        </motion.section>
 
-            {/* Enhanced Destination Showcase */}
-            <View style={styles.destinationSection}>
-              <View style={styles.destinationHeader}>
-                <Text style={styles.destinationLabel}>{hotlistLabel}</Text>
-                <Text style={styles.destinationDescription}>
-                  {hotlistDescription}
-                </Text>
-              </View>
-
-              <View style={styles.destinationGrid}>
-                {groupedDestinations.map((row, rowIndex) => (
-                  <View
-                    key={`dest-row-${rowIndex}`}
-                    style={[
-                      styles.destinationRow,
-                      row.length < 3 && styles.destinationRowCompact,
-                    ]}
-                  >
-                    {row.map((destination, destIndex) => {
-                      const localizedName = getLocalizedDestinationName(
-                        destination,
-                        selectedLanguage
-                      );
-                      const key = destination.id || destination.name || localizedName;
-
-                      return (
-                        <Animated.View
-                          key={key}
-                          style={[
-                            styles.destinationCard,
-                            {
-                              transform: [
-                                {
-                                  scale: scaleAnim.interpolate({
-                                    inputRange: [0.8, 1],
-                                    outputRange: [0.8, 1],
-                                    extrapolate: 'clamp',
-                                  })
-                                }
-                              ]
-                            }
-                          ]}
-                        >
-                          <View style={styles.destinationCardContent}>
-                            <Text style={styles.destinationFlag}>
-                              {destination.flag}
-                            </Text>
-                            <Text style={styles.destinationName}>
-                              {localizedName}
-                            </Text>
-                            <View style={styles.popularityIndicator}>
-                              <Text style={styles.popularityText}>
-                                {t('login.popularityText', { percent: destination.popularity })}
-                              </Text>
-                            </View>
-                          </View>
-                        </Animated.View>
-                      );
-                    })}
-                  </View>
-                ))}
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* Footer */}
-          <Animated.View
-            style={[
-              styles.footer,
-              {
-                opacity: fadeAnim
-              }
-            ]}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+          className="flex flex-col items-center gap-6 text-center"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+            className="w-full max-w-lg"
           >
-            <Text style={styles.footerCopy}>
-              {footerCopy}
-            </Text>
-          </Animated.View>
-        </Animated.ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
+            <Button
+              onClick={onExperience}
+              className="h-auto w-full rounded-2xl bg-emerald-500 py-4 text-base font-semibold shadow-lg shadow-emerald-200 transition-transform hover:scale-[1.02] hover:bg-emerald-600"
+            >
+              🚀 {t('login.buttonText')}
+            </Button>
+          </motion.div>
+
+          <p className="max-w-md text-sm text-emerald-700 sm:text-base">
+            {t('login.ctaSubtitle')}
+          </p>
+
+          {whisperVisible && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="text-sm italic text-emerald-500/80"
+            >
+              {t('login.whisperText')}
+            </motion.p>
+          )}
+        </motion.section>
+
+        <footer className="pt-4 text-center text-xs text-emerald-500 sm:text-sm">
+          🌍 {t('common.appName')} © 2025
+        </footer>
+      </div>
+    </motion.main>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
+const NativeLoginScreen = ({
+  languages,
+  activeLanguage,
+  setActiveLanguage,
+  whisperVisible,
+  onExperience,
+  t,
+}) => (
+  <SafeAreaView style={nativeStyles.safeArea}>
+    <LinearGradient
+      colors={['#E8F9F0', '#F8FFFE', '#E8F9F0']}
+      style={nativeStyles.gradientBackground}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <ScrollView
+        contentContainerStyle={nativeStyles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={nativeStyles.languageBar}>
+          {languages.map(({ code, label }) => {
+            const isActive = activeLanguage === code;
+            return (
+              <TouchableOpacity
+                key={code}
+                onPress={() => setActiveLanguage(code)}
+                activeOpacity={0.8}
+                style={[nativeStyles.languagePill, isActive && nativeStyles.languagePillActive]}
+              >
+                <Text style={[nativeStyles.languageLabel, isActive && nativeStyles.languageLabelActive]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={nativeStyles.header}>
+          <Text style={nativeStyles.title}>✈️ {t('common.appName')}</Text>
+          <Text style={nativeStyles.subtitle}>{t('login.tagline')}</Text>
+        </View>
+
+        <View style={nativeStyles.badgeRow}>
+          {[t('login.benefits.free'), t('login.benefits.noRegistration'), t('login.benefits.instant')].map((label) => (
+            <View key={label} style={nativeStyles.badge}>
+              <Text style={nativeStyles.badgeText}>{label}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={nativeStyles.card}>
+          <View style={nativeStyles.cardIcon}>
+            <Text style={nativeStyles.cardIconEmoji}>🗂️</Text>
+          </View>
+          <View style={nativeStyles.cardContent}>
+            <Text style={nativeStyles.cardTitle}>{t('login.heroCard.title')}</Text>
+            <Text style={nativeStyles.cardDescription}>
+              {t('login.heroCard.description')}
+            </Text>
+          </View>
+        </View>
+
+        <View style={nativeStyles.featuresGrid}>
+          {[
+            { title: t('login.features.digitalPack'), emoji: '📦' },
+            { title: t('login.features.voiceAssistant'), emoji: '🗣️' },
+            { title: t('login.features.entryNavigation'), emoji: '🧭' },
+          ].map(({ title, emoji }) => (
+            <View key={title} style={nativeStyles.featureCard}>
+              <Text style={nativeStyles.featureEmoji}>{emoji}</Text>
+              <Text style={nativeStyles.featureTitle}>{title}</Text>
+            </View>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={onExperience}
+          style={nativeStyles.ctaButton}
+        >
+          <Text style={nativeStyles.ctaText}>🚀 {t('login.buttonText')}</Text>
+        </TouchableOpacity>
+
+        <Text style={nativeStyles.ctaSubtext}>{t('login.ctaSubtitle')}</Text>
+
+        {whisperVisible && (
+          <Text style={nativeStyles.whisper}>{t('login.whisperText')}</Text>
+        )}
+
+        <Text style={nativeStyles.footer}>🌍 {t('common.appName')} © 2025</Text>
+      </ScrollView>
+    </LinearGradient>
+  </SafeAreaView>
+);
+
+const LoginScreen = () => {
+  const navigation = useNavigation();
+  const { language: activeLanguage, setLanguage: setActiveLanguage, t } = useLocale();
+  const [whisperVisible, setWhisperVisible] = useState(false);
+
+  const handleExperience = useCallback(() => {
+    navigation?.replace?.('MainTabs');
+  }, [navigation]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWhisperVisible(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isWeb) {
+    return (
+      <WebLoginScreen
+        languages={LANGUAGES}
+        activeLanguage={activeLanguage}
+        setActiveLanguage={setActiveLanguage}
+        whisperVisible={whisperVisible}
+        onExperience={handleExperience}
+        t={t}
+      />
+    );
+  }
+
+  return (
+    <NativeLoginScreen
+      languages={LANGUAGES}
+      activeLanguage={activeLanguage}
+      setActiveLanguage={setActiveLanguage}
+      whisperVisible={whisperVisible}
+      onExperience={handleExperience}
+      t={t}
+    />
+  );
+};
+
+const nativeStyles = StyleSheet.create({
+  safeArea: {
     flex: 1,
+    backgroundColor: '#E8F9F0',
   },
   gradientBackground: {
     flex: 1,
   },
-  scrollContainer: {
-    flex: 1,
-  },
   content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl * 2.5,
-    minHeight: '100%',
-    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    gap: 20,
   },
-  languageBarWrapper: {
+  languageBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: spacing.xl,
-    marginBottom: spacing.lg,
-    gap: spacing.xs,
-    rowGap: spacing.xs,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    gap: 8,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    alignSelf: 'center',
+    shadowColor: '#07C160',
+    shadowOpacity: 0.12,
     shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
-  languageOption: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: spacing.lg,
+  languagePill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
   },
-  languageOptionActive: {
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+  languagePillActive: {
+    backgroundColor: '#07C160',
+    shadowColor: '#07C160',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
   languageLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontSize: 13,
+    color: '#15803d',
+    fontWeight: '500',
   },
   languageLabelActive: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  mainContent: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingVertical: spacing.xl,
-  },
-  appNameContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  appName: {
-    ...typography.h1,
-    color: colors.text,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textAlign: 'center',
-    lineHeight: 44,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  tagline: {
-    ...typography.body,
-    color: colors.primary,
-    fontWeight: '600',
-    marginTop: spacing.sm,
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
-  valueProposition: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    gap: spacing.sm,
-    paddingHorizontal: spacing.sm,
-  },
-  benefitItem: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(7, 193, 96, 0.05)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderRadius: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(7, 193, 96, 0.15)',
-    minWidth: 80,
-  },
-  benefitIcon: {
-    fontSize: 18,
-    marginBottom: 2,
-  },
-  benefitText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '600',
-    fontSize: 11,
-    textAlign: 'center',
-  },
-  ctaSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.sm,
-  },
-  ctaTitle: {
-    ...typography.h2,
-    color: colors.text,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    lineHeight: 32,
-    letterSpacing: 0.5,
-  },
-  ctaSubtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-    lineHeight: 24,
-    paddingHorizontal: spacing.md,
-    fontSize: 15,
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  enhancedButton: {
-    width: '95%',
-    maxWidth: 380,
-    borderRadius: spacing.xl,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  buttonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: spacing.xl,
-    minHeight: 56,
-  },
-  buttonIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
-  },
-  buttonText: {
-    ...typography.button,
-    color: colors.white,
-    fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.3,
-    flexShrink: 1,
-    textAlign: 'center',
-  },
-  buttonSubtext: {
-    ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.95)',
-    fontSize: 11,
-    marginTop: 1,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  destinationSection: {
-    marginTop: spacing.xl,
-    paddingBottom: spacing.xl,
-  },
-  destinationHeader: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  destinationLabel: {
-    ...typography.body,
-    color: colors.primary,
+    color: '#FFFFFF',
     fontWeight: '700',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
   },
-  destinationDescription: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  destinationGrid: {
+  header: {
     alignItems: 'center',
+    marginTop: 10,
+    gap: 8,
   },
-  destinationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: spacing.xl,
-    gap: spacing.lg,
-  },
-  destinationRowCompact: {
-    justifyContent: 'center',
-  },
-  destinationCard: {
-    backgroundColor: colors.white,
-    borderRadius: spacing.xl,
-    padding: spacing.lg,
-    alignItems: 'center',
-    width: 115,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(7, 193, 96, 0.12)',
-    marginHorizontal: spacing.xs,
-  },
-  destinationCardContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  destinationFlag: {
+  title: {
     fontSize: 28,
-    marginBottom: spacing.xs,
+    fontWeight: '800',
+    color: '#047857',
   },
-  destinationName: {
-    ...typography.caption,
-    color: colors.text,
-    fontWeight: '600',
+  subtitle: {
+    fontSize: 16,
+    color: '#047857',
     textAlign: 'center',
-    marginBottom: spacing.xs,
-    fontSize: 12,
   },
-  popularityIndicator: {
-    backgroundColor: 'rgba(7, 193, 96, 0.1)',
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: spacing.xs,
-    marginTop: 'auto',
+  badgeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 10,
   },
-  popularityText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontSize: 9,
+  badge: {
+    backgroundColor: '#DCFCE7',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  badgeText: {
+    color: '#047857',
+    fontSize: 13,
     fontWeight: '600',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    shadowColor: '#07C160',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  cardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardIconEmoji: {
+    fontSize: 26,
+  },
+  cardContent: {
+    flex: 1,
+    gap: 6,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  cardDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#047857',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  featureCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#07C160',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+    minWidth: 110,
+  },
+  featureEmoji: {
+    fontSize: 24,
+  },
+  featureTitle: {
+    fontSize: 14,
+    color: '#047857',
+    fontWeight: '600',
+  },
+  ctaButton: {
+    marginTop: 10,
+    backgroundColor: '#07C160',
+    borderRadius: 22,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    shadowColor: '#07C160',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  ctaText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  ctaSubtext: {
+    marginTop: 12,
+    textAlign: 'center',
+    color: '#065F46',
+    fontSize: 14,
+  },
+  whisper: {
+    marginTop: 8,
+    textAlign: 'center',
+    color: 'rgba(4,120,87,0.7)',
+    fontSize: 13,
+    fontStyle: 'italic',
   },
   footer: {
-    alignItems: 'center',
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  footerCopy: {
-    ...typography.caption,
-    color: colors.textTertiary,
+    marginTop: 24,
     textAlign: 'center',
-    lineHeight: 16,
-    fontSize: 11,
+    color: '#047857',
+    fontSize: 12,
   },
 });
 

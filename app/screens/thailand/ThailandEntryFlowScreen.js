@@ -422,8 +422,45 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
   const handlePrimaryAction = async () => {
     const buttonState = getPrimaryButtonState();
-    
+
     switch (buttonState.action) {
+      case 'view_submitted_tdac':
+        // Navigate to entry info detail screen to view submitted TDAC
+        try {
+          const EntryInfoService = require('../../services/EntryInfoService').default;
+          const userId = passportParam?.id || 'user_001';
+          const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
+          const destinationId = route.params?.destination?.id || 'thailand';
+          const thailandEntryInfo = allEntryInfos?.find(info =>
+            info.destinationId === destinationId || info.destinationId === 'thailand'
+          );
+
+          if (thailandEntryInfo) {
+            navigation.navigate('EntryInfoDetail', {
+              entryInfoId: thailandEntryInfo.id,
+              passport: passportParam,
+              destination: route.params?.destination,
+            });
+          } else {
+            Alert.alert(
+              '未找到入境卡数据',
+              '这可能是因为：\n\n1. 使用了模拟状态（dev按钮）\n2. 入境卡数据还未同步\n\n请尝试实际提交TDAC或查看历史记录。',
+              [
+                {
+                  text: '查看历史',
+                  onPress: () => {
+                    navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+                  }
+                },
+                { text: '取消', style: 'cancel' }
+              ]
+            );
+          }
+        } catch (error) {
+          console.error('Failed to load entry info:', error);
+          Alert.alert('错误', '加载入境信息失败：' + error.message);
+        }
+        break;
       case 'continue_improving':
         // Navigate back to ThailandTravelInfoScreen
         navigation.navigate('ThailandTravelInfo', {
@@ -551,6 +588,17 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
    * @returns {string} [returns.subtitle] - Optional subtitle text
    */
   const getPrimaryButtonState = () => {
+    // Check if TDAC has been submitted successfully
+    if (entryPackStatus === 'submitted' && !showSupersededStatus) {
+      return {
+        title: '查看我的入境卡 ✅',
+        action: 'view_submitted_tdac',
+        disabled: false,
+        variant: 'success',
+        subtitle: '入境卡已成功提交'
+      };
+    }
+
     // Check if entry pack is superseded
     if (showSupersededStatus || entryPackStatus === 'superseded') {
       return {
@@ -690,6 +738,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       handlePreviewEntryCard={handlePreviewEntryCard}
       navigation={navigation}
       renderPrimaryAction={renderPrimaryAction}
+      entryPackStatus={entryPackStatus}
     />
   );
 
@@ -731,6 +780,26 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     </View>
   );
 
+  /**
+   * Simulate submitted TDAC state (Development Only)
+   */
+  const simulateSubmittedState = () => {
+    setEntryPackStatus('submitted');
+    setShowSupersededStatus(false);
+    Alert.alert(
+      '✅ 模拟成功',
+      '已模拟TDAC提交成功状态\n\n注意：这是模拟状态，点击"查看我的入境卡"按钮会失败，因为没有真实的入境卡数据。请实际提交TDAC来测试完整流程。'
+    );
+  };
+
+  /**
+   * Reset to initial state (Development Only)
+   */
+  const resetToInitialState = () => {
+    loadData(); // Reload real data
+    Alert.alert('🔄 已重置', '已恢复真实数据状态');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -742,7 +811,24 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         <Text style={styles.headerTitle}>
           我的泰国之旅 🌺
         </Text>
-        <View style={styles.headerRight} />
+        {/* Dev Buttons (Development Only) */}
+        {__DEV__ && (
+          <View style={styles.devButtonContainer}>
+            <TouchableOpacity
+              style={styles.devButton}
+              onPress={simulateSubmittedState}
+            >
+              <Text style={styles.devButtonText}>✅</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.devButton, styles.resetButton]}
+              onPress={resetToInitialState}
+            >
+              <Text style={styles.devButtonText}>🔄</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {!__DEV__ && <View style={styles.headerRight} />}
       </View>
 
       <ScrollView 
@@ -809,6 +895,24 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 40,
+  },
+  devButtonContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  devButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#4CAF50',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#FF9800',
+  },
+  devButtonText: {
+    fontSize: 16,
   },
   scrollContainer: {
     paddingBottom: spacing.lg,

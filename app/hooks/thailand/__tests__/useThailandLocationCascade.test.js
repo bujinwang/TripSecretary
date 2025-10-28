@@ -4,7 +4,7 @@
  * Tests location cascade logic for Province -> District -> SubDistrict -> Postal Code
  */
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useThailandLocationCascade } from '../useThailandLocationCascade';
 
 // Mock location helpers

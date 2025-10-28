@@ -1292,7 +1292,7 @@ const validationProps = useMemo(() => ({
 
 **Test custom hooks**:
 ```javascript
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useThailandFormState } from '../useThailandFormState';
 
 describe('useThailandFormState', () => {

@@ -4,7 +4,7 @@
  * Tests form state management, smart defaults, computed values, and utility functions
  */
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useThailandFormState } from '../useThailandFormState';
 
 // Mock phone code utility
