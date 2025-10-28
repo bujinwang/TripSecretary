@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, Text, Image, StyleSheet, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
 import {
   PinchGestureHandler,
   TapGestureHandler,
@@ -15,6 +15,7 @@ import {
 } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { colors, spacing } from '../../../theme';
+import OptimizedImage from '../../../components/OptimizedImage';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 

@@ -6,9 +6,10 @@
  */
 
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
 import { colors, spacing } from '../../../theme';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../../utils/currencyConverter';
+import OptimizedImage from '../../../components/OptimizedImage';
 
 /**
  * Funds Information Section Component
@@ -155,10 +156,14 @@ const FundsInfoSection = ({ fundData, language, t }) => {
                     style={styles.fundPhotoContainer}
                     onPress={handleFundPhotoPress}
                   >
-                    <Image
-                      source={{ uri: fund.photoUri }}
+                    <OptimizedImage
+                      uri={fund.photoUri}
                       style={styles.fundPhoto}
                       resizeMode="cover"
+                      lazy={true}
+                      lazyLoadDelay={150}
+                      placeholder="💰"
+                      showLoadingText={false}
                     />
                     <Text style={styles.fundPhotoHint}>
                       {language === 'english'

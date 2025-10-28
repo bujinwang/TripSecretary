@@ -6,8 +6,9 @@
  */
 
 import React from 'react';
-import { View, Text, Image, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { colors, spacing } from '../../../theme';
+import OptimizedImage from '../../../components/OptimizedImage';
 
 /**
  * Passport Information Section Component
@@ -59,10 +60,13 @@ const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }
       {/* Passport photo if available */}
       {passportData?.photoUri && (
         <View style={styles.passportPhotoContainer}>
-          <Image
-            source={{ uri: passportData.photoUri }}
+          <OptimizedImage
+            uri={passportData.photoUri}
             style={styles.passportPhoto}
             resizeMode="cover"
+            lazy={false}
+            placeholder="🛂"
+            showLoadingText={false}
           />
         </View>
       )}

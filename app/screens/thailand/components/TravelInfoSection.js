@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
+import OptimizedImage from '../../../components/OptimizedImage';
 
 /**
  * TravelInfoSection Component
@@ -79,10 +80,14 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
                   language === 'thai' ? 'ตั๋วเครื่องบิน' :
                   'ตั๋วเครื่องบิน / Flight Ticket'}
             </Text>
-            <Image
-              source={{ uri: travelData.arrivalFlightTicketPhotoUri }}
+            <OptimizedImage
+              uri={travelData.arrivalFlightTicketPhotoUri}
               style={styles.documentPhoto}
               resizeMode="contain"
+              lazy={true}
+              lazyLoadDelay={200}
+              placeholder="🎫"
+              showLoadingText={false}
             />
             <Text style={styles.documentPhotoHint}>
               {language === 'english' ? 'Tap to enlarge' :
@@ -156,10 +161,14 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
                   language === 'thai' ? 'การจองโรงแรม' :
                   'การจองโรงแรม / Hotel Booking'}
             </Text>
-            <Image
-              source={{ uri: travelData.hotelBookingPhotoUri }}
+            <OptimizedImage
+              uri={travelData.hotelBookingPhotoUri}
               style={styles.documentPhoto}
               resizeMode="contain"
+              lazy={true}
+              lazyLoadDelay={250}
+              placeholder="🏨"
+              showLoadingText={false}
             />
             <Text style={styles.documentPhotoHint}>
               {language === 'english' ? 'Tap to enlarge' :
