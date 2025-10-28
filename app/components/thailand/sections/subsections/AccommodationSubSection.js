@@ -6,10 +6,16 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { colors, typography, spacing } from '../../../../theme';
+import { Image } from 'react-native';
+import {
+  YStack,
+  XStack,
+  BaseCard,
+  BaseInput,
+  BaseButton,
+  Text as TamaguiText,
+} from '../../../tamagui';
 import { ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../../../components';
-import { InputWithValidation } from '../../ThailandTravelComponents';
 import Input from '../../../../components/Input';
 
 const AccommodationSubSection = ({
@@ -48,11 +54,7 @@ const AccommodationSubSection = ({
   handleDistrictSelect,
   handleSubDistrictSelect,
   handleHotelReservationPhotoUpload,
-  // Styles from parent
-  styles: parentStyles,
 }) => {
-  // Use parent styles if provided, otherwise use local styles
-  const styles = parentStyles || localStyles;
   const accommodationOptions = [
     { value: 'HOTEL', label: '酒店', icon: '🏨' },
     { value: 'HOSTEL', label: '青年旅舍', icon: '🏠' },
@@ -69,13 +71,23 @@ const AccommodationSubSection = ({
   return (
     <>
       {/* Accommodation Section */}
-      <View style={styles.subSectionHeader}>
-        <Text style={styles.subSectionTitle}>住宿信息</Text>
-      </View>
+      <YStack
+        marginTop="$lg"
+        marginBottom="$md"
+        paddingBottom="$sm"
+        borderBottomWidth={1}
+        borderBottomColor="$borderColor"
+      >
+        <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+          住宿信息
+        </TamaguiText>
+      </YStack>
 
       {/* Transit Passenger Checkbox */}
-      <TouchableOpacity
-        style={styles.transitCheckboxContainer}
+      <BaseCard
+        variant="flat"
+        padding="md"
+        pressable
         onPress={async () => {
           const newValue = !isTransitPassenger;
           setIsTransitPassenger(newValue);
@@ -102,30 +114,46 @@ const AccommodationSubSection = ({
             }
           }
         }}
-        activeOpacity={0.7}
+        marginBottom="$md"
       >
-        <View style={[styles.checkbox, isTransitPassenger && styles.checkboxChecked]}>
-          {isTransitPassenger && <Text style={styles.checkmark}>✓</Text>}
-        </View>
-        <Text style={styles.checkboxLabel}>
-          我是转机乘客（不在泰国过夜）
-        </Text>
-      </TouchableOpacity>
+        <XStack gap="$sm" alignItems="center">
+          <YStack
+            width={24}
+            height={24}
+            borderWidth={2}
+            borderColor={isTransitPassenger ? '$primary' : '$borderColor'}
+            borderRadius={4}
+            justifyContent="center"
+            alignItems="center"
+            backgroundColor={isTransitPassenger ? '$primary' : 'transparent'}
+          >
+            {isTransitPassenger && (
+              <TamaguiText color="$white" fontSize={16} fontWeight="bold">
+                ✓
+              </TamaguiText>
+            )}
+          </YStack>
+          <TamaguiText fontSize="$2" color="$text" flex={1}>
+            我是转机乘客（不在泰国过夜）
+          </TamaguiText>
+        </XStack>
+      </BaseCard>
 
       {!isTransitPassenger && (
         <>
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>住宿类型</Text>
-            <View style={styles.optionsContainer}>
+          <YStack marginBottom="$md">
+            <TamaguiText fontSize="$2" fontWeight="600" color="$text" marginBottom="$sm">
+              住宿类型
+            </TamaguiText>
+            <XStack flexWrap="wrap" gap="$sm">
               {accommodationOptions.map((option) => {
                 const isActive = accommodationType === option.value;
                 return (
-                  <TouchableOpacity
+                  <BaseCard
                     key={option.value}
-                    style={[
-                      styles.optionButton,
-                      isActive && styles.optionButtonActive,
-                    ]}
+                    variant="flat"
+                    padding="sm"
+                    pressable
                     onPress={async () => {
                       setAccommodationType(option.value);
                       if (option.value !== 'OTHER') {
@@ -160,20 +188,25 @@ const AccommodationSubSection = ({
                         console.error('Failed to save accommodation type:', error);
                       }
                     }}
+                    borderWidth={1}
+                    borderColor={isActive ? '$primary' : '$borderColor'}
+                    backgroundColor={isActive ? '$primary' : '$card'}
+                    minWidth={100}
                   >
-                    <Text style={styles.optionIcon}>{option.icon}</Text>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        isActive && styles.optionTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
+                    <XStack gap="$xs" alignItems="center">
+                      <TamaguiText fontSize={20}>{option.icon}</TamaguiText>
+                      <TamaguiText
+                        fontSize="$2"
+                        color={isActive ? '$white' : '$text'}
+                        fontWeight={isActive ? '600' : '400'}
+                      >
+                        {option.label}
+                      </TamaguiText>
+                    </XStack>
+                  </BaseCard>
                 );
               })}
-            </View>
+            </XStack>
             {accommodationType === 'OTHER' && (
               <Input
                 placeholder="请详细说明住宿类型（英文）"
@@ -222,282 +255,113 @@ const AccommodationSubSection = ({
           )}
 
           {needsDetailedLocation && (
-            <InputWithValidation
-              label="邮政编码"
-              value={postalCode}
-              onChangeText={(text) => {
-                // Auto-filled by SubDistrictSelector, but allow manual edit
-                // Handled by parent through handleSubDistrictSelect
-              }}
-              helpText="选择街道后自动填充，或手动输入"
-              error={!!errors.postalCode}
-              errorMessage={errors.postalCode}
-              fieldName="postalCode"
-              lastEditedField={lastEditedField}
-              keyboardType="numeric"
-              editable={false}
-              style={styles.disabledInput}
-            />
+            <YStack marginBottom="$md">
+              <BaseInput
+                label="邮政编码"
+                value={postalCode}
+                helperText="选择街道后自动填充，或手动输入"
+                error={errors.postalCode}
+                keyboardType="numeric"
+                editable={false}
+                opacity={0.6}
+              />
+            </YStack>
           )}
 
-          <InputWithValidation
-            label="酒店地址"
-            value={hotelAddress}
-            onChangeText={(text) => setHotelAddress(text.toUpperCase())}
-            onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
-            helpText="例如：123 SUKHUMVIT ROAD"
-            error={!!errors.hotelAddress}
-            errorMessage={errors.hotelAddress}
-            warning={!!warnings.hotelAddress}
-            warningMessage={warnings.hotelAddress}
-            fieldName="hotelAddress"
-            lastEditedField={lastEditedField}
-            autoCapitalize="characters"
-            multiline
-            numberOfLines={3}
-          />
+          <YStack marginBottom="$md">
+            <BaseInput
+              label="酒店地址"
+              value={hotelAddress}
+              onChangeText={(text) => setHotelAddress(text.toUpperCase())}
+              onBlur={() => handleFieldBlur('hotelAddress', hotelAddress)}
+              helperText="例如：123 SUKHUMVIT ROAD"
+              error={errors.hotelAddress}
+              autoCapitalize="characters"
+              multiline
+              numberOfLines={3}
+            />
+            {warnings.hotelAddress && !errors.hotelAddress && (
+              <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+                ⚠️ {warnings.hotelAddress}
+              </TamaguiText>
+            )}
+          </YStack>
 
           {/* Photo Upload Card */}
-          <View style={styles.photoUploadCard}>
-            <View style={styles.photoUploadHeader}>
-              <Text style={styles.photoUploadTitle}>🏨 酒店预订凭证（可选）</Text>
-            </View>
+          <BaseCard
+            variant="elevated"
+            padding="md"
+            marginTop="$md"
+            marginBottom="$lg"
+          >
+            <YStack gap="$sm">
+              <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+                🏨 酒店预订凭证（可选）
+              </TamaguiText>
 
-            <View style={styles.photoInfoBox}>
-              <Text style={styles.photoInfoIcon}>💡</Text>
-              <Text style={styles.photoInfoText}>
-                上传酒店预订凭证可以帮助海关快速确认你的住宿安排
-              </Text>
-            </View>
+              <BaseCard variant="flat" padding="sm" backgroundColor="#FEF3C7">
+                <XStack gap="$xs" alignItems="flex-start">
+                  <TamaguiText fontSize={16}>💡</TamaguiText>
+                  <TamaguiText fontSize="$1" color="#92400E" flex={1} lineHeight={18}>
+                    上传酒店预订凭证可以帮助海关快速确认你的住宿安排
+                  </TamaguiText>
+                </XStack>
+              </BaseCard>
 
-            {!hotelReservationPhoto ? (
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={handleHotelReservationPhotoUpload}
-              >
-                <View style={styles.uploadButtonContent}>
-                  <View style={styles.uploadIconCircle}>
-                    <Text style={styles.uploadIcon}>📷</Text>
-                  </View>
-                  <Text style={styles.uploadButtonText}>点击上传预订凭证</Text>
-                  <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
-                </View>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.photoPreviewContainer}>
-                <Image
-                  source={{ uri: hotelReservationPhoto }}
-                  style={styles.photoImage}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.changePhotoButton}
+              {!hotelReservationPhoto ? (
+                <BaseCard
+                  variant="flat"
+                  padding="lg"
+                  pressable
                   onPress={handleHotelReservationPhotoUpload}
+                  borderWidth={2}
+                  borderColor="$primary"
+                  borderStyle="dashed"
+                  backgroundColor="#F0F7FF"
                 >
-                  <Text style={styles.changePhotoIcon}>🔄</Text>
-                  <Text style={styles.changePhotoText}>更换凭证</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+                  <YStack alignItems="center" gap="$sm">
+                    <YStack
+                      width={64}
+                      height={64}
+                      borderRadius={32}
+                      backgroundColor="$primary"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <TamaguiText fontSize={32}>📷</TamaguiText>
+                    </YStack>
+                    <TamaguiText fontSize="$2" fontWeight="600" color="$primary">
+                      点击上传预订凭证
+                    </TamaguiText>
+                    <TamaguiText fontSize="$1" color="$textSecondary">
+                      支持 JPG, PNG 格式
+                    </TamaguiText>
+                  </YStack>
+                </BaseCard>
+              ) : (
+                <YStack>
+                  <Image
+                    source={{ uri: hotelReservationPhoto }}
+                    style={{ width: '100%', height: 200, borderRadius: 8 }}
+                    resizeMode="cover"
+                  />
+                  <BaseButton
+                    variant="primary"
+                    size="md"
+                    onPress={handleHotelReservationPhotoUpload}
+                    marginTop="$sm"
+                    icon={<TamaguiText fontSize={16}>🔄</TamaguiText>}
+                  >
+                    更换凭证
+                  </BaseButton>
+                </YStack>
+              )}
+            </YStack>
+          </BaseCard>
         </>
       )}
     </>
   );
 };
-
-const localStyles = StyleSheet.create({
-  subSectionHeader: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  subSectionTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  transitCheckboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
-    marginBottom: spacing.md,
-  },
-  checkboxLabel: {
-    ...typography.body2,
-    color: colors.text,
-    flex: 1,
-  },
-  disabledInput: {
-    backgroundColor: '#f5f5f5',
-  },
-  fieldContainer: {
-    marginBottom: spacing.lg,
-  },
-  fieldLabel: {
-    ...typography.label,
-    color: colors.textPrimary,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-    minWidth: 100,
-  },
-  optionButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  optionIcon: {
-    fontSize: 20,
-    marginRight: spacing.xs,
-  },
-  optionText: {
-    ...typography.body2,
-    color: colors.text,
-  },
-  optionTextActive: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  input: {
-    marginTop: spacing.sm,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.sm,
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  photoUploadCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  photoUploadHeader: {
-    marginBottom: spacing.sm,
-  },
-  photoUploadTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-    fontSize: 16,
-  },
-  photoInfoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  photoInfoIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
-  },
-  photoInfoText: {
-    ...typography.caption,
-    color: '#92400E',
-    flex: 1,
-    lineHeight: 18,
-  },
-  uploadButton: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderRadius: 12,
-    borderStyle: 'dashed',
-    padding: spacing.lg,
-    backgroundColor: '#F0F7FF',
-  },
-  uploadButtonContent: {
-    alignItems: 'center',
-  },
-  uploadIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  uploadIcon: {
-    fontSize: 32,
-  },
-  uploadButtonText: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  uploadButtonSubtext: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  photoPreviewContainer: {
-    position: 'relative',
-  },
-  changePhotoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  changePhotoIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
-  },
-  changePhotoText: {
-    ...typography.body2,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  photoImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-  },
-});
 
 export default AccommodationSubSection;

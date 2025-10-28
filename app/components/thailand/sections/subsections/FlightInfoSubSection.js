@@ -6,10 +6,16 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { colors, typography, spacing } from '../../../../theme';
+import { Image } from 'react-native';
+import {
+  YStack,
+  XStack,
+  BaseCard,
+  BaseInput,
+  BaseButton,
+  Text as TamaguiText,
+} from '../../../tamagui';
 import { DateTimeInput } from '../../../../components';
-import { InputWithValidation } from '../../ThailandTravelComponents';
 
 const FlightInfoSubSection = ({
   // Form state
@@ -32,34 +38,39 @@ const FlightInfoSubSection = ({
   // Actions
   handleFlightTicketPhotoUpload,
   handleDepartureFlightTicketPhotoUpload,
-  // Styles from parent
-  styles: parentStyles,
 }) => {
-  // Use parent styles if provided, otherwise use local styles
-  const styles = parentStyles || localStyles;
-
   return (
     <>
       {/* Arrival Flight Section */}
-      <View style={styles.subSectionHeader}>
-        <Text style={styles.subSectionTitle}>来程机票（入境泰国）</Text>
-      </View>
+      <YStack
+        marginTop="$lg"
+        marginBottom="$md"
+        paddingBottom="$sm"
+        borderBottomWidth={1}
+        borderBottomColor="$borderColor"
+      >
+        <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+          来程机票（入境泰国）
+        </TamaguiText>
+      </YStack>
 
-      <InputWithValidation
-        label="航班号（来程）"
-        value={arrivalFlightNumber}
-        onChangeText={(text) => setArrivalFlightNumber(text.toUpperCase())}
-        onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
-        helpText="例如：MU5067"
-        error={!!errors.arrivalFlightNumber}
-        errorMessage={errors.arrivalFlightNumber}
-        warning={!!warnings.arrivalFlightNumber}
-        warningMessage={warnings.arrivalFlightNumber}
-        fieldName="arrivalFlightNumber"
-        lastEditedField={lastEditedField}
-        autoCapitalize="characters"
-        placeholder="MU5067"
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label="航班号（来程）"
+          value={arrivalFlightNumber}
+          onChangeText={(text) => setArrivalFlightNumber(text.toUpperCase())}
+          onBlur={() => handleFieldBlur('arrivalFlightNumber', arrivalFlightNumber)}
+          helperText="例如：MU5067"
+          error={errors.arrivalFlightNumber}
+          autoCapitalize="characters"
+          placeholder="MU5067"
+        />
+        {warnings.arrivalFlightNumber && !errors.arrivalFlightNumber && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.arrivalFlightNumber}
+          </TamaguiText>
+        )}
+      </YStack>
 
       <DateTimeInput
         label="抵达日期"
@@ -76,69 +87,107 @@ const FlightInfoSubSection = ({
       />
 
       {/* Photo Upload Card */}
-      <View style={styles.photoUploadCard}>
-        <View style={styles.photoUploadHeader}>
-          <Text style={styles.photoUploadTitle}>📸 机票照片（可选）</Text>
-        </View>
+      <BaseCard
+        variant="elevated"
+        padding="md"
+        marginTop="$md"
+        marginBottom="$lg"
+      >
+        <YStack gap="$sm">
+          <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+            📸 机票照片（可选）
+          </TamaguiText>
 
-        <View style={styles.photoInfoBox}>
-          <Text style={styles.photoInfoIcon}>💡</Text>
-          <Text style={styles.photoInfoText}>
-            上传机票照片可以帮助海关快速确认你的行程
-          </Text>
-        </View>
+          <BaseCard variant="flat" padding="sm" backgroundColor="#FEF3C7">
+            <XStack gap="$xs" alignItems="flex-start">
+              <TamaguiText fontSize={16}>💡</TamaguiText>
+              <TamaguiText fontSize="$1" color="#92400E" flex={1} lineHeight={18}>
+                上传机票照片可以帮助海关快速确认你的行程
+              </TamaguiText>
+            </XStack>
+          </BaseCard>
 
-        {!flightTicketPhoto ? (
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleFlightTicketPhotoUpload}
-          >
-            <View style={styles.uploadButtonContent}>
-              <View style={styles.uploadIconCircle}>
-                <Text style={styles.uploadIcon}>📷</Text>
-              </View>
-              <Text style={styles.uploadButtonText}>点击上传机票照片</Text>
-              <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.photoPreviewContainer}>
-            <Image
-              source={{ uri: flightTicketPhoto }}
-              style={styles.photoImage}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
-              style={styles.changePhotoButton}
+          {!flightTicketPhoto ? (
+            <BaseCard
+              variant="flat"
+              padding="lg"
+              pressable
               onPress={handleFlightTicketPhotoUpload}
+              borderWidth={2}
+              borderColor="$primary"
+              borderStyle="dashed"
+              backgroundColor="#F0F7FF"
             >
-              <Text style={styles.changePhotoIcon}>🔄</Text>
-              <Text style={styles.changePhotoText}>更换照片</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+              <YStack alignItems="center" gap="$sm">
+                <YStack
+                  width={64}
+                  height={64}
+                  borderRadius={32}
+                  backgroundColor="$primary"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <TamaguiText fontSize={32}>📷</TamaguiText>
+                </YStack>
+                <TamaguiText fontSize="$2" fontWeight="600" color="$primary">
+                  点击上传机票照片
+                </TamaguiText>
+                <TamaguiText fontSize="$1" color="$textSecondary">
+                  支持 JPG, PNG 格式
+                </TamaguiText>
+              </YStack>
+            </BaseCard>
+          ) : (
+            <YStack>
+              <Image
+                source={{ uri: flightTicketPhoto }}
+                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                resizeMode="cover"
+              />
+              <BaseButton
+                variant="primary"
+                size="md"
+                onPress={handleFlightTicketPhotoUpload}
+                marginTop="$sm"
+                icon={<TamaguiText fontSize={16}>🔄</TamaguiText>}
+              >
+                更换照片
+              </BaseButton>
+            </YStack>
+          )}
+        </YStack>
+      </BaseCard>
 
       {/* Departure Flight Section */}
-      <View style={styles.subSectionHeader}>
-        <Text style={styles.subSectionTitle}>去程机票（离开泰国）</Text>
-      </View>
+      <YStack
+        marginTop="$lg"
+        marginBottom="$md"
+        paddingBottom="$sm"
+        borderBottomWidth={1}
+        borderBottomColor="$borderColor"
+      >
+        <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+          去程机票（离开泰国）
+        </TamaguiText>
+      </YStack>
 
-      <InputWithValidation
-        label="航班号（去程）"
-        value={departureFlightNumber}
-        onChangeText={(text) => setDepartureFlightNumber(text.toUpperCase())}
-        onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)}
-        helpText="例如：MU5068"
-        error={!!errors.departureFlightNumber}
-        errorMessage={errors.departureFlightNumber}
-        warning={!!warnings.departureFlightNumber}
-        warningMessage={warnings.departureFlightNumber}
-        fieldName="departureFlightNumber"
-        lastEditedField={lastEditedField}
-        autoCapitalize="characters"
-        placeholder="MU5068"
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label="航班号（去程）"
+          value={departureFlightNumber}
+          onChangeText={(text) => setDepartureFlightNumber(text.toUpperCase())}
+          onBlur={() => handleFieldBlur('departureFlightNumber', departureFlightNumber)}
+          helperText="例如：MU5068"
+          error={errors.departureFlightNumber}
+          autoCapitalize="characters"
+          placeholder="MU5068"
+        />
+        {warnings.departureFlightNumber && !errors.departureFlightNumber && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.departureFlightNumber}
+          </TamaguiText>
+        )}
+      </YStack>
 
       <DateTimeInput
         label="离开日期"
@@ -157,165 +206,78 @@ const FlightInfoSubSection = ({
       />
 
       {/* Departure Flight Photo Upload Card */}
-      <View style={styles.photoUploadCard}>
-        <View style={styles.photoUploadHeader}>
-          <Text style={styles.photoUploadTitle}>📸 离境机票照片（可选）</Text>
-        </View>
+      <BaseCard
+        variant="elevated"
+        padding="md"
+        marginTop="$md"
+        marginBottom="$lg"
+      >
+        <YStack gap="$sm">
+          <TamaguiText fontSize="$2" fontWeight="600" color="$text">
+            📸 离境机票照片（可选）
+          </TamaguiText>
 
-        <View style={styles.photoInfoBox}>
-          <Text style={styles.photoInfoIcon}>💡</Text>
-          <Text style={styles.photoInfoText}>
-            上传离境机票照片可以帮助海关确认你的返程计划
-          </Text>
-        </View>
+          <BaseCard variant="flat" padding="sm" backgroundColor="#FEF3C7">
+            <XStack gap="$xs" alignItems="flex-start">
+              <TamaguiText fontSize={16}>💡</TamaguiText>
+              <TamaguiText fontSize="$1" color="#92400E" flex={1} lineHeight={18}>
+                上传离境机票照片可以帮助海关确认你的返程计划
+              </TamaguiText>
+            </XStack>
+          </BaseCard>
 
-        {!departureFlightTicketPhoto ? (
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleDepartureFlightTicketPhotoUpload}
-          >
-            <View style={styles.uploadButtonContent}>
-              <View style={styles.uploadIconCircle}>
-                <Text style={styles.uploadIcon}>📷</Text>
-              </View>
-              <Text style={styles.uploadButtonText}>点击上传离境机票照片</Text>
-              <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.photoPreviewContainer}>
-            <Image
-              source={{ uri: departureFlightTicketPhoto }}
-              style={styles.photoImage}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
-              style={styles.changePhotoButton}
+          {!departureFlightTicketPhoto ? (
+            <BaseCard
+              variant="flat"
+              padding="lg"
+              pressable
               onPress={handleDepartureFlightTicketPhotoUpload}
+              borderWidth={2}
+              borderColor="$primary"
+              borderStyle="dashed"
+              backgroundColor="#F0F7FF"
             >
-              <Text style={styles.changePhotoIcon}>🔄</Text>
-              <Text style={styles.changePhotoText}>更换照片</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+              <YStack alignItems="center" gap="$sm">
+                <YStack
+                  width={64}
+                  height={64}
+                  borderRadius={32}
+                  backgroundColor="$primary"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <TamaguiText fontSize={32}>📷</TamaguiText>
+                </YStack>
+                <TamaguiText fontSize="$2" fontWeight="600" color="$primary">
+                  点击上传离境机票照片
+                </TamaguiText>
+                <TamaguiText fontSize="$1" color="$textSecondary">
+                  支持 JPG, PNG 格式
+                </TamaguiText>
+              </YStack>
+            </BaseCard>
+          ) : (
+            <YStack>
+              <Image
+                source={{ uri: departureFlightTicketPhoto }}
+                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                resizeMode="cover"
+              />
+              <BaseButton
+                variant="primary"
+                size="md"
+                onPress={handleDepartureFlightTicketPhotoUpload}
+                marginTop="$sm"
+                icon={<TamaguiText fontSize={16}>🔄</TamaguiText>}
+              >
+                更换照片
+              </BaseButton>
+            </YStack>
+          )}
+        </YStack>
+      </BaseCard>
     </>
   );
 };
-
-const localStyles = StyleSheet.create({
-  subSectionHeader: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  subSectionTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  photoUploadCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: spacing.md,
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  photoUploadHeader: {
-    marginBottom: spacing.sm,
-  },
-  photoUploadTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.text,
-    fontSize: 16,
-  },
-  photoInfoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  photoInfoIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
-  },
-  photoInfoText: {
-    ...typography.caption,
-    color: '#92400E',
-    flex: 1,
-    lineHeight: 18,
-  },
-  uploadButton: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderRadius: 12,
-    borderStyle: 'dashed',
-    padding: spacing.lg,
-    backgroundColor: '#F0F7FF',
-  },
-  uploadButtonContent: {
-    alignItems: 'center',
-  },
-  uploadIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  uploadIcon: {
-    fontSize: 32,
-  },
-  uploadButtonText: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  uploadButtonSubtext: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  photoPreviewContainer: {
-    position: 'relative',
-  },
-  changePhotoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  changePhotoIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
-  },
-  changePhotoText: {
-    ...typography.body2,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  photoImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-  },
-});
 
 export default FlightInfoSubSection;
