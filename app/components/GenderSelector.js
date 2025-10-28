@@ -6,8 +6,11 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../theme';
+import {
+  XStack,
+  BaseCard,
+  Text as TamaguiText,
+} from '../tamagui';
 
 /**
  * GenderSelector component for selecting gender/sex
@@ -29,76 +32,38 @@ const GenderSelector = ({
   disabled = false,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <XStack gap="$sm" style={style}>
       {options.map((option) => {
         const isActive = value === option.value;
         const label = t ? t(option.translationKey, { defaultValue: option.defaultLabel }) : option.defaultLabel;
 
         return (
-          <TouchableOpacity
+          <BaseCard
             key={option.value}
-            style={[
-              styles.optionButton,
-              isActive && styles.optionButtonActive,
-              disabled && styles.optionButtonDisabled,
-            ]}
+            variant="flat"
+            padding="md"
+            pressable={!disabled}
             onPress={() => !disabled && onChange(option.value)}
-            disabled={disabled}
-            activeOpacity={0.7}
+            flex={1}
+            borderWidth={1.5}
+            borderColor={isActive ? '$primary' : '$borderColor'}
+            backgroundColor={isActive ? '$primaryLight' : '$card'}
+            opacity={disabled ? 0.5 : 1}
+            alignItems="center"
+            justifyContent="center"
           >
-            <Text
-              style={[
-                styles.optionText,
-                isActive && styles.optionTextActive,
-                disabled && styles.optionTextDisabled,
-              ]}
+            <TamaguiText
+              fontSize="$2"
+              color={disabled ? '$textSecondary' : isActive ? '$primary' : '$text'}
+              fontWeight={isActive ? '600' : '500'}
             >
               {label}
-            </Text>
-          </TouchableOpacity>
+            </TamaguiText>
+          </BaseCard>
         );
       })}
-    </View>
+    </XStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  optionButton: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionButtonActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  optionButtonDisabled: {
-    opacity: 0.5,
-    backgroundColor: colors.backgroundLight,
-  },
-  optionText: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  optionTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  optionTextDisabled: {
-    color: colors.textSecondary,
-  },
-});
 
 export default GenderSelector;

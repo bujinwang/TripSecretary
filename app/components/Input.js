@@ -1,12 +1,10 @@
 // 入境通 - Input Component
 import React, { useState } from 'react';
 import {
-  View,
-  TextInput,
-  Text,
-  StyleSheet,
-} from 'react-native';
-import { colors, typography, spacing, borderRadius } from '../theme';
+  YStack,
+  Input as TamaguiInput,
+  Text as TamaguiText,
+} from '../tamagui';
 
 const Input = React.forwardRef(({
   label,
@@ -59,21 +57,18 @@ const Input = React.forwardRef(({
   };
 
   return (
-    <View style={[styles.container, style]}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      
-      <TextInput
+    <YStack marginBottom="$md" style={style}>
+      {label && (
+        <TamaguiText fontSize="$2" color="$text" marginBottom="$xs">
+          {label}
+        </TamaguiText>
+      )}
+
+      <TamaguiInput
         ref={ref}
-        style={[
-          styles.input,
-          isFocused && styles.inputFocused,
-          error && styles.inputError,
-          multiline && styles.inputMultiline,
-        ]}
         value={value}
         onChangeText={handleTextChange}
         placeholder={placeholder}
-        placeholderTextColor={colors.textDisabled}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         multiline={multiline}
@@ -82,61 +77,32 @@ const Input = React.forwardRef(({
         onSubmitEditing={onSubmitEditing}
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
+        backgroundColor="$background"
+        borderWidth={1}
+        borderColor={error ? '$danger' : isFocused ? '$primary' : '$borderColor'}
+        height={multiline ? 100 : 48}
+        paddingHorizontal="$md"
+        paddingTop={multiline ? '$sm' : undefined}
+        textAlignVertical={multiline ? 'top' : undefined}
+        fontSize="$2"
+        color="$text"
         {...rest}
       />
-      
+
       {error && errorMessage && (
-        <Text style={styles.errorText}>{errorMessage}</Text>
+        <TamaguiText fontSize="$1" color="$danger" marginTop="$xs">
+          {errorMessage}
+        </TamaguiText>
       )}
       {helpText && !error && (
-        <Text style={styles.helpText}>{helpText}</Text>
+        <TamaguiText fontSize="$1" color="$textSecondary" marginTop="$xs">
+          {helpText}
+        </TamaguiText>
       )}
-    </View>
+    </YStack>
   );
 });
 
 Input.displayName = 'Input';
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    ...typography.body1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    height: 48,
-    paddingHorizontal: spacing.md,
-    ...typography.body1,
-    color: colors.text,
-  },
-  inputFocused: {
-    borderColor: colors.primary,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  inputMultiline: {
-    height: 100,
-    paddingTop: spacing.sm,
-    textAlignVertical: 'top',
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-  },
-  helpText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-});
 
 export default Input;
