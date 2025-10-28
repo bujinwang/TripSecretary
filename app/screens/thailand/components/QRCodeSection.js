@@ -16,6 +16,7 @@ import {
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { colors, spacing } from '../../../theme';
 import OptimizedImage from '../../../components/OptimizedImage';
+import { GESTURES } from '../immigrationOfficerViewConstants';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -122,7 +123,7 @@ const QRCodeSection = ({
                 handleLongPressQR();
               }
             }}
-            minDurationMs={800}
+            minDurationMs={GESTURES.LONG_PRESS_DURATION}
           >
             <TapGestureHandler
               ref={doubleTapRef}

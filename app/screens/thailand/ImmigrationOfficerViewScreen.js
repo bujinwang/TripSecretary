@@ -34,6 +34,7 @@ import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Brightness from 'expo-brightness';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import { QR_CODE, GESTURES, IMAGE_SIZES, TYPOGRAPHY as IOV_TYPOGRAPHY, LAYOUT, OPACITY, BORDER_COLORS } from './immigrationOfficerViewConstants';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../utils/currencyConverter';
 import QRCodeSection from './components/QRCodeSection';
@@ -197,7 +198,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
       context.startScale = scale.value;
     },
     onActive: (event, context) => {
-      const newScale = Math.max(0.5, Math.min(2.0, context.startScale * event.scale));
+      const newScale = Math.max(GESTURES.MIN_PINCH_SCALE, Math.min(GESTURES.MAX_PINCH_SCALE, context.startScale * event.scale));
       scale.value = newScale;
       focalX.value = event.focalX;
       focalY.value = event.focalY;
@@ -764,13 +765,13 @@ const styles = StyleSheet.create({
   },
   qrCode: {
     // Large QR code - 50-60% of screen width, optimized for landscape
-    width: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
-    height: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
+    width: QR_CODE.getSize(),
+    height: QR_CODE.getSize(),
   },
   qrPlaceholder: {
     // Match QR code size for consistency
-    width: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
-    height: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
+    width: QR_CODE.getSize(),
+    height: QR_CODE.getSize(),
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
@@ -792,10 +793,10 @@ const styles = StyleSheet.create({
   },
   entryCardNumber: {
     color: colors.white,
-    fontSize: 40, // Extra large font for easy reading
+    fontSize: IOV_TYPOGRAPHY.ENTRY_CARD_NUMBER.fontSize, // Extra large font for easy reading
     fontWeight: 'bold',
     fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', // Monospace font
-    letterSpacing: 3, // Increased letter spacing for clarity
+    letterSpacing: IOV_TYPOGRAPHY.ENTRY_CARD_NUMBER.letterSpacing, // Increased letter spacing for clarity
     marginBottom: spacing.sm,
     textAlign: 'center',
     // High contrast with text shadow for better visibility
@@ -819,8 +820,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   passportPhoto: {
-    width: 120,
-    height: 150,
+    width: IMAGE_SIZES.PASSPORT_PHOTO.width,
+    height: IMAGE_SIZES.PASSPORT_PHOTO.height,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: colors.white,
