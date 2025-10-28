@@ -8,10 +8,13 @@
  */
 
 import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 class PDFManagementService {
-  // Centralized PDF directory
+  // Centralized PDF directory - using legacy API for path construction
   static PDF_DIRECTORY = `${FileSystem.documentDirectory}tdac/`;
+  static PDF_SUBDIR = 'tdac'; // For new Directory API
 
   /**
    * Initialize PDF directory
@@ -21,12 +24,11 @@ class PDFManagementService {
    */
   static async initialize() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.PDF_DIRECTORY);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(this.PDF_DIRECTORY, {
-          intermediates: true
-        });
-        console.log('✅ PDF directory created:', this.PDF_DIRECTORY);
+      // Use new Directory API with Paths helper
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      if (!dir.exists) {
+        dir.create();
+        console.log('✅ PDF directory created');
       }
     } catch (error) {
       console.error('❌ Failed to initialize PDF directory:', error);
@@ -63,12 +65,14 @@ class PDFManagementService {
 
   /**
    * Get full file path for a filename
+   * @deprecated Use direct File creation with Paths.document instead
    *
    * @param {string} filename - Filename
-   * @returns {string} - Full file path
+   * @returns {string} - Full file path (URI)
    */
   static getFilePath(filename) {
-    return `${this.PDF_DIRECTORY}${filename}`;
+    const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+    return file.uri;
   }
 
   /**
@@ -84,19 +88,26 @@ class PDFManagementService {
       await this.initialize();
 
       const filename = this.generatePDFFilename(arrCardNo, metadata.submissionMethod);
-      const filepath = this.getFilePath(filename);
+      const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+      const filepath = file.uri; // Get the actual URI for later use
 
       // Convert blob to base64
       const reader = new FileReader();
       reader.readAsDataURL(pdfBlob);
 
       return new Promise((resolve, reject) => {
-        reader.onloadend = async () => {
+        reader.onloadend = () => {
           try {
             const base64data = reader.result.split(',')[1];
-            await FileSystem.writeAsStringAsync(filepath, base64data, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
+            // Decode base64 to Uint8Array for binary data
+            const binaryString = atob(base64data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            file.create();
+            file.write(bytes);
 
             console.log('✅ PDF saved:', filepath);
             resolve({
@@ -131,16 +142,23 @@ class PDFManagementService {
       await this.initialize();
 
       const filename = this.generateQRFilename(arrCardNo);
-      const filepath = this.getFilePath(filename);
+      const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+      const filepath = file.uri; // Get the actual URI for later use
 
       // Remove base64 prefix if present
       const base64Image = base64Data.includes(',')
         ? base64Data.split(',')[1]
         : base64Data;
 
-      await FileSystem.writeAsStringAsync(filepath, base64Image, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Decode base64 to Uint8Array for binary image data
+      const binaryString = atob(base64Image);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      file.create();
+      file.write(bytes);
 
       console.log('✅ QR image saved:', filepath);
       return {
@@ -163,7 +181,19 @@ class PDFManagementService {
    */
   static async getPDFInfo(filepath) {
     try {
-      return await FileSystem.getInfoAsync(filepath);
+      const file = new File(filepath);
+
+      if (!file.exists) {
+        return { exists: false };
+      }
+
+      // Get file metadata
+      return {
+        exists: true,
+        uri: file.uri,
+        size: file.size,
+        modificationTime: null // New API doesn't provide modificationTime directly
+      };
     } catch (error) {
       console.error('❌ Failed to get PDF info:', error);
       return { exists: false };
@@ -178,8 +208,11 @@ class PDFManagementService {
    */
   static async deletePDF(filepath) {
     try {
-      await FileSystem.deleteAsync(filepath, { idempotent: true });
-      console.log('✅ PDF deleted:', filepath);
+      const file = new File(filepath);
+      if (file.exists) {
+        file.delete();
+        console.log('✅ PDF deleted:', filepath);
+      }
     } catch (error) {
       console.error('❌ Failed to delete PDF:', error);
       throw error;
@@ -194,8 +227,12 @@ class PDFManagementService {
   static async listPDFs() {
     try {
       await this.initialize();
-      const files = await FileSystem.readDirectoryAsync(this.PDF_DIRECTORY);
-      return files.filter(f => f.endsWith('.pdf'));
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      const items = dir.list();
+      // Filter for .pdf files and extract just the names
+      return items
+        .filter(item => item instanceof File && item.name.endsWith('.pdf'))
+        .map(item => item.name);
     } catch (error) {
       console.error('❌ Failed to list PDFs:', error);
       return [];
@@ -204,6 +241,8 @@ class PDFManagementService {
 
   /**
    * Clean up old PDFs (older than specified days)
+   * NOTE: New File API doesn't provide modificationTime directly.
+   * Currently using filename timestamp as fallback.
    *
    * @param {number} daysOld - Number of days (default: 30)
    * @returns {Promise<Object>} - Cleanup result with deleted count
@@ -215,13 +254,19 @@ class PDFManagementService {
       const cutoffTime = Date.now() - (daysOld * 24 * 60 * 60 * 1000);
 
       let deletedCount = 0;
-      for (const file of files) {
-        const filepath = this.getFilePath(file);
-        const info = await this.getPDFInfo(filepath);
+      for (const filename of files) {
+        // Create file object using path components
+        const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+        const filepath = file.uri;
 
-        if (info.exists && info.modificationTime && info.modificationTime < cutoffTime) {
-          await this.deletePDF(filepath);
-          deletedCount++;
+        // Extract timestamp from filename (format: TDAC_{cardNo}_{timestamp}.pdf)
+        const timestampMatch = filename.match(/_(\d+)\.pdf$/);
+        if (timestampMatch) {
+          const fileTimestamp = parseInt(timestampMatch[1], 10);
+          if (fileTimestamp < cutoffTime) {
+            await this.deletePDF(filepath);
+            deletedCount++;
+          }
         }
       }
 
@@ -237,6 +282,184 @@ class PDFManagementService {
         success: false,
         error: error.message
       };
+    }
+  }
+
+  /**
+   * Share PDF file using native share dialog
+   *
+   * @param {string} filepath - Full file path or filename
+   * @returns {Promise<Object>} - Share result
+   */
+  static async sharePDF(filepath) {
+    try {
+      // If only filename provided, construct full path
+      const fullPath = filepath.includes('/')
+        ? filepath
+        : this.getFilePath(filepath);
+
+      const file = new File(fullPath);
+
+      if (!file.exists) {
+        throw new Error('PDF file not found');
+      }
+
+      // Check if sharing is available on this platform
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        throw new Error('Sharing is not available on this platform');
+      }
+
+      await Sharing.shareAsync(file.uri, {
+        mimeType: 'application/pdf',
+        dialogTitle: 'Share TDAC PDF',
+        UTI: 'com.adobe.pdf'
+      });
+
+      console.log('✅ PDF shared successfully');
+      return {
+        success: true,
+        filepath: file.uri
+      };
+    } catch (error) {
+      console.error('❌ Failed to share PDF:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Share QR code image using native share dialog
+   *
+   * @param {string} filepath - Full file path or filename
+   * @returns {Promise<Object>} - Share result
+   */
+  static async shareQRImage(filepath) {
+    try {
+      // If only filename provided, construct full path
+      const fullPath = filepath.includes('/')
+        ? filepath
+        : this.getFilePath(filepath);
+
+      const file = new File(fullPath);
+
+      if (!file.exists) {
+        throw new Error('QR image file not found');
+      }
+
+      // Check if sharing is available on this platform
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        throw new Error('Sharing is not available on this platform');
+      }
+
+      await Sharing.shareAsync(file.uri, {
+        mimeType: 'image/png',
+        dialogTitle: 'Share TDAC QR Code'
+      });
+
+      console.log('✅ QR image shared successfully');
+      return {
+        success: true,
+        filepath: file.uri
+      };
+    } catch (error) {
+      console.error('❌ Failed to share QR image:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get all saved PDFs with detailed metadata
+   *
+   * @returns {Promise<Array<Object>>} - Array of PDF metadata objects
+   */
+  static async getAllSavedPDFs() {
+    try {
+      await this.initialize();
+      const filenames = await this.listPDFs();
+
+      const pdfsWithMetadata = [];
+
+      for (const filename of filenames) {
+        const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+
+        // Parse filename: TDAC_{cardNo}_{timestamp}.pdf
+        const match = filename.match(/^TDAC_(.+?)_(\d+)\.pdf$/);
+
+        if (match) {
+          const cardNo = match[1].replace(/_/g, '-'); // Restore dashes
+          const timestamp = parseInt(match[2], 10);
+
+          pdfsWithMetadata.push({
+            filename,
+            filepath: file.uri,
+            arrCardNo: cardNo,
+            savedAt: new Date(timestamp).toISOString(),
+            timestamp,
+            size: file.exists ? file.size : 0,
+            exists: file.exists
+          });
+        }
+      }
+
+      // Sort by timestamp descending (newest first)
+      pdfsWithMetadata.sort((a, b) => b.timestamp - a.timestamp);
+
+      return pdfsWithMetadata;
+    } catch (error) {
+      console.error('❌ Failed to get all saved PDFs:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all saved QR images with detailed metadata
+   *
+   * @returns {Promise<Array<Object>>} - Array of QR image metadata objects
+   */
+  static async getAllSavedQRImages() {
+    try {
+      await this.initialize();
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      const items = dir.list();
+
+      const qrImages = [];
+
+      for (const item of items) {
+        if (item instanceof File && item.name.match(/^TDAC_QR_.+\.png$/)) {
+          // Parse filename: TDAC_QR_{cardNo}_{timestamp}.png
+          const match = item.name.match(/^TDAC_QR_(.+?)_(\d+)\.png$/);
+
+          if (match) {
+            const cardNo = match[1].replace(/_/g, '-'); // Restore dashes
+            const timestamp = parseInt(match[2], 10);
+
+            qrImages.push({
+              filename: item.name,
+              filepath: item.uri,
+              arrCardNo: cardNo,
+              savedAt: new Date(timestamp).toISOString(),
+              timestamp,
+              size: item.size,
+              exists: item.exists
+            });
+          }
+        }
+      }
+
+      // Sort by timestamp descending (newest first)
+      qrImages.sort((a, b) => b.timestamp - a.timestamp);
+
+      return qrImages;
+    } catch (error) {
+      console.error('❌ Failed to get all saved QR images:', error);
+      return [];
     }
   }
 }

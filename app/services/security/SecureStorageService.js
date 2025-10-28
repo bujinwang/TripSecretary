@@ -13,6 +13,7 @@
 
 import { openDatabaseAsync } from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+import { Directory, Paths } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import EncryptionService from './EncryptionService';
 import DatabaseSchema from './schema/DatabaseSchema';
@@ -112,10 +113,11 @@ class SecureStorageService {
    */
   async ensureBackupDirectory() {
     try {
-      const backupPath = this.getBackupDir();
-      const info = await FileSystem.getInfoAsync(backupPath);
-      if (!info.exists) {
-        await FileSystem.makeDirectoryAsync(backupPath, { intermediates: true });
+      // Use the new Directory API with Paths helper
+      // Paths.document points to the document directory, 'backups' is the subdirectory
+      const dir = new Directory(Paths.document, 'backups');
+      if (!dir.exists) {
+        dir.create();
       }
     } catch (error) {
       console.warn('Warning: Could not create backup directory.', error.message);

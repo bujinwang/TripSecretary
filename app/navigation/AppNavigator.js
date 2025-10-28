@@ -90,6 +90,7 @@ import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import NotificationTestScreen from '../screens/NotificationTestScreen';
 import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
+import TDACFilesScreen from '../screens/thailand/TDACFilesScreen';
 import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
@@ -298,6 +299,18 @@ const AppNavigator = React.forwardRef((props, ref) => {
           options={{
             headerShown: false,
             presentation: 'fullScreenModal',
+          }}
+        />
+        <Stack.Screen
+          name="TDACFiles"
+          component={TDACFilesScreen}
+          options={{
+            headerShown: true,
+            title: 'Saved TDAC Files',
+            headerTintColor: colors.text,
+            headerStyle: {
+              backgroundColor: colors.white,
+            },
           }}
         />
         <Stack.Screen

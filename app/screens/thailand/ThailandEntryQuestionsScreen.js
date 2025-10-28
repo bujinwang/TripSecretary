@@ -46,8 +46,8 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
           'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions',
           {
             severity: ErrorSeverity.WARNING,
-            customTitle: '错误',
-            customMessage: '缺少入境包信息',
+            customTitle: t('common.error'),
+            customMessage: t('thailand.entryQuestions.errors.missingEntryPack'),
             onRetry: () => navigation.goBack(),
           }
         );
@@ -64,8 +64,8 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
           'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions',
           {
             severity: ErrorSeverity.WARNING,
-            customTitle: '错误',
-            customMessage: '无法加载入境包',
+            customTitle: t('common.error'),
+            customMessage: t('thailand.entryQuestions.errors.loadFailed'),
             onRetry: () => navigation.goBack(),
           }
         );
@@ -113,8 +113,8 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
     } catch (error) {
       ErrorHandler.handleDataLoadError(error, 'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions', {
         severity: ErrorSeverity.WARNING,
-        customTitle: '错误',
-        customMessage: '加载入境问题失败，请稍后重试',
+        customTitle: t('common.error'),
+        customMessage: t('thailand.entryQuestions.errors.loadFailed'),
         onRetry: () => loadTravelerProfileAndQuestions(),
       });
     } finally {
@@ -132,7 +132,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
 
   const renderLanguageSelector = () => (
     <View style={styles.languageSelector}>
-      <Text style={styles.selectorLabel}>语言 / Language:</Text>
+      <Text style={styles.selectorLabel}>{t('thailand.entryQuestions.languageSelector.label')}</Text>
       <View style={styles.languageButtons}>
         {['zh', 'en', 'th'].map((lang) => (
           <TouchableOpacity
@@ -149,7 +149,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
                 selectedLanguage === lang && styles.languageButtonTextActive,
               ]}
             >
-              {lang === 'zh' ? '中文' : lang === 'en' ? 'English' : 'ไทย'}
+              {t(`thailand.entryQuestions.languageSelector.${lang}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -164,10 +164,10 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
     >
       <View style={styles.filterToggleContent}>
         <Text style={styles.filterToggleText}>
-          {showOnlyRequired ? '仅显示必填问题' : '显示全部问题'}
+          {showOnlyRequired ? t('thailand.entryQuestions.filter.showRequired') : t('thailand.entryQuestions.filter.showAll')}
         </Text>
         <Text style={styles.filterToggleCount}>
-          ({questions.length} 个问题)
+          {t('thailand.entryQuestions.filter.count', { count: questions.length })}
         </Text>
       </View>
     </TouchableOpacity>
@@ -196,7 +196,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
           </View>
           {item.required && (
             <View style={styles.requiredBadge}>
-              <Text style={styles.requiredText}>必填</Text>
+              <Text style={styles.requiredText}>{t('thailand.entryQuestions.question.required')}</Text>
             </View>
           )}
         </View>
@@ -205,7 +205,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
           <Text style={styles.questionText}>{item.question}</Text>
 
           <View style={styles.answerSection}>
-            <Text style={styles.answerLabel}>答案 / Answer:</Text>
+            <Text style={styles.answerLabel}>{t('thailand.entryQuestions.question.answerLabel')}</Text>
             <View style={styles.answerBox}>
               <Text style={styles.answerText}>{item.answer}</Text>
             </View>
@@ -213,7 +213,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
 
           {item.tips && item.tips.length > 0 && (
             <View style={styles.tipsSection}>
-              <Text style={styles.tipsLabel}>💡 提示:</Text>
+              <Text style={styles.tipsLabel}>{t('thailand.entryQuestions.question.tipsLabel')}</Text>
               {item.tips.map((tip, idx) => (
                 <Text key={idx} style={styles.tipText}>
                   • {tip}
@@ -224,7 +224,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
 
           {item.suggestedAnswers && item.suggestedAnswers.length > 1 && (
             <View style={styles.suggestedSection}>
-              <Text style={styles.suggestedLabel}>其他可选答案:</Text>
+              <Text style={styles.suggestedLabel}>{t('thailand.entryQuestions.question.suggestedLabel')}</Text>
               {item.suggestedAnswers.slice(1).map((suggestion, idx) => (
                 <Text key={idx} style={styles.suggestedText}>
                   • {suggestion}
@@ -241,18 +241,18 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
     <View style={styles.header}>
       <View style={styles.headerTitleContainer}>
         <Text style={styles.headerTitle}>
-          ชุดคำถาม-คำตอบสำหรับเจ้าหน้าที่
+          {t('thailand.entryQuestions.header.title')}
         </Text>
         <Text style={styles.headerSubtitle}>
-          Immigration Questions & Answers
+          {t('thailand.entryQuestions.header.subtitle')}
         </Text>
         <Text style={styles.headerSubtitleZh}>
-          入境常见问题及答案
+          {t('thailand.entryQuestions.header.subtitleZh')}
         </Text>
       </View>
       <View style={styles.headerDescription}>
         <Text style={styles.descriptionText}>
-          📋 基于您的旅行信息预填的常见入境问题答案，可向移民官员展示
+          {t('thailand.entryQuestions.header.description')}
         </Text>
       </View>
     </View>
@@ -261,21 +261,21 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
   const renderFooter = () => (
     <View style={styles.footer}>
       <View style={styles.footerInfo}>
-        <Text style={styles.footerIcon}>ℹ️</Text>
+        <Text style={styles.footerIcon}>{t('thailand.entryQuestions.footer.icon')}</Text>
         <Text style={styles.footerText}>
-          这些答案基于您提交的入境信息自动生成。如移民官提出其他问题，请如实回答。
+          {t('thailand.entryQuestions.footer.infoText')}
         </Text>
       </View>
       <View style={styles.footerInstructions}>
-        <Text style={styles.instructionsTitle}>使用说明：</Text>
+        <Text style={styles.instructionsTitle}>{t('thailand.entryQuestions.footer.instructionsTitle')}</Text>
         <Text style={styles.instructionText}>
-          1. 向移民官展示此页面作为参考
+          {t('thailand.entryQuestions.footer.instruction1')}
         </Text>
         <Text style={styles.instructionText}>
-          2. 可切换语言以便沟通
+          {t('thailand.entryQuestions.footer.instruction2')}
         </Text>
         <Text style={styles.instructionText}>
-          3. 必填问题已用徽章标记
+          {t('thailand.entryQuestions.footer.instruction3')}
         </Text>
       </View>
     </View>
@@ -286,7 +286,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>加载入境问题...</Text>
+          <Text style={styles.loadingText}>{t('thailand.entryQuestions.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -296,7 +296,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <BackButton onPress={() => navigation.goBack()} />
-        <Text style={styles.topBarTitle}>入境问题</Text>
+        <Text style={styles.topBarTitle}>{t('thailand.entryQuestions.topBarTitle')}</Text>
         <View style={styles.topBarSpacer} />
       </View>
 
@@ -314,12 +314,12 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
             questions.map((question, index) => renderQuestionCard(question, index))
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateIcon}>📭</Text>
+              <Text style={styles.emptyStateIcon}>{t('thailand.entryQuestions.empty.icon')}</Text>
               <Text style={styles.emptyStateText}>
-                暂无可显示的问题
+                {t('thailand.entryQuestions.empty.text')}
               </Text>
               <Text style={styles.emptyStateHint}>
-                请确保您的入境信息已完整填写
+                {t('thailand.entryQuestions.empty.hint')}
               </Text>
             </View>
           )}

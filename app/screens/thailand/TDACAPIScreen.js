@@ -263,7 +263,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
   };
   
   /**
-   * Save QR code to storage
+   * Save PDF to storage (Documents folder only)
+   *
+   * SECURITY NOTE: Full PDF contains sensitive data and should NOT be saved to photo album.
+   * Only extracted QR code images should go to photo album (future enhancement).
    */
   const saveQRCode = async (arrCardNo, pdfBlob, result = {}) => {
     try {
@@ -307,9 +310,22 @@ const TDACAPIScreen = ({ navigation, route }) => {
       await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
       console.log('✅ Recent submission flag set for EntryPackService');
 
-      // Save PDF to photo album
-      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
-      console.log('✅ QR code saved to photo album');
+      // SECURITY FIX: Do NOT save full PDF to photo album (contains sensitive personal data)
+      // TODO: Extract only QR code from PDF and save that to photo album
+      // See app/services/QRCodeExtractor.js for implementation plan
+
+      // Removed insecure code:
+      // await MediaLibrary.createAssetAsync(pdfSaveResult.filepath); // ❌ Saved full PDF with sensitive data
+
+      // Future implementation:
+      // const qrCodeBase64 = await QRCodeExtractor.extractQRCodeFromPDF(pdfBlob, arrCardNo);
+      // if (qrCodeBase64) {
+      //   const qrFile = await saveQRCodeImage(qrCodeBase64, arrCardNo);
+      //   await MediaLibrary.createAssetAsync(qrFile.uri);
+      //   console.log('✅ QR code image saved to photo album');
+      // }
+
+      console.log('ℹ️  Full PDF saved to app Documents folder only (not photo album)');
 
       return pdfSaveResult;
 

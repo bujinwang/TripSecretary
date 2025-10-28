@@ -31,6 +31,7 @@ import HelperModal from '../../components/tdac/HelperModal';
 import QRCodeModal from '../../components/tdac/QRCodeModal';
 import DataComparisonModal from '../../components/tdac/DataComparisonModal';
 import styles from './TDACWebViewScreen.styles';
+import colors from '../../theme/colors';
 
 const TDACWebViewScreen = ({ navigation, route }) => {
   const { t } = useTranslation();

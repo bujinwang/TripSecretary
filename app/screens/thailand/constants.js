@@ -6,7 +6,26 @@
  */
 
 /**
+ * Get travel purpose options with internationalized labels
+ * @param {Function} t - Translation function from i18n
+ * @returns {Array} Travel purpose options with translated labels
+ */
+export const getTravelPurposeOptions = (t) => [
+  { value: 'HOLIDAY', label: t('thailand.travelPurposes.HOLIDAY') },
+  { value: 'MEETING', label: t('thailand.travelPurposes.MEETING') },
+  { value: 'SPORTS', label: t('thailand.travelPurposes.SPORTS') },
+  { value: 'BUSINESS', label: t('thailand.travelPurposes.BUSINESS') },
+  { value: 'INCENTIVE', label: t('thailand.travelPurposes.INCENTIVE') },
+  { value: 'CONVENTION', label: t('thailand.travelPurposes.CONVENTION') },
+  { value: 'EDUCATION', label: t('thailand.travelPurposes.EDUCATION') },
+  { value: 'EMPLOYMENT', label: t('thailand.travelPurposes.EMPLOYMENT') },
+  { value: 'EXHIBITION', label: t('thailand.travelPurposes.EXHIBITION') },
+  { value: 'MEDICAL', label: t('thailand.travelPurposes.MEDICAL') },
+];
+
+/**
  * Predefined travel purpose options for Thailand entry
+ * @deprecated Use getTravelPurposeOptions(t) for i18n support
  */
 export const PREDEFINED_TRAVEL_PURPOSES = [
   'HOLIDAY',
@@ -22,9 +41,26 @@ export const PREDEFINED_TRAVEL_PURPOSES = [
 ];
 
 /**
+ * Get accommodation type options with internationalized labels
+ * @param {Function} t - Translation function from i18n
+ * @returns {Array} Accommodation options with translated labels
+ * @note These match the UI values from AccommodationSubSection
+ * They are transformed to TDAC API values by ThailandTravelerContextBuilder
+ */
+export const getAccommodationTypeOptions = (t) => [
+  { value: 'HOTEL', label: t('thailand.accommodationTypes.HOTEL') },
+  { value: 'HOSTEL', label: t('thailand.accommodationTypes.HOSTEL') },      // Maps to YOUTH_HOSTEL in TDAC
+  { value: 'GUESTHOUSE', label: t('thailand.accommodationTypes.GUESTHOUSE') },  // Maps to GUEST_HOUSE in TDAC
+  { value: 'RESORT', label: t('thailand.accommodationTypes.RESORT') },      // Maps to HOTEL in TDAC (no resort option in TDAC)
+  { value: 'APARTMENT', label: t('thailand.accommodationTypes.APARTMENT') },
+  { value: 'FRIEND', label: t('thailand.accommodationTypes.FRIEND') },      // Maps to FRIEND_HOUSE in TDAC
+];
+
+/**
  * Predefined accommodation type options for Thailand stay
  * These match the UI values from AccommodationSubSection
  * They are transformed to TDAC API values by ThailandTravelerContextBuilder
+ * @deprecated Use getAccommodationTypeOptions(t) for i18n support
  */
 export const PREDEFINED_ACCOMMODATION_TYPES = [
   'HOTEL',
@@ -45,8 +81,32 @@ export const GENDER_OPTIONS = [
 ];
 
 /**
- * Predefined occupation options for Thailand TDAC
- * Chinese labels with English values (submitted in uppercase)
+ * Get occupation options with internationalized labels
+ * @param {Function} t - Translation function from i18n
+ * @returns {Array} Occupation options with translated labels
+ */
+export const getOccupationOptions = (t) => [
+  { value: 'SOFTWARE ENGINEER', label: t('thailand.occupations.SOFTWARE_ENGINEER'), icon: '💻' },
+  { value: 'STUDENT', label: t('thailand.occupations.STUDENT'), icon: '📚' },
+  { value: 'TEACHER', label: t('thailand.occupations.TEACHER'), icon: '👨‍🏫' },
+  { value: 'DOCTOR', label: t('thailand.occupations.DOCTOR'), icon: '👨‍⚕️' },
+  { value: 'ACCOUNTANT', label: t('thailand.occupations.ACCOUNTANT'), icon: '📊' },
+  { value: 'SALES MANAGER', label: t('thailand.occupations.SALES_MANAGER'), icon: '📈' },
+  { value: 'RETIRED', label: t('thailand.occupations.RETIRED'), icon: '🏖️' },
+  { value: 'ENGINEER', label: t('thailand.occupations.ENGINEER'), icon: '⚙️' },
+  { value: 'CIVIL SERVANT', label: t('thailand.occupations.CIVIL_SERVANT'), icon: '🏛️' },
+  { value: 'LAWYER', label: t('thailand.occupations.LAWYER'), icon: '⚖️' },
+  { value: 'NURSE', label: t('thailand.occupations.NURSE'), icon: '👩‍⚕️' },
+  { value: 'FREELANCER', label: t('thailand.occupations.FREELANCER'), icon: '🎨' },
+  { value: 'BUSINESS OWNER', label: t('thailand.occupations.BUSINESS_OWNER'), icon: '💼' },
+  { value: 'HOMEMAKER', label: t('thailand.occupations.HOMEMAKER'), icon: '🏠' },
+  { value: 'DESIGNER', label: t('thailand.occupations.DESIGNER'), icon: '✏️' },
+  { value: 'OTHER', label: t('thailand.occupations.OTHER'), icon: '📝' },
+];
+
+/**
+ * Legacy export for backward compatibility
+ * @deprecated Use getOccupationOptions(t) instead
  */
 export const OCCUPATION_OPTIONS = [
   { value: 'SOFTWARE ENGINEER', label: '软件工程师', icon: '💻' },

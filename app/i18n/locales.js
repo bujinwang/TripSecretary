@@ -1223,10 +1223,42 @@ const baseTranslations = {
           chooseFailedMessage: 'Please try again',
         },
         lastEdited: 'Recently edited',
+        sectionTitles: {
+          passport: '👤 Passport Information',
+          passportSubtitle: 'Thailand customs needs to verify your identity',
+          personal: '👤 Personal Information',
+          personalSubtitle: 'Let Thailand know more about you',
+          funds: '💰 Proof of Funds',
+          fundsSubtitle: 'Show your financial capability',
+          travel: '✈️ Travel Information',
+          travelSubtitle: 'Your Thailand itinerary',
+        },
+        sectionIntros: {
+          passport: '🛂 Customs officers will verify your passport information. Please ensure it matches your passport exactly. Don\'t worry, we\'ll help you format it!',
+          personal: '👤 This information helps Thailand understand your background and contact you if needed.',
+          funds: '💰 Show your financial capability to support your Thailand trip.',
+          travel: '✈️ Tell Thailand your travel plans so they can prepare a warm welcome for you.',
+        },
         fields: {
           fullName: {
             label: 'Full Name',
             help: 'Please enter in Pinyin (e.g., LI, MAO) - Do not enter Chinese characters',
+          },
+          passportName: {
+            label: 'Name on Passport',
+            help: 'Fill in English name as shown on passport, e.g.: LI, MAO (surname first, given name last)',
+          },
+          surname: {
+            label: 'Surname',
+            help: 'Enter surname as shown on passport (in English)',
+          },
+          middleName: {
+            label: 'Middle Name',
+            help: 'If any (optional)',
+          },
+          givenName: {
+            label: 'Given Name',
+            help: 'Enter given name as shown on passport (in English)',
           },
           nationality: {
             label: 'Nationality',
@@ -1234,7 +1266,11 @@ const baseTranslations = {
           },
           passportNo: {
             label: 'Passport Number',
-            help: 'Please enter your passport number',
+            help: 'Passport number is usually 8-9 alphanumeric characters, will be automatically capitalized',
+          },
+          visaNumber: {
+            label: 'Visa Number (if any)',
+            help: 'If you have a visa, please enter visa number (letters or numbers only)',
           },
           dob: {
             label: 'Date of Birth',
@@ -1541,6 +1577,135 @@ const baseTranslations = {
       accommodationTypes: {
         HOTEL: 'Hotel', HOSTEL: 'Hostel', GUESTHOUSE: 'Guesthouse',
         RESORT: 'Resort', APARTMENT: 'Apartment', FRIEND: 'Friend\'s House'
+      },
+
+      // Form validation error messages
+      validation: {
+        // Required field errors
+        required: {
+          passportNo: 'Passport number is required',
+          surname: 'Surname is required',
+          givenName: 'Given name is required',
+          nationality: 'Nationality is required',
+          dob: 'Date of birth is required',
+          expiryDate: 'Passport expiry date is required',
+          sex: 'Gender/sex is required',
+          occupation: 'Occupation is required',
+          cityOfResidence: 'City of residence is required',
+          residentCountry: 'Resident country is required',
+          phoneNumber: 'Phone number is required',
+          email: 'Email address is required',
+          travelPurpose: 'Travel purpose is required',
+          arrivalDate: 'Arrival date is required',
+          departureDate: 'Departure date is required',
+          arrivalFlightNumber: 'Arrival flight number is required',
+          departureFlightNumber: 'Departure flight number is required',
+          accommodationType: 'Accommodation type is required',
+          province: 'Province is required',
+          district: 'District is required',
+          subDistrict: 'Sub-district is required',
+          postalCode: 'Postal code is required',
+          hotelAddress: 'Hotel/accommodation address is required',
+          recentStayCountry: 'Recent stay country is required',
+          boardingCountry: 'Boarding country is required',
+        },
+
+        // Format validation errors
+        format: {
+          passportNo: 'Passport number format is invalid (typically 8-9 alphanumeric characters)',
+          email: 'Email address format is invalid (e.g., example@email.com)',
+          phoneNumber: 'Phone number format is invalid (8-15 digits)',
+          phoneCode: 'Phone code format is invalid (e.g., +86, +1)',
+          postalCode: 'Postal code format is invalid',
+          flightNumber: 'Flight number format is invalid (e.g., TG123, CZ456)',
+          uppercaseRequired: 'Must be in UPPERCASE letters',
+          alphanumericOnly: 'Only letters and numbers are allowed',
+          numbersOnly: 'Only numbers are allowed',
+        },
+
+        // Length validation errors
+        length: {
+          passportNoTooShort: 'Passport number is too short (minimum {{min}} characters)',
+          passportNoTooLong: 'Passport number is too long (maximum {{max}} characters)',
+          phoneNumberTooShort: 'Phone number is too short (minimum {{min}} digits)',
+          phoneNumberTooLong: 'Phone number is too long (maximum {{max}} digits)',
+          nameTooShort: 'Name is too short (minimum {{min}} characters)',
+          nameTooLong: 'Name is too long (maximum {{max}} characters)',
+          textTooLong: 'Text exceeds maximum length of {{max}} characters',
+        },
+
+        // Date validation errors
+        date: {
+          invalid: 'Invalid date format',
+          pastRequired: 'Date must be in the past',
+          futureRequired: 'Date must be in the future',
+          passportExpired: 'Passport has already expired',
+          passportExpiringSoon: 'Passport expires within 6 months - may be rejected by immigration',
+          dobTooRecent: 'Date of birth is too recent (must be at least {{minAge}} years old)',
+          dobTooOld: 'Date of birth seems unrealistic (please check)',
+          arrivalBeforeDeparture: 'Arrival date must be before departure date',
+          departureBeforeArrival: 'Departure date must be after arrival date',
+          arrivalTooFar: 'Arrival date is too far in the future ({{maxDays}} days maximum)',
+          arrivalTooSoon: 'Arrival date is too soon (minimum {{minHours}} hours from now)',
+          stayTooLong: 'Stay duration exceeds visa-free limit ({{maxDays}} days)',
+        },
+
+        // Specific field warnings (non-critical)
+        warning: {
+          nameNotUppercase: 'Name should be in UPPERCASE as shown on passport',
+          nameMismatch: 'Name format may not match passport - please verify',
+          passportExpiringWithin6Months: 'Passport expires in {{months}} months - some countries require 6+ months validity',
+          emailUncommon: 'Email format is uncommon - please verify',
+          phoneNumberShort: 'Phone number seems short - please verify',
+          occupationOther: 'You selected "Other" - please enter your occupation in the custom field',
+          cityNotRecognized: 'City not recognized - please verify spelling',
+          missingFlightPhoto: 'Flight ticket photo not uploaded - recommended for faster processing',
+          missingHotelPhoto: 'Hotel reservation photo not uploaded - recommended for verification',
+          transitPassenger: 'You marked as transit passenger - accommodation details may not be required',
+        },
+
+        // Photo upload errors
+        photo: {
+          uploadFailed: 'Failed to upload photo - please try again',
+          invalidFormat: 'Invalid photo format - please use JPG, PNG, or PDF',
+          fileTooLarge: 'Photo file is too large (maximum {{maxSize}}MB)',
+          permissionDenied: 'Camera/photo library permission denied - please enable in settings',
+          cameraNotAvailable: 'Camera not available on this device',
+          processingFailed: 'Failed to process photo - please try another photo',
+        },
+
+        // Location cascade errors
+        location: {
+          provinceRequired: 'Please select a province first',
+          districtRequired: 'Please select a district',
+          subDistrictRequired: 'Please select a sub-district',
+          invalidProvince: 'Selected province is invalid',
+          invalidDistrict: 'Selected district is invalid for this province',
+          invalidSubDistrict: 'Selected sub-district is invalid for this district',
+          loadingFailed: 'Failed to load location data - please try again',
+        },
+
+        // Network/Save errors
+        save: {
+          failed: 'Failed to save data - please check your connection',
+          retrying: 'Retrying save... ({{attempt}}/{{max}})',
+          offline: 'You are offline - data will be saved when connection is restored',
+          conflict: 'Data conflict detected - please refresh and try again',
+          timeout: 'Save timeout - please check your internet connection',
+        },
+
+        // TDAC submission errors
+        submission: {
+          missingRequiredFields: 'Please complete all required fields before submitting',
+          invalidData: 'Some data is invalid - please check highlighted fields',
+          networkError: 'Network error - please check your connection and try again',
+          serverError: 'Server error - please try again later',
+          cloudflareTimeout: 'Cloudflare verification timeout - please try again',
+          submissionWindowClosed: 'Submission window has closed - please contact support',
+          submissionWindowNotOpen: 'Submission window not yet open - please wait until {{openTime}}',
+          duplicateSubmission: 'This entry has already been submitted',
+          rateLimitExceeded: 'Too many attempts - please wait {{minutes}} minutes',
+        },
       },
     },
     japan: {
@@ -3662,18 +3827,54 @@ const baseTranslations = {
           chooseFailedMessage: '请重试',
         },
         lastEdited: '最近编辑',
+        sectionTitles: {
+          passport: '👤 护照信息',
+          passportSubtitle: '泰国海关需要核实你的身份',
+          personal: '👤 个人信息',
+          personalSubtitle: '让泰国更了解你',
+          funds: '💰 资金证明',
+          fundsSubtitle: '展示你的经济能力',
+          travel: '✈️ 旅行信息',
+          travelSubtitle: '你的泰国行程',
+        },
+        sectionIntros: {
+          passport: '🛂 海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！',
+          personal: '👤 这些信息帮助泰国了解你的背景，如有需要可以联系你。',
+          funds: '💰 展示你的经济能力，证明可以支持泰国之旅。',
+          travel: '✈️ 告诉泰国你的旅行计划，让他们为你准备好热情的欢迎。',
+        },
         fields: {
           fullName: {
             label: '姓名',
             help: '请填写汉语拼音（例如：LI, MAO）- 不要输入中文字符',
+          },
+          passportName: {
+            label: '护照上的姓名',
+            help: '填写护照上显示的英文姓名，例如：LI, MAO（姓在前，名在后）',
+          },
+          surname: {
+            label: '姓',
+            help: '填写护照上显示的姓（英文）',
+          },
+          middleName: {
+            label: '中间名',
+            help: '如有（可选）',
+          },
+          givenName: {
+            label: '名',
+            help: '填写护照上显示的名（英文）',
           },
           nationality: {
             label: '国籍',
             help: '请选择您的国籍',
           },
           passportNo: {
-            label: '护照号',
-            help: '请输入您的护照号码',
+            label: '护照号码',
+            help: '护照号码通常是8-9位字母和数字的组合，输入时会自动转大写',
+          },
+          visaNumber: {
+            label: '签证号（如有）',
+            help: '如有签证，请填写签证号码（仅限字母或数字）',
           },
           dob: {
             label: '出生日期',
@@ -3980,6 +4181,135 @@ const baseTranslations = {
       accommodationTypes: {
         HOTEL: '酒店', HOSTEL: '青年旅舍', GUESTHOUSE: '民宿',
         RESORT: '度假村', APARTMENT: '公寓', FRIEND: '朋友家'
+      },
+
+      // 表单验证错误信息
+      validation: {
+        // 必填字段错误
+        required: {
+          passportNo: '护照号码为必填项',
+          surname: '姓氏为必填项',
+          givenName: '名字为必填项',
+          nationality: '国籍为必填项',
+          dob: '出生日期为必填项',
+          expiryDate: '护照有效期为必填项',
+          sex: '性别为必填项',
+          occupation: '职业为必填项',
+          cityOfResidence: '居住城市为必填项',
+          residentCountry: '常住国家为必填项',
+          phoneNumber: '手机号码为必填项',
+          email: '电子邮箱为必填项',
+          travelPurpose: '旅行目的为必填项',
+          arrivalDate: '到达日期为必填项',
+          departureDate: '离境日期为必填项',
+          arrivalFlightNumber: '入境航班号为必填项',
+          departureFlightNumber: '离境航班号为必填项',
+          accommodationType: '住宿类型为必填项',
+          province: '省份为必填项',
+          district: '区/县为必填项',
+          subDistrict: '街道/镇为必填项',
+          postalCode: '邮政编码为必填项',
+          hotelAddress: '酒店/住宿地址为必填项',
+          recentStayCountry: '最近停留国家为必填项',
+          boardingCountry: '登机国家为必填项',
+        },
+
+        // 格式验证错误
+        format: {
+          passportNo: '护照号码格式无效（通常为8-9位字母数字组合）',
+          email: '电子邮箱格式无效（例如：example@email.com）',
+          phoneNumber: '手机号码格式无效（8-15位数字）',
+          phoneCode: '电话区号格式无效（例如：+86、+1）',
+          postalCode: '邮政编码格式无效',
+          flightNumber: '航班号格式无效（例如：TG123、CZ456）',
+          uppercaseRequired: '必须使用大写字母',
+          alphanumericOnly: '只允许字母和数字',
+          numbersOnly: '只允许数字',
+        },
+
+        // 长度验证错误
+        length: {
+          passportNoTooShort: '护照号码太短（最少{{min}}位）',
+          passportNoTooLong: '护照号码太长（最多{{max}}位）',
+          phoneNumberTooShort: '手机号码太短（最少{{min}}位）',
+          phoneNumberTooLong: '手机号码太长（最多{{max}}位）',
+          nameTooShort: '姓名太短（最少{{min}}位）',
+          nameTooLong: '姓名太长（最多{{max}}位）',
+          textTooLong: '文本超过最大长度{{max}}个字符',
+        },
+
+        // 日期验证错误
+        date: {
+          invalid: '日期格式无效',
+          pastRequired: '日期必须是过去的日期',
+          futureRequired: '日期必须是未来的日期',
+          passportExpired: '护照已过期',
+          passportExpiringSoon: '护照将在6个月内过期 - 可能被移民局拒绝',
+          dobTooRecent: '出生日期太近（必须至少{{minAge}}岁）',
+          dobTooOld: '出生日期似乎不合理（请检查）',
+          arrivalBeforeDeparture: '到达日期必须在离境日期之前',
+          departureBeforeArrival: '离境日期必须在到达日期之后',
+          arrivalTooFar: '到达日期太遥远（最多{{maxDays}}天）',
+          arrivalTooSoon: '到达日期太接近（最少距离{{minHours}}小时）',
+          stayTooLong: '停留时长超过免签限制（{{maxDays}}天）',
+        },
+
+        // 特定字段警告（非关键）
+        warning: {
+          nameNotUppercase: '姓名应使用护照上显示的大写字母',
+          nameMismatch: '姓名格式可能与护照不符 - 请核实',
+          passportExpiringWithin6Months: '护照将在{{months}}个月后过期 - 部分国家要求6个月以上有效期',
+          emailUncommon: '电子邮箱格式不常见 - 请核实',
+          phoneNumberShort: '手机号码似乎太短 - 请核实',
+          occupationOther: '您选择了"其他" - 请在自定义字段中输入您的职业',
+          cityNotRecognized: '城市无法识别 - 请核实拼写',
+          missingFlightPhoto: '未上传机票照片 - 建议上传以加快处理',
+          missingHotelPhoto: '未上传酒店预订照片 - 建议上传以便核实',
+          transitPassenger: '您已标记为过境旅客 - 住宿详情可能不需要填写',
+        },
+
+        // 照片上传错误
+        photo: {
+          uploadFailed: '照片上传失败 - 请重试',
+          invalidFormat: '照片格式无效 - 请使用JPG、PNG或PDF',
+          fileTooLarge: '照片文件太大（最大{{maxSize}}MB）',
+          permissionDenied: '相机/相册权限被拒绝 - 请在设置中启用',
+          cameraNotAvailable: '此设备无相机功能',
+          processingFailed: '照片处理失败 - 请尝试其他照片',
+        },
+
+        // 地理位置级联错误
+        location: {
+          provinceRequired: '请先选择省份',
+          districtRequired: '请选择区/县',
+          subDistrictRequired: '请选择街道/镇',
+          invalidProvince: '所选省份无效',
+          invalidDistrict: '所选区/县对该省份无效',
+          invalidSubDistrict: '所选街道/镇对该区/县无效',
+          loadingFailed: '加载地理位置数据失败 - 请重试',
+        },
+
+        // 网络/保存错误
+        save: {
+          failed: '保存数据失败 - 请检查网络连接',
+          retrying: '正在重试保存...（{{attempt}}/{{max}}）',
+          offline: '您处于离线状态 - 数据将在连接恢复后保存',
+          conflict: '检测到数据冲突 - 请刷新后重试',
+          timeout: '保存超时 - 请检查互联网连接',
+        },
+
+        // TDAC提交错误
+        submission: {
+          missingRequiredFields: '请在提交前完成所有必填字段',
+          invalidData: '部分数据无效 - 请检查高亮显示的字段',
+          networkError: '网络错误 - 请检查连接后重试',
+          serverError: '服务器错误 - 请稍后重试',
+          cloudflareTimeout: 'Cloudflare验证超时 - 请重试',
+          submissionWindowClosed: '提交窗口已关闭 - 请联系客服',
+          submissionWindowNotOpen: '提交窗口尚未开启 - 请等待至{{openTime}}',
+          duplicateSubmission: '此入境信息已提交过',
+          rateLimitExceeded: '尝试次数过多 - 请等待{{minutes}}分钟',
+        },
       },
     },
     result: {

@@ -92,8 +92,8 @@ const TravelDetailsSection = ({
 
   return (
     <CollapsibleSection
-      title="✈️ 旅行计划"
-      subtitle="告诉泰国你的旅行安排"
+      title={t('thailand.travelInfo.sectionTitles.travel')}
+      subtitle={t('thailand.travelInfo.sectionTitles.travelSubtitle')}
       isExpanded={isExpanded}
       onToggle={onToggle}
       fieldCount={fieldCount}
@@ -102,7 +102,7 @@ const TravelDetailsSection = ({
       <View style={styles.sectionIntro}>
         <Text style={styles.sectionIntroIcon}>✈️</Text>
         <Text style={styles.sectionIntroText}>
-          海关想知道你为什么来泰国、何时来、何时走、在哪里住。这有助于他们确认你是合法游客。
+          {t('thailand.travelInfo.sectionIntros.travel')}
         </Text>
       </View>
 

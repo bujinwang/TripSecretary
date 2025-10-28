@@ -47,7 +47,10 @@
       "Bash(do echo)",
       "Bash(git log:*)",
       "Bash(node scripts/diagnose-travel-info-error.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:docs.expo.dev)"
     ],
     "deny": [],
     "ask": []

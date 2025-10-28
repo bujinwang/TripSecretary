@@ -9,8 +9,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryInfoService from '../../services/EntryInfoService';
+import SecureStorageService from '../../services/security/SecureStorageService';
 import { useTranslation } from '../../i18n/LocaleContext';
 
 export const useQRCodeHandler = ({ passport, route }) => {
@@ -32,8 +34,8 @@ export const useQRCodeHandler = ({ passport, route }) => {
    * @returns {Promise<boolean>} - Success status
    */
   const saveToPhotoAlbum = async (base64Data) => {
-    // Declare filename outside try block so it's accessible in catch block for cleanup
-    let filename = null;
+    // Declare file outside try block so it's accessible in catch block for cleanup
+    let file = null;
 
     try {
       // Request photo album permissions
@@ -47,25 +49,34 @@ export const useQRCodeHandler = ({ passport, route }) => {
         return false;
       }
 
-      // Save base64 image to file system
-      filename = FileSystem.documentDirectory + `tdac_qr_${Date.now()}.png`;
+      // Create temporary file for saving to photo album
+      const tempFilename = `tdac_qr_${Date.now()}.png`;
+      file = new File(FileSystem.documentDirectory + tempFilename);
 
       // Remove base64 prefix if present
       const base64Image = base64Data.split(',')[1] || base64Data;
 
-      await FileSystem.writeAsStringAsync(filename, base64Image, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Decode base64 to Uint8Array for binary image data
+      const binaryString = atob(base64Image);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
 
-      // Save to photo album
-      const asset = await MediaLibrary.createAssetAsync(filename);
+      file.create();
+      file.write(bytes);
+
+      // Save to photo album using the file URI
+      const asset = await MediaLibrary.createAssetAsync(file.uri);
       await MediaLibrary.createAlbumAsync('BorderBuddy', asset, false);
 
       // Clean up temporary file after successful save
       try {
-        await FileSystem.deleteAsync(filename, { idempotent: true });
-        if (__DEV__) {
-          console.log('✅ 临时文件已清理');
+        if (file.exists) {
+          file.delete();
+          if (__DEV__) {
+            console.log('✅ 临时文件已清理');
+          }
         }
       } catch (cleanupError) {
         if (__DEV__) {
@@ -83,11 +94,13 @@ export const useQRCodeHandler = ({ passport, route }) => {
       console.error('保存到相册失败:', error);
 
       // Clean up temporary file even if save operation failed
-      if (filename) {
+      if (file) {
         try {
-          await FileSystem.deleteAsync(filename, { idempotent: true });
-          if (__DEV__) {
-            console.log('✅ 临时文件已清理（错误路径）');
+          if (file.exists) {
+            file.delete();
+            if (__DEV__) {
+              console.log('✅ 临时文件已清理（错误路径）');
+            }
           }
         } catch (cleanupError) {
           // Silently ignore cleanup errors in error path
@@ -143,7 +156,50 @@ export const useQRCodeHandler = ({ passport, route }) => {
         console.log('✅ Recent submission flag set for EntryPackService');
       }
 
-      // 2. Create or update digital arrival card with TDAC submission
+      // 2. Save to digital_arrival_cards table (CRITICAL - must happen regardless of other operations)
+      try {
+        // Get userId from passport or use default
+        const userId = passport?.id || passport?.passportNo || 'user_001';
+        const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
+
+        // Create digital arrival card record in database
+        const dacData = {
+          userId: userId,
+          entryInfoId: entryInfoId,
+          cardType: 'TDAC',
+          destinationId: 'THA',
+          arrCardNo: cardNo,
+          qrUri: qrData.src,
+          pdfUrl: qrData.src, // Using QR image as PDF placeholder
+          submittedAt: new Date().toISOString(),
+          submissionMethod: 'webview',
+          status: 'success',
+          apiResponse: null,
+          processingTime: null,
+          retryCount: 0,
+          errorDetails: null,
+          version: 1
+        };
+
+        await SecureStorageService.initialize(userId);
+        const result = await SecureStorageService.saveDigitalArrivalCard(dacData);
+
+        if (__DEV__) {
+          console.log('✅ Digital arrival card saved to database:', result);
+        }
+      } catch (dacError) {
+        console.error('❌ CRITICAL: Failed to save digital arrival card to database:', dacError);
+        // Log this error prominently as it means the record won't be in digital_arrival_cards
+        if (__DEV__) {
+          Alert.alert(
+            '⚠️ Database Save Error',
+            `Failed to save to digital_arrival_cards table: ${dacError.message}\n\nThe QR code was saved to photos but may not appear in your entry pack.`
+          );
+        }
+        // Don't block user flow - continue with remaining operations
+      }
+
+      // 3. Update entry info (secondary operation, not critical)
       try {
         const tdacSubmission = {
           arrCardNo: cardNo,
@@ -171,7 +227,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
         // Don't block user flow - continue with QR code saving
       }
 
-      // 3. Save to photo album
+      // 4. Save to photo album
       const saved = await saveToPhotoAlbum(qrData.src);
 
       if (saved && isMountedRef.current) {

@@ -54,8 +54,8 @@ const PersonalInfoSection = ({
 
   return (
     <CollapsibleSection
-      title="👤 个人信息"
-      subtitle="泰国需要了解你的基本信息"
+      title={t('thailand.travelInfo.sectionTitles.personal')}
+      subtitle={t('thailand.travelInfo.sectionTitles.personalSubtitle')}
       isExpanded={isExpanded}
       onToggle={onToggle}
       fieldCount={fieldCount}
@@ -64,12 +64,12 @@ const PersonalInfoSection = ({
       <View style={styles.sectionIntro}>
         <Text style={styles.sectionIntroIcon}>📱</Text>
         <Text style={styles.sectionIntroText}>
-          提供你的基本个人信息，包括职业、居住地和联系方式，以便泰国海关了解你的情况。
+          {t('thailand.travelInfo.sectionIntros.personal')}
         </Text>
       </View>
 
       <OccupationSelector
-        label="职业"
+        label={t('thailand.travelInfo.fields.occupation.label')}
         value={occupation}
         onValueChange={(value) => {
           setOccupation(value);
@@ -88,10 +88,10 @@ const PersonalInfoSection = ({
           handleFieldBlur('occupation', finalOccupation);
           debouncedSaveData();
         }}
-        customLabel="请输入您的职业"
-        customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
-        customHelpText="请用英文填写您的职业"
-        helpText={!errors.occupation && warnings.occupation ? warnings.occupation : "请选择您的职业"}
+        customLabel={t('thailand.travelInfo.fields.occupation.label')}
+        customPlaceholder="e.g., ACCOUNTANT, ENGINEER"
+        customHelpText={t('thailand.travelInfo.fields.occupation.help')}
+        helpText={!errors.occupation && warnings.occupation ? warnings.occupation : t('thailand.travelInfo.fields.occupation.help')}
         error={!!errors.occupation}
         errorMessage={errors.occupation}
       />
@@ -115,21 +115,21 @@ const PersonalInfoSection = ({
       />
 
       <NationalitySelector
-        label="居住国家"
+        label={t('thailand.travelInfo.fields.residentCountry.label')}
         value={residentCountry}
         onValueChange={(code) => {
           setResidentCountry(code);
           setPhoneCode(getPhoneCode(code));
           debouncedSaveData();
         }}
-        helpText="请选择您居住的国家"
+        helpText={t('thailand.travelInfo.fields.residentCountry.help')}
         error={!!errors.residentCountry}
         errorMessage={errors.residentCountry}
       />
 
       <View style={styles.phoneInputContainer}>
         <Input
-          label="国家代码"
+          label={t('thailand.travelInfo.fields.phoneCode.label')}
           value={phoneCode}
           onChangeText={setPhoneCode}
           onBlur={() => handleFieldBlur('phoneCode', phoneCode)}
@@ -140,12 +140,12 @@ const PersonalInfoSection = ({
           style={styles.phoneCodeInput}
         />
         <Input
-          label="电话号码"
+          label={t('thailand.travelInfo.fields.phoneNumber.label')}
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           onBlur={() => handleFieldBlur('phoneNumber', phoneNumber)}
           keyboardType="phone-pad"
-          helpText="请输入您的电话号码"
+          helpText={t('thailand.travelInfo.fields.phoneNumber.help')}
           error={!!errors.phoneNumber}
           errorMessage={errors.phoneNumber}
           style={styles.phoneInput}
@@ -153,12 +153,12 @@ const PersonalInfoSection = ({
       </View>
 
       <InputWithValidation
-        label="电子邮箱"
+        label={t('thailand.travelInfo.fields.email.label')}
         value={email}
         onChangeText={setEmail}
         onBlur={() => handleFieldBlur('email', email)}
         keyboardType="email-address"
-        helpText="请输入您的电子邮箱地址"
+        helpText={t('thailand.travelInfo.fields.email.help')}
         error={!!errors.email}
         errorMessage={errors.email}
         warning={!!warnings.email}

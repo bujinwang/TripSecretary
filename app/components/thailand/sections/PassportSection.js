@@ -66,8 +66,8 @@ const PassportSection = ({
 
   return (
     <CollapsibleSection
-      title="👤 护照信息"
-      subtitle="泰国海关需要核实你的身份"
+      title={t('thailand.travelInfo.sectionTitles.passport')}
+      subtitle={t('thailand.travelInfo.sectionTitles.passportSubtitle')}
       isExpanded={isExpanded}
       onToggle={onToggle}
       fieldCount={fieldCount}
@@ -76,13 +76,13 @@ const PassportSection = ({
       <View style={styles.sectionIntro}>
         <Text style={styles.sectionIntroIcon}>🛂</Text>
         <Text style={styles.sectionIntroText}>
-          海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！
+          {t('thailand.travelInfo.sectionIntros.passport')}
         </Text>
       </View>
 
       <View style={styles.inputWithValidationContainer}>
         <View style={styles.inputLabelContainer}>
-          <Text style={styles.inputLabel}>护照上的姓名</Text>
+          <Text style={styles.inputLabel}>{t('thailand.travelInfo.fields.passportName.label')}</Text>
           <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!errors.fullName} />
         </View>
         <PassportNameInput
@@ -93,7 +93,7 @@ const PassportSection = ({
           onMiddleNameChange={setMiddleName}
           onGivenNameChange={setGivenName}
           onBlur={() => handleFieldBlur('fullName', [surname, middleName, givenName].filter(Boolean).join(', '))}
-          helpText="填写护照上显示的英文姓名，例如：LI, MAO（姓在前，名在后）"
+          helpText={t('thailand.travelInfo.fields.passportName.help')}
           error={!!errors.fullName}
           errorMessage={errors.fullName}
         />
@@ -103,23 +103,23 @@ const PassportSection = ({
       </View>
 
       <NationalitySelector
-        label="国籍"
+        label={t('thailand.travelInfo.fields.nationality.label')}
         value={nationality}
         onValueChange={(code) => {
           setNationality(code);
           debouncedSaveData();
         }}
-        helpText="请选择您的国籍"
+        helpText={t('thailand.travelInfo.fields.nationality.help')}
         error={!!errors.nationality}
         errorMessage={errors.nationality}
       />
 
       <InputWithValidation
-        label="护照号码"
+        label={t('thailand.travelInfo.fields.passportNo.label')}
         value={passportNo}
         onChangeText={setPassportNo}
         onBlur={() => handleFieldBlur('passportNo', passportNo)}
-        helpText="护照号码通常是8-9位字母和数字的组合，输入时会自动转大写"
+        helpText={t('thailand.travelInfo.fields.passportNo.help')}
         error={!!errors.passportNo}
         errorMessage={errors.passportNo}
         warning={!!warnings.passportNo}
@@ -130,11 +130,11 @@ const PassportSection = ({
       />
 
       <InputWithValidation
-        label="签证号（如有）"
+        label={t('thailand.travelInfo.fields.visaNumber.label')}
         value={visaNumber}
         onChangeText={(text) => setVisaNumber(text.toUpperCase())}
         onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
-        helpText="如有签证，请填写签证号码（仅限字母或数字）"
+        helpText={t('thailand.travelInfo.fields.visaNumber.help')}
         error={!!errors.visaNumber}
         errorMessage={errors.visaNumber}
         warning={!!warnings.visaNumber}
@@ -148,7 +148,7 @@ const PassportSection = ({
       />
 
       <DateTimeInput
-        label="出生日期"
+        label={t('thailand.travelInfo.fields.dob.label')}
         value={dob}
         onChangeText={(newValue) => {
           setDob(newValue);
@@ -156,13 +156,13 @@ const PassportSection = ({
         }}
         mode="date"
         dateType="past"
-        helpText="选择出生日期"
+        helpText={t('thailand.travelInfo.fields.dob.help')}
         error={!!errors.dob}
         errorMessage={errors.dob}
       />
 
       <DateTimeInput
-        label="护照有效期"
+        label={t('thailand.travelInfo.fields.expiryDate.label')}
         value={expiryDate}
         onChangeText={(newValue) => {
           setExpiryDate(newValue);
@@ -170,13 +170,13 @@ const PassportSection = ({
         }}
         mode="date"
         dateType="future"
-        helpText="选择护照有效期"
+        helpText={t('thailand.travelInfo.fields.expiryDate.help')}
         error={!!errors.expiryDate}
         errorMessage={errors.expiryDate}
       />
 
       <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>性别</Text>
+        <Text style={styles.fieldLabel}>{t('thailand.travelInfo.fields.sex.label')}</Text>
         <GenderSelector
           value={sex}
           onChange={handleGenderChange}

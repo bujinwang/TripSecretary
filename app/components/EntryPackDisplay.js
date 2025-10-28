@@ -703,17 +703,6 @@ const EntryPackDisplay = ({
               <Text style={styles.placeholderTitle}>
                 {placeholderTitles[country] || placeholderTitles.thailand}
               </Text>
-              <Text style={styles.placeholderDescription}>
-                {placeholderDescriptions[country] || placeholderDescriptions.thailand}
-              </Text>
-              <View style={styles.qrPlaceholder}>
-                <Text style={styles.qrPlaceholderText}>
-                  {qrPlaceholderTexts[country] || qrPlaceholderTexts.thailand}
-                </Text>
-              </View>
-              <Text style={styles.placeholderNote}>
-                {placeholderNotes[country] || placeholderNotes.thailand}
-              </Text>
             </View>
 
             {/* Show sample PDF preview for Thailand */}
