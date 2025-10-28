@@ -9,6 +9,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { colors, spacing } from '../../../theme';
 import OptimizedImage from '../../../components/OptimizedImage';
+import { getFullName as getFullNameHelper, safeString } from '../helpers';
 
 /**
  * Passport Information Section Component
@@ -21,22 +22,26 @@ import OptimizedImage from '../../../components/OptimizedImage';
  */
 const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }) => {
   /**
-   * Safely get full name from passport data
+   * Safely get full name from passport data using centralized helper
    */
   const getFullName = () => {
     if (!passportData) return 'N/A';
 
+    // If fullName is already provided, use it
     if (passportData.fullName) {
       return passportData.fullName;
     }
 
-    const parts = [
-      passportData.firstName,
-      passportData.middleName,
-      passportData.lastName,
-    ].filter(Boolean);
+    // Otherwise construct from individual parts using helper
+    // Note: Helper expects surname, middleName, givenName
+    // but data might have firstName, middleName, lastName
+    const nameData = {
+      surname: passportData.lastName || passportData.surname,
+      middleName: passportData.middleName,
+      givenName: passportData.firstName || passportData.givenName,
+    };
 
-    return parts.join(' ') || 'N/A';
+    return getFullNameHelper(nameData, 'N/A');
   };
 
   const getLabel = (englishKey, thaiText) => {

@@ -10,6 +10,7 @@ import { View, Text, TouchableOpacity, Alert, StyleSheet, Platform } from 'react
 import { colors, spacing } from '../../../theme';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../../utils/currencyConverter';
 import OptimizedImage from '../../../components/OptimizedImage';
+import { formatCurrency as formatCurrencyHelper, safeArray } from '../helpers';
 
 /**
  * Funds Information Section Component
@@ -31,16 +32,12 @@ const FundsInfoSection = ({ fundData, language, t }) => {
   };
 
   const formatCurrency = (amount, currency) => {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(amount);
-    } catch (error) {
-      return `${amount} ${currency}`;
-    }
+    // Use centralized helper with no decimals for cleaner display
+    return formatCurrencyHelper(amount, currency, {
+      decimals: 0,
+      showSymbol: true,
+      defaultValue: `${amount || 0} ${currency || ''}`,
+    });
   };
 
   const formatAmount = (amount) => {
