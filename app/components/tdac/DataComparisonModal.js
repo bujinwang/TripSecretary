@@ -7,7 +7,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { View, Text, Modal, SafeAreaView, ScrollView, TouchableOpacity, Alert, Clipboard } from 'react-native';
+import { View, Text, Modal, ScrollView, TouchableOpacity, Alert, Clipboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
 
 const DataComparisonModal = ({ visible, onClose, comparisonData, onRefresh }) => {

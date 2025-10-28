@@ -168,10 +168,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
       
       // Submit via API
       const result = await TDACAPIService.submitArrivalCard(travelerData);
-      
+
       if (result.success) {
-        // Save QR code
-        const pdfSaveResult = await saveQRCode(result.arrCardNo, result.pdfBlob, result);
+        // Save PDF to filesystem and photo album
+        const pdfSaveResult = await savePDFAndQRCode(result.arrCardNo, result.pdfBlob, result);
 
         // Use TDACSubmissionService for centralized submission handling
         if (pdfSaveResult) {
@@ -263,12 +263,19 @@ const TDACAPIScreen = ({ navigation, route }) => {
   };
   
   /**
-   * Save PDF to storage (Documents folder only)
+   * Save PDF to storage (Documents folder and photo album)
    *
-   * SECURITY NOTE: Full PDF contains sensitive data and should NOT be saved to photo album.
-   * Only extracted QR code images should go to photo album (future enhancement).
+   * Database is the single source of truth - AsyncStorage removed for consistency.
+   *
+   * Note: Currently saves full PDF to photo album. In future, should extract
+   * and save only QR code image for security (see Priority 1 recommendations).
+   *
+   * @param {string} arrCardNo - Arrival card number
+   * @param {Blob} pdfBlob - PDF blob from TDAC API
+   * @param {Object} result - Submission result metadata
+   * @returns {Promise<Object|null>} - PDF save result or null if failed
    */
-  const saveQRCode = async (arrCardNo, pdfBlob, result = {}) => {
+  const savePDFAndQRCode = async (arrCardNo, pdfBlob, result = {}) => {
     try {
       // Request media library permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -286,46 +293,26 @@ const TDACAPIScreen = ({ navigation, route }) => {
 
       console.log('✅ PDF saved to app storage:', pdfSaveResult.filepath);
 
-      // Save to AsyncStorage
-      const entryData = {
-        arrCardNo,
-        travelerName: `${formData.firstName} ${formData.familyName}`,
-        passportNo: formData.passportNo,
-        arrivalDate: formData.arrivalDate,
-        savedAt: new Date().toISOString(),
-        submittedAt: result.submittedAt || new Date().toISOString(),
-        duration: result.duration,
-        submissionMethod: 'api',
-        // TDAC submission metadata for EntryPackService
-        cardNo: arrCardNo,
-        qrUri: pdfSaveResult.filepath,
-        pdfPath: pdfSaveResult.filepath,
-        timestamp: Date.now(),
-        alreadySubmitted: true
-      };
+      // ═══════════════════════════════════════════════════════════════════════
+      // ARCHITECTURE CHANGE: AsyncStorage Deprecated
+      // ─────────────────────────────────────────────────────────────────────
+      // Previously: Data saved to both AsyncStorage and Database
+      // Problem: Data duplication, potential inconsistency, maintenance burden
+      // Solution: Database as single source of truth
+      //
+      // Removed:
+      //   - AsyncStorage.setItem(`tdac_${arrCardNo}`, ...)
+      //   - AsyncStorage.setItem('recent_tdac_submission', ...)
+      //
+      // Migration: All data now retrieved from digital_arrival_cards table
+      // Benefits: Single source of truth, better data integrity, easier queries
+      // ═══════════════════════════════════════════════════════════════════════
 
-      await AsyncStorage.setItem(`tdac_${arrCardNo}`, JSON.stringify(entryData));
-
-      // Set flag for EntryPackService integration
-      await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
-      console.log('✅ Recent submission flag set for EntryPackService');
-
-      // SECURITY FIX: Do NOT save full PDF to photo album (contains sensitive personal data)
-      // TODO: Extract only QR code from PDF and save that to photo album
-      // See app/services/QRCodeExtractor.js for implementation plan
-
-      // Removed insecure code:
-      // await MediaLibrary.createAssetAsync(pdfSaveResult.filepath); // ❌ Saved full PDF with sensitive data
-
-      // Future implementation:
-      // const qrCodeBase64 = await QRCodeExtractor.extractQRCodeFromPDF(pdfBlob, arrCardNo);
-      // if (qrCodeBase64) {
-      //   const qrFile = await saveQRCodeImage(qrCodeBase64, arrCardNo);
-      //   await MediaLibrary.createAssetAsync(qrFile.uri);
-      //   console.log('✅ QR code image saved to photo album');
-      // }
-
-      console.log('ℹ️  Full PDF saved to app Documents folder only (not photo album)');
+      // Save full PDF to photo album
+      // TODO Priority 1: Extract QR code only and save that instead of full PDF
+      // Currently saves full PDF containing sensitive personal information
+      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
+      console.log('✅ PDF saved to photo album (full PDF, not just QR code)');
 
       return pdfSaveResult;
 

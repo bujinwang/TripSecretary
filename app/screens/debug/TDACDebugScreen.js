@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ConnectivityTestRunner from '../../components/ConnectivityTestRunner';
 import SimpleTDACTest from '../../components/SimpleTDACTest';
 

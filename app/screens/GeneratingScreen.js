@@ -4,10 +4,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
 

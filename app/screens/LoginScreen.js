@@ -4,11 +4,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Animated,
-  Dimensions
+  Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Button from '../components/Button';
 import { colors, typography, spacing } from '../theme';

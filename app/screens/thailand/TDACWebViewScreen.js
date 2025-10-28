@@ -3,7 +3,6 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   Clipboard,
@@ -15,6 +14,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { useTranslation } from '../../i18n/LocaleContext';
 import * as MediaLibrary from 'expo-media-library';

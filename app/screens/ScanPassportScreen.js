@@ -4,12 +4,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import Button from '../components/Button';

@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Platform,
   UIManager,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../../components/BackButton';
 import CollapsibleSection from '../../components/CollapsibleSection';
 import PassportNameInput from '../../components/PassportNameInput';

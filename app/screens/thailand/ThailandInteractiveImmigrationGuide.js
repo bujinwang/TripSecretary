@@ -4,12 +4,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
   Vibration,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';

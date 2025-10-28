@@ -4,13 +4,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Platform,
   UIManager,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
 import FundItemDetailModal from '../../components/FundItemDetailModal';

@@ -8,12 +8,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import Button from '../components/Button';

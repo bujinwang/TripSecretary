@@ -15,13 +15,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
   RefreshControl,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import NotificationService from '../services/notification/NotificationService';
 import NotificationCoordinator from '../services/notification/NotificationCoordinator';

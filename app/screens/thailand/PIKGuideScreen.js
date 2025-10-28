@@ -4,11 +4,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import BackButton from '../../components/BackButton';

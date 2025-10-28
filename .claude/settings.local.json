@@ -50,7 +50,9 @@
       "Bash(node:*)",
       "Bash(python3:*)",
       "Bash(find:*)",
-      "WebFetch(domain:docs.expo.dev)"
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(npx expo install expo-image-manipulator)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

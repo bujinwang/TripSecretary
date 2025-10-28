@@ -74,12 +74,14 @@ class TDACSubmissionService {
 
       if (entryInfoId) {
         // Create or update digital arrival card
+        // Note: Currently qrUri and pdfUrl both point to PDF file path
+        // Future: qrUri should point to extracted QR image, pdfUrl to full PDF
         const digitalArrivalCard = await UserDataService.saveDigitalArrivalCard({
           entryInfoId: entryInfoId,
           cardType: 'TDAC',
           arrCardNo: tdacSubmission.arrCardNo,
-          qrUri: tdacSubmission.qrUri,
-          pdfUrl: tdacSubmission.pdfPath,
+          qrUri: tdacSubmission.qrUri,        // Currently: PDF path (should be QR image)
+          pdfUrl: tdacSubmission.pdfPath,     // Correctly: Full PDF path
           submittedAt: tdacSubmission.submittedAt,
           submissionMethod: tdacSubmission.submissionMethod,
           status: 'success'
@@ -148,12 +150,23 @@ class TDACSubmissionService {
    *
    * @param {Object} submissionData - Raw submission data from TDAC API
    * @returns {Object} Standardized TDAC submission metadata
+   *
+   * Field Clarification:
+   * - qrUri: Currently set to PDF path, but SHOULD be QR code image path
+   * - pdfPath: Full PDF document path (correct usage)
+   *
+   * TODO: Once QR extraction is implemented, qrUri should point to extracted
+   * QR image (e.g., Documents/tdac/QR_TH12345_timestamp.png), not PDF.
    */
   static extractTDACSubmissionMetadata(submissionData) {
+    // Extract PDF path
+    const pdfPath = submissionData.pdfPath || submissionData.fileUri;
+
     return {
       arrCardNo: submissionData.arrCardNo || submissionData.cardNo,
-      qrUri: submissionData.qrUri || submissionData.fileUri || submissionData.src,
-      pdfPath: submissionData.pdfPath || submissionData.fileUri,
+      // TODO: Once QR extraction implemented, qrUri should be separate QR image path
+      qrUri: submissionData.qrUri || pdfPath || submissionData.src,  // Currently same as PDF
+      pdfPath: pdfPath,  // Full PDF document path
       submittedAt: submissionData.submittedAt || submissionData.timestamp
         ? new Date(submissionData.submittedAt || submissionData.timestamp).toISOString()
         : new Date().toISOString(),

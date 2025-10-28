@@ -4,11 +4,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   Vibration,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import UserDataService from '../services/data/UserDataService';
 

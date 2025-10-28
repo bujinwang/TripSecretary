@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   LayoutAnimation,
@@ -12,6 +11,7 @@ import {
   UIManager,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import Input from '../../components/Input';

@@ -4,10 +4,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../components/Card';
 import { colors, typography, spacing } from '../theme';
 import { useLocale } from '../i18n/LocaleContext';

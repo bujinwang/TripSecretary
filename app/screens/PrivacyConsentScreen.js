@@ -8,11 +8,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';

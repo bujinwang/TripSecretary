@@ -5,7 +5,6 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Modal,
@@ -13,6 +12,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation, useLocale, getLanguageOptions } from '../i18n/LocaleContext';

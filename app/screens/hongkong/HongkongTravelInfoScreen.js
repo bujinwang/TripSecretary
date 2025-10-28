@@ -3,13 +3,13 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import {
   View,
-  SafeAreaView,
   ScrollView,
   Platform,
   UIManager,
   Alert,
   Text,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';

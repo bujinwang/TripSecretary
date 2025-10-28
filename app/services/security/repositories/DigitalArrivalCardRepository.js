@@ -4,6 +4,14 @@
  *
  * Handles all database operations for digital arrival cards including
  * CRUD operations, queries, and submission tracking.
+ *
+ * Field Usage Clarification:
+ * - qrUri: Currently stores PDF path, but SHOULD store QR code image path
+ * - pdfUrl: Stores full PDF document path (correct usage)
+ *
+ * When QR extraction is implemented:
+ * - qrUri: file:///.../Documents/tdac/QR_TH12345_timestamp.png
+ * - pdfUrl: file:///.../Documents/tdac/TDAC_TH12345_timestamp.pdf
  */
 
 import DataSerializer from '../utils/DataSerializer';
@@ -17,7 +25,10 @@ class DigitalArrivalCardRepository {
 
   /**
    * Save or update a digital arrival card record
+   *
    * @param {Object} dacData - Digital arrival card data to save
+   * @param {string} dacData.qrUri - QR code URI (currently PDF path, should be QR image)
+   * @param {string} dacData.pdfUrl - Full PDF document path
    * @returns {Promise<Object>} - Saved digital arrival card record
    */
   async save(dacData) {

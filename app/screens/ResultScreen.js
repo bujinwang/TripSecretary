@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
@@ -14,6 +13,7 @@ import {
   Clipboard,
   Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
 import { colors, typography, spacing, borderRadius, shadows, touchable } from '../theme';

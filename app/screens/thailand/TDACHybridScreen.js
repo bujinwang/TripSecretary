@@ -23,8 +23,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  SafeAreaView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import TDACAPIService from '../../services/TDACAPIService';
 import CloudflareTokenExtractor from '../../services/CloudflareTokenExtractor';
@@ -186,14 +186,19 @@ const TDACHybridScreen = ({ navigation, route }) => {
       // 🔍 DETAILED LOGGING: Log all submission data and field mappings
       await TDACSubmissionLogger.logHybridSubmission(travelerData, token);
 
-      // 🛑 MANUAL CONFIRMATION: Show confirmation dialog before final submission
-      const shouldProceed = await showSubmissionConfirmation(travelerData);
-      
-      if (!shouldProceed) {
-        console.log('❌ User cancelled submission');
-        setStage('error');
-        setProgress('用户取消提交');
-        return;
+      // 🛑 MANUAL CONFIRMATION: Show confirmation dialog in development mode only
+      // In production, submit directly without user confirmation
+      if (__DEV__) {
+        const shouldProceed = await showSubmissionConfirmation(travelerData);
+
+        if (!shouldProceed) {
+          console.log('❌ User cancelled submission (dev mode)');
+          setStage('error');
+          setProgress('用户取消提交');
+          return;
+        }
+      } else {
+        console.log('✅ Auto-proceeding with submission (production mode)');
       }
 
       // Submit with progress updates
@@ -885,8 +890,11 @@ const styles = StyleSheet.create({
 
 
 /**
- * 🛑 MANUAL CONFIRMATION: Show detailed confirmation dialog
+ * 🛑 MANUAL CONFIRMATION: Show detailed confirmation dialog (DEV MODE ONLY)
  * 显示详细的确认对话框，让用户手动确认提交
+ *
+ * This is a debugging tool - only shown in development mode (__DEV__ = true)
+ * In production, submission proceeds automatically without user confirmation
  */
 const showSubmissionConfirmation = (travelerData) => {
   return new Promise((resolve) => {
@@ -962,7 +970,8 @@ const showSubmissionConfirmation = (travelerData) => {
 };
 
 /**
- * 显示更详细的日志信息
+ * 显示更详细的日志信息 (DEV MODE ONLY)
+ * Show detailed JSON payload preview for debugging
  */
 const showDetailedLog = (travelerData, resolve) => {
   // Create JSON payload for verification

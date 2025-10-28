@@ -4,10 +4,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { activateKeepAwakeAsync, deactivateKeepAwakeAsync } from 'expo-keep-awake';
 import Card from '../components/Card';
 import BackButton from '../components/BackButton';

@@ -9,9 +9,9 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   TextInput,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { getDistrictsByProvince } from '../data/thailandLocations';
 import { useLocale } from '../i18n/LocaleContext';

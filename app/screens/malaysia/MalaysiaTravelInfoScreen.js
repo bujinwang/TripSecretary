@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   View,
-  SafeAreaView,
   ScrollView,
   Platform,
   UIManager,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
