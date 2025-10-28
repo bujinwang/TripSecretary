@@ -25,6 +25,9 @@ export type { CollapsibleSectionProps } from './CollapsibleSection';
 export { ProgressOverviewCard } from './ProgressOverviewCard';
 export type { ProgressOverviewCardProps, ProgressSection } from './ProgressOverviewCard';
 
+// Selector Components
+export { default as BaseSearchableSelector } from './BaseSearchableSelector';
+
 // Re-export commonly used Tamagui primitives for convenience
 export {
   YStack,
@@ -36,5 +39,6 @@ export {
   ScrollView,
   Separator,
   Spinner,
+  Input,
   useTheme,
 } from 'tamagui';
