@@ -355,6 +355,12 @@ const ProfileScreen = ({ navigation, route }) => {
             title: 'Notification Testing',
             subtitle: 'Test and debug notification system',
           },
+          {
+            id: 'tamaguiTest',
+            icon: '🎨',
+            title: 'Tamagui Test',
+            subtitle: 'View Tamagui design system components',
+          },
         ],
       }] : []),
     ],
@@ -401,6 +407,8 @@ const ProfileScreen = ({ navigation, route }) => {
       handleExportData();
     } else if (itemId === 'notificationTest') {
       navigation.navigate('NotificationTest');
+    } else if (itemId === 'tamaguiTest') {
+      navigation.navigate('TamaguiTest');
     }
     // TODO: Navigate to other screens
   };
