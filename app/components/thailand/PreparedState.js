@@ -101,8 +101,8 @@ const PreparedState = ({
                 <Text style={styles.quickActionIcon}>👥</Text>
               </View>
               <View style={styles.quickActionContent}>
-                <Text style={styles.quickActionTitle}>找泰友帮忙修改</Text>
-                <Text style={styles.quickActionSubtitle}>分享给亲友帮忙检查</Text>
+                <Text style={styles.quickActionTitle}>找亲友帮忙修改</Text>
+                <Text style={styles.quickActionSubtitle}>分享给亲友帮忙修改</Text>
               </View>
               <Text style={styles.quickActionArrow}>›</Text>
             </TouchableOpacity>

@@ -123,6 +123,9 @@ export const useThailandDataPersistence = ({
   // Refresh fund items from database
   const refreshFundItems = useCallback(async (options = {}) => {
     try {
+      // Ensure UserDataService is initialized before accessing data
+      await UserDataService.initialize(userId);
+
       const fundItems = await UserDataService.getFundItems(userId, options);
       const normalized = fundItems.map(normalizeFundItem);
       setFunds(normalized);
@@ -139,6 +142,9 @@ export const useThailandDataPersistence = ({
         console.log('Entry info already initialized');
         return;
       }
+
+      // Ensure UserDataService is initialized before accessing data
+      await UserDataService.initialize(userId);
 
       const destinationId = destination?.id || 'thailand';
       console.log('🔍 Initializing entry info for destination:', destinationId);
@@ -485,6 +491,9 @@ export const useThailandDataPersistence = ({
     try {
       console.log('=== LOADING DATA FROM DATABASE ===');
       setIsLoading(true);
+
+      // Initialize UserDataService (ensures database is ready)
+      await UserDataService.initialize(userId);
 
       // Load passport data
       const passportInfo = await UserDataService.getPassport(userId);

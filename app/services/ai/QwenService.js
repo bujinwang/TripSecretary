@@ -1,5 +1,5 @@
 // QwenService - Alibaba DashScope integration for the BorderBuddy AI assistant
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import SecureTokenService from '../security/SecureTokenService';
 
 const DEFAULT_MODEL = 'qwen-turbo';
 const DASH_SCOPE_URL =
@@ -19,7 +19,18 @@ class QwenService {
     }
 
     try {
-      this.apiKey = await AsyncStorage.getItem('qwen_api_key');
+      // SECURITY MIGRATION: Migrate from AsyncStorage to SecureStore (one-time)
+      const migrated = await SecureTokenService.migrateFromAsyncStorage(
+        'qwen_api_key',
+        SecureTokenService.QWEN_API_KEY
+      );
+
+      if (migrated) {
+        console.log('✅ Qwen API key migrated from AsyncStorage to SecureStore');
+      }
+
+      // Load API key from secure storage
+      this.apiKey = await SecureTokenService.getQwenAPIKey();
     } catch (error) {
       console.warn('QwenService: failed to load stored API key', error);
     } finally {
@@ -32,9 +43,10 @@ class QwenService {
 
     try {
       if (apiKey) {
-        await AsyncStorage.setItem('qwen_api_key', apiKey);
+        // SECURITY: Use SecureStore instead of AsyncStorage for API keys
+        await SecureTokenService.saveQwenAPIKey(apiKey);
       } else {
-        await AsyncStorage.removeItem('qwen_api_key');
+        await SecureTokenService.deleteQwenAPIKey();
       }
     } catch (error) {
       console.warn('QwenService: failed to persist API key', error);

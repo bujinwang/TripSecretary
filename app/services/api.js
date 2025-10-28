@@ -1,5 +1,5 @@
 // API Client Service for BorderBuddy
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import SecureTokenService from './security/SecureTokenService';
 
 const API_BASE_URL = __DEV__ 
   ? 'http://localhost:8787' 
@@ -12,7 +12,18 @@ class ApiClient {
 
   async initialize() {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
+      // SECURITY MIGRATION: Migrate from AsyncStorage to SecureStore (one-time)
+      const migrated = await SecureTokenService.migrateFromAsyncStorage(
+        'auth_token',
+        SecureTokenService.AUTH_TOKEN_KEY
+      );
+
+      if (migrated) {
+        console.log('✅ Auth token migrated from AsyncStorage to SecureStore');
+      }
+
+      // Load token from secure storage
+      const token = await SecureTokenService.getAuthToken();
       if (token) {
         this.token = token;
       }
@@ -24,7 +35,8 @@ class ApiClient {
   async setToken(token) {
     this.token = token;
     try {
-      await AsyncStorage.setItem('auth_token', token);
+      // SECURITY: Use SecureStore instead of AsyncStorage
+      await SecureTokenService.saveAuthToken(token);
     } catch (error) {
       console.error('Failed to save auth token:', error);
     }
@@ -33,7 +45,8 @@ class ApiClient {
   async clearToken() {
     this.token = null;
     try {
-      await AsyncStorage.removeItem('auth_token');
+      // SECURITY: Use SecureStore instead of AsyncStorage
+      await SecureTokenService.deleteAuthToken();
     } catch (error) {
       console.error('Failed to clear auth token:', error);
     }
