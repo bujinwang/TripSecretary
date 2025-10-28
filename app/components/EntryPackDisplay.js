@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Modal, Image } from 'react-native';
+import React, { useMemo, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Modal, Image, Platform } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import TDACInfoCard from './TDACInfoCard';
+import PDFViewer from './PDFViewer';
+import { SAMPLE_THAILAND_ARRIVAL_CARD_PDF_BASE64 } from '../assets/samplePdfBase64';
 import { thailandProvinces } from '../data/thailandProvinces';
 import { hongkongDistricts, getAllDistricts } from '../data/hongkongLocations';
 import { calculateTotalFundsForCountry } from '../utils/currencyConverter';
@@ -639,16 +641,59 @@ const EntryPackDisplay = ({
       hongkong: '可以向入境處人員出示此資料包 / You can show this entry pack to immigration officer'
     };
 
+    const pdfDocumentTitle = {
+      thailand: '📄 เอกสาร TDAC / TDAC Document',
+      malaysia: '📄 MDAC Document / Dokumen MDAC',
+      singapore: '📄 SGAC Document / 新加坡入境卡文件',
+      usa: '📄 I-94 Document / I-94文件',
+      japan: '📄 入国カード / Entry Card Document',
+      hongkong: '📄 入境文件 / Entry Document'
+    };
+
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
 
         {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
-          <TDACInfoCard
-            tdacSubmission={entryPack.tdacSubmission}
-            isReadOnly={true}
-            country={country}
-          />
+          <>
+            <TDACInfoCard
+              tdacSubmission={entryPack.tdacSubmission}
+              isReadOnly={true}
+              country={country}
+            />
+
+            {/* PDF Viewer Section */}
+            {(entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath) && (
+              <View style={styles.pdfContainer}>
+                <Text style={styles.pdfTitle}>
+                  {pdfDocumentTitle[country] || pdfDocumentTitle.thailand}
+                </Text>
+                <Text style={styles.pdfHint}>
+                  {country === 'thailand'
+                    ? 'เลื่อนดูทุกหน้าของเอกสาร / Scroll to view all pages'
+                    : country === 'malaysia'
+                    ? 'Scroll to view all pages / Tatal untuk melihat semua halaman'
+                    : country === 'singapore' || country === 'usa'
+                    ? 'Scroll to view all pages / 滚动查看所有页面'
+                    : country === 'hongkong'
+                    ? '滾動查看所有頁面 / Scroll to view all pages'
+                    : country === 'japan'
+                    ? 'スクロールしてすべてのページを表示 / Scroll to view all pages'
+                    : 'Scroll to view all pages'}
+                </Text>
+                <PDFViewer
+                  source={{
+                    uri: entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath
+                  }}
+                  style={styles.pdfViewer}
+                  showPageIndicator={true}
+                  onError={(error) => {
+                    console.error('PDF display error:', error);
+                  }}
+                />
+              </View>
+            )}
+          </>
         ) : (
           <>
             <View style={styles.tdacPlaceholder}>
@@ -670,9 +715,48 @@ const EntryPackDisplay = ({
                 {placeholderNotes[country] || placeholderNotes.thailand}
               </Text>
             </View>
-            <Text style={styles.placeholderNote}>
-              {placeholderNotes[country] || placeholderNotes.thailand}
-            </Text>
+
+            {/* Show sample PDF preview for Thailand */}
+            {country === 'thailand' && (
+              <View style={styles.samplePdfContainer}>
+                <View style={styles.samplePdfHeader}>
+                  <Text style={styles.samplePdfTitle}>
+                    📄 ตัวอย่างเอกสาร TDAC / Sample TDAC Document
+                  </Text>
+                  <Text style={styles.samplePdfSubtitle}>
+                    เอกสารตัวอย่างเพื่อให้ทราบรูปแบบที่จะได้รับหลังจากส่งฟอร์ม
+                  </Text>
+                  <Text style={styles.samplePdfSubtitle}>
+                    Sample document showing the format you'll receive after submission
+                  </Text>
+                </View>
+
+                {/* PDF Preview with Watermark */}
+                <PDFViewer
+                  source={{ base64: SAMPLE_THAILAND_ARRIVAL_CARD_PDF_BASE64 }}
+                  style={styles.samplePdfViewer}
+                  showPageIndicator={true}
+                  showWatermark={true}
+                  watermarkText="SAMPLE / ตัวอย่าง"
+                  onError={(error) => {
+                    console.error('Sample PDF display error:', error);
+                  }}
+                />
+
+                <View style={styles.pdfInfoHint}>
+                  <Text style={styles.pdfInfoText}>
+                    ℹ️ This is a 2-page PDF. Scroll within the document to see page 2.
+                  </Text>
+                </View>
+
+                <Text style={styles.samplePdfFooter}>
+                  ⚠️ นี่เป็นเอกสารตัวอย่างเท่านั้น กรุณาส่งฟอร์ม TDAC เพื่อรับเอกสารจริง
+                </Text>
+                <Text style={styles.samplePdfFooter}>
+                  ⚠️ This is a sample document only. Please submit TDAC form to get actual document.
+                </Text>
+              </View>
+            )}
           </>
         )}
       </View>
@@ -1274,6 +1358,94 @@ const styles = StyleSheet.create({
     color: colors.warning,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  pdfContainer: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: spacing.md,
+    minHeight: 600,
+  },
+  pdfTitle: {
+    ...typography.body,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  pdfHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  pdfViewer: {
+    height: 700,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+  },
+  samplePdfContainer: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: spacing.md,
+    borderWidth: 2,
+    borderColor: '#ff9800',
+    borderStyle: 'dashed',
+  },
+  samplePdfHeader: {
+    marginBottom: spacing.md,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  samplePdfTitle: {
+    ...typography.body,
+    color: '#ff9800',
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  samplePdfSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: spacing.xs / 2,
+    lineHeight: 16,
+  },
+  samplePdfViewer: {
+    height: 600,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+    marginBottom: spacing.md,
+  },
+  pdfInfoHint: {
+    backgroundColor: colors.info || '#e3f2fd',
+    padding: spacing.sm,
+    borderRadius: 8,
+    marginVertical: spacing.sm,
+  },
+  pdfInfoText: {
+    ...typography.caption,
+    color: colors.primary || '#1976d2',
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  samplePdfFooter: {
+    ...typography.caption,
+    color: '#ff9800',
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
   },
   tipsList: {
     backgroundColor: colors.background,

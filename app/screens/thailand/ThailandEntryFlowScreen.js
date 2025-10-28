@@ -23,6 +23,7 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
+import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
 const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
@@ -190,8 +191,12 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       });
       
     } catch (error) {
-      console.error('Failed to load entry flow data:', error);
-      
+      ErrorHandler.handleDataLoadError(error, 'ThailandEntryFlowScreen.loadData', {
+        severity: ErrorSeverity.WARNING,
+        customMessage: '加载入境准备信息时出现问题，请下拉刷新重试。',
+        onRetry: () => loadData(),
+      });
+
       // Fallback to empty state on error
       setCompletionPercent(0);
       setCompletionStatus('needs_improvement');
@@ -313,7 +318,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         setResubmissionWarning(null);
       }
     } catch (error) {
-      console.error('Failed to load entry info status:', error);
+      ErrorHandler.handle(error, {
+        context: 'ThailandEntryFlowScreen.loadEntryInfoStatus',
+        type: ErrorType.DATA_LOAD,
+        severity: ErrorSeverity.SILENT, // Silent - don't notify user as this is non-critical
+      });
       // Don't let entry info status loading failure block the main UI
       setEntryPackStatus(null);
       setShowSupersededStatus(false);
@@ -360,13 +369,14 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         setResubmissionWarning(null);
       }
     } catch (error) {
-      console.error('Failed to handle resubmission warning:', error);
-      Alert.alert(
-        t('common.error', { defaultValue: '错误' }),
-        t('progressiveEntryFlow.dataChange.handleError', { 
-          defaultValue: '处理数据变更时出错，请重试。' 
-        })
-      );
+      ErrorHandler.handleDataSaveError(error, 'ThailandEntryFlowScreen.handleResubmissionWarning', {
+        severity: ErrorSeverity.WARNING,
+        customTitle: t('common.error', { defaultValue: '错误' }),
+        customMessage: t('progressiveEntryFlow.dataChange.handleError', {
+          defaultValue: '处理数据变更时出错，请重试。'
+        }),
+        onRetry: () => handleResubmissionWarning(warning, action),
+      });
     }
   };
 
@@ -496,12 +506,12 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             );
           }
         } catch (error) {
-          console.error('❌ Error building traveler context:', error);
-          Alert.alert(
-            '系统错误',
-            '构建旅行者信息时出错，请稍后重试。',
-            [{ text: '确定' }]
-          );
+          ErrorHandler.handleDataLoadError(error, 'ThailandEntryFlowScreen.handlePrimaryAction.buildContext', {
+            severity: ErrorSeverity.WARNING,
+            customTitle: '系统错误',
+            customMessage: '构建旅行者信息时出错，请稍后重试。',
+            onRetry: () => handlePrimaryAction(),
+          });
         }
         break;
       case 'view_entry_pack':

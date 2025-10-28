@@ -46,7 +46,8 @@
       "Read(//private/tmp/**)",
       "Bash(do echo)",
       "Bash(git log:*)",
-      "Bash(node scripts/diagnose-travel-info-error.js:*)"
+      "Bash(node scripts/diagnose-travel-info-error.js:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

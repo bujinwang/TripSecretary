@@ -14,6 +14,7 @@ import { colors, typography, spacing } from '../../theme';
 import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
 import EntryInfoService from '../../services/EntryInfoService';
+import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
 const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -87,8 +88,12 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
         });
         return;
       } catch (error) {
-        console.error('Error navigating to officer view:', error);
-        Alert.alert('错误', '无法打开展示页面，请稍后重试');
+        ErrorHandler.handleNavigationError(error, 'ThailandInteractiveImmigrationGuide.handleNextStep', {
+          severity: ErrorSeverity.WARNING,
+          customTitle: '错误',
+          customMessage: '无法打开展示页面，请稍后重试',
+          onRetry: () => handleNextStep(),
+        });
         return;
       }
     }
@@ -128,7 +133,11 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
         );
         return;
       } catch (error) {
-        console.error('Error marking immigration completed:', error);
+        ErrorHandler.handle(error, {
+          context: 'ThailandInteractiveImmigrationGuide.handleNextStep.markCompleted',
+          type: ErrorType.DATA_SAVE,
+          severity: ErrorSeverity.SILENT, // Silent - don't interrupt user's success experience
+        });
         // Still show success message even if marking fails
         Alert.alert(
           '🎉 入境完成！',

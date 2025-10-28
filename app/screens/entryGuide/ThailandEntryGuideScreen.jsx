@@ -176,15 +176,24 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
         {currentStep.showEntryPack && (
           <View style={styles.entryPackCompactContainer}>
             <Button
-              title={`${t('immigrationGuide.openEntryPack', { defaultValue: '打开通关包' })} 📋`}
+              title={
+                completionData?.tdacSubmission
+                  ? `${t('immigrationGuide.openEntryPack', { defaultValue: '打开通关包' })} 📋`
+                  : `${t('immigrationGuide.previewEntryPack', { defaultValue: '预览通关包' })} 👁️`
+              }
               onPress={handleOpenEntryPack}
               size="medium"
               style={styles.entryPackButton}
+              variant={completionData?.tdacSubmission ? 'primary' : 'secondary'}
             />
             <Text style={styles.entryPackCompactHint}>
-              {t('thailand.entryGuide.entryPackHintShort', {
-                defaultValue: '护照、TDAC二维码与资金凭证一键展示给移民官。',
-              })}
+              {completionData?.tdacSubmission
+                ? t('thailand.entryGuide.entryPackHintOfficial', {
+                    defaultValue: '护照、TDAC二维码与资金凭证一键展示给移民官。',
+                  })
+                : t('thailand.entryGuide.entryPackHintPreview', {
+                    defaultValue: '查看通关包格式（提交TDAC后可获得完整版）',
+                  })}
             </Text>
           </View>
         )}

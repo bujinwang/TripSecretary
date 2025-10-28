@@ -39,6 +39,8 @@ import TDACErrorHandler from '../../services/error/TDACErrorHandler';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 import ThailandTravelerContextBuilder from '../../services/thailand/ThailandTravelerContextBuilder';
 import DigitalArrivalCard from '../../models/DigitalArrivalCard';
+import PDFManagementService from '../../services/PDFManagementService';
+import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 
 const TDACHybridScreen = ({ navigation, route }) => {
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
@@ -319,101 +321,74 @@ const TDACHybridScreen = ({ navigation, route }) => {
         return;
       }
 
-      // Save PDF to app storage
-      const fileUri = `${FileSystem.documentDirectory}TDAC_${cardNo}.pdf`;
-      
-      // Convert blob to base64 and save
-      const reader = new FileReader();
-      reader.readAsDataURL(pdfBlob);
-      reader.onloadend = async () => {
-        const base64data = reader.result.split(',')[1];
-        await FileSystem.writeAsStringAsync(fileUri, base64data, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        console.log('✅ PDF saved to app storage:', fileUri);
-        
-        // Save comprehensive data to AsyncStorage for history with submission flag
-        const entryData = {
-          cardNo,
-          fileUri,
-          timestamp: Date.now(),
-          submittedAt: result.submittedAt,
-          travelerName: `${travelerInfo.firstName} ${travelerInfo.familyName}`,
-          passportNo: travelerInfo.passportNo,
-          nationality: travelerInfo.nationality,
-          arrivalDate: travelerInfo.arrivalDate,
-          flightNo: travelerInfo.flightNo,
-          duration: result.duration,
-          // Flag to prevent resubmission
-          alreadySubmitted: true,
-          submissionMethod: 'hybrid', // Mark that this was submitted via Hybrid method
-          // TDAC submission metadata for EntryPackService
-          arrCardNo: result.arrCardNo,
-          qrUri: fileUri,
-          pdfPath: fileUri
-        };
-        
-        await AsyncStorage.setItem(`tdac_qr_${cardNo}`, JSON.stringify(entryData));
-        console.log('✅ Entry data saved to history');
+      // Save PDF using PDFManagementService (standardized naming)
+      const pdfSaveResult = await PDFManagementService.savePDF(
+        cardNo,
+        pdfBlob,
+        { submissionMethod: 'hybrid' }
+      );
+
+      console.log('✅ PDF saved to app storage:', pdfSaveResult.filepath);
+
+      // Save comprehensive data to AsyncStorage for history with submission flag
+      const entryData = {
+        cardNo,
+        fileUri: pdfSaveResult.filepath,
+        timestamp: Date.now(),
+        submittedAt: result.submittedAt,
+        travelerName: `${travelerInfo.firstName} ${travelerInfo.familyName}`,
+        passportNo: travelerInfo.passportNo,
+        nationality: travelerInfo.nationality,
+        arrivalDate: travelerInfo.arrivalDate,
+        flightNo: travelerInfo.flightNo,
+        duration: result.duration,
+        // Flag to prevent resubmission
+        alreadySubmitted: true,
+        submissionMethod: 'hybrid', // Mark that this was submitted via Hybrid method
+        // TDAC submission metadata for EntryPackService
+        arrCardNo: result.arrCardNo,
+        qrUri: pdfSaveResult.filepath,
+        pdfPath: pdfSaveResult.filepath
+      };
+
+      await AsyncStorage.setItem(`tdac_qr_${cardNo}`, JSON.stringify(entryData));
+      console.log('✅ Entry data saved to history');
         
         // Set flag for EntryPackService integration
         await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
         console.log('✅ Recent submission flag set for EntryPackService');
-        
-        // Create or update digital arrival card with TDAC submission
+
+        // Use TDACSubmissionService for centralized submission handling
         try {
-          const tdacSubmission = {
+          const submissionData = {
             arrCardNo: result.arrCardNo,
-            qrUri: fileUri,
-            pdfUrl: fileUri,
+            qrUri: pdfSaveResult.filepath,
+            pdfPath: pdfSaveResult.filepath,
             submittedAt: result.submittedAt,
             submissionMethod: 'hybrid',
-            cardType: 'TDAC',
-            status: 'success'
+            duration: result.duration,
+            travelerName: `${travelerInfo.firstName} ${travelerInfo.familyName}`,
+            passportNo: travelerInfo.passportNo,
+            arrivalDate: travelerInfo.arrivalDate
           };
 
-          // Find entry info ID - for now use a placeholder, this should be passed from navigation params
-          const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
+          const serviceResult = await TDACSubmissionService.handleTDACSubmissionSuccess(
+            submissionData,
+            travelerInfo
+          );
 
-          await EntryInfoService.updateEntryInfo(entryInfoId, {
-            documents: JSON.stringify([tdacSubmission]),
-            displayStatus: JSON.stringify({ tdacSubmitted: true, submissionMethod: 'hybrid' })
-          });
-
-          console.log('✅ Entry info updated successfully via Hybrid');
-
-          // Save to digital_arrival_cards table using DigitalArrivalCard model
-          try {
-            const digitalArrivalCard = new DigitalArrivalCard({
-              entryInfoId: entryInfoId,
-              userId: route.params?.userId || null,
-              cardType: 'TDAC',
-              destinationId: 'thailand',
-              arrCardNo: result.arrCardNo,
-              qrUri: fileUri,
-              pdfUrl: fileUri, // Using local file URI as pdfUrl
-              submittedAt: result.submittedAt,
-              submissionMethod: 'hybrid',
-              status: 'success',
-              processingTime: result.duration,
-              retryCount: 0,
-              apiResponse: {
-                cardNo: result.arrCardNo,
-                duration: result.duration,
-                travelerInfo: result.travelerInfo
-              }
+          if (serviceResult.success) {
+            console.log('✅ TDAC submission handled successfully by service:', {
+              digitalArrivalCardId: serviceResult.digitalArrivalCard?.id,
+              entryInfoId: serviceResult.entryInfoId
             });
-
-            await digitalArrivalCard.save();
-            console.log('✅ Digital arrival card saved to database:', digitalArrivalCard.id);
-          } catch (dbError) {
-            console.error('❌ Failed to save to digital_arrival_cards table:', dbError);
-            // Don't block user flow - this is just for record keeping
+          } else {
+            console.warn('⚠️ TDAC submission service reported issues:', serviceResult.error);
+            // Don't block user flow - submission was successful, just some metadata issues
           }
-        } catch (entryInfoError) {
-          console.error('❌ Failed to update entry info:', entryInfoError);
-          // Don't block user flow - continue with file saving
+        } catch (serviceError) {
+          console.error('❌ TDACSubmissionService error:', serviceError);
+          // Don't block user flow - PDF is saved, this is just for metadata
         }
         
         // Also add to history list
@@ -429,15 +404,14 @@ const TDACHybridScreen = ({ navigation, route }) => {
           history.splice(50);
         }
         
-        await AsyncStorage.setItem(historyKey, JSON.stringify(history));
-        console.log('✅ Added to history list');
-        
-        // Save to photo library
-        await MediaLibrary.createAssetAsync(fileUri);
-        console.log('✅ PDF saved to photo library');
-        
-        setQrCodeUri(fileUri);
-      };
+      await AsyncStorage.setItem(historyKey, JSON.stringify(history));
+      console.log('✅ Added to history list');
+
+      // Save to photo library
+      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
+      console.log('✅ PDF saved to photo library');
+
+      setQrCodeUri(pdfSaveResult.filepath);
 
     } catch (error) {
       console.error('❌ Failed to save QR code:', error);

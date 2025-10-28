@@ -50,6 +50,7 @@ import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS, GENDER_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
+import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
 // Import custom hooks for state, persistence, and validation
 import {
@@ -240,7 +241,11 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
       await saveDataToSecureStorageWithOverride({ sex: newSex });
       formState.setLastEditedAt(new Date());
     } catch (error) {
-      console.error('Failed to save gender:', error);
+      ErrorHandler.handleDataSaveError(error, 'ThailandTravelInfoScreen.handleGenderChange', {
+        severity: ErrorSeverity.WARNING,
+        customMessage: '保存性别信息失败，请重试。',
+        onRetry: () => handleGenderChange(newSex),
+      });
     }
   };
 

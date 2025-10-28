@@ -17,6 +17,7 @@ import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from '../../screens/thailand/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
+import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
 /**
  * Custom hook to manage Thailand travel form data persistence
@@ -357,11 +358,12 @@ export const useThailandDataPersistence = ({
         }
       }
     } catch (error) {
-      console.error('Error picking flight ticket photo:', error);
-      Alert.alert(
-        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
-        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
-      );
+      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleFlightTicketPhotoUpload', {
+        severity: ErrorSeverity.WARNING,
+        customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
+        onRetry: () => handleFlightTicketPhotoUpload(t),
+      });
     }
   }, [savePhoto]);
 
@@ -392,11 +394,12 @@ export const useThailandDataPersistence = ({
         }
       }
     } catch (error) {
-      console.error('Error picking hotel reservation photo:', error);
-      Alert.alert(
-        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
-        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
-      );
+      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleHotelReservationPhotoUpload', {
+        severity: ErrorSeverity.WARNING,
+        customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
+        onRetry: () => handleHotelReservationPhotoUpload(t),
+      });
     }
   }, [savePhoto]);
 
@@ -427,11 +430,12 @@ export const useThailandDataPersistence = ({
         }
       }
     } catch (error) {
-      console.error('Error picking departure flight ticket photo:', error);
-      Alert.alert(
-        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
-        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
-      );
+      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleDepartureFlightTicketPhotoUpload', {
+        severity: ErrorSeverity.WARNING,
+        customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
+        onRetry: () => handleDepartureFlightTicketPhotoUpload(t),
+      });
     }
   }, [savePhoto]);
 

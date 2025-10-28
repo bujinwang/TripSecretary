@@ -1087,7 +1087,9 @@ const baseTranslations = {
           'ATM取款手续费约220泰铢，一次多取节省费用',
           '只使用官方Public Taxi，避免黑车',
           '入境通司机页面显示泰文+英文酒店地址'
-        ]
+        ],
+        entryPackHintOfficial: 'Passport, TDAC QR code, and fund proof ready for immigration officer.',
+        entryPackHintPreview: 'Preview entry pack format (full version available after TDAC submission)'
       },
       info: {
         headerTitle: 'Thailand Entry Information',
@@ -2009,6 +2011,7 @@ const baseTranslations = {
       previousStep: 'Previous',
       completeEntry: 'Complete Entry, Return to Pack',
       openEntryPack: 'Open Entry Pack',
+      previewEntryPack: 'Preview Entry Pack',
       modalClose: 'Close',
       entryCardSampleTitle: 'Entry Card Sample',
       customsDeclarationSampleTitle: 'Customs Declaration Sample',
@@ -3411,7 +3414,9 @@ const baseTranslations = {
           'ATM取款手续费约220泰铢，一次多取节省费用',
           '只使用官方Public Taxi，避免黑车',
           '入境通司机页面显示泰文+英文酒店地址'
-        ]
+        ],
+        entryPackHintOfficial: '护照、TDAC二维码与资金凭证一键展示给移民官。',
+        entryPackHintPreview: '查看通关包格式（提交TDAC后可获得完整版）'
       },
       info: {
         headerTitle: '泰国入境信息',
@@ -4059,6 +4064,7 @@ const baseTranslations = {
       previousStep: '上一步',
       completeEntry: '结束入境，返回入境包',
       openEntryPack: '打开通关包',
+      previewEntryPack: '预览通关包',
       modalClose: '关闭',
       entryCardSampleTitle: '入境卡样本',
       customsDeclarationSampleTitle: '海关申报单样本',

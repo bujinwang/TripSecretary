@@ -821,6 +821,104 @@ class UserDataService {
   }
 
   // ============================================================================
+  // DIGITAL ARRIVAL CARD OPERATIONS
+  // ============================================================================
+
+  /**
+   * Save digital arrival card (TDAC, MDAC, SDAC, etc.)
+   * Wrapper for SecureStorageService.saveDigitalArrivalCard
+   *
+   * @param {Object} dacData - Digital arrival card data
+   * @param {string} dacData.entryInfoId - Entry info ID
+   * @param {string} dacData.cardType - Card type (TDAC, MDAC, etc.)
+   * @param {string} dacData.arrCardNo - Arrival card number
+   * @param {string} dacData.qrUri - QR code URI
+   * @param {string} dacData.pdfUrl - PDF file URL/path
+   * @param {string} dacData.submittedAt - Submission timestamp
+   * @param {string} dacData.submissionMethod - Submission method (api/webview/hybrid)
+   * @param {string} dacData.status - Status (success/failed/pending)
+   * @returns {Promise<Object>} - Save result with card ID
+   */
+  static async saveDigitalArrivalCard(dacData) {
+    try {
+      console.log('💾 Saving digital arrival card via UserDataService:', {
+        cardType: dacData.cardType,
+        arrCardNo: dacData.arrCardNo,
+        entryInfoId: dacData.entryInfoId
+      });
+
+      const result = await SecureStorageService.saveDigitalArrivalCard(dacData);
+
+      // Invalidate related caches
+      if (dacData.entryInfoId) {
+        this.cache.entryInfo.delete(dacData.entryInfoId);
+        console.log('🔄 Cache invalidated for entry info:', dacData.entryInfoId);
+      }
+
+      // Trigger data change event for listeners
+      this.triggerDataChangeEvent({
+        type: 'DIGITAL_ARRIVAL_CARD_SAVED',
+        cardType: dacData.cardType,
+        arrCardNo: dacData.arrCardNo,
+        entryInfoId: dacData.entryInfoId,
+        timestamp: new Date().toISOString()
+      });
+
+      console.log('✅ Digital arrival card saved successfully:', result.id);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to save digital arrival card:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get digital arrival card by ID
+   *
+   * @param {string} cardId - Digital arrival card ID
+   * @returns {Promise<Object|null>} - Digital arrival card data or null
+   */
+  static async getDigitalArrivalCard(cardId) {
+    try {
+      return await SecureStorageService.getDigitalArrivalCard(cardId);
+    } catch (error) {
+      console.error('❌ Failed to get digital arrival card:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all digital arrival cards for an entry info
+   *
+   * @param {string} entryInfoId - Entry info ID
+   * @returns {Promise<Array>} - Array of digital arrival cards
+   */
+  static async getDigitalArrivalCardsByEntryInfo(entryInfoId) {
+    try {
+      return await SecureStorageService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+    } catch (error) {
+      console.error('❌ Failed to get digital arrival cards:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get latest successful digital arrival card for an entry info
+   *
+   * @param {string} entryInfoId - Entry info ID
+   * @param {string} cardType - Card type (TDAC, MDAC, etc.)
+   * @returns {Promise<Object|null>} - Latest digital arrival card or null
+   */
+  static async getLatestDigitalArrivalCard(entryInfoId, cardType) {
+    try {
+      return await SecureStorageService.getLatestSuccessfulDigitalArrivalCard(entryInfoId, cardType);
+    } catch (error) {
+      console.error('❌ Failed to get latest digital arrival card:', error);
+      return null;
+    }
+  }
+
+  // ============================================================================
   // TRAVEL INFO OPERATIONS
   // ============================================================================
 

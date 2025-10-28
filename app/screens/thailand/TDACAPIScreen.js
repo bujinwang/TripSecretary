@@ -26,6 +26,8 @@ import * as FileSystem from 'expo-file-system';
 // Removed mockTDACData dependency - using pure user data
 import { colors } from '../../theme';
 import EntryInfoService from '../../services/EntryInfoService';
+import PDFManagementService from '../../services/PDFManagementService';
+import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 
 const TDACAPIScreen = ({ navigation, route }) => {
   const params = route.params || {};
@@ -169,37 +171,46 @@ const TDACAPIScreen = ({ navigation, route }) => {
       
       if (result.success) {
         // Save QR code
-        await saveQRCode(result.arrCardNo, result.pdfBlob, result);
-        
-        // Create or update digital arrival card with TDAC submission
-        try {
-          const tdacSubmission = {
-            arrCardNo: result.arrCardNo,
-            qrUri: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
-            pdfUrl: `${FileSystem.documentDirectory}tdac_${result.arrCardNo}.pdf`,
-            submittedAt: new Date().toISOString(),
-            submissionMethod: 'api',
-            cardType: 'TDAC',
-            status: 'success'
-          };
+        const pdfSaveResult = await saveQRCode(result.arrCardNo, result.pdfBlob, result);
 
-          // Find entry info ID - for now use a placeholder, this should be passed from navigation params
-          const entryInfoId = params.entryInfoId || 'thailand_entry_info';
+        // Use TDACSubmissionService for centralized submission handling
+        if (pdfSaveResult) {
+          try {
+            const submissionData = {
+              arrCardNo: result.arrCardNo,
+              qrUri: pdfSaveResult.filepath,
+              pdfPath: pdfSaveResult.filepath,
+              submittedAt: result.submittedAt || new Date().toISOString(),
+              submissionMethod: 'api',
+              duration: result.duration,
+              travelerName: `${formData.firstName} ${formData.familyName}`,
+              passportNo: formData.passportNo,
+              arrivalDate: formData.arrivalDate
+            };
 
-          await EntryInfoService.updateEntryInfo(entryInfoId, {
-            documents: JSON.stringify([tdacSubmission]),
-            displayStatus: JSON.stringify({ tdacSubmitted: true, submissionMethod: 'api' })
-          });
+            const serviceResult = await TDACSubmissionService.handleTDACSubmissionSuccess(
+              submissionData,
+              travelerData
+            );
 
-          console.log('✅ Entry info updated successfully');
-        } catch (entryInfoError) {
-          console.error('❌ Failed to update entry info:', entryInfoError);
-          // Don't block user flow - show warning but continue
-          Alert.alert(
-            '⚠️ 注意',
-            '入境卡提交成功，但保存到旅程记录时出现问题。QR码已保存到相册。',
-            [{ text: '好的' }]
-          );
+            if (serviceResult.success) {
+              console.log('✅ TDAC submission handled successfully by service:', {
+                digitalArrivalCardId: serviceResult.digitalArrivalCard?.id,
+                entryInfoId: serviceResult.entryInfoId
+              });
+            } else {
+              console.warn('⚠️ TDAC submission service reported issues:', serviceResult.error);
+              // Don't block user flow - submission was successful, just some metadata issues
+            }
+          } catch (serviceError) {
+            console.error('❌ TDACSubmissionService error:', serviceError);
+            // Don't block user flow - PDF is saved, show warning
+            Alert.alert(
+              '⚠️ 注意',
+              '入境卡提交成功，但保存到旅程记录时出现问题。QR码已保存到相册。',
+              [{ text: '好的' }]
+            );
+          }
         }
         
         // Show result
@@ -256,8 +267,22 @@ const TDACAPIScreen = ({ navigation, route }) => {
    */
   const saveQRCode = async (arrCardNo, pdfBlob, result = {}) => {
     try {
-      const fileUri = `${FileSystem.documentDirectory}tdac_${arrCardNo}.pdf`;
-      
+      // Request media library permissions
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('❌ Media library permission denied');
+        return null;
+      }
+
+      // Save PDF using PDFManagementService (standardized naming)
+      const pdfSaveResult = await PDFManagementService.savePDF(
+        arrCardNo,
+        pdfBlob,
+        { submissionMethod: 'api' }
+      );
+
+      console.log('✅ PDF saved to app storage:', pdfSaveResult.filepath);
+
       // Save to AsyncStorage
       const entryData = {
         arrCardNo,
@@ -270,37 +295,27 @@ const TDACAPIScreen = ({ navigation, route }) => {
         submissionMethod: 'api',
         // TDAC submission metadata for EntryPackService
         cardNo: arrCardNo,
-        qrUri: fileUri,
-        pdfPath: fileUri,
+        qrUri: pdfSaveResult.filepath,
+        pdfPath: pdfSaveResult.filepath,
         timestamp: Date.now(),
         alreadySubmitted: true
       };
-      
+
       await AsyncStorage.setItem(`tdac_${arrCardNo}`, JSON.stringify(entryData));
-      
+
       // Set flag for EntryPackService integration
       await AsyncStorage.setItem('recent_tdac_submission', JSON.stringify(entryData));
       console.log('✅ Recent submission flag set for EntryPackService');
-      
+
       // Save PDF to photo album
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status === 'granted') {
-        // Convert blob to base64
-        const reader = new FileReader();
-        reader.readAsDataURL(pdfBlob);
-        reader.onloadend = async () => {
-          const base64data = reader.result.split(',')[1];
-          await FileSystem.writeAsStringAsync(fileUri, base64data, {
-            encoding: FileSystem.EncodingType.Base64
-          });
-          
-          await MediaLibrary.createAssetAsync(fileUri);
-          console.log('✅ QR code saved to photo album');
-        };
-      }
-      
+      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
+      console.log('✅ QR code saved to photo album');
+
+      return pdfSaveResult;
+
     } catch (error) {
       console.error('Failed to save QR code:', error);
+      return null;
     }
   };
   

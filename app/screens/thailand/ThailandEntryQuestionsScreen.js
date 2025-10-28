@@ -17,6 +17,7 @@ import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
 import ThailandEntryGuideService from '../../services/entryGuide/ThailandEntryGuideService';
 import EntryInfoService from '../../services/EntryInfoService';
+import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
 const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -40,7 +41,16 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
       setLoading(true);
 
       if (!entryPackId) {
-        Alert.alert('错误', '缺少入境包信息');
+        ErrorHandler.handleValidationError(
+          new Error('Missing entry pack ID'),
+          'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions',
+          {
+            severity: ErrorSeverity.WARNING,
+            customTitle: '错误',
+            customMessage: '缺少入境包信息',
+            onRetry: () => navigation.goBack(),
+          }
+        );
         navigation.goBack();
         return;
       }
@@ -49,7 +59,16 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
       const entryPack = await EntryInfoService.getEntryInfo(entryPackId);
 
       if (!entryPack) {
-        Alert.alert('错误', '无法加载入境包');
+        ErrorHandler.handleDataLoadError(
+          new Error('Entry pack not found'),
+          'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions',
+          {
+            severity: ErrorSeverity.WARNING,
+            customTitle: '错误',
+            customMessage: '无法加载入境包',
+            onRetry: () => navigation.goBack(),
+          }
+        );
         navigation.goBack();
         return;
       }
@@ -92,8 +111,12 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
 
       setQuestions(generatedQuestions);
     } catch (error) {
-      console.error('Failed to load traveler profile:', error);
-      Alert.alert('错误', '加载入境问题失败，请稍后重试');
+      ErrorHandler.handleDataLoadError(error, 'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions', {
+        severity: ErrorSeverity.WARNING,
+        customTitle: '错误',
+        customMessage: '加载入境问题失败，请稍后重试',
+        onRetry: () => loadTravelerProfileAndQuestions(),
+      });
     } finally {
       setLoading(false);
     }
