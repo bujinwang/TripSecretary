@@ -224,8 +224,24 @@ const TDACHybridScreen = ({ navigation, route }) => {
         setTimeout(() => {
           Alert.alert(
             '🎉 提交成功！',
-            `入境卡号: ${result.arrCardNo}\n总用时: ${totalTime}秒\n\nQR码已保存到相册`,
-            [{ text: '完成', onPress: () => navigation.goBack() }]
+            `入境卡号: ${result.arrCardNo}\n总用时: ${totalTime}秒\n\nQR码已保存到相册和历史记录中`,
+            [
+              {
+                text: '查看历史',
+                onPress: () => {
+                  // Dismiss modal and navigate to History tab
+                  navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+                }
+              },
+              {
+                text: '返回首页',
+                onPress: () => {
+                  // Dismiss modal and navigate to Home tab
+                  navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+                },
+                style: 'default'
+              }
+            ]
           );
         }, 500);
 
@@ -412,10 +428,6 @@ const TDACHybridScreen = ({ navigation, route }) => {
       await AsyncStorage.setItem(historyKey, JSON.stringify(history));
       console.log('✅ Added to history list');
 
-      // Save to photo library
-      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
-      console.log('✅ PDF saved to photo library');
-
       setQrCodeUri(pdfSaveResult.filepath);
 
     } catch (error) {
@@ -488,34 +500,24 @@ const TDACHybridScreen = ({ navigation, route }) => {
               <TouchableOpacity
                 style={styles.successButton}
                 onPress={() => {
-                  // Navigate back with success data
-                  navigation.navigate('Result', {
-                    tdacSuccess: true,
-                    arrCardNo,
-                    qrCodeUri,
-                  });
+                  // Dismiss modal and navigate to Home tab
+                  navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
                 }}
               >
-                <Text style={styles.successButtonText}>✅ 完成</Text>
+                <Text style={styles.successButtonText}>✅ 返回首页</Text>
               </TouchableOpacity>
-              
-              {qrCodeUri && (
-                <TouchableOpacity
-                  style={[styles.successButton, styles.secondaryButton]}
-                  onPress={() => {
-                    // Open PDF viewer or share
-                    Alert.alert(
-                      'QR码已保存',
-                      '已保存到手机相册和App历史记录中',
-                      [{ text: '好的' }]
-                    );
-                  }}
-                >
-                  <Text style={[styles.successButtonText, styles.secondaryButtonText]}>
-                    📱 查看QR码
-                  </Text>
-                </TouchableOpacity>
-              )}
+
+              <TouchableOpacity
+                style={[styles.successButton, styles.secondaryButton]}
+                onPress={() => {
+                  // Dismiss modal and navigate to History tab
+                  navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+                }}
+              >
+                <Text style={[styles.successButtonText, styles.secondaryButtonText]}>
+                  📋 查看历史记录
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -545,16 +547,61 @@ const TDACHybridScreen = ({ navigation, route }) => {
     );
   };
 
+  /**
+   * Test success flow (Development Only)
+   */
+  const testSuccessFlow = () => {
+    const mockArrCardNo = 'TEST-' + Date.now().toString().slice(-8);
+    const mockTotalTime = '5.23';
+
+    setArrCardNo(mockArrCardNo);
+    setStage('success');
+    setProgress(`✅ 完成！用时 ${mockTotalTime}秒`);
+
+    setTimeout(() => {
+      Alert.alert(
+        '🎉 提交成功！',
+        `入境卡号: ${mockArrCardNo}\n总用时: ${mockTotalTime}秒\n\nQR码已保存到相册和历史记录中`,
+        [
+          {
+            text: '查看历史',
+            onPress: () => {
+              // Dismiss modal and navigate to History tab
+              navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+            }
+          },
+          {
+            text: '返回首页',
+            onPress: () => {
+              // Dismiss modal and navigate to Home tab
+              navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+            },
+            style: 'default'
+          }
+        ]
+      );
+    }, 500);
+  };
+
   return (
     <View style={styles.container}>
-      {/* Debug Button (Development Only) */}
+      {/* Debug Buttons (Development Only) */}
       {__DEV__ && (
-        <TouchableOpacity
-          style={styles.debugButton}
-          onPress={() => navigation.navigate('TDACDebug')}
-        >
-          <Text style={styles.debugButtonText}>🔧 Debug</Text>
-        </TouchableOpacity>
+        <View style={styles.debugButtonContainer}>
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={() => navigation.navigate('TDACDebug')}
+          >
+            <Text style={styles.debugButtonText}>🔧 Debug</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.debugButton, styles.testSuccessButton]}
+            onPress={testSuccessFlow}
+          >
+            <Text style={styles.debugButtonText}>✅ Test Success</Text>
+          </TouchableOpacity>
+        </View>
       )}
       {/* WebView for Cloudflare token extraction - Shows when needed */}
       {(stage === 'loading' || stage === 'extracting') && (
@@ -666,15 +713,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  debugButton: {
+  debugButtonContainer: {
     position: 'absolute',
     top: 50,
     right: 20,
+    flexDirection: 'row',
+    gap: 8,
+    zIndex: 1000,
+  },
+  debugButton: {
     backgroundColor: '#FF9800',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    zIndex: 1000,
+  },
+  testSuccessButton: {
+    backgroundColor: '#4CAF50',
   },
   debugButtonText: {
     color: 'white',

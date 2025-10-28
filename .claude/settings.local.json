@@ -52,7 +52,8 @@
       "Bash(find:*)",
       "WebFetch(domain:docs.expo.dev)",
       "Bash(npx expo install expo-image-manipulator)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(open:*)"
     ],
     "deny": [],
     "ask": []

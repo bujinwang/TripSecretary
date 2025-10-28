@@ -223,8 +223,24 @@ const TDACAPIScreen = ({ navigation, route }) => {
         
         Alert.alert(
           '✅ 提交成功！',
-          `入境卡号: ${result.arrCardNo}\n用时: ${result.duration}秒\n\nQR码已保存到手机相册和App中`,
-          [{ text: '好的', onPress: () => navigation.goBack() }]
+          `入境卡号: ${result.arrCardNo}\n用时: ${result.duration}秒\n\nQR码已保存到相册和历史记录中`,
+          [
+            {
+              text: '查看历史',
+              onPress: () => {
+                // Dismiss modal and navigate to History tab
+                navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+              }
+            },
+            {
+              text: '返回首页',
+              onPress: () => {
+                // Dismiss modal and navigate to Home tab
+                navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+              },
+              style: 'default'
+            }
+          ]
         );
       } else {
         Alert.alert('❌ 提交失败', result.error);
@@ -322,12 +338,52 @@ const TDACAPIScreen = ({ navigation, route }) => {
     }
   };
   
+  /**
+   * Test success flow (Development Only)
+   */
+  const testSuccessFlow = () => {
+    const mockArrCardNo = 'TEST-' + Date.now().toString().slice(-8);
+    const mockDuration = '3.45';
+
+    setResultData({
+      arrCardNo: mockArrCardNo,
+      duration: mockDuration,
+      travelerName: `${formData.firstName || 'Test'} ${formData.familyName || 'User'}`
+    });
+    setShowResult(true);
+    setLoading(false);
+
+    setTimeout(() => {
+      Alert.alert(
+        '✅ 提交成功！',
+        `入境卡号: ${mockArrCardNo}\n用时: ${mockDuration}秒\n\nQR码已保存到相册和历史记录中`,
+        [
+          {
+            text: '查看历史',
+            onPress: () => {
+              // Dismiss modal and navigate to History tab
+              navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
+            }
+          },
+          {
+            text: '返回首页',
+            onPress: () => {
+              // Dismiss modal and navigate to Home tab
+              navigation.getParent()?.navigate('MainTabs', { screen: 'Home' });
+            },
+            style: 'default'
+          }
+        ]
+      );
+    }, 500);
+  };
+
   // 自动提交模式：只显示加载或成功Modal
   if (autoSubmit) {
     if (loading) {
       return (
         <View style={[styles.container, styles.centerContent]}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => {
               setLoading(false);
@@ -336,6 +392,17 @@ const TDACAPIScreen = ({ navigation, route }) => {
           >
             <Text style={styles.cancelButtonText}>✕ 取消</Text>
           </TouchableOpacity>
+
+          {/* Test Success Button (Development Only) */}
+          {__DEV__ && (
+            <TouchableOpacity
+              style={[styles.cancelButton, styles.testSuccessButton]}
+              onPress={testSuccessFlow}
+            >
+              <Text style={[styles.cancelButtonText, { color: 'white' }]}>✅ Test Success</Text>
+            </TouchableOpacity>
+          )}
+
           <ActivityIndicator size="large" color="#1b6ca3" />
           <Text style={styles.loadingText}>正在提交泰国入境卡...</Text>
           <Text style={styles.loadingSubtext}>⚡ 预计3秒完成</Text>
@@ -831,6 +898,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.1)',
     borderRadius: 20,
     zIndex: 10
+  },
+  testSuccessButton: {
+    right: 140,
+    backgroundColor: '#4CAF50',
   },
   cancelButtonText: {
     color: '#666',

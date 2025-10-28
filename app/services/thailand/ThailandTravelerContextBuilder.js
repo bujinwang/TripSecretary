@@ -91,6 +91,7 @@ class ThailandTravelerContextBuilder {
       const travelerPayload = {
         ...tdacData,
         // Technical fields required by TDAC API
+        userId, // Include userId for post-submission entry info creation
         cloudflareToken: 'auto',
         tranModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo), // Required transport mode
       };
