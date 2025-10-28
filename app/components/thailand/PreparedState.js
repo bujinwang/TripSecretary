@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CompletionSummaryCard from '../CompletionSummaryCard';
 import SubmissionCountdown from '../SubmissionCountdown';
 import Button from '../Button';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, shadows } from '../../theme';
 
 /**
  * PreparedState component displays entry preparation status and action buttons
@@ -58,19 +58,26 @@ const PreparedState = ({
           showProgressBar={true}
         />
 
-        {/* Additional Action Buttons - Show when completion is high */}
+        {/* Quick Action Buttons - Vertical Layout for Better Hierarchy */}
         {completionPercent >= 80 && (
-          <View style={styles.additionalActionsContainer}>
+          <View style={styles.quickActionsContainer}>
             <TouchableOpacity
-              style={styles.additionalActionButton}
+              style={styles.quickActionButton}
               onPress={handleEditInformation}
+              activeOpacity={0.7}
             >
-              <Text style={styles.additionalActionIcon}>✏️</Text>
-              <Text style={styles.additionalActionText}>再改改</Text>
+              <View style={styles.quickActionIconWrapper}>
+                <Text style={styles.quickActionIcon}>✏️</Text>
+              </View>
+              <View style={styles.quickActionContent}>
+                <Text style={styles.quickActionTitle}>再改改</Text>
+                <Text style={styles.quickActionSubtitle}>调整和完善信息</Text>
+              </View>
+              <Text style={styles.quickActionArrow}>›</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.additionalActionButton}
+              style={styles.quickActionButton}
               onPress={() => {
                 // Show sharing options
                 Alert.alert(
@@ -88,9 +95,16 @@ const PreparedState = ({
                   ]
                 );
               }}
+              activeOpacity={0.7}
             >
-              <Text style={styles.additionalActionIcon}>👥</Text>
-              <Text style={styles.additionalActionText}>找亲友帮忙修改</Text>
+              <View style={styles.quickActionIconWrapper}>
+                <Text style={styles.quickActionIcon}>👥</Text>
+              </View>
+              <View style={styles.quickActionContent}>
+                <Text style={styles.quickActionTitle}>找泰友帮忙修改</Text>
+                <Text style={styles.quickActionSubtitle}>分享给亲友帮忙检查</Text>
+              </View>
+              <Text style={styles.quickActionArrow}>›</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -116,7 +130,7 @@ const PreparedState = ({
         </View>
       </View>
 
-      {/* Secondary Actions Section */}
+      {/* Secondary Actions Section - Vertically Stacked */}
       <View style={styles.actionSection}>
         {/* Entry Guide Button */}
         <TouchableOpacity
@@ -151,28 +165,26 @@ const PreparedState = ({
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Secondary Actions - Redesigned */}
+        {/* Preview Entry Pack Button */}
         {completionPercent > 50 && (
-          <View style={styles.secondaryActionsContainer}>
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={handlePreviewEntryCard}
-              activeOpacity={0.8}
-            >
-              <View style={styles.secondaryActionIconContainer}>
-                <Text style={styles.secondaryActionIcon}>👁️</Text>
-              </View>
-              <View style={styles.secondaryActionContent}>
-                <Text style={styles.secondaryActionTitle}>
-                  看看我的通关包
-                </Text>
-                <Text style={styles.secondaryActionSubtitle}>
-                  {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
-                </Text>
-              </View>
-              <Text style={styles.secondaryActionArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.secondaryActionButton}
+            onPress={handlePreviewEntryCard}
+            activeOpacity={0.8}
+          >
+            <View style={styles.secondaryActionIconContainer}>
+              <Text style={styles.secondaryActionIcon}>👁️</Text>
+            </View>
+            <View style={styles.secondaryActionContent}>
+              <Text style={styles.secondaryActionTitle}>
+                看看我的通关包
+              </Text>
+              <Text style={styles.secondaryActionSubtitle}>
+                {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
+              </Text>
+            </View>
+            <Text style={styles.secondaryActionArrow}>›</Text>
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -182,31 +194,29 @@ const PreparedState = ({
 const styles = StyleSheet.create({
   // Status Section Styles
   statusSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   sectionTitle: {
     ...typography.h3,
     color: colors.text,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 18,
     marginBottom: spacing.md,
+    letterSpacing: 0.2,
   },
 
   // Integrated Countdown & Submission Section Styles
   countdownSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 16,
+    padding: spacing.lg,
+    ...shadows.card,
   },
 
-  // Action Section Styles (now only for secondary actions)
+  // Action Section Styles - Vertically stacked with better spacing
   actionSection: {
-    marginBottom: spacing.lg,
+    gap: spacing.md,
   },
   primaryActionContainer: {
     marginTop: spacing.md,
@@ -214,36 +224,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  secondaryActionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
   secondaryActionButton: {
-    flex: 1,
-    minWidth: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 16,
-    paddingVertical: spacing.md,
+    paddingVertical: 18,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(7, 193, 96, 0.15)',
-    shadowColor: colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    borderColor: colors.border,
+    marginTop: spacing.md,
+    ...shadows.card,
   },
   secondaryActionIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -258,43 +254,41 @@ const styles = StyleSheet.create({
   secondaryActionTitle: {
     ...typography.body1,
     color: colors.text,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.1,
   },
   secondaryActionSubtitle: {
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 4,
+    fontSize: 13,
   },
   secondaryActionArrow: {
     ...typography.body2,
-    color: colors.primaryDark,
+    color: colors.primary,
     fontWeight: '700',
-    fontSize: 18,
-    marginLeft: spacing.sm,
+    fontSize: 20,
+    marginLeft: spacing.xs,
   },
 
-  // Entry Guide Button Styles
+  // Entry Guide Button Styles - Premium gradient button
   entryGuideButton: {
     borderRadius: 16,
     overflow: 'hidden',
-    marginTop: spacing.lg,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.button,
   },
   entryGuideGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 20,
   },
   entryGuideIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -306,63 +300,86 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.white,
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 17,
+    letterSpacing: 0.2,
   },
   entryGuideSubtitle: {
     ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(255, 255, 255, 0.90)',
     marginTop: 4,
+    fontSize: 13,
   },
   entryGuideIcon: {
-    fontSize: 24,
+    fontSize: 26,
   },
   entryGuideChevron: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.26)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: spacing.md,
+    marginLeft: spacing.sm,
   },
   entryGuideArrow: {
     ...typography.body1,
     color: colors.white,
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
   },
 
-  // Additional action buttons styles
-  additionalActionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.md,
-    paddingTop: spacing.sm,
+  // Quick Action Buttons - Vertical layout with enhanced hierarchy
+  quickActionsContainer: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    gap: spacing.sm,
   },
-  additionalActionButton: {
-    flex: 1,
+  quickActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    marginHorizontal: spacing.xs,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadows.small,
   },
-  additionalActionIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
+  quickActionIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
-  additionalActionText: {
-    ...typography.body2,
+  quickActionIcon: {
+    fontSize: 24,
+  },
+  quickActionContent: {
+    flex: 1,
+  },
+  quickActionTitle: {
+    ...typography.body1,
     color: colors.text,
-    fontWeight: '500',
+    fontWeight: '700',
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  quickActionSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
     fontSize: 13,
+  },
+  quickActionArrow: {
+    ...typography.body1,
+    color: colors.primary,
+    fontSize: 22,
+    fontWeight: '600',
+    marginLeft: spacing.xs,
   },
 });
 

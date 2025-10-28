@@ -16,10 +16,12 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
 import BackButton from '../../components/BackButton';
+import { useLocale } from '../../i18n/LocaleContext';
 // Removed mockTDACData dependency - using pure user data
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
+  const { t } = useLocale();
   const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
   
   /**
@@ -134,15 +136,15 @@ const TDACSelectionScreen = ({ navigation, route }) => {
           <View style={styles.heroHeaderRow}>
             <BackButton
               onPress={() => navigation.goBack()}
-              label="返回"
+              label={t('thailand.selection.backButton')}
               style={styles.backButton}
               labelStyle={styles.backButtonLabel}
               iconStyle={styles.backButtonIcon}
             />
           </View>
-          <Text style={styles.heroEmoji}>🌟</Text>
-          <Text style={styles.heroTitle}>选择提交方式</Text>
-          <Text style={styles.heroSubtitle}>快速完成泰国入境卡</Text>
+          <Text style={styles.heroEmoji}>{t('thailand.selection.heroEmoji')}</Text>
+          <Text style={styles.heroTitle}>{t('thailand.selection.heroTitle')}</Text>
+          <Text style={styles.heroSubtitle}>{t('thailand.selection.heroSubtitle')}</Text>
         </LinearGradient>
 
       {/* 快速通道选项 */}
@@ -154,49 +156,49 @@ const TDACSelectionScreen = ({ navigation, route }) => {
         >
           {/* 推荐徽章 */}
           <View style={styles.recommendationBadge}>
-            <Text style={styles.recommendationIcon}>📱</Text>
-            <Text style={styles.recommendationText}>推荐选择</Text>
+            <Text style={styles.recommendationIcon}>{t('thailand.selection.lightning.badgeIcon')}</Text>
+            <Text style={styles.recommendationText}>{t('thailand.selection.lightning.badge')}</Text>
           </View>
 
           {/* 标题区域 */}
           <View style={styles.cardHeader}>
-            <Text style={styles.optionIcon}>⚡</Text>
+            <Text style={styles.optionIcon}>{t('thailand.selection.lightning.icon')}</Text>
             <View style={styles.titleSection}>
-              <Text style={styles.optionTitle}>闪电提交</Text>
-              <Text style={styles.optionSubtitle}>快速通道 · 智能验证</Text>
+              <Text style={styles.optionTitle}>{t('thailand.selection.lightning.title')}</Text>
+              <Text style={styles.optionSubtitle}>{t('thailand.selection.lightning.subtitle')}</Text>
             </View>
           </View>
 
           {/* 核心优势 */}
           <View style={styles.benefitsSection}>
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>⏱️</Text>
+              <Text style={styles.benefitIcon}>{t('thailand.selection.lightning.benefits.time.icon')}</Text>
               <View>
-                <Text style={styles.benefitValue}>5-8秒</Text>
-                <Text style={styles.benefitLabel}>闪电完成</Text>
+                <Text style={styles.benefitValue}>{t('thailand.selection.lightning.benefits.time.value')}</Text>
+                <Text style={styles.benefitLabel}>{t('thailand.selection.lightning.benefits.time.label')}</Text>
               </View>
             </View>
 
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>🎯</Text>
+              <Text style={styles.benefitIcon}>{t('thailand.selection.lightning.benefits.success.icon')}</Text>
               <View>
-                <Text style={styles.benefitValue}>95%+</Text>
-                <Text style={styles.benefitLabel}>超高成功率</Text>
+                <Text style={styles.benefitValue}>{t('thailand.selection.lightning.benefits.success.value')}</Text>
+                <Text style={styles.benefitLabel}>{t('thailand.selection.lightning.benefits.success.label')}</Text>
               </View>
             </View>
 
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>🚀</Text>
+              <Text style={styles.benefitIcon}>{t('thailand.selection.lightning.benefits.speed.icon')}</Text>
               <View>
-                <Text style={styles.benefitValue}>快3倍</Text>
-                <Text style={styles.benefitLabel}>比传统方式</Text>
+                <Text style={styles.benefitValue}>{t('thailand.selection.lightning.benefits.speed.value')}</Text>
+                <Text style={styles.benefitLabel}>{t('thailand.selection.lightning.benefits.speed.label')}</Text>
               </View>
             </View>
           </View>
 
           {/* 用户利益 */}
           <View style={styles.userBenefits}>
-            <Text style={styles.benefitSummary}>节省排队时间，提交后即可获得确认。</Text>
+            <Text style={styles.benefitSummary}>{t('thailand.selection.lightning.summary')}</Text>
           </View>
 
           {/* 行动按钮 */}
@@ -204,7 +206,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('TDACHybrid', { travelerInfo })}
           >
-            <Text style={styles.actionButtonText}>使用闪电提交</Text>
+            <Text style={styles.actionButtonText}>{t('thailand.selection.lightning.cta')}</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </View>
@@ -218,35 +220,35 @@ const TDACSelectionScreen = ({ navigation, route }) => {
           >
             {/* 标题区域 */}
             <View style={styles.cardHeader}>
-              <Text style={[styles.optionIcon, styles.stableIcon]}>🛡️</Text>
+              <Text style={[styles.optionIcon, styles.stableIcon]}>{t('thailand.selection.stable.icon')}</Text>
               <View style={styles.titleSection}>
-                <Text style={[styles.optionTitle, styles.stableTitle]}>稳妥提交</Text>
-                <Text style={[styles.optionSubtitle, styles.stableSubtitle]}>稳定通道 · 清晰可见</Text>
+                <Text style={[styles.optionTitle, styles.stableTitle]}>{t('thailand.selection.stable.title')}</Text>
+                <Text style={[styles.optionSubtitle, styles.stableSubtitle]}>{t('thailand.selection.stable.subtitle')}</Text>
               </View>
             </View>
 
           {/* 核心指标 */}
           <View style={[styles.benefitsSection, styles.stableBenefitsSection]}>
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>⏱️</Text>
+              <Text style={styles.benefitIcon}>{t('thailand.selection.stable.benefits.time.icon')}</Text>
               <View>
-                <Text style={[styles.benefitValue, styles.stableValue]}>24秒</Text>
-                <Text style={styles.benefitLabel}>稳定完成</Text>
+                <Text style={[styles.benefitValue, styles.stableValue]}>{t('thailand.selection.stable.benefits.time.value')}</Text>
+                <Text style={styles.benefitLabel}>{t('thailand.selection.stable.benefits.time.label')}</Text>
               </View>
             </View>
 
             <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>🎯</Text>
+              <Text style={styles.benefitIcon}>{t('thailand.selection.stable.benefits.success.icon')}</Text>
               <View>
-                <Text style={[styles.benefitValue, styles.stableValue]}>85%</Text>
-                <Text style={styles.benefitLabel}>可靠成功率</Text>
+                <Text style={[styles.benefitValue, styles.stableValue]}>{t('thailand.selection.stable.benefits.success.value')}</Text>
+                <Text style={styles.benefitLabel}>{t('thailand.selection.stable.benefits.success.label')}</Text>
               </View>
             </View>
           </View>
 
           {/* 用户利益 */}
           <View style={styles.userBenefits}>
-            <Text style={styles.benefitSummary}>适合想亲自查看每一步的旅客。</Text>
+            <Text style={styles.benefitSummary}>{t('thailand.selection.stable.summary')}</Text>
           </View>
 
             {/* 行动按钮 */}
@@ -254,7 +256,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
               style={[styles.actionButton, styles.stableButton]}
               onPress={() => navigation.navigate('TDACWebView', { travelerInfo })}
             >
-              <Text style={[styles.actionButtonText, styles.stableButtonText]}>选择稳妥方案</Text>
+              <Text style={[styles.actionButtonText, styles.stableButtonText]}>{t('thailand.selection.stable.cta')}</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </View>
@@ -262,17 +264,17 @@ const TDACSelectionScreen = ({ navigation, route }) => {
         {/* 智能推荐提示 */}
         <View style={styles.smartTipSection}>
           <View style={styles.tipCard}>
-            <Text style={styles.tipIcon}>💡</Text>
+            <Text style={styles.tipIcon}>{t('thailand.selection.smartTip.icon')}</Text>
             <View style={styles.tipContent}>
-              <Text style={styles.tipTitle}>智能推荐</Text>
-              <Text style={styles.tipText}>推荐闪电提交；如需完整流程，可随时切换稳妥方案。</Text>
+              <Text style={styles.tipTitle}>{t('thailand.selection.smartTip.title')}</Text>
+              <Text style={styles.tipText}>{t('thailand.selection.smartTip.text')}</Text>
             </View>
           </View>
         </View>
 
         {/* 底部鼓励信息 */}
         <View style={styles.footerSection}>
-          <Text style={styles.footerText}>我们会陪您完成整个流程，确保顺利提交。</Text>
+          <Text style={styles.footerText}>{t('thailand.selection.footer.text')}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -19,7 +19,7 @@ import CompletionSummaryCard from '../../components/CompletionSummaryCard';
 import PreparedState from '../../components/thailand/PreparedState';
 import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, shadows } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
@@ -1035,28 +1035,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 
-  // Entry Guide Button Styles
+  // Entry Guide Button Styles - Premium gradient button
   entryGuideButton: {
     borderRadius: 16,
     overflow: 'hidden',
     marginTop: spacing.lg,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.button,
   },
   entryGuideGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 18,
   },
   entryGuideIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -1068,63 +1064,75 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.white,
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 17,
+    letterSpacing: 0.2,
   },
   entryGuideSubtitle: {
     ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(255, 255, 255, 0.90)',
     marginTop: 4,
+    fontSize: 13,
   },
   entryGuideIcon: {
-    fontSize: 24,
+    fontSize: 26,
   },
   entryGuideChevron: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.26)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: spacing.md,
+    marginLeft: spacing.sm,
   },
   entryGuideArrow: {
     ...typography.body1,
     color: colors.white,
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
   },
 
-  // Additional action buttons styles
-  additionalActionsContainer: {
+  // Quick Action Buttons - Compact action buttons with icons
+  quickActionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: spacing.sm,
     marginTop: spacing.md,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  additionalActionButton: {
+  quickActionButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    marginHorizontal: spacing.xs,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    ...shadows.small,
   },
-  additionalActionIcon: {
-    fontSize: 16,
-    marginRight: spacing.xs,
+  quickActionIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
   },
-  additionalActionText: {
+  quickActionIcon: {
+    fontSize: 20,
+  },
+  quickActionText: {
     ...typography.body2,
-    color: colors.text,
-    fontWeight: '500',
-    fontSize: 13,
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });
 

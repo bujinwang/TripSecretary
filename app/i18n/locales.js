@@ -1431,6 +1431,117 @@ const baseTranslations = {
           },
         },
       },
+
+      // TDACSelectionScreen translations
+      selection: {
+        heroEmoji: '🌟',
+        heroTitle: 'Choose Submission Method',
+        heroSubtitle: 'Complete Thailand Arrival Card Quickly',
+        backButton: 'Back',
+        lightning: {
+          badge: 'Recommended',
+          badgeIcon: '📱',
+          icon: '⚡',
+          title: 'Lightning Submit',
+          subtitle: 'Fast Track · Smart Validation',
+          benefits: {
+            time: { icon: '⏱️', value: '5-8 sec', label: 'Lightning Fast' },
+            success: { icon: '🎯', value: '95%+', label: 'High Success Rate' },
+            speed: { icon: '🚀', value: '3x Faster', label: 'Than Traditional' }
+          },
+          summary: 'Save queue time, get confirmation immediately after submission.',
+          cta: 'Use Lightning Submit'
+        },
+        stable: {
+          icon: '🛡️',
+          title: 'Stable Submit',
+          subtitle: 'Stable Channel · Clearly Visible',
+          benefits: {
+            time: { icon: '⏱️', value: '24 sec', label: 'Stable Completion' },
+            success: { icon: '🎯', value: '85%', label: 'Reliable Success Rate' }
+          },
+          summary: 'Suitable for travelers who want to see every step.',
+          cta: 'Choose Stable Option'
+        },
+        smartTip: {
+          icon: '💡',
+          title: 'Smart Recommendation',
+          text: 'Lightning Submit recommended; you can switch to stable option anytime if you need the full process.'
+        },
+        footer: {
+          text: 'We will accompany you through the entire process to ensure smooth submission.'
+        }
+      },
+
+      // ThailandEntryQuestionsScreen translations
+      entryQuestions: {
+        topBarTitle: 'Entry Questions',
+        header: {
+          title: 'ชุดคำถาม-คำตอบสำหรับเจ้าหน้าที่',
+          subtitle: 'Immigration Questions & Answers',
+          subtitleZh: 'Common Entry Questions and Answers',
+          description: '📋 Pre-filled answers to common entry questions based on your travel information, ready to show immigration officers'
+        },
+        languageSelector: { label: 'Language:', zh: 'Chinese', en: 'English', th: 'Thai' },
+        filter: { showRequired: 'Show Required Questions Only', showAll: 'Show All Questions', count: '({{count}} questions)' },
+        question: { required: 'Required', answerLabel: 'Answer:', tipsLabel: '💡 Tips:', suggestedLabel: 'Other Optional Answers:' },
+        footer: {
+          icon: 'ℹ️',
+          infoText: 'These answers are automatically generated based on your submitted entry information. If immigration officers ask other questions, please answer truthfully.',
+          instructionsTitle: 'Usage Instructions:',
+          instruction1: '1. Show this page to immigration officer as reference',
+          instruction2: '2. Switch languages for easier communication',
+          instruction3: '3. Required questions are marked with badges'
+        },
+        empty: { icon: '📭', text: 'No questions to display', hint: 'Please ensure your entry information is completely filled' },
+        loading: 'Loading entry questions...',
+        errors: { missingEntryPack: 'Missing entry pack information', loadFailed: 'Failed to load entry questions, please try again later' }
+      },
+
+      // Enhanced travelInfo translations
+      travelInfoEnhanced: {
+        sectionIntros: {
+          passport: { icon: '🛂', text: 'Customs officers will verify your passport information. Please ensure it matches your passport exactly. Don\'t worry, we\'ll help you format it!' },
+          personal: { icon: '👤', text: 'This information helps Thailand understand your background and contact you if needed.' },
+          funds: { icon: '💰', text: 'Show your financial capability to support your Thailand trip.' },
+          travel: { icon: '✈️', text: 'Tell Thailand your travel plans so they can prepare a warm welcome for you.' }
+        },
+        saveStatus: { pending: 'Waiting to save...', saving: 'Saving...', saved: 'Saved', error: 'Save failed', retry: 'Retry' },
+        lastEdited: 'Last edited: {{time}}',
+        progress: {
+          ready: 'Ready for Thailand! 🌴',
+          completion: '{{percent}}% complete',
+          hints: {
+            start: '🌟 First step, start by introducing yourself!',
+            early: 'Great start! Thailand welcomes you 🌺',
+            mid: 'Continue my Thailand preparation journey 🏖️',
+            late: '🚀 Almost done, your Thailand trip is just around the corner!'
+          },
+          nextSteps: {
+            passport: '💡 Start with passport information, tell Thailand who you are',
+            personal: '👤 Fill in personal information, let Thailand know you better',
+            funds: '💰 Show your proof of funds, Thailand wants to ensure you have a great time',
+            travel: '✈️ Last step, share your travel plans!'
+          }
+        }
+      },
+
+      // Constants translations
+      occupations: {
+        SOFTWARE_ENGINEER: 'Software Engineer', STUDENT: 'Student', TEACHER: 'Teacher', DOCTOR: 'Doctor',
+        ACCOUNTANT: 'Accountant', SALES_MANAGER: 'Sales Manager', RETIRED: 'Retired', ENGINEER: 'Engineer',
+        CIVIL_SERVANT: 'Civil Servant', LAWYER: 'Lawyer', NURSE: 'Nurse', FREELANCER: 'Freelancer',
+        BUSINESS_OWNER: 'Business Owner', HOMEMAKER: 'Homemaker', DESIGNER: 'Designer', OTHER: 'Other'
+      },
+      travelPurposes: {
+        HOLIDAY: 'Holiday/Tourism', MEETING: 'Meeting', SPORTS: 'Sports', BUSINESS: 'Business',
+        INCENTIVE: 'Incentive', CONVENTION: 'Convention/Conference', EDUCATION: 'Education',
+        EMPLOYMENT: 'Employment', EXHIBITION: 'Exhibition', MEDICAL: 'Medical Treatment'
+      },
+      accommodationTypes: {
+        HOTEL: 'Hotel', HOSTEL: 'Hostel', GUESTHOUSE: 'Guesthouse',
+        RESORT: 'Resort', APARTMENT: 'Apartment', FRIEND: 'Friend\'s House'
+      },
     },
     japan: {
       info: {
@@ -3758,6 +3869,117 @@ const baseTranslations = {
             exportedMessage: 'Comparison data copied to clipboard',
           },
         },
+      },
+
+      // TDACSelectionScreen 中文翻译
+      selection: {
+        heroEmoji: '🌟',
+        heroTitle: '选择提交方式',
+        heroSubtitle: '快速完成泰国入境卡',
+        backButton: '返回',
+        lightning: {
+          badge: '推荐选择',
+          badgeIcon: '📱',
+          icon: '⚡',
+          title: '闪电提交',
+          subtitle: '快速通道 · 智能验证',
+          benefits: {
+            time: { icon: '⏱️', value: '5-8秒', label: '闪电完成' },
+            success: { icon: '🎯', value: '95%+', label: '超高成功率' },
+            speed: { icon: '🚀', value: '快3倍', label: '比传统方式' }
+          },
+          summary: '节省排队时间，提交后即可获得确认。',
+          cta: '使用闪电提交'
+        },
+        stable: {
+          icon: '🛡️',
+          title: '稳妥提交',
+          subtitle: '稳定通道 · 清晰可见',
+          benefits: {
+            time: { icon: '⏱️', value: '24秒', label: '稳定完成' },
+            success: { icon: '🎯', value: '85%', label: '可靠成功率' }
+          },
+          summary: '适合想亲自查看每一步的旅客。',
+          cta: '选择稳妥方案'
+        },
+        smartTip: {
+          icon: '💡',
+          title: '智能推荐',
+          text: '推荐闪电提交；如需完整流程，可随时切换稳妥方案。'
+        },
+        footer: {
+          text: '我们会陪您完成整个流程，确保顺利提交。'
+        }
+      },
+
+      // ThailandEntryQuestionsScreen 中文翻译
+      entryQuestions: {
+        topBarTitle: '入境问题',
+        header: {
+          title: 'ชุดคำถาม-คำตอบสำหรับเจ้าหน้าที่',
+          subtitle: 'Immigration Questions & Answers',
+          subtitleZh: '入境常见问题及答案',
+          description: '📋 基于您的旅行信息预填的常见入境问题答案，可向移民官员展示'
+        },
+        languageSelector: { label: '语言 / Language:', zh: '中文', en: 'English', th: 'ไทย' },
+        filter: { showRequired: '仅显示必填问题', showAll: '显示全部问题', count: '({{count}} 个问题)' },
+        question: { required: '必填', answerLabel: '答案 / Answer:', tipsLabel: '💡 提示:', suggestedLabel: '其他可选答案:' },
+        footer: {
+          icon: 'ℹ️',
+          infoText: '这些答案基于您提交的入境信息自动生成。如移民官提出其他问题，请如实回答。',
+          instructionsTitle: '使用说明：',
+          instruction1: '1. 向移民官展示此页面作为参考',
+          instruction2: '2. 可切换语言以便沟通',
+          instruction3: '3. 必填问题已用徽章标记'
+        },
+        empty: { icon: '📭', text: '暂无可显示的问题', hint: '请确保您的入境信息已完整填写' },
+        loading: '加载入境问题...',
+        errors: { missingEntryPack: '缺少入境包信息', loadFailed: '加载入境问题失败，请稍后重试' }
+      },
+
+      // TravelInfoScreen 补充翻译
+      travelInfoEnhanced: {
+        sectionIntros: {
+          passport: { icon: '🛂', text: '海关官员会核对你的护照信息，请确保与护照完全一致。别担心，我们会帮你格式化！' },
+          personal: { icon: '👤', text: '这些信息帮助泰国了解你的背景，如有需要可以联系你。' },
+          funds: { icon: '💰', text: '展示你的经济能力，证明可以支持泰国之旅。' },
+          travel: { icon: '✈️', text: '告诉泰国你的旅行计划，让他们为你准备好热情的欢迎。' }
+        },
+        saveStatus: { pending: '等待保存...', saving: '正在保存...', saved: '已保存', error: '保存失败', retry: '重试' },
+        lastEdited: '最近编辑：{{time}}',
+        progress: {
+          ready: '泰国准备就绪！🌴',
+          completion: '完成度 {{percent}}%',
+          hints: {
+            start: '🌟 第一步，从介绍自己开始吧！',
+            early: '好的开始！泰国欢迎你 🌺',
+            mid: '继续我的泰国准备之旅 🏖️',
+            late: '🚀 快要完成了，你的泰国之旅近在咫尺！'
+          },
+          nextSteps: {
+            passport: '💡 从护照信息开始，告诉泰国你是谁',
+            personal: '👤 填写个人信息，让泰国更了解你',
+            funds: '💰 展示你的资金证明，泰国想确保你玩得开心',
+            travel: '✈️ 最后一步，分享你的旅行计划吧！'
+          }
+        }
+      },
+
+      // 常量翻译
+      occupations: {
+        SOFTWARE_ENGINEER: '软件工程师', STUDENT: '学生', TEACHER: '教师', DOCTOR: '医生',
+        ACCOUNTANT: '会计师', SALES_MANAGER: '销售经理', RETIRED: '退休人员', ENGINEER: '工程师',
+        CIVIL_SERVANT: '公务员', LAWYER: '律师', NURSE: '护士', FREELANCER: '自由职业者',
+        BUSINESS_OWNER: '企业主', HOMEMAKER: '家庭主妇', DESIGNER: '设计师', OTHER: '其他'
+      },
+      travelPurposes: {
+        HOLIDAY: '度假/旅游', MEETING: '会议', SPORTS: '体育', BUSINESS: '商务',
+        INCENTIVE: '奖励旅游', CONVENTION: '会展/大会', EDUCATION: '教育',
+        EMPLOYMENT: '就业', EXHIBITION: '展览', MEDICAL: '医疗'
+      },
+      accommodationTypes: {
+        HOTEL: '酒店', HOSTEL: '青年旅舍', GUESTHOUSE: '民宿',
+        RESORT: '度假村', APARTMENT: '公寓', FRIEND: '朋友家'
       },
     },
     result: {
