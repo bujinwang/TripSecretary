@@ -823,6 +823,18 @@ const AppNavigator = React.forwardRef((props, ref) => {
                 },
               }}
             />
+            <Stack.Screen
+              name="ComponentShowcase"
+              component={require('../components/tamagui/ComponentShowcase').default}
+              options={{
+                headerShown: true,
+                title: 'Component Library',
+                headerTintColor: colors.text,
+                headerStyle: {
+                  backgroundColor: colors.white,
+                },
+              }}
+            />
           </>
         )}
         

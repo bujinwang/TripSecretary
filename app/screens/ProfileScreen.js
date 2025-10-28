@@ -361,6 +361,12 @@ const ProfileScreen = ({ navigation, route }) => {
             title: 'Tamagui Test',
             subtitle: 'View Tamagui design system components',
           },
+          {
+            id: 'componentShowcase',
+            icon: '🧩',
+            title: 'Component Library',
+            subtitle: 'Browse shared Tamagui components',
+          },
         ],
       }] : []),
     ],
@@ -409,6 +415,8 @@ const ProfileScreen = ({ navigation, route }) => {
       navigation.navigate('NotificationTest');
     } else if (itemId === 'tamaguiTest') {
       navigation.navigate('TamaguiTest');
+    } else if (itemId === 'componentShowcase') {
+      navigation.navigate('ComponentShowcase');
     }
     // TODO: Navigate to other screens
   };
