@@ -14,7 +14,7 @@ import UserDataService from '../../services/data/UserDataService';
 import { parsePassportName } from '../../utils/NameParser';
 import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from '../../screens/thailand/constants';
+import { TRAVEL_PURPOSE_VALUES, ACCOMMODATION_TYPE_VALUES, OCCUPATION_VALUES } from '../../screens/thailand/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
@@ -535,7 +535,7 @@ export const useThailandDataPersistence = ({
 
         // Handle occupation
         const savedOccupation = personalInfo.occupation || '';
-        const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+        const isPredefined = OCCUPATION_VALUES.includes(savedOccupation);
         if (isPredefined) {
           setOccupation(savedOccupation);
           setCustomOccupation('');
@@ -579,7 +579,7 @@ export const useThailandDataPersistence = ({
 
           // Handle travel purpose
           const loadedPurpose = travelInfo.travelPurpose || 'HOLIDAY';
-          if (PREDEFINED_TRAVEL_PURPOSES.includes(loadedPurpose)) {
+          if (TRAVEL_PURPOSE_VALUES.includes(loadedPurpose)) {
             setTravelPurpose(loadedPurpose);
             setCustomTravelPurpose('');
           } else {
@@ -599,7 +599,7 @@ export const useThailandDataPersistence = ({
 
           // Handle accommodation type
           const loadedAccommodationType = travelInfo.accommodationType || 'HOTEL';
-          if (PREDEFINED_ACCOMMODATION_TYPES.includes(loadedAccommodationType)) {
+          if (ACCOMMODATION_TYPE_VALUES.includes(loadedAccommodationType)) {
             setAccommodationType(loadedAccommodationType);
             setCustomAccommodationType('');
           } else {
@@ -640,8 +640,8 @@ export const useThailandDataPersistence = ({
             subDistrict: travelInfo.subDistrict,
             postalCode: travelInfo.postalCode,
             hotelAddress: travelInfo.hotelAddress,
-            customTravelPurpose: travelInfo.travelPurpose && !PREDEFINED_TRAVEL_PURPOSES.includes(travelInfo.travelPurpose) ? travelInfo.travelPurpose : '',
-            customAccommodationType: travelInfo.accommodationType && !PREDEFINED_ACCOMMODATION_TYPES.includes(travelInfo.accommodationType) ? travelInfo.accommodationType : ''
+            customTravelPurpose: travelInfo.travelPurpose && !TRAVEL_PURPOSE_VALUES.includes(travelInfo.travelPurpose) ? travelInfo.travelPurpose : '',
+            customAccommodationType: travelInfo.accommodationType && !ACCOMMODATION_TYPE_VALUES.includes(travelInfo.accommodationType) ? travelInfo.accommodationType : ''
           });
         } else {
           console.log('No saved travel info found');

@@ -1,5 +1,5 @@
 // 入境通 - Occupation Selector Component
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { OCCUPATION_OPTIONS } from '../screens/thailand/constants';
+import { getOccupationOptions } from '../screens/thailand/constants';
+import { useLocale } from '../i18n/LocaleContext';
 
 const OccupationSelector = ({
   label,
@@ -36,8 +37,12 @@ const OccupationSelector = ({
   const [isFocused, setIsFocused] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);
 
+  // Get i18n-enabled occupation options
+  const { t } = useLocale();
+  const OCCUPATION_OPTIONS = useMemo(() => getOccupationOptions(t), [t]);
+
   // Filter occupations based on search text
-  const filteredOccupations = React.useMemo(() => {
+  const filteredOccupations = useMemo(() => {
     if (!Array.isArray(OCCUPATION_OPTIONS)) return [];
 
     return OCCUPATION_OPTIONS.filter(occupation => {
@@ -48,7 +53,7 @@ const OccupationSelector = ({
       return label.toLowerCase().includes(search) ||
              occupationValue.toLowerCase().includes(search);
     });
-  }, [searchText]);
+  }, [searchText, OCCUPATION_OPTIONS]);
 
   // Get current display value
   const getCurrentDisplayValue = () => {

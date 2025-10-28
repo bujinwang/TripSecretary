@@ -356,6 +356,30 @@ export const useThailandValidation = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.residentCountry, formState.cityOfResidence]);
 
+  // Auto-calculate completion metrics when form values change
+  // Uses a memoized formValues object to prevent excessive re-renders
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      const metrics = calculateCompletionMetrics();
+      formState.setCompletionMetrics(metrics);
+      formState.setTotalCompletionPercent(metrics?.percent || 0);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
+    // Only depend on the memoized formValues object, not individual fields
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    // Group related fields to reduce dependency list
+    formState.passportNo, formState.surname, formState.givenName, formState.nationality,
+    formState.dob, formState.expiryDate, formState.sex,
+    formState.occupation, formState.cityOfResidence, formState.residentCountry,
+    formState.phoneNumber, formState.email,
+    formState.funds.length, // Only track funds array length, not contents
+    formState.travelPurpose, formState.arrivalArrivalDate, formState.arrivalFlightNumber,
+    formState.accommodationType, formState.province, formState.district,
+    calculateCompletionMetrics,
+  ]);
+
   return {
     handleFieldBlur,
     handleUserInteraction,

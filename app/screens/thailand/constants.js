@@ -24,23 +24,6 @@ export const getTravelPurposeOptions = (t) => [
 ];
 
 /**
- * Predefined travel purpose options for Thailand entry
- * @deprecated Use getTravelPurposeOptions(t) for i18n support
- */
-export const PREDEFINED_TRAVEL_PURPOSES = [
-  'HOLIDAY',
-  'MEETING',
-  'SPORTS',
-  'BUSINESS',
-  'INCENTIVE',
-  'CONVENTION',
-  'EDUCATION',
-  'EMPLOYMENT',
-  'EXHIBITION',
-  'MEDICAL',
-];
-
-/**
  * Get accommodation type options with internationalized labels
  * @param {Function} t - Translation function from i18n
  * @returns {Array} Accommodation options with translated labels
@@ -57,18 +40,56 @@ export const getAccommodationTypeOptions = (t) => [
 ];
 
 /**
- * Predefined accommodation type options for Thailand stay
- * These match the UI values from AccommodationSubSection
- * They are transformed to TDAC API values by ThailandTravelerContextBuilder
- * @deprecated Use getAccommodationTypeOptions(t) for i18n support
+ * Predefined travel purpose values (for validation)
+ * Use this array to check if a value is a predefined option
  */
-export const PREDEFINED_ACCOMMODATION_TYPES = [
+export const TRAVEL_PURPOSE_VALUES = [
+  'HOLIDAY',
+  'MEETING',
+  'SPORTS',
+  'BUSINESS',
+  'INCENTIVE',
+  'CONVENTION',
+  'EDUCATION',
+  'EMPLOYMENT',
+  'EXHIBITION',
+  'MEDICAL',
+];
+
+/**
+ * Predefined accommodation type values (for validation)
+ * Use this array to check if a value is a predefined option
+ */
+export const ACCOMMODATION_TYPE_VALUES = [
   'HOTEL',
-  'HOSTEL',      // Maps to YOUTH_HOSTEL in TDAC
-  'GUESTHOUSE',  // Maps to GUEST_HOUSE in TDAC
-  'RESORT',      // Maps to HOTEL in TDAC (no resort option in TDAC)
+  'HOSTEL',
+  'GUESTHOUSE',
+  'RESORT',
   'APARTMENT',
-  'FRIEND',      // Maps to FRIEND_HOUSE in TDAC
+  'FRIEND',
+];
+
+/**
+ * Predefined occupation values (for validation)
+ * Use this array to check if a value is a predefined option
+ */
+export const OCCUPATION_VALUES = [
+  'SOFTWARE ENGINEER',
+  'STUDENT',
+  'TEACHER',
+  'DOCTOR',
+  'ACCOUNTANT',
+  'SALES MANAGER',
+  'RETIRED',
+  'ENGINEER',
+  'CIVIL SERVANT',
+  'LAWYER',
+  'NURSE',
+  'FREELANCER',
+  'BUSINESS OWNER',
+  'HOMEMAKER',
+  'DESIGNER',
+  'OTHER',
 ];
 
 /**
@@ -104,28 +125,6 @@ export const getOccupationOptions = (t) => [
   { value: 'OTHER', label: t('thailand.occupations.OTHER'), icon: '📝' },
 ];
 
-/**
- * Legacy export for backward compatibility
- * @deprecated Use getOccupationOptions(t) instead
- */
-export const OCCUPATION_OPTIONS = [
-  { value: 'SOFTWARE ENGINEER', label: '软件工程师', icon: '💻' },
-  { value: 'STUDENT', label: '学生', icon: '📚' },
-  { value: 'TEACHER', label: '教师', icon: '👨‍🏫' },
-  { value: 'DOCTOR', label: '医生', icon: '👨‍⚕️' },
-  { value: 'ACCOUNTANT', label: '会计师', icon: '📊' },
-  { value: 'SALES MANAGER', label: '销售经理', icon: '📈' },
-  { value: 'RETIRED', label: '退休人员', icon: '🏖️' },
-  { value: 'ENGINEER', label: '工程师', icon: '⚙️' },
-  { value: 'CIVIL SERVANT', label: '公务员', icon: '🏛️' },
-  { value: 'LAWYER', label: '律师', icon: '⚖️' },
-  { value: 'NURSE', label: '护士', icon: '👩‍⚕️' },
-  { value: 'FREELANCER', label: '自由职业者', icon: '🎨' },
-  { value: 'BUSINESS OWNER', label: '企业主', icon: '💼' },
-  { value: 'HOMEMAKER', label: '家庭主妇', icon: '🏠' },
-  { value: 'DESIGNER', label: '设计师', icon: '✏️' },
-  { value: 'OTHER', label: '其他', icon: '📝' },
-];
 
 /**
  * Storage keys for AsyncStorage
@@ -291,10 +290,7 @@ export const QR_CODE = {
 };
 
 export default {
-  PREDEFINED_TRAVEL_PURPOSES,
-  PREDEFINED_ACCOMMODATION_TYPES,
   GENDER_OPTIONS,
-  OCCUPATION_OPTIONS,
   STORAGE_KEYS,
   SECTIONS,
   FIELD_NAMES,

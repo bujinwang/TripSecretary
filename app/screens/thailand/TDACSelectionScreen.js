@@ -3,7 +3,7 @@
   * 让用户选择最适合的入境卡提交方式，聚焦于用户体验而非技术细节
   */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
 // Removed mockTDACData dependency - using pure user data
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
+import UserDataService from '../../services/data/UserDataService';
 
 const TDACSelectionScreen = ({ navigation, route }) => {
   const { t } = useLocale();
@@ -77,8 +78,9 @@ const TDACSelectionScreen = ({ navigation, route }) => {
   /**
    * Handle successful TDAC submission by creating/updating entry pack
    * This is called when user returns from successful TDAC submission
+   * Wrapped with useCallback to prevent stale closures in event listener
    */
-  const handleTDACSubmissionSuccess = async (submissionData) => {
+  const handleTDACSubmissionSuccess = useCallback(async (submissionData) => {
     const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
 
     if (!result.success) {
@@ -99,13 +101,11 @@ const TDACSelectionScreen = ({ navigation, route }) => {
         }
       );
     }
-  };
+  }, [travelerInfo]);
 
   // Event-driven TDAC submission listener instead of polling AsyncStorage
   React.useEffect(() => {
     // Subscribe to TDAC submission events from UserDataService
-    const UserDataService = require('../../services/data/UserDataService').default;
-
     const unsubscribe = UserDataService.addDataChangeListener((event) => {
       console.log('📡 TDAC submission event received:', event.type);
 
@@ -117,11 +117,11 @@ const TDACSelectionScreen = ({ navigation, route }) => {
     });
 
     return () => {
-      if (unsubscribe) {
+      if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
     };
-  }, []);
+  }, [handleTDACSubmissionSuccess]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -48,7 +48,7 @@ import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS, GENDER_OPTIONS } from './constants';
+import { GENDER_OPTIONS } from './constants';
 import OptionSelector from '../../components/thailand/OptionSelector';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
@@ -165,41 +165,14 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     debouncedSaveData
   });
 
-  // Destructure stable setters and values for useEffect
-  const { setCompletionMetrics, setTotalCompletionPercent } = formState;
-  const {
-    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
-    funds, travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry,
-    hotelAddress, accommodationType, customAccommodationType, province, district,
-    subDistrict, postalCode, isTransitPassenger
-  } = formState;
-
   // Load saved data on component mount - delegated to persistence hook
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Debounced completion metrics calculation
-  // Prevents excessive recalculations when user is typing rapidly
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      const metrics = calculateCompletionMetrics();
-      setCompletionMetrics(metrics);
-      setTotalCompletionPercent(metrics?.percent || 0);
-    }, 300); // 300ms debounce delay
-
-    return () => clearTimeout(debounceTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneNumber, email, phoneCode,
-    funds, travelPurpose, customTravelPurpose, arrivalArrivalDate, departureDepartureDate,
-    arrivalFlightNumber, departureFlightNumber, recentStayCountry, boardingCountry,
-    hotelAddress, accommodationType, customAccommodationType, province, district,
-    subDistrict, postalCode, isTransitPassenger,
-  ]);
+  // Note: Completion metrics calculation is now handled automatically
+  // by the useThailandValidation hook to prevent excessive re-renders
+  // from 20+ dependencies. See useThailandValidation.js:359-381
 
 
 

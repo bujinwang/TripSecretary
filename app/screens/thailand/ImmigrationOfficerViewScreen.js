@@ -34,8 +34,15 @@ import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Brightness from 'expo-brightness';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import { QR_CODE, GESTURES, IMAGE_SIZES, TYPOGRAPHY as IOV_TYPOGRAPHY, LAYOUT, OPACITY, BORDER_COLORS } from './immigrationOfficerViewConstants';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
+import { safeGet, safeArray } from './helpers';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../utils/currencyConverter';
+import QRCodeSection from './components/QRCodeSection';
+import PassportInfoSection from './components/PassportInfoSection';
+import FundsInfoSection from './components/FundsInfoSection';
+import TravelInfoSection from './components/TravelInfoSection';
+import ContactInfoSection from './components/ContactInfoSection';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -58,11 +65,15 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
   const [brightnessBoost, setBrightnessBoost] = useState(true);
   const [showHelpHints, setShowHelpHints] = useState(false);
   const scrollViewRef = useRef(null);
-  
+
   // Gesture handler refs
   const doubleTapRef = useRef(null);
   const longPressRef = useRef(null);
   const threeFingerTapRef = useRef(null);
+
+  // Cleanup refs to prevent async issues on unmount
+  const isMountedRef = useRef(true);
+  const cleanupRef = useRef(null);
 
   // Entry pack data from route params
   const entryPackId = route.params?.entryPackId;
@@ -103,10 +114,19 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
             // Convert entry info to entry pack format for compatibility
             const loadedEntryPack = loadedEntryInfo ? {
               id: loadedEntryInfo.id,
-              qrCodeUri: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.qrUri,
-              arrCardNo: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.arrCardNo,
-              submittedAt: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.submittedAt,
-              status: loadedEntryInfo.displayStatus?.tdacSubmitted ? 'submitted' : 'in_progress'
+              qrCodeUri: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'qrUri'
+              ),
+              arrCardNo: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'arrCardNo'
+              ),
+              submittedAt: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'submittedAt'
+              ),
+              status: safeGet(loadedEntryInfo, 'displayStatus.tdacSubmitted', false) ? 'submitted' : 'in_progress'
             } : null;
             
             setEntryPack(loadedEntryPack);
@@ -125,54 +145,62 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         // Store original orientation
         const currentOrientation = await ScreenOrientation.getOrientationAsync();
         setOriginalOrientation(currentOrientation);
-        
+
         // Lock to landscape orientation for presentation mode
         await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-        
+
         // Hide status bar for full-screen experience
         StatusBar.setHidden(true);
-        
+
         // Keep screen awake during presentation mode
         activateKeepAwake('ImmigrationOfficerView');
-        
+
         // Store original brightness and boost to maximum
         const currentBrightness = await Brightness.getBrightnessAsync();
         setOriginalBrightness(currentBrightness);
         await Brightness.setBrightnessAsync(1.0); // Maximum brightness
+
+        // Store cleanup values in ref for synchronous cleanup
+        cleanupRef.current = {
+          orientation: currentOrientation,
+          brightness: currentBrightness,
+        };
       } catch (error) {
         console.warn('Failed to set up presentation mode:', error);
       }
     };
 
     setupPresentationMode();
-    
+
+    // Synchronous cleanup to avoid async issues on unmount
     return () => {
-      // Restore original settings on exit
-      const cleanup = async () => {
-        try {
-          // Restore original orientation
-          if (originalOrientation) {
-            await ScreenOrientation.unlockAsync();
-          }
-          
-          // Restore status bar
-          StatusBar.setHidden(false);
-          
-          // Deactivate keep awake
-          deactivateKeepAwake('ImmigrationOfficerView');
-          
-          // Restore original brightness
-          if (originalBrightness !== null) {
-            await Brightness.setBrightnessAsync(originalBrightness);
-          }
-        } catch (error) {
-          console.warn('Failed to cleanup presentation mode:', error);
+      isMountedRef.current = false;
+
+      try {
+        // Restore original orientation (fire-and-forget with error handling)
+        if (cleanupRef.current?.orientation) {
+          ScreenOrientation.unlockAsync().catch(err =>
+            console.warn('Failed to unlock orientation:', err)
+          );
         }
-      };
-      
-      cleanup();
+
+        // Restore status bar (synchronous)
+        StatusBar.setHidden(false);
+
+        // Deactivate keep awake (synchronous)
+        deactivateKeepAwake('ImmigrationOfficerView');
+
+        // Restore original brightness (fire-and-forget with error handling)
+        if (cleanupRef.current?.brightness !== null && cleanupRef.current?.brightness !== undefined) {
+          Brightness.setBrightnessAsync(cleanupRef.current.brightness).catch(err =>
+            console.warn('Failed to restore brightness:', err)
+          );
+        }
+      } catch (error) {
+        console.warn('Failed to cleanup presentation mode:', error);
+      }
     };
-  }, [originalOrientation]);
+  }, []);
 
   // Pinch gesture handler for QR code zoom
   const pinchGestureHandler = useAnimatedGestureHandler({
@@ -180,7 +208,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
       context.startScale = scale.value;
     },
     onActive: (event, context) => {
-      const newScale = Math.max(0.5, Math.min(2.0, context.startScale * event.scale));
+      const newScale = Math.max(GESTURES.MIN_PINCH_SCALE, Math.min(GESTURES.MAX_PINCH_SCALE, context.startScale * event.scale));
       scale.value = newScale;
       focalX.value = event.focalX;
       focalY.value = event.focalY;
@@ -376,541 +404,54 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
   };
 
   const renderQRSection = () => (
-    <View style={styles.qrSection}>
-      <Text style={styles.sectionTitle}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.tdacQRCode') : 
-         language === 'thai' ? 'รหัส QR TDAC' : 
-         `รหัส QR TDAC / ${t('progressiveEntryFlow.immigrationOfficer.presentation.tdacQRCode')}`}
-      </Text>
-      
-      <View style={styles.qrContainer}>
-        {entryPack?.qrCodeUri ? (
-          <LongPressGestureHandler
-            ref={longPressRef}
-            onHandlerStateChange={({ nativeEvent }) => {
-              if (nativeEvent.state === State.ACTIVE) {
-                handleLongPressQR();
-              }
-            }}
-            minDurationMs={800}
-          >
-            <TapGestureHandler
-              ref={doubleTapRef}
-              onHandlerStateChange={({ nativeEvent }) => {
-                if (nativeEvent.state === State.ACTIVE) {
-                  handleDoubleTap();
-                }
-              }}
-              numberOfTaps={2}
-              waitFor={longPressRef}
-            >
-              <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
-                <Animated.View style={[styles.qrCodeContainer, animatedQRStyle]}>
-                  <Image 
-                    source={{ uri: entryPack.qrCodeUri }}
-                    style={styles.qrCode}
-                    resizeMode="contain"
-                    // High resolution settings for better scanning
-                    resizeMethod="scale"
-                    fadeDuration={0}
-                    // Ensure crisp rendering
-                    blurRadius={0}
-                  />
-                </Animated.View>
-              </PinchGestureHandler>
-            </TapGestureHandler>
-          </LongPressGestureHandler>
-        ) : (
-          <View style={styles.qrPlaceholder}>
-            <Text style={styles.qrPlaceholderText}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodePlaceholder') : 
-               language === 'thai' ? 'รหัส QR' : 
-               `รหัส QR / ${t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodePlaceholder')}`}
-            </Text>
-            <Text style={styles.qrPlaceholderSubtext}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodeSubtext') : 
-               language === 'thai' ? 'จะปรากฏหลังส่ง TDAC' : 
-               'จะปรากฏหลังส่ง TDAC'}
-            </Text>
-          </View>
-        )}
-        
-        {/* Zoom indicator */}
-        {qrZoom !== 1 && (
-          <View style={styles.zoomIndicator}>
-            <Text style={styles.zoomText}>
-              {Math.round(qrZoom * 100)}%
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.entryCardNumber}>
-        {formatEntryCardNumber(entryPack?.arrCardNo || 'XXXXXXXXXXXX')}
-      </Text>
-      
-      <Text style={styles.submissionDate}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.submitted') : 
-         language === 'thai' ? 'ส่งเมื่อ' : 
-         `ส่งเมื่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.submitted')}`}: {formatDateForDisplay(entryPack?.submittedAt)}
-      </Text>
-    </View>
+    <QRCodeSection
+      entryPack={entryPack}
+      language={language}
+      qrZoom={qrZoom}
+      scale={scale}
+      pinchGestureHandler={pinchGestureHandler}
+      animatedQRStyle={animatedQRStyle}
+      handleDoubleTap={handleDoubleTap}
+      handleLongPressQR={handleLongPressQR}
+      t={t}
+      doubleTapRef={doubleTapRef}
+      longPressRef={longPressRef}
+    />
   );
 
   const renderPassportSection = () => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.passportInformation') : 
-         language === 'thai' ? 'ข้อมูลหนังสือเดินทาง' : 
-         `ข้อมูลหนังสือเดินทาง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.passportInformation')}`}
-      </Text>
-      
-      {/* Passport photo if available */}
-      {passportData?.photoUri && (
-        <View style={styles.passportPhotoContainer}>
-          <Image 
-            source={{ uri: passportData.photoUri }}
-            style={styles.passportPhoto}
-            resizeMode="cover"
-          />
-        </View>
-      )}
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.fullName') : 
-           language === 'thai' ? 'ชื่อเต็ม' : 
-           `ชื่อเต็ม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fullName')}`}:
-        </Text>
-        <Text style={styles.infoValue}>
-          {passportData?.fullName || passportData?.firstName + ' ' + passportData?.lastName || 'N/A'}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.passportNumber') : 
-           language === 'thai' ? 'หมายเลขหนังสือเดินทาง' : 
-           `หมายเลขหนังสือเดินทาง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.passportNumber')}`}:
-        </Text>
-        <Text style={[styles.infoValue, styles.passportNumber]}>
-          {passportData?.passportNumber || 'N/A'}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.nationality') : 
-           language === 'thai' ? 'สัญชาติ' : 
-           `สัญชาติ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.nationality')}`}:
-        </Text>
-        <Text style={styles.infoValue}>
-          {passportData?.nationality || 'N/A'}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.dateOfBirth') : 
-           language === 'thai' ? 'วันเกิด' : 
-           `วันเกิด / ${t('progressiveEntryFlow.immigrationOfficer.presentation.dateOfBirth')}`}:
-        </Text>
-        <Text style={styles.infoValue}>
-          {formatDateForDisplay(passportData?.dateOfBirth)}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.gender') : 
-           language === 'thai' ? 'เพศ' : 
-           `เพศ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.gender')}`}:
-        </Text>
-        <Text style={styles.infoValue}>
-          {passportData?.gender || 'N/A'}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
-          {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.passportExpiry') : 
-           language === 'thai' ? 'วันหมดอายุหนังสือเดินทาง' : 
-           `วันหมดอายุหนังสือเดินทาง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.passportExpiry')}`}:
-        </Text>
-        <Text style={styles.infoValue}>
-          {formatDateForDisplay(passportData?.expiryDate)}
-        </Text>
-      </View>
-    </View>
+    <PassportInfoSection
+      passportData={passportData}
+      language={language}
+      formatDateForDisplay={formatDateForDisplay}
+      t={t}
+    />
   );
 
   const renderFundsSection = () => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.fundsInformation') : 
-         language === 'thai' ? 'ข้อมูลเงินทุน' : 
-         `ข้อมูลเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundsInformation')}`}
-      </Text>
-      
-      {/* Total Funds Summary */}
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
-          💰 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds') : 
-               language === 'thai' ? 'เงินทุนรวม' : 
-               `เงินทุนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds')}`}
-        </Text>
-        
-        {fundData && fundData.length > 0 ? (
-          <>
-            {/* Calculate and display total in THB (all currencies converted) */}
-            {(() => {
-              const totalInTHB = calculateTotalFundsInCurrency(fundData, 'THB');
-
-              return (
-                <View style={styles.totalFundsContainer}>
-                  <Text style={styles.totalFundsLabel}>
-                    {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount') :
-                     language === 'thai' ? 'จำนวนรวม' :
-                     `จำนวนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')}`}:
-                  </Text>
-                  <Text style={styles.totalFundsAmount}>
-                    {new Intl.NumberFormat('en-US', {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2
-                    }).format(totalInTHB)} THB
-                  </Text>
-                </View>
-              );
-            })()}
-            
-            {/* Individual Fund Items */}
-            <View style={styles.fundItemsContainer}>
-              <Text style={styles.fundItemsTitle}>
-                {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems') : 
-                 language === 'thai' ? 'รายการเงินทุน' : 
-                 `รายการเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems')}`}:
-              </Text>
-              
-              {fundData.map((fund, index) => {
-                const originalAmount = parseFloat(fund.amount) || 0;
-                const originalCurrency = fund.currency || 'THB';
-                const convertedAmount = convertCurrency(originalAmount, originalCurrency, 'THB');
-
-                return (
-                  <View key={index} style={styles.fundItem}>
-                    <View style={styles.fundItemHeader}>
-                      <Text style={styles.fundItemType}>
-                        {fund.type || 'Cash'}
-                      </Text>
-                      <View style={styles.fundItemAmounts}>
-                        <Text style={styles.fundItemAmount}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: originalCurrency,
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0
-                          }).format(originalAmount)}
-                        </Text>
-                        {originalCurrency !== 'THB' && (
-                          <Text style={styles.fundItemConvertedAmount}>
-                            ≈ {new Intl.NumberFormat('en-US', {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 2
-                            }).format(convertedAmount)} THB
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                  
-                  {fund.photoUri && (
-                    <TouchableOpacity 
-                      style={styles.fundPhotoContainer}
-                      onPress={() => {
-                        // Could implement photo enlargement modal here
-                        Alert.alert(
-                          language === 'english' ? 'Fund Proof Photo' : 
-                          language === 'thai' ? 'รูปหลักฐานเงินทุน' : 
-                          'รูปหลักฐานเงินทุน / Fund Proof Photo',
-                          language === 'english' ? 'Tap to view larger image' : 
-                          language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' : 
-                          'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
-                        );
-                      }}
-                    >
-                      <Image 
-                        source={{ uri: fund.photoUri }}
-                        style={styles.fundPhoto}
-                        resizeMode="cover"
-                      />
-                      <Text style={styles.fundPhotoHint}>
-                        {language === 'english' ? 'Tap to enlarge' : 
-                         language === 'thai' ? 'แตะเพื่อขยาย' : 
-                         'แตะเพื่อขยาย'}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  </View>
-                );
-              })}
-            </View>
-          </>
-        ) : (
-          <View style={styles.infoRow}>
-            <Text style={styles.infoValue}>
-              {language === 'english' ? 'No fund information available' : 
-               language === 'thai' ? 'ไม่มีข้อมูลเงินทุน' : 
-               'ไม่มีข้อมูลเงินทุน / No fund information available'}
-            </Text>
-          </View>
-        )}
-      </View>
-    </View>
+    <FundsInfoSection
+      fundData={fundData}
+      language={language}
+      t={t}
+    />
   );
 
   const renderTravelSection = () => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.travelInformation') : 
-         language === 'thai' ? 'ข้อมูลการเดินทาง' : 
-         `ข้อมูลการเดินทาง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.travelInformation')}`}
-      </Text>
-      
-      {/* Flight Information Group */}
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
-          ✈️ {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.flightDetails') :
-               language === 'thai' ? 'รายละเอียดเที่ยวบิน' :
-               `รายละเอียดเที่ยวบิน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.flightDetails')}`}
-        </Text>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight') :
-             language === 'thai' ? 'เที่ยวบินมา' :
-             `เที่ยวบินมา / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.arrivalFlight || travelData?.flightNumber || 'N/A'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime') :
-             language === 'thai' ? 'วันและเวลาที่มาถึง' :
-             `วันและเวลาที่มาถึง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {formatDateForDisplay(travelData?.arrivalDate)}
-          </Text>
-        </View>
-
-        {travelData?.departureDate && (
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate') :
-               language === 'thai' ? 'วันที่เดินทางกลับ' :
-               `วันที่เดินทางกลับ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate')}`}:
-            </Text>
-            <Text style={styles.infoValue}>
-              {formatDateForDisplay(travelData.departureDate)}
-            </Text>
-          </View>
-        )}
-
-        {/* Flight Ticket Photo */}
-        {travelData?.arrivalFlightTicketPhotoUri && (
-          <TouchableOpacity
-            style={styles.documentPhotoContainer}
-            onPress={() => {
-              Alert.alert(
-                language === 'english' ? 'Flight Ticket' :
-                language === 'thai' ? 'ตั๋วเครื่องบิน' :
-                'ตั๋วเครื่องบิน / Flight Ticket',
-                language === 'english' ? 'Tap to view larger image' :
-                language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' :
-                'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
-              );
-            }}
-          >
-            <Text style={styles.documentPhotoLabel}>
-              🎫 {language === 'english' ? 'Flight Ticket' :
-                  language === 'thai' ? 'ตั๋วเครื่องบิน' :
-                  'ตั๋วเครื่องบิน / Flight Ticket'}
-            </Text>
-            <Image
-              source={{ uri: travelData.arrivalFlightTicketPhotoUri }}
-              style={styles.documentPhoto}
-              resizeMode="contain"
-            />
-            <Text style={styles.documentPhotoHint}>
-              {language === 'english' ? 'Tap to enlarge' :
-               language === 'thai' ? 'แตะเพื่อขยาย' :
-               'แตะเพื่อขยาย'}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Accommodation Information Group */}
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
-          🏨 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.accommodation') :
-               language === 'thai' ? 'ที่พัก' :
-               `ที่พัก / ${t('progressiveEntryFlow.immigrationOfficer.presentation.accommodation')}`}
-        </Text>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName') :
-             language === 'thai' ? 'ชื่อโรงแรม' :
-             `ชื่อโรงแรม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.accommodationName || travelData?.hotelName || 'N/A'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.address') :
-             language === 'thai' ? 'ที่อยู่' :
-             `ที่อยู่ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.address')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.accommodationAddress || travelData?.address || 'N/A'}
-          </Text>
-        </View>
-
-        {travelData?.accommodationPhone && (
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phone') :
-               language === 'thai' ? 'โทรศัพท์' :
-               `โทรศัพท์ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phone')}`}:
-            </Text>
-            <Text style={styles.infoValue}>
-              {travelData.accommodationPhone}
-            </Text>
-          </View>
-        )}
-
-        {/* Hotel Booking Photo */}
-        {travelData?.hotelBookingPhotoUri && (
-          <TouchableOpacity
-            style={styles.documentPhotoContainer}
-            onPress={() => {
-              Alert.alert(
-                language === 'english' ? 'Hotel Booking' :
-                language === 'thai' ? 'การจองโรงแรม' :
-                'การจองโรงแรม / Hotel Booking',
-                language === 'english' ? 'Tap to view larger image' :
-                language === 'thai' ? 'แตะเพื่อดูภาพขนาดใหญ่' :
-                'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
-              );
-            }}
-          >
-            <Text style={styles.documentPhotoLabel}>
-              🏨 {language === 'english' ? 'Hotel Booking' :
-                  language === 'thai' ? 'การจองโรงแรม' :
-                  'การจองโรงแรม / Hotel Booking'}
-            </Text>
-            <Image
-              source={{ uri: travelData.hotelBookingPhotoUri }}
-              style={styles.documentPhoto}
-              resizeMode="contain"
-            />
-            <Text style={styles.documentPhotoHint}>
-              {language === 'english' ? 'Tap to enlarge' :
-               language === 'thai' ? 'แตะเพื่อขยาย' :
-               'แตะเพื่อขยาย'}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Visit Purpose Group */}
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
-          🎯 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.visitPurpose') : 
-               language === 'thai' ? 'จุดประสงค์การเยือน' : 
-               `จุดประสงค์การเยือน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.visitPurpose')}`}
-        </Text>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.purpose') : 
-             language === 'thai' ? 'จุดประสงค์' : 
-             `จุดประสงค์ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.purpose')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.purposeOfVisit || travelData?.purpose || 'N/A'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.durationOfStay') : 
-             language === 'thai' ? 'ระยะเวลาพำนัก' : 
-             `ระยะเวลาพำนัก / ${t('progressiveEntryFlow.immigrationOfficer.presentation.durationOfStay')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.durationOfStay || 'N/A'}
-          </Text>
-        </View>
-      </View>
-    </View>
+    <TravelInfoSection
+      travelData={travelData}
+      language={language}
+      formatDateForDisplay={formatDateForDisplay}
+      t={t}
+    />
   );
 
   const renderContactSection = () => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>
-        {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.contactInformation') : 
-         language === 'thai' ? 'ข้อมูลติดต่อ' : 
-         `ข้อมูลติดต่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.contactInformation')}`}
-      </Text>
-      
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
-          📞 {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.contactDetails') : 
-               language === 'thai' ? 'รายละเอียดการติดต่อ' : 
-               `รายละเอียดการติดต่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.contactDetails')}`}
-        </Text>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phoneInThailand') : 
-             language === 'thai' ? 'โทรศัพท์ในประเทศไทย' : 
-             `โทรศัพท์ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phoneInThailand')}`}:
-          </Text>
-          <Text style={[styles.infoValue, styles.phoneNumber]}>
-            {passportData?.phoneNumber || travelData?.phoneNumber || 'N/A'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.email') : 
-             language === 'thai' ? 'อีเมล' : 
-             `อีเมล / ${t('progressiveEntryFlow.immigrationOfficer.presentation.email')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {passportData?.email || 'N/A'}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>
-            {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.thaiAddress') : 
-             language === 'thai' ? 'ที่อยู่ในประเทศไทย' : 
-             `ที่อยู่ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.thaiAddress')}`}:
-          </Text>
-          <Text style={styles.infoValue}>
-            {travelData?.accommodationAddress || travelData?.address || 'N/A'}
-          </Text>
-        </View>
-      </View>
-    </View>
+    <ContactInfoSection
+      passportData={passportData}
+      travelData={travelData}
+      language={language}
+      t={t}
+    />
   );
 
   // Handle authentication required
@@ -1234,13 +775,13 @@ const styles = StyleSheet.create({
   },
   qrCode: {
     // Large QR code - 50-60% of screen width, optimized for landscape
-    width: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
-    height: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
+    width: QR_CODE.getSize(),
+    height: QR_CODE.getSize(),
   },
   qrPlaceholder: {
     // Match QR code size for consistency
-    width: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
-    height: Math.min(screenHeight * 0.5, screenWidth * 0.4, 400),
+    width: QR_CODE.getSize(),
+    height: QR_CODE.getSize(),
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1262,10 +803,10 @@ const styles = StyleSheet.create({
   },
   entryCardNumber: {
     color: colors.white,
-    fontSize: 40, // Extra large font for easy reading
+    fontSize: IOV_TYPOGRAPHY.ENTRY_CARD_NUMBER.fontSize, // Extra large font for easy reading
     fontWeight: 'bold',
     fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', // Monospace font
-    letterSpacing: 3, // Increased letter spacing for clarity
+    letterSpacing: IOV_TYPOGRAPHY.ENTRY_CARD_NUMBER.letterSpacing, // Increased letter spacing for clarity
     marginBottom: spacing.sm,
     textAlign: 'center',
     // High contrast with text shadow for better visibility
@@ -1289,8 +830,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   passportPhoto: {
-    width: 120,
-    height: 150,
+    width: IMAGE_SIZES.PASSPORT_PHOTO.width,
+    height: IMAGE_SIZES.PASSPORT_PHOTO.height,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: colors.white,
