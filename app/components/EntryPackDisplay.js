@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Modal, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
@@ -194,8 +194,21 @@ const EntryPackDisplay = ({
 }) => {
   const config = countryConfigs[country] || countryConfigs.thailand;
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
+  const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+  const [selectedPhotoUri, setSelectedPhotoUri] = useState(null);
 
   const fallbackHotelText = config.fallbackHotelText;
+
+  // Handle photo viewer
+  const handleOpenPhotoViewer = (photoUri) => {
+    setSelectedPhotoUri(photoUri);
+    setPhotoViewerVisible(true);
+  };
+
+  const handleClosePhotoViewer = () => {
+    setPhotoViewerVisible(false);
+    setSelectedPhotoUri(null);
+  };
 
   const formatProvinceThaiEnglish = (value) => {
     if (!value || typeof value !== 'string') return '';
@@ -556,9 +569,22 @@ const EntryPackDisplay = ({
               )}
 
               {(fund.photoUri || fund.proofPhoto) && (
-                <Text style={styles.fundProof}>
-                  {proofPhotoText}
-                </Text>
+                <TouchableOpacity
+                  onPress={() => handleOpenPhotoViewer(fund.photoUri || fund.proofPhoto)}
+                  style={styles.fundProofContainer}
+                >
+                  <Text style={styles.fundProof}>
+                    {proofPhotoText}
+                  </Text>
+                  <Text style={styles.fundProofHint}>
+                    {country === 'thailand' ? 'แตะเพื่อดูรูป / Tap to view' :
+                     country === 'malaysia' ? 'Tap to view / Tekan untuk melihat' :
+                     country === 'singapore' || country === 'usa' ? 'Tap to view / 点击查看' :
+                     country === 'hongkong' || country === 'taiwan' ? '點擊查看 / Tap to view' :
+                     country === 'japan' ? 'タップして表示 / Tap to view' :
+                     'แตะเพื่อดูรูป / Tap to view'}
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
           ))
@@ -909,7 +935,12 @@ const EntryPackDisplay = ({
       </View>
 
       {/* Tab Navigation */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabContainer}
+        contentContainerStyle={styles.tabContentContainer}
+      >
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
@@ -950,6 +981,49 @@ const EntryPackDisplay = ({
           }
         </Text>
       </View>
+
+      {/* Photo Viewer Modal */}
+      <Modal
+        visible={photoViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleClosePhotoViewer}
+      >
+        <View style={styles.photoViewerOverlay}>
+          <TouchableOpacity
+            style={styles.photoViewerBackdrop}
+            activeOpacity={1}
+            onPress={handleClosePhotoViewer}
+          />
+          <View style={styles.photoViewerContent}>
+            {selectedPhotoUri && (
+              <Image
+                source={{ uri: selectedPhotoUri }}
+                style={styles.photoViewerImage}
+                resizeMode="contain"
+              />
+            )}
+            <TouchableOpacity
+              style={styles.photoViewerCloseButton}
+              onPress={handleClosePhotoViewer}
+            >
+              <View style={styles.photoViewerCloseButtonCircle}>
+                <Text style={styles.photoViewerCloseButtonText}>✕</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.photoViewerHintContainer}>
+              <Text style={styles.photoViewerHint}>
+                {country === 'thailand' ? 'รูปหลักฐานเงินทุน / Fund Proof Photo' :
+                 country === 'malaysia' ? 'Fund Proof Photo / Foto Bukti Dana' :
+                 country === 'singapore' || country === 'usa' ? 'Fund Proof Photo / 资金证明照片' :
+                 country === 'hongkong' || country === 'taiwan' ? '資金證明照片 / Fund Proof Photo' :
+                 country === 'japan' ? '資金証明写真 / Fund Proof Photo' :
+                 'รูปหลักฐานเงินทุน / Fund Proof Photo'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1001,18 +1075,21 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  tab: {
+  tabContentContainer: {
     paddingHorizontal: spacing.md,
+    paddingRight: spacing.lg,
+  },
+  tab: {
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    marginRight: spacing.sm,
+    marginRight: spacing.xs,
     borderRadius: 20,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    minWidth: 80,
+    minWidth: 70,
     alignItems: 'center',
   },
   activeTab: {
@@ -1098,10 +1175,20 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
+  fundProofContainer: {
+    marginTop: spacing.xs,
+  },
   fundProof: {
     ...typography.caption,
     color: colors.success,
     fontWeight: '500',
+  },
+  fundProofHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 10,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   fundsTotal: {
     flexDirection: 'column',
@@ -1112,11 +1199,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   totalLabel: {
-    ...typography.h3,
+    fontSize: 16,
     color: colors.surface,
     fontWeight: '600',
     marginBottom: spacing.xs,
     textAlign: 'center',
+    width: '100%',
   },
   totalAmount: {
     ...typography.h2,
@@ -1220,6 +1308,63 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  // Photo Viewer Modal Styles
+  photoViewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoViewerBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  photoViewerContent: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoViewerImage: {
+    width: '100%',
+    height: '80%',
+  },
+  photoViewerCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: spacing.lg,
+    zIndex: 10,
+  },
+  photoViewerCloseButtonCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  photoViewerCloseButtonText: {
+    fontSize: 24,
+    color: colors.surface,
+    fontWeight: '600',
+  },
+  photoViewerHintContainer: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  photoViewerHint: {
+    ...typography.body,
+    color: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
 });
 

@@ -23,13 +23,16 @@ export const PREDEFINED_TRAVEL_PURPOSES = [
 
 /**
  * Predefined accommodation type options for Thailand stay
+ * These match the UI values from AccommodationSubSection
+ * They are transformed to TDAC API values by ThailandTravelerContextBuilder
  */
 export const PREDEFINED_ACCOMMODATION_TYPES = [
   'HOTEL',
-  'YOUTH_HOSTEL',
-  'GUEST_HOUSE',
-  'FRIEND_HOUSE',
+  'HOSTEL',      // Maps to YOUTH_HOSTEL in TDAC
+  'GUESTHOUSE',  // Maps to GUEST_HOUSE in TDAC
+  'RESORT',      // Maps to HOTEL in TDAC (no resort option in TDAC)
   'APARTMENT',
+  'FRIEND',      // Maps to FRIEND_HOUSE in TDAC
 ];
 
 /**

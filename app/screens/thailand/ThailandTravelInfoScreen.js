@@ -132,6 +132,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     migrateExistingDataToInteractionState,
     savePhoto,
     handleFlightTicketPhotoUpload,
+    handleDepartureFlightTicketPhotoUpload,
     handleHotelReservationPhotoUpload,
     handleNavigationWithSave,
     scrollViewRef,
@@ -145,7 +146,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     handleSubDistrictSelect
   } = useThailandLocationCascade({
     formState,
-    handleFieldBlur
+    handleFieldBlur,
+    saveDataToSecureStorage: persistence.saveDataToSecureStorage
   });
 
   // Initialize fund management hook
@@ -207,6 +209,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // Photo upload handler wrappers (to pass t parameter)
   const wrappedHandleFlightTicketPhotoUpload = () => handleFlightTicketPhotoUpload(t);
+  const wrappedHandleDepartureFlightTicketPhotoUpload = () => handleDepartureFlightTicketPhotoUpload(t);
   const wrappedHandleHotelReservationPhotoUpload = () => handleHotelReservationPhotoUpload(t);
 
   const handleContinue = async () => {
@@ -435,6 +438,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           // Form state - Departure
           departureFlightNumber={formState.departureFlightNumber}
           departureDepartureDate={formState.departureDepartureDate}
+          departureFlightTicketPhoto={formState.departureFlightTicketPhoto}
           // Form state - Accommodation
           isTransitPassenger={formState.isTransitPassenger}
           accommodationType={formState.accommodationType}
@@ -479,6 +483,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           handleDistrictSelect={handleDistrictSelect}
           handleSubDistrictSelect={handleSubDistrictSelect}
           handleFlightTicketPhotoUpload={wrappedHandleFlightTicketPhotoUpload}
+          handleDepartureFlightTicketPhotoUpload={wrappedHandleDepartureFlightTicketPhotoUpload}
           handleHotelReservationPhotoUpload={wrappedHandleHotelReservationPhotoUpload}
           // Styles
           styles={styles}

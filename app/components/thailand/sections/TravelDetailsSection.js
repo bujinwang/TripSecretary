@@ -37,6 +37,7 @@ const TravelDetailsSection = ({
   // Form state - Departure
   departureFlightNumber,
   departureDepartureDate,
+  departureFlightTicketPhoto,
   // Form state - Accommodation
   isTransitPassenger,
   accommodationType,
@@ -81,6 +82,7 @@ const TravelDetailsSection = ({
   handleDistrictSelect,
   handleSubDistrictSelect,
   handleFlightTicketPhotoUpload,
+  handleDepartureFlightTicketPhotoUpload,
   handleHotelReservationPhotoUpload,
   // Styles from parent (optional)
   styles: parentStyles,
@@ -126,6 +128,7 @@ const TravelDetailsSection = ({
         flightTicketPhoto={flightTicketPhoto}
         departureFlightNumber={departureFlightNumber}
         departureDepartureDate={departureDepartureDate}
+        departureFlightTicketPhoto={departureFlightTicketPhoto}
         setArrivalFlightNumber={setArrivalFlightNumber}
         setArrivalArrivalDate={setArrivalArrivalDate}
         setDepartureFlightNumber={setDepartureFlightNumber}
@@ -135,6 +138,7 @@ const TravelDetailsSection = ({
         handleFieldBlur={handleFieldBlur}
         lastEditedField={lastEditedField}
         handleFlightTicketPhotoUpload={handleFlightTicketPhotoUpload}
+        handleDepartureFlightTicketPhotoUpload={handleDepartureFlightTicketPhotoUpload}
         styles={styles}
       />
 
@@ -155,6 +159,11 @@ const TravelDetailsSection = ({
         setAccommodationType={setAccommodationType}
         setCustomAccommodationType={setCustomAccommodationType}
         setHotelAddress={setHotelAddress}
+        setDistrict={setDistrict}
+        setDistrictId={setDistrictId}
+        setSubDistrict={setSubDistrict}
+        setSubDistrictId={setSubDistrictId}
+        setPostalCode={setPostalCode}
         errors={errors}
         warnings={warnings}
         handleFieldBlur={handleFieldBlur}
@@ -193,6 +202,101 @@ const localStyles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: spacing.md,
+  },
+  photoUploadCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  photoUploadHeader: {
+    marginBottom: spacing.sm,
+  },
+  photoUploadTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    fontSize: 16,
+  },
+  photoInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  photoInfoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  photoInfoText: {
+    ...typography.caption,
+    color: '#92400E',
+    flex: 1,
+    lineHeight: 18,
+  },
+  uploadButton: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    borderStyle: 'dashed',
+    padding: spacing.lg,
+    backgroundColor: '#F0F7FF',
+  },
+  uploadButtonContent: {
+    alignItems: 'center',
+  },
+  uploadIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  uploadIcon: {
+    fontSize: 32,
+  },
+  uploadButtonText: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  uploadButtonSubtext: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  photoPreviewContainer: {
+    position: 'relative',
+  },
+  changePhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  changePhotoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  changePhotoText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
   },
   fieldLabel: {
     fontSize: 14,

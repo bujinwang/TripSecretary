@@ -18,6 +18,7 @@ const FlightInfoSubSection = ({
   flightTicketPhoto,
   departureFlightNumber,
   departureDepartureDate,
+  departureFlightTicketPhoto,
   // Setters
   setArrivalFlightNumber,
   setArrivalArrivalDate,
@@ -30,9 +31,13 @@ const FlightInfoSubSection = ({
   lastEditedField,
   // Actions
   handleFlightTicketPhotoUpload,
+  handleDepartureFlightTicketPhotoUpload,
   // Styles from parent
-  styles,
+  styles: parentStyles,
 }) => {
+  // Use parent styles if provided, otherwise use local styles
+  const styles = parentStyles || localStyles;
+
   return (
     <>
       {/* Arrival Flight Section */}
@@ -70,27 +75,46 @@ const FlightInfoSubSection = ({
         errorMessage={errors.arrivalArrivalDate}
       />
 
-      <View style={styles.documentUploadSection}>
-        <Text style={styles.fieldLabel}>机票照片（可选）</Text>
-        <Text style={styles.helpText}>
-          上传机票照片可以帮助海关快速确认你的行程
-        </Text>
-        <TouchableOpacity
-          style={styles.photoUploadButton}
-          onPress={handleFlightTicketPhotoUpload}
-        >
-          <Text style={styles.photoUploadIcon}>📷</Text>
-          <Text style={styles.photoUploadText}>
-            {flightTicketPhoto ? '更换机票照片' : '上传机票照片'}
+      {/* Photo Upload Card */}
+      <View style={styles.photoUploadCard}>
+        <View style={styles.photoUploadHeader}>
+          <Text style={styles.photoUploadTitle}>📸 机票照片（可选）</Text>
+        </View>
+
+        <View style={styles.photoInfoBox}>
+          <Text style={styles.photoInfoIcon}>💡</Text>
+          <Text style={styles.photoInfoText}>
+            上传机票照片可以帮助海关快速确认你的行程
           </Text>
-        </TouchableOpacity>
-        {flightTicketPhoto && (
-          <View style={styles.photoPreview}>
+        </View>
+
+        {!flightTicketPhoto ? (
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={handleFlightTicketPhotoUpload}
+          >
+            <View style={styles.uploadButtonContent}>
+              <View style={styles.uploadIconCircle}>
+                <Text style={styles.uploadIcon}>📷</Text>
+              </View>
+              <Text style={styles.uploadButtonText}>点击上传机票照片</Text>
+              <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.photoPreviewContainer}>
             <Image
               source={{ uri: flightTicketPhoto }}
               style={styles.photoImage}
               resizeMode="cover"
             />
+            <TouchableOpacity
+              style={styles.changePhotoButton}
+              onPress={handleFlightTicketPhotoUpload}
+            >
+              <Text style={styles.changePhotoIcon}>🔄</Text>
+              <Text style={styles.changePhotoText}>更换照片</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -131,6 +155,50 @@ const FlightInfoSubSection = ({
         error={!!errors.departureDepartureDate}
         errorMessage={errors.departureDepartureDate}
       />
+
+      {/* Departure Flight Photo Upload Card */}
+      <View style={styles.photoUploadCard}>
+        <View style={styles.photoUploadHeader}>
+          <Text style={styles.photoUploadTitle}>📸 离境机票照片（可选）</Text>
+        </View>
+
+        <View style={styles.photoInfoBox}>
+          <Text style={styles.photoInfoIcon}>💡</Text>
+          <Text style={styles.photoInfoText}>
+            上传离境机票照片可以帮助海关确认你的返程计划
+          </Text>
+        </View>
+
+        {!departureFlightTicketPhoto ? (
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={handleDepartureFlightTicketPhotoUpload}
+          >
+            <View style={styles.uploadButtonContent}>
+              <View style={styles.uploadIconCircle}>
+                <Text style={styles.uploadIcon}>📷</Text>
+              </View>
+              <Text style={styles.uploadButtonText}>点击上传离境机票照片</Text>
+              <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.photoPreviewContainer}>
+            <Image
+              source={{ uri: departureFlightTicketPhoto }}
+              style={styles.photoImage}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.changePhotoButton}
+              onPress={handleDepartureFlightTicketPhotoUpload}
+            >
+              <Text style={styles.changePhotoIcon}>🔄</Text>
+              <Text style={styles.changePhotoText}>更换照片</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </>
   );
 };
@@ -148,41 +216,105 @@ const localStyles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
   },
-  documentUploadSection: {
-    marginBottom: spacing.md,
+  photoUploadCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  helpText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  photoUploadHeader: {
     marginBottom: spacing.sm,
   },
-  photoUploadButton: {
+  photoUploadTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    fontSize: 16,
+  },
+  photoInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  photoInfoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  photoInfoText: {
+    ...typography.caption,
+    color: '#92400E',
+    flex: 1,
+    lineHeight: 18,
+  },
+  uploadButton: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    borderStyle: 'dashed',
+    padding: spacing.lg,
+    backgroundColor: '#F0F7FF',
+  },
+  uploadButtonContent: {
+    alignItems: 'center',
+  },
+  uploadIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  uploadIcon: {
+    fontSize: 32,
+  },
+  uploadButtonText: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  uploadButtonSubtext: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  photoPreviewContainer: {
+    position: 'relative',
+  },
+  changePhotoButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.primary,
     borderRadius: 8,
-    borderStyle: 'dashed',
-    backgroundColor: '#f8f9fa',
-  },
-  photoUploadIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  photoUploadText: {
-    ...typography.body2,
-    color: colors.primary,
-  },
-  photoPreview: {
+    padding: spacing.sm,
     marginTop: spacing.sm,
-    borderRadius: 8,
-    overflow: 'hidden',
+  },
+  changePhotoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  changePhotoText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
   },
   photoImage: {
     width: '100%',
     height: 200,
+    borderRadius: 8,
   },
 });
 

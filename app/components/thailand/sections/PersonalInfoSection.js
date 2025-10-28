@@ -10,9 +10,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector } from '../../../components';
 import { CollapsibleSection, InputWithValidation } from '../ThailandTravelComponents';
-import OptionSelector from '../OptionSelector';
+import OccupationSelector from '../../OccupationSelector';
 import Input from '../../../components/Input';
-import { OCCUPATION_OPTIONS } from '../../../screens/thailand/constants';
 import { getPhoneCode } from '../../../data/phoneCodes';
 
 const PersonalInfoSection = ({
@@ -69,39 +68,33 @@ const PersonalInfoSection = ({
         </Text>
       </View>
 
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>职业</Text>
-        <OptionSelector
-          options={OCCUPATION_OPTIONS}
-          value={occupation}
-          onSelect={(value) => {
-            setOccupation(value);
-            if (value !== 'OTHER') {
-              setCustomOccupation('');
-              handleFieldBlur('occupation', value);
-            }
-            debouncedSaveData();
-          }}
-          customValue={customOccupation}
-          onCustomChange={(text) => {
-            setCustomOccupation(text.toUpperCase());
-          }}
-          onCustomBlur={() => {
-            const finalOccupation = customOccupation.trim() ? customOccupation : occupation;
-            handleFieldBlur('occupation', finalOccupation);
-            debouncedSaveData();
-          }}
-          customLabel="请输入您的职业"
-          customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
-          customHelpText="请用英文填写您的职业"
-        />
-        {errors.occupation && (
-          <Text style={styles.errorText}>{errors.occupation}</Text>
-        )}
-        {warnings.occupation && !errors.occupation && (
-          <Text style={styles.warningText}>{warnings.occupation}</Text>
-        )}
-      </View>
+      <OccupationSelector
+        label="职业"
+        value={occupation}
+        onValueChange={(value) => {
+          setOccupation(value);
+          if (value !== 'OTHER') {
+            setCustomOccupation('');
+            handleFieldBlur('occupation', value);
+          }
+          debouncedSaveData();
+        }}
+        customValue={customOccupation}
+        onCustomChange={(text) => {
+          setCustomOccupation(text.toUpperCase());
+        }}
+        onCustomBlur={() => {
+          const finalOccupation = customOccupation.trim() ? customOccupation : occupation;
+          handleFieldBlur('occupation', finalOccupation);
+          debouncedSaveData();
+        }}
+        customLabel="请输入您的职业"
+        customPlaceholder="例如：ACCOUNTANT, ENGINEER 等"
+        customHelpText="请用英文填写您的职业"
+        helpText={!errors.occupation && warnings.occupation ? warnings.occupation : "请选择您的职业"}
+        error={!!errors.occupation}
+        errorMessage={errors.occupation}
+      />
 
       <InputWithValidation
         label={cityOfResidenceLabel}
@@ -199,25 +192,6 @@ const localStyles = StyleSheet.create({
     color: '#2C5AA0',
     flex: 1,
     lineHeight: 20,
-  },
-  fieldContainer: {
-    marginBottom: spacing.lg,
-  },
-  fieldLabel: {
-    ...typography.label,
-    color: colors.textPrimary,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-  },
-  warningText: {
-    ...typography.caption,
-    color: '#FF9500',
-    marginTop: spacing.xs,
   },
   phoneInputContainer: {
     flexDirection: 'row',

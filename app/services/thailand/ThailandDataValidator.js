@@ -213,13 +213,17 @@ class ThailandDataValidator {
         }
       }
 
-      // Check arrival date is in the future
+      // Check arrival date is in the future (must be at least tomorrow)
       if (travelInfo.arrivalArrivalDate && this.isValidDate(travelInfo.arrivalArrivalDate)) {
         const arrivalDate = new Date(travelInfo.arrivalArrivalDate);
-        const now = new Date();
-        
-        if (arrivalDate <= now) {
-          errors.push('入境日期必须是未来日期');
+        arrivalDate.setHours(0, 0, 0, 0); // Normalize to start of day
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+        // Arrival must be at least tomorrow (not today)
+        if (arrivalDate <= today) {
+          errors.push('入境日期必须是明天或之后的日期');
           fieldStatus.arrivalArrivalDate = false;
         }
       }

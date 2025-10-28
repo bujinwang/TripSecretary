@@ -13,9 +13,10 @@ import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/
  * @param {Object} params - Hook parameters
  * @param {Object} params.formState - Form state from useThailandFormState
  * @param {Function} params.handleFieldBlur - Field blur handler from validation hook
+ * @param {Function} params.saveDataToSecureStorage - Immediate save function from persistence hook
  * @returns {Object} Location handlers
  */
-export const useThailandLocationCascade = ({ formState, handleFieldBlur }) => {
+export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDataToSecureStorage }) => {
   // Handle district/subdistrict ID updates (cascade logic)
   useEffect(() => {
     if (!formState.province || !formState.district) {
@@ -76,39 +77,63 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur }) => {
   }, [handleFieldBlur, resetDistrictSelection, formState]);
 
   // Handle district selection
-  const handleDistrictSelect = useCallback((selection) => {
+  const handleDistrictSelect = useCallback(async (selection) => {
     if (!selection) return;
 
-    formState.setDistrict(selection.nameEn);
+    const newDistrict = selection.nameEn;
+    formState.setDistrict(newDistrict);
     formState.setDistrictId(selection.id);
-    handleFieldBlur('district', selection.nameEn);
+    handleFieldBlur('district', newDistrict);
 
-    if (formState.subDistrict) {
+    // Clear sub-district and postal code when district changes
+    const shouldClearSubDistrict = formState.subDistrict !== '';
+    const shouldClearPostalCode = formState.postalCode !== '';
+
+    if (shouldClearSubDistrict) {
       formState.setSubDistrict('');
       formState.setSubDistrictId(null);
       handleFieldBlur('subDistrict', '');
     }
 
-    if (formState.postalCode) {
+    if (shouldClearPostalCode) {
       formState.setPostalCode('');
       handleFieldBlur('postalCode', '');
     }
-  }, [handleFieldBlur, formState]);
+
+    // Save immediately with explicit values (React state updates are async!)
+    if (saveDataToSecureStorage) {
+      const overrides = { district: newDistrict };
+      if (shouldClearSubDistrict) overrides.subDistrict = '';
+      if (shouldClearPostalCode) overrides.postalCode = '';
+      await saveDataToSecureStorage(overrides);
+    }
+  }, [handleFieldBlur, formState, saveDataToSecureStorage]);
 
   // Handle subdistrict selection
-  const handleSubDistrictSelect = useCallback((selection) => {
+  const handleSubDistrictSelect = useCallback(async (selection) => {
     if (!selection) return;
 
-    formState.setSubDistrict(selection.nameEn);
-    formState.setSubDistrictId(selection.id);
-    handleFieldBlur('subDistrict', selection.nameEn);
-
+    const newSubDistrict = selection.nameEn;
     const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
+
+    formState.setSubDistrict(newSubDistrict);
+    formState.setSubDistrictId(selection.id);
+    handleFieldBlur('subDistrict', newSubDistrict);
+
     if (newPostalCode || formState.postalCode) {
       formState.setPostalCode(newPostalCode);
       handleFieldBlur('postalCode', newPostalCode);
     }
-  }, [handleFieldBlur, formState]);
+
+    // Save immediately with explicit values (React state updates are async!)
+    // Pass the NEW values as overrides to ensure they're saved correctly
+    if (saveDataToSecureStorage) {
+      await saveDataToSecureStorage({
+        subDistrict: newSubDistrict,
+        postalCode: newPostalCode
+      });
+    }
+  }, [handleFieldBlur, formState, saveDataToSecureStorage]);
 
   return {
     resetDistrictSelection,

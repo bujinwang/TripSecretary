@@ -72,28 +72,28 @@ export const TRAVEL_PURPOSES = {
   },
   'CONVENTION': {
     en: 'Convention',
-    zh: '会议展览',
+    zh: '会展',
     ja: 'コンベンション',
     th: 'การประชุม',
     ko: '컨벤션'
   },
   'EDUCATION': {
     en: 'Education',
-    zh: '教育学习',
+    zh: '教育',
     ja: '教育',
     th: 'การศึกษา',
     ko: '교육'
   },
   'EMPLOYMENT': {
     en: 'Employment',
-    zh: '工作就业',
+    zh: '就业',
     ja: '雇用',
     th: 'การจ้างงาน',
     ko: '고용'
   },
   'EXHIBITION': {
     en: 'Exhibition',
-    zh: '展览展会',
+    zh: '展览',
     ja: '展示会',
     th: 'นิทรรศการ',
     ko: '전시회'
@@ -200,11 +200,14 @@ export const normalizeTravelPurpose = (legacyPurpose) => {
     '体育活动': 'SPORTS',
     '体育': 'SPORTS',
     '奖励旅游': 'INCENTIVE',
+    '会展': 'CONVENTION',
     '会议展览': 'CONVENTION',
-    '教育学习': 'EDUCATION',
     '教育': 'EDUCATION',
+    '教育学习': 'EDUCATION',
+    '就业': 'EMPLOYMENT',
     '工作就业': 'EMPLOYMENT',
     '工作': 'EMPLOYMENT',
+    '展览': 'EXHIBITION',
     '展览展会': 'EXHIBITION',
     '医疗': 'MEDICAL',
   };

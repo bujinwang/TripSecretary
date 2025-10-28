@@ -156,6 +156,7 @@ class DatabaseSchema {
             departure_departure_date TEXT,
             departure_arrival_airport TEXT,
             departure_arrival_date TEXT,
+            departure_flight_ticket_photo_uri TEXT,
             accommodation_type TEXT DEFAULT 'HOTEL',
             province TEXT,
             district TEXT,
@@ -411,15 +412,24 @@ class DatabaseSchema {
 
       // Migration: Add photo columns to travel_info table
       const travelInfoColumns = await db.getAllAsync("PRAGMA table_info(travel_info)");
-      const hasFlightTicketPhoto = travelInfoColumns.some(col => col.name === 'arrival_flight_ticket_photo_uri');
+      const hasArrivalFlightTicketPhoto = travelInfoColumns.some(col => col.name === 'arrival_flight_ticket_photo_uri');
+      const hasDepartureFlightTicketPhoto = travelInfoColumns.some(col => col.name === 'departure_flight_ticket_photo_uri');
       const hasHotelBookingPhoto = travelInfoColumns.some(col => col.name === 'hotel_booking_photo_uri');
 
-      if (!hasFlightTicketPhoto) {
+      if (!hasArrivalFlightTicketPhoto) {
         console.log('Applying migration: Adding arrival_flight_ticket_photo_uri to travel_info table');
         await db.execAsync(`
           ALTER TABLE travel_info ADD COLUMN arrival_flight_ticket_photo_uri TEXT;
         `);
         console.log('✅ Migration completed: arrival_flight_ticket_photo_uri column added to travel_info');
+      }
+
+      if (!hasDepartureFlightTicketPhoto) {
+        console.log('Applying migration: Adding departure_flight_ticket_photo_uri to travel_info table');
+        await db.execAsync(`
+          ALTER TABLE travel_info ADD COLUMN departure_flight_ticket_photo_uri TEXT;
+        `);
+        console.log('✅ Migration completed: departure_flight_ticket_photo_uri column added to travel_info');
       }
 
       if (!hasHotelBookingPhoto) {

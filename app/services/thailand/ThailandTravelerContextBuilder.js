@@ -297,15 +297,16 @@ class ThailandTravelerContextBuilder {
       accommodationTypeDisplay: ThailandTravelerContextBuilder.getAccommodationTypeDisplay(travelInfo?.accommodationType),
       province: ThailandTravelerContextBuilder.transformProvince(travelInfo?.province),
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
-      district: travelInfo?.district || '',
-      districtDisplay: ThailandTravelerContextBuilder.formatLocationDisplay(
+      // For HOTEL accommodation, district/subDistrict/postCode are not required and should be empty
+      district: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.district || ''),
+      districtDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
         travelInfo?.districtDisplay || travelInfo?.district
       ),
-      subDistrict: travelInfo?.subDistrict || '',
-      subDistrictDisplay: ThailandTravelerContextBuilder.formatLocationDisplay(
+      subDistrict: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.subDistrict || ''),
+      subDistrictDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
         travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
       ),
-      postCode: travelInfo?.postalCode || '',
+      postCode: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.postalCode || ''),
       address: travelInfo?.hotelAddress || travelInfo?.address || '',
       
       // Visa (optional, from user's travel info)
@@ -1059,6 +1060,7 @@ class ThailandTravelerContextBuilder {
     const typeMapping = {
       'HOTEL': 'HOTEL',
       '酒店': 'HOTEL',
+      'RESORT': 'HOTEL',  // TDAC doesn't have resort option, map to HOTEL
       'YOUTH HOSTEL': 'YOUTH_HOSTEL',
       'HOSTEL': 'YOUTH_HOSTEL',
       '青年旅舍': 'YOUTH_HOSTEL',
@@ -1067,6 +1069,7 @@ class ThailandTravelerContextBuilder {
       '民宿': 'GUEST_HOUSE',
       'FRIEND\'S HOUSE': 'FRIEND_HOUSE',
       'FRIENDS HOUSE': 'FRIEND_HOUSE',
+      'FRIEND': 'FRIEND_HOUSE',  // Map UI's FRIEND to TDAC's FRIEND_HOUSE
       '朋友家': 'FRIEND_HOUSE',
       'APARTMENT': 'APARTMENT',
       '公寓': 'APARTMENT',

@@ -85,6 +85,7 @@ export const useThailandDataPersistence = ({
     setPostalCode,
     setHotelAddress,
     setFlightTicketPhoto,
+    setDepartureFlightTicketPhoto,
     setHotelReservationPhoto,
     entryInfoInitialized,
     setEntryInfoId,
@@ -304,12 +305,16 @@ export const useThailandDataPersistence = ({
   // Save photo to travel info
   const savePhoto = useCallback(async (photoType, photoUri) => {
     try {
-      const fieldName = photoType === 'flightTicket' ? 'flightTicketPhoto' : 'hotelReservationPhoto';
+      let fieldName;
 
-      // Update formState
       if (photoType === 'flightTicket') {
+        fieldName = 'flightTicketPhoto';
         setFlightTicketPhoto(photoUri);
-      } else {
+      } else if (photoType === 'departureFlightTicket') {
+        fieldName = 'departureFlightTicketPhoto';
+        setDepartureFlightTicketPhoto(photoUri);
+      } else if (photoType === 'hotelReservation') {
+        fieldName = 'hotelReservationPhoto';
         setHotelReservationPhoto(photoUri);
       }
 
@@ -323,7 +328,7 @@ export const useThailandDataPersistence = ({
       console.error(`Failed to save ${photoType} photo:`, error);
       return { success: false, error };
     }
-  }, [setFlightTicketPhoto, setHotelReservationPhoto, saveDataToSecureStorage]);
+  }, [setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto, saveDataToSecureStorage]);
 
   // Handle flight ticket photo upload
   const handleFlightTicketPhotoUpload = useCallback(async (t) => {
@@ -388,6 +393,41 @@ export const useThailandDataPersistence = ({
       }
     } catch (error) {
       console.error('Error picking hotel reservation photo:', error);
+      Alert.alert(
+        t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+        t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
+      );
+    }
+  }, [savePhoto]);
+
+  // Handle departure flight ticket photo upload
+  const handleDepartureFlightTicketPhotoUpload = useCallback(async (t) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        const { success } = await savePhoto('departureFlightTicket', photoUri);
+
+        if (success) {
+          Alert.alert(
+            t('thailand.travelInfo.uploadSuccess', { defaultValue: '上传成功' }),
+            t('thailand.travelInfo.departureFlightTicketUploaded', { defaultValue: '离境机票照片已上传' })
+          );
+        } else {
+          Alert.alert(
+            t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
+            t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '保存失败，请重试' })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error picking departure flight ticket photo:', error);
       Alert.alert(
         t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
         t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' })
@@ -569,6 +609,7 @@ export const useThailandDataPersistence = ({
 
           // Load document photos
           setFlightTicketPhoto(travelInfo.flightTicketPhoto || null);
+          setDepartureFlightTicketPhoto(travelInfo.departureFlightTicketPhoto || null);
           setHotelReservationPhoto(travelInfo.hotelReservationPhoto || null);
 
           // Initialize user interaction tracker
@@ -615,7 +656,7 @@ export const useThailandDataPersistence = ({
     } finally {
       setIsLoading(false);
     }
-  }, [userId, passport, destination, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setHotelReservationPhoto]);
+  }, [userId, passport, destination, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto]);
 
   // Helper function to perform the actual save operation
   const performSaveOperation = useCallback(async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
@@ -627,7 +668,7 @@ export const useThailandDataPersistence = ({
         arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
         isTransitPassenger, accommodationType, customAccommodationType, province, district,
         subDistrict, postalCode, hotelAddress, existingPassport, interactionState, destination,
-        flightTicketPhoto, hotelReservationPhoto
+        flightTicketPhoto, departureFlightTicketPhoto, hotelReservationPhoto
       } = currentState;
 
       const getCurrentValue = (fieldName, currentValue) => {
@@ -644,10 +685,15 @@ export const useThailandDataPersistence = ({
         gender: getCurrentValue('sex', sex)
       };
 
+      // Include fields with explicit overrides in alwaysSaveFields
+      const passportAlwaysSaveFields = Object.keys(fieldOverrides).filter(key =>
+        ['passportNo', 'surname', 'middleName', 'givenName', 'nationality', 'dob', 'expiryDate', 'sex'].includes(key)
+      );
+
       const passportUpdates = FieldStateManager.filterSaveableFields(
         allPassportFields,
         interactionState,
-        { preserveExisting: true, alwaysSaveFields: [] }
+        { preserveExisting: true, alwaysSaveFields: passportAlwaysSaveFields }
       );
 
       if (Object.keys(passportUpdates).length > 0) {
@@ -680,10 +726,15 @@ export const useThailandDataPersistence = ({
         countryRegion: getCurrentValue('residentCountry', residentCountry)
       };
 
+      // Include fields with explicit overrides in alwaysSaveFields
+      const personalInfoAlwaysSaveFields = Object.keys(fieldOverrides).filter(key =>
+        ['phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry'].includes(key)
+      );
+
       const personalInfoUpdates = FieldStateManager.filterSaveableFields(
         allPersonalInfoFields,
         interactionState,
-        { preserveExisting: true, alwaysSaveFields: [] }
+        { preserveExisting: true, alwaysSaveFields: personalInfoAlwaysSaveFields }
       );
 
       if (Object.keys(personalInfoUpdates).length > 0) {
@@ -726,13 +777,26 @@ export const useThailandDataPersistence = ({
         postalCode: getCurrentValue('postalCode', postalCode),
         hotelAddress: getCurrentValue('hotelAddress', hotelAddress),
         flightTicketPhoto: getCurrentValue('flightTicketPhoto', flightTicketPhoto),
+        departureFlightTicketPhoto: getCurrentValue('departureFlightTicketPhoto', departureFlightTicketPhoto),
         hotelReservationPhoto: getCurrentValue('hotelReservationPhoto', hotelReservationPhoto)
       };
+
+      // Build list of fields that should always be saved
+      // Include photo fields and any fields with explicit overrides (even if empty)
+      const alwaysSaveFields = ['flightTicketPhoto', 'departureFlightTicketPhoto', 'hotelReservationPhoto'];
+
+      // Add fields that have explicit overrides to ensure they're saved even if empty
+      // This is critical for clearing district/subDistrict/postalCode when switching to HOTEL
+      Object.keys(fieldOverrides).forEach(fieldName => {
+        if (!alwaysSaveFields.includes(fieldName)) {
+          alwaysSaveFields.push(fieldName);
+        }
+      });
 
       const travelInfoUpdates = FieldStateManager.filterSaveableFields(
         allTravelInfoFields,
         interactionState,
-        { preserveExisting: true, alwaysSaveFields: [] }
+        { preserveExisting: true, alwaysSaveFields }
       );
 
       if (Object.keys(travelInfoUpdates).length > 0) {
@@ -774,7 +838,7 @@ export const useThailandDataPersistence = ({
         'travelPurpose', 'customTravelPurpose', 'boardingCountry', 'recentStayCountry', 'visaNumber',
         'arrivalFlightNumber', 'arrivalArrivalDate', 'departureFlightNumber', 'departureDepartureDate',
         'isTransitPassenger', 'accommodationType', 'customAccommodationType', 'province', 'district',
-        'subDistrict', 'postalCode', 'hotelAddress'
+        'subDistrict', 'postalCode', 'hotelAddress', 'flightTicketPhoto', 'departureFlightTicketPhoto', 'hotelReservationPhoto'
       ];
 
       allFieldNames.forEach(fieldName => {
@@ -828,6 +892,7 @@ export const useThailandDataPersistence = ({
         interactionState,
         destination,
         flightTicketPhoto: latestValues.flightTicketPhoto,
+        departureFlightTicketPhoto: latestValues.departureFlightTicketPhoto,
         hotelReservationPhoto: latestValues.hotelReservationPhoto
       };
 
@@ -837,7 +902,9 @@ export const useThailandDataPersistence = ({
         console.error('Save operation completed with errors:', saveErrors);
         const successfulSaves = Object.values(saveResults).filter(result => result.success).length;
         if (successfulSaves === 0) {
-          throw new Error(`Complete save failure: ${saveErrors[0].error.message}`);
+          const primaryError = saveErrors[0]?.error;
+          const errorMessage = primaryError?.message || primaryError?.code || 'Unknown error';
+          throw new Error(`Complete save failure: ${errorMessage}`);
         }
       }
     } catch (error) {
@@ -924,6 +991,7 @@ export const useThailandDataPersistence = ({
     migrateExistingDataToInteractionState,
     savePhoto,
     handleFlightTicketPhotoUpload,
+    handleDepartureFlightTicketPhotoUpload,
     handleHotelReservationPhotoUpload,
     handleNavigationWithSave,
     scrollViewRef,

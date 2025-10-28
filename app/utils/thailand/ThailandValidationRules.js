@@ -89,11 +89,10 @@ export const validateField = (fieldName, fieldValue, context = {}) => {
                 errorMessage = 'Passport expiry date must be in the future';
               }
             } else if (fieldName === 'arrivalArrivalDate') {
-              const yesterday = new Date(today);
-              yesterday.setDate(yesterday.getDate() - 1);
-              if (date < yesterday) {
+              // Arrival date must be at least tomorrow (not today or past)
+              if (date <= today) {
                 isValid = false;
-                errorMessage = 'Arrival date should not be in the past';
+                errorMessage = 'Arrival date must be tomorrow or later';
               }
             } else if (fieldName === 'departureDepartureDate') {
               if (context.arrivalArrivalDate && date <= new Date(context.arrivalArrivalDate)) {

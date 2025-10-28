@@ -78,6 +78,7 @@ export const useThailandFormState = (passport) => {
 
   // ========== Document Photos State ==========
   const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
+  const [departureFlightTicketPhoto, setDepartureFlightTicketPhoto] = useState(null);
   const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
 
   // ========== Funds State ==========
@@ -230,6 +231,7 @@ export const useThailandFormState = (passport) => {
 
     // Document photos
     flightTicketPhoto,
+    departureFlightTicketPhoto,
     hotelReservationPhoto,
 
     // Funds
@@ -246,7 +248,7 @@ export const useThailandFormState = (passport) => {
     travelPurpose, customTravelPurpose, recentStayCountry, boardingCountry, arrivalFlightNumber,
     arrivalArrivalDate, previousArrivalDate, departureFlightNumber, departureDepartureDate,
     isTransitPassenger, accommodationType, customAccommodationType, province, district, districtId,
-    subDistrict, subDistrictId, postalCode, hotelAddress, flightTicketPhoto, hotelReservationPhoto,
+    subDistrict, subDistrictId, postalCode, hotelAddress, flightTicketPhoto, departureFlightTicketPhoto, hotelReservationPhoto,
     funds, passportData, personalInfoData, entryData, entryInfoId
   ]);
 
@@ -302,6 +304,7 @@ export const useThailandFormState = (passport) => {
 
     // Document photos state
     flightTicketPhoto, setFlightTicketPhoto,
+    departureFlightTicketPhoto, setDepartureFlightTicketPhoto,
     hotelReservationPhoto, setHotelReservationPhoto,
 
     // Funds state

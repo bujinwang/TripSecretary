@@ -25,8 +25,127 @@ class TravelInfoRepository {
       throw new Error('Travel info data and userId are required');
     }
 
+    const sanitizeTextField = (value) => {
+      if (value === undefined || value === null) {
+        return null;
+      }
+
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      }
+
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+
+      if (typeof value === 'object') {
+        if (typeof value.uri === 'string') {
+          return value.uri;
+        }
+
+        if (typeof value.path === 'string') {
+          return value.path;
+        }
+
+        if (typeof value.value === 'string') {
+          return value.value;
+        }
+
+        try {
+          return JSON.stringify(value);
+        } catch (serializationError) {
+          console.warn('TravelInfoRepository: Failed to serialize field value, coercing to string.', serializationError);
+          return String(value);
+        }
+      }
+
+      return String(value);
+    };
+
     const id = travelData.id || this.serializer.generateId();
     const now = new Date().toISOString();
+    const normalizedUserId = sanitizeTextField(travelData.userId);
+
+    if (!normalizedUserId) {
+      throw new Error('Travel info save failed: userId is invalid.');
+    }
+
+    const normalizedEntryInfoId = sanitizeTextField(travelData.entryInfoId);
+    const normalizedDestination = sanitizeTextField(travelData.destination);
+
+    console.log('TravelInfoRepository.save() called with:', {
+      id,
+      userId: normalizedUserId,
+      entryInfoId: normalizedEntryInfoId,
+      destination: normalizedDestination,
+      hasId: !!travelData.id
+    });
+    const normalizedTravelPurpose = sanitizeTextField(travelData.travelPurpose || 'HOLIDAY') || 'HOLIDAY';
+    const normalizedRecentStayCountry = sanitizeTextField(travelData.recentStayCountry);
+    const normalizedBoardingCountry = sanitizeTextField(travelData.boardingCountry);
+    const normalizedVisaNumber = sanitizeTextField(travelData.visaNumber);
+    const normalizedArrivalFlightNumber = sanitizeTextField(travelData.arrivalFlightNumber);
+    const normalizedArrivalDepartureAirport = sanitizeTextField(travelData.arrivalDepartureAirport);
+    const normalizedArrivalDepartureDate = sanitizeTextField(travelData.arrivalDepartureDate);
+    const normalizedArrivalArrivalAirport = sanitizeTextField(travelData.arrivalArrivalAirport);
+    const normalizedArrivalArrivalDate = sanitizeTextField(travelData.arrivalArrivalDate);
+    const normalizedArrivalFlightTicketPhotoUri = sanitizeTextField(
+      travelData.flightTicketPhoto ?? travelData.arrivalFlightTicketPhotoUri
+    );
+    const normalizedDepartureFlightNumber = sanitizeTextField(travelData.departureFlightNumber);
+    const normalizedDepartureDepartureAirport = sanitizeTextField(travelData.departureDepartureAirport);
+    const normalizedDepartureDepartureDate = sanitizeTextField(travelData.departureDepartureDate);
+    const normalizedDepartureArrivalAirport = sanitizeTextField(travelData.departureArrivalAirport);
+    const normalizedDepartureArrivalDate = sanitizeTextField(travelData.departureArrivalDate);
+    const normalizedDepartureFlightTicketPhotoUri = sanitizeTextField(
+      travelData.departureFlightTicketPhoto ?? travelData.departureFlightTicketPhotoUri
+    );
+    const normalizedAccommodationType = sanitizeTextField(travelData.accommodationType || 'HOTEL') || 'HOTEL';
+    const normalizedProvince = sanitizeTextField(travelData.province);
+    const normalizedDistrict = sanitizeTextField(travelData.district);
+    const normalizedSubDistrict = sanitizeTextField(travelData.subDistrict);
+    const normalizedPostalCode = sanitizeTextField(travelData.postalCode);
+    const normalizedHotelName = sanitizeTextField(travelData.hotelName);
+    const normalizedHotelAddress = sanitizeTextField(travelData.hotelAddress);
+    const normalizedHotelBookingPhotoUri = sanitizeTextField(
+      travelData.hotelReservationPhoto ?? travelData.hotelBookingPhotoUri
+    );
+    const normalizedAccommodationPhone = sanitizeTextField(travelData.accommodationPhone);
+    const normalizedLengthOfStay = sanitizeTextField(travelData.lengthOfStay);
+    const normalizedStatus = sanitizeTextField(travelData.status || 'draft') || 'draft';
+    const normalizedCreatedAt = sanitizeTextField(travelData.createdAt) || now;
+    const isTransitPassengerFlag = travelData.isTransitPassenger ? 1 : 0;
+
+    // Pre-emptively clear any conflicting records before INSERT OR REPLACE
+    // This prevents UNIQUE constraint violations on entry_info_id
+    try {
+      if (normalizedEntryInfoId) {
+        // First, check what records would be deleted
+        const conflictingRecords = await this.db.getAllAsync(
+          `SELECT id, entry_info_id, destination FROM ${this.tableName} WHERE entry_info_id = ? AND id != ?`,
+          [normalizedEntryInfoId, id]
+        );
+
+        if (conflictingRecords.length > 0) {
+          console.log(`TravelInfoRepository: Found ${conflictingRecords.length} conflicting record(s):`, conflictingRecords);
+
+          // Delete any existing travel_info with this entry_info_id that has a different id
+          await this.db.runAsync(
+            `DELETE FROM ${this.tableName} WHERE entry_info_id = ? AND id != ?`,
+            [normalizedEntryInfoId, id]
+          );
+          console.log(`TravelInfoRepository: Deleted ${conflictingRecords.length} conflicting record(s) with entry_info_id=${normalizedEntryInfoId}`);
+        } else {
+          console.log(`TravelInfoRepository: No conflicting records found for entry_info_id=${normalizedEntryInfoId}`);
+        }
+      } else {
+        console.log('TravelInfoRepository: No entry_info_id provided, skipping conflict check');
+      }
+    } catch (cleanupError) {
+      console.warn('TravelInfoRepository: Pre-save cleanup warning:', cleanupError);
+      // Don't throw - proceed with save even if cleanup fails
+    }
 
     const query = `
       INSERT OR REPLACE INTO ${this.tableName} (
@@ -34,50 +153,116 @@ class TravelInfoRepository {
         boarding_country, visa_number, arrival_flight_number,
         arrival_departure_airport, arrival_departure_date,
         arrival_arrival_airport, arrival_arrival_date,
+        arrival_flight_ticket_photo_uri,
         departure_flight_number, departure_departure_airport,
         departure_departure_date, departure_arrival_airport,
-        departure_arrival_date, accommodation_type, province, district,
+        departure_arrival_date, departure_flight_ticket_photo_uri,
+        accommodation_type, province, district,
         sub_district, postal_code, hotel_name, hotel_address,
+        hotel_booking_photo_uri,
         accommodation_phone, length_of_stay, is_transit_passenger,
         status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
       id,
-      travelData.userId,
-      travelData.entryInfoId || null,
-      travelData.destination || null,
-      travelData.travelPurpose || 'HOLIDAY',
-      travelData.recentStayCountry || null,
-      travelData.boardingCountry || null,
-      travelData.visaNumber || null,
-      travelData.arrivalFlightNumber || null,
-      travelData.arrivalDepartureAirport || null,
-      travelData.arrivalDepartureDate || null,
-      travelData.arrivalArrivalAirport || null,
-      travelData.arrivalArrivalDate || null,
-      travelData.departureFlightNumber || null,
-      travelData.departureDepartureAirport || null,
-      travelData.departureDepartureDate || null,
-      travelData.departureArrivalAirport || null,
-      travelData.departureArrivalDate || null,
-      travelData.accommodationType || 'HOTEL',
-      travelData.province || null,
-      travelData.district || null,
-      travelData.subDistrict || null,
-      travelData.postalCode || null,
-      travelData.hotelName || null,
-      travelData.hotelAddress || null,
-      travelData.accommodationPhone || null,
-      travelData.lengthOfStay || null,
-      travelData.isTransitPassenger ? 1 : 0,
-      travelData.status || 'draft',
-      travelData.createdAt || now,
+      normalizedUserId,
+      normalizedEntryInfoId,
+      normalizedDestination,
+      normalizedTravelPurpose,
+      normalizedRecentStayCountry,
+      normalizedBoardingCountry,
+      normalizedVisaNumber,
+      normalizedArrivalFlightNumber,
+      normalizedArrivalDepartureAirport,
+      normalizedArrivalDepartureDate,
+      normalizedArrivalArrivalAirport,
+      normalizedArrivalArrivalDate,
+      normalizedArrivalFlightTicketPhotoUri,
+      normalizedDepartureFlightNumber,
+      normalizedDepartureDepartureAirport,
+      normalizedDepartureDepartureDate,
+      normalizedDepartureArrivalAirport,
+      normalizedDepartureArrivalDate,
+      normalizedDepartureFlightTicketPhotoUri,
+      normalizedAccommodationType,
+      normalizedProvince,
+      normalizedDistrict,
+      normalizedSubDistrict,
+      normalizedPostalCode,
+      normalizedHotelName,
+      normalizedHotelAddress,
+      normalizedHotelBookingPhotoUri,
+      normalizedAccommodationPhone,
+      normalizedLengthOfStay,
+      isTransitPassengerFlag,
+      normalizedStatus,
+      normalizedCreatedAt,
       now
     ];
 
-    await this.db.runAsync(query, params);
+    try {
+      await this.db.runAsync(query, params);
+    } catch (error) {
+      if (error?.code === 'ERR_INTERNAL_SQLITE_ERROR') {
+        console.error(
+          'TravelInfoRepository: SQLite internal error while saving travel info. Attempting recovery.',
+          {
+            userId: normalizedUserId,
+            destination: normalizedDestination,
+            entryInfoId: normalizedEntryInfoId,
+          }
+        );
+
+        try {
+          // Recovery strategy: Delete conflicting records by multiple criteria
+          // This handles both (user_id, destination) duplicates and entry_info_id UNIQUE constraint violations
+
+          // Strategy 1: Delete by user_id + destination (handles most common case)
+          if (normalizedDestination) {
+            await this.db.runAsync(
+              `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination = ?`,
+              [normalizedUserId, normalizedDestination]
+            );
+            console.log('Deleted records by user_id + destination');
+          } else {
+            await this.db.runAsync(
+              `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination IS NULL`,
+              [normalizedUserId]
+            );
+            console.log('Deleted records by user_id + NULL destination');
+          }
+
+          // Strategy 2: If entry_info_id is provided, also delete by entry_info_id to handle UNIQUE constraint
+          if (normalizedEntryInfoId) {
+            await this.db.runAsync(
+              `DELETE FROM ${this.tableName} WHERE entry_info_id = ?`,
+              [normalizedEntryInfoId]
+            );
+            console.log('Deleted records by entry_info_id');
+          }
+
+          // Retry the insert
+          await this.db.runAsync(query, params);
+          console.warn(
+            'TravelInfoRepository: Recovery succeeded after clearing conflicting travel info records.',
+            {
+              userId: normalizedUserId,
+              destination: normalizedDestination,
+              entryInfoId: normalizedEntryInfoId,
+            }
+          );
+        } catch (recoveryError) {
+          console.error('TravelInfoRepository: Recovery attempt failed.', recoveryError);
+          recoveryError.cause = error;
+          throw recoveryError;
+        }
+      } else {
+        throw error;
+      }
+    }
+
     return this.getById(id);
   }
 
@@ -269,4 +454,3 @@ class TravelInfoRepository {
 }
 
 export default TravelInfoRepository;
-

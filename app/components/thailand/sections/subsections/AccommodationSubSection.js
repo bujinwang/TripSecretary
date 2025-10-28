@@ -31,6 +31,11 @@ const AccommodationSubSection = ({
   setAccommodationType,
   setCustomAccommodationType,
   setHotelAddress,
+  setDistrict,
+  setDistrictId,
+  setSubDistrict,
+  setSubDistrictId,
+  setPostalCode,
   // Validation
   errors,
   warnings,
@@ -45,8 +50,10 @@ const AccommodationSubSection = ({
   handleSubDistrictSelect,
   handleHotelReservationPhotoUpload,
   // Styles from parent
-  styles,
+  styles: parentStyles,
 }) => {
+  // Use parent styles if provided, otherwise use local styles
+  const styles = parentStyles || localStyles;
   const accommodationOptions = [
     { value: 'HOTEL', label: '酒店', icon: '🏨' },
     { value: 'HOSTEL', label: '青年旅舍', icon: '🏠' },
@@ -56,6 +63,9 @@ const AccommodationSubSection = ({
     { value: 'FRIEND', label: '朋友家', icon: '👥' },
     { value: 'OTHER', label: '其他', icon: '🏘️' },
   ];
+
+  // Only Hotel accommodation requires province and address (not detailed location)
+  const needsDetailedLocation = accommodationType !== 'HOTEL';
 
   return (
     <>
@@ -122,11 +132,30 @@ const AccommodationSubSection = ({
                       if (option.value !== 'OTHER') {
                         setCustomAccommodationType('');
                       }
+
+                      // Clear district/subdistrict/postal code when switching to Hotel
+                      // since these fields are not needed for hotels
+                      const dataToSave = {
+                        accommodationType: option.value,
+                        customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
+                      };
+
+                      if (option.value === 'HOTEL') {
+                        // Clear location details that are not needed for hotels
+                        dataToSave.district = '';
+                        dataToSave.subDistrict = '';
+                        dataToSave.postalCode = '';
+
+                        // Clear state immediately
+                        setDistrict('');
+                        setDistrictId(null);
+                        setSubDistrict('');
+                        setSubDistrictId(null);
+                        setPostalCode('');
+                      }
+
                       try {
-                        await saveDataToSecureStorageWithOverride({
-                          accommodationType: option.value,
-                          customAccommodationType: option.value !== 'OTHER' ? '' : customAccommodationType
-                        });
+                        await saveDataToSecureStorageWithOverride(dataToSave);
                         setLastEditedAt(new Date());
                       } catch (error) {
                         console.error('Failed to save accommodation type:', error);
@@ -167,46 +196,50 @@ const AccommodationSubSection = ({
             errorMessage={errors.province}
           />
 
-          {province && (
+          {needsDetailedLocation && province && (
             <DistrictSelector
               label="区/县"
               provinceCode={province}
               value={district}
-              onValueChange={handleDistrictSelect}
+              selectedDistrictId={districtId}
+              onSelect={handleDistrictSelect}
               helpText="选择酒店所在的区/县"
               error={!!errors.district}
               errorMessage={errors.district}
             />
           )}
 
-          {district && districtId && (
+          {needsDetailedLocation && district && districtId && (
             <SubDistrictSelector
               label="街道/分区"
               districtId={districtId}
               value={subDistrict}
-              onValueChange={handleSubDistrictSelect}
+              selectedSubDistrictId={subDistrictId}
+              onSelect={handleSubDistrictSelect}
               helpText="选择酒店所在的街道/分区"
               error={!!errors.subDistrict}
               errorMessage={errors.subDistrict}
             />
           )}
 
-          <InputWithValidation
-            label="邮政编码"
-            value={postalCode}
-            onChangeText={(text) => {
-              // Auto-filled by SubDistrictSelector, but allow manual edit
-              // Handled by parent through handleSubDistrictSelect
-            }}
-            helpText="选择街道后自动填充，或手动输入"
-            error={!!errors.postalCode}
-            errorMessage={errors.postalCode}
-            fieldName="postalCode"
-            lastEditedField={lastEditedField}
-            keyboardType="numeric"
-            editable={false}
-            style={styles.disabledInput}
-          />
+          {needsDetailedLocation && (
+            <InputWithValidation
+              label="邮政编码"
+              value={postalCode}
+              onChangeText={(text) => {
+                // Auto-filled by SubDistrictSelector, but allow manual edit
+                // Handled by parent through handleSubDistrictSelect
+              }}
+              helpText="选择街道后自动填充，或手动输入"
+              error={!!errors.postalCode}
+              errorMessage={errors.postalCode}
+              fieldName="postalCode"
+              lastEditedField={lastEditedField}
+              keyboardType="numeric"
+              editable={false}
+              style={styles.disabledInput}
+            />
+          )}
 
           <InputWithValidation
             label="酒店地址"
@@ -225,27 +258,46 @@ const AccommodationSubSection = ({
             numberOfLines={3}
           />
 
-          <View style={styles.documentUploadSection}>
-            <Text style={styles.fieldLabel}>酒店预订凭证（可选）</Text>
-            <Text style={styles.helpText}>
-              上传酒店预订凭证可以帮助海关快速确认你的住宿安排
-            </Text>
-            <TouchableOpacity
-              style={styles.photoUploadButton}
-              onPress={handleHotelReservationPhotoUpload}
-            >
-              <Text style={styles.photoUploadIcon}>📷</Text>
-              <Text style={styles.photoUploadText}>
-                {hotelReservationPhoto ? '更换预订凭证' : '上传预订凭证'}
+          {/* Photo Upload Card */}
+          <View style={styles.photoUploadCard}>
+            <View style={styles.photoUploadHeader}>
+              <Text style={styles.photoUploadTitle}>🏨 酒店预订凭证（可选）</Text>
+            </View>
+
+            <View style={styles.photoInfoBox}>
+              <Text style={styles.photoInfoIcon}>💡</Text>
+              <Text style={styles.photoInfoText}>
+                上传酒店预订凭证可以帮助海关快速确认你的住宿安排
               </Text>
-            </TouchableOpacity>
-            {hotelReservationPhoto && (
-              <View style={styles.photoPreview}>
+            </View>
+
+            {!hotelReservationPhoto ? (
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={handleHotelReservationPhotoUpload}
+              >
+                <View style={styles.uploadButtonContent}>
+                  <View style={styles.uploadIconCircle}>
+                    <Text style={styles.uploadIcon}>📷</Text>
+                  </View>
+                  <Text style={styles.uploadButtonText}>点击上传预订凭证</Text>
+                  <Text style={styles.uploadButtonSubtext}>支持 JPG, PNG 格式</Text>
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.photoPreviewContainer}>
                 <Image
                   source={{ uri: hotelReservationPhoto }}
                   style={styles.photoImage}
                   resizeMode="cover"
                 />
+                <TouchableOpacity
+                  style={styles.changePhotoButton}
+                  onPress={handleHotelReservationPhotoUpload}
+                >
+                  <Text style={styles.changePhotoIcon}>🔄</Text>
+                  <Text style={styles.changePhotoText}>更换凭证</Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>
@@ -284,41 +336,168 @@ const localStyles = StyleSheet.create({
   disabledInput: {
     backgroundColor: '#f5f5f5',
   },
-  documentUploadSection: {
-    marginBottom: spacing.md,
+  fieldContainer: {
+    marginBottom: spacing.lg,
   },
-  helpText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  fieldLabel: {
+    ...typography.label,
+    color: colors.textPrimary,
+    fontWeight: '600',
     marginBottom: spacing.sm,
   },
-  photoUploadButton: {
+  optionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-    borderStyle: 'dashed',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.white,
+    minWidth: 100,
   },
-  photoUploadIcon: {
-    fontSize: 24,
+  optionButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  optionIcon: {
+    fontSize: 20,
+    marginRight: spacing.xs,
+  },
+  optionText: {
+    ...typography.body2,
+    color: colors.text,
+  },
+  optionTextActive: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  input: {
+    marginTop: spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: spacing.sm,
   },
-  photoUploadText: {
-    ...typography.body2,
-    color: colors.primary,
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  photoPreview: {
-    marginTop: spacing.sm,
+  checkmark: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  photoUploadCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  photoUploadHeader: {
+    marginBottom: spacing.sm,
+  },
+  photoUploadTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.text,
+    fontSize: 16,
+  },
+  photoInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
     borderRadius: 8,
-    overflow: 'hidden',
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  photoInfoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  photoInfoText: {
+    ...typography.caption,
+    color: '#92400E',
+    flex: 1,
+    lineHeight: 18,
+  },
+  uploadButton: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    borderStyle: 'dashed',
+    padding: spacing.lg,
+    backgroundColor: '#F0F7FF',
+  },
+  uploadButtonContent: {
+    alignItems: 'center',
+  },
+  uploadIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  uploadIcon: {
+    fontSize: 32,
+  },
+  uploadButtonText: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  uploadButtonSubtext: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  photoPreviewContainer: {
+    position: 'relative',
+  },
+  changePhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  changePhotoIcon: {
+    fontSize: 16,
+    marginRight: spacing.xs,
+  },
+  changePhotoText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '600',
   },
   photoImage: {
     width: '100%',
     height: 200,
+    borderRadius: 8,
   },
 });
 
