@@ -6,10 +6,14 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing } from '../../../theme';
-import { CollapsibleSection } from '../ThailandTravelComponents';
-import Button from '../../../components/Button';
+import {
+  YStack,
+  XStack,
+  CollapsibleSection,
+  BaseCard,
+  BaseButton,
+  Text as TamaguiText,
+} from '../../tamagui';
 
 const FundsSection = ({
   t,
@@ -21,57 +25,86 @@ const FundsSection = ({
   // Actions
   addFund,
   handleFundItemPress,
-  // Styles from parent (optional)
-  styles: parentStyles,
 }) => {
-  // Use parent styles if provided, otherwise use local styles
-  const styles = parentStyles || localStyles;
-
   return (
     <CollapsibleSection
-      title="💰 资金证明"
-      subtitle="证明你有足够资金在泰国旅行"
-      isExpanded={isExpanded}
+      title={t('thailand.travelInfo.sectionTitles.funds', { defaultValue: '资金证明' })}
+      subtitle={t('thailand.travelInfo.sectionTitles.fundsSubtitle', { defaultValue: '证明你有足够资金在泰国旅行' })}
+      icon="💰"
+      badge={funds.length > 0 ? `${funds.length}` : '0'}
+      badgeVariant={funds.length > 0 ? 'success' : 'danger'}
+      expanded={isExpanded}
       onToggle={onToggle}
-      fieldCount={fieldCount}
+      variant="default"
     >
       {/* Border Crossing Context for Funds */}
-      <View style={styles.sectionIntro}>
-        <Text style={styles.sectionIntroIcon}>💳</Text>
-        <Text style={styles.sectionIntroText}>
-          泰国海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用，通常是每天至少500泰铢。
-        </Text>
-      </View>
+      <BaseCard
+        variant="flat"
+        padding="md"
+        backgroundColor="#F0F7FF"
+        marginBottom="$lg"
+        borderLeftWidth={4}
+        borderLeftColor="$primary"
+      >
+        <XStack gap="$sm" alignItems="flex-start">
+          <TamaguiText fontSize={20}>💳</TamaguiText>
+          <TamaguiText fontSize="$2" color="#2C5AA0" flex={1} lineHeight={20}>
+            {t('thailand.travelInfo.sectionIntros.funds', {
+              defaultValue: '泰国海关想确保你不会成为负担。只需证明你有足够钱支付旅行费用，通常是每天至少500泰铢。'
+            })}
+          </TamaguiText>
+        </XStack>
+      </BaseCard>
 
-      <View style={styles.fundActions}>
-        <Button
-          title="添加现金"
+      <XStack gap="$sm" marginBottom="$lg" flexWrap="wrap">
+        <BaseButton
+          variant="secondary"
+          size="md"
           onPress={() => addFund('cash')}
+          flex={1}
+          minWidth="45%"
+        >
+          {t('thailand.travelInfo.funds.addCash', { defaultValue: '添加现金' })}
+        </BaseButton>
+        <BaseButton
           variant="secondary"
-          style={styles.fundButton}
-        />
-        <Button
-          title="添加信用卡照片"
+          size="md"
           onPress={() => addFund('credit_card')}
+          flex={1}
+          minWidth="45%"
+        >
+          {t('thailand.travelInfo.funds.addCreditCard', { defaultValue: '添加信用卡照片' })}
+        </BaseButton>
+        <BaseButton
           variant="secondary"
-          style={styles.fundButton}
-        />
-        <Button
-          title="添加银行账户余额"
+          size="md"
           onPress={() => addFund('bank_balance')}
-          variant="secondary"
-          style={styles.fundButton}
-        />
-      </View>
+          flex={1}
+          minWidth="45%"
+        >
+          {t('thailand.travelInfo.funds.addBankBalance', { defaultValue: '添加银行账户余额' })}
+        </BaseButton>
+      </XStack>
 
       {funds.length === 0 ? (
-        <View style={styles.fundEmptyState}>
-          <Text style={styles.fundEmptyText}>
-            {t('thailand.travelInfo.funds.empty', { defaultValue: '尚未添加资金证明，请先新建条目。' })}
-          </Text>
-        </View>
+        <BaseCard
+          variant="flat"
+          padding="xl"
+          backgroundColor="#F5F5F5"
+        >
+          <YStack alignItems="center" justifyContent="center" minHeight={100}>
+            <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
+              {t('thailand.travelInfo.funds.empty', { defaultValue: '尚未添加资金证明，请先新建条目。' })}
+            </TamaguiText>
+          </YStack>
+        </BaseCard>
       ) : (
-        <View style={styles.fundList}>
+        <YStack
+          backgroundColor="$card"
+          borderRadius="$md"
+          borderWidth={1}
+          borderColor="#E0E0E0"
+        >
           {funds.map((fund, index) => {
             const isLast = index === funds.length - 1;
             const typeKey = (fund.type || 'OTHER').toUpperCase();
@@ -108,119 +141,50 @@ const FundsSection = ({
             }
 
             return (
-              <TouchableOpacity
+              <BaseCard
                 key={fund.id}
-                style={[styles.fundListItem, !isLast && styles.fundListItemDivider]}
+                variant="flat"
+                padding="none"
+                pressable
                 onPress={() => handleFundItemPress(fund)}
-                accessibilityRole="button"
+                borderRadius={0}
+                borderBottomWidth={!isLast ? 1 : 0}
+                borderBottomColor="#E0E0E0"
               >
-                <View style={styles.fundListItemContent}>
-                  <Text style={styles.fundItemIcon}>{typeIcon}</Text>
-                  <View style={styles.fundItemDetails}>
-                    <Text style={styles.fundItemTitle}>{typeLabel}</Text>
-                    <Text style={styles.fundItemSubtitle} numberOfLines={2}>
-                      {displayText}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.fundListItemArrow}>›</Text>
-              </TouchableOpacity>
+                <XStack padding="$md" alignItems="center" justifyContent="space-between">
+                  <XStack alignItems="center" flex={1}>
+                    <TamaguiText fontSize={32} marginRight="$md">
+                      {typeIcon}
+                    </TamaguiText>
+                    <YStack flex={1}>
+                      <TamaguiText
+                        fontSize="$2"
+                        fontWeight="600"
+                        color="$text"
+                        marginBottom="$xs"
+                      >
+                        {typeLabel}
+                      </TamaguiText>
+                      <TamaguiText
+                        fontSize="$2"
+                        color="$textSecondary"
+                        numberOfLines={2}
+                      >
+                        {displayText}
+                      </TamaguiText>
+                    </YStack>
+                  </XStack>
+                  <TamaguiText fontSize="$4" color="$textSecondary" marginLeft="$sm">
+                    ›
+                  </TamaguiText>
+                </XStack>
+              </BaseCard>
             );
           })}
-        </View>
+        </YStack>
       )}
     </CollapsibleSection>
   );
 };
-
-// Local styles (fallback if parent styles not provided)
-const localStyles = StyleSheet.create({
-  sectionIntro: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F0F7FF',
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  sectionIntroIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  sectionIntroText: {
-    ...typography.body2,
-    color: '#2C5AA0',
-    flex: 1,
-    lineHeight: 20,
-  },
-  fundActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  fundButton: {
-    flex: 1,
-    minWidth: '45%',
-  },
-  fundEmptyState: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    padding: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
-  },
-  fundEmptyText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  fundList: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  fundListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    justifyContent: 'space-between',
-  },
-  fundListItemDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  fundListItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  fundItemIcon: {
-    fontSize: 32,
-    marginRight: spacing.md,
-  },
-  fundItemDetails: {
-    flex: 1,
-  },
-  fundItemTitle: {
-    ...typography.body1,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  fundItemSubtitle: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
-  fundListItemArrow: {
-    ...typography.h2,
-    color: colors.textSecondary,
-    marginLeft: spacing.sm,
-  },
-});
 
 export default FundsSection;
