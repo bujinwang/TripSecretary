@@ -4,12 +4,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-} from 'react-native';
-import { colors, typography, spacing, borderRadius } from '../theme';
+  YStack,
+  XStack,
+  Input,
+  Text as TamaguiText,
+} from '../tamagui';
 import {
   formatPassportFullName,
   normalizePassportNameParts,
@@ -88,14 +87,16 @@ const PassportNameInput = ({
     errorFlag,
     placeholderText,
   }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{labelText}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          error && styles.inputError,
-          errorFlag && styles.inputError,
-        ]}
+    <YStack flex={1}>
+      <TamaguiText
+        fontSize="$1"
+        color="$textSecondary"
+        marginBottom="$xs"
+        fontWeight="600"
+      >
+        {labelText}
+      </TamaguiText>
+      <Input
         value={fieldValue}
         onChangeText={(text) => {
           if (validateLettersOnly(text)) {
@@ -111,22 +112,31 @@ const PassportNameInput = ({
         }}
         onBlur={onBlur}
         placeholder={placeholderText}
-        placeholderTextColor={colors.textDisabled}
         autoCapitalize="characters"
         autoCorrect={false}
         autoComplete="off"
         spellCheck={false}
         keyboardType="ascii-capable"
+        height={48}
+        borderWidth={1}
+        borderColor={error || errorFlag ? '$danger' : '$borderColor'}
+        backgroundColor="$background"
+        fontSize="$2"
+        color="$text"
         {...rest}
       />
-    </View>
+    </YStack>
   );
 
   return (
-    <View style={[styles.container, style]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+    <YStack marginBottom="$md" style={style}>
+      {label && (
+        <TamaguiText fontSize="$2" color="$text" marginBottom="$xs">
+          {label}
+        </TamaguiText>
+      )}
 
-      <View style={styles.inputRow}>
+      <XStack gap="$sm">
         {renderNameField({
           labelText: '姓',
           value: currentSurname,
@@ -174,75 +184,35 @@ const PassportNameInput = ({
           errorFlag: givenNameError,
           placeholderText: 'MAOA',
         })}
-      </View>
+      </XStack>
 
       {error && errorMessage && (
-        <Text style={styles.errorText}>{errorMessage}</Text>
+        <TamaguiText fontSize="$1" color="$danger" marginTop="$xs">
+          {errorMessage}
+        </TamaguiText>
       )}
       {surnameError && (
-        <Text style={styles.errorText}>{surnameError}</Text>
+        <TamaguiText fontSize="$1" color="$danger" marginTop="$xs">
+          {surnameError}
+        </TamaguiText>
       )}
       {middleNameError && (
-        <Text style={styles.errorText}>{middleNameError}</Text>
+        <TamaguiText fontSize="$1" color="$danger" marginTop="$xs">
+          {middleNameError}
+        </TamaguiText>
       )}
       {givenNameError && (
-        <Text style={styles.errorText}>{givenNameError}</Text>
+        <TamaguiText fontSize="$1" color="$danger" marginTop="$xs">
+          {givenNameError}
+        </TamaguiText>
       )}
       {!helpText && (
-        <Text style={styles.helpText}>
+        <TamaguiText fontSize="$1" color="$textSecondary" marginTop="$xs">
           请填写汉语拼音姓名（例如：LI, MAOA 或 LI, MARIE, MAOA）- 仅限A-Z字母
-        </Text>
+        </TamaguiText>
       )}
-    </View>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    ...typography.body1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  inputContainer: {
-    flex: 1,
-  },
-  inputLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    fontWeight: '600',
-  },
-  input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    height: 48,
-    paddingHorizontal: spacing.md,
-    ...typography.body1,
-    color: colors.text,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-  },
-  helpText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-});
 
 export default PassportNameInput;
