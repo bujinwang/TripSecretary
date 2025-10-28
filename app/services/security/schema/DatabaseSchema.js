@@ -439,6 +439,75 @@ class DatabaseSchema {
         `);
         console.log('✅ Migration completed: hotel_booking_photo_uri column added to travel_info');
       }
+
+      // Migration: Add entry_guide_progress table (v1.4.0)
+      const entryGuideProgressExists = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name='entry_guide_progress'");
+
+      if (entryGuideProgressExists.length === 0) {
+        console.log('Applying migration: Creating entry_guide_progress table');
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS entry_guide_progress (
+            id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            country_code TEXT NOT NULL,
+            current_step INTEGER DEFAULT 0,
+            total_steps INTEGER NOT NULL,
+            completed_steps TEXT,
+            answers TEXT,
+            last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, country_code)
+          );
+        `);
+
+        // Create trigger for auto-update timestamp
+        await db.execAsync(`
+          CREATE TRIGGER IF NOT EXISTS update_entry_guide_progress_timestamp
+          AFTER UPDATE ON entry_guide_progress
+          BEGIN
+            UPDATE entry_guide_progress
+            SET last_updated_at = CURRENT_TIMESTAMP
+            WHERE id = NEW.id;
+          END;
+        `);
+
+        console.log('✅ Migration completed: entry_guide_progress table created');
+      }
+
+      // Migration: Add tdac_submission_logs table (v1.4.0)
+      const tdacSubmissionLogsExists = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name='tdac_submission_logs'");
+
+      if (tdacSubmissionLogsExists.length === 0) {
+        console.log('Applying migration: Creating tdac_submission_logs table');
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS tdac_submission_logs (
+            id TEXT PRIMARY KEY,
+            user_id INTEGER,
+            submission_method TEXT NOT NULL,
+            arr_card_no TEXT,
+            traveler_data TEXT,
+            field_mappings TEXT,
+            validation_results TEXT,
+            cloudflare_token_length INTEGER,
+            submission_timestamp DATETIME NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+          );
+        `);
+
+        // Create trigger for auto-cleanup (delete logs older than 90 days)
+        await db.execAsync(`
+          CREATE TRIGGER IF NOT EXISTS cleanup_old_tdac_logs
+          AFTER INSERT ON tdac_submission_logs
+          BEGIN
+            DELETE FROM tdac_submission_logs
+            WHERE submission_timestamp < datetime('now', '-90 days');
+          END;
+        `);
+
+        console.log('✅ Migration completed: tdac_submission_logs table created');
+      }
     } catch (error) {
       console.error('Migration error:', error);
       // Don't throw - some migrations may fail on certain databases, but we can continue
@@ -487,6 +556,16 @@ class DatabaseSchema {
       CREATE INDEX IF NOT EXISTS idx_dac_superseded ON digital_arrival_cards(entry_info_id, card_type, is_superseded);
       CREATE INDEX IF NOT EXISTS idx_dac_arr_card_no ON digital_arrival_cards(arr_card_no);
       CREATE INDEX IF NOT EXISTS idx_dac_latest ON digital_arrival_cards(entry_info_id, card_type, is_superseded, status);
+
+      CREATE INDEX IF NOT EXISTS idx_entry_guide_user ON entry_guide_progress(user_id);
+      CREATE INDEX IF NOT EXISTS idx_entry_guide_country ON entry_guide_progress(country_code);
+      CREATE INDEX IF NOT EXISTS idx_entry_guide_updated ON entry_guide_progress(last_updated_at);
+
+      CREATE INDEX IF NOT EXISTS idx_tdac_logs_user ON tdac_submission_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_tdac_logs_method ON tdac_submission_logs(submission_method);
+      CREATE INDEX IF NOT EXISTS idx_tdac_logs_timestamp ON tdac_submission_logs(submission_timestamp);
+      CREATE INDEX IF NOT EXISTS idx_tdac_logs_created ON tdac_submission_logs(created_at);
+      CREATE INDEX IF NOT EXISTS idx_tdac_logs_arr_card ON tdac_submission_logs(arr_card_no);
     `);
   }
 }

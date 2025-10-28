@@ -33,22 +33,28 @@ class ApiClient {
   }
 
   async setToken(token) {
-    this.token = token;
     try {
       // SECURITY: Use SecureStore instead of AsyncStorage
       await SecureTokenService.saveAuthToken(token);
+      // Only set in memory if save succeeds
+      this.token = token;
     } catch (error) {
       console.error('Failed to save auth token:', error);
+      // Re-throw so caller knows save failed
+      throw new Error('Failed to persist authentication. Please try logging in again.');
     }
   }
 
   async clearToken() {
-    this.token = null;
     try {
       // SECURITY: Use SecureStore instead of AsyncStorage
       await SecureTokenService.deleteAuthToken();
+      this.token = null;
     } catch (error) {
       console.error('Failed to clear auth token:', error);
+      // Still clear from memory on logout attempt (best effort)
+      this.token = null;
+      // Don't throw - logout should still work even if storage clear fails
     }
   }
 

@@ -11,11 +11,12 @@ class QwenService {
     this.model = DEFAULT_MODEL;
     this.baseURL = DASH_SCOPE_URL;
     this.initialized = false;
+    this.initSuccess = false;
   }
 
   async initialize() {
     if (this.initialized) {
-      return;
+      return this.initSuccess;
     }
 
     try {
@@ -31,10 +32,14 @@ class QwenService {
 
       // Load API key from secure storage
       this.apiKey = await SecureTokenService.getQwenAPIKey();
+      this.initialized = true;
+      this.initSuccess = true;
+      return true;
     } catch (error) {
       console.warn('QwenService: failed to load stored API key', error);
-    } finally {
       this.initialized = true;
+      this.initSuccess = false;
+      return false;
     }
   }
 

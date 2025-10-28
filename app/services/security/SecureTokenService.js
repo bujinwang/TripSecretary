@@ -210,6 +210,15 @@ class SecureTokenService {
     try {
       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
 
+      // Check if SecureStore already has data (prevents overwriting newer data)
+      const existingValue = await SecureStore.getItemAsync(secureStoreKey);
+      if (existingValue) {
+        console.log(`ℹ️  ${secureStoreKey} already exists, skipping migration`);
+        // Still clean up old AsyncStorage key
+        await AsyncStorage.removeItem(asyncStorageKey);
+        return false;
+      }
+
       // Get value from AsyncStorage
       const value = await AsyncStorage.getItem(asyncStorageKey);
 
@@ -234,41 +243,56 @@ class SecureTokenService {
 
   /**
    * Check if SecureStore is available on this platform
+   * Uses finally block to guarantee test key cleanup
    *
    * @returns {Promise<boolean>} - True if available
    */
   static async isAvailable() {
+    const testKey = '__secure_store_test__';
+    const testValue = 'test';
+
     try {
       // Try to perform a test operation
-      const testKey = '__secure_store_test__';
-      const testValue = 'test';
-
       await SecureStore.setItemAsync(testKey, testValue);
       const result = await SecureStore.getItemAsync(testKey);
-      await SecureStore.deleteItemAsync(testKey);
-
       return result === testValue;
     } catch (error) {
       console.error('❌ SecureStore not available:', error);
       return false;
+    } finally {
+      // Always attempt cleanup, even if test failed
+      try {
+        await SecureStore.deleteItemAsync(testKey);
+      } catch (cleanupError) {
+        // Ignore cleanup errors - test key may not exist
+      }
     }
   }
 
   /**
    * Clear all secure tokens (logout helper)
    * Deletes auth token and other sensitive data
+   * Uses Promise.allSettled() to ensure all deletions are attempted
    *
    * @returns {Promise<void>}
    */
   static async clearAllTokens() {
-    try {
-      await this.deleteAuthToken();
-      await this.deleteQwenAPIKey();
-      console.log('✅ All secure tokens cleared');
-    } catch (error) {
-      console.error('❌ Failed to clear all tokens:', error);
-      throw new Error(`Failed to clear tokens: ${error.message}`);
+    const results = await Promise.allSettled([
+      this.deleteAuthToken(),
+      this.deleteQwenAPIKey(),
+    ]);
+
+    const failures = results.filter(r => r.status === 'rejected');
+
+    if (failures.length > 0) {
+      console.error(`❌ Failed to clear ${failures.length} token(s)`);
+      failures.forEach((failure, index) => {
+        console.error(`  - Token ${index + 1}: ${failure.reason}`);
+      });
+      throw new Error(`Failed to clear ${failures.length} token(s)`);
     }
+
+    console.log('✅ All secure tokens cleared');
   }
 }
 

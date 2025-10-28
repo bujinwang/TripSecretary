@@ -1131,20 +1131,31 @@ class TDACAPIService {
       ? (traveler.departureFlightNo || traveler.departureFlightNumber || '').toUpperCase().trim()
       : '';
 
-    // IMPORTANT: Only include departure transport mode if there's a departure flight number
-    // TDAC API requires flight number when transport mode is provided
-    // CRITICAL: Use the SAME session transport mode ID as arrival (dyn.tranModeRow?.key)
+    // IMPORTANT: Departure has TWO transport-related fields:
+    // 1. deptTraModeId - Departure travel mode (AIR/LAND/SEA) - maps to traModeId for arrival
+    // 2. deptTranModeId - Departure transport type (COMMERCIAL FLIGHT/etc.) - maps to tranModeId for arrival
+    //
+    // CRITICAL: Use the SAME session IDs as arrival
     // Do NOT use hardcoded IDs from traveler.departureTransportModeId - those are from different sessions
     const hasDepartureFlight = hasDeparture && !!deptFlightNo;
-    const deptTranModeId = hasDepartureFlight
-      ? (dyn.tranModeRow?.key || '')  // Use the same session transport mode as arrival
+
+    // deptTraModeId = departure travel mode (AIR/LAND/SEA), same as arrival traModeId
+    const deptTraModeId = hasDeparture
+      ? this.getTravelModeId(traveler.departureTravelMode || traveler.travelMode)
       : '';
+
+    // deptTranModeId = departure transport type (COMMERCIAL FLIGHT), same as arrival tranModeId
+    // IMPORTANT: Must be null (not empty string) when no departure flight, to match TDAC API behavior
+    const deptTranModeId = hasDepartureFlight
+      ? (dyn.tranModeRow?.key || tranModeId)  // Use the same session transport mode as arrival
+      : null;
 
     console.log('   Departure flags:', {
       hasDeparture,
       hasDepartureFlight,
       departureDate,
-      deptTranModeId,
+      deptTraModeId,  // Travel mode (AIR/LAND/SEA)
+      deptTranModeId, // Transport type (COMMERCIAL FLIGHT)
       deptFlightNo,
       rawDepartureMode: traveler.departureTravelMode,
       rawDepartureTransportModeId: traveler.departureTransportModeId,
@@ -1188,10 +1199,11 @@ class TDACAPIService {
         countryBoardCode: this.getNationalityId(traveler.countryBoarded),
         countryBoardDesc: this.getCountryDesc(traveler.countryBoarded),
         traPurposeId: purposeId,
-        traModeId: this.getTravelModeId(traveler.travelMode),
-        tranModeId,
+        traModeId: this.getTravelModeId(traveler.travelMode),  // Arrival: Travel mode (AIR/LAND/SEA)
+        tranModeId,                                             // Arrival: Transport type (COMMERCIAL FLIGHT)
         flightNo: (traveler.flightNo || '').toUpperCase(),
-        deptTraModeId: deptTranModeId,
+        deptTraModeId,      // Departure: Travel mode (AIR/LAND/SEA)
+        deptTranModeId,     // Departure: Transport type (COMMERCIAL FLIGHT)
         deptFlightNo,
         accTypeId: this.getAccommodationId(traveler.accommodationType),
         accProvinceId: dyn.provinceRow?.key || this.getProvinceId(traveler.province),
@@ -1210,30 +1222,13 @@ class TDACAPIService {
       }
     };
 
-    console.log('   Before cleanup - Departure fields in payload:', {
+    console.log('   Final departure fields in payload:', {
       deptDate: payload.tripInfo.deptDate,
       deptFlightNo: payload.tripInfo.deptFlightNo,
       deptTraModeId: payload.tripInfo.deptTraModeId,
+      deptTranModeId: payload.tripInfo.deptTranModeId,
       hasDeparture,
       hasDepartureFlight
-    });
-
-    // Clean up departure fields based on what data we have
-    // CRITICAL: Based on HAR file analysis, TDAC API's first next() call expects NO departure info
-    // All departure fields must be null/empty in the initial submission
-    // Departure info is likely added in a subsequent step/call
-    console.log('   Cleanup: Setting ALL departure fields to null/empty (HAR file shows no departure in first next() call)');
-    payload.tripInfo.deptDate = null;
-    payload.tripInfo.deptTraModeId = '';
-    payload.tripInfo.deptFlightNo = '';
-
-    // TODO: Implement separate API call for departure information if needed
-    // The TDAC form likely requires departure to be submitted separately
-
-    console.log('   After cleanup - Departure fields in payload:', {
-      deptDate: payload.tripInfo.deptDate,
-      deptFlightNo: payload.tripInfo.deptFlightNo,
-      deptTraModeId: payload.tripInfo.deptTraModeId
     });
 
     TDACSubmissionLogger.logResolvedSelectMappings(traveler, payload, dyn)

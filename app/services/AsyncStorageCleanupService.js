@@ -59,7 +59,7 @@ class AsyncStorageCleanupService {
       const keysToDelete = [];
 
       for (const key of allKeys) {
-        // TDAC submission logs
+        // TDAC submission logs with timestamp in key name
         if (key.startsWith('tdac_submission_log_')) {
           const timestamp = this.extractTimestampFromKey(key);
           if (timestamp && (now - timestamp) > this.LOG_MAX_AGE) {
@@ -67,15 +67,52 @@ class AsyncStorageCleanupService {
           }
         }
 
-        // Error logs
-        if (key.startsWith('tdac_submission_failure_') ||
-            key === 'tdac_error_log' ||
-            key === 'snapshot_creation_failures' ||
-            key === 'entry_info_status_update_failures') {
-          // Keep error logs for shorter period
+        // Error logs with timestamp in key name
+        if (key.startsWith('tdac_submission_failure_')) {
           const timestamp = this.extractTimestampFromKey(key);
           if (timestamp && (now - timestamp) > this.ERROR_LOG_MAX_AGE) {
             keysToDelete.push(key);
+          }
+        }
+
+        // Error logs without timestamp in key name
+        // These should be checked by value age or simply deleted if old
+        if (key === 'tdac_error_log' ||
+            key === 'snapshot_creation_failures' ||
+            key === 'entry_info_status_update_failures') {
+          try {
+            const value = await AsyncStorage.getItem(key);
+            if (value) {
+              // Try to parse and check timestamp from value
+              let shouldDelete = false;
+              try {
+                const data = JSON.parse(value);
+                // Check if it's an array of log entries
+                if (Array.isArray(data) && data.length > 0) {
+                  // Get the most recent entry's timestamp
+                  const lastEntry = data[data.length - 1];
+                  const lastTimestamp = lastEntry?.timestamp || lastEntry?.createdAt;
+                  if (lastTimestamp && (now - lastTimestamp) > this.ERROR_LOG_MAX_AGE) {
+                    shouldDelete = true;
+                  }
+                } else if (data.timestamp) {
+                  // Single log entry with timestamp
+                  if ((now - data.timestamp) > this.ERROR_LOG_MAX_AGE) {
+                    shouldDelete = true;
+                  }
+                }
+              } catch (parseError) {
+                // If we can't parse, consider deleting if the key exists
+                // (safer to keep it if we can't determine age)
+                console.warn(`Could not parse ${key} for age check`);
+              }
+
+              if (shouldDelete) {
+                keysToDelete.push(key);
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to check age for ${key}:`, error);
           }
         }
       }
@@ -121,8 +158,10 @@ class AsyncStorageCleanupService {
         other: 0
       };
 
-      for (const key of allKeys) {
-        const value = await AsyncStorage.getItem(key);
+      // Fetch all values in parallel for better performance (10-100x faster)
+      const keyValuePairs = await AsyncStorage.multiGet(allKeys);
+
+      for (const [key, value] of keyValuePairs) {
         const size = value ? value.length : 0;
         totalSize += size;
 
@@ -289,6 +328,7 @@ class AsyncStorageCleanupService {
 
   /**
    * Schedule automatic cleanup (call on app start)
+   * Validates timestamp parsing to prevent NaN calculations
    *
    * @returns {Promise<void>}
    */
@@ -297,9 +337,18 @@ class AsyncStorageCleanupService {
       // Check if cleanup is needed
       const lastCleanup = await AsyncStorage.getItem('last_cleanup_date');
       const now = Date.now();
-      const daysSinceCleanup = lastCleanup
-        ? (now - parseInt(lastCleanup)) / (24 * 60 * 60 * 1000)
-        : 999;
+
+      let daysSinceCleanup = 999; // Default to "needs cleanup"
+
+      if (lastCleanup) {
+        const lastCleanupTimestamp = parseInt(lastCleanup, 10);
+        // Validate parsed timestamp
+        if (!isNaN(lastCleanupTimestamp) && lastCleanupTimestamp > 0 && lastCleanupTimestamp <= now) {
+          daysSinceCleanup = (now - lastCleanupTimestamp) / (24 * 60 * 60 * 1000);
+        } else {
+          console.warn(`⚠️  Invalid last_cleanup_date: ${lastCleanup}, will run cleanup`);
+        }
+      }
 
       // Run cleanup weekly
       if (daysSinceCleanup > 7) {
