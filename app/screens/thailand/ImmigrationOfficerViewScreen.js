@@ -36,6 +36,7 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { QR_CODE, GESTURES, IMAGE_SIZES, TYPOGRAPHY as IOV_TYPOGRAPHY, LAYOUT, OPACITY, BORDER_COLORS } from './immigrationOfficerViewConstants';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
+import { safeGet, safeArray } from './helpers';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../utils/currencyConverter';
 import QRCodeSection from './components/QRCodeSection';
 import PassportInfoSection from './components/PassportInfoSection';
@@ -113,10 +114,19 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
             // Convert entry info to entry pack format for compatibility
             const loadedEntryPack = loadedEntryInfo ? {
               id: loadedEntryInfo.id,
-              qrCodeUri: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.qrUri,
-              arrCardNo: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.arrCardNo,
-              submittedAt: loadedEntryInfo.documents?.find(d => d.cardType === 'TDAC')?.submittedAt,
-              status: loadedEntryInfo.displayStatus?.tdacSubmitted ? 'submitted' : 'in_progress'
+              qrCodeUri: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'qrUri'
+              ),
+              arrCardNo: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'arrCardNo'
+              ),
+              submittedAt: safeGet(
+                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
+                'submittedAt'
+              ),
+              status: safeGet(loadedEntryInfo, 'displayStatus.tdacSubmitted', false) ? 'submitted' : 'in_progress'
             } : null;
             
             setEntryPack(loadedEntryPack);

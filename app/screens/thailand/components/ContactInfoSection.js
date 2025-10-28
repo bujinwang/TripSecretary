@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
+import { safeGet, safeString } from '../helpers';
 
 /**
  * ContactInfoSection Component
@@ -30,7 +31,7 @@ const ContactInfoSection = ({ passportData, travelData, language, t }) => {
              `โทรศัพท์ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phoneInThailand')}`}:
           </Text>
           <Text style={[styles.infoValue, styles.phoneNumber]}>
-            {passportData?.phoneNumber || travelData?.phoneNumber || 'N/A'}
+            {safeGet(passportData, 'phoneNumber', null) || safeGet(travelData, 'phoneNumber', 'N/A')}
           </Text>
         </View>
 
@@ -41,7 +42,7 @@ const ContactInfoSection = ({ passportData, travelData, language, t }) => {
              `อีเมล / ${t('progressiveEntryFlow.immigrationOfficer.presentation.email')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {passportData?.email || 'N/A'}
+            {safeString(safeGet(passportData, 'email'), 'N/A')}
           </Text>
         </View>
 
@@ -52,7 +53,7 @@ const ContactInfoSection = ({ passportData, travelData, language, t }) => {
              `ที่อยู่ในประเทศไทย / ${t('progressiveEntryFlow.immigrationOfficer.presentation.thaiAddress')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.accommodationAddress || travelData?.address || 'N/A'}
+            {safeGet(travelData, 'accommodationAddress', null) || safeGet(travelData, 'address', 'N/A')}
           </Text>
         </View>
       </View>

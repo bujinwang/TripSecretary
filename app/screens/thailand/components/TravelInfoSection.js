@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
 import OptimizedImage from '../../../components/OptimizedImage';
+import { safeGet, safeString } from '../helpers';
 
 /**
  * TravelInfoSection Component
@@ -32,7 +33,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
              `เที่ยวบินมา / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalFlight')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.arrivalFlight || travelData?.flightNumber || 'N/A'}
+            {safeGet(travelData, 'arrivalFlight', null) || safeGet(travelData, 'flightNumber', 'N/A')}
           </Text>
         </View>
 
@@ -113,7 +114,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
              `ชื่อโรงแรม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.hotelName')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.accommodationName || travelData?.hotelName || 'N/A'}
+            {safeGet(travelData, 'accommodationName', null) || safeGet(travelData, 'hotelName', 'N/A')}
           </Text>
         </View>
 
@@ -124,11 +125,11 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
              `ที่อยู่ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.address')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.accommodationAddress || travelData?.address || 'N/A'}
+            {safeGet(travelData, 'accommodationAddress', null) || safeGet(travelData, 'address', 'N/A')}
           </Text>
         </View>
 
-        {travelData?.accommodationPhone && (
+        {safeGet(travelData, 'accommodationPhone') && (
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>
               {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.phone') :
@@ -136,7 +137,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
                `โทรศัพท์ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.phone')}`}:
             </Text>
             <Text style={styles.infoValue}>
-              {travelData.accommodationPhone}
+              {safeString(safeGet(travelData, 'accommodationPhone'), 'N/A')}
             </Text>
           </View>
         )}
@@ -194,7 +195,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
              `จุดประสงค์ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.purpose')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {travelData?.purposeOfVisit || travelData?.purpose || 'N/A'}
+            {safeGet(travelData, 'purposeOfVisit', null) || safeGet(travelData, 'purpose', 'N/A')}
           </Text>
         </View>
 
