@@ -6,9 +6,8 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, typography, spacing } from '../../../theme';
+import { YStack, XStack, Text as TamaguiText } from '../../tamagui';
 
 const HeroSection = ({ t }) => {
   return (
@@ -16,117 +15,53 @@ const HeroSection = ({ t }) => {
       colors={['#1a3568', '#102347']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.heroSection}
+      style={{
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 8,
+      }}
     >
-      <View style={styles.heroContent}>
-        <Text style={styles.heroFlag}>🇹🇭</Text>
-        <View style={styles.heroHeading}>
-          <Text style={styles.heroTitle}>泰国入境准备指南</Text>
-          <Text style={styles.heroSubtitle}>别担心，我们来帮你！</Text>
-        </View>
+      <YStack alignItems="center">
+        <TamaguiText fontSize={64} marginBottom="$md">🇹🇭</TamaguiText>
+        <YStack alignItems="center" marginBottom="$xl">
+          <TamaguiText fontSize={28} fontWeight="700" color="white" marginBottom="$xs" textAlign="center">
+            泰国入境准备指南
+          </TamaguiText>
+          <TamaguiText fontSize={16} color="#E8F0FF" textAlign="center">
+            别担心，我们来帮你！
+          </TamaguiText>
+        </YStack>
 
         {/* Beginner-Friendly Value Proposition */}
-        <View style={styles.valueProposition}>
-          <View style={styles.valueItem}>
-            <Text style={styles.valueIcon}>⏱️</Text>
-            <Text style={styles.valueText}>3分钟完成</Text>
-          </View>
-          <View style={styles.valueItem}>
-            <Text style={styles.valueIcon}>🔒</Text>
-            <Text style={styles.valueText}>100%隐私保护</Text>
-          </View>
-          <View style={styles.valueItem}>
-            <Text style={styles.valueIcon}>🎯</Text>
-            <Text style={styles.valueText}>避免通关延误</Text>
-          </View>
-        </View>
+        <XStack justifyContent="space-around" width="100%" marginBottom="$xl" paddingVertical="$md">
+          <YStack alignItems="center" flex={1}>
+            <TamaguiText fontSize={32} marginBottom="$xs">⏱️</TamaguiText>
+            <TamaguiText fontSize={12} fontWeight="600" color="white" textAlign="center">3分钟完成</TamaguiText>
+          </YStack>
+          <YStack alignItems="center" flex={1}>
+            <TamaguiText fontSize={32} marginBottom="$xs">🔒</TamaguiText>
+            <TamaguiText fontSize={12} fontWeight="600" color="white" textAlign="center">100%隐私保护</TamaguiText>
+          </YStack>
+          <YStack alignItems="center" flex={1}>
+            <TamaguiText fontSize={32} marginBottom="$xs">🎯</TamaguiText>
+            <TamaguiText fontSize={12} fontWeight="600" color="white" textAlign="center">避免通关延误</TamaguiText>
+          </YStack>
+        </XStack>
 
-        <View style={styles.beginnerTip}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <Text style={styles.tipText}>
+        <XStack backgroundColor="rgba(255, 255, 255, 0.1)" borderRadius={12} padding="$md" alignItems="flex-start">
+          <TamaguiText fontSize={24} marginRight="$sm">💡</TamaguiText>
+          <TamaguiText fontSize="$2" color="#E8F0FF" flex={1} lineHeight={20}>
             第一次过泰国海关？我们会一步步教你准备所有必需文件，确保顺利通关！
-          </Text>
-        </View>
-      </View>
+          </TamaguiText>
+        </XStack>
+      </YStack>
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  heroSection: {
-    borderRadius: 16,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  heroContent: {
-    alignItems: 'center',
-  },
-  heroFlag: {
-    fontSize: 64,
-    marginBottom: spacing.md,
-  },
-  heroHeading: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  heroTitle: {
-    ...typography.h1,
-    color: colors.white,
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  heroSubtitle: {
-    ...typography.body1,
-    color: '#E8F0FF',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  valueProposition: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: spacing.xl,
-    paddingVertical: spacing.md,
-  },
-  valueItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  valueIcon: {
-    fontSize: 32,
-    marginBottom: spacing.xs,
-  },
-  valueText: {
-    ...typography.caption,
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  beginnerTip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  tipIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  tipText: {
-    ...typography.body2,
-    color: '#E8F0FF',
-    flex: 1,
-    lineHeight: 20,
-  },
-});
 
 export default HeroSection;

@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, LayoutAnimation, StyleSheet } from 'react-native';
+import { LayoutAnimation } from 'react-native';
+import { YStack, XStack, Text as TamaguiText } from '../tamagui';
 import Input from '../Input';
 
 /**
@@ -12,10 +13,10 @@ import Input from '../Input';
  */
 export const FieldWarningIcon = ({ hasWarning, hasError }) => {
   if (hasError) {
-    return <Text style={styles.fieldErrorIcon}>❌</Text>;
+    return <TamaguiText fontSize={18} marginLeft={8}>❌</TamaguiText>;
   }
   if (hasWarning) {
-    return <Text style={styles.fieldWarningIcon}>⚠️</Text>;
+    return <TamaguiText fontSize={18} marginLeft={8}>⚠️</TamaguiText>;
   }
   return null;
 };
@@ -44,31 +45,35 @@ export const InputWithValidation = ({
   const isLastEdited = fieldName && lastEditedField === fieldName;
 
   const getFieldRequirementText = () => {
-    if (required) return <Text style={styles.requiredText}>*</Text>;
-    if (optional) return <Text style={styles.optionalText}>（可选）</Text>;
+    if (required) return <TamaguiText color="#e74c3c" fontSize={14}>*</TamaguiText>;
+    if (optional) return <TamaguiText color="#95a5a6" fontSize={12}>（可选）</TamaguiText>;
     return null;
   };
 
   return (
-    <View style={[
-      styles.inputWithValidationContainer,
-      isLastEdited && styles.lastEditedField
-    ]}>
-      <View style={styles.inputLabelContainer}>
-        <View style={styles.labelRow}>
-          <Text style={[
-            styles.inputLabel,
-            isLastEdited && styles.lastEditedLabel
-          ]}>
+    <YStack
+      marginBottom={16}
+      backgroundColor={isLastEdited ? '#f0f8ff' : 'transparent'}
+      borderRadius={8}
+      padding={isLastEdited ? 8 : 0}
+      marginHorizontal={isLastEdited ? -8 : 0}
+    >
+      <XStack justifyContent="space-between" alignItems="center" marginBottom={4}>
+        <XStack alignItems="center">
+          <TamaguiText
+            fontSize={14}
+            fontWeight="600"
+            color={isLastEdited ? '#1a73e8' : '#333'}
+          >
             {label}
             {isLastEdited && ' ✨'}
-          </Text>
-          <View style={styles.requirementIndicator}>
+          </TamaguiText>
+          <YStack marginLeft={4}>
             {getFieldRequirementText()}
-          </View>
-        </View>
+          </YStack>
+        </XStack>
         <FieldWarningIcon hasWarning={hasWarning} hasError={hasError} />
-      </View>
+      </XStack>
       <Input
         value={value}
         onChangeText={onChangeText}
@@ -78,14 +83,14 @@ export const InputWithValidation = ({
         {...props}
       />
       {hasWarning && !hasError && (
-        <Text style={styles.warningText}>{warningMessage}</Text>
+        <TamaguiText marginTop={4} fontSize={12} color="#ff9500">{warningMessage}</TamaguiText>
       )}
       {isLastEdited && t && (
-        <Text style={styles.lastEditedIndicator}>
+        <TamaguiText marginTop={4} fontSize={11} color="#1a73e8" fontStyle="italic">
           {t('thailand.travelInfo.lastEdited', { defaultValue: '最近编辑' })}
-        </Text>
+        </TamaguiText>
       )}
-    </View>
+    </YStack>
   );
 };
 
@@ -101,157 +106,53 @@ export const CollapsibleSection = ({ title, subtitle, children, onScan, isExpand
   const isComplete = fieldCount && fieldCount.filled === fieldCount.total;
 
   return (
-    <View style={styles.sectionContainer}>
-      <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle} activeOpacity={0.8}>
-        <View style={styles.sectionTitleContainer}>
-          <View>
-            <Text style={styles.sectionTitle}>{title}</Text>
-            {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
-          </View>
+    <YStack
+      backgroundColor="white"
+      borderRadius={12}
+      marginBottom={16}
+      overflow="hidden"
+      shadowColor="#000"
+      shadowOffset={{ width: 0, height: 2 }}
+      shadowOpacity={0.1}
+      shadowRadius={4}
+      elevation={3}
+    >
+      <XStack
+        justifyContent="space-between"
+        alignItems="center"
+        padding={16}
+        backgroundColor="#f8f9fa"
+        onPress={handleToggle}
+        pressStyle={{ opacity: 0.8 }}
+        cursor="pointer"
+      >
+        <XStack flex={1} justifyContent="space-between" alignItems="center" marginRight={12}>
+          <YStack>
+            <TamaguiText fontSize={18} fontWeight="700" color="#1a3568">{title}</TamaguiText>
+            {subtitle && <TamaguiText fontSize={13} color="#6c757d" marginTop={2}>{subtitle}</TamaguiText>}
+          </YStack>
           {fieldCount && (
-            <View style={[
-              styles.fieldCountBadge,
-              isComplete ? styles.fieldCountBadgeComplete : styles.fieldCountBadgeIncomplete
-            ]}>
-              <Text style={[
-                styles.fieldCountText,
-                isComplete ? styles.fieldCountTextComplete : styles.fieldCountTextIncomplete
-              ]}>
+            <YStack
+              paddingHorizontal={10}
+              paddingVertical={4}
+              borderRadius={12}
+              backgroundColor={isComplete ? '#d4edda' : '#fff3cd'}
+            >
+              <TamaguiText
+                fontSize={12}
+                fontWeight="600"
+                color={isComplete ? '#155724' : '#856404'}
+              >
                 {`${fieldCount.filled}/${fieldCount.total}`}
-              </Text>
-            </View>
+              </TamaguiText>
+            </YStack>
           )}
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={styles.sectionIcon}>{isExpanded ? '▲' : '▼'}</Text>
-        </View>
-      </TouchableOpacity>
-      {isExpanded && <View style={styles.sectionContent}>{children}</View>}
-    </View>
+        </XStack>
+        <XStack alignItems="center">
+          <TamaguiText fontSize={16} color="#6c757d">{isExpanded ? '▲' : '▼'}</TamaguiText>
+        </XStack>
+      </XStack>
+      {isExpanded && <YStack padding={16} paddingTop={8}>{children}</YStack>}
+    </YStack>
   );
 };
-
-// Styles for components
-const styles = StyleSheet.create({
-  fieldErrorIcon: {
-    fontSize: 18,
-    marginLeft: 8,
-  },
-  fieldWarningIcon: {
-    fontSize: 18,
-    marginLeft: 8,
-  },
-  inputWithValidationContainer: {
-    marginBottom: 16,
-  },
-  lastEditedField: {
-    backgroundColor: '#f0f8ff',
-    borderRadius: 8,
-    padding: 8,
-    marginHorizontal: -8,
-  },
-  inputLabelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
-  lastEditedLabel: {
-    color: '#1a73e8',
-  },
-  requirementIndicator: {
-    marginLeft: 4,
-  },
-  requiredText: {
-    color: '#e74c3c',
-    fontSize: 14,
-  },
-  optionalText: {
-    color: '#95a5a6',
-    fontSize: 12,
-  },
-  warningText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#ff9500',
-  },
-  lastEditedIndicator: {
-    marginTop: 4,
-    fontSize: 11,
-    color: '#1a73e8',
-    fontStyle: 'italic',
-  },
-  sectionContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-  },
-  sectionTitleContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a3568',
-  },
-  sectionSubtitle: {
-    fontSize: 13,
-    color: '#6c757d',
-    marginTop: 2,
-  },
-  fieldCountBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  fieldCountBadgeComplete: {
-    backgroundColor: '#d4edda',
-  },
-  fieldCountBadgeIncomplete: {
-    backgroundColor: '#fff3cd',
-  },
-  fieldCountText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  fieldCountTextComplete: {
-    color: '#155724',
-  },
-  fieldCountTextIncomplete: {
-    color: '#856404',
-  },
-  sectionIcon: {
-    fontSize: 16,
-    color: '#6c757d',
-  },
-  sectionContent: {
-    padding: 16,
-    paddingTop: 8,
-  },
-});

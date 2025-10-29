@@ -6,9 +6,8 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { YStack, XStack, Text as TamaguiText } from '../tamagui';
 import Input from '../Input';
-import { colors, typography, spacing } from '../../theme';
 
 /**
  * @typedef {Object} Option
@@ -53,48 +52,58 @@ const OptionSelector = ({
   };
 
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.optionsGrid}>
+    <YStack width="100%" style={style}>
+      <XStack flexWrap="wrap" marginBottom="$sm" marginHorizontal={-8}>
         {options.map((option) => {
           const isActive = value === option.value;
           return (
-            <TouchableOpacity
+            <YStack
               key={option.value}
-              style={[
-                styles.optionButton,
-                isActive && styles.optionButtonActive,
-                disabled && styles.optionButtonDisabled,
-              ]}
+              alignItems="center"
+              justifyContent="center"
+              paddingVertical="$md"
+              paddingHorizontal="$sm"
+              borderRadius={12}
+              backgroundColor={isActive ? '#3B82F615' : '$surface'}
+              borderWidth={2}
+              borderColor={isActive ? '$primary' : '$borderColor'}
+              minWidth={100}
+              width="31%"
+              marginHorizontal={8}
+              marginBottom="$md"
+              minHeight={80}
+              opacity={disabled ? 0.5 : 1}
               onPress={() => handleSelect(option.value)}
-              disabled={disabled}
+              pressStyle={{ opacity: 0.7 }}
+              cursor={disabled ? 'not-allowed' : 'pointer'}
               accessibilityLabel={`${option.label}${option.tip ? ` - ${option.tip}` : ''}`}
               accessibilityRole="button"
-              accessibilityState={{ selected: isActive, disabled }}
             >
               {option.icon && (
-                <Text style={styles.optionIcon} accessibilityLabel="">
+                <TamaguiText fontSize={28} marginBottom="$xs">
                   {option.icon}
-                </Text>
+                </TamaguiText>
               )}
-              <Text
-                style={[
-                  styles.optionText,
-                  isActive && styles.optionTextActive,
-                  disabled && styles.optionTextDisabled,
-                ]}
+              <TamaguiText
+                fontSize="$2"
+                fontWeight={isActive ? '700' : '500'}
+                color={isActive ? '$primary' : disabled ? '$textSecondary' : '$text'}
+                textAlign="center"
               >
                 {option.label}
-              </Text>
+              </TamaguiText>
               {option.tip && !isActive && (
-                <Text style={styles.optionTip}>{option.tip}</Text>
+                <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginTop="$xs">
+                  {option.tip}
+                </TamaguiText>
               )}
-            </TouchableOpacity>
+            </YStack>
           );
         })}
-      </View>
+      </XStack>
 
       {value === 'OTHER' && onCustomChange && (
-        <View style={styles.customInputContainer}>
+        <YStack marginTop="$md">
           <Input
             label={customLabel}
             value={customValue}
@@ -105,72 +114,10 @@ const OptionSelector = ({
             autoCapitalize="words"
             disabled={disabled}
           />
-        </View>
+        </YStack>
       )}
-    </View>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: spacing.sm,
-    marginHorizontal: -spacing.xs, // Negative margin to offset item margins
-  },
-  optionButton: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    minWidth: 100,
-    width: '31%', // Roughly 1/3 width to fit 3 columns with margins
-    marginHorizontal: spacing.xs,
-    marginBottom: spacing.md,
-    minHeight: 80,
-  },
-  optionButtonActive: {
-    backgroundColor: colors.primary + '15',
-    borderColor: colors.primary,
-  },
-  optionButtonDisabled: {
-    opacity: 0.5,
-    backgroundColor: colors.disabled,
-  },
-  optionIcon: {
-    fontSize: 28,
-    marginBottom: spacing.xs,
-  },
-  optionText: {
-    fontSize: typography.sizes.sm,
-    fontWeight: '500',
-    color: colors.text,
-    textAlign: 'center',
-  },
-  optionTextActive: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-  optionTextDisabled: {
-    color: colors.textSecondary,
-  },
-  optionTip: {
-    fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  customInputContainer: {
-    marginTop: spacing.md,
-  },
-});
 
 export default OptionSelector;
