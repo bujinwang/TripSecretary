@@ -33,7 +33,7 @@ const SubmissionCountdown = ({
     setWindowInfo({ ...window, ...uiState });
 
     if (window.timeRemaining) {
-       const formatted = CountdownFormatter.formatTimeRemaining(window.timeRemaining, locale, { showSeconds: true });
+       const formatted = CountdownFormatter.formatTimeRemaining(window.timeRemaining, locale, { showSeconds: true, maxUnit: 'hours' });
        setTimeRemaining(formatted);
      } else {
        setTimeRemaining(null);
