@@ -245,6 +245,9 @@ const ProgressEncouragement = ({
   arrivalDate,
   t,
   buttonState,
+  navigation,
+  passportParam,
+  destination,
 }) => {
   const getPrimaryGradient = () => {
     if (buttonState.disabled) {
@@ -350,6 +353,39 @@ const ProgressEncouragement = ({
 
         {/* Secondary Actions Row */}
         <XStack gap="$sm">
+          {/* Edit Travel Info - Always show for non-submitted state */}
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            onPress={() => {
+              // Navigate to edit travel info
+              navigation.navigate('ThailandTravelInfo', {
+                passport: passportParam,
+                destination: destination,
+              });
+            }}
+          >
+            <AnimatedCard
+              flex={1}
+              backgroundColor="$white"
+              borderRadius={14}
+              padding="$md"
+              borderWidth={1}
+              borderColor="$borderColor"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.1}
+              shadowRadius={4}
+              elevation={2}
+            >
+              <YStack alignItems="center">
+                <Text fontSize={24} marginBottom="$xs">✏️</Text>
+                <Text fontSize={12} fontWeight="600" color="$text" textAlign="center">
+                  修改旅行信息
+                </Text>
+              </YStack>
+            </AnimatedCard>
+          </TouchableOpacity>
+
           {/* Preview Pack */}
           {['view_entry_pack', 'submit_tdac'].includes(buttonState.action) && (
             <TouchableOpacity
@@ -477,6 +513,9 @@ const PreparedState = ({
         arrivalDate={arrivalDate}
         t={t}
         buttonState={buttonState}
+        navigation={navigation}
+        passportParam={passportParam}
+        destination={destination}
       />
     );
   };
