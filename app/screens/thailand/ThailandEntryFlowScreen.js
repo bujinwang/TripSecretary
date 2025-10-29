@@ -424,43 +424,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     const buttonState = getPrimaryButtonState();
 
     switch (buttonState.action) {
-      case 'view_submitted_tdac':
-        // Navigate to entry info detail screen to view submitted TDAC
-        try {
-          const EntryInfoService = require('../../services/EntryInfoService').default;
-          const userId = passportParam?.id || 'user_001';
-          const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
-          const destinationId = route.params?.destination?.id || 'thailand';
-          const thailandEntryInfo = allEntryInfos?.find(info =>
-            info.destinationId === destinationId || info.destinationId === 'thailand'
-          );
-
-          if (thailandEntryInfo) {
-            navigation.navigate('EntryInfoDetail', {
-              entryInfoId: thailandEntryInfo.id,
-              passport: passportParam,
-              destination: route.params?.destination,
-            });
-          } else {
-            Alert.alert(
-              '未找到入境卡数据',
-              '这可能是因为：\n\n1. 使用了模拟状态（dev按钮）\n2. 入境卡数据还未同步\n\n请尝试实际提交TDAC或查看历史记录。',
-              [
-                {
-                  text: '查看历史',
-                  onPress: () => {
-                    navigation.getParent()?.navigate('MainTabs', { screen: 'History' });
-                  }
-                },
-                { text: '取消', style: 'cancel' }
-              ]
-            );
-          }
-        } catch (error) {
-          console.error('Failed to load entry info:', error);
-          Alert.alert('错误', '加载入境信息失败：' + error.message);
-        }
-        break;
       case 'continue_improving':
         // Navigate back to ThailandTravelInfoScreen
         navigation.navigate('ThailandTravelInfo', {
@@ -591,11 +554,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     // Check if TDAC has been submitted successfully
     if (entryPackStatus === 'submitted' && !showSupersededStatus) {
       return {
-        title: '查看我的入境卡 ✅',
-        action: 'view_submitted_tdac',
+        title: '查看我的通关包 📋',
+        action: 'view_entry_pack',
         disabled: false,
         variant: 'success',
-        subtitle: '入境卡已成功提交'
+        subtitle: '随时回顾你已准备好的资料'
       };
     }
 
@@ -672,26 +635,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const hasNoEntryData = completionPercent === 0 && categories.every(cat => cat.completedCount === 0);
-
-  const renderPrimaryAction = () => {
-    const buttonState = getPrimaryButtonState();
-    return (
-      <View>
-        <Button
-          title={buttonState.title}
-          onPress={handlePrimaryAction}
-          variant={buttonState.variant}
-          disabled={buttonState.disabled}
-          style={styles.primaryActionButton}
-        />
-        {buttonState.subtitle && (
-          <Text style={styles.primaryActionSubtitle}>
-            {buttonState.subtitle}
-          </Text>
-        )}
-      </View>
-    );
-  };
+  const primaryActionState = getPrimaryButtonState();
 
   const renderNoDataState = () => (
     <View style={styles.noDataContainer}>
@@ -737,7 +681,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       handleEditInformation={handleEditInformation}
       handlePreviewEntryCard={handlePreviewEntryCard}
       navigation={navigation}
-      renderPrimaryAction={renderPrimaryAction}
+      onPrimaryAction={handlePrimaryAction}
+      primaryActionState={primaryActionState}
       entryPackStatus={entryPackStatus}
     />
   );
@@ -788,7 +733,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     setShowSupersededStatus(false);
     Alert.alert(
       '✅ 模拟成功',
-      '已模拟TDAC提交成功状态\n\n注意：这是模拟状态，点击"查看我的入境卡"按钮会失败，因为没有真实的入境卡数据。请实际提交TDAC来测试完整流程。'
+      '已模拟TDAC提交成功状态\n\n注意：这是模拟状态，通关包内容可能不完整，仅用于界面预览。请实际提交TDAC来测试完整流程。'
     );
   };
 
@@ -844,15 +789,17 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         }
       >
 
-        <View style={styles.titleSection}>
-          <Text style={styles.flag}>🇹🇭</Text>
-          <Text style={styles.title}>
-            我的泰国之旅准备好了吗？🌺
-          </Text>
-          <Text style={styles.subtitle}>
-            看看你准备得怎么样，一起迎接泰国冒险！
-          </Text>
-        </View>
+        {entryPackStatus !== 'submitted' && (
+          <View style={styles.preSubmissionHeader}>
+            <Text style={styles.preSubmissionIcon}>🎉</Text>
+            <Text style={styles.preSubmissionTitle}>
+              太棒了！泰国之旅准备就绪！🌴
+            </Text>
+            <Text style={styles.preSubmissionSubtitle}>
+              入境卡已成功提交，可以查看您的入境信息
+            </Text>
+          </View>
+        )}
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -918,24 +865,33 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
 
-  titleSection: {
+  preSubmissionHeader: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 18,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  flag: {
-    fontSize: 40,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    ...typography.h3,
-    color: colors.primary,
+  preSubmissionIcon: {
+    fontSize: 48,
     marginBottom: spacing.xs,
-    textAlign: 'center',
   },
-  subtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
+  preSubmissionTitle: {
+    ...typography.h4,
+    color: '#2E7D32',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  preSubmissionSubtitle: {
+    ...typography.body2,
+    color: '#558B2F',
     textAlign: 'center',
   },
   loadingContainer: {
@@ -987,15 +943,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-  },
-  primaryActionButton: {
-    marginBottom: spacing.xs,
-  },
-  primaryActionSubtitle: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 16,
   },
   secondaryActionsContainer: {
     flexDirection: 'row',

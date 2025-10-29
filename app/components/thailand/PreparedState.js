@@ -6,19 +6,18 @@
  */
 
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   YStack,
   XStack,
   Text,
   styled,
-  Stack,
 } from 'tamagui';
 import CompletionSummaryCard from '../CompletionSummaryCard';
 import SubmissionCountdown from '../SubmissionCountdown';
 import Button from '../Button';
-import { colors, typography, spacing, shadows } from '../../theme';
+import { colors, spacing } from '../../theme';
 
 // Styled Tamagui components
 const PressableCard = styled(YStack, {
@@ -41,7 +40,8 @@ const PressableCard = styled(YStack, {
  * @param {Function} props.handleEditInformation - Handler for edit information action
  * @param {Function} props.handlePreviewEntryCard - Handler for preview entry card action
  * @param {Function} props.navigation - Navigation object
- * @param {Function} props.renderPrimaryAction - Function to render primary action button
+ * @param {Object} props.primaryActionState - Object describing primary action button state
+ * @param {Function} props.onPrimaryAction - Handler for primary action press
  * @param {string} props.entryPackStatus - Status of entry pack: 'submitted', 'in_progress', null
  */
 const PreparedState = ({
@@ -55,9 +55,96 @@ const PreparedState = ({
   handleEditInformation,
   handlePreviewEntryCard,
   navigation,
-  renderPrimaryAction,
+  primaryActionState,
+  onPrimaryAction,
   entryPackStatus,
 }) => {
+  const renderPrimaryAction = () => {
+    if (!primaryActionState) {
+      return null;
+    }
+
+    if (entryPackStatus === 'submitted') {
+      const gradientColors = primaryActionState.disabled
+        ? ['#A5D6A7', '#81C784']
+        : ['#0BD67B', colors.primary];
+
+      return (
+        <YStack>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={onPrimaryAction}
+            disabled={primaryActionState.disabled}
+            style={{ opacity: primaryActionState.disabled ? 0.6 : 1 }}
+          >
+            <YStack
+              borderRadius={28}
+              overflow="hidden"
+              shadowColor="#0C8A52"
+              shadowOffset={{ width: 0, height: 8 }}
+              shadowOpacity={0.25}
+              shadowRadius={12}
+              elevation={6}
+            >
+              <LinearGradient
+                colors={gradientColors}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={{
+                  paddingVertical: 16,
+                  paddingHorizontal: spacing.lg,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text
+                  fontSize={18}
+                  fontWeight="700"
+                  color="$white"
+                  letterSpacing={0.3}
+                >
+                  {primaryActionState.title}
+                </Text>
+              </LinearGradient>
+            </YStack>
+          </TouchableOpacity>
+          {primaryActionState.subtitle && (
+            <Text
+              fontSize={13}
+              color="$textSecondary"
+              textAlign="center"
+              marginTop="$sm"
+            >
+              {primaryActionState.subtitle}
+            </Text>
+          )}
+        </YStack>
+      );
+    }
+
+    return (
+      <YStack>
+        <Button
+          title={primaryActionState.title}
+          onPress={onPrimaryAction}
+          variant={primaryActionState.variant}
+          disabled={primaryActionState.disabled}
+          style={{ marginBottom: spacing.xs }}
+        />
+        {primaryActionState.subtitle && (
+          <Text
+            fontSize={13}
+            color="$textSecondary"
+            textAlign="center"
+            marginTop="$xs"
+          >
+            {primaryActionState.subtitle}
+          </Text>
+        )}
+      </YStack>
+    );
+  };
+
   return (
     <YStack>
       {/* Status Cards Section */}
@@ -192,6 +279,7 @@ const PreparedState = ({
             borderTopColor="$borderColor"
             gap="$sm"
           >
+            {/* Edit Travel Info - New addition for post-submission */}
             <PressableCard
               flexDirection="row"
               alignItems="center"
@@ -206,40 +294,65 @@ const PreparedState = ({
               shadowOpacity={0.1}
               shadowRadius={2}
               elevation={1}
-              onPress={() => {
-                // Share QR code with travel companions
-                Alert.alert(
-                  '分享入境卡',
-                  '您可以分享入境卡给同行的家人或朋友参考',
-                  [
-                    {
-                      text: '分享',
-                      onPress: () => {
-                        Alert.alert('提示', '请使用手机分享功能');
-                      }
-                    },
-                    { text: '取消', style: 'cancel' }
-                  ]
-                );
-              }}
+              onPress={handleEditInformation}
             >
               <YStack
                 width={48}
                 height={48}
                 borderRadius={24}
-                backgroundColor="$primaryLight"
+                backgroundColor="#FFE7C2"
                 alignItems="center"
                 justifyContent="center"
                 marginRight="$md"
               >
-                <Text fontSize={24}>📤</Text>
+                <Text fontSize={24}>✏️</Text>
               </YStack>
               <YStack flex={1}>
                 <Text fontSize={16} fontWeight="700" color="$text" marginBottom={2}>
-                  分享入境卡
+                  编辑旅行信息
                 </Text>
                 <Text fontSize={13} color="$textSecondary">
-                  发送给同行的家人朋友
+                  如需修改，返回编辑并重新提交
+                </Text>
+              </YStack>
+              <Text fontSize={22} fontWeight="600" color="#FF9800" marginLeft="$xs">
+                ›
+              </Text>
+            </PressableCard>
+
+            <PressableCard
+              flexDirection="row"
+              alignItems="center"
+              backgroundColor="#F0FFF6"
+              borderRadius={14}
+              paddingVertical="$md"
+              paddingHorizontal="$md"
+              borderWidth={1}
+              borderColor="rgba(11, 214, 123, 0.25)"
+              shadowColor="$shadow"
+              shadowOffset={{ width: 0, height: 1 }}
+              shadowOpacity={0.1}
+              shadowRadius={2}
+              elevation={1}
+              onPress={handlePreviewEntryCard}
+            >
+              <YStack
+                width={48}
+                height={48}
+                borderRadius={24}
+                backgroundColor="#D2F7E5"
+                alignItems="center"
+                justifyContent="center"
+                marginRight="$md"
+              >
+                <Text fontSize={24}>👁️</Text>
+              </YStack>
+              <YStack flex={1}>
+                <Text fontSize={16} fontWeight="700" color="$text" marginBottom={2}>
+                  查看我的入境包
+                </Text>
+                <Text fontSize={13} color="$textSecondary">
+                  重新查看您的所有入境信息
                 </Text>
               </YStack>
               <Text fontSize={22} fontWeight="600" color="$primary" marginLeft="$xs">
@@ -264,39 +377,8 @@ const PreparedState = ({
           shadowRadius={4}
           elevation={3}
         >
-          <YStack
-            backgroundColor="#E8F5E9"
-            borderRadius={12}
-            padding="$lg"
-            alignItems="center"
-          >
-            <Text fontSize={48} marginBottom="$sm">🎉</Text>
-            <Text
-              fontSize={18}
-              fontWeight="700"
-              color="#2E7D32"
-              textAlign="center"
-              marginBottom="$xs"
-            >
-              太棒了！泰国之旅准备就绪！🌴
-            </Text>
-            <Text fontSize={14} color="#558B2F" textAlign="center">
-              入境卡已成功提交，可以查看您的入境信息
-            </Text>
-          </YStack>
-
-          {/* Smart Primary Action Button */}
-          <YStack
-            marginTop="$md"
-            paddingTop="$md"
-            borderTopWidth={1}
-            borderTopColor="$borderColor"
-          >
-            {renderPrimaryAction()}
-          </YStack>
-
           {/* Entry Guide Button - Prominent position after submission */}
-          <YStack marginTop="$lg">
+          <YStack marginBottom="$lg">
             <PressableCard
               borderRadius={16}
               overflow="hidden"
@@ -335,21 +417,21 @@ const PreparedState = ({
                   <Text fontSize={26}>🛂</Text>
                 </YStack>
                 <YStack flex={1}>
-                  <Text
-                    fontSize={17}
-                    fontWeight="700"
-                    color="$white"
-                    letterSpacing={0.2}
-                  >
-                    入境通关完整指南
-                  </Text>
-                  <Text
-                    fontSize={13}
-                    color="rgba(255, 255, 255, 0.90)"
-                    marginTop={4}
-                  >
-                    如何在机场使用入境卡
-                  </Text>
+                <Text
+                  fontSize={17}
+                  fontWeight="700"
+                  color="$white"
+                  letterSpacing={0.2}
+                >
+                  开始入境流程
+                </Text>
+                <Text
+                  fontSize={13}
+                  color="rgba(255, 255, 255, 0.90)"
+                  marginTop={4}
+                >
+                  如何在机场使用入境卡
+                </Text>
                 </YStack>
                 <YStack
                   width={32}
@@ -366,6 +448,37 @@ const PreparedState = ({
                 </YStack>
               </LinearGradient>
             </PressableCard>
+          </YStack>
+
+          <YStack
+            backgroundColor="#E8F5E9"
+            borderRadius={12}
+            padding="$lg"
+            alignItems="center"
+          >
+            <Text fontSize={48} marginBottom="$sm">🎉</Text>
+            <Text
+              fontSize={18}
+              fontWeight="700"
+              color="#2E7D32"
+              textAlign="center"
+              marginBottom="$xs"
+            >
+              太棒了！泰国之旅准备就绪！🌴
+            </Text>
+            <Text fontSize={14} color="#558B2F" textAlign="center">
+              入境卡已成功提交，可以查看您的入境信息
+            </Text>
+          </YStack>
+
+          {/* Smart Primary Action Button */}
+          <YStack
+            marginTop="$md"
+            paddingTop="$md"
+            borderTopWidth={1}
+            borderTopColor="$borderColor"
+          >
+            {renderPrimaryAction()}
           </YStack>
         </YStack>
       ) : (
@@ -459,14 +572,14 @@ const PreparedState = ({
                   color="$white"
                   letterSpacing={0.2}
                 >
-                  查看泰国入境指引
+                  开始入境流程
                 </Text>
                 <Text
                   fontSize={13}
                   color="rgba(255, 255, 255, 0.90)"
                   marginTop={4}
                 >
-                  6步骤完整入境流程指南
+                  查看完整的入境指引
                 </Text>
               </YStack>
               <YStack

@@ -11,9 +11,24 @@ import SecureStorageService from '../services/security/SecureStorageService';
 class EntryInfo extends EntryData {
   constructor(data = {}) {
     super(data);
-    
+
     // Progressive entry flow specific fields
-    this.completionMetrics = data.completionMetrics || {
+    // Parse completion_metrics if it's a string (from database)
+    let parsedMetrics = data.completionMetrics || data.completion_metrics;
+    if (typeof parsedMetrics === 'string') {
+      try {
+        // Handle double-stringified JSON from database
+        parsedMetrics = JSON.parse(parsedMetrics);
+        if (typeof parsedMetrics === 'string') {
+          parsedMetrics = JSON.parse(parsedMetrics);
+        }
+      } catch (e) {
+        console.warn('Failed to parse completion_metrics:', e);
+        parsedMetrics = null;
+      }
+    }
+
+    this.completionMetrics = parsedMetrics || {
       passport: { complete: 0, total: 5, state: 'missing' }, // passportNo, fullName, nationality, dob, expiryDate
       personalInfo: { complete: 0, total: 6, state: 'missing' }, // occupation, provinceCity, countryRegion, phoneNumber, email, gender
       funds: { complete: 0, total: 1, state: 'missing' }, // at least 1 fund item

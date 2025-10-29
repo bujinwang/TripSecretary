@@ -1,11 +1,24 @@
 // TDAC Entry Pack Preview - PreviewBadge Component
 // Indicates to user they're in preview mode
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+  withSequence,
+} from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '../../i18n/LocaleContext';
 import { previewTheme } from '../../theme/preview-tokens';
+import {
+  ANIMATION_EASING,
+  ReduceMotionManager,
+  AnimationHelpers,
+} from '../../utils/animations/previewAnimations';
+import { PreviewHaptics } from '../../utils/haptics';
 
 /**
  * PreviewBadge Component
@@ -37,6 +50,13 @@ const PreviewBadge = ({
   const { t } = useTranslation();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(collapsed);
+
+  // Animation values
+  const slideY = useSharedValue(-50);
+  const opacity = useSharedValue(0);
+  const heightScale = useSharedValue(collapsed ? 0 : 1);
+  const iconScale = useSharedValue(1);
 
   // Configuration for each variant
   const variantConfig = {
@@ -74,20 +94,102 @@ const PreviewBadge = ({
 
   const config = variantConfig[variant];
 
+  // Entrance animation on mount
+  useEffect(() => {
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+
+    if (isReduceMotion) {
+      // Reduce motion: fade only, faster
+      slideY.value = 0;
+      opacity.value = withTiming(1, { duration: 200 });
+    } else {
+      // Normal: slide down + fade in
+      slideY.value = withTiming(0, {
+        duration: 350,
+        easing: ANIMATION_EASING.EASE_OUT_QUINT,
+      });
+      opacity.value = withTiming(1, { duration: 350 });
+    }
+  }, []);
+
+  // Collapse/expand animation when prop changes
+  useEffect(() => {
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+    const duration = isReduceMotion ? 150 : 250;
+
+    if (collapsed !== isCollapsed) {
+      setIsCollapsed(collapsed);
+
+      if (collapsed) {
+        // Collapsing: scale down height, scale up icon slightly
+        heightScale.value = withTiming(0, { duration });
+        iconScale.value = withSequence(
+          withTiming(1.1, { duration: duration / 2 }),
+          withTiming(1, { duration: duration / 2 })
+        );
+      } else {
+        // Expanding: scale up height, scale icon
+        heightScale.value = withTiming(1, { duration });
+        iconScale.value = withSequence(
+          withTiming(0.9, { duration: duration / 2 }),
+          withTiming(1, { duration: duration / 2 })
+        );
+      }
+    }
+  }, [collapsed]);
+
   const handleDismiss = () => {
-    setIsDismissed(true);
-    if (onDismiss) {
-      onDismiss();
+    PreviewHaptics.buttonPress();
+
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+
+    if (isReduceMotion) {
+      // Instant dismiss
+      setIsDismissed(true);
+      if (onDismiss) {
+        onDismiss();
+      }
+    } else {
+      // Animate out: slide up + fade out
+      slideY.value = withTiming(-50, {
+        duration: 200,
+        easing: ANIMATION_EASING.EASE_IN_QUAD,
+      });
+      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
+        if (finished) {
+          runOnJS(setIsDismissed)(true);
+          if (onDismiss) {
+            runOnJS(onDismiss)();
+          }
+        }
+      });
     }
   };
 
   const handleInfoPress = () => {
+    PreviewHaptics.buttonPress();
     setShowTooltip(true);
   };
 
   const handleCloseTooltip = () => {
+    PreviewHaptics.buttonPress();
     setShowTooltip(false);
   };
+
+  // Animated styles
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: slideY.value }],
+    opacity: opacity.value,
+  }));
+
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    maxHeight: heightScale.value * 100, // Approximate max height
+    opacity: heightScale.value,
+  }));
+
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: iconScale.value }],
+  }));
 
   // Don't render if dismissed
   if (isDismissed) {
@@ -97,36 +199,41 @@ const PreviewBadge = ({
   // Collapsed chip version (minimal)
   if (collapsed) {
     return (
-      <TouchableOpacity
-        style={[
-          styles.chipContainer,
-          { backgroundColor: config.bgColor, borderColor: config.borderColor },
-          style,
-        ]}
-        onPress={handleInfoPress}
-        accessible={true}
-        accessibilityRole="button"
-        accessibilityLabel={t(config.titleKey, { defaultValue: config.titleDefault })}
-        accessibilityHint={t('preview.badge.expandHint', {
-          defaultValue: 'Tap to show more information',
-        })}
-      >
-        <Feather
-          name={config.icon}
-          size={previewTheme.iconSizes.small}
-          color={config.textColor}
-        />
-      </TouchableOpacity>
+      <Animated.View style={[animatedContainerStyle]}>
+        <TouchableOpacity
+          style={[
+            styles.chipContainer,
+            { backgroundColor: config.bgColor, borderColor: config.borderColor },
+            style,
+          ]}
+          onPress={handleInfoPress}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={t(config.titleKey, { defaultValue: config.titleDefault })}
+          accessibilityHint={t('preview.badge.expandHint', {
+            defaultValue: 'Tap to show more information',
+          })}
+        >
+          <Animated.View style={animatedIconStyle}>
+            <Feather
+              name={config.icon}
+              size={previewTheme.iconSizes.small}
+              color={config.textColor}
+            />
+          </Animated.View>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 
   // Full badge version
   return (
     <>
-      <View
+      <Animated.View
         style={[
           styles.container,
           { backgroundColor: config.bgColor, borderColor: config.borderColor },
+          animatedContainerStyle,
           style,
         ]}
         accessible={true}
@@ -134,7 +241,7 @@ const PreviewBadge = ({
         accessibilityLabel={t(config.titleKey, { defaultValue: config.titleDefault })}
       >
         {/* Icon and Title */}
-        <View style={styles.content}>
+        <Animated.View style={[styles.content, animatedContentStyle]}>
           <Feather
             name={config.icon}
             size={previewTheme.iconSizes.medium}
@@ -144,7 +251,7 @@ const PreviewBadge = ({
           <Text style={[styles.title, { color: config.textColor }]}>
             {t(config.titleKey, { defaultValue: config.titleDefault })}
           </Text>
-        </View>
+        </Animated.View>
 
         {/* Actions */}
         <View style={styles.actions}>
@@ -180,7 +287,7 @@ const PreviewBadge = ({
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Animated.View>
 
       {/* Tooltip Modal */}
       <Modal

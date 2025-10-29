@@ -49,14 +49,14 @@ docs/
 #### Step 1.1: Backup Current Database
 ```bash
 # Backup current database
-sqlite3 tripsecretary.db ".backup tripsecretary_backup.db"
+sqlite3 tripsecretary_secure.db ".backup tripsecretary_backup.db"
 ```
 
 #### Step 1.2: Apply New Schema
 ```bash
 # Option A: Start fresh (RECOMMENDED based on decision)
-rm tripsecretary.db
-sqlite3 tripsecretary.db < src/db/schema-v2.sql
+rm tripsecretary_secure.db
+sqlite3 tripsecretary_secure.db < src/db/schema-v2.sql
 
 # Option B: Migrate existing data (if needed later)
 # See migration section below
@@ -65,12 +65,12 @@ sqlite3 tripsecretary.db < src/db/schema-v2.sql
 #### Step 1.3: Verify Schema
 ```bash
 # Check tables created
-sqlite3 tripsecretary.db ".tables"
+sqlite3 tripsecretary_secure.db ".tables"
 
 # Check triggers created
-sqlite3 tripsecretary.db ".schema passports" | grep TRIGGER
-sqlite3 tripsecretary.db ".schema personal_info" | grep TRIGGER
-sqlite3 tripsecretary.db ".schema digital_arrival_cards" | grep TRIGGER
+sqlite3 tripsecretary_secure.db ".schema passports" | grep TRIGGER
+sqlite3 tripsecretary_secure.db ".schema personal_info" | grep TRIGGER
+sqlite3 tripsecretary_secure.db ".schema digital_arrival_cards" | grep TRIGGER
 ```
 
 #### Step 1.4: Create Test User and Passport
@@ -91,10 +91,10 @@ VALUES ('passport_test_2', 1, 'K98765432', 'ZHANG, WEI', 'HKG', 0);
 #### Step 1.5: Seed Passport Countries
 ```bash
 # Apply seed data
-sqlite3 tripsecretary.db < src/db/seed-passport-countries.sql
+sqlite3 tripsecretary_secure.db < src/db/seed-passport-countries.sql
 
 # Verify passport-countries created
-sqlite3 tripsecretary.db "SELECT * FROM passport_countries WHERE passport_id = 'passport_test_1' LIMIT 5;"
+sqlite3 tripsecretary_secure.db "SELECT * FROM passport_countries WHERE passport_id = 'passport_test_1' LIMIT 5;"
 ```
 
 ---
@@ -524,8 +524,8 @@ describe('Entry Creation with Multiple Personal Info', () => {
 #### Step 4.1: Development Environment
 ```bash
 # Apply schema to dev database
-sqlite3 dev_tripsecretary.db < src/db/schema-v2.sql
-sqlite3 dev_tripsecretary.db < src/db/seed-passport-countries.sql
+sqlite3 dev_tripsecretary_secure.db < src/db/schema-v2.sql
+sqlite3 dev_tripsecretary_secure.db < src/db/seed-passport-countries.sql
 
 # Run tests
 npm test
@@ -537,8 +537,8 @@ npm run dev
 #### Step 4.2: Staging Environment
 ```bash
 # Apply schema
-sqlite3 staging_tripsecretary.db < src/db/schema-v2.sql
-sqlite3 staging_tripsecretary.db < src/db/seed-passport-countries.sql
+sqlite3 staging_tripsecretary_secure.db < src/db/schema-v2.sql
+sqlite3 staging_tripsecretary_secure.db < src/db/seed-passport-countries.sql
 
 # Smoke tests
 npm run test:e2e
@@ -547,15 +547,15 @@ npm run test:e2e
 #### Step 4.3: Production Deployment
 ```bash
 # IMPORTANT: Backup first
-sqlite3 prod_tripsecretary.db ".backup prod_backup_$(date +%Y%m%d).db"
+sqlite3 prod_tripsecretary_secure.db ".backup prod_backup_$(date +%Y%m%d).db"
 
 # Apply schema (start fresh as decided)
-sqlite3 prod_tripsecretary.db < src/db/schema-v2.sql
-sqlite3 prod_tripsecretary.db < src/db/seed-passport-countries.sql
+sqlite3 prod_tripsecretary_secure.db < src/db/schema-v2.sql
+sqlite3 prod_tripsecretary_secure.db < src/db/seed-passport-countries.sql
 
 # Verify
-sqlite3 prod_tripsecretary.db ".tables"
-sqlite3 prod_tripsecretary.db "SELECT COUNT(*) FROM passport_countries;"
+sqlite3 prod_tripsecretary_secure.db ".tables"
+sqlite3 prod_tripsecretary_secure.db "SELECT COUNT(*) FROM passport_countries;"
 ```
 
 ---
@@ -566,7 +566,7 @@ If issues arise, rollback is straightforward since we're starting fresh:
 
 ```bash
 # Restore backup
-cp prod_backup_YYYYMMDD.db prod_tripsecretary.db
+cp prod_backup_YYYYMMDD.db prod_tripsecretary_secure.db
 
 # Revert application code
 git revert <commit-hash>

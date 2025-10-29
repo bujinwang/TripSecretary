@@ -23,12 +23,15 @@ const mockPersonalInfo = {
   fullName: '张三',
   passportNumber: 'E12345678',
   nationality: '中国',
-  dateOfBirth: '1990-01-01'
+  dateOfBirth: '1990-01-01',
+  expiryDate: '2030-12-31'
 };
 
 const mockTravelInfo = {
   arrivalDate: '2025-01-20',
-  flightNumber: 'CA123',
+  arrivalFlightNumber: 'CA123',
+  departureDate: '2025-01-29',
+  departureFlightNumber: 'CA456',
   purposeOfVisit: '旅游',
   hotelAddress: '曼谷市中心酒店'
 };
@@ -98,6 +101,8 @@ describe('EntryPackDisplay', () => {
     expect(getByText('张三')).toBeTruthy();
     expect(getByText('护照号码 / Passport Number:')).toBeTruthy();
     expect(getByText('E12345678')).toBeTruthy();
+    expect(getByText(/Passport Expiry Date/)).toBeTruthy();
+    expect(getByText(/2030/)).toBeTruthy();
   });
 
   it('displays travel information correctly', () => {
@@ -106,8 +111,12 @@ describe('EntryPackDisplay', () => {
     fireEvent.press(getByText('旅行信息'));
 
     expect(getByText('✈️ 旅行信息 / Travel Information')).toBeTruthy();
-    expect(getByText('入境日期 / Arrival Date:')).toBeTruthy();
+    expect(getByText(/Arrival Date:/)).toBeTruthy();
+    expect(getByText(/Arrival Flight Number:/)).toBeTruthy();
     expect(getByText('CA123')).toBeTruthy();
+    expect(getByText(/Departure Date:/)).toBeTruthy();
+    expect(getByText(/Departure Flight Number:/)).toBeTruthy();
+    expect(getByText('CA456')).toBeTruthy();
   });
 
   it('displays funds information correctly', () => {

@@ -1,11 +1,23 @@
 // TDAC Entry Pack Preview - InfoAlert Component
 // Shows important notices, warnings, or time-sensitive information
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '../../i18n/LocaleContext';
 import { previewTheme } from '../../theme/preview-tokens';
+import {
+  ANIMATION_EASING,
+  ReduceMotionManager,
+} from '../../utils/animations/previewAnimations';
+import { PreviewHaptics } from '../../utils/haptics';
 
 /**
  * InfoAlert Component
@@ -47,6 +59,11 @@ const InfoAlert = ({
   const { t } = useTranslation();
   const [isDismissed, setIsDismissed] = useState(false);
 
+  // Animation values
+  const slideY = useSharedValue(-50);
+  const opacity = useSharedValue(0);
+  const shakeX = useSharedValue(0);
+
   // Variant configuration
   const variantConfig = {
     info: {
@@ -81,12 +98,75 @@ const InfoAlert = ({
 
   const config = variantConfig[variant];
 
+  // Entrance animation on mount
+  useEffect(() => {
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+
+    if (isReduceMotion) {
+      // Reduce motion: fade only, faster
+      slideY.value = 0;
+      opacity.value = withTiming(1, { duration: 250 });
+    } else {
+      // Normal: slide down + fade in
+      slideY.value = withTiming(0, {
+        duration: 350,
+        easing: ANIMATION_EASING.EASE_OUT_QUINT,
+      });
+      opacity.value = withTiming(1, { duration: 350 });
+
+      // Shake on error variant
+      if (variant === 'error') {
+        // Wait for entrance, then shake
+        setTimeout(() => {
+          shakeX.value = withSequence(
+            withTiming(-10, { duration: 80 }),
+            withTiming(10, { duration: 80 }),
+            withTiming(-5, { duration: 80 }),
+            withTiming(5, { duration: 80 }),
+            withTiming(0, { duration: 80 })
+          );
+          PreviewHaptics.error();
+        }, 350);
+      }
+    }
+  }, [variant]);
+
   const handleDismiss = () => {
-    setIsDismissed(true);
-    if (onDismiss) {
-      onDismiss();
+    PreviewHaptics.buttonPress();
+
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+
+    if (isReduceMotion) {
+      // Instant dismiss
+      setIsDismissed(true);
+      if (onDismiss) {
+        onDismiss();
+      }
+    } else {
+      // Animate out: slide up + fade out
+      slideY.value = withTiming(-30, {
+        duration: 200,
+        easing: ANIMATION_EASING.EASE_IN_QUAD,
+      });
+      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
+        if (finished) {
+          runOnJS(setIsDismissed)(true);
+          if (onDismiss) {
+            runOnJS(onDismiss)();
+          }
+        }
+      });
     }
   };
+
+  // Animated styles
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: slideY.value },
+      { translateX: shakeX.value },
+    ],
+    opacity: opacity.value,
+  }));
 
   // Don't render if dismissed
   if (isDismissed) {
@@ -94,13 +174,14 @@ const InfoAlert = ({
   }
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.container,
         {
           backgroundColor: config.bgColor,
           borderColor: config.borderColor,
         },
+        animatedContainerStyle,
         style,
       ]}
       accessible={true}
@@ -181,7 +262,7 @@ const InfoAlert = ({
           />
         </TouchableOpacity>
       )}
-    </View>
+    </Animated.View>
   );
 };
 

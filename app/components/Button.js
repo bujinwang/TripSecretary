@@ -48,7 +48,15 @@ const Button = ({
         />
       ) : (
         <View style={styles.content}>
-          {icon && <View style={styles.icon}>{icon}</View>}
+          {icon != null && icon !== false && (
+            <View style={styles.icon}>
+              {React.isValidElement(icon) ? (
+                icon
+              ) : (
+                <Text style={[styles.iconText, textStyles]}>{icon}</Text>
+              )}
+            </View>
+          )}
           <Text style={textStyles}>{title}</Text>
         </View>
       )}
@@ -131,6 +139,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 8,
+  },
+  iconText: {
+    ...typography.button,
   },
 });
 

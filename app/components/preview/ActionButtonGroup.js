@@ -2,11 +2,21 @@
 // Primary and secondary CTAs for main user actions
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+} from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from '../../i18n/LocaleContext';
 import { previewTheme } from '../../theme/preview-tokens';
+import { ANIMATION_DURATION } from '../../utils/animations/previewAnimations';
+import { PreviewHaptics } from '../../utils/haptics';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(Animated.View);
 
 /**
  * ActionButtonGroup Component
@@ -66,6 +76,12 @@ const ActionButtonGroup = ({
       secondaryIcon: 'edit-2',
       showSecondary: true,
     },
+    'preview-info': {
+      primaryKey: 'common.back',
+      primaryDefault: 'Back',
+      primaryIcon: 'arrow-left',
+      showSecondary: false,
+    },
     submitted: {
       primaryKey: 'preview.actions.viewPdf',
       primaryDefault: 'View PDF',
@@ -79,6 +95,56 @@ const ActionButtonGroup = ({
 
   const config = variantConfig[variant];
 
+  // Animation values for button press
+  const primaryScale = useSharedValue(1);
+  const secondaryScale = useSharedValue(1);
+
+  const primaryAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: primaryScale.value }],
+  }));
+
+  const secondaryAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: secondaryScale.value }],
+  }));
+
+  // Primary button press handler with animation
+  const handlePrimaryPress = () => {
+    if (primaryDisabled || primaryLoading) return;
+
+    // Scale animation: 1.0 → 0.97 → 1.0
+    primaryScale.value = withSequence(
+      withTiming(0.97, { duration: ANIMATION_DURATION.FAST }),
+      withTiming(1.0, { duration: ANIMATION_DURATION.FAST })
+    );
+
+    // Haptic feedback
+    if (variant === 'preview-complete') {
+      PreviewHaptics.primaryAction();
+    } else {
+      PreviewHaptics.buttonPress();
+    }
+
+    if (onPrimaryPress) {
+      onPrimaryPress();
+    }
+  };
+
+  // Secondary button press handler with animation
+  const handleSecondaryPress = () => {
+    if (secondaryDisabled) return;
+
+    secondaryScale.value = withSequence(
+      withTiming(0.97, { duration: ANIMATION_DURATION.FAST }),
+      withTiming(1.0, { duration: ANIMATION_DURATION.FAST })
+    );
+
+    PreviewHaptics.buttonPress();
+
+    if (onSecondaryPress) {
+      onSecondaryPress();
+    }
+  };
+
   const containerStyle = fixed
     ? [
         styles.fixedContainer,
@@ -89,14 +155,13 @@ const ActionButtonGroup = ({
   return (
     <View style={[containerStyle, style]}>
       {/* Primary Button */}
-      <TouchableOpacity
+      <AnimatedTouchable
         style={[
           styles.primaryButton,
           (primaryDisabled || primaryLoading) && styles.primaryButtonDisabled,
+          primaryAnimatedStyle,
         ]}
-        onPress={onPrimaryPress}
-        disabled={primaryDisabled || primaryLoading}
-        activeOpacity={0.8}
+        onTouchEnd={handlePrimaryPress}
         accessible={true}
         accessibilityRole="button"
         accessibilityLabel={
@@ -126,18 +191,17 @@ const ActionButtonGroup = ({
             />
           </>
         )}
-      </TouchableOpacity>
+      </AnimatedTouchable>
 
       {/* Secondary Button (conditional) */}
       {config.showSecondary && onSecondaryPress && (
-        <TouchableOpacity
+        <AnimatedTouchable
           style={[
             styles.secondaryButton,
             secondaryDisabled && styles.secondaryButtonDisabled,
+            secondaryAnimatedStyle,
           ]}
-          onPress={onSecondaryPress}
-          disabled={secondaryDisabled}
-          activeOpacity={0.8}
+          onTouchEnd={handleSecondaryPress}
           accessible={true}
           accessibilityRole="button"
           accessibilityLabel={
@@ -163,7 +227,7 @@ const ActionButtonGroup = ({
           >
             {secondaryLabel || t(config.secondaryKey, { defaultValue: config.secondaryDefault })}
           </Text>
-        </TouchableOpacity>
+        </AnimatedTouchable>
       )}
     </View>
   );
@@ -251,4 +315,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActionButtonGroup;
+// Memoize component for performance
+export default React.memo(ActionButtonGroup);

@@ -31,14 +31,14 @@ Apply these files to create the database:
 
 ```bash
 # 1. Apply main schema
-sqlite3 tripsecretary.db < cloudflare-backend/src/db/schema-v2.sql
+sqlite3 tripsecretary_secure.db < cloudflare-backend/src/db/schema-v2.sql
 
 # 2. Seed passport-country data
-sqlite3 tripsecretary.db < cloudflare-backend/src/db/seed-passport-countries.sql
+sqlite3 tripsecretary_secure.db < cloudflare-backend/src/db/seed-passport-countries.sql
 
 # 3. Verify
-sqlite3 tripsecretary.db ".tables"
-sqlite3 tripsecretary.db "SELECT name FROM sqlite_master WHERE type='trigger';"
+sqlite3 tripsecretary_secure.db ".tables"
+sqlite3 tripsecretary_secure.db "SELECT name FROM sqlite_master WHERE type='trigger';"
 ```
 
 **Files Location**:

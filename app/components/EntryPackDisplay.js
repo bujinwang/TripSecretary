@@ -29,10 +29,13 @@ const countryConfigs = {
     labels: {
       fullName: 'ชื่อเต็ม / Full Name',
       passportNumber: 'หมายเลขหนังสือเดินทาง / Passport Number',
+      passportExpiryDate: 'วันหมดอายุหนังสือเดินทาง / Passport Expiry Date',
       nationality: 'สัญชาติ / Nationality',
       dateOfBirth: 'วันเกิด / Date of Birth',
       arrivalDate: 'วันเข้าประเทศ / Arrival Date',
+      arrivalFlightNumber: 'เที่ยวบินขาเข้า / Arrival Flight Number',
       departureDate: 'วันออกจากประเทศ / Departure Date',
+      departureFlightNumber: 'เที่ยวบินขาออก / Departure Flight Number',
       flightNumber: 'เที่ยวบิน / Flight Number',
       stayLocation: 'สถานที่พัก / Stay Location',
       lengthOfStay: 'ระยะเวลาพัก / Length of Stay',
@@ -57,10 +60,13 @@ const countryConfigs = {
     labels: {
       fullName: 'Full Name / Nama Penuh',
       passportNumber: 'Passport Number / Nombor Pasport',
+      passportExpiryDate: 'Passport Expiry Date / Tarikh Tamat Pasport',
       nationality: 'Nationality / Warganegara',
       dateOfBirth: 'Date of Birth / Tarikh Lahir',
       arrivalDate: 'Arrival Date / Tarikh Ketibaan',
+      arrivalFlightNumber: 'Arrival Flight Number / Nombor Penerbangan Ketibaan',
       departureDate: 'Departure Date / Tarikh Berlepas',
+      departureFlightNumber: 'Departure Flight Number / Nombor Penerbangan Berlepas',
       flightNumber: 'Flight Number / Nombor Penerbangan',
       stayLocation: 'Stay Location / Lokasi Penginapan',
       lengthOfStay: 'Length of Stay / Tempoh Penginapan',
@@ -85,10 +91,13 @@ const countryConfigs = {
     labels: {
       fullName: '全名 / Full Name',
       passportNumber: '護照號碼 / Passport Number',
+      passportExpiryDate: '護照到期日 / Passport Expiry Date',
       nationality: '國籍 / Nationality',
       dateOfBirth: '出生日期 / Date of Birth',
       arrivalDate: '抵達日期 / Arrival Date',
+      arrivalFlightNumber: '抵港航班號 / Arrival Flight Number',
       departureDate: '離開日期 / Departure Date',
+      departureFlightNumber: '離港航班號 / Departure Flight Number',
       flightNumber: '航班號碼 / Flight Number',
       stayLocation: '住宿地點 / Stay Location',
       lengthOfStay: '停留時間 / Length of Stay',
@@ -113,10 +122,13 @@ const countryConfigs = {
     labels: {
       fullName: 'Full Name / 全名',
       passportNumber: 'Passport Number / 护照号码',
+      passportExpiryDate: 'Passport Expiry Date / 护照有效期',
       nationality: 'Nationality / 国籍',
       dateOfBirth: 'Date of Birth / 出生日期',
       arrivalDate: 'Arrival Date / 抵达日期',
+      arrivalFlightNumber: 'Arrival Flight Number / 抵达航班号',
       departureDate: 'Departure Date / 离开日期',
+      departureFlightNumber: 'Departure Flight Number / 离境航班号',
       flightNumber: 'Flight Number / 航班号',
       stayLocation: 'Accommodation Address / 住宿地址',
       lengthOfStay: 'Length of Stay / 停留时间',
@@ -141,10 +153,13 @@ const countryConfigs = {
     labels: {
       fullName: '全名 / Full Name',
       passportNumber: '護照號碼 / Passport Number',
+      passportExpiryDate: '護照到期日 / Passport Expiry Date',
       nationality: '國籍 / Nationality',
       dateOfBirth: '出生日期 / Date of Birth',
       arrivalDate: '抵達日期 / Arrival Date',
+      arrivalFlightNumber: '入境航班號 / Arrival Flight Number',
       departureDate: '離開日期 / Departure Date',
+      departureFlightNumber: '出境航班號 / Departure Flight Number',
       flightNumber: '航班號碼 / Flight Number',
       stayLocation: '住宿地點 / Stay Location',
       lengthOfStay: '停留時間 / Length of Stay',
@@ -169,10 +184,13 @@ const countryConfigs = {
     labels: {
       fullName: 'Full Name / 全名',
       passportNumber: 'Passport Number / 护照号码',
+      passportExpiryDate: 'Passport Expiry Date / 护照有效期',
       nationality: 'Nationality / 国籍',
       dateOfBirth: 'Date of Birth / 出生日期',
       arrivalDate: 'Arrival Date / 抵达日期',
+      arrivalFlightNumber: 'Arrival Flight Number / 入境航班号',
       departureDate: 'Departure Date / 离开日期',
+      departureFlightNumber: 'Departure Flight Number / 离境航班号',
       flightNumber: 'Flight Number / 航班号',
       stayLocation: 'Accommodation Address / 住宿地址',
       lengthOfStay: 'Length of Stay / 停留时间',
@@ -462,6 +480,13 @@ const EntryPackDisplay = ({
         </View>
 
         <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{config.labels.passportExpiryDate}:</Text>
+          <Text style={styles.infoValue}>
+            {formatBilingualDate(entryPack?.passport?.expiryDate || personalInfo?.expiryDate) || config.notProvided}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.dateOfBirth}:</Text>
           <Text style={styles.infoValue}>
             {formatBilingualDate(entryPack?.passport?.dateOfBirth || personalInfo?.dateOfBirth)}
@@ -471,59 +496,103 @@ const EntryPackDisplay = ({
     </View>
   );
 
-  const renderTravelInfo = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>✈️ {config.travelInfoTitle}</Text>
+  const renderTravelInfo = () => {
+    const formatDateWithFallback = (rawDate) => {
+      if (!rawDate || (typeof rawDate === 'string' && rawDate.trim().length === 0)) {
+        return config.notProvided;
+      }
+      const formatted = formatBilingualDate(rawDate);
+      return formatted || config.notProvided;
+    };
 
-      <View style={styles.infoGrid}>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>{config.labels.arrivalDate}:</Text>
-          <Text style={styles.infoValue}>
-            {formatBilingualDate(travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate)}
-          </Text>
-        </View>
+    const formatTextWithFallback = (value) => {
+      if (value === null || value === undefined) return config.notProvided;
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : config.notProvided;
+      }
+      return value;
+    };
 
-        {country === 'thailand' && hotelProvinceDisplay && (
+    const arrivalDateValue = formatDateWithFallback(
+      travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate
+    );
+    const departureDateValue = formatDateWithFallback(
+      travelInfo?.departureDepartureDate || travelInfo?.departureDate
+    );
+    const arrivalFlightLabel = config.labels.arrivalFlightNumber || config.labels.flightNumber;
+    const departureFlightLabel = config.labels.departureFlightNumber || config.labels.flightNumber;
+    const arrivalFlightValue = formatTextWithFallback(
+      travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber
+    );
+    const departureFlightValue = formatTextWithFallback(
+      travelInfo?.departureFlightNumber ||
+      travelInfo?.returnFlightNumber ||
+      travelInfo?.departureFlight
+    );
+    const stayLocationValue = formatTextWithFallback(travelInfo?.hotelAddress);
+    const purposeValue = formatTextWithFallback(
+      travelInfo?.travelPurpose || travelInfo?.purposeOfVisit
+    );
+    const lengthOfStayRaw = travelInfo?.lengthOfStay;
+    const hasLengthOfStay = typeof lengthOfStayRaw === 'string'
+      ? lengthOfStayRaw.trim().length > 0
+      : !!lengthOfStayRaw;
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>✈️ {config.travelInfoTitle}</Text>
+
+        <View style={styles.infoGrid}>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>จังหวัด / Province:</Text>
-            <Text style={styles.infoValue}>
-              {hotelProvinceDisplay || config.notProvided}
-            </Text>
+            <Text style={styles.infoLabel}>{config.labels.arrivalDate}:</Text>
+            <Text style={styles.infoValue}>{arrivalDateValue}</Text>
           </View>
-        )}
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>{config.labels.flightNumber}:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber || config.notProvided}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>{config.labels.purpose}:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || config.notProvided}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>{config.labels.stayLocation}:</Text>
-          <Text style={styles.infoValue}>
-            {travelInfo?.hotelAddress || config.notProvided}
-          </Text>
-        </View>
-
-        {travelInfo?.lengthOfStay && (
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{config.labels.lengthOfStay}:</Text>
-            <Text style={styles.infoValue}>
-              {travelInfo.lengthOfStay}
-            </Text>
+            <Text style={styles.infoLabel}>{arrivalFlightLabel}:</Text>
+            <Text style={styles.infoValue}>{arrivalFlightValue}</Text>
           </View>
-        )}
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{config.labels.departureDate}:</Text>
+            <Text style={styles.infoValue}>{departureDateValue}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{departureFlightLabel}:</Text>
+            <Text style={styles.infoValue}>{departureFlightValue}</Text>
+          </View>
+
+          {country === 'thailand' && hotelProvinceDisplay && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>จังหวัด / Province:</Text>
+              <Text style={styles.infoValue}>
+                {hotelProvinceDisplay || config.notProvided}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{config.labels.stayLocation}:</Text>
+            <Text style={styles.infoValue}>{stayLocationValue}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{config.labels.purpose}:</Text>
+            <Text style={styles.infoValue}>{purposeValue}</Text>
+          </View>
+
+          {hasLengthOfStay && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>{config.labels.lengthOfStay}:</Text>
+              <Text style={styles.infoValue}>{lengthOfStayRaw}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderFundsInfo = () => {
     const proofPhotoTexts = {
@@ -696,14 +765,16 @@ const EntryPackDisplay = ({
           </>
         ) : (
           <>
-            <View style={styles.tdacPlaceholder}>
-              <View style={styles.placeholderIcon}>
-                <Text style={styles.placeholderIconText}>📱</Text>
+            {country !== 'thailand' && (
+              <View style={styles.tdacPlaceholder}>
+                <View style={styles.placeholderIcon}>
+                  <Text style={styles.placeholderIconText}>📱</Text>
+                </View>
+                <Text style={styles.placeholderTitle}>
+                  {placeholderTitles[country] || placeholderTitles.thailand}
+                </Text>
               </View>
-              <Text style={styles.placeholderTitle}>
-                {placeholderTitles[country] || placeholderTitles.thailand}
-              </Text>
-            </View>
+            )}
 
             {/* Show sample PDF preview for Thailand */}
             {country === 'thailand' && (
@@ -1028,26 +1099,6 @@ const EntryPackDisplay = ({
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {renderTabContent()}
       </ScrollView>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          {country === 'malaysia'
-            ? 'Please show this entry pack to the immigration officer'
-            : country === 'singapore'
-            ? 'Please show this entry pack to the immigration officer'
-            : country === 'taiwan'
-            ? '請向入境官員出示此資料包'
-            : country === 'hongkong'
-            ? '請向入境處人員出示此資料包'
-            : country === 'usa'
-            ? 'Please show this entry pack to the CBP officer'
-            : country === 'japan'
-            ? 'この情報パックを入国審査官に提示してください'
-            : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง'
-          }
-        </Text>
-      </View>
 
       {/* Photo Viewer Modal */}
       <Modal
@@ -1454,18 +1505,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.primary,
     fontWeight: '500',
-  },
-  footer: {
-    padding: spacing.lg,
-    backgroundColor: colors.background,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-  },
-  footerText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
   },
   // Photo Viewer Modal Styles
   photoViewerOverlay: {

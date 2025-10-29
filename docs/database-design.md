@@ -845,24 +845,24 @@ ORDER BY pc.country_code;
 
 ```bash
 # 1. Apply schema
-sqlite3 tripsecretary.db < cloudflare-backend/src/db/schema-v2.sql
+sqlite3 tripsecretary_secure.db < cloudflare-backend/src/db/schema-v2.sql
 
 # 2. Apply seed data
-sqlite3 tripsecretary.db < cloudflare-backend/src/db/seed-passport-countries.sql
+sqlite3 tripsecretary_secure.db < cloudflare-backend/src/db/seed-passport-countries.sql
 
 # 3. Verify
-sqlite3 tripsecretary.db ".tables"
-sqlite3 tripsecretary.db "SELECT COUNT(*) FROM passport_countries;"
+sqlite3 tripsecretary_secure.db ".tables"
+sqlite3 tripsecretary_secure.db "SELECT COUNT(*) FROM passport_countries;"
 
 # 4. Check triggers
-sqlite3 tripsecretary.db "SELECT name FROM sqlite_master WHERE type='trigger';"
+sqlite3 tripsecretary_secure.db "SELECT name FROM sqlite_master WHERE type='trigger';"
 ```
 
 ### Option 2: Migrate Existing Data
 
 ```sql
 -- 1. Backup existing database
--- cp tripsecretary.db tripsecretary.db.backup
+-- cp tripsecretary_secure.db tripsecretary_secure.db.backup
 
 -- 2. Create new tables
 -- (Run schema-v2.sql)

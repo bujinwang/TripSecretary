@@ -142,14 +142,15 @@ class EntryInfoService {
           // No successful DAC - add to in-progress destinations
           // Calculate completion percentage based on filled fields
           const completionPercent = this.calculateCompletionPercent(entryInfo);
-          if (completionPercent > 0) {
-            inProgressDestinations.push({
-              destinationId: entryInfo.destinationId,
-              destinationName: entryInfo.destinationName,
-              completionPercent: completionPercent,
-              isReady: completionPercent >= 80 // Consider ready if 80%+ complete
-            });
-          }
+          // Include all entries without submitted DAC, even if 0% complete
+          // This ensures user can see destinations they started working on
+          inProgressDestinations.push({
+            destinationId: entryInfo.destinationId,
+            destinationName: entryInfo.destinationName,
+            completionPercent: completionPercent,
+            isReady: completionPercent >= 80, // Consider ready if 80%+ complete
+            entryInfoId: entryInfo.id // Add ID for navigation
+          });
         }
       }
 
@@ -178,6 +179,38 @@ class EntryInfoService {
    * @returns {number} - Completion percentage (0-100).
    */
   static calculateCompletionPercent(entryInfo) {
+    // Use stored completion metrics if available
+    if (entryInfo.completionMetrics) {
+      let completedFields = 0;
+      let totalFields = 0;
+
+      const metrics = entryInfo.completionMetrics;
+
+      // Sum up completion from stored metrics
+      if (metrics.passport) {
+        completedFields += metrics.passport.complete || 0;
+        totalFields += metrics.passport.total || 5;
+      }
+
+      if (metrics.personalInfo) {
+        completedFields += metrics.personalInfo.complete || 0;
+        totalFields += metrics.personalInfo.total || 6;
+      }
+
+      if (metrics.travel) {
+        completedFields += metrics.travel.complete || 0;
+        totalFields += metrics.travel.total || 6;
+      }
+
+      if (metrics.funds) {
+        completedFields += metrics.funds.complete || 0;
+        totalFields += metrics.funds.total || 1;
+      }
+
+      return totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
+    }
+
+    // Fallback: Calculate from direct field access (legacy)
     let completedFields = 0;
     let totalFields = 0;
 

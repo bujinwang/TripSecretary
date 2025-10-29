@@ -1,11 +1,14 @@
 // TDAC Entry Pack Preview - StatusCard Component
 // Displays submission status and required actions
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, AccessibilityInfo } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '../../i18n/LocaleContext';
 import { previewTheme } from '../../theme/preview-tokens';
+import { ANIMATION_DURATION, ANIMATION_EASING } from '../../utils/animations/previewAnimations';
+import { PreviewHaptics } from '../../utils/haptics';
 
 /**
  * StatusCard Component
@@ -42,6 +45,43 @@ const StatusCard = ({
   style,
 }) => {
   const { t } = useTranslation();
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  // Animation values
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
+
+  // Check reduce motion setting
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      setReduceMotion(enabled);
+    });
+  }, []);
+
+  // Entrance animation on mount
+  useEffect(() => {
+    if (reduceMotion) {
+      // Simple fade for reduce motion
+      opacity.value = withTiming(1, { duration: 200 });
+      scale.value = 1;
+    } else {
+      // Fade + scale with bounce
+      opacity.value = withTiming(1, {
+        duration: ANIMATION_DURATION.SLOW,
+        easing: ANIMATION_EASING.EASE_OUT_BACK,
+      });
+      scale.value = withTiming(1, {
+        duration: ANIMATION_DURATION.SLOW,
+        easing: ANIMATION_EASING.EASE_OUT_BACK,
+      });
+    }
+  }, [reduceMotion]);
+
+  // Animated style
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
 
   // Configuration for each variant
   const variantConfig = {
@@ -100,11 +140,20 @@ const StatusCard = ({
   // Calculate display title
   const displayTitle = title || t(config.titleKey, { defaultValue: config.titleDefault });
 
+  // Handle action press with haptic feedback
+  const handleActionPress = () => {
+    PreviewHaptics.buttonPress();
+    if (onActionPress) {
+      onActionPress();
+    }
+  };
+
   return (
-    <View
+    <Animated.View
       style={[
         styles.container,
         { borderColor: config.borderColor, backgroundColor: config.bgColor },
+        animatedStyle,
         style,
       ]}
       accessible={true}
@@ -180,7 +229,7 @@ const StatusCard = ({
       {onActionPress && (
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: config.color }]}
-          onPress={onActionPress}
+          onPress={handleActionPress}
           activeOpacity={0.8}
           accessible={true}
           accessibilityRole="button"
@@ -201,7 +250,7 @@ const StatusCard = ({
           </Text>
         </TouchableOpacity>
       )}
-    </View>
+    </Animated.View>
   );
 };
 
@@ -284,4 +333,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StatusCard;
+// Memoize component for performance
+export default React.memo(StatusCard);

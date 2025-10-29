@@ -3,9 +3,20 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+} from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '../../i18n/LocaleContext';
 import { previewTheme } from '../../theme/preview-tokens';
+import {
+  ANIMATION_EASING,
+  ReduceMotionManager,
+} from '../../utils/animations/previewAnimations';
+import { PreviewHaptics } from '../../utils/haptics';
 
 /**
  * DocumentPreviewCard Component
@@ -50,17 +61,55 @@ const DocumentPreviewCard = ({
   const { t } = useTranslation();
   const [isFullScreen, setIsFullScreen] = useState(false);
 
+  // Animation values
+  const scale = useSharedValue(1);
+  const borderRadius = useSharedValue(previewTheme.borderRadius.medium);
+
   const handleExpand = () => {
-    if (onExpand) {
-      onExpand();
+    PreviewHaptics.documentExpand();
+
+    const isReduceMotion = ReduceMotionManager.isReduceMotionEnabled;
+
+    if (isReduceMotion) {
+      // No animation
+      if (onExpand) {
+        onExpand();
+      } else {
+        setIsFullScreen(true);
+      }
     } else {
-      setIsFullScreen(true);
+      // Animate: scale up briefly, then trigger modal
+      scale.value = withSequence(
+        withTiming(1.05, {
+          duration: 150,
+          easing: ANIMATION_EASING.EASE_IN_OUT,
+        }),
+        withTiming(1, {
+          duration: 150,
+          easing: ANIMATION_EASING.EASE_IN_OUT,
+        })
+      );
+
+      // Trigger expand after animation starts
+      setTimeout(() => {
+        if (onExpand) {
+          onExpand();
+        } else {
+          setIsFullScreen(true);
+        }
+      }, 150);
     }
   };
 
   const handleCloseFullScreen = () => {
+    PreviewHaptics.buttonPress();
     setIsFullScreen(false);
   };
+
+  // Animated styles
+  const animatedCardStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   // Variant configuration
   const variantConfig = {
@@ -191,11 +240,6 @@ const DocumentPreviewCard = ({
     <>
       {/* Card view */}
       <TouchableOpacity
-        style={[
-          styles.container,
-          { borderStyle: config.borderStyle },
-          style,
-        ]}
         onPress={handleExpand}
         activeOpacity={0.8}
         accessible={true}
@@ -205,6 +249,14 @@ const DocumentPreviewCard = ({
           defaultValue: 'Double tap to view in full screen',
         })}
       >
+        <Animated.View
+          style={[
+            styles.container,
+            { borderStyle: config.borderStyle },
+            animatedCardStyle,
+            style,
+          ]}
+        >
         <PreviewContent />
 
         {/* Info badge at bottom */}
@@ -228,6 +280,7 @@ const DocumentPreviewCard = ({
             color={previewTheme.colors.neutral400}
           />
         </View>
+        </Animated.View>
       </TouchableOpacity>
 
       {/* Fullscreen modal */}

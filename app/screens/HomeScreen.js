@@ -659,14 +659,83 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-
         {/* Welcome */}
         <View style={styles.welcomeSection}>
           <Text style={styles.greeting}>{greetingText}</Text>
           <Text style={styles.welcomeText}>{welcomeMessage}</Text>
         </View>
 
-        {/* Where to Go */}
+        {/* Active Entry Packs Section - Priority #1 */}
+        {activeEntryPacks.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.activeTrips', { defaultValue: '我的行程' })}
+              </Text>
+              <Text style={styles.sectionBadge}>
+                {activeEntryPacks.length}
+              </Text>
+            </View>
+            {renderEntryPackCards()}
+          </View>
+        )}
+
+        {/* In-Progress Destinations Section - Priority #2 */}
+        {inProgressDestinations.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.inProgress', { defaultValue: '填写中' })}
+              </Text>
+              <Text style={styles.sectionBadge}>
+                {inProgressDestinations.length}
+              </Text>
+            </View>
+            {renderInProgressDestinationCards()}
+          </View>
+        )}
+
+        {/* Empty State - No Active Trips */}
+        {activeEntryPacks.length === 0 && inProgressDestinations.length === 0 && hasPassport && (
+          <View style={styles.section}>
+            <Card style={styles.emptyStateCard}>
+              <View style={styles.emptyStateContent}>
+                <Text style={styles.emptyStateIcon}>🗺️</Text>
+                <Text style={styles.emptyStateTitle}>
+                  {t('home.emptyState.title', { defaultValue: '还没有行程计划' })}
+                </Text>
+                <Text style={styles.emptyStateText}>
+                  {t('home.emptyState.subtitle', { defaultValue: '选择一个目的地开始规划您的旅行' })}
+                </Text>
+              </View>
+            </Card>
+          </View>
+        )}
+
+        {/* Empty State - No Passport */}
+        {!hasPassport && (
+          <View style={styles.section}>
+            <Card style={styles.emptyStateCard}>
+              <View style={styles.emptyStateContent}>
+                <Text style={styles.emptyStateIcon}>📱</Text>
+                <Text style={styles.emptyStateTitle}>
+                  {t('home.emptyState.noPassport.title', { defaultValue: '开始您的第一次旅行' })}
+                </Text>
+                <Text style={styles.emptyStateText}>
+                  {t('home.emptyState.noPassport.subtitle', { defaultValue: '扫描护照快速填写信息' })}
+                </Text>
+                <Button
+                  title={t('home.emptyState.noPassport.action', { defaultValue: '扫描护照' })}
+                  onPress={handleScanPassport}
+                  style={styles.emptyStateButton}
+                  icon="📷"
+                />
+              </View>
+            </Card>
+          </View>
+        )}
+
+        {/* Where to Go - Priority #3 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{exploreSectionTitle}</Text>
@@ -685,6 +754,18 @@ const HomeScreen = ({ navigation }) => {
             ))}
           </View>
         </View>
+
+        {/* History Section - At Bottom */}
+        {historyList.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.history', { defaultValue: '历史记录' })}
+              </Text>
+            </View>
+            {renderHistoryCards()}
+          </View>
+        )}
 
         {/* Bottom Spacing */}
         <View style={{ height: spacing.xxl }} />
@@ -797,17 +878,21 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   welcomeSection: {
-    padding: spacing.md,
+    padding: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
     backgroundColor: colors.white,
   },
   greeting: {
     ...typography.h2,
     color: colors.text,
     marginBottom: spacing.xs,
+    fontWeight: '700',
   },
   welcomeText: {
     ...typography.body1,
     color: colors.textSecondary,
+    lineHeight: 22,
   },
   
   // Passport Card Styles
@@ -883,7 +968,7 @@ const styles = StyleSheet.create({
 
   // Sections
   section: {
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     paddingHorizontal: spacing.md,
   },
   sectionHeader: {
@@ -891,17 +976,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
+    paddingBottom: spacing.xs,
   },
   sectionTitle: {
     ...typography.h3,
     color: colors.text,
     fontWeight: '600',
+  },
+  sectionBadge: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.white,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    minWidth: 24,
+    textAlign: 'center',
+    overflow: 'hidden',
+  },
+
+  // Empty State Styles
+  emptyStateCard: {
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyStateIcon: {
+    fontSize: 64,
+    marginBottom: spacing.md,
+  },
+  emptyStateTitle: {
+    ...typography.h3,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyStateText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  emptyStateButton: {
+    marginTop: spacing.sm,
+    minWidth: 200,
   },
 
   // Countries Grid
@@ -914,7 +1040,7 @@ const styles = StyleSheet.create({
 
   // History Cards
   historyCard: {
-    marginTop: spacing.sm,
+    marginBottom: spacing.md,
   },
   historyItem: {
     flexDirection: 'row',
@@ -946,6 +1072,12 @@ const styles = StyleSheet.create({
   entryPackCard: {
     borderLeftWidth: 4,
     borderLeftColor: colors.success,
+    backgroundColor: colors.white,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   entryPackItem: {
     flexDirection: 'row',
@@ -1000,6 +1132,12 @@ const styles = StyleSheet.create({
   inProgressCard: {
     borderLeftWidth: 4,
     borderLeftColor: colors.warning,
+    backgroundColor: colors.white,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   inProgressLeft: {
     flexDirection: 'row',
