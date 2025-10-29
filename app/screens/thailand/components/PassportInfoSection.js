@@ -6,8 +6,8 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import { colors, spacing } from '../../../theme';
+import { Platform } from 'react-native';
+import { YStack, XStack, Text as TamaguiText } from '../../../components/tamagui';
 import OptimizedImage from '../../../components/OptimizedImage';
 import { getFullName as getFullNameHelper, safeString } from '../helpers';
 
@@ -59,111 +59,92 @@ const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }
   };
 
   return (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>{getSectionTitle()}</Text>
+    <YStack backgroundColor="rgba(255, 255, 255, 0.1)" padding="$lg" borderRadius={12} marginBottom="$lg">
+      <TamaguiText color="white" fontSize={24} fontWeight="bold" marginBottom="$lg" textAlign="center">
+        {getSectionTitle()}
+      </TamaguiText>
 
       {/* Passport photo if available */}
       {passportData?.photoUri && (
-        <View style={styles.passportPhotoContainer}>
+        <YStack alignItems="center" marginBottom="$lg">
           <OptimizedImage
             uri={passportData.photoUri}
-            style={styles.passportPhoto}
+            style={{
+              width: 120,
+              height: 150,
+              borderRadius: 8,
+              borderWidth: 2,
+              borderColor: 'white',
+            }}
             resizeMode="cover"
             lazy={false}
             placeholder="🛂"
             showLoadingText={false}
           />
-        </View>
+        </YStack>
       )}
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{getLabel('fullName', 'ชื่อเต็ม')}:</Text>
-        <Text style={styles.infoValue}>{getFullName()}</Text>
-      </View>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
+          {getLabel('fullName', 'ชื่อเต็ม')}:
+        </TamaguiText>
+        <TamaguiText color="white" fontSize={18} fontWeight="bold">
+          {getFullName()}
+        </TamaguiText>
+      </YStack>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
           {getLabel('passportNumber', 'หมายเลขหนังสือเดินทาง')}:
-        </Text>
-        <Text style={[styles.infoValue, styles.passportNumber]}>
+        </TamaguiText>
+        <TamaguiText
+          color="white"
+          fontSize={20}
+          fontWeight="bold"
+          fontFamily={Platform.OS === 'ios' ? 'Courier New' : 'monospace'}
+          letterSpacing={1}
+        >
           {passportData?.passportNumber || 'N/A'}
-        </Text>
-      </View>
+        </TamaguiText>
+      </YStack>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{getLabel('nationality', 'สัญชาติ')}:</Text>
-        <Text style={styles.infoValue}>{passportData?.nationality || 'N/A'}</Text>
-      </View>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
+          {getLabel('nationality', 'สัญชาติ')}:
+        </TamaguiText>
+        <TamaguiText color="white" fontSize={18} fontWeight="bold">
+          {passportData?.nationality || 'N/A'}
+        </TamaguiText>
+      </YStack>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{getLabel('dateOfBirth', 'วันเกิด')}:</Text>
-        <Text style={styles.infoValue}>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
+          {getLabel('dateOfBirth', 'วันเกิด')}:
+        </TamaguiText>
+        <TamaguiText color="white" fontSize={18} fontWeight="bold">
           {formatDateForDisplay(passportData?.dateOfBirth)}
-        </Text>
-      </View>
+        </TamaguiText>
+      </YStack>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{getLabel('gender', 'เพศ')}:</Text>
-        <Text style={styles.infoValue}>{passportData?.gender || 'N/A'}</Text>
-      </View>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
+          {getLabel('gender', 'เพศ')}:
+        </TamaguiText>
+        <TamaguiText color="white" fontSize={18} fontWeight="bold">
+          {passportData?.gender || 'N/A'}
+        </TamaguiText>
+      </YStack>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>
+      <YStack marginBottom="$md">
+        <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" opacity={0.9}>
           {getLabel('passportExpiry', 'วันหมดอายุหนังสือเดินทาง')}:
-        </Text>
-        <Text style={styles.infoValue}>
+        </TamaguiText>
+        <TamaguiText color="white" fontSize={18} fontWeight="bold">
           {formatDateForDisplay(passportData?.expiryDate)}
-        </Text>
-      </View>
-    </View>
+        </TamaguiText>
+      </YStack>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  infoSection: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: spacing.lg,
-    borderRadius: 12,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-  },
-  passportPhotoContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  passportPhoto: {
-    width: 120,
-    height: 150,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.white,
-  },
-  infoRow: {
-    marginBottom: spacing.md,
-  },
-  infoLabel: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-    opacity: 0.9,
-  },
-  infoValue: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  passportNumber: {
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-    letterSpacing: 1,
-    fontSize: 20,
-  },
-});
 
 export default PassportInfoSection;
