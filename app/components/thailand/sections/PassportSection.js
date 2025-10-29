@@ -6,8 +6,6 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../../components';
 import GenderSelector from '../../GenderSelector';
 import { FieldWarningIcon, InputWithValidation } from '../ThailandTravelComponents';
@@ -57,11 +55,7 @@ const PassportSection = ({
   debouncedSaveData,
   saveDataToSecureStorageWithOverride,
   setLastEditedAt,
-  // Styles from parent (optional - can use inline styles if not provided)
-  styles: parentStyles,
 }) => {
-  // Use parent styles if provided, otherwise use local styles
-  const styles = parentStyles || localStyles;
 
   const handleGenderChange = async (newSex) => {
     setSex(newSex);
@@ -97,11 +91,13 @@ const PassportSection = ({
         </XStack>
       </BaseCard>
 
-      <View style={styles.inputWithValidationContainer}>
-        <View style={styles.inputLabelContainer}>
-          <Text style={styles.inputLabel}>{t('thailand.travelInfo.fields.passportName.label')}</Text>
+      <YStack marginBottom="$md">
+        <XStack justifyContent="space-between" alignItems="center" marginBottom="$xs">
+          <TamaguiText fontSize="$3" fontWeight="600" color="$textPrimary">
+            {t('thailand.travelInfo.fields.passportName.label')}
+          </TamaguiText>
           <FieldWarningIcon hasWarning={!!warnings.fullName} hasError={!!errors.fullName} />
-        </View>
+        </XStack>
         <PassportNameInput
           surname={surname}
           middleName={middleName}
@@ -115,9 +111,11 @@ const PassportSection = ({
           errorMessage={errors.fullName}
         />
         {warnings.fullName && !errors.fullName && (
-          <Text style={styles.warningText}>{warnings.fullName}</Text>
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            {warnings.fullName}
+          </TamaguiText>
         )}
-      </View>
+      </YStack>
 
       <NationalitySelector
         label={t('thailand.travelInfo.fields.nationality.label')}
@@ -200,97 +198,19 @@ const PassportSection = ({
         errorMessage={errors.expiryDate}
       />
 
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>{t('thailand.travelInfo.fields.sex.label')}</Text>
+      <YStack marginBottom="$lg">
+        <TamaguiText fontSize="$3" fontWeight="600" color="$textPrimary" marginBottom="$sm">
+          {t('thailand.travelInfo.fields.sex.label')}
+        </TamaguiText>
         <GenderSelector
           value={sex}
           onChange={handleGenderChange}
           t={t}
           options={GENDER_OPTIONS}
         />
-      </View>
+      </YStack>
     </CollapsibleSection>
   );
 };
-
-// Local styles (fallback if parent styles not provided)
-const localStyles = StyleSheet.create({
-  sectionIntro: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F0F7FF',
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  sectionIntroIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  sectionIntroText: {
-    ...typography.body2,
-    color: '#2C5AA0',
-    flex: 1,
-    lineHeight: 20,
-  },
-  inputWithValidationContainer: {
-    marginBottom: spacing.md,
-  },
-  inputLabelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  inputLabel: {
-    ...typography.label,
-    color: colors.textPrimary,
-    fontWeight: '600',
-  },
-  warningText: {
-    ...typography.caption,
-    color: '#FF9500',
-    marginTop: spacing.xs,
-  },
-  fieldContainer: {
-    marginBottom: spacing.lg,
-  },
-  fieldLabel: {
-    ...typography.label,
-    color: colors.textPrimary,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: spacing.sm,
-  },
-  optionButton: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  optionButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  optionText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  optionTextActive: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-});
 
 export default PassportSection;

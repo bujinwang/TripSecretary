@@ -6,8 +6,6 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector } from '../../../components';
 import { InputWithValidation } from '../ThailandTravelComponents';
 import OccupationSelector from '../../OccupationSelector';
@@ -56,11 +54,7 @@ const PersonalInfoSection = ({
   lastEditedField,
   // Actions
   debouncedSaveData,
-  // Styles from parent (optional)
-  styles: parentStyles,
 }) => {
-  // Use parent styles if provided, otherwise use local styles
-  const styles = parentStyles || localStyles;
 
   return (
     <CollapsibleSection
@@ -193,40 +187,5 @@ const PersonalInfoSection = ({
     </CollapsibleSection>
   );
 };
-
-// Local styles (fallback if parent styles not provided)
-const localStyles = StyleSheet.create({
-  sectionIntro: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F0F7FF',
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  sectionIntroIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  sectionIntroText: {
-    ...typography.body2,
-    color: '#2C5AA0',
-    flex: 1,
-    lineHeight: 20,
-  },
-  phoneInputContainer: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  phoneCodeInput: {
-    flex: 0.3,
-  },
-  phoneInput: {
-    flex: 0.7,
-  },
-});
 
 export default PersonalInfoSection;
