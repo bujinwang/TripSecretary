@@ -10,8 +10,18 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, typography, spacing } from '../../../theme';
 import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../../components';
 import GenderSelector from '../../GenderSelector';
-import { CollapsibleSection, FieldWarningIcon, InputWithValidation } from '../ThailandTravelComponents';
+import { FieldWarningIcon, InputWithValidation } from '../ThailandTravelComponents';
 import { GENDER_OPTIONS } from '../../../screens/thailand/constants';
+
+// Import Tamagui shared components
+import {
+  YStack,
+  XStack,
+  CollapsibleSection,
+  BaseCard,
+  BaseInput,
+  Text as TamaguiText,
+} from '../../tamagui';
 
 const PassportSection = ({
   t,
@@ -66,19 +76,26 @@ const PassportSection = ({
 
   return (
     <CollapsibleSection
-      title={t('thailand.travelInfo.sectionTitles.passport')}
-      subtitle={t('thailand.travelInfo.sectionTitles.passportSubtitle')}
-      isExpanded={isExpanded}
+      title={t('thailand.travelInfo.sectionTitles.passport', { defaultValue: 'Passport Information' })}
+      subtitle={t('thailand.travelInfo.sectionTitles.passportSubtitle', { defaultValue: 'Enter your passport details' })}
+      icon="📘"
+      badge={`${fieldCount.filled}/${fieldCount.total}`}
+      badgeVariant={fieldCount.filled === fieldCount.total ? 'success' : fieldCount.filled > 0 ? 'warning' : 'danger'}
+      expanded={isExpanded}
       onToggle={onToggle}
-      fieldCount={fieldCount}
+      variant="default"
     >
-      {/* Border Crossing Context for Personal Info */}
-      <View style={styles.sectionIntro}>
-        <Text style={styles.sectionIntroIcon}>🛂</Text>
-        <Text style={styles.sectionIntroText}>
-          {t('thailand.travelInfo.sectionIntros.passport')}
-        </Text>
-      </View>
+      {/* Border Crossing Context for Personal Info - Using Tamagui BaseCard */}
+      <BaseCard variant="flat" padding="md" backgroundColor="#F0F7FF" marginBottom="$lg">
+        <XStack gap="$sm" alignItems="flex-start">
+          <TamaguiText fontSize={20}>🛂</TamaguiText>
+          <TamaguiText fontSize="$2" color="$textSecondary" flex={1} lineHeight={20}>
+            {t('thailand.travelInfo.sectionIntros.passport', {
+              defaultValue: 'Please ensure all details match your passport exactly'
+            })}
+          </TamaguiText>
+        </XStack>
+      </BaseCard>
 
       <View style={styles.inputWithValidationContainer}>
         <View style={styles.inputLabelContainer}>
@@ -114,38 +131,46 @@ const PassportSection = ({
         errorMessage={errors.nationality}
       />
 
-      <InputWithValidation
-        label={t('thailand.travelInfo.fields.passportNo.label')}
-        value={passportNo}
-        onChangeText={setPassportNo}
-        onBlur={() => handleFieldBlur('passportNo', passportNo)}
-        helpText={t('thailand.travelInfo.fields.passportNo.help')}
-        error={!!errors.passportNo}
-        errorMessage={errors.passportNo}
-        warning={!!warnings.passportNo}
-        warningMessage={warnings.passportNo}
-        required={true}
-        autoCapitalize="characters"
-        testID="passport-number-input"
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label={t('thailand.travelInfo.fields.passportNo.label', { defaultValue: 'Passport Number' })}
+          value={passportNo}
+          onChangeText={setPassportNo}
+          onBlur={() => handleFieldBlur('passportNo', passportNo)}
+          helperText={t('thailand.travelInfo.fields.passportNo.help', { defaultValue: 'Enter your passport number' })}
+          error={errors.passportNo}
+          required={true}
+          autoCapitalize="characters"
+          testID="passport-number-input"
+        />
+        {warnings.passportNo && !errors.passportNo && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.passportNo}
+          </TamaguiText>
+        )}
+      </YStack>
 
-      <InputWithValidation
-        label={t('thailand.travelInfo.fields.visaNumber.label')}
-        value={visaNumber}
-        onChangeText={(text) => setVisaNumber(text.toUpperCase())}
-        onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
-        helpText={t('thailand.travelInfo.fields.visaNumber.help')}
-        error={!!errors.visaNumber}
-        errorMessage={errors.visaNumber}
-        warning={!!warnings.visaNumber}
-        warningMessage={warnings.visaNumber}
-        optional={true}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        autoComplete="off"
-        spellCheck={false}
-        keyboardType="ascii-capable"
-      />
+      <YStack marginBottom="$md">
+        <BaseInput
+          label={t('thailand.travelInfo.fields.visaNumber.label', { defaultValue: 'Visa Number (Optional)' })}
+          value={visaNumber}
+          onChangeText={(text) => setVisaNumber(text.toUpperCase())}
+          onBlur={() => handleFieldBlur('visaNumber', visaNumber)}
+          helperText={t('thailand.travelInfo.fields.visaNumber.help', { defaultValue: 'Enter visa number if applicable' })}
+          error={errors.visaNumber}
+          required={false}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          autoComplete="off"
+          spellCheck={false}
+          keyboardType="ascii-capable"
+        />
+        {warnings.visaNumber && !errors.visaNumber && (
+          <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">
+            ⚠️ {warnings.visaNumber}
+          </TamaguiText>
+        )}
+      </YStack>
 
       <DateTimeInput
         label={t('thailand.travelInfo.fields.dob.label')}

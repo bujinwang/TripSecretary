@@ -69,7 +69,15 @@ import {
   FundsSection,
   TravelDetailsSection
 } from '../../components/thailand/sections';
-import ProgressOverviewCard from '../../components/thailand/ProgressOverviewCard';
+
+// Import Tamagui shared components
+import {
+  YStack,
+  XStack,
+  ProgressOverviewCard,
+  BaseCard,
+  Text as TamaguiText,
+} from '../../components/tamagui';
 
 // Import styles
 import styles from './ThailandTravelInfoScreen.styles';
@@ -222,6 +230,45 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
+  // Helper function to get progress sections for Tamagui ProgressOverviewCard
+  const getProgressSections = () => {
+    const sections = [
+      {
+        name: t('thailand.sections.passport', { defaultValue: 'Passport' }),
+        icon: '📘',
+        completed: getFieldCount('passport').filled === getFieldCount('passport').total,
+        completedFields: getFieldCount('passport').filled,
+        fieldCount: getFieldCount('passport').total,
+      },
+      {
+        name: t('thailand.sections.personal', { defaultValue: 'Personal Info' }),
+        icon: '👤',
+        completed: getFieldCount('personal').filled === getFieldCount('personal').total,
+        completedFields: getFieldCount('personal').filled,
+        fieldCount: getFieldCount('personal').total,
+      },
+      {
+        name: t('thailand.sections.funds', { defaultValue: 'Funds' }),
+        icon: '💰',
+        completed: getFieldCount('funds').filled === getFieldCount('funds').total,
+        completedFields: getFieldCount('funds').filled,
+        fieldCount: getFieldCount('funds').total,
+      },
+      {
+        name: t('thailand.sections.travel', { defaultValue: 'Travel Details' }),
+        icon: '✈️',
+        completed: getFieldCount('travel').filled === getFieldCount('travel').total,
+        completedFields: getFieldCount('travel').filled,
+        fieldCount: getFieldCount('travel').total,
+      },
+    ];
+
+    const totalCompleted = sections.reduce((sum, s) => sum + s.completedFields, 0);
+    const totalFields = sections.reduce((sum, s) => sum + s.fieldCount, 0);
+
+    return { sections, totalCompleted, totalFields };
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -253,11 +300,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         {/* Hero Section */}
         <HeroSection t={t} />
 
-        {/* Progress Overview Card */}
-        <ProgressOverviewCard
-          totalCompletionPercent={formState.totalCompletionPercent}
-          styles={styles}
-        />
+        {/* Progress Overview Card - Now using shared Tamagui component */}
+        <YStack paddingHorizontal="$md" marginBottom="$md">
+          <ProgressOverviewCard
+            completedFields={getProgressSections().totalCompleted}
+            totalFields={getProgressSections().totalFields}
+            sections={getProgressSections().sections}
+            title={t('thailand.progress.title', { defaultValue: 'Completion Progress' })}
+            completionMessage={t('thailand.progress.complete', { defaultValue: 'All information completed! Ready to proceed.' })}
+            incompleteMessage={t('thailand.progress.incomplete', { defaultValue: 'Complete all fields to continue.' })}
+          />
+        </YStack>
           
           {/* Enhanced Save Status Indicator */}
           {formState.saveStatus && (
@@ -299,13 +352,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             </Text>
           )}
 
-        {/* Privacy Notice */}
-        <View style={styles.privacyBox}>
-          <Text style={styles.privacyIcon}>💾</Text>
-          <Text style={styles.privacyText}>
-            {t('thailand.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
-          </Text>
-        </View>
+        {/* Privacy Notice - Using Tamagui BaseCard */}
+        <YStack paddingHorizontal="$md" marginBottom="$md">
+          <BaseCard variant="flat" padding="md">
+            <XStack gap="$sm" alignItems="center">
+              <TamaguiText fontSize={20}>💾</TamaguiText>
+              <TamaguiText fontSize="$2" color="$textSecondary" flex={1}>
+                {t('thailand.travelInfo.privacyNotice', { defaultValue: '所有信息仅保存在您的手机本地' })}
+              </TamaguiText>
+            </XStack>
+          </BaseCard>
+        </YStack>
 
         {/* Passport Information Section */}
         <PassportSection

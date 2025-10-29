@@ -355,6 +355,18 @@ const ProfileScreen = ({ navigation, route }) => {
             title: 'Notification Testing',
             subtitle: 'Test and debug notification system',
           },
+          {
+            id: 'tamaguiTest',
+            icon: '🎨',
+            title: 'Tamagui Test',
+            subtitle: 'View Tamagui design system components',
+          },
+          {
+            id: 'componentShowcase',
+            icon: '🧩',
+            title: 'Component Library',
+            subtitle: 'Browse shared Tamagui components',
+          },
         ],
       }] : []),
     ],
@@ -401,6 +413,10 @@ const ProfileScreen = ({ navigation, route }) => {
       handleExportData();
     } else if (itemId === 'notificationTest') {
       navigation.navigate('NotificationTest');
+    } else if (itemId === 'tamaguiTest') {
+      navigation.navigate('TamaguiTest');
+    } else if (itemId === 'componentShowcase') {
+      navigation.navigate('ComponentShowcase');
     }
     // TODO: Navigate to other screens
   };

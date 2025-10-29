@@ -6,10 +6,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing } from '../../../../theme';
 import { NationalitySelector, TravelPurposeSelector } from '../../../../components';
-import Input from '../../../../components/Input';
 
 const TravelPurposeSubSection = ({
   // Form state
@@ -26,8 +23,6 @@ const TravelPurposeSubSection = ({
   handleFieldBlur,
   // Actions
   debouncedSaveData,
-  // Styles from parent
-  styles,
 }) => {
   return (
     <>

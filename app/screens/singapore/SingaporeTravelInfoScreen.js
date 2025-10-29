@@ -1,472 +1,245 @@
-// 入境通 - Singapore Travel Info Screen (新加坡入境信息)
-// Refactored to align with Malaysia's modular travel info architecture
-import React, { useEffect, useMemo } from 'react';
-import {
-  View,
-  ScrollView,
-  Platform,
-  UIManager,
-  Alert,
-  Text,
-} from 'react-native';
+/**
+ * Singapore Travel Info Screen (New Simplified Version)
+ * 
+ * Migrated to use all 4 shared sections with Singapore-specific labels and config.
+ * Single-level location hierarchy (planning areas only).
+ */
+
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { ScrollView, Alert, Platform, UIManager } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BackButton from '../../components/BackButton';
-import Button from '../../components/Button';
-import FundItemDetailModal from '../../components/FundItemDetailModal';
-
-import { useLocale } from '../../i18n/LocaleContext';
-import { useTravelInfoForm } from '../../utils/TravelInfoFormUtils';
-import DebouncedSave from '../../utils/DebouncedSave';
-import UserDataService from '../../services/data/UserDataService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
-  useSingaporeFormState,
-  useSingaporeDataPersistence,
-  useSingaporeValidation,
-} from '../../hooks/singapore';
-
-import {
-  HeroSection,
   PassportSection,
   PersonalInfoSection,
-  TravelDetailsSection,
   FundsSection,
-} from '../../components/singapore/sections';
+  TravelDetailsSection,
+} from '../../components/shared';
 
-import { styles } from './SingaporeTravelInfoScreen.styles';
+import {
+  YStack,
+  XStack,
+  ProgressOverviewCard,
+  BaseCard,
+  BaseButton,
+  Text as TamaguiText,
+} from '../../components/tamagui';
 
-if (Platform.OS === 'android') {
-  if (UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
+import { singaporeRegions } from '../../data/singaporeRegions';
+import { singaporeLabels, singaporeConfig } from '../../config/labels/singapore';
+import BackButton from '../../components/BackButton';
+import UserDataService from '../../services/data/UserDataService';
+import { useLocale } from '../../i18n/LocaleContext';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const SingaporeTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
   const { t } = useLocale();
-
-  // Memoized passport + user id
-  const passport = useMemo(() => {
-    return UserDataService.toSerializablePassport(rawPassport);
-  }, [rawPassport?.id, rawPassport?.passportNo, rawPassport?.name, rawPassport?.nameEn]);
-
+  const passport = useMemo(() => UserDataService.toSerializablePassport(rawPassport), [rawPassport?.id, rawPassport?.passportNo]);
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
-  // Shared travel info utilities
-  const travelInfoForm = useTravelInfoForm('singapore');
+  // Passport state
+  const [surname, setSurname] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [givenName, setGivenName] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [passportNo, setPassportNo] = useState('');
+  const [visaNumber, setVisaNumber] = useState('');
+  const [dob, setDob] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [sex, setSex] = useState('');
 
-  // Screen state & services
-  const formState = useSingaporeFormState(passport);
-  const persistence = useSingaporeDataPersistence({
-    passport,
-    destination,
-    userId,
-    formState,
-    travelInfoForm,
-    navigation,
-  });
-  const validation = useSingaporeValidation({
-    formState,
-    travelInfoForm,
-    saveDataToSecureStorage: persistence.saveDataToSecureStorage,
-    debouncedSaveData: persistence.debouncedSaveData,
-  });
+  // Personal info state
+  const [occupation, setOccupation] = useState('');
+  const [customOccupation, setCustomOccupation] = useState('');
+  const [cityOfResidence, setCityOfResidence] = useState('');
+  const [countryOfResidence, setCountryOfResidence] = useState('');
+  const [phoneCode, setPhoneCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
 
-  const {
-    handleFieldBlur,
-    handleFieldChange,
-    handleUserInteraction,
-    getFieldCount,
-    calculateCompletionMetrics,
-    getSmartButtonConfig,
-    getProgressText,
-    getProgressColor,
-  } = validation;
+  // Funds state
+  const [funds, setFunds] = useState([]);
 
-  const {
-    loadData,
-    refreshFundItems,
-    normalizeFundItem,
-    saveSessionState,
-    scrollViewRef,
-    shouldRestoreScrollPosition,
-  } = persistence;
+  // Travel details state
+  const [travelPurpose, setTravelPurpose] = useState('');
+  const [customTravelPurpose, setCustomTravelPurpose] = useState('');
+  const [recentStayCountry, setRecentStayCountry] = useState('');
+  const [boardingCountry, setBoardingCountry] = useState('');
+  const [arrivalFlightNumber, setArrivalFlightNumber] = useState('');
+  const [arrivalDate, setArrivalDate] = useState('');
+  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
+  const [departureFlightNumber, setDepartureFlightNumber] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [departureFlightTicketPhoto, setDepartureFlightTicketPhoto] = useState(null);
+  const [isTransitPassenger, setIsTransitPassenger] = useState(false);
+  const [accommodationType, setAccommodationType] = useState('');
+  const [customAccommodationType, setCustomAccommodationType] = useState('');
+  const [planningArea, setPlanningArea] = useState(''); // Singapore uses planning areas
+  const [hotelAddress, setHotelAddress] = useState('');
+  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
 
-  // ===== Effects ============================================================
+  // UI state
+  const [expandedSections, setExpandedSections] = useState({ passport: true, personalInfo: false, funds: false, travelDetails: false });
+  const [lastEditedAt, setLastEditedAt] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [warnings, setWarnings] = useState({});
+  const scrollViewRef = useRef(null);
+  const saveTimerRef = useRef(null);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const toggleSection = (section) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
 
-  // Destructure stable setters and values for useEffect
-  const { setCompletionMetrics, setTotalCompletionPercent } = formState;
-  const {
-    passportNo, visaNumber, fullName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
-    travelPurpose, customTravelPurpose, boardingCountry,
-    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
-    isTransitPassenger, accommodationType, customAccommodationType,
-    province, district, subDistrict, postalCode, hotelAddress, funds
-  } = formState;
+  const debouncedSaveData = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => saveDataToStorage(), 1000);
+  }, []);
 
-  useEffect(() => {
-    const metrics = calculateCompletionMetrics();
-    setCompletionMetrics(metrics?.metrics || null);
-    setTotalCompletionPercent(metrics?.totalPercent || 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    passportNo, visaNumber, fullName, nationality, dob, expiryDate, sex,
-    occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
-    travelPurpose, customTravelPurpose, boardingCountry,
-    arrivalFlightNumber, arrivalArrivalDate, departureFlightNumber, departureDepartureDate,
-    isTransitPassenger, accommodationType, customAccommodationType,
-    province, district, subDistrict, postalCode, hotelAddress, funds,
-  ]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStatus = DebouncedSave.getSaveState('singapore_travel_info');
-      // Only update if status actually changed to prevent infinite loops
-      formState.setSaveStatus(prevStatus => {
-        if (prevStatus !== currentStatus) {
-          return currentStatus;
-        }
-        return prevStatus;
-      });
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [formState.setSaveStatus]);
-
-  useEffect(() => {
-    if (shouldRestoreScrollPosition.current && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({
-        y: formState.scrollPosition || 0,
-        animated: false,
-      });
-      shouldRestoreScrollPosition.current = false;
-    }
-  }, [shouldRestoreScrollPosition, scrollViewRef, formState.scrollPosition]);
-
-  useEffect(() => {
-    return () => {
-      saveSessionState();
-    };
-  }, [saveSessionState]);
-
-  // ===== Fund helpers =======================================================
-
-  const resetFundModalState = () => {
-    formState.setFundItemModalVisible(false);
-    formState.setSelectedFundItem(null);
-    formState.setCurrentFundItem(null);
-    formState.setNewFundItemType(null);
-    formState.setIsCreatingFundItem(false);
-  };
-
-  const addFund = (type) => {
-    const newFund = {
-      id: `fund_${Date.now()}`,
-      type,
-      amount: '',
-      currency: 'SGD',
-      details: '',
-    };
-
-    formState.setCurrentFundItem(newFund);
-    formState.setNewFundItemType(type);
-    formState.setIsCreatingFundItem(true);
-    formState.setFundItemModalVisible(true);
-  };
-
-  const editFund = (fund) => {
-    if (!fund) return;
-    formState.setSelectedFundItem(fund);
-    formState.setCurrentFundItem(fund);
-    formState.setIsCreatingFundItem(false);
-    formState.setFundItemModalVisible(true);
-  };
-
-  const handleFundItemUpdate = async (updatedItem) => {
+  const saveDataToStorage = async () => {
     try {
-      if (updatedItem) {
-        const normalized = normalizeFundItem(updatedItem);
-        formState.setFunds((prev) => {
-          const exists = prev.some((item) => item.id === normalized.id);
-          if (exists) {
-            return prev.map((item) => (item.id === normalized.id ? normalized : item));
-          }
-          return [...prev, normalized];
-        });
-      }
-      await refreshFundItems({ forceRefresh: true });
-      resetFundModalState();
+      setIsSaving(true);
+      await AsyncStorage.setItem(`singapore_travel_info_${userId}`, JSON.stringify({
+        surname, middleName, givenName, nationality, passportNo, visaNumber, dob, expiryDate, sex,
+        occupation, customOccupation, cityOfResidence, countryOfResidence, phoneCode, phoneNumber, email,
+        funds, travelPurpose, customTravelPurpose, recentStayCountry, boardingCountry,
+        arrivalFlightNumber, arrivalDate, departureFlightNumber, departureDate, isTransitPassenger,
+        accommodationType, customAccommodationType, planningArea, hotelAddress,
+        lastEditedAt: new Date().toISOString(),
+      }));
+      setLastEditedAt(new Date());
     } catch (error) {
-      console.error('Failed to update fund item:', error);
-      Alert.alert(
-        t('singapore.travelInfo.errors.fundUpdateTitle', { defaultValue: '保存失败' }),
-        t('singapore.travelInfo.errors.fundUpdateMessage', { defaultValue: '更新资金信息时出现问题，请稍后再试。' })
-      );
-    }
-  };
-
-  const handleFundItemCreate = async (createdItem) => {
-    try {
-      if (createdItem) {
-        const normalized = normalizeFundItem(createdItem);
-        formState.setFunds((prev) => [...prev, normalized]);
-      }
-      await refreshFundItems({ forceRefresh: true });
-    } catch (error) {
-      console.error('Failed to refresh funds after creation:', error);
+      console.error('Failed to save:', error);
     } finally {
-      resetFundModalState();
+      setIsSaving(false);
     }
   };
 
-  const handleFundItemDelete = async (id) => {
+  const loadDataFromStorage = async () => {
     try {
-      formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
-      await refreshFundItems({ forceRefresh: true });
+      const saved = await AsyncStorage.getItem(`singapore_travel_info_${userId}`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setSurname(data.surname || ''); setMiddleName(data.middleName || ''); setGivenName(data.givenName || '');
+        setNationality(data.nationality || ''); setPassportNo(data.passportNo || ''); setVisaNumber(data.visaNumber || '');
+        setDob(data.dob || ''); setExpiryDate(data.expiryDate || ''); setSex(data.sex || '');
+        setOccupation(data.occupation || ''); setCustomOccupation(data.customOccupation || '');
+        setCityOfResidence(data.cityOfResidence || ''); setCountryOfResidence(data.countryOfResidence || '');
+        setPhoneCode(data.phoneCode || ''); setPhoneNumber(data.phoneNumber || ''); setEmail(data.email || '');
+        setFunds(data.funds || []); setTravelPurpose(data.travelPurpose || ''); setCustomTravelPurpose(data.customTravelPurpose || '');
+        setRecentStayCountry(data.recentStayCountry || ''); setBoardingCountry(data.boardingCountry || '');
+        setArrivalFlightNumber(data.arrivalFlightNumber || ''); setArrivalDate(data.arrivalDate || '');
+        setDepartureFlightNumber(data.departureFlightNumber || ''); setDepartureDate(data.departureDate || '');
+        setIsTransitPassenger(data.isTransitPassenger || false); setAccommodationType(data.accommodationType || '');
+        setCustomAccommodationType(data.customAccommodationType || ''); setPlanningArea(data.planningArea || '');
+        setHotelAddress(data.hotelAddress || '');
+        setLastEditedAt(data.lastEditedAt ? new Date(data.lastEditedAt) : null);
+      }
     } catch (error) {
-      console.error('Failed to refresh funds after deletion:', error);
-    } finally {
-      resetFundModalState();
+      console.error('Failed to load:', error);
     }
   };
 
-  // ===== Navigation helpers =================================================
+  useEffect(() => { loadDataFromStorage(); }, [userId]);
 
-  const handleNavigationWithSave = async (action, actionName) => {
-    try {
-      formState.setSaveStatus('saving');
-      await DebouncedSave.flushPendingSave('singapore_travel_info');
-      action();
-    } catch (error) {
-      console.error(`Failed to save data before ${actionName}:`, error);
-      formState.setSaveStatus('error');
-
-      Alert.alert(
-        t('singapore.travelInfo.saveError.title', { defaultValue: '保存失败' }),
-        t('singapore.travelInfo.saveError.message', { defaultValue: '数据保存遇到问题，是否继续操作？' }),
-        [
-          {
-            text: t('singapore.travelInfo.saveError.retry', { defaultValue: '重试' }),
-            onPress: () => handleNavigationWithSave(action, actionName),
-          },
-          {
-            text: t('singapore.travelInfo.saveError.continue', { defaultValue: '继续' }),
-            onPress: action,
-          },
-          {
-            text: t('common.cancel', { defaultValue: '取消' }),
-            style: 'cancel',
-          },
-        ]
-      );
+  const handleFieldBlur = (field, value) => {
+    const newErrors = { ...errors };
+    if (!value && ['passportNo', 'nationality', 'dob', 'expiryDate', 'sex'].includes(field)) {
+      newErrors[field] = singaporeLabels.validation.required;
+    } else {
+      delete newErrors[field];
     }
+    setErrors(newErrors);
   };
 
-  const handleContinue = () => {
-    handleNavigationWithSave(
-      () => navigation.navigate('SingaporeEntryFlow', { passport, destination }),
-      'continue'
-    );
-  };
-
-  const handleGoBack = () => {
-    handleNavigationWithSave(() => navigation.goBack(), 'go back');
-  };
-
-  // ===== Derived UI state ===================================================
-
-  const progressText = getProgressText();
-  const progressColor = getProgressColor();
-  const smartButtonConfig =
-    getSmartButtonConfig() || {
-      label: t('singapore.travelInfo.actions.continue', { defaultValue: '继续前往下一步' }),
-      variant: 'primary',
+  const getFieldCount = (section) => {
+    const counts = {
+      passport: { fields: [surname, givenName, nationality, passportNo, dob, expiryDate, sex], total: 7 },
+      personalInfo: { fields: [occupation, cityOfResidence, countryOfResidence, phoneCode, phoneNumber, email], total: 6 },
+      funds: { fields: funds, total: Math.max(funds.length, 1) },
+      travelDetails: { fields: [travelPurpose, boardingCountry, arrivalFlightNumber, arrivalDate, departureFlightNumber, departureDate, accommodationType, planningArea, hotelAddress], total: 9 },
     };
+    const { fields, total } = counts[section] || { fields: [], total: 1 };
+    const filled = Array.isArray(fields) ? fields.filter(f => f && f.toString().trim() !== '').length : 0;
+    return { filled, total };
+  };
+
+  const addFund = (fundType) => {
+    const newFund = { id: Date.now().toString(), type: fundType, amount: '', currency: 'SGD', createdAt: new Date().toISOString() };
+    setFunds([...funds, newFund]);
+  };
+
+  const handleFundItemPress = (fund) => {};
+  const handleFlightTicketPhotoUpload = async (photo) => { setFlightTicketPhoto(photo); debouncedSaveData(); };
+  const handleDepartureFlightTicketPhotoUpload = async (photo) => { setDepartureFlightTicketPhoto(photo); debouncedSaveData(); };
+  const handleHotelReservationPhotoUpload = async (photo) => { setHotelReservationPhoto(photo); debouncedSaveData(); };
+
+  const handleSubmit = async () => {
+    const missing = Object.entries({ passportNo, nationality, dob, expiryDate, sex }).filter(([k, v]) => !v || v.toString().trim() === '');
+    if (missing.length > 0) {
+      Alert.alert('Missing Information', 'Please fill required passport fields.', [{ text: 'OK' }]);
+      return;
+    }
+    await saveDataToStorage();
+    Alert.alert('Success', 'Singapore entry information saved!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton
-          onPress={handleGoBack}
-          label={t('common.back', { defaultValue: '返回' })}
-          style={styles.backButton}
-        />
-        <Text style={styles.headerTitle}>
-          {t('singapore.travelInfo.headerTitle', { defaultValue: 'Singapore Entry Info' })}
-        </Text>
-        <View style={styles.headerRight}>
-          {formState.saveStatus && (
-            <View
-              style={[
-                styles.saveStatus,
-                formState.saveStatus === 'saved' && styles.saveStatusSuccess,
-                formState.saveStatus === 'error' && styles.saveStatusError,
-              ]}
-            >
-              {formState.saveStatus === 'saving' && '💾'}
-              {formState.saveStatus === 'saved' && '✅'}
-              {formState.saveStatus === 'error' && '❌'}
-            </View>
-          )}
-        </View>
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA' }} edges={['top']}>
+      <YStack backgroundColor="$background" paddingHorizontal="$md" paddingVertical="$sm">
+        <XStack alignItems="center" gap="$md">
+          <BackButton onPress={() => navigation.goBack()} />
+          <YStack flex={1}>
+            <TamaguiText fontSize="$6" fontWeight="bold">{singaporeLabels.screenTitle}</TamaguiText>
+            <TamaguiText fontSize="$2" color="$textSecondary">{singaporeLabels.screenTitleEn}</TamaguiText>
+          </YStack>
+        </XStack>
+      </YStack>
 
-      {/* Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-        onScroll={(event) => formState.setScrollPosition(event.nativeEvent.contentOffset.y)}
-        scrollEventThrottle={16}
-      >
-        <HeroSection
-          t={t}
-          completionMetrics={formState.completionMetrics}
-          totalCompletionPercent={formState.totalCompletionPercent}
-          progressText={progressText}
-          progressColor={progressColor}
-          styles={styles}
-        />
+      <ScrollView ref={scrollViewRef} contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
+        <YStack gap="$md">
+          <ProgressOverviewCard sections={[
+            { name: singaporeLabels.passport.title, ...getFieldCount('passport') },
+            { name: singaporeLabels.personalInfo.title, ...getFieldCount('personalInfo') },
+            { name: singaporeLabels.funds.title, ...getFieldCount('funds') },
+            { name: singaporeLabels.travelDetails.title, ...getFieldCount('travelDetails') },
+          ]} />
 
-        <PassportSection
-          isExpanded={formState.expandedSection === 'passport'}
-          onToggle={() =>
-            formState.setExpandedSection(formState.expandedSection === 'passport' ? null : 'passport')
-          }
-          fieldCount={getFieldCount('passport')}
-          passportNo={formState.passportNo}
-          visaNumber={formState.visaNumber}
-          fullName={formState.fullName}
-          nationality={formState.nationality}
-          dob={formState.dob}
-          expiryDate={formState.expiryDate}
-          sex={formState.sex}
-          setPassportNo={formState.setPassportNo}
-          setVisaNumber={formState.setVisaNumber}
-          setFullName={formState.setFullName}
-          setNationality={formState.setNationality}
-          setDob={formState.setDob}
-          setExpiryDate={formState.setExpiryDate}
-          setSex={formState.setSex}
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldChange={handleFieldChange}
-          handleUserInteraction={handleUserInteraction}
-          handleFieldBlur={handleFieldBlur}
-          t={t}
-          styles={styles}
-        />
+          <PassportSection {...{ isExpanded: expandedSections.passport, onToggle: () => toggleSection('passport'), fieldCount: getFieldCount('passport'),
+            surname, middleName, givenName, nationality, passportNo, visaNumber, dob, expiryDate, sex,
+            setSurname, setMiddleName, setGivenName, setNationality, setPassportNo, setVisaNumber, setDob, setExpiryDate, setSex,
+            errors, warnings, handleFieldBlur, debouncedSaveData, setLastEditedAt, labels: singaporeLabels.passport, config: singaporeConfig.passport }} />
 
-        <PersonalInfoSection
-          isExpanded={formState.expandedSection === 'personal'}
-          onToggle={() =>
-            formState.setExpandedSection(formState.expandedSection === 'personal' ? null : 'personal')
-          }
-          fieldCount={getFieldCount('personal')}
-          occupation={formState.occupation}
-          cityOfResidence={formState.cityOfResidence}
-          residentCountry={formState.residentCountry}
-          phoneCode={formState.phoneCode}
-          phoneNumber={formState.phoneNumber}
-          email={formState.email}
-          setOccupation={formState.setOccupation}
-          setCityOfResidence={formState.setCityOfResidence}
-          setResidentCountry={formState.setResidentCountry}
-          setPhoneCode={formState.setPhoneCode}
-          setPhoneNumber={formState.setPhoneNumber}
-          setEmail={formState.setEmail}
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldChange={handleFieldChange}
-          handleFieldBlur={handleFieldBlur}
-          t={t}
-          styles={styles}
-        />
+          <PersonalInfoSection {...{ isExpanded: expandedSections.personalInfo, onToggle: () => toggleSection('personalInfo'), fieldCount: getFieldCount('personalInfo'),
+            occupation, customOccupation, cityOfResidence, countryOfResidence, phoneCode, phoneNumber, email,
+            setOccupation, setCustomOccupation, setCityOfResidence, setCountryOfResidence, setPhoneCode, setPhoneNumber, setEmail,
+            errors, warnings, handleFieldBlur, debouncedSaveData, labels: singaporeLabels.personalInfo, config: singaporeConfig.personalInfo }} />
 
-        <TravelDetailsSection
-          isExpanded={formState.expandedSection === 'travel'}
-          onToggle={() =>
-            formState.setExpandedSection(formState.expandedSection === 'travel' ? null : 'travel')
-          }
-          fieldCount={getFieldCount('travel')}
-          travelPurpose={formState.travelPurpose}
-          customTravelPurpose={formState.customTravelPurpose}
-          boardingCountry={formState.boardingCountry}
-          arrivalFlightNumber={formState.arrivalFlightNumber}
-          arrivalArrivalDate={formState.arrivalArrivalDate}
-          departureFlightNumber={formState.departureFlightNumber}
-          departureDepartureDate={formState.departureDepartureDate}
-          isTransitPassenger={formState.isTransitPassenger}
-          accommodationType={formState.accommodationType}
-          customAccommodationType={formState.customAccommodationType}
-          province={formState.province}
-          district={formState.district}
-          subDistrict={formState.subDistrict}
-          postalCode={formState.postalCode}
-          hotelAddress={formState.hotelAddress}
-          setTravelPurpose={formState.setTravelPurpose}
-          setCustomTravelPurpose={formState.setCustomTravelPurpose}
-          setBoardingCountry={formState.setBoardingCountry}
-          setArrivalFlightNumber={formState.setArrivalFlightNumber}
-          setArrivalArrivalDate={formState.setArrivalArrivalDate}
-          setDepartureFlightNumber={formState.setDepartureFlightNumber}
-          setDepartureDepartureDate={formState.setDepartureDepartureDate}
-          setIsTransitPassenger={formState.setIsTransitPassenger}
-          setAccommodationType={formState.setAccommodationType}
-          setCustomAccommodationType={formState.setCustomAccommodationType}
-          setProvince={formState.setProvince}
-          setDistrict={formState.setDistrict}
-          setSubDistrict={formState.setSubDistrict}
-          setPostalCode={formState.setPostalCode}
-          setHotelAddress={formState.setHotelAddress}
-          errors={formState.errors}
-          warnings={formState.warnings}
-          handleFieldChange={handleFieldChange}
-          handleFieldBlur={handleFieldBlur}
-          handleUserInteraction={handleUserInteraction}
-          t={t}
-          styles={styles}
-        />
+          <FundsSection {...{ isExpanded: expandedSections.funds, onToggle: () => toggleSection('funds'), fieldCount: getFieldCount('funds'),
+            funds, addFund, handleFundItemPress, labels: singaporeLabels.funds, config: singaporeConfig.funds }} />
 
-        <FundsSection
-          isExpanded={formState.expandedSection === 'funds'}
-          onToggle={() =>
-            formState.setExpandedSection(formState.expandedSection === 'funds' ? null : 'funds')
-          }
-          fieldCount={getFieldCount('funds')}
-          funds={formState.funds}
-          onAddFund={addFund}
-          onFundItemPress={editFund}
-          t={t}
-          styles={styles}
-        />
+          <TravelDetailsSection {...{ isExpanded: expandedSections.travelDetails, onToggle: () => toggleSection('travelDetails'), fieldCount: getFieldCount('travelDetails'),
+            travelPurpose, customTravelPurpose, recentStayCountry, boardingCountry, arrivalFlightNumber, arrivalDate, flightTicketPhoto,
+            departureFlightNumber, departureDate, departureFlightTicketPhoto, isTransitPassenger, accommodationType, customAccommodationType,
+            province: planningArea, hotelAddress, hotelReservationPhoto,
+            setTravelPurpose, setCustomTravelPurpose, setRecentStayCountry, setBoardingCountry, setArrivalFlightNumber, setArrivalDate, setFlightTicketPhoto,
+            setDepartureFlightNumber, setDepartureDate, setDepartureFlightTicketPhoto, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType,
+            setProvince: setPlanningArea, setHotelAddress, setHotelReservationPhoto,
+            errors, warnings, handleFieldBlur, debouncedSaveData,
+            getProvinceData: singaporeRegions,
+            handleFlightTicketPhotoUpload, handleDepartureFlightTicketPhotoUpload, handleHotelReservationPhotoUpload,
+            labels: singaporeLabels.travelDetails, config: singaporeConfig.travelDetails }} />
 
-        <View style={styles.buttonContainer}>
-          <Button
-            title={smartButtonConfig.label}
-            onPress={handleContinue}
-            variant={smartButtonConfig.variant || 'primary'}
-            style={styles.continueButton}
-          />
-        </View>
+          <BaseCard padding="$md" marginTop="$lg">
+            <BaseButton onPress={handleSubmit} variant="primary" size="lg" fullWidth>{singaporeLabels.progress.submit}</BaseButton>
+            {lastEditedAt && <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginTop="$sm">Last saved: {lastEditedAt.toLocaleString('en-SG')}</TamaguiText>}
+          </BaseCard>
+          <YStack height={40} />
+        </YStack>
       </ScrollView>
-
-      <FundItemDetailModal
-        visible={formState.fundItemModalVisible}
-        fundItem={formState.isCreatingFundItem ? formState.currentFundItem : formState.selectedFundItem}
-        isCreateMode={formState.isCreatingFundItem}
-        createItemType={formState.newFundItemType}
-        onClose={resetFundModalState}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
-      />
     </SafeAreaView>
   );
 };

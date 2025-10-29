@@ -3,7 +3,36 @@
  * Hong Kong has 18 districts organized into 3 main regions
  */
 
-export const hongkongDistricts = {
+// Hong Kong Regions (3 main regions)
+export const hongkongRegions = [
+  {
+    id: 'HONG_KONG_ISLAND',
+    code: 'HKI',
+    name: 'Hong Kong Island',
+    nameEn: 'Hong Kong Island',
+    nameZh: '香港岛',
+    nameLocal: '香港島',
+  },
+  {
+    id: 'KOWLOON',
+    code: 'KLN',
+    name: 'Kowloon',
+    nameEn: 'Kowloon',
+    nameZh: '九龙',
+    nameLocal: '九龍',
+  },
+  {
+    id: 'NEW_TERRITORIES',
+    code: 'NT',
+    name: 'New Territories',
+    nameEn: 'New Territories',
+    nameZh: '新界',
+    nameLocal: '新界',
+  },
+];
+
+// Hong Kong Districts (18 districts organized by region)
+const hongkongDistricts = {
   "HONG_KONG_ISLAND": [
     {
       "id": 1,
@@ -126,13 +155,22 @@ export const hongkongSubDistricts = {};
 
 /**
  * Get districts by region (province in Thailand's terminology)
- * @param {string} region - Region name (HONG_KONG_ISLAND, KOWLOON, NEW_TERRITORIES)
- * @returns {Array} - Array of district objects
+ * @param {string} regionCode - Region code/ID (HONG_KONG_ISLAND, KOWLOON, NEW_TERRITORIES)
+ * @returns {Array} - Array of district objects with proper structure
  */
-export function getDistrictsByProvince(region) {
-  if (!region) return [];
-  const normalizedRegion = region.toUpperCase().replace(/\s+/g, '_');
-  return hongkongDistricts[normalizedRegion] || [];
+export function getDistrictsByProvince(regionCode) {
+  if (!regionCode) return [];
+  const normalizedRegion = regionCode.toUpperCase().replace(/\s+/g, '_');
+  const districts = hongkongDistricts[normalizedRegion] || [];
+
+  // Add regionCode and proper structure for LocationHierarchySelector
+  return districts.map((district) => ({
+    ...district,
+    code: `HK-${district.id}`,
+    name: district.nameEn,
+    nameLocal: district.nameZh,
+    regionCode: normalizedRegion,
+  }));
 }
 
 /**
@@ -147,21 +185,38 @@ export function getSubDistrictsByDistrictId(districtId) {
 }
 
 /**
- * Get all regions (provinces)
- * @returns {Array} - Array of region names
+ * Get region display name in bilingual format
+ * @param {string} regionCode - Region code
+ * @returns {string} Region display name
  */
-export function getAllRegions() {
-  return [
-    { nameEn: "Hong Kong Island", nameZh: "香港岛" },
-    { nameEn: "Kowloon", nameZh: "九龙" },
-    { nameEn: "New Territories", nameZh: "新界" }
-  ];
+export function getRegionDisplayName(regionCode) {
+  const region = hongkongRegions.find((r) => r.code === regionCode || r.id === regionCode);
+  if (!region) return '';
+  return `${region.nameEn} - ${region.nameZh}`;
+}
+
+/**
+ * Get district display name in bilingual format
+ * @param {number|string} districtId - District ID
+ * @returns {string} District display name
+ */
+export function getDistrictDisplayName(districtId) {
+  // Search through all regions for the district
+  for (const regionKey in hongkongDistricts) {
+    const district = hongkongDistricts[regionKey].find((d) => d.id.toString() === districtId.toString());
+    if (district) {
+      return `${district.nameEn} - ${district.nameZh}`;
+    }
+  }
+  return '';
 }
 
 export default {
+  hongkongRegions,
   hongkongDistricts,
   hongkongSubDistricts,
   getDistrictsByProvince,
   getSubDistrictsByDistrictId,
-  getAllRegions
+  getRegionDisplayName,
+  getDistrictDisplayName,
 };
