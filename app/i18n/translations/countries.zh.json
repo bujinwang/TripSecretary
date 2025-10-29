@@ -1132,6 +1132,61 @@
       "message": "时间选择器将在未来版本中实现"
     }
   },
+  "preview": {
+    "badge": {
+      "preview": "预览模式",
+      "previewHint": "您的信息尚未提交",
+      "draft": "草稿模式",
+      "readonly": "只读"
+    },
+    "status": {
+      "incomplete": "草稿 - 需要操作",
+      "complete": "准备提交",
+      "submitted": "已提交",
+      "missing": "缺少:",
+      "completionProgress": "已完成 {{completed}}/{{total}} 部分"
+    },
+    "steps": {
+      "tdac": "TDAC 卡",
+      "personal": "个人信息",
+      "travel": "旅行详情",
+      "funds": "资金证明",
+      "complete": "完成",
+      "incomplete": "未完成",
+      "inProgress": "进行中"
+    },
+    "buttons": {
+      "submit": "提交 TDAC 入境卡",
+      "continueEditing": "继续编辑",
+      "addTdac": "添加 TDAC 卡",
+      "addPersonalInfo": "添加个人信息",
+      "addTravelDetails": "添加旅行详情",
+      "addFunds": "添加资金证明",
+      "edit": "编辑",
+      "viewDocument": "查看文档",
+      "close": "关闭"
+    },
+    "info": {
+      "submissionWindow": "请在抵达前 72 小时内提交",
+      "daysRemaining": "还剩 {{days}} 天提交",
+      "readyToSubmit": "所有信息已完成。准备提交！",
+      "missingInformation": "请在提交前完成所有必填部分",
+      "documentPreview": "TDAC 文档预览",
+      "tapToView": "点击查看完整大小",
+      "scrollToView": "滚动查看所有部分"
+    },
+    "alerts": {
+      "deadline": "截止日期临近：请在 {{date}} 前提交",
+      "incomplete": "完成所有部分以启用提交",
+      "error": "无法加载预览。请重试。"
+    },
+    "document": {
+      "title": "TDAC 文档预览",
+      "sampleNotice": "这是示例预览。实际文档将包含您的信息。",
+      "notGenerated": "文档将在提交后生成",
+      "pages": "第 {{current}}/{{total}} 页"
+    }
+  },
   "screenTitles": {
     "notificationSettings": "通知设置"
   }

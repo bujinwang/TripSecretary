@@ -10,7 +10,7 @@ import {
   XStack,
   BaseCard,
   Text as TamaguiText,
-} from '../tamagui';
+} from './tamagui';
 
 /**
  * GenderSelector component for selecting gender/sex

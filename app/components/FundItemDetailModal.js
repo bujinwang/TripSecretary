@@ -275,7 +275,9 @@ const FundItemDetailModal = ({
 
   // Allow null fundItem when in create mode
   if (!fundItem && !isCreateMode) {
-    console.log('[FundItemDetailModal] No fund item provided, modal will not render');
+    if (__DEV__) {
+      console.warn('[FundItemDetailModal] No fund item provided, modal will not render');
+    }
     return null;
   }
 

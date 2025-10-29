@@ -527,24 +527,24 @@ const EntryPackDisplay = ({
 
   const renderFundsInfo = () => {
     const proofPhotoTexts = {
-      thailand: '📸 มีหลักฐานรูปภาพแล้ว / Proof photo uploaded',
-      malaysia: '📸 Proof photo uploaded / Foto bukti dimuat naik',
-      singapore: '📸 Proof photo uploaded / 已上传凭证照片',
-      usa: '📸 Proof photo uploaded / 已上传凭证照片',
-      hongkong: '📸 已上載證明照片 / Proof photo uploaded',
-      taiwan: '📸 已上傳證明照片 / Proof photo uploaded',
-      japan: '📸 証明写真アップロード済み / Proof photo uploaded'
+      thailand: '📸 มีหลักฐานรูปภาพแล้ว',
+      malaysia: '📸 Proof photo uploaded',
+      singapore: '📸 Proof photo uploaded',
+      usa: '📸 Proof photo uploaded',
+      hongkong: '📸 已上載證明照片',
+      taiwan: '📸 已上傳證明照片',
+      japan: '📸 証明写真アップロード済み'
     };
     const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
 
     const noDataTexts = {
-      thailand: 'ยังไม่มีข้อมูลเงินทุน / No funds information',
-      malaysia: 'No funds information / Tiada maklumat kewangan',
-      singapore: 'No funds information / 未提供资金信息',
-      usa: 'No funds information / 未提供资金信息',
-      japan: '資金情報なし / No funds information',
-      hongkong: '未提供資金證明 / No funds information',
-      taiwan: '未提供資金證明 / No funds information'
+      thailand: 'ยังไม่มีข้อมูลเงินทุน',
+      malaysia: 'No funds information',
+      singapore: 'No funds information',
+      usa: 'No funds information',
+      japan: '資金情報なし',
+      hongkong: '未提供資金證明',
+      taiwan: '未提供資金證明'
     };
     const noDataText = noDataTexts[country] || noDataTexts.thailand;
 
@@ -579,12 +579,12 @@ const EntryPackDisplay = ({
                     {proofPhotoText}
                   </Text>
                   <Text style={styles.fundProofHint}>
-                    {country === 'thailand' ? 'แตะเพื่อดูรูป / Tap to view' :
-                     country === 'malaysia' ? 'Tap to view / Tekan untuk melihat' :
-                     country === 'singapore' || country === 'usa' ? 'Tap to view / 点击查看' :
-                     country === 'hongkong' || country === 'taiwan' ? '點擊查看 / Tap to view' :
-                     country === 'japan' ? 'タップして表示 / Tap to view' :
-                     'แตะเพื่อดูรูป / Tap to view'}
+                    {country === 'thailand' ? 'แตะเพื่อดูรูป' :
+                     country === 'malaysia' ? 'Tap to view' :
+                     country === 'singapore' || country === 'usa' ? 'Tap to view' :
+                     country === 'hongkong' || country === 'taiwan' ? '點擊查看' :
+                     country === 'japan' ? 'タップして表示' :
+                     'แตะเพื่อดูรูป'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -606,48 +606,48 @@ const EntryPackDisplay = ({
 
   const renderTDACInfo = () => {
     const placeholderTitles = {
-      thailand: 'ยังไม่ได้ส่ง TDAC / TDAC Not Submitted Yet',
-      malaysia: 'MDAC Not Submitted Yet / MDAC Belum Dihantar',
-      singapore: 'SGAC Not Submitted Yet / 新加坡入境卡尚未提交',
-      usa: 'I-94 Not Required Online / 无需在线提交I-94',
-      japan: '入国カード未提出 / Entry Card Not Submitted Yet',
-      hongkong: '尚未提交入境資料 / Entry Information Not Submitted Yet'
+      thailand: 'ยังไม่ได้ส่ง TDAC',
+      malaysia: 'MDAC Not Submitted',
+      singapore: 'SGAC Not Submitted',
+      usa: 'I-94 Not Required Online',
+      japan: '入国カード未提出',
+      hongkong: '尚未提交入境資料'
     };
 
     const placeholderDescriptions = {
-      thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง / Please submit TDAC within 72 hours before arrival',
-      malaysia: 'Please submit MDAC within 3 days before arrival / Sila hantar MDAC dalam 3 hari sebelum ketibaan',
-      singapore: 'Please submit SGAC within 3 days before arrival / 请在抵达前3天内提交新加坡入境卡',
-      usa: 'I-94 is completed at the airport upon arrival / I-94将在抵达机场时填写',
-      japan: '到着前にVisit Japan Webで入国カードを提出してください / Please submit entry card via Visit Japan Web before arrival',
-      hongkong: '香港入境無需預先提交電子表格，到達時填寫即可 / No pre-arrival form required for Hong Kong, complete at immigration'
+      thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง',
+      malaysia: 'Please submit MDAC within 3 days before arrival',
+      singapore: 'Please submit SGAC within 3 days before arrival',
+      usa: 'I-94 is completed at the airport upon arrival',
+      japan: '到着前にVisit Japan Webで入国カードを提出してください',
+      hongkong: '香港入境無需預先提交電子表格，到達時填寫即可'
     };
 
     const qrPlaceholderTexts = {
-      thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย / QR Code will appear after submission',
-      malaysia: 'QR Code will appear after submission / Kod QR akan muncul selepas penghantaran',
-      singapore: 'DE Number will appear after submission / 提交后会显示DE编号',
-      usa: 'I-94 number will be provided at entry / 入境时将获得I-94编号',
-      japan: 'QRコードは提出後に表示されます / QR Code will appear after submission',
-      hongkong: '入境時會獲得入境蓋章 / Entry stamp will be provided at immigration'
+      thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย',
+      malaysia: 'QR Code will appear after submission',
+      singapore: 'DE Number will appear after submission',
+      usa: 'I-94 number will be provided at entry',
+      japan: 'QRコードは提出後に表示されます',
+      hongkong: '入境時會獲得入境蓋章'
     };
 
     const placeholderNotes = {
-      thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้ / You can still show other information to immigration officer even without TDAC',
-      malaysia: 'You can still show other information to immigration officer / Anda masih boleh tunjukkan maklumat lain kepada pegawai imigresen',
-      singapore: 'You can still show other information to immigration officer / 您仍可向入境官员出示其他信息',
-      usa: 'Prepare this information for CBP officer at the airport / 为机场海关及边境保护局官员准备好此信息',
-      japan: '入国カードがなくても、他の情報を入国審査官に提示できます / You can still show other information to immigration officer even without entry card',
-      hongkong: '可以向入境處人員出示此資料包 / You can show this entry pack to immigration officer'
+      thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้',
+      malaysia: 'You can still show other information to immigration officer',
+      singapore: 'You can still show other information to immigration officer',
+      usa: 'Prepare this information for CBP officer at the airport',
+      japan: '入国カードがなくても、他の情報を入国審査官に提示できます',
+      hongkong: '可以向入境處人員出示此資料包'
     };
 
     const pdfDocumentTitle = {
-      thailand: '📄 เอกสาร TDAC / TDAC Document',
-      malaysia: '📄 MDAC Document / Dokumen MDAC',
-      singapore: '📄 SGAC Document / 新加坡入境卡文件',
-      usa: '📄 I-94 Document / I-94文件',
-      japan: '📄 入国カード / Entry Card Document',
-      hongkong: '📄 入境文件 / Entry Document'
+      thailand: '📄 เอกสาร TDAC',
+      malaysia: '📄 MDAC Document',
+      singapore: '📄 SGAC Document',
+      usa: '📄 I-94 Document',
+      japan: '📄 入国カード',
+      hongkong: '📄 入境文件'
     };
 
     return (
@@ -670,15 +670,15 @@ const EntryPackDisplay = ({
                 </Text>
                 <Text style={styles.pdfHint}>
                   {country === 'thailand'
-                    ? 'เลื่อนดูทุกหน้าของเอกสาร / Scroll to view all pages'
+                    ? 'เลื่อนดูทุกหน้าของเอกสาร'
                     : country === 'malaysia'
-                    ? 'Scroll to view all pages / Tatal untuk melihat semua halaman'
+                    ? 'Scroll to view all pages'
                     : country === 'singapore' || country === 'usa'
-                    ? 'Scroll to view all pages / 滚动查看所有页面'
+                    ? 'Scroll to view all pages'
                     : country === 'hongkong'
-                    ? '滾動查看所有頁面 / Scroll to view all pages'
+                    ? '滾動查看所有頁面'
                     : country === 'japan'
-                    ? 'スクロールしてすべてのページを表示 / Scroll to view all pages'
+                    ? 'スクロールしてすべてのページを表示'
                     : 'Scroll to view all pages'}
                 </Text>
                 <PDFViewer
@@ -710,13 +710,10 @@ const EntryPackDisplay = ({
               <View style={styles.samplePdfContainer}>
                 <View style={styles.samplePdfHeader}>
                   <Text style={styles.samplePdfTitle}>
-                    📄 ตัวอย่างเอกสาร TDAC / Sample TDAC Document
+                    📄 ตัวอย่างเอกสาร TDAC
                   </Text>
                   <Text style={styles.samplePdfSubtitle}>
                     เอกสารตัวอย่างเพื่อให้ทราบรูปแบบที่จะได้รับหลังจากส่งฟอร์ม
-                  </Text>
-                  <Text style={styles.samplePdfSubtitle}>
-                    Sample document showing the format you'll receive after submission
                   </Text>
                 </View>
 
@@ -726,7 +723,7 @@ const EntryPackDisplay = ({
                   style={styles.samplePdfViewer}
                   showPageIndicator={true}
                   showWatermark={true}
-                  watermarkText="SAMPLE / ตัวอย่าง"
+                  watermarkText="ตัวอย่าง"
                   onError={(error) => {
                     console.error('Sample PDF display error:', error);
                   }}
@@ -734,15 +731,12 @@ const EntryPackDisplay = ({
 
                 <View style={styles.pdfInfoHint}>
                   <Text style={styles.pdfInfoText}>
-                    ℹ️ This is a 2-page PDF. Scroll within the document to see page 2.
+                    ℹ️ เอกสารนี้มี 2 หน้า เลื่อนเพื่อดูหน้าถัดไป
                   </Text>
                 </View>
 
                 <Text style={styles.samplePdfFooter}>
                   ⚠️ นี่เป็นเอกสารตัวอย่างเท่านั้น กรุณาส่งฟอร์ม TDAC เพื่อรับเอกสารจริง
-                </Text>
-                <Text style={styles.samplePdfFooter}>
-                  ⚠️ This is a sample document only. Please submit TDAC form to get actual document.
                 </Text>
               </View>
             )}
@@ -974,23 +968,23 @@ const EntryPackDisplay = ({
   const tabs = tabsConfig[country] || tabsConfig.thailand;
 
   const headerTitles = {
-    thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack',
-    malaysia: '🇲🇾 Entry Pack / Pakej Kemasukan',
-    singapore: '🇸🇬 Entry Pack / 入境信息包',
-    taiwan: '🇹🇼 臺灣入境資料包 / Entry Pack',
-    usa: '🇺🇸 Entry Pack / 入境信息包',
-    hongkong: '🇭🇰 入境資料包 / Entry Pack',
-    japan: '🇯🇵 入国情報パック / Entry Pack'
+    thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง',
+    malaysia: '🇲🇾 Entry Pack',
+    singapore: '🇸🇬 Entry Pack',
+    taiwan: '🇹🇼 臺灣入境資料包',
+    usa: '🇺🇸 Entry Pack',
+    hongkong: '🇭🇰 入境資料包',
+    japan: '🇯🇵 入国情報パック'
   };
 
   const headerSubtitles = {
-    thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง / Important information for immigration officer',
-    malaysia: 'Important information for immigration officer / Maklumat penting untuk pegawai imigresen',
-    singapore: 'Important information for immigration officer / 重要入境信息',
-    taiwan: '入境處重要資料 / Important information for immigration officer',
-    usa: 'Important information for immigration officer / 重要入境信息',
-    hongkong: '入境處重要資料 / Important information for immigration officer',
-    japan: '入国審査官への重要情報 / Important information for immigration officer'
+    thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง',
+    malaysia: 'Important information for immigration officer',
+    singapore: 'Important information for immigration officer',
+    taiwan: '入境處重要資料',
+    usa: 'Important information for immigration officer',
+    hongkong: '入境處重要資料',
+    japan: '入国審査官への重要情報'
   };
 
   return (
@@ -1039,18 +1033,18 @@ const EntryPackDisplay = ({
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           {country === 'malaysia'
-            ? 'Please show this entry pack to the immigration officer / Sila tunjukkan pakej ini kepada pegawai imigresen'
+            ? 'Please show this entry pack to the immigration officer'
             : country === 'singapore'
-            ? 'Please show this entry pack to the immigration officer / 请向入境官员出示此信息包'
+            ? 'Please show this entry pack to the immigration officer'
             : country === 'taiwan'
-            ? '請向入境官員出示此資料包 / Please show this entry pack to the immigration officer'
+            ? '請向入境官員出示此資料包'
             : country === 'hongkong'
-            ? '請向入境處人員出示此資料包 / Please show this entry pack to the immigration officer'
+            ? '請向入境處人員出示此資料包'
             : country === 'usa'
-            ? 'Please show this entry pack to the CBP officer / 请向海关及边境保护局官员出示此信息包'
+            ? 'Please show this entry pack to the CBP officer'
             : country === 'japan'
-            ? 'この情報パックを入国審査官に提示してください / Please show this entry pack to the immigration officer'
-            : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง / Please show this entry pack to the immigration officer'
+            ? 'この情報パックを入国審査官に提示してください'
+            : 'กรุณาแสดงชุดข้อมูลนี้ต่อเจ้าหน้าที่ตรวจคนเข้าเมือง'
           }
         </Text>
       </View>
@@ -1086,12 +1080,12 @@ const EntryPackDisplay = ({
             </TouchableOpacity>
             <View style={styles.photoViewerHintContainer}>
               <Text style={styles.photoViewerHint}>
-                {country === 'thailand' ? 'รูปหลักฐานเงินทุน / Fund Proof Photo' :
-                 country === 'malaysia' ? 'Fund Proof Photo / Foto Bukti Dana' :
-                 country === 'singapore' || country === 'usa' ? 'Fund Proof Photo / 资金证明照片' :
-                 country === 'hongkong' || country === 'taiwan' ? '資金證明照片 / Fund Proof Photo' :
-                 country === 'japan' ? '資金証明写真 / Fund Proof Photo' :
-                 'รูปหลักฐานเงินทุน / Fund Proof Photo'}
+                {country === 'thailand' ? 'รูปหลักฐานเงินทุน' :
+                 country === 'malaysia' ? 'Fund Proof Photo' :
+                 country === 'singapore' || country === 'usa' ? 'Fund Proof Photo' :
+                 country === 'hongkong' || country === 'taiwan' ? '資金證明照片' :
+                 country === 'japan' ? '資金証明写真' :
+                 'รูปหลักฐานเงินทุน'}
               </Text>
             </View>
           </View>
@@ -1113,21 +1107,22 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: spacing.lg,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.white,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   title: {
     ...typography.h2,
-    color: colors.surface,
+    color: colors.text,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
-    color: colors.surface,
-    opacity: 0.9,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   closeButton: {
@@ -1159,15 +1154,15 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     marginRight: spacing.xs,
     borderRadius: 20,
-    backgroundColor: colors.surface,
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E5E7EB',
     minWidth: 70,
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
   },
   tabText: {
     ...typography.caption,
@@ -1266,14 +1261,16 @@ const styles = StyleSheet.create({
   fundsTotal: {
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: '#F0F4F8',
     padding: spacing.md,
     borderRadius: 12,
     marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: '#D0D8E0',
   },
   totalLabel: {
     fontSize: 16,
-    color: colors.surface,
+    color: '#4B5563',
     fontWeight: '600',
     marginBottom: spacing.xs,
     textAlign: 'center',
@@ -1281,7 +1278,7 @@ const styles = StyleSheet.create({
   },
   totalAmount: {
     ...typography.h2,
-    color: colors.surface,
+    color: '#111827',
     fontWeight: '700',
     textAlign: 'center',
   },

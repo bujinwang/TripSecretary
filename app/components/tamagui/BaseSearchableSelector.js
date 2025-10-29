@@ -10,14 +10,10 @@
 import React, { useState, useMemo } from 'react';
 import { Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  YStack,
-  XStack,
-  BaseCard,
-  BaseButton,
-  Input,
-  Text as TamaguiText,
-} from './index';
+import { YStack, XStack, Text as TamaguiText } from 'tamagui';
+import { BaseCard } from './BaseCard';
+import { BaseButton } from './BaseButton';
+import { BaseInput as Input } from './BaseInput';
 
 const BaseSearchableSelector = ({
   // Label and value

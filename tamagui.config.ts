@@ -1,16 +1,15 @@
 // Tamagui configuration seeded from existing TripSecretary theme tokens.
 import { createFont, createTamagui, createTokens } from 'tamagui';
 import { shorthands } from '@tamagui/shorthands';
-import { animations } from '@tamagui/animations-react-native';
 
-import { colors as themeColors } from './app/theme/colors';
-import { spacing, borderRadius } from './app/theme/spacing';
+import { colors as themeColors } from './app/theme/colors.js';
+import { spacing, borderRadius } from './app/theme/spacing.js';
 import {
   fontFamily,
   fontSize,
   fontWeight,
   lineHeight,
-} from './app/theme/typography';
+} from './app/theme/typography.js';
 
 const tokens = createTokens({
   color: {
@@ -62,6 +61,7 @@ const bodyFont = createFont({
     2: fontSize.body1,
     3: fontSize.body2,
     4: fontSize.h3,
+    lg: fontSize.h3,
   },
   lineHeight: {
     1: Math.round(fontSize.caption * lineHeight.caption),
@@ -123,6 +123,7 @@ const themes = {
     card: themeColors.card,
     borderColor: themeColors.border,
     borderColorHover: themeColors.divider,
+    borderColorPress: themeColors.divider,
     overlay: themeColors.overlay,
     overlayStrong: themeColors.overlayDark,
     shadowColor: themeColors.shadow,
@@ -133,6 +134,7 @@ const themes = {
     success: themeColors.success,
     warning: themeColors.warning,
     danger: themeColors.error,
+    textPrimary: themeColors.text,
   },
   dark: {
     background: '#111827',
@@ -148,6 +150,7 @@ const themes = {
     card: '#1f2937',
     borderColor: '#374151',
     borderColorHover: '#4b5563',
+    borderColorPress: '#4b5563',
     overlay: 'rgba(15, 23, 42, 0.6)',
     overlayStrong: 'rgba(15, 23, 42, 0.75)',
     shadowColor: 'rgba(0, 0, 0, 0.6)',
@@ -158,6 +161,7 @@ const themes = {
     success: themeColors.success,
     warning: themeColors.warning,
     danger: themeColors.error,
+    textPrimary: '#f3f4f6',
   },
 };
 
@@ -172,7 +176,6 @@ const media = {
 };
 
 const tamaguiConfig = createTamagui({
-  animations,
   fonts: {
     body: bodyFont,
     heading: headingFont,

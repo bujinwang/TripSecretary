@@ -6,18 +6,26 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import {
+  YStack,
+  XStack,
+  Text,
+  styled,
+  Stack,
+} from 'tamagui';
 import CompletionSummaryCard from '../CompletionSummaryCard';
 import SubmissionCountdown from '../SubmissionCountdown';
 import Button from '../Button';
 import { colors, typography, spacing, shadows } from '../../theme';
+
+// Styled Tamagui components
+const PressableCard = styled(YStack, {
+  pressStyle: { opacity: 0.7, scale: 0.98 },
+  animation: 'quick',
+  cursor: 'pointer',
+});
 
 /**
  * PreparedState component displays entry preparation status and action buttons
@@ -51,9 +59,9 @@ const PreparedState = ({
   entryPackStatus,
 }) => {
   return (
-    <View>
+    <YStack>
       {/* Status Cards Section */}
-      <View style={styles.statusSection}>
+      <YStack marginBottom="$xl">
         {/* Only show completion card if not submitted */}
         {entryPackStatus !== 'submitted' && (
           <CompletionSummaryCard
@@ -65,24 +73,72 @@ const PreparedState = ({
 
         {/* Pre-Submission Actions: Only show BEFORE submission */}
         {entryPackStatus !== 'submitted' && completionPercent >= 80 && (
-          <View style={styles.quickActionsContainer}>
-            <TouchableOpacity
-              style={styles.quickActionButton}
+          <YStack
+            marginTop="$lg"
+            paddingTop="$md"
+            borderTopWidth={1}
+            borderTopColor="$borderColor"
+            gap="$sm"
+          >
+            <PressableCard
+              flexDirection="row"
+              alignItems="center"
+              backgroundColor="$background"
+              borderRadius={14}
+              paddingVertical="$md"
+              paddingHorizontal="$md"
+              borderWidth={1}
+              borderColor="$borderColor"
+              shadowColor="$shadow"
+              shadowOffset={{ width: 0, height: 1 }}
+              shadowOpacity={0.1}
+              shadowRadius={2}
+              elevation={1}
               onPress={handleEditInformation}
-              activeOpacity={0.7}
             >
-              <View style={styles.quickActionIconWrapper}>
-                <Text style={styles.quickActionIcon}>✏️</Text>
-              </View>
-              <View style={styles.quickActionContent}>
-                <Text style={styles.quickActionTitle}>再改改</Text>
-                <Text style={styles.quickActionSubtitle}>调整和完善信息</Text>
-              </View>
-              <Text style={styles.quickActionArrow}>›</Text>
-            </TouchableOpacity>
+              <YStack
+                width={48}
+                height={48}
+                borderRadius={24}
+                backgroundColor="$primaryLight"
+                alignItems="center"
+                justifyContent="center"
+                marginRight="$md"
+              >
+                <Text fontSize={24}>✏️</Text>
+              </YStack>
+              <YStack flex={1}>
+                <Text
+                  fontSize={16}
+                  fontWeight="700"
+                  color="$text"
+                  marginBottom={2}
+                >
+                  再改改
+                </Text>
+                <Text fontSize={13} color="$textSecondary">
+                  调整和完善信息
+                </Text>
+              </YStack>
+              <Text fontSize={22} fontWeight="600" color="$primary" marginLeft="$xs">
+                ›
+              </Text>
+            </PressableCard>
 
-            <TouchableOpacity
-              style={styles.quickActionButton}
+            <PressableCard
+              flexDirection="row"
+              alignItems="center"
+              backgroundColor="$background"
+              borderRadius={14}
+              paddingVertical="$md"
+              paddingHorizontal="$md"
+              borderWidth={1}
+              borderColor="$borderColor"
+              shadowColor="$shadow"
+              shadowOffset={{ width: 0, height: 1 }}
+              shadowOpacity={0.1}
+              shadowRadius={2}
+              elevation={1}
               onPress={() => {
                 // Show sharing options
                 Alert.alert(
@@ -100,25 +156,56 @@ const PreparedState = ({
                   ]
                 );
               }}
-              activeOpacity={0.7}
             >
-              <View style={styles.quickActionIconWrapper}>
-                <Text style={styles.quickActionIcon}>👥</Text>
-              </View>
-              <View style={styles.quickActionContent}>
-                <Text style={styles.quickActionTitle}>找亲友帮忙修改</Text>
-                <Text style={styles.quickActionSubtitle}>分享给亲友帮忙修改</Text>
-              </View>
-              <Text style={styles.quickActionArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
+              <YStack
+                width={48}
+                height={48}
+                borderRadius={24}
+                backgroundColor="$primaryLight"
+                alignItems="center"
+                justifyContent="center"
+                marginRight="$md"
+              >
+                <Text fontSize={24}>👥</Text>
+              </YStack>
+              <YStack flex={1}>
+                <Text fontSize={16} fontWeight="700" color="$text" marginBottom={2}>
+                  找亲友帮忙修改
+                </Text>
+                <Text fontSize={13} color="$textSecondary">
+                  分享给亲友帮忙修改
+                </Text>
+              </YStack>
+              <Text fontSize={22} fontWeight="600" color="$primary" marginLeft="$xs">
+                ›
+              </Text>
+            </PressableCard>
+          </YStack>
         )}
 
         {/* Post-Submission Actions: Show AFTER submission */}
         {entryPackStatus === 'submitted' && (
-          <View style={styles.quickActionsContainer}>
-            <TouchableOpacity
-              style={styles.quickActionButton}
+          <YStack
+            marginTop="$lg"
+            paddingTop="$md"
+            borderTopWidth={1}
+            borderTopColor="$borderColor"
+            gap="$sm"
+          >
+            <PressableCard
+              flexDirection="row"
+              alignItems="center"
+              backgroundColor="$background"
+              borderRadius={14}
+              paddingVertical="$md"
+              paddingHorizontal="$md"
+              borderWidth={1}
+              borderColor="$borderColor"
+              shadowColor="$shadow"
+              shadowOffset={{ width: 0, height: 1 }}
+              shadowOpacity={0.1}
+              shadowRadius={2}
+              elevation={1}
               onPress={() => {
                 // Share QR code with travel companions
                 Alert.alert(
@@ -135,80 +222,172 @@ const PreparedState = ({
                   ]
                 );
               }}
-              activeOpacity={0.7}
             >
-              <View style={styles.quickActionIconWrapper}>
-                <Text style={styles.quickActionIcon}>📤</Text>
-              </View>
-              <View style={styles.quickActionContent}>
-                <Text style={styles.quickActionTitle}>分享入境卡</Text>
-                <Text style={styles.quickActionSubtitle}>发送给同行的家人朋友</Text>
-              </View>
-              <Text style={styles.quickActionArrow}>›</Text>
-            </TouchableOpacity>
-          </View>
+              <YStack
+                width={48}
+                height={48}
+                borderRadius={24}
+                backgroundColor="$primaryLight"
+                alignItems="center"
+                justifyContent="center"
+                marginRight="$md"
+              >
+                <Text fontSize={24}>📤</Text>
+              </YStack>
+              <YStack flex={1}>
+                <Text fontSize={16} fontWeight="700" color="$text" marginBottom={2}>
+                  分享入境卡
+                </Text>
+                <Text fontSize={13} color="$textSecondary">
+                  发送给同行的家人朋友
+                </Text>
+              </YStack>
+              <Text fontSize={22} fontWeight="600" color="$primary" marginLeft="$xs">
+                ›
+              </Text>
+            </PressableCard>
+          </YStack>
         )}
-      </View>
+      </YStack>
 
       {/* Integrated Countdown & Submission Section */}
       {entryPackStatus === 'submitted' ? (
         // Success State - TDAC has been submitted
-        <View style={styles.countdownSection}>
-          <View style={styles.successBanner}>
-            <Text style={styles.successIcon}>🎉</Text>
-            <Text style={styles.successTitle}>
+        <YStack
+          marginBottom="$xl"
+          backgroundColor="$background"
+          borderRadius={16}
+          padding="$lg"
+          shadowColor="$shadow"
+          shadowOffset={{ width: 0, height: 2 }}
+          shadowOpacity={0.1}
+          shadowRadius={4}
+          elevation={3}
+        >
+          <YStack
+            backgroundColor="#E8F5E9"
+            borderRadius={12}
+            padding="$lg"
+            alignItems="center"
+          >
+            <Text fontSize={48} marginBottom="$sm">🎉</Text>
+            <Text
+              fontSize={18}
+              fontWeight="700"
+              color="#2E7D32"
+              textAlign="center"
+              marginBottom="$xs"
+            >
               太棒了！泰国之旅准备就绪！🌴
             </Text>
-            <Text style={styles.successMessage}>
+            <Text fontSize={14} color="#558B2F" textAlign="center">
               入境卡已成功提交，可以查看您的入境信息
             </Text>
-          </View>
+          </YStack>
 
           {/* Smart Primary Action Button */}
-          <View style={styles.primaryActionContainer}>
+          <YStack
+            marginTop="$md"
+            paddingTop="$md"
+            borderTopWidth={1}
+            borderTopColor="$borderColor"
+          >
             {renderPrimaryAction()}
-          </View>
+          </YStack>
 
           {/* Entry Guide Button - Prominent position after submission */}
-          <View style={styles.submittedEntryGuideContainer}>
-            <TouchableOpacity
-              style={styles.entryGuideButton}
+          <YStack marginTop="$lg">
+            <PressableCard
+              borderRadius={16}
+              overflow="hidden"
+              shadowColor="$shadow"
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.2}
+              shadowRadius={8}
+              elevation={4}
               onPress={() => navigation.navigate('ThailandEntryGuide', {
                 passport: passportParam,
                 destination: destination,
                 completionData: userData,
                 showSubmittedTips: true
               })}
-              activeOpacity={0.8}
             >
               <LinearGradient
                 colors={['#0BD67B', colors.primary]}
                 start={{ x: 0, y: 0.5 }}
                 end={{ x: 1, y: 0.5 }}
-                style={styles.entryGuideGradient}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: spacing.lg,
+                  paddingVertical: 20,
+                }}
               >
-                <View style={styles.entryGuideIconContainer}>
-                  <Text style={styles.entryGuideIcon}>🛂</Text>
-                </View>
-                <View style={styles.entryGuideContent}>
-                  <Text style={styles.entryGuideTitle}>
+                <YStack
+                  width={52}
+                  height={52}
+                  borderRadius={26}
+                  backgroundColor="rgba(255, 255, 255, 0.28)"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginRight="$md"
+                >
+                  <Text fontSize={26}>🛂</Text>
+                </YStack>
+                <YStack flex={1}>
+                  <Text
+                    fontSize={17}
+                    fontWeight="700"
+                    color="$white"
+                    letterSpacing={0.2}
+                  >
                     入境通关完整指南
                   </Text>
-                  <Text style={styles.entryGuideSubtitle}>
+                  <Text
+                    fontSize={13}
+                    color="rgba(255, 255, 255, 0.90)"
+                    marginTop={4}
+                  >
                     如何在机场使用入境卡
                   </Text>
-                </View>
-                <View style={styles.entryGuideChevron}>
-                  <Text style={styles.entryGuideArrow}>›</Text>
-                </View>
+                </YStack>
+                <YStack
+                  width={32}
+                  height={32}
+                  borderRadius={16}
+                  backgroundColor="rgba(255, 255, 255, 0.26)"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginLeft="$sm"
+                >
+                  <Text fontSize={20} fontWeight="700" color="$white">
+                    ›
+                  </Text>
+                </YStack>
               </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
+            </PressableCard>
+          </YStack>
+        </YStack>
       ) : (
         // Default State - Show countdown
-        <View style={styles.countdownSection}>
-          <Text style={styles.sectionTitle}>
+        <YStack
+          marginBottom="$xl"
+          backgroundColor="$background"
+          borderRadius={16}
+          padding="$lg"
+          shadowColor="$shadow"
+          shadowOffset={{ width: 0, height: 2 }}
+          shadowOpacity={0.1}
+          shadowRadius={4}
+          elevation={3}
+        >
+          <Text
+            fontSize={18}
+            fontWeight="700"
+            color="$text"
+            letterSpacing={0.2}
+            marginBottom="$md"
+          >
             最佳提交时间 ⏰
           </Text>
 
@@ -221,295 +400,152 @@ const PreparedState = ({
           />
 
           {/* Smart Primary Action Button - Integrated with Countdown */}
-          <View style={styles.primaryActionContainer}>
+          <YStack
+            marginTop="$md"
+            paddingTop="$md"
+            borderTopWidth={1}
+            borderTopColor="$borderColor"
+          >
             {renderPrimaryAction()}
-          </View>
-        </View>
+          </YStack>
+        </YStack>
       )}
 
       {/* Secondary Actions Section - Vertically Stacked */}
-      <View style={styles.actionSection}>
+      <YStack gap="$md">
         {/* Entry Guide Button - Only shown BEFORE submission (after submission it's in prominent position) */}
         {entryPackStatus !== 'submitted' && (
-          <TouchableOpacity
-            style={styles.entryGuideButton}
+          <PressableCard
+            borderRadius={16}
+            overflow="hidden"
+            shadowColor="$shadow"
+            shadowOffset={{ width: 0, height: 4 }}
+            shadowOpacity={0.2}
+            shadowRadius={8}
+            elevation={4}
             onPress={() => navigation.navigate('ThailandEntryGuide', {
               passport: passportParam,
               destination: destination,
               completionData: userData,
               showSubmittedTips: false
             })}
-            activeOpacity={0.8}
           >
             <LinearGradient
               colors={['#0BD67B', colors.primary]}
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
-              style={styles.entryGuideGradient}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: spacing.lg,
+                paddingVertical: 20,
+              }}
             >
-              <View style={styles.entryGuideIconContainer}>
-                <Text style={styles.entryGuideIcon}>🗺️</Text>
-              </View>
-              <View style={styles.entryGuideContent}>
-                <Text style={styles.entryGuideTitle}>
+              <YStack
+                width={52}
+                height={52}
+                borderRadius={26}
+                backgroundColor="rgba(255, 255, 255, 0.28)"
+                alignItems="center"
+                justifyContent="center"
+                marginRight="$md"
+              >
+                <Text fontSize={26}>🗺️</Text>
+              </YStack>
+              <YStack flex={1}>
+                <Text
+                  fontSize={17}
+                  fontWeight="700"
+                  color="$white"
+                  letterSpacing={0.2}
+                >
                   查看泰国入境指引
                 </Text>
-                <Text style={styles.entryGuideSubtitle}>
+                <Text
+                  fontSize={13}
+                  color="rgba(255, 255, 255, 0.90)"
+                  marginTop={4}
+                >
                   6步骤完整入境流程指南
                 </Text>
-              </View>
-              <View style={styles.entryGuideChevron}>
-                <Text style={styles.entryGuideArrow}>›</Text>
-              </View>
+              </YStack>
+              <YStack
+                width={32}
+                height={32}
+                borderRadius={16}
+                backgroundColor="rgba(255, 255, 255, 0.26)"
+                alignItems="center"
+                justifyContent="center"
+                marginLeft="$sm"
+              >
+                <Text fontSize={20} fontWeight="700" color="$white">
+                  ›
+                </Text>
+              </YStack>
             </LinearGradient>
-          </TouchableOpacity>
+          </PressableCard>
         )}
 
         {/* Preview Entry Pack Button - Only show BEFORE submission */}
         {entryPackStatus !== 'submitted' && completionPercent > 50 && (
-          <TouchableOpacity
-            style={styles.secondaryActionButton}
+          <PressableCard
+            flexDirection="row"
+            alignItems="center"
+            backgroundColor="$background"
+            borderRadius={16}
+            paddingVertical={18}
+            paddingHorizontal="$md"
+            borderWidth={1}
+            borderColor="$borderColor"
+            marginTop="$md"
+            shadowColor="$shadow"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.1}
+            shadowRadius={4}
+            elevation={3}
             onPress={handlePreviewEntryCard}
-            activeOpacity={0.8}
           >
-            <View style={styles.secondaryActionIconContainer}>
-              <Text style={styles.secondaryActionIcon}>👁️</Text>
-            </View>
-            <View style={styles.secondaryActionContent}>
-              <Text style={styles.secondaryActionTitle}>
+            <YStack
+              width={48}
+              height={48}
+              borderRadius={24}
+              backgroundColor="$primaryLight"
+              alignItems="center"
+              justifyContent="center"
+              marginRight="$md"
+            >
+              <Text fontSize={24}>👁️</Text>
+            </YStack>
+            <YStack flex={1}>
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color="$text"
+                letterSpacing={0.1}
+              >
                 看看我的通关包
               </Text>
-              <Text style={styles.secondaryActionSubtitle}>
+              <Text
+                fontSize={13}
+                color="$textSecondary"
+                marginTop={4}
+              >
                 {t('progressiveEntryFlow.entryPack.quickPeek', { defaultValue: '快速查看旅途资料' })}
               </Text>
-            </View>
-            <Text style={styles.secondaryActionArrow}>›</Text>
-          </TouchableOpacity>
+            </YStack>
+            <Text
+              fontSize={20}
+              fontWeight="700"
+              color="$primary"
+              marginLeft="$xs"
+            >
+              ›
+            </Text>
+          </PressableCard>
         )}
-      </View>
-    </View>
+      </YStack>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  // Status Section Styles
-  statusSection: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 18,
-    marginBottom: spacing.md,
-    letterSpacing: 0.2,
-  },
-
-  // Integrated Countdown & Submission Section Styles
-  countdownSection: {
-    marginBottom: spacing.xl,
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-
-  // Success Banner Styles
-  successBanner: {
-    backgroundColor: '#E8F5E9',
-    borderRadius: 12,
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  successIcon: {
-    fontSize: 48,
-    marginBottom: spacing.sm,
-  },
-  successTitle: {
-    ...typography.h3,
-    color: '#2E7D32',
-    fontWeight: '700',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: spacing.xs,
-  },
-  successMessage: {
-    ...typography.body2,
-    color: '#558B2F',
-    textAlign: 'center',
-    fontSize: 14,
-  },
-
-  // Action Section Styles - Vertically stacked with better spacing
-  actionSection: {
-    gap: spacing.md,
-  },
-  primaryActionContainer: {
-    marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  submittedEntryGuideContainer: {
-    marginTop: spacing.lg,
-  },
-  secondaryActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginTop: spacing.md,
-    ...shadows.card,
-  },
-  secondaryActionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  secondaryActionIcon: {
-    fontSize: 24,
-  },
-  secondaryActionContent: {
-    flex: 1,
-  },
-  secondaryActionTitle: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 16,
-    letterSpacing: 0.1,
-  },
-  secondaryActionSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 4,
-    fontSize: 13,
-  },
-  secondaryActionArrow: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '700',
-    fontSize: 20,
-    marginLeft: spacing.xs,
-  },
-
-  // Entry Guide Button Styles - Premium gradient button
-  entryGuideButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    ...shadows.button,
-  },
-  entryGuideGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 20,
-  },
-  entryGuideIconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(255, 255, 255, 0.28)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  entryGuideContent: {
-    flex: 1,
-  },
-  entryGuideTitle: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 17,
-    letterSpacing: 0.2,
-  },
-  entryGuideSubtitle: {
-    ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.90)',
-    marginTop: 4,
-    fontSize: 13,
-  },
-  entryGuideIcon: {
-    fontSize: 26,
-  },
-  entryGuideChevron: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.26)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  },
-  entryGuideArrow: {
-    ...typography.body1,
-    color: colors.white,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-
-  // Quick Action Buttons - Vertical layout with enhanced hierarchy
-  quickActionsContainer: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    gap: spacing.sm,
-  },
-  quickActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.small,
-  },
-  quickActionIconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  quickActionIcon: {
-    fontSize: 24,
-  },
-  quickActionContent: {
-    flex: 1,
-  },
-  quickActionTitle: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  quickActionSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  quickActionArrow: {
-    ...typography.body1,
-    color: colors.primary,
-    fontSize: 22,
-    fontWeight: '600',
-    marginLeft: spacing.xs,
-  },
-});
 
 export default PreparedState;

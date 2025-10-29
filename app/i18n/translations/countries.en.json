@@ -925,6 +925,61 @@
       "message": "Time picker will be implemented in a future update"
     }
   },
+  "preview": {
+    "badge": {
+      "preview": "Preview Mode",
+      "previewHint": "Your information has not been submitted yet",
+      "draft": "Draft Mode",
+      "readonly": "Read Only"
+    },
+    "status": {
+      "incomplete": "Draft - Action Required",
+      "complete": "Ready to Submit",
+      "submitted": "Submitted",
+      "missing": "Missing:",
+      "completionProgress": "{{completed}} of {{total}} sections complete"
+    },
+    "steps": {
+      "tdac": "TDAC Card",
+      "personal": "Personal Information",
+      "travel": "Travel Details",
+      "funds": "Proof of Funds",
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "inProgress": "In Progress"
+    },
+    "buttons": {
+      "submit": "Submit TDAC Entry Card",
+      "continueEditing": "Continue Editing",
+      "addTdac": "Add TDAC Card",
+      "addPersonalInfo": "Add Personal Information",
+      "addTravelDetails": "Add Travel Details",
+      "addFunds": "Add Proof of Funds",
+      "edit": "Edit",
+      "viewDocument": "View Document",
+      "close": "Close"
+    },
+    "info": {
+      "submissionWindow": "Submit within 72 hours before arrival",
+      "daysRemaining": "{{days}} days remaining to submit",
+      "readyToSubmit": "All information complete. Ready to submit!",
+      "missingInformation": "Please complete all required sections before submitting",
+      "documentPreview": "Preview of TDAC document",
+      "tapToView": "Tap to view full size",
+      "scrollToView": "Scroll to view all sections"
+    },
+    "alerts": {
+      "deadline": "Deadline approaching: Submit by {{date}}",
+      "incomplete": "Complete all sections to enable submission",
+      "error": "Unable to load preview. Please try again."
+    },
+    "document": {
+      "title": "TDAC Document Preview",
+      "sampleNotice": "This is a sample preview. Actual document will include your information.",
+      "notGenerated": "Document will be generated after submission",
+      "pages": "Page {{current}} of {{total}}"
+    }
+  },
   "screenTitles": {
     "notificationSettings": "Notification Settings"
   }
