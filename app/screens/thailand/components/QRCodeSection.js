@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
+import { Image, Platform, Dimensions } from 'react-native';
 import {
   PinchGestureHandler,
   TapGestureHandler,
@@ -14,11 +14,11 @@ import {
   State,
 } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
-import { colors, spacing } from '../../../theme';
-import OptimizedImage from '../../../components/OptimizedImage';
+import { YStack, Text as TamaguiText } from '../../../components/tamagui';
 import { GESTURES } from '../immigrationOfficerViewConstants';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const QR_CODE_SIZE = Math.min(screenHeight * 0.5, screenWidth * 0.4, 400);
 
 /**
  * QR Code Section Component
@@ -111,10 +111,24 @@ const QRCodeSection = ({
   };
 
   return (
-    <View style={styles.qrSection}>
-      <Text style={styles.sectionTitle}>{getSectionTitle()}</Text>
+    <YStack alignItems="center" marginBottom="$xl">
+      <TamaguiText color="white" fontSize={24} fontWeight="bold" marginBottom="$lg" textAlign="center">
+        {getSectionTitle()}
+      </TamaguiText>
 
-      <View style={styles.qrContainer}>
+      <YStack
+        backgroundColor="white"
+        padding="$xl"
+        borderRadius={20}
+        marginBottom="$lg"
+        shadowColor="#000"
+        shadowOffset={{ width: 0, height: 8 }}
+        shadowOpacity={0.4}
+        shadowRadius={16}
+        elevation={12}
+        borderWidth={4}
+        borderColor="white"
+      >
         {entryPack?.qrCodeUri ? (
           <LongPressGestureHandler
             ref={longPressRef}
@@ -136,10 +150,10 @@ const QRCodeSection = ({
               waitFor={longPressRef}
             >
               <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
-                <Animated.View style={[styles.qrCodeContainer, animatedQRStyle]}>
+                <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, animatedQRStyle]}>
                   <Image
                     source={{ uri: entryPack.qrCodeUri }}
-                    style={styles.qrCode}
+                    style={{ width: QR_CODE_SIZE, height: QR_CODE_SIZE }}
                     resizeMode="contain"
                     resizeMethod="scale"
                     fadeDuration={0}
@@ -150,131 +164,72 @@ const QRCodeSection = ({
             </TapGestureHandler>
           </LongPressGestureHandler>
         ) : (
-          <View style={styles.qrPlaceholder}>
-            <Text style={styles.qrPlaceholderText}>
+          <YStack
+            width={QR_CODE_SIZE}
+            height={QR_CODE_SIZE}
+            backgroundColor="$background"
+            justifyContent="center"
+            alignItems="center"
+            borderRadius={12}
+            borderWidth={2}
+            borderColor="$borderColor"
+            borderStyle="dashed"
+          >
+            <TamaguiText color="$textSecondary" fontSize={18} fontWeight="600" marginBottom="$xs">
               {language === 'english'
                 ? t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodePlaceholder')
                 : language === 'thai'
                 ? 'รหัส QR'
                 : `รหัส QR / ${t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodePlaceholder')}`}
-            </Text>
-            <Text style={styles.qrPlaceholderSubtext}>
+            </TamaguiText>
+            <TamaguiText color="$textTertiary" fontSize={14} textAlign="center">
               {language === 'english'
                 ? t('progressiveEntryFlow.immigrationOfficer.presentation.qrCodeSubtext')
                 : language === 'thai'
                 ? 'จะปรากฏหลังส่ง TDAC'
                 : 'จะปรากฏหลังส่ง TDAC'}
-            </Text>
-          </View>
+            </TamaguiText>
+          </YStack>
         )}
 
         {/* Zoom indicator */}
         {qrZoom !== 1 && (
-          <View style={styles.zoomIndicator}>
-            <Text style={styles.zoomText}>{Math.round(qrZoom * 100)}%</Text>
-          </View>
+          <YStack
+            position="absolute"
+            top="$sm"
+            right="$sm"
+            backgroundColor="rgba(0, 0, 0, 0.7)"
+            paddingHorizontal="$sm"
+            paddingVertical="$xs"
+            borderRadius={12}
+          >
+            <TamaguiText color="white" fontSize={12} fontWeight="600">
+              {Math.round(qrZoom * 100)}%
+            </TamaguiText>
+          </YStack>
         )}
-      </View>
+      </YStack>
 
-      <Text style={styles.entryCardNumber}>
+      <TamaguiText
+        color="white"
+        fontSize={40}
+        fontWeight="bold"
+        fontFamily={Platform.OS === 'ios' ? 'Courier New' : 'monospace'}
+        letterSpacing={3}
+        marginBottom="$sm"
+        textAlign="center"
+        textShadowColor="rgba(0, 0, 0, 0.8)"
+        textShadowOffset={{ width: 2, height: 2 }}
+        textShadowRadius={4}
+      >
         {formatEntryCardNumber(entryPack?.arrCardNo || 'XXXXXXXXXXXX')}
-      </Text>
+      </TamaguiText>
 
-      <Text style={styles.submissionDate}>
+      <TamaguiText color="white" fontSize={16} opacity={0.8}>
         {getSubmittedText()}: {formatDateForDisplay(entryPack?.submittedAt)}
-      </Text>
-    </View>
+      </TamaguiText>
+    </YStack>
   );
 };
-
-const QR_CODE_SIZE = Math.min(screenHeight * 0.5, screenWidth * 0.4, 400);
-
-const styles = StyleSheet.create({
-  qrSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-  },
-  qrContainer: {
-    backgroundColor: colors.white,
-    padding: spacing.xl,
-    borderRadius: 20,
-    marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
-    borderWidth: 4,
-    borderColor: colors.white,
-  },
-  qrCodeContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  qrCode: {
-    width: QR_CODE_SIZE,
-    height: QR_CODE_SIZE,
-  },
-  qrPlaceholder: {
-    width: QR_CODE_SIZE,
-    height: QR_CODE_SIZE,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  qrPlaceholderText: {
-    color: colors.textSecondary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  qrPlaceholderSubtext: {
-    color: colors.textTertiary,
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  entryCardNumber: {
-    color: colors.white,
-    fontSize: 40,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-    letterSpacing: 3,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-  },
-  submissionDate: {
-    color: colors.white,
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  zoomIndicator: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 12,
-  },
-  zoomText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-});
 
 export default QRCodeSection;

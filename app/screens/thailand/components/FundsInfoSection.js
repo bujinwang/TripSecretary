@@ -6,8 +6,8 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
-import { colors, spacing } from '../../../theme';
+import { Alert, Platform } from 'react-native';
+import { YStack, XStack, Text as TamaguiText } from '../../../components/tamagui';
 import { calculateTotalFundsInCurrency, convertCurrency } from '../../../utils/currencyConverter';
 import OptimizedImage from '../../../components/OptimizedImage';
 import { formatCurrency as formatCurrencyHelper, safeArray } from '../helpers';
@@ -68,64 +68,80 @@ const FundsInfoSection = ({ fundData, language, t }) => {
 
   if (!fundData || fundData.length === 0) {
     return (
-      <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>
+      <YStack backgroundColor="rgba(255, 255, 255, 0.1)" padding="$lg" borderRadius={12} marginBottom="$lg">
+        <TamaguiText color="white" fontSize={24} fontWeight="bold" marginBottom="$lg" textAlign="center">
           {getLabel('fundsInformation', 'ข้อมูลเงินทุน')}
-        </Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoValue}>
+        </TamaguiText>
+        <YStack marginBottom="$md">
+          <TamaguiText color="white" fontSize={18} fontWeight="bold">
             {language === 'english'
               ? 'No fund information available'
               : language === 'thai'
               ? 'ไม่มีข้อมูลเงินทุน'
               : 'ไม่มีข้อมูลเงินทุน / No fund information available'}
-          </Text>
-        </View>
-      </View>
+          </TamaguiText>
+        </YStack>
+      </YStack>
     );
   }
 
   const totalInTHB = calculateTotalFundsInCurrency(fundData, 'THB');
 
   return (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>
+    <YStack backgroundColor="rgba(255, 255, 255, 0.1)" padding="$lg" borderRadius={12} marginBottom="$lg">
+      <TamaguiText color="white" fontSize={24} fontWeight="bold" marginBottom="$lg" textAlign="center">
         {getLabel('fundsInformation', 'ข้อมูลเงินทุน')}
-      </Text>
+      </TamaguiText>
 
       {/* Total Funds Summary */}
-      <View style={styles.infoGroup}>
-        <Text style={styles.groupTitle}>
+      <YStack marginBottom="$lg" paddingBottom="$md" borderBottomWidth={1} borderBottomColor="rgba(255, 255, 255, 0.2)">
+        <TamaguiText color="white" fontSize={18} fontWeight="bold" marginBottom="$md" opacity={0.9}>
           💰{' '}
           {language === 'english'
             ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds')
             : language === 'thai'
             ? 'เงินทุนรวม'
             : `เงินทุนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalFunds')}`}
-        </Text>
+        </TamaguiText>
 
-        <View style={styles.totalFundsContainer}>
-          <Text style={styles.totalFundsLabel}>
+        <YStack
+          backgroundColor="rgba(76, 175, 80, 0.2)"
+          padding="$md"
+          borderRadius={12}
+          borderWidth={2}
+          borderColor="rgba(76, 175, 80, 0.4)"
+          marginBottom="$md"
+          alignItems="center"
+        >
+          <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$xs" textAlign="center">
             {language === 'english'
               ? t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')
               : language === 'thai'
               ? 'จำนวนรวม'
               : `จำนวนรวม / ${t('progressiveEntryFlow.immigrationOfficer.presentation.totalAmount')}`}
             :
-          </Text>
-          <Text style={styles.totalFundsAmount}>{formatAmount(totalInTHB)} THB</Text>
-        </View>
+          </TamaguiText>
+          <TamaguiText
+            color="#4CAF50"
+            fontSize={28}
+            fontWeight="bold"
+            fontFamily={Platform.OS === 'ios' ? 'Courier New' : 'monospace'}
+            textAlign="center"
+          >
+            {formatAmount(totalInTHB)} THB
+          </TamaguiText>
+        </YStack>
 
         {/* Individual Fund Items */}
-        <View style={styles.fundItemsContainer}>
-          <Text style={styles.fundItemsTitle}>
+        <YStack marginTop="$md">
+          <TamaguiText color="white" fontSize={16} fontWeight="600" marginBottom="$md" opacity={0.9}>
             {language === 'english'
               ? t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems')
               : language === 'thai'
               ? 'รายการเงินทุน'
               : `รายการเงินทุน / ${t('progressiveEntryFlow.immigrationOfficer.presentation.fundItems')}`}
             :
-          </Text>
+          </TamaguiText>
 
           {fundData.map((fund, index) => {
             const originalAmount = parseFloat(fund.amount) || 0;
@@ -133,172 +149,79 @@ const FundsInfoSection = ({ fundData, language, t }) => {
             const convertedAmount = convertCurrency(originalAmount, originalCurrency, 'THB');
 
             return (
-              <View key={index} style={styles.fundItem}>
-                <View style={styles.fundItemHeader}>
-                  <Text style={styles.fundItemType}>{fund.type || 'Cash'}</Text>
-                  <View style={styles.fundItemAmounts}>
-                    <Text style={styles.fundItemAmount}>
+              <YStack
+                key={index}
+                backgroundColor="rgba(255, 255, 255, 0.05)"
+                padding="$md"
+                borderRadius={8}
+                marginBottom="$sm"
+              >
+                <XStack justifyContent="space-between" alignItems="center" marginBottom="$sm">
+                  <TamaguiText color="white" fontSize={14} fontWeight="600" opacity={0.8}>
+                    {fund.type || 'Cash'}
+                  </TamaguiText>
+                  <YStack alignItems="flex-end">
+                    <TamaguiText
+                      color="white"
+                      fontSize={16}
+                      fontWeight="bold"
+                      fontFamily={Platform.OS === 'ios' ? 'Courier New' : 'monospace'}
+                    >
                       {formatCurrency(originalAmount, originalCurrency)}
-                    </Text>
+                    </TamaguiText>
                     {originalCurrency !== 'THB' && (
-                      <Text style={styles.fundItemConvertedAmount}>
+                      <TamaguiText
+                        color="white"
+                        fontSize={13}
+                        opacity={0.7}
+                        marginTop={2}
+                        fontFamily={Platform.OS === 'ios' ? 'Courier New' : 'monospace'}
+                      >
                         ≈ {formatAmount(convertedAmount)} THB
-                      </Text>
+                      </TamaguiText>
                     )}
-                  </View>
-                </View>
+                  </YStack>
+                </XStack>
 
                 {fund.photoUri && (
-                  <TouchableOpacity
-                    style={styles.fundPhotoContainer}
+                  <YStack
+                    alignItems="center"
+                    marginTop="$sm"
                     onPress={handleFundPhotoPress}
+                    cursor="pointer"
+                    pressStyle={{ opacity: 0.8 }}
                   >
                     <OptimizedImage
                       uri={fund.photoUri}
-                      style={styles.fundPhoto}
+                      style={{
+                        width: 120,
+                        height: 80,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                      }}
                       resizeMode="cover"
                       lazy={true}
                       lazyLoadDelay={150}
                       placeholder="💰"
                       showLoadingText={false}
                     />
-                    <Text style={styles.fundPhotoHint}>
+                    <TamaguiText color="white" fontSize={12} opacity={0.6} marginTop="$xs">
                       {language === 'english'
                         ? 'Tap to enlarge'
                         : language === 'thai'
                         ? 'แตะเพื่อขยาย'
                         : 'แตะเพื่อขยาย'}
-                    </Text>
-                  </TouchableOpacity>
+                    </TamaguiText>
+                  </YStack>
                 )}
-              </View>
+              </YStack>
             );
           })}
-        </View>
-      </View>
-    </View>
+        </YStack>
+      </YStack>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  infoSection: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: spacing.lg,
-    borderRadius: 12,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-  },
-  infoGroup: {
-    marginBottom: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  groupTitle: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: spacing.md,
-    opacity: 0.9,
-  },
-  totalFundsContainer: {
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'rgba(76, 175, 80, 0.4)',
-    marginBottom: spacing.md,
-    alignItems: 'center',
-  },
-  totalFundsLabel: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  totalFundsAmount: {
-    color: '#4CAF50',
-    fontSize: 28,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-    textAlign: 'center',
-  },
-  fundItemsContainer: {
-    marginTop: spacing.md,
-  },
-  fundItemsTitle: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.md,
-    opacity: 0.9,
-  },
-  fundItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    padding: spacing.md,
-    borderRadius: 8,
-    marginBottom: spacing.sm,
-  },
-  fundItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  fundItemType: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '600',
-    opacity: 0.8,
-  },
-  fundItemAmounts: {
-    alignItems: 'flex-end',
-  },
-  fundItemAmount: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-  },
-  fundItemConvertedAmount: {
-    color: colors.white,
-    fontSize: 13,
-    opacity: 0.7,
-    marginTop: 2,
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-  },
-  fundPhotoContainer: {
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-  fundPhoto: {
-    width: 120,
-    height: 80,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  fundPhotoHint: {
-    color: colors.white,
-    fontSize: 12,
-    opacity: 0.6,
-    marginTop: spacing.xs,
-  },
-  infoRow: {
-    marginBottom: spacing.md,
-  },
-  infoValue: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 export default FundsInfoSection;
