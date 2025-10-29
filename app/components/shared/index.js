@@ -12,4 +12,5 @@ export {
   PassportSection,
   PersonalInfoSection,
   FundsSection,
+  TravelDetailsSection,
 } from './sections';
