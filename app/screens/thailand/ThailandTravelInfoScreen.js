@@ -45,7 +45,7 @@ import UserDataService from '../../services/data/UserDataService';
 
 // Import Thailand-specific utilities
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
-import { FieldWarningIcon, InputWithValidation, CollapsibleSection } from '../../components/thailand/ThailandTravelComponents';
+import { FieldWarningIcon, InputWithValidation } from '../../components/thailand/ThailandTravelComponents';
 import { parsePassportName } from '../../utils/NameParser';
 import { normalizeLocationValue, findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { GENDER_OPTIONS } from './constants';
@@ -74,7 +74,6 @@ import {
 import {
   YStack,
   XStack,
-  ProgressOverviewCard,
   BaseCard,
   Text as TamaguiText,
 } from '../../components/tamagui';
@@ -125,9 +124,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     getFieldCount,
     calculateCompletionMetrics,
     isFormValid,
-    getSmartButtonConfig,
-    getProgressText,
-    getProgressColor
+    getSmartButtonConfig
   } = validation;
 
   const {
@@ -230,44 +227,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
     }
   };
 
-  // Helper function to get progress sections for Tamagui ProgressOverviewCard
-  const getProgressSections = () => {
-    const sections = [
-      {
-        name: t('thailand.sections.passport', { defaultValue: 'Passport' }),
-        icon: '📘',
-        completed: getFieldCount('passport').filled === getFieldCount('passport').total,
-        completedFields: getFieldCount('passport').filled,
-        fieldCount: getFieldCount('passport').total,
-      },
-      {
-        name: t('thailand.sections.personal', { defaultValue: 'Personal Info' }),
-        icon: '👤',
-        completed: getFieldCount('personal').filled === getFieldCount('personal').total,
-        completedFields: getFieldCount('personal').filled,
-        fieldCount: getFieldCount('personal').total,
-      },
-      {
-        name: t('thailand.sections.funds', { defaultValue: 'Funds' }),
-        icon: '💰',
-        completed: getFieldCount('funds').filled === getFieldCount('funds').total,
-        completedFields: getFieldCount('funds').filled,
-        fieldCount: getFieldCount('funds').total,
-      },
-      {
-        name: t('thailand.sections.travel', { defaultValue: 'Travel Details' }),
-        icon: '✈️',
-        completed: getFieldCount('travel').filled === getFieldCount('travel').total,
-        completedFields: getFieldCount('travel').filled,
-        fieldCount: getFieldCount('travel').total,
-      },
-    ];
-
-    const totalCompleted = sections.reduce((sum, s) => sum + s.completedFields, 0);
-    const totalFields = sections.reduce((sum, s) => sum + s.fieldCount, 0);
-
-    return { sections, totalCompleted, totalFields };
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -300,17 +259,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         {/* Hero Section */}
         <HeroSection t={t} />
 
-        {/* Progress Overview Card - Now using shared Tamagui component */}
-        <YStack paddingHorizontal="$md" marginBottom="$md">
-          <ProgressOverviewCard
-            completedFields={getProgressSections().totalCompleted}
-            totalFields={getProgressSections().totalFields}
-            sections={getProgressSections().sections}
-            title={t('thailand.progress.title', { defaultValue: 'Completion Progress' })}
-            completionMessage={t('thailand.progress.complete', { defaultValue: 'All information completed! Ready to proceed.' })}
-            incompleteMessage={t('thailand.progress.incomplete', { defaultValue: 'Complete all fields to continue.' })}
-          />
-        </YStack>
           
           {/* Enhanced Save Status Indicator */}
           {formState.saveStatus && (
@@ -368,7 +316,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <PassportSection
           t={t}
           isExpanded={formState.expandedSection === 'passport'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'passport' ? null : 'passport')}
+          onToggle={(expanded) => {
+            const willExpand = typeof expanded === 'boolean'
+              ? expanded
+              : formState.expandedSection !== 'passport';
+            console.log('[ThailandTravelInfoScreen] PassportSection toggle', {
+              received: expanded,
+              current: formState.expandedSection,
+              willExpand,
+            });
+            formState.setExpandedSection(willExpand ? 'passport' : null);
+          }}
           fieldCount={getFieldCount('passport')}
           // Form state
           surname={formState.surname}
@@ -407,7 +365,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <PersonalInfoSection
           t={t}
           isExpanded={formState.expandedSection === 'personal'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'personal' ? null : 'personal')}
+          onToggle={(expanded) => {
+            const willExpand = typeof expanded === 'boolean'
+              ? expanded
+              : formState.expandedSection !== 'personal';
+            console.log('[ThailandTravelInfoScreen] PersonalInfoSection toggle', {
+              received: expanded,
+              current: formState.expandedSection,
+              willExpand,
+            });
+            formState.setExpandedSection(willExpand ? 'personal' : null);
+          }}
           fieldCount={getFieldCount('personal')}
           // Form state
           occupation={formState.occupation}
@@ -444,7 +412,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <FundsSection
           t={t}
           isExpanded={formState.expandedSection === 'funds'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'funds' ? null : 'funds')}
+          onToggle={(expanded) => {
+            const willExpand = typeof expanded === 'boolean'
+              ? expanded
+              : formState.expandedSection !== 'funds';
+            console.log('[ThailandTravelInfoScreen] FundsSection toggle', {
+              received: expanded,
+              current: formState.expandedSection,
+              willExpand,
+            });
+            formState.setExpandedSection(willExpand ? 'funds' : null);
+          }}
           fieldCount={getFieldCount('funds')}
           // Form state
           funds={formState.funds}
@@ -459,7 +437,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <TravelDetailsSection
           t={t}
           isExpanded={formState.expandedSection === 'travel'}
-          onToggle={() => formState.setExpandedSection(formState.expandedSection === 'travel' ? null : 'travel')}
+          onToggle={(expanded) => {
+            const willExpand = typeof expanded === 'boolean'
+              ? expanded
+              : formState.expandedSection !== 'travel';
+            console.log('[ThailandTravelInfoScreen] TravelDetailsSection toggle', {
+              received: expanded,
+              current: formState.expandedSection,
+              willExpand,
+            });
+            formState.setExpandedSection(willExpand ? 'travel' : null);
+          }}
           fieldCount={getFieldCount('travel')}
           // Form state - Travel purpose
           travelPurpose={formState.travelPurpose}
@@ -526,32 +514,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
         <View style={styles.buttonContainer}>
-          {/* Enhanced Progress Indicator */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBarEnhanced}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${formState.totalCompletionPercent}%`,
-                      backgroundColor: getProgressColor()
-                    }
-                  ]}
-                />
-                {/* Completion Badge */}
-                {formState.totalCompletionPercent >= 100 && (
-                  <View style={styles.completionBadge}>
-                    <Text style={styles.completionBadgeText}>泰国准备就绪！🌴</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-            <Text style={[styles.progressText, { color: getProgressColor() }]}>
-              {getProgressText()}
-            </Text>
-          </View>
-
           {/* Smart Button with Dynamic Configuration */}
           {(() => {
             const buttonConfig = getSmartButtonConfig();
@@ -565,38 +527,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
               />
             );
           })()}
-          
-          {/* Encouraging Progress Messages */}
-          {formState.totalCompletionPercent < 100 && (
-            <Text style={styles.encouragingHint}>
-              {formState.totalCompletionPercent < 20
-                ? '🌟 第一步，从介绍自己开始吧！'
-                : formState.totalCompletionPercent < 40
-                ? '好的开始！泰国欢迎你 🌺'
-                : formState.totalCompletionPercent < 60
-                ? '继续我的泰国准备之旅 🏖️'
-                : '🚀 快要完成了，你的泰国之旅近在咫尺！'
-              }
-            </Text>
-          )}
-
-          {/* Travel-Focused Next Steps */}
-          {formState.totalCompletionPercent < 100 && (
-            <Text style={styles.nextStepHint}>
-              {formState.totalCompletionPercent < 25
-                ? '💡 从护照信息开始，告诉泰国你是谁'
-                : formState.totalCompletionPercent < 50
-                ? '👤 填写个人信息，让泰国更了解你'
-                : formState.totalCompletionPercent < 75
-                ? '💰 展示你的资金证明，泰国想确保你玩得开心'
-                : formState.totalCompletionPercent < 100
-                ? '✈️ 最后一步，分享你的旅行计划吧！'
-                : ''
-              }
-            </Text>
-          )}
-
-
         </View>
       </ScrollView>
 

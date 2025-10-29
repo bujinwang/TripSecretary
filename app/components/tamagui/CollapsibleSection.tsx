@@ -24,7 +24,6 @@ import {
   styled,
   AnimatePresence,
 } from 'tamagui';
-import { TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -157,7 +156,6 @@ const Header = styled(XStack, {
 });
 
 const IconContainer = styled(YStack, {
-  fontSize: 24,
   justifyContent: 'center',
   alignItems: 'center',
   minWidth: 32,
@@ -293,6 +291,13 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
     const newExpanded = !isExpanded;
 
+    console.log('[CollapsibleSection] toggle requested:', {
+      title,
+      current: isExpanded,
+      next: newExpanded,
+      hasHandler: !!onToggle,
+    });
+
     // Update rotation animation
     rotation.value = newExpanded ? 180 : 0;
 
@@ -302,40 +307,42 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
     }
 
     // Notify parent
-    onToggle?.(newExpanded);
+    try {
+      onToggle?.(newExpanded);
+    } catch (error) {
+      console.error('[CollapsibleSection] onToggle failed:', error);
+    }
   };
 
   return (
     <Container variant={variant}>
       {/* Header */}
-      <TouchableOpacity onPress={handleToggle} disabled={disabled} activeOpacity={0.7}>
-        <Header disabled={disabled}>
-          {/* Icon */}
-          {icon && (
-            <IconContainer>
-              {typeof icon === 'string' ? <Text fontSize={24}>{icon}</Text> : icon}
-            </IconContainer>
-          )}
+      <Header disabled={disabled} onPress={handleToggle}>
+        {/* Icon */}
+        {icon && (
+          <IconContainer>
+            {typeof icon === 'string' ? <Text fontSize={24}>{icon}</Text> : icon}
+          </IconContainer>
+        )}
 
-          {/* Title & Subtitle */}
-          <TitleContainer>
-            <Title>{title}</Title>
-            {subtitle && <Subtitle>{subtitle}</Subtitle>}
-          </TitleContainer>
+        {/* Title & Subtitle */}
+        <TitleContainer>
+          <Title>{title}</Title>
+          {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        </TitleContainer>
 
-          {/* Badge */}
-          {badge && (
-            <Badge variant={badgeVariant}>
-              <BadgeText variant={badgeVariant}>{badge}</BadgeText>
-            </Badge>
-          )}
+        {/* Badge */}
+        {badge && (
+          <Badge variant={badgeVariant}>
+            <BadgeText variant={badgeVariant}>{badge}</BadgeText>
+          </Badge>
+        )}
 
-          {/* Arrow */}
-          <Animated.View style={arrowStyle}>
-            <Arrow>▼</Arrow>
-          </Animated.View>
-        </Header>
-      </TouchableOpacity>
+        {/* Arrow */}
+        <Animated.View style={arrowStyle}>
+          <Arrow>▼</Arrow>
+        </Animated.View>
+      </Header>
 
       {/* Content */}
       {isExpanded ? (

@@ -168,6 +168,42 @@ const PreparedState = ({
           <View style={styles.primaryActionContainer}>
             {renderPrimaryAction()}
           </View>
+
+          {/* Entry Guide Button - Prominent position after submission */}
+          <View style={styles.submittedEntryGuideContainer}>
+            <TouchableOpacity
+              style={styles.entryGuideButton}
+              onPress={() => navigation.navigate('ThailandEntryGuide', {
+                passport: passportParam,
+                destination: destination,
+                completionData: userData,
+                showSubmittedTips: true
+              })}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#0BD67B', colors.primary]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={styles.entryGuideGradient}
+              >
+                <View style={styles.entryGuideIconContainer}>
+                  <Text style={styles.entryGuideIcon}>🛂</Text>
+                </View>
+                <View style={styles.entryGuideContent}>
+                  <Text style={styles.entryGuideTitle}>
+                    入境通关完整指南
+                  </Text>
+                  <Text style={styles.entryGuideSubtitle}>
+                    如何在机场使用入境卡
+                  </Text>
+                </View>
+                <View style={styles.entryGuideChevron}>
+                  <Text style={styles.entryGuideArrow}>›</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         // Default State - Show countdown
@@ -193,47 +229,41 @@ const PreparedState = ({
 
       {/* Secondary Actions Section - Vertically Stacked */}
       <View style={styles.actionSection}>
-        {/* Entry Guide Button - Always shown, text changes based on submission state */}
-        <TouchableOpacity
-          style={styles.entryGuideButton}
-          onPress={() => navigation.navigate('ThailandEntryGuide', {
-            passport: passportParam,
-            destination: destination,
-            completionData: userData,
-            showSubmittedTips: entryPackStatus === 'submitted'
-          })}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#0BD67B', colors.primary]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.entryGuideGradient}
+        {/* Entry Guide Button - Only shown BEFORE submission (after submission it's in prominent position) */}
+        {entryPackStatus !== 'submitted' && (
+          <TouchableOpacity
+            style={styles.entryGuideButton}
+            onPress={() => navigation.navigate('ThailandEntryGuide', {
+              passport: passportParam,
+              destination: destination,
+              completionData: userData,
+              showSubmittedTips: false
+            })}
+            activeOpacity={0.8}
           >
-            <View style={styles.entryGuideIconContainer}>
-              <Text style={styles.entryGuideIcon}>
-                {entryPackStatus === 'submitted' ? '🛂' : '🗺️'}
-              </Text>
-            </View>
-            <View style={styles.entryGuideContent}>
-              <Text style={styles.entryGuideTitle}>
-                {entryPackStatus === 'submitted'
-                  ? '入境通关完整指南'
-                  : '查看泰国入境指引'
-                }
-              </Text>
-              <Text style={styles.entryGuideSubtitle}>
-                {entryPackStatus === 'submitted'
-                  ? '如何在机场使用入境卡'
-                  : '6步骤完整入境流程指南'
-                }
-              </Text>
-            </View>
-            <View style={styles.entryGuideChevron}>
-              <Text style={styles.entryGuideArrow}>›</Text>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={['#0BD67B', colors.primary]}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={styles.entryGuideGradient}
+            >
+              <View style={styles.entryGuideIconContainer}>
+                <Text style={styles.entryGuideIcon}>🗺️</Text>
+              </View>
+              <View style={styles.entryGuideContent}>
+                <Text style={styles.entryGuideTitle}>
+                  查看泰国入境指引
+                </Text>
+                <Text style={styles.entryGuideSubtitle}>
+                  6步骤完整入境流程指南
+                </Text>
+              </View>
+              <View style={styles.entryGuideChevron}>
+                <Text style={styles.entryGuideArrow}>›</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
 
         {/* Preview Entry Pack Button - Only show BEFORE submission */}
         {entryPackStatus !== 'submitted' && completionPercent > 50 && (
@@ -319,6 +349,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+  },
+  submittedEntryGuideContainer: {
+    marginTop: spacing.lg,
   },
   secondaryActionButton: {
     flexDirection: 'row',

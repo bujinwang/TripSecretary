@@ -18,6 +18,7 @@ const tokens = createTokens({
   },
   radius: {
     none: 0,
+    true: borderRadius.md,
     ...borderRadius,
   },
   space: {
