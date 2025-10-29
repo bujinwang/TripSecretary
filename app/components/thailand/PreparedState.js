@@ -390,7 +390,20 @@ const ProgressEncouragement = ({
           {['view_entry_pack', 'submit_tdac'].includes(buttonState.action) && (
             <TouchableOpacity
               style={{ flex: 1 }}
-              onPress={onPreviewPack}
+              onPress={() => {
+                // Navigate to entry pack preview
+                navigation.navigate('EntryPackPreview', {
+                  userData,
+                  passport: passportParam,
+                  destination: destination,
+                  entryPackData: {
+                    personalInfo: userData?.personalInfo,
+                    travelInfo: userData?.travel,
+                    funds: userData?.funds,
+                    tdacSubmission: null // Will be populated when TDAC is submitted
+                  }
+                });
+              }}
             >
               <AnimatedCard
                 flex={1}
@@ -418,7 +431,15 @@ const ProgressEncouragement = ({
           {/* Get Help */}
           <TouchableOpacity
             style={{ flex: 1 }}
-            onPress={onGetHelp}
+            onPress={() => {
+              // Navigate to help/support screen
+              navigation.navigate('HelpSupport', {
+                context: 'thailand_entry_flow',
+                userData: userData,
+                passport: passportParam,
+                destination: destination
+              });
+            }}
           >
             <AnimatedCard
               flex={1}
