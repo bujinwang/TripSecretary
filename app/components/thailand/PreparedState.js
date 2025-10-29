@@ -242,9 +242,10 @@ const ProgressEncouragement = ({
   onContinuePreparation,
   onPreviewPack,
   onGetHelp,
+  arrivalDate,
+  t,
+  buttonState,
 }) => {
-  const buttonState = primaryActionState || {};
-
   const getPrimaryGradient = () => {
     if (buttonState.disabled) {
       return ['#CFD8DC', '#B0BEC5'];
@@ -309,6 +310,42 @@ const ProgressEncouragement = ({
           <Text fontSize={12} color="$textSecondary" textAlign="center" marginTop="$xs">
             {buttonState.subtitle}
           </Text>
+        )}
+
+        {/* Countdown Section - Moved below the submit button */}
+        {(arrivalDate || buttonState.action === 'wait_for_window') && (
+          <AnimatedCard
+            backgroundColor="#F3F4F6"
+            borderRadius={16}
+            padding="$lg"
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={4}
+            elevation={2}
+          >
+            <YStack alignItems="center">
+              <Text
+                fontSize={16}
+                fontWeight="700"
+                color="$text"
+                marginBottom="$md"
+              >
+                {(() => {
+                  if (buttonState.action === 'wait_for_window') {
+                    return '⏳ 距离提交窗口开启还有';
+                  }
+                  return '🛂 距离提交入境卡还有';
+                })()}
+              </Text>
+              <SubmissionCountdown
+                arrivalDate={arrivalDate}
+                locale={t('locale', { defaultValue: 'zh' })}
+                showIcon={false}
+                updateInterval={60000} // Update every minute
+              />
+            </YStack>
+          </AnimatedCard>
         )}
 
         {/* Secondary Actions Row */}
@@ -437,6 +474,9 @@ const PreparedState = ({
             ]
           );
         }}
+        arrivalDate={arrivalDate}
+        t={t}
+        buttonState={buttonState}
       />
     );
   };
@@ -456,48 +496,6 @@ const PreparedState = ({
 
       {/* Main Content */}
       {renderContent()}
-
-      {/* Arrival Countdown / Submission Window Guidance */}
-      {(arrivalDate || buttonState.action === 'wait_for_window' || (entryPackStatus === 'submitted' && !isSuperseded)) && (
-        <AnimatedCard
-          backgroundColor="#F3F4F6"
-          borderRadius={16}
-          padding="$lg"
-          marginTop="$lg"
-          shadowColor="#000"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.08}
-          shadowRadius={4}
-          elevation={2}
-        >
-          <YStack alignItems="center">
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              color="$text"
-              marginBottom="$md"
-            >
-              {(() => {
-                if (entryPackStatus === 'submitted' && !isSuperseded) {
-                  return '🛫 距离出发还有';
-                }
-
-                if (buttonState.action === 'wait_for_window') {
-                  return '⏳ 距离提交窗口开启还有';
-                }
-
-                return '🛂 距离提交入境卡还有';
-              })()}
-            </Text>
-            <SubmissionCountdown
-              arrivalDate={arrivalDate}
-              locale={t('locale', { defaultValue: 'zh' })}
-              showIcon={false}
-              updateInterval={60000} // Update every minute
-            />
-          </YStack>
-        </AnimatedCard>
-      )}
     </YStack>
   );
 };
