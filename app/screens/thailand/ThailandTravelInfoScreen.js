@@ -2,7 +2,6 @@
 // 入境通 - Thailand Travel Info Screen (泰国入境信息)
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  ScrollView,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -66,6 +65,7 @@ import {
 import {
   YStack,
   XStack,
+  ScrollView,
   BaseCard,
   BaseButton,
   Text as TamaguiText,
