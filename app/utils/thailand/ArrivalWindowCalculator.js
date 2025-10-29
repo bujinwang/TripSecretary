@@ -404,36 +404,36 @@ class ArrivalWindowCalculator {
       zh: {
         no_date: '未设置泰国入境日期，无法提交入境卡',
         pre_window: `还有 ${params.days || 0} 天 ${params.hours || 0} 小时可以提交入境卡`,
-        within_window: `距离截止还有 ${params.hours || 0} 小时 ${params.minutes || 0} 分钟，请尽快提交`,
-        urgent: `距离截止还有 ${params.hours || 0} 小时 ${params.minutes || 0} 分钟`,
+        within_window: '提交窗口已开启，请在倒计时结束前完成提交',
+        urgent: '进入最后冲刺！窗口即将关闭，请立即提交入境卡',
         past_deadline: '提交截止时间已过，请联系相关部门'
       },
       en: {
         no_date: 'No Thailand arrival date set, cannot submit entry card',
         pre_window: `Can submit in ${params.days || 0} days ${params.hours || 0} hours`,
-        within_window: `${params.hours || 0}h ${params.minutes || 0}m until deadline, please submit soon`,
-        urgent: `URGENT: ${params.hours || 0}h ${params.minutes || 0}m until deadline`,
+        within_window: 'Submission window is open. Submit before the countdown ends.',
+        urgent: 'Final call! The window is closing—submit now.',
         past_deadline: 'Submission deadline has passed, please contact authorities'
       },
       es: {
         no_date: 'No se ha establecido la fecha de llegada a Tailandia, no se puede enviar la tarjeta de entrada',
         pre_window: `Se puede enviar en ${params.days || 0} días ${params.hours || 0} horas`,
-        within_window: `${params.hours || 0}h ${params.minutes || 0}m hasta la fecha límite, envíe pronto`,
-        urgent: `URGENTE: ${params.hours || 0}h ${params.minutes || 0}m hasta la fecha límite`,
+        within_window: 'La ventana de envío está abierta. Envíe antes de que termine la cuenta regresiva.',
+        urgent: '¡Último aviso! La ventana está por cerrar, envíe ahora.',
         past_deadline: 'La fecha límite de envío ha pasado, contacte a las autoridades'
       },
       fr: {
         no_date: 'Aucune date d\'arrivée en Thaïlande définie, impossible de soumettre la carte d\'entrée',
         pre_window: `Peut soumettre dans ${params.days || 0} jours ${params.hours || 0} heures`,
-        within_window: `${params.hours || 0}h ${params.minutes || 0}m jusqu\'à la date limite, veuillez soumettre bientôt`,
-        urgent: `URGENT: ${params.hours || 0}h ${params.minutes || 0}m jusqu\'à la date limite`,
+        within_window: 'La fenêtre de soumission est ouverte. Envoyez avant la fin du compte à rebours.',
+        urgent: 'Dernier rappel ! La fenêtre va fermer — soumettez maintenant.',
         past_deadline: 'La date limite de soumission est passée, veuillez contacter les autorités'
       },
       de: {
         no_date: 'Kein Thailand-Ankunftsdatum festgelegt, Einreisekarte kann nicht eingereicht werden',
         pre_window: `Kann in ${params.days || 0} Tagen ${params.hours || 0} Stunden eingereicht werden`,
-        within_window: `${params.hours || 0}h ${params.minutes || 0}m bis zur Frist, bitte bald einreichen`,
-        urgent: `DRINGEND: ${params.hours || 0}h ${params.minutes || 0}m bis zur Frist`,
+        within_window: 'Das Einreichfenster ist geöffnet. Reiche vor Ablauf des Countdowns ein.',
+        urgent: 'Letzter Aufruf! Das Fenster schließt bald – jetzt einreichen.',
         past_deadline: 'Einreichungsfrist ist abgelaufen, bitte kontaktieren Sie die Behörden'
       }
     };

@@ -684,6 +684,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       onPrimaryAction={handlePrimaryAction}
       primaryActionState={primaryActionState}
       entryPackStatus={entryPackStatus}
+      showSupersededStatus={showSupersededStatus}
     />
   );
 
@@ -789,7 +790,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         }
       >
 
-        {entryPackStatus !== 'submitted' && (
+        {entryPackStatus === 'submitted' && !showSupersededStatus && (
           <View style={styles.preSubmissionHeader}>
             <Text style={styles.preSubmissionIcon}>🎉</Text>
             <Text style={styles.preSubmissionTitle}>
