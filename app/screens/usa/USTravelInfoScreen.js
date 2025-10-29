@@ -632,16 +632,18 @@ const USTravelInfoScreen = ({ navigation, route }) => {
       </ScrollView>
 
       {/* Fund Item Detail Modal */}
-      <FundItemDetailModal
-        visible={formState.fundItemModalVisible}
-        fundItem={formState.currentFundItem}
-        isCreateMode={!formState.currentFundItem && formState.newFundItemType}
-        createItemType={formState.newFundItemType}
-        onClose={handleFundItemModalClose}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
-      />
+      {formState.fundItemModalVisible && (
+        <FundItemDetailModal
+          visible={formState.fundItemModalVisible}
+          fundItem={formState.currentFundItem}
+          isCreateMode={!formState.currentFundItem && formState.newFundItemType}
+          createItemType={formState.newFundItemType}
+          onClose={handleFundItemModalClose}
+          onUpdate={handleFundItemUpdate}
+          onCreate={handleFundItemCreate}
+          onDelete={handleFundItemDelete}
+        />
+      )}
     </SafeAreaView>
   );
 };

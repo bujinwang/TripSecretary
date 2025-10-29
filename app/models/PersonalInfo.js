@@ -307,7 +307,8 @@ class PersonalInfo {
        console.log('- phoneCode:', this.phoneCode);
        console.log('- gender:', this.gender);
 
-       // Filter out empty/null/undefined values from updates
+       // Filter out only null/undefined values from updates
+       // BUT preserve empty strings as they indicate intentional clearing of a field
        const nonEmptyUpdates = {};
 
        for (const [key, value] of Object.entries(updates)) {
@@ -316,22 +317,11 @@ class PersonalInfo {
            continue;
          }
 
-         // Only include non-empty values
-         // Empty means: null, undefined, empty string, or whitespace-only string
+         // Include all values except null/undefined
+         // Empty strings are kept as they indicate intentional field clearing
          if (value !== null && value !== undefined) {
-           if (typeof value === 'string') {
-             // For strings, only include if not empty or whitespace-only
-             if (value.trim().length > 0) {
-               nonEmptyUpdates[key] = value;
-               console.log(`✅ Including field ${key}: "${value}"`);
-             } else {
-               console.log(`❌ Skipping field ${key}: empty string`);
-             }
-           } else {
-             // For non-strings, include as-is
-             nonEmptyUpdates[key] = value;
-             console.log(`✅ Including field ${key}:`, value);
-           }
+           nonEmptyUpdates[key] = value;
+           console.log(`✅ Including field ${key}:`, typeof value === 'string' ? `"${value}"` : value);
          } else {
            console.log(`❌ Skipping field ${key}: null/undefined`);
          }

@@ -59,22 +59,45 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDat
   }, [formState]);
 
   // Handle province selection
-  const handleProvinceSelect = useCallback((code) => {
+  const handleProvinceSelect = useCallback(async (code) => {
+    console.log('🌏 handleProvinceSelect called with code:', code);
     formState.setProvince(code);
     resetDistrictSelection();
 
-    handleFieldBlur('province', code);
+    console.log('🌏 Calling handleFieldBlur for province:', code);
+    await handleFieldBlur('province', code);
 
     if (formState.district) {
-      handleFieldBlur('district', '');
+      await handleFieldBlur('district', '');
     }
     if (formState.subDistrict) {
-      handleFieldBlur('subDistrict', '');
+      await handleFieldBlur('subDistrict', '');
     }
     if (formState.postalCode) {
-      handleFieldBlur('postalCode', '');
+      await handleFieldBlur('postalCode', '');
     }
-  }, [handleFieldBlur, resetDistrictSelection, formState]);
+
+    // Save immediately with explicit values to ensure cleared fields are persisted
+    if (saveDataToSecureStorage) {
+      console.log('🌏 Calling saveDataToSecureStorage with overrides:', {
+        province: code,
+        district: '',
+        districtId: null,
+        subDistrict: '',
+        subDistrictId: null,
+        postalCode: ''
+      });
+      await saveDataToSecureStorage({
+        province: code,
+        district: '',
+        districtId: null,
+        subDistrict: '',
+        subDistrictId: null,
+        postalCode: ''
+      });
+      console.log('🌏 saveDataToSecureStorage completed');
+    }
+  }, [handleFieldBlur, resetDistrictSelection, formState, saveDataToSecureStorage]);
 
   // Handle district selection
   const handleDistrictSelect = useCallback(async (selection) => {

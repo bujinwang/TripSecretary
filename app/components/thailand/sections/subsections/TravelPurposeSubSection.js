@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { NationalitySelector, TravelPurposeSelector } from '../../../../components';
+import DebouncedSave from '../../../../utils/DebouncedSave';
 
 const TravelPurposeSubSection = ({
   // Form state
@@ -23,18 +24,46 @@ const TravelPurposeSubSection = ({
   handleFieldBlur,
   // Actions
   debouncedSaveData,
+  saveDataToSecureStorageWithOverride,
+  setLastEditedAt,
 }) => {
   return (
     <>
       <TravelPurposeSelector
         label="为什么来泰国？"
         value={travelPurpose}
-        onValueChange={(code) => {
+        onValueChange={async (code) => {
           setTravelPurpose(code);
+          handleFieldBlur('travelPurpose', code);
+
           if (code !== 'OTHER') {
             setCustomTravelPurpose('');
+            // Cancel any pending debounced saves to prevent race condition
+            if (DebouncedSave.hasPendingSaves('thailand_travel_info')) {
+              DebouncedSave.pendingTimeouts.forEach((timeoutId, key) => {
+                if (key === 'thailand_travel_info') {
+                  clearTimeout(timeoutId);
+                  DebouncedSave.pendingTimeouts.delete(key);
+                }
+              });
+            }
+            // Save immediately with explicit values to ensure cleared customTravelPurpose is persisted
+            if (saveDataToSecureStorageWithOverride) {
+              try {
+                await saveDataToSecureStorageWithOverride({
+                  travelPurpose: code,
+                  customTravelPurpose: ''
+                });
+                setLastEditedAt(new Date());
+              } catch (error) {
+                console.error('Failed to save travel purpose:', error);
+              }
+            }
+            // Don't call debouncedSaveData here - the explicit save above already saved
+          } else {
+            // For OTHER option, use debounced save since user needs to type the custom value
+            debouncedSaveData();
           }
-          handleFieldBlur('travelPurpose', code);
         }}
         placeholder="请选择旅行目的"
         purposeType="thailand"

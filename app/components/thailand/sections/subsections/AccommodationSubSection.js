@@ -17,6 +17,7 @@ import {
 } from '../../../tamagui';
 import { ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../../../components';
 import Input from '../../../../components/Input';
+import DebouncedSave from '../../../../utils/DebouncedSave';
 
 const AccommodationSubSection = ({
   // Form state
@@ -95,6 +96,15 @@ const AccommodationSubSection = ({
             // Clear accommodation details for transit passengers
             setAccommodationType('HOTEL');
             setCustomAccommodationType('');
+            // Cancel any pending debounced saves to prevent race condition
+            if (DebouncedSave.hasPendingSaves('thailand_travel_info')) {
+              DebouncedSave.pendingTimeouts.forEach((timeoutId, key) => {
+                if (key === 'thailand_travel_info') {
+                  clearTimeout(timeoutId);
+                  DebouncedSave.pendingTimeouts.delete(key);
+                }
+              });
+            }
             const overrides = {
               isTransitPassenger: true,
               accommodationType: 'HOTEL',
@@ -158,6 +168,16 @@ const AccommodationSubSection = ({
                       setAccommodationType(option.value);
                       if (option.value !== 'OTHER') {
                         setCustomAccommodationType('');
+                      }
+
+                      // Cancel any pending debounced saves to prevent race condition
+                      if (DebouncedSave.hasPendingSaves('thailand_travel_info')) {
+                        DebouncedSave.pendingTimeouts.forEach((timeoutId, key) => {
+                          if (key === 'thailand_travel_info') {
+                            clearTimeout(timeoutId);
+                            DebouncedSave.pendingTimeouts.delete(key);
+                          }
+                        });
                       }
 
                       // Clear district/subdistrict/postal code when switching to Hotel

@@ -58,6 +58,7 @@ class EntryInfo extends EntryData {
 
   /**
    * Update completion metrics based on current data
+   * Uses EntryCompletionCalculator as the single source of truth for consistent validation
    * @param {Object} passport - Passport data
    * @param {Object} personalInfo - Personal info data
    * @param {Array} funds - Fund items array
@@ -65,55 +66,44 @@ class EntryInfo extends EntryData {
    * @returns {Object} - Updated completion metrics
    */
   updateCompletionMetrics(passport = {}, personalInfo = {}, funds = [], travel = {}) {
-    // Passport completion (5 required fields)
-    const passportFields = ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'];
-    const passportComplete = passportFields.filter(field => passport[field] && passport[field].trim()).length;
-    this.completionMetrics.passport = {
-      complete: passportComplete,
-      total: 5,
-      state: passportComplete === 5 ? 'complete' : passportComplete > 0 ? 'partial' : 'missing'
+    // Use EntryCompletionCalculator for consistent validation across all screens
+    const EntryCompletionCalculator = require('../utils/EntryCompletionCalculator').default;
+
+    // Build entry info structure for calculator
+    const entryInfoForCalculation = {
+      passport: passport,
+      personalInfo: personalInfo,
+      funds: funds,
+      travel: travel,
+      lastUpdatedAt: this.lastUpdatedAt || new Date().toISOString()
     };
 
-    // Personal info completion (6 required fields)
-    const personalFields = ['occupation', 'provinceCity', 'countryRegion', 'phoneNumber', 'email', 'gender'];
-    const personalComplete = personalFields.filter(field => {
-      let value = personalInfo[field];
-      if ((!value || (typeof value === 'string' && !value.trim())) && field === 'gender') {
-        value = personalInfo.sex;
+    // Calculate metrics using the centralized calculator
+    const calculatedMetrics = EntryCompletionCalculator.calculateCompletionMetrics(entryInfoForCalculation);
+
+    // Convert to our storage format
+    this.completionMetrics = {
+      passport: {
+        complete: calculatedMetrics.passport.complete,
+        total: calculatedMetrics.passport.total,
+        state: calculatedMetrics.passport.state
+      },
+      personalInfo: {
+        complete: calculatedMetrics.personalInfo.complete,
+        total: calculatedMetrics.personalInfo.total,
+        state: calculatedMetrics.personalInfo.state
+      },
+      funds: {
+        complete: calculatedMetrics.funds.complete,
+        total: calculatedMetrics.funds.total,
+        state: calculatedMetrics.funds.state,
+        validFundCount: calculatedMetrics.funds.validFundCount
+      },
+      travel: {
+        complete: calculatedMetrics.travel.complete,
+        total: calculatedMetrics.travel.total,
+        state: calculatedMetrics.travel.state
       }
-
-      if (typeof value === 'string') {
-        return value.trim().length > 0;
-      }
-
-      return Boolean(value);
-    }).length;
-    this.completionMetrics.personalInfo = {
-      complete: personalComplete,
-      total: 6,
-      state: personalComplete === 6 ? 'complete' : personalComplete > 0 ? 'partial' : 'missing'
-    };
-
-    // Funds completion (at least 1 fund item with type, amount, currency)
-    const validFunds = funds.filter(fund => 
-      fund.type && fund.amount && fund.currency
-    ).length;
-    this.completionMetrics.funds = {
-      complete: validFunds > 0 ? 1 : 0,
-      total: 1,
-      state: validFunds > 0 ? 'complete' : 'missing'
-    };
-
-    // Travel completion (6 required fields)
-    const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'hotelName'];
-    const travelComplete = travelFields.filter(field => {
-      const value = travel[field];
-      return value && (typeof value === 'string' ? value.trim() : true);
-    }).length;
-    this.completionMetrics.travel = {
-      complete: travelComplete,
-      total: 6,
-      state: travelComplete === 6 ? 'complete' : travelComplete > 0 ? 'partial' : 'missing'
     };
 
     // Update timestamp
@@ -143,40 +133,26 @@ class EntryInfo extends EntryData {
 
   /**
    * Get missing fields by category
+   * Uses EntryCompletionCalculator for consistent missing field detection
    * @returns {Object} - Missing fields grouped by category
    */
   getMissingFields() {
-    const missing = {
-      passport: [],
-      personalInfo: [],
-      funds: [],
-      travel: []
+    // Use EntryCompletionCalculator to get accurate missing fields
+    const EntryCompletionCalculator = require('../utils/EntryCompletionCalculator').default;
+
+    // Build entry info structure for calculator
+    const entryInfoForCalculation = {
+      passport: this.passport || {},
+      personalInfo: this.personalInfo || {},
+      funds: this.funds || [],
+      travel: this.travel || {},
+      lastUpdatedAt: this.lastUpdatedAt || new Date().toISOString()
     };
 
-    // Passport missing fields
-    if (this.completionMetrics.passport.state !== 'complete') {
-      const passportFields = ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'];
-      missing.passport = passportFields.filter(field => !this.hasValidField('passport', field));
-    }
-
-    // Personal info missing fields
-    if (this.completionMetrics.personalInfo.state !== 'complete') {
-      const personalFields = ['occupation', 'provinceCity', 'countryRegion', 'phoneNumber', 'email', 'gender'];
-      missing.personalInfo = personalFields.filter(field => !this.hasValidField('personalInfo', field));
-    }
-
-    // Funds missing
-    if (this.completionMetrics.funds.state !== 'complete') {
-      missing.funds = ['At least one fund item with type, amount, and currency'];
-    }
-
-    // Travel missing fields
-    if (this.completionMetrics.travel.state !== 'complete') {
-      const travelFields = ['travelPurpose', 'arrivalArrivalDate', 'departureDepartureDate', 'arrivalFlightNumber', 'departureFlightNumber', 'hotelName'];
-      missing.travel = travelFields.filter(field => !this.hasValidField('travel', field));
-    }
-
-    return missing;
+    // Get missing fields from calculator
+    return EntryCompletionCalculator.getMissingFields(
+      EntryCompletionCalculator.calculateCompletionMetrics(entryInfoForCalculation)
+    );
   }
 
   /**

@@ -871,37 +871,39 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       </ScrollView>
 
       {/* Fund Item Modal */}
-      <FundItemDetailModal
-        visible={fundItemModalVisible}
-        fundItem={selectedFundItem || currentFundItem}
-        fundItemType={newFundItemType}
-        onClose={() => {
-          setFundItemModalVisible(false);
-          setSelectedFundItem(null);
-          setCurrentFundItem(null);
-          setNewFundItemType(null);
-        }}
-        onSave={async (fundItem) => {
-          const updatedFunds = selectedFundItem
-            ? funds.map(f => f.id === fundItem.id ? fundItem : f)
-            : [...funds, fundItem];
-          setFunds(updatedFunds);
-          await UserDataService.saveFundItems(userId, updatedFunds);
-          setFundItemModalVisible(false);
-          setSelectedFundItem(null);
-          setCurrentFundItem(null);
-          setNewFundItemType(null);
-          // Note: calculateCompletionMetrics() is called automatically by useEffect
-        }}
-        onDelete={async (fundItemId) => {
-          const updatedFunds = funds.filter(f => f.id !== fundItemId);
-          setFunds(updatedFunds);
-          await UserDataService.saveFundItems(userId, updatedFunds);
-          setFundItemModalVisible(false);
-          setSelectedFundItem(null);
-          // Note: calculateCompletionMetrics() is called automatically by useEffect
-        }}
-      />
+      {fundItemModalVisible && (
+        <FundItemDetailModal
+          visible={fundItemModalVisible}
+          fundItem={selectedFundItem || currentFundItem}
+          fundItemType={newFundItemType}
+          onClose={() => {
+            setFundItemModalVisible(false);
+            setSelectedFundItem(null);
+            setCurrentFundItem(null);
+            setNewFundItemType(null);
+          }}
+          onSave={async (fundItem) => {
+            const updatedFunds = selectedFundItem
+              ? funds.map(f => f.id === fundItem.id ? fundItem : f)
+              : [...funds, fundItem];
+            setFunds(updatedFunds);
+            await UserDataService.saveFundItems(userId, updatedFunds);
+            setFundItemModalVisible(false);
+            setSelectedFundItem(null);
+            setCurrentFundItem(null);
+            setNewFundItemType(null);
+            // Note: calculateCompletionMetrics() is called automatically by useEffect
+          }}
+          onDelete={async (fundItemId) => {
+            const updatedFunds = funds.filter(f => f.id !== fundItemId);
+            setFunds(updatedFunds);
+            await UserDataService.saveFundItems(userId, updatedFunds);
+            setFundItemModalVisible(false);
+            setSelectedFundItem(null);
+            // Note: calculateCompletionMetrics() is called automatically by useEffect
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 };

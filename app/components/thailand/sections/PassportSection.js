@@ -10,6 +10,7 @@ import { NationalitySelector, PassportNameInput, DateTimeInput } from '../../../
 import GenderSelector from '../../GenderSelector';
 import { FieldWarningIcon, InputWithValidation } from '../ThailandTravelComponents';
 import { GENDER_OPTIONS } from '../../../screens/thailand/constants';
+import DebouncedSave from '../../../utils/DebouncedSave';
 
 // Import Tamagui shared components
 import {
@@ -59,6 +60,15 @@ const PassportSection = ({
 
   const handleGenderChange = async (newSex) => {
     setSex(newSex);
+    // Cancel any pending debounced saves to prevent race condition
+    if (DebouncedSave.hasPendingSaves('thailand_travel_info')) {
+      DebouncedSave.pendingTimeouts.forEach((timeoutId, key) => {
+        if (key === 'thailand_travel_info') {
+          clearTimeout(timeoutId);
+          DebouncedSave.pendingTimeouts.delete(key);
+        }
+      });
+    }
     // Save immediately to ensure gender is saved without requiring other field interaction
     try {
       await saveDataToSecureStorageWithOverride({ sex: newSex });

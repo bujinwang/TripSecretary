@@ -16,6 +16,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { TRAVEL_PURPOSE_VALUES, ACCOMMODATION_TYPE_VALUES, OCCUPATION_VALUES } from '../../screens/thailand/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
+import { hasValidValue } from '../../utils/fieldValueHelpers';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
 
@@ -806,16 +807,59 @@ export const useThailandDataPersistence = ({
         }
       });
 
+      console.log('💾 Travel info save - fieldOverrides:', fieldOverrides);
+      console.log('💾 Travel info save - alwaysSaveFields:', alwaysSaveFields);
+      console.log('💾 Travel info save - allTravelInfoFields.province:', allTravelInfoFields.province);
+      console.log('💾 Travel info save - interactionState.province:', interactionState.province);
+
       const travelInfoUpdates = FieldStateManager.filterSaveableFields(
         allTravelInfoFields,
         interactionState,
         { preserveExisting: true, alwaysSaveFields }
       );
 
+      console.log('💾 Travel info save - travelInfoUpdates:', travelInfoUpdates);
+
       if (Object.keys(travelInfoUpdates).length > 0) {
         try {
-          const travelDataWithDestination = { ...travelInfoUpdates, destination: destinationId };
-          await UserDataService.saveTravelInfo(userId, travelDataWithDestination);
+          // 🔧 FIX: Load existing travel info from database to prevent data loss
+          // The filterSaveableFields may exclude fields that weren't modified in this session.
+          // To prevent overwriting existing non-null values with null/empty, we need to:
+          // 1. Load the existing record from database
+          // 2. Smart merge: only apply non-empty updates OR explicit overrides
+          // 3. Save the merged data
+          const existingTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+
+          // Start with existing data
+          const mergedTravelData = { ...(existingTravelInfo || {}) };
+
+          // Smart merge: only overwrite if new value is valid OR it's an explicit override
+          Object.keys(travelInfoUpdates).forEach(key => {
+            const newValue = travelInfoUpdates[key];
+            const isExplicitOverride = fieldOverrides && (key in fieldOverrides);
+
+            // Apply update if:
+            // 1. New value is valid (handles booleans, numbers, non-empty strings)
+            // 2. OR it's an explicit override (user intentionally cleared/changed it)
+            if (hasValidValue(newValue)) {
+              mergedTravelData[key] = newValue;
+            } else if (isExplicitOverride) {
+              // Explicit override - apply even if empty (user wants to clear it)
+              mergedTravelData[key] = newValue;
+            }
+            // Otherwise, keep existing value (don't overwrite with empty)
+          });
+
+          // Ensure destination is set
+          mergedTravelData.destination = destinationId;
+
+          console.log('💾 Travel info save - smart merge with existing data');
+          console.log('💾 Existing data keys:', Object.keys(existingTravelInfo || {}));
+          console.log('💾 Update keys:', Object.keys(travelInfoUpdates));
+          console.log('💾 Explicit overrides:', Object.keys(fieldOverrides || {}));
+          console.log('💾 Merged keys:', Object.keys(mergedTravelData));
+
+          await UserDataService.saveTravelInfo(userId, mergedTravelData);
           saveResults.travelInfo.success = true;
         } catch (travelSaveError) {
           console.error('Failed to save travel info:', travelSaveError);
@@ -824,6 +868,37 @@ export const useThailandDataPersistence = ({
         }
       } else {
         saveResults.travelInfo.success = true;
+      }
+
+      // Update entry_info completion metrics after saving data
+      try {
+        // Get all entry infos for the user
+        const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
+        let entryInfo = existingEntryInfos?.find(entry => entry.destinationId === destinationId);
+
+        if (entryInfo) {
+          // Load fresh data to calculate metrics
+          const savedPassport = await UserDataService.getPassport(userId);
+          const savedPersonalInfo = await UserDataService.getPersonalInfo(userId);
+          const savedFunds = await UserDataService.getFundItems(userId);
+          const savedTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+
+          // Update completion metrics using the EntryInfo model method
+          // which now uses EntryCompletionCalculator internally
+          entryInfo.updateCompletionMetrics(
+            savedPassport || {},
+            savedPersonalInfo || {},
+            savedFunds || [],
+            savedTravelInfo || {}
+          );
+
+          // Save updated metrics back to database
+          await entryInfo.save();
+          console.log('✅ Updated entry_info completion metrics:', entryInfo.getTotalCompletionPercent() + '%');
+        }
+      } catch (metricsError) {
+        // Don't fail the entire save operation if metrics update fails
+        console.warn('Failed to update entry_info metrics:', metricsError);
       }
 
       return { success: true };

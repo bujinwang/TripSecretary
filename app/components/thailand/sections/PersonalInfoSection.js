@@ -11,6 +11,7 @@ import { InputWithValidation } from '../ThailandTravelComponents';
 import OccupationSelector from '../../OccupationSelector';
 import Input from '../../../components/Input';
 import { getPhoneCode } from '../../../data/phoneCodes';
+import DebouncedSave from '../../../utils/DebouncedSave';
 
 // Import Tamagui shared components
 import {
@@ -54,6 +55,8 @@ const PersonalInfoSection = ({
   lastEditedField,
   // Actions
   debouncedSaveData,
+  saveDataToSecureStorageWithOverride,
+  setLastEditedAt,
 }) => {
 
   return (
@@ -82,13 +85,38 @@ const PersonalInfoSection = ({
       <OccupationSelector
         label={t('thailand.travelInfo.fields.occupation.label')}
         value={occupation}
-        onValueChange={(value) => {
+        onValueChange={async (value) => {
           setOccupation(value);
+          handleFieldBlur('occupation', value);
+
           if (value !== 'OTHER') {
             setCustomOccupation('');
-            handleFieldBlur('occupation', value);
+            // Cancel any pending debounced saves to prevent race condition
+            if (DebouncedSave.hasPendingSaves('thailand_travel_info')) {
+              DebouncedSave.pendingTimeouts.forEach((timeoutId, key) => {
+                if (key === 'thailand_travel_info') {
+                  clearTimeout(timeoutId);
+                  DebouncedSave.pendingTimeouts.delete(key);
+                }
+              });
+            }
+            // Save immediately with explicit values to ensure cleared customOccupation is persisted
+            if (saveDataToSecureStorageWithOverride) {
+              try {
+                await saveDataToSecureStorageWithOverride({
+                  occupation: value,
+                  customOccupation: ''
+                });
+                setLastEditedAt(new Date());
+              } catch (error) {
+                console.error('Failed to save occupation:', error);
+              }
+            }
+            // Don't call debouncedSaveData here - the explicit save above already saved
+          } else {
+            // For OTHER option, use debounced save since user needs to type the custom value
+            debouncedSaveData();
           }
-          debouncedSaveData();
         }}
         customValue={customOccupation}
         onCustomChange={(text) => {

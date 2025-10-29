@@ -127,6 +127,8 @@ const TravelDetailsSection = ({
         setBoardingCountry={setBoardingCountry}
         handleFieldBlur={handleFieldBlur}
         debouncedSaveData={debouncedSaveData}
+        saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
+        setLastEditedAt={setLastEditedAt}
       />
 
       {/* Flight Info Sub-Section */}

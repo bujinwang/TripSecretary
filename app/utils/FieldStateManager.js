@@ -214,7 +214,9 @@ class FieldStateManager {
         totalUserModified++;
       }
 
-      if (hasValue && isUserModified) {
+      // Count fields with values, regardless of user-modified status
+      // This ensures that data loaded from database is counted correctly
+      if (hasValue) {
         totalWithValues++;
       }
     });

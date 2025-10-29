@@ -143,28 +143,39 @@ class CountdownFormatter {
    * @returns {string} - Chinese-optimized time display
    */
   static formatChineseTime(parts, components, options = {}) {
-    const { days, hours, minutes } = components;
+    const { days, hours, minutes, seconds } = components;
+    const { showSeconds = false } = options;
 
     // For times over 24 hours, use "X天X小时X分钟" format
     if (days > 0) {
       const dayPart = days > 0 ? `${days}天` : '';
       const hourPart = hours > 0 ? `${hours}小时` : '';
       const minutePart = minutes > 0 ? `${minutes}分钟` : '';
+      const secondPart = showSeconds && seconds > 0 ? `${seconds}秒` : '';
 
-      return [dayPart, hourPart, minutePart].filter(Boolean).join(' ');
+      return [dayPart, hourPart, minutePart, secondPart].filter(Boolean).join(' ');
     }
 
     // For times under 24 hours, use more conversational format
     if (hours > 0) {
-      if (minutes === 0) {
-        return `${hours}小时`;
-      }
-      return `${hours}小时 ${minutes}分钟`;
+      const hourPart = `${hours}小时`;
+      const minutePart = minutes > 0 ? `${minutes}分钟` : '';
+      const secondPart = showSeconds && seconds > 0 ? `${seconds}秒` : '';
+
+      return [hourPart, minutePart, secondPart].filter(Boolean).join(' ');
     }
 
     // For times under 1 hour
     if (minutes > 0) {
-      return `${minutes}分钟`;
+      const minutePart = `${minutes}分钟`;
+      const secondPart = showSeconds && seconds > 0 ? `${seconds}秒` : '';
+
+      return [minutePart, secondPart].filter(Boolean).join(' ');
+    }
+
+    // For times under 1 minute
+    if (showSeconds && seconds > 0) {
+      return `${seconds}秒`;
     }
 
     return '0分钟';

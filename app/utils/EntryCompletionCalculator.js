@@ -370,19 +370,49 @@ class EntryCompletionCalculator {
         return 'Transit passenger';
       }
 
-      const accommodationValue = firstNonEmpty(
-        travel.accommodation,
-        travel.hotelAddress,
-        travel.hotelName,
+      // Check if we have a meaningful accommodation value
+      // For HOTEL/HOSTEL/RESORT types, we need both address AND province
+      const accommodationType = firstNonEmpty(
         travel.accommodationType,
-        travel.stayAddress,
+        travel.customAccommodationType
+      );
+
+      const hotelAddress = firstNonEmpty(
+        travel.hotelAddress,
+        travel.accommodation,
+        travel.stayAddress
+      );
+
+      const hotelName = firstNonEmpty(
+        travel.hotelName,
         travel.accommodationName
       );
 
-      if (accommodationValue) {
-        return accommodationValue;
+      const province = firstNonEmpty(travel.province);
+
+      // If accommodation type requires address (HOTEL, HOSTEL, RESORT, etc.)
+      // Then we need BOTH province AND (hotelAddress OR hotelName)
+      if (accommodationType) {
+        const requiresAddress = ['HOTEL', 'HOSTEL', 'RESORT', 'APARTMENT', 'GUESTHOUSE', 'VILLA'].includes(
+          accommodationType.toUpperCase()
+        );
+
+        if (requiresAddress) {
+          // For these types, we need province AND (address OR name)
+          const hasLocation = province && (hotelAddress || hotelName);
+          if (hasLocation) {
+            const parts = [hotelName || hotelAddress, province].filter(Boolean);
+            return parts.join(', ');
+          }
+          // If province or address is missing, return empty (incomplete)
+          return '';
+        } else {
+          // For other types (FRIEND, RELATIVE, etc.), just the type is enough
+          return accommodationType;
+        }
       }
 
+      // Fallback: try to build from location parts only
       const locationParts = [
         travel.province,
         travel.district,
@@ -399,13 +429,37 @@ class EntryCompletionCalculator {
       return '';
     })();
 
+    // Updated to match UI granular field counting (7-10 fields instead of 5 logical fields)
+    // This ensures the completion percentage matches what users see in the Thailand screen
     const requiredFields = [
       { name: 'travelPurpose', type: 'text', value: travelPurpose },
-      { name: 'arrivalDate', type: 'date', value: arrivalDate },
-      { name: 'departureDate', type: 'date', value: departureDate },
-      { name: 'flightNumber', type: 'text', value: combinedFlightNumber },
-      { name: 'accommodation', type: 'text', value: accommodation }
+      { name: 'recentStayCountry', type: 'text', value: firstNonEmpty(travel.recentStayCountry) },
+      { name: 'boardingCountry', type: 'text', value: firstNonEmpty(travel.boardingCountry) },
+      { name: 'arrivalFlightNumber', type: 'text', value: firstNonEmpty(travel.arrivalFlightNumber, travel.arrivalFlight) },
+      { name: 'arrivalArrivalDate', type: 'date', value: arrivalDate },
+      { name: 'departureFlightNumber', type: 'text', value: firstNonEmpty(travel.departureFlightNumber, travel.returnFlightNumber, travel.departureFlight) },
+      { name: 'departureDepartureDate', type: 'date', value: departureDate }
     ];
+
+    // Add accommodation fields only if not a transit passenger
+    if (!travel.isTransitPassenger) {
+      const accommodationType = firstNonEmpty(
+        travel.accommodationType,
+        travel.customAccommodationType
+      );
+      const province = firstNonEmpty(travel.province);
+      const hotelAddress = firstNonEmpty(
+        travel.hotelAddress,
+        travel.accommodation,
+        travel.stayAddress
+      );
+
+      requiredFields.push(
+        { name: 'accommodationType', type: 'text', value: accommodationType },
+        { name: 'province', type: 'text', value: province },
+        { name: 'hotelAddress', type: 'text', value: hotelAddress }
+      );
+    }
 
     const fieldResults = requiredFields.map(field => ({
       name: field.name,

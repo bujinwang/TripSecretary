@@ -37,34 +37,6 @@ const AnimatedCard = styled(YStack, {
  */
 const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo }) => (
   <YStack marginBottom="$lg">
-    {/* Celebration Header */}
-    <AnimatedCard
-      backgroundColor="#E8F5E9"
-      borderRadius={20}
-      padding="$xl"
-      alignItems="center"
-      shadowColor="#000"
-      shadowOffset={{ width: 0, height: 6 }}
-      shadowOpacity={0.15}
-      shadowRadius={12}
-      elevation={4}
-      marginBottom="$lg"
-    >
-      <Text fontSize={64} marginBottom="$md">🎉</Text>
-      <Text
-        fontSize={24}
-        fontWeight="800"
-        color="#2E7D32"
-        textAlign="center"
-        marginBottom="$sm"
-      >
-        太棒了！泰国之旅准备就绪！🌴
-      </Text>
-      <Text fontSize={16} color="#558B2F" textAlign="center">
-        入境卡已成功提交，你的所有准备资料都已就绪
-      </Text>
-    </AnimatedCard>
-
     {/* Primary Success Actions */}
     <YStack gap="$md">
       {/* Start Immigration Process */}
@@ -138,96 +110,88 @@ const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo })
       {/* Secondary Actions Row */}
       <XStack gap="$md">
         {/* View Entry Pack */}
-        <TouchableOpacity
-          style={{ flex: 1 }}
+        <AnimatedCard
+          flex={1}
+          backgroundColor="$white"
+          borderRadius={16}
+          padding="$lg"
+          borderWidth={1.5}
+          borderColor="rgba(11, 214, 123, 0.3)"
+          shadowColor="#000"
+          shadowOffset={{ width: 0, height: 3 }}
+          shadowOpacity={0.12}
+          shadowRadius={8}
+          elevation={3}
           onPress={onViewEntryPack}
         >
-          <AnimatedCard
-            flex={1}
-            backgroundColor="$white"
-            borderRadius={16}
-            padding="$lg"
-            borderWidth={1.5}
-            borderColor="rgba(11, 214, 123, 0.3)"
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 3 }}
-            shadowOpacity={0.12}
-            shadowRadius={8}
-            elevation={3}
-          >
-            <YStack alignItems="center">
-              <YStack
-                width={48}
-                height={48}
-                borderRadius={24}
-                backgroundColor="#E8F5E9"
-                alignItems="center"
-                justifyContent="center"
-                marginBottom="$sm"
-              >
-                <Text fontSize={24}>📋</Text>
-              </YStack>
-              <Text
-                fontSize={14}
-                fontWeight="700"
-                color="$text"
-                textAlign="center"
-                marginBottom="$xs"
-              >
-                查看我的入境包
-              </Text>
-              <Text fontSize={12} color="$textSecondary" textAlign="center">
-                重新查看所有准备资料
-              </Text>
+          <YStack alignItems="center">
+            <YStack
+              width={48}
+              height={48}
+              borderRadius={24}
+              backgroundColor="#E8F5E9"
+              alignItems="center"
+              justifyContent="center"
+              marginBottom="$sm"
+            >
+              <Text fontSize={24}>📋</Text>
             </YStack>
-          </AnimatedCard>
-        </TouchableOpacity>
+            <Text
+              fontSize={14}
+              fontWeight="700"
+              color="$text"
+              textAlign="center"
+              marginBottom="$xs"
+            >
+              查看我的入境包
+            </Text>
+            <Text fontSize={12} color="$textSecondary" textAlign="center">
+              重新查看所有准备资料
+            </Text>
+          </YStack>
+        </AnimatedCard>
 
         {/* Edit Info */}
-        <TouchableOpacity
-          style={{ flex: 1 }}
+        <AnimatedCard
+          flex={1}
+          backgroundColor="$white"
+          borderRadius={16}
+          padding="$lg"
+          borderWidth={1.5}
+          borderColor="rgba(255, 152, 0, 0.3)"
+          shadowColor="#000"
+          shadowOffset={{ width: 0, height: 3 }}
+          shadowOpacity={0.12}
+          shadowRadius={8}
+          elevation={3}
           onPress={onEditInfo}
         >
-          <AnimatedCard
-            flex={1}
-            backgroundColor="$white"
-            borderRadius={16}
-            padding="$lg"
-            borderWidth={1.5}
-            borderColor="rgba(255, 152, 0, 0.3)"
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 3 }}
-            shadowOpacity={0.12}
-            shadowRadius={8}
-            elevation={3}
-          >
-            <YStack alignItems="center">
-              <YStack
-                width={48}
-                height={48}
-                borderRadius={24}
-                backgroundColor="#FFF3E0"
-                alignItems="center"
-                justifyContent="center"
-                marginBottom="$sm"
-              >
-                <Text fontSize={24}>✏️</Text>
-              </YStack>
-              <Text
-                fontSize={14}
-                fontWeight="700"
-                color="$text"
-                textAlign="center"
-                marginBottom="$xs"
-              >
-                编辑旅行信息
-              </Text>
-              <Text fontSize={12} color="$textSecondary" textAlign="center">
-                如需修改，返回编辑
-              </Text>
+          <YStack alignItems="center">
+            <YStack
+              width={48}
+              height={48}
+              borderRadius={24}
+              backgroundColor="#FFF3E0"
+              alignItems="center"
+              justifyContent="center"
+              marginBottom="$sm"
+            >
+              <Text fontSize={24}>✏️</Text>
             </YStack>
-          </AnimatedCard>
-        </TouchableOpacity>
+            <Text
+              fontSize={14}
+              fontWeight="700"
+              color="$text"
+              textAlign="center"
+              marginBottom="$xs"
+            >
+              编辑旅行信息
+            </Text>
+            <Text fontSize={12} color="$textSecondary" textAlign="center">
+              如需修改，返回编辑
+            </Text>
+          </YStack>
+        </AnimatedCard>
       </XStack>
     </YStack>
   </YStack>
@@ -248,7 +212,12 @@ const ProgressEncouragement = ({
   navigation,
   passportParam,
   destination,
+  userData,
 }) => {
+  console.log('ProgressEncouragement rendered with buttonState:', buttonState);
+  console.log('Navigation available:', !!navigation);
+  console.log('UserData available:', !!userData);
+
   const getPrimaryGradient = () => {
     if (buttonState.disabled) {
       return ['#CFD8DC', '#B0BEC5'];
@@ -269,74 +238,80 @@ const ProgressEncouragement = ({
     <YStack marginBottom="$lg">
       {/* Action Buttons */}
       <YStack gap="$md">
-        {/* Primary Action - Continue or Submit */}
-        <TouchableOpacity
-          onPress={onContinuePreparation}
-          disabled={buttonState.disabled}
-          activeOpacity={buttonState.disabled ? 1 : 0.7}
+        {/* Primary Action - Edit Travel Info (Most Important for Incomplete State) */}
+        <PressableCard
+          borderRadius={20}
+          overflow="hidden"
+          shadowColor="#000"
+          shadowOffset={{ width: 0, height: 6 }}
+          shadowOpacity={0.15}
+          shadowRadius={10}
+          elevation={5}
+          onPress={() => {
+            console.log('Primary Edit Travel Info button pressed');
+            console.log('Navigation available:', !!navigation);
+            console.log('Passport param:', passportParam);
+            console.log('Destination:', destination);
+
+            if (!navigation) {
+              console.error('Navigation is not available!');
+              Alert.alert('错误', '导航功能不可用');
+              return;
+            }
+
+            navigation.navigate('ThailandTravelInfo', {
+              passport: passportParam,
+              destination: destination,
+            });
+          }}
         >
-          <AnimatedCard
-            borderRadius={20}
-            overflow="hidden"
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 6 }}
-            shadowOpacity={0.15}
-            shadowRadius={10}
-            elevation={5}
-            opacity={buttonState.disabled ? 0.6 : 1}
+          <LinearGradient
+            colors={['#FF9800', '#F57C00']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: spacing.xl,
+              paddingVertical: 18,
+              justifyContent: 'center',
+            }}
           >
-            <LinearGradient
-              colors={getPrimaryGradient()}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: spacing.xl,
-                paddingVertical: 18,
-                justifyContent: 'center',
-              }}
+            <Text
+              fontSize={18}
+              fontWeight="800"
+              color="$white"
+              letterSpacing={0.3}
             >
-              <Text
-                fontSize={18}
-                fontWeight="800"
-                color="$white"
-                letterSpacing={0.3}
-              >
-                {buttonState.title || (completionPercent >= 80 ? '📝 提交入境卡' : '💪 继续准备')}
-              </Text>
-            </LinearGradient>
-          </AnimatedCard>
-        </TouchableOpacity>
+              ✏️ 修改旅行信息
+            </Text>
+          </LinearGradient>
+        </PressableCard>
 
-        {buttonState.subtitle && (
-          <Text fontSize={12} color="$textSecondary" textAlign="center" marginTop="$xs">
-            {buttonState.subtitle}
-          </Text>
-        )}
-
-        {/* Countdown Section - Moved below the submit button */}
+        {/* Countdown Section - High Priority Alert */}
         {(arrivalDate || buttonState.action === 'wait_for_window') && (
           <AnimatedCard
-            backgroundColor="#F3F4F6"
+            backgroundColor="#FFF3E0"
             borderRadius={16}
             padding="$lg"
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowOpacity={0.08}
-            shadowRadius={4}
-            elevation={2}
+            borderWidth={2}
+            borderColor="#FF9800"
+            shadowColor="#FF9800"
+            shadowOffset={{ width: 0, height: 4 }}
+            shadowOpacity={0.2}
+            shadowRadius={8}
+            elevation={4}
           >
             <YStack alignItems="center">
               <Text
                 fontSize={16}
                 fontWeight="700"
-                color="$text"
-                marginBottom="$md"
+                color="#E65100"
+                marginBottom="$sm"
               >
                 {(() => {
                   if (buttonState.action === 'wait_for_window') {
-                    return '⏳ 距离提交窗口开启还有';
+                    return '📅 距离提交窗口开启还有';
                   }
                   return '🛂 距离提交入境卡还有';
                 })()}
@@ -347,91 +322,99 @@ const ProgressEncouragement = ({
                 showIcon={false}
                 updateInterval={1000} // Update every second for dynamic countdown
               />
+              {buttonState.action === 'submit_now' && (
+                <YStack
+                  marginTop="$md"
+                  paddingHorizontal="$md"
+                  paddingVertical="$sm"
+                  backgroundColor="#FFCCBC"
+                  borderRadius={8}
+                >
+                  <Text
+                    fontSize={13}
+                    fontWeight="600"
+                    color="#BF360C"
+                    textAlign="center"
+                  >
+                    ⚠️ 进入最后冲刺！窗口即将关闭，请立即提交入境卡
+                  </Text>
+                </YStack>
+              )}
+              <Text
+                fontSize={12}
+                color="#EF6C00"
+                marginTop="$sm"
+                textAlign="center"
+              >
+                抵达日期 {arrivalDate ? new Date(arrivalDate).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '年').replace(/年(\d+)年/, '年$1月') + '日' : ''}
+              </Text>
             </YStack>
           </AnimatedCard>
         )}
 
-        {/* Secondary Actions Row */}
-        <XStack gap="$sm">
-          {/* Edit Travel Info - Always show for non-submitted state */}
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            onPress={() => {
-              // Navigate to edit travel info
-              navigation.navigate('ThailandTravelInfo', {
-                passport: passportParam,
-                destination: destination,
-              });
-            }}
-          >
-            <AnimatedCard
-              flex={1}
-              backgroundColor="$white"
-              borderRadius={14}
-              padding="$md"
-              borderWidth={1}
-              borderColor="$borderColor"
-              shadowColor="#000"
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.1}
-              shadowRadius={4}
-              elevation={2}
-            >
-              <YStack alignItems="center">
-                <Text fontSize={24} marginBottom="$xs">✏️</Text>
-                <Text fontSize={12} fontWeight="600" color="$text" textAlign="center">
-                  修改旅行信息
-                </Text>
-              </YStack>
-            </AnimatedCard>
-          </TouchableOpacity>
+        {/* Secondary Action - Preview Entry Pack */}
+        <PressableCard
+          backgroundColor="$white"
+          borderRadius={16}
+          padding="$lg"
+          borderWidth={2}
+          borderColor="rgba(11, 214, 123, 0.4)"
+          shadowColor="#000"
+          shadowOffset={{ width: 0, height: 3 }}
+          shadowOpacity={0.12}
+          shadowRadius={8}
+          elevation={3}
+          onPress={() => {
+            console.log('Preview Entry Pack button pressed');
+            console.log('Navigation available:', !!navigation);
+            console.log('UserData:', userData);
 
-          {/* Preview Pack */}
-          {['view_entry_pack', 'submit_tdac'].includes(buttonState.action) && (
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() => {
-                // Navigate to entry pack preview
-                navigation.navigate('EntryPackPreview', {
-                  userData,
-                  passport: passportParam,
-                  destination: destination,
-                  entryPackData: {
-                    personalInfo: userData?.personalInfo,
-                    travelInfo: userData?.travel,
-                    funds: userData?.funds,
-                    tdacSubmission: null // Will be populated when TDAC is submitted
-                  }
-                });
-              }}
-            >
-              <AnimatedCard
-                flex={1}
-                backgroundColor="$white"
-                borderRadius={14}
-                padding="$md"
-                borderWidth={1}
-                borderColor="$borderColor"
-                shadowColor="#000"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.1}
-                shadowRadius={4}
-                elevation={2}
-              >
-                <YStack alignItems="center">
-                  <Text fontSize={24} marginBottom="$xs">👁️</Text>
-                  <Text fontSize={12} fontWeight="600" color="$text" textAlign="center">
-                    预览入境包
-                  </Text>
-                </YStack>
-              </AnimatedCard>
-            </TouchableOpacity>
-          )}
+            if (!navigation) {
+              console.error('Navigation is not available!');
+              Alert.alert('错误', '导航功能不可用');
+              return;
+            }
 
+            navigation.navigate('EntryPackPreview', {
+              userData,
+              passport: passportParam,
+              destination: destination,
+              entryPackData: {
+                personalInfo: userData?.personalInfo,
+                travelInfo: userData?.travel,
+                funds: userData?.funds,
+                tdacSubmission: null
+              }
+            });
+          }}
+        >
+          <YStack alignItems="center">
+            <Text fontSize={18} fontWeight="700" color="$text">
+              👁️ 预览入境包
+            </Text>
+            <Text fontSize={13} color="$textSecondary" marginTop="$xs" textAlign="center">
+              查看你已经准备好的入境信息
+            </Text>
+          </YStack>
+        </PressableCard>
+
+        {/* Tertiary Actions Row */}
+        <XStack justifyContent="center">
           {/* Get Help */}
-          <TouchableOpacity
-            style={{ flex: 1 }}
+          <AnimatedCard
+            width="50%"
+            backgroundColor="$white"
+            borderRadius={14}
+            padding="$md"
+            borderWidth={1}
+            borderColor="$borderColor"
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.1}
+            shadowRadius={4}
+            elevation={2}
             onPress={() => {
+              console.log('Get Help button pressed');
               // Show help dialog instead of navigation
               Alert.alert(
                 '寻求帮助 🤝',
@@ -450,27 +433,13 @@ const ProgressEncouragement = ({
               );
             }}
           >
-            <AnimatedCard
-              flex={1}
-              backgroundColor="$white"
-              borderRadius={14}
-              padding="$md"
-              borderWidth={1}
-              borderColor="$borderColor"
-              shadowColor="#000"
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.1}
-              shadowRadius={4}
-              elevation={2}
-            >
-              <YStack alignItems="center">
-                <Text fontSize={24} marginBottom="$xs">👥</Text>
-                <Text fontSize={12} fontWeight="600" color="$text" textAlign="center">
-                  寻求帮助
-                </Text>
-              </YStack>
-            </AnimatedCard>
-          </TouchableOpacity>
+            <YStack alignItems="center">
+              <Text fontSize={24} marginBottom="$xs">👥</Text>
+              <Text fontSize={12} fontWeight="600" color="$text" textAlign="center">
+                寻求帮助
+              </Text>
+            </YStack>
+          </AnimatedCard>
         </XStack>
       </YStack>
     </YStack>
@@ -546,6 +515,7 @@ const PreparedState = ({
         navigation={navigation}
         passportParam={passportParam}
         destination={destination}
+        userData={userData}
       />
     );
   };

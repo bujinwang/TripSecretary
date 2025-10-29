@@ -132,7 +132,7 @@ const BaseSearchableSelector = ({
       {/* Selector Button */}
       <BaseCard
         variant="flat"
-        padding="md"
+        paddingHorizontal="$md"
         pressable
         onPress={() => setIsModalVisible(true)}
         borderWidth={1}
@@ -141,7 +141,7 @@ const BaseSearchableSelector = ({
         height={48}
         {...rest}
       >
-        <XStack alignItems="center" justifyContent="space-between">
+        <XStack alignItems="center" justifyContent="space-between" height="100%">
           <TamaguiText
             fontSize="$2"
             color={getCurrentDisplayValue() ? '$text' : '$textDisabled'}
@@ -292,19 +292,20 @@ const BaseSearchableSelector = ({
                             <BaseCard
                               key={item.value || `item-${index}`}
                               variant="flat"
-                              padding="md"
+                              paddingVertical="$md"
+                              paddingHorizontal="$lg"
                               pressable
                               onPress={() => handleSelectOption(item)}
                               backgroundColor={isSelected ? '$primaryLight' : 'transparent'}
                               borderRadius={0}
                             >
-                              <XStack gap="$md" alignItems="center">
+                              <XStack gap="$md" alignItems="center" justifyContent="flex-start">
                                 {item.icon && (
                                   <TamaguiText fontSize={24}>
                                     {item.icon}
                                   </TamaguiText>
                                 )}
-                                <YStack flex={1}>
+                                <YStack flex={1} justifyContent="center">
                                   <TamaguiText
                                     fontSize="$2"
                                     fontWeight={isSelected ? '600' : '400'}

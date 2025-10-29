@@ -121,19 +121,19 @@ const CompletionSummaryCard = ({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
-    padding: spacing.lg,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
   percentageContainer: {
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   percentageText: {
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: '700',
-    lineHeight: 56,
+    lineHeight: 42,
   },
   percentageLabel: {
     ...typography.body2,
@@ -141,10 +141,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   statusContainer: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   statusText: {
-    ...typography.h3,
+    fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
   },

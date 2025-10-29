@@ -814,16 +814,18 @@ const JapanTravelInfoScreen = ({ navigation, route }) => {
       </View>
 
       {/* Fund Item Detail Modal */}
-      <FundItemDetailModal
-        visible={fundItemModalVisible}
-        fundItem={isCreatingFundItem ? null : selectedFundItem}
-        isCreateMode={isCreatingFundItem}
-        createItemType={newFundItemType}
-        onClose={handleFundItemModalClose}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
-      />
+      {fundItemModalVisible && (
+        <FundItemDetailModal
+          visible={fundItemModalVisible}
+          fundItem={isCreatingFundItem ? null : selectedFundItem}
+          isCreateMode={isCreatingFundItem}
+          createItemType={newFundItemType}
+          onClose={handleFundItemModalClose}
+          onUpdate={handleFundItemUpdate}
+          onCreate={handleFundItemCreate}
+          onDelete={handleFundItemDelete}
+        />
+      )}
     </SafeAreaView>
   );
 };

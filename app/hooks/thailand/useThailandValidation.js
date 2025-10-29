@@ -9,6 +9,7 @@ import { useCallback, useEffect } from 'react';
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
 import FieldStateManager from '../../utils/FieldStateManager';
+import performanceMonitor from '../../utils/PerformanceMonitor';
 
 /**
  * Custom hook to manage Thailand travel form validation
@@ -167,7 +168,7 @@ export const useThailandValidation = ({
 
         return {
           filled: passportFieldCount.totalWithValues,
-          total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
+          total: Object.keys(passportFields).length  // Always show total number of fields
         };
       }
 
@@ -189,7 +190,7 @@ export const useThailandValidation = ({
 
         return {
           filled: personalFieldCount.totalWithValues,
-          total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
+          total: Object.keys(personalFields).length  // Always show total number of fields
         };
       }
 
@@ -238,7 +239,7 @@ export const useThailandValidation = ({
 
         return {
           filled: travelFieldCount.totalWithValues,
-          total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
+          total: Object.keys(travelFields).length  // Always show total number of fields
         };
       }
 
@@ -248,8 +249,13 @@ export const useThailandValidation = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInteractionTracker]);
 
-  // Calculate completion metrics
+  // Calculate completion metrics with performance monitoring
   const calculateCompletionMetrics = useCallback(() => {
+    const operationId = performanceMonitor.startTiming('calculateCompletionMetrics', {
+      context: 'Thailand Travel Info',
+      type: 'completion_calculation'
+    });
+
     const passportCount = getFieldCount('passport');
     const personalCount = getFieldCount('personal');
     const fundsCount = getFieldCount('funds');
@@ -260,7 +266,7 @@ export const useThailandValidation = ({
 
     const percent = totalFields > 0 ? Math.round((totalFilled / totalFields) * 100) : 0;
 
-    return {
+    const result = {
       passport: passportCount,
       personal: personalCount,
       funds: fundsCount,
@@ -268,6 +274,15 @@ export const useThailandValidation = ({
       percent,
       isReady: percent >= 100
     };
+
+    performanceMonitor.endTiming(operationId, {
+      totalFilled,
+      totalFields,
+      percent,
+      sections: 4
+    });
+
+    return result;
   }, [getFieldCount]);
 
   // Check if all fields are filled and valid
@@ -359,13 +374,30 @@ export const useThailandValidation = ({
   // Auto-calculate completion metrics when form values change
   // Uses a memoized formValues object to prevent excessive re-renders
   useEffect(() => {
+    const effectOperationId = performanceMonitor.startTiming('completionMetrics_autoCalculate', {
+      context: 'Thailand Travel Info - Auto Calculation Effect',
+      type: 'effect_trigger'
+    });
+
     const debounceTimer = setTimeout(() => {
       const metrics = calculateCompletionMetrics();
       formState.setCompletionMetrics(metrics);
       formState.setTotalCompletionPercent(metrics?.percent || 0);
+
+      performanceMonitor.endTiming(effectOperationId, {
+        triggered: true,
+        debounced: true
+      });
     }, 300); // 300ms debounce delay
 
-    return () => clearTimeout(debounceTimer);
+    return () => {
+      clearTimeout(debounceTimer);
+      performanceMonitor.endTiming(effectOperationId, {
+        triggered: true,
+        debounced: false,
+        cancelled: true
+      });
+    };
     // Only depend on the memoized formValues object, not individual fields
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

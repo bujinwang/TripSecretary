@@ -175,11 +175,12 @@ class EntryInfoService {
 
   /**
    * Calculate completion percentage for an entry info.
+   * Uses EntryCompletionCalculator as the single source of truth for consistent validation
    * @param {EntryInfo} entryInfo - The entry info to calculate completion for.
    * @returns {number} - Completion percentage (0-100).
    */
   static calculateCompletionPercent(entryInfo) {
-    // Use stored completion metrics if available
+    // Use stored completion metrics if available (preferred path)
     if (entryInfo.completionMetrics) {
       let completedFields = 0;
       let totalFields = 0;
@@ -199,7 +200,7 @@ class EntryInfoService {
 
       if (metrics.travel) {
         completedFields += metrics.travel.complete || 0;
-        totalFields += metrics.travel.total || 6;
+        totalFields += metrics.travel.total || 5; // Fixed: travel has 5 fields, not 6
       }
 
       if (metrics.funds) {
@@ -210,37 +211,19 @@ class EntryInfoService {
       return totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
     }
 
-    // Fallback: Calculate from direct field access (legacy)
-    let completedFields = 0;
-    let totalFields = 0;
+    // Fallback: Use EntryCompletionCalculator for consistent validation
+    const EntryCompletionCalculator = require('../utils/EntryCompletionCalculator').default;
 
-    // Passport information (required)
-    totalFields += 4;
-    if (entryInfo.passport?.fullName) completedFields++;
-    if (entryInfo.passport?.passportNumber) completedFields++;
-    if (entryInfo.passport?.nationality) completedFields++;
-    if (entryInfo.passport?.dateOfBirth) completedFields++;
+    const entryInfoForCalculation = {
+      passport: entryInfo.passport || {},
+      personalInfo: entryInfo.personalInfo || {},
+      funds: entryInfo.funds || [],
+      travel: entryInfo.travel || {},
+      lastUpdatedAt: entryInfo.lastUpdatedAt || new Date().toISOString()
+    };
 
-    // Personal information (optional but recommended)
-    totalFields += 3;
-    if (entryInfo.personalInfo?.occupation) completedFields++;
-    if (entryInfo.personalInfo?.phoneNumber) completedFields++;
-    if (entryInfo.personalInfo?.email) completedFields++;
-
-    // Travel information (required)
-    totalFields += 4;
-    if (entryInfo.travel?.arrivalDate) completedFields++;
-    if (entryInfo.travel?.flightNumber) completedFields++;
-    if (entryInfo.travel?.travelPurpose) completedFields++;
-    if (entryInfo.travel?.accommodation) completedFields++;
-
-    // Fund information (optional)
-    if (entryInfo.funds && entryInfo.funds.length > 0) {
-      totalFields += 1;
-      completedFields += 1;
-    }
-
-    return totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
+    const summary = EntryCompletionCalculator.getCompletionSummary(entryInfoForCalculation);
+    return summary.totalPercent;
   }
 
   /**

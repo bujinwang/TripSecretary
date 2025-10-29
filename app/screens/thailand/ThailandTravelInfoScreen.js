@@ -417,6 +417,8 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           lastEditedField={formState.lastEditedField}
           // Actions
           debouncedSaveData={debouncedSaveData}
+          saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
+          setLastEditedAt={formState.setLastEditedAt}
         />
 
         {/* Funds Section */}
@@ -538,15 +540,17 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         </YStack>
       </ScrollView>
 
-      <FundItemDetailModal
-        visible={formState.fundItemModalVisible}
-        fundItem={formState.currentFundItem}
-        createItemType={formState.newFundItemType}
-        onClose={handleFundItemModalClose}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
-      />
+      {formState.fundItemModalVisible && (
+        <FundItemDetailModal
+          visible={formState.fundItemModalVisible}
+          fundItem={formState.currentFundItem}
+          createItemType={formState.newFundItemType}
+          onClose={handleFundItemModalClose}
+          onUpdate={handleFundItemUpdate}
+          onCreate={handleFundItemCreate}
+          onDelete={handleFundItemDelete}
+        />
+      )}
     </SafeAreaView>
   );
 };

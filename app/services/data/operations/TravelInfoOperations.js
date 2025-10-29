@@ -45,17 +45,13 @@ class TravelInfoOperations {
       console.log('Saving travel info for user:', userId);
       console.log('Travel data fields:', Object.keys(travelData));
 
-      // Filter out empty fields to avoid overwriting existing data
+      // Filter out only null/undefined fields to avoid overwriting existing data
+      // BUT preserve empty strings as they indicate intentional clearing of a field
       const nonEmptyUpdates = {};
       for (const [key, value] of Object.entries(travelData)) {
         if (value !== null && value !== undefined) {
-          if (typeof value === 'string') {
-            if (value.trim().length > 0) {
-              nonEmptyUpdates[key] = value;
-            }
-          } else {
-            nonEmptyUpdates[key] = value;
-          }
+          // Keep all values including empty strings (empty string = intentional clear)
+          nonEmptyUpdates[key] = value;
         }
       }
 
@@ -126,17 +122,13 @@ class TravelInfoOperations {
        // Capture existing arrival date using both legacy and new field names
        const oldArrivalDate = existing.arrivalArrivalDate || existing.arrivalDate || null;
 
-       // Filter out empty values from updates
+       // Filter out only null/undefined values from updates
+       // BUT preserve empty strings as they indicate intentional clearing of a field
        const nonEmptyUpdates = {};
        for (const [key, value] of Object.entries(updates)) {
          if (value !== null && value !== undefined) {
-           if (typeof value === 'string') {
-             if (value.trim().length > 0) {
-               nonEmptyUpdates[key] = value;
-             }
-           } else {
-             nonEmptyUpdates[key] = value;
-           }
+           // Keep all values including empty strings (empty string = intentional clear)
+           nonEmptyUpdates[key] = value;
          }
        }
 

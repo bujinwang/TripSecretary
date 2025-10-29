@@ -55,7 +55,11 @@
       "Bash(npm uninstall:*)",
       "Bash(open:*)",
       "Bash(npx expo install:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Read(//dev/**)",
+      "Bash(npx react-native log-ios:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []

@@ -1775,17 +1775,19 @@ const ProfileScreen = ({ navigation, route }) => {
       </Modal>
 
       {/* Fund Item Detail Modal */}
-      <FundItemDetailModal
-        visible={fundItemModalVisible}
-        fundItem={isCreatingFundItem ? null : selectedFundItem}
-        isCreateMode={isCreatingFundItem}
-        createItemType={newFundItemType}
-        onClose={handleFundItemModalClose}
-        onUpdate={handleFundItemUpdate}
-        onCreate={handleFundItemCreate}
-        onDelete={handleFundItemDelete}
-        onManageAll={handleManageFundItems}
-      />
+      {fundItemModalVisible && (
+        <FundItemDetailModal
+          visible={fundItemModalVisible}
+          fundItem={isCreatingFundItem ? null : selectedFundItem}
+          isCreateMode={isCreatingFundItem}
+          createItemType={newFundItemType}
+          onClose={handleFundItemModalClose}
+          onUpdate={handleFundItemUpdate}
+          onCreate={handleFundItemCreate}
+          onDelete={handleFundItemDelete}
+          onManageAll={handleManageFundItems}
+        />
+      )}
 
       {/* Language Selector Modal */}
       <Modal

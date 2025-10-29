@@ -569,7 +569,7 @@ const HomeScreen = ({ navigation }) => {
             const screenMap = {
               'jp': 'JapanTravelInfo',
               'th': 'ThailandTravelInfo',
-              'hk': 'HongKongTravelInfo',
+              'hk': 'HongkongTravelInfo',
               'tw': 'TaiwanTravelInfo',
               'kr': 'KoreaTravelInfo',
               'sg': 'SingaporeTravelInfo',

@@ -61,7 +61,6 @@ const bodyFont = createFont({
     2: fontSize.body1,
     3: fontSize.body2,
     4: fontSize.h3,
-    lg: fontSize.h3,
   },
   lineHeight: {
     1: Math.round(fontSize.caption * lineHeight.caption),
@@ -185,6 +184,20 @@ const tamaguiConfig = createTamagui({
   shorthands,
   themes,
   tokens,
+  // Enable settings for better optimization
+  settings: {
+    // Allow styled() components to be optimized
+    allowedStyleValues: 'somewhat-strict',
+    // Enable automatic class merging
+    autocompleteSpecificMedia: true,
+    // Optimize theme updates
+    fastSchemeChange: true,
+    // Enable more optimizations
+    maxDarkLightNesting: 1,
+  },
+  // Disable debug mode in production
+  disableSSR: false,
+  shouldAddPrefersColorThemes: true,
 });
 
 export type TamaguiConfig = typeof tamaguiConfig;

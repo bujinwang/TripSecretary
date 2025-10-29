@@ -6,7 +6,14 @@ module.exports = function(api) {
       ['module:@tamagui/babel-plugin', {
         config: './tamagui.config.ts',
         components: ['tamagui'],
-        disableExtraction: process.env.NODE_ENV === 'development',
+        // Enable extraction for better optimization
+        disableExtraction: false,
+        // Enable logging to see optimization results
+        logTimings: true,
+        // Optimize imports
+        importsWhitelist: ['Constants.js', 'colors.js'],
+        // Enable flattening for better performance
+        disable: false,
       }],
       'react-native-reanimated/plugin',
     ],
