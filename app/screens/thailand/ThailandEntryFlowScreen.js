@@ -794,7 +794,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           <View style={styles.preSubmissionHeader}>
             <Text style={styles.preSubmissionIcon}>🎉</Text>
             <Text style={styles.preSubmissionTitle}>
-              太棒了！泰国之旅准备就绪！🌴
+              100% 泰国准备就绪！🌴
             </Text>
             <Text style={styles.preSubmissionSubtitle}>
               入境卡已成功提交，可以查看您的入境信息

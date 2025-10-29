@@ -345,7 +345,7 @@ const ProgressEncouragement = ({
                 arrivalDate={arrivalDate}
                 locale={t('locale', { defaultValue: 'zh' })}
                 showIcon={false}
-                updateInterval={60000} // Update every minute
+                updateInterval={1000} // Update every second for dynamic countdown
               />
             </YStack>
           </AnimatedCard>
