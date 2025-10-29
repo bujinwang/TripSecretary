@@ -432,13 +432,22 @@ const ProgressEncouragement = ({
           <TouchableOpacity
             style={{ flex: 1 }}
             onPress={() => {
-              // Navigate to help/support screen
-              navigation.navigate('HelpSupport', {
-                context: 'thailand_entry_flow',
-                userData: userData,
-                passport: passportParam,
-                destination: destination
-              });
+              // Show help dialog instead of navigation
+              Alert.alert(
+                '寻求帮助 🤝',
+                '你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档',
+                [
+                  {
+                    text: '截图分享',
+                    onPress: () => Alert.alert('提示', '请使用手机截图功能分享给亲友查看')
+                  },
+                  {
+                    text: '联系客服',
+                    onPress: () => Alert.alert('功能开发中', '客服功能即将上线，敬请期待！')
+                  },
+                  { text: '取消', style: 'cancel' }
+                ]
+              );
             }}
           >
             <AnimatedCard
