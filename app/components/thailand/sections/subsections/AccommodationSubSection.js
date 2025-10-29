@@ -217,7 +217,7 @@ const AccommodationSubSection = ({
                 style={styles.input}
               />
             )}
-          </View>
+          </YStack>
 
           <ProvinceSelector
             label="省份"
