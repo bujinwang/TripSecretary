@@ -2,30 +2,22 @@
 // 入境通 - Thailand Travel Info Screen (泰国入境信息)
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
   LayoutAnimation,
   Platform,
   UIManager,
   Alert,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../../components/BackButton';
-import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputWithUserTracking from '../../components/InputWithUserTracking';
 import FundItemDetailModal from '../../components/FundItemDetailModal';
 import GenderSelector from '../../components/GenderSelector';
 import { NationalitySelector, PassportNameInput, DateTimeInput, ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../components';
 
-import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import { getPhoneCode } from '../../data/phoneCodes';
 import DebouncedSave from '../../utils/DebouncedSave';
@@ -75,11 +67,9 @@ import {
   YStack,
   XStack,
   BaseCard,
+  BaseButton,
   Text as TamaguiText,
 } from '../../components/tamagui';
-
-// Import styles
-import styles from './ThailandTravelInfoScreen.styles';
 
 const ThailandTravelInfoScreen = ({ navigation, route }) => {
   const { passport: rawPassport, destination } = route.params || {};
@@ -229,27 +219,38 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+      <XStack
+        paddingHorizontal="$md"
+        paddingVertical="$sm"
+        alignItems="center"
+        justifyContent="space-between"
+        backgroundColor="$background"
+        borderBottomWidth={1}
+        borderBottomColor="$borderColor"
+      >
         <BackButton
           onPress={handleGoBack}
           label={t('common.back')}
-          style={styles.backButton}
         />
-        <Text style={styles.headerTitle}>{t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}</Text>
-        <View style={styles.headerRight} />
-      </View>
+        <TamaguiText fontSize="$5" fontWeight="600" color="$textPrimary" flex={1} textAlign="center">
+          {t('thailand.travelInfo.headerTitle', { defaultValue: '泰国入境信息' })}
+        </TamaguiText>
+        <YStack width={60} />
+      </XStack>
 
       {formState.isLoading && (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('thailand.travelInfo.loading', { defaultValue: '正在加载数据...' })}</Text>
-        </View>
+        <YStack padding="$md" alignItems="center">
+          <TamaguiText fontSize="$3" color="$textSecondary">
+            {t('thailand.travelInfo.loading', { defaultValue: '正在加载数据...' })}
+          </TamaguiText>
+        </YStack>
       )}
 
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={{ paddingBottom: 100 }}
         onScroll={(event) => {
           const currentScrollPosition = event.nativeEvent.contentOffset.y;
           formState.setScrollPosition(currentScrollPosition);
@@ -259,46 +260,60 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         {/* Hero Section */}
         <HeroSection t={t} />
 
-          
-          {/* Enhanced Save Status Indicator */}
-          {formState.saveStatus && (
-            <View style={[styles.saveStatusBar, styles[`saveStatus${formState.saveStatus.charAt(0).toUpperCase() + formState.saveStatus.slice(1)}`]]}>
-              <Text style={styles.saveStatusIcon}>
-                {formState.saveStatus === 'pending' && '⏳'}
-                {formState.saveStatus === 'saving' && '💾'}
-                {formState.saveStatus === 'saved' && '✅'}
-                {formState.saveStatus === 'error' && '❌'}
-              </Text>
-              <Text style={styles.saveStatusText}>
-                {formState.saveStatus === 'pending' && t('thailand.travelInfo.saveStatus.pending', { defaultValue: '等待保存...' })}
-                {formState.saveStatus === 'saving' && t('thailand.travelInfo.saveStatus.saving', { defaultValue: '正在保存...' })}
-                {formState.saveStatus === 'saved' && t('thailand.travelInfo.saveStatus.saved', { defaultValue: '已保存' })}
-                {formState.saveStatus === 'error' && t('thailand.travelInfo.saveStatus.error', { defaultValue: '保存失败' })}
-              </Text>
-              {formState.saveStatus === 'error' && (
-                <TouchableOpacity
-                  style={styles.retryButton}
-                  onPress={() => {
-                    formState.setSaveStatus('saving');
-                    debouncedSaveData();
-                  }}
-                >
-                  <Text style={styles.retryButtonText}>
-                    {t('thailand.travelInfo.saveStatus.retry', { defaultValue: '重试' })}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          {/* Last Edited Timestamp */}
-          {formState.lastEditedAt && (
-            <Text style={styles.lastEditedText}>
-              {t('thailand.travelInfo.lastEdited', {
-                defaultValue: 'Last edited: {{time}}',
-                time: formState.lastEditedAt.toLocaleTimeString()
-              })}
-            </Text>
-          )}
+
+        {/* Enhanced Save Status Indicator */}
+        {formState.saveStatus && (
+          <XStack
+            paddingHorizontal="$md"
+            paddingVertical="$sm"
+            alignItems="center"
+            gap="$sm"
+            backgroundColor={
+              formState.saveStatus === 'pending' ? '#FFF9E6' :
+              formState.saveStatus === 'saving' ? '#E6F2FF' :
+              formState.saveStatus === 'saved' ? '#E6F9E6' :
+              '#FFE6E6'
+            }
+            marginHorizontal="$md"
+            marginVertical="$sm"
+            borderRadius="$md"
+          >
+            <TamaguiText fontSize={16}>
+              {formState.saveStatus === 'pending' && '⏳'}
+              {formState.saveStatus === 'saving' && '💾'}
+              {formState.saveStatus === 'saved' && '✅'}
+              {formState.saveStatus === 'error' && '❌'}
+            </TamaguiText>
+            <TamaguiText fontSize="$2" color="$textSecondary" flex={1}>
+              {formState.saveStatus === 'pending' && t('thailand.travelInfo.saveStatus.pending', { defaultValue: '等待保存...' })}
+              {formState.saveStatus === 'saving' && t('thailand.travelInfo.saveStatus.saving', { defaultValue: '正在保存...' })}
+              {formState.saveStatus === 'saved' && t('thailand.travelInfo.saveStatus.saved', { defaultValue: '已保存' })}
+              {formState.saveStatus === 'error' && t('thailand.travelInfo.saveStatus.error', { defaultValue: '保存失败' })}
+            </TamaguiText>
+            {formState.saveStatus === 'error' && (
+              <BaseButton
+                variant="outline"
+                size="sm"
+                onPress={() => {
+                  formState.setSaveStatus('saving');
+                  debouncedSaveData();
+                }}
+              >
+                {t('thailand.travelInfo.saveStatus.retry', { defaultValue: '重试' })}
+              </BaseButton>
+            )}
+          </XStack>
+        )}
+
+        {/* Last Edited Timestamp */}
+        {formState.lastEditedAt && (
+          <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginBottom="$sm">
+            {t('thailand.travelInfo.lastEdited', {
+              defaultValue: 'Last edited: {{time}}',
+              time: formState.lastEditedAt.toLocaleTimeString()
+            })}
+          </TamaguiText>
+        )}
 
         {/* Privacy Notice - Using Tamagui BaseCard */}
         <YStack paddingHorizontal="$md" marginBottom="$md">
@@ -357,8 +372,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           debouncedSaveData={debouncedSaveData}
           saveDataToSecureStorageWithOverride={saveDataToSecureStorageWithOverride}
           setLastEditedAt={formState.setLastEditedAt}
-          // Styles
-          styles={styles}
         />
 
         {/* Personal Information Section */}
@@ -404,8 +417,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           lastEditedField={formState.lastEditedField}
           // Actions
           debouncedSaveData={debouncedSaveData}
-          // Styles
-          styles={styles}
         />
 
         {/* Funds Section */}
@@ -429,8 +440,6 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           // Actions
           addFund={addFund}
           handleFundItemPress={handleFundItemPress}
-          // Styles
-          styles={styles}
         />
 
         {/* Travel Details Section */}
@@ -508,26 +517,25 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           handleFlightTicketPhotoUpload={wrappedHandleFlightTicketPhotoUpload}
           handleDepartureFlightTicketPhotoUpload={wrappedHandleDepartureFlightTicketPhotoUpload}
           handleHotelReservationPhotoUpload={wrappedHandleHotelReservationPhotoUpload}
-          // Styles
-          styles={styles}
         />
 
 
-        <View style={styles.buttonContainer}>
+        <YStack paddingHorizontal="$md" paddingVertical="$lg">
           {/* Smart Button with Dynamic Configuration */}
           {(() => {
             const buttonConfig = getSmartButtonConfig();
             return (
-              <Button
-                title={`${buttonConfig.icon} ${buttonConfig.label}`}
+              <BaseButton
+                variant={buttonConfig.variant === 'primary' ? 'primary' : 'secondary'}
+                size="lg"
                 onPress={handleContinue}
-                variant={buttonConfig.variant}
-                disabled={false}
-                style={buttonConfig.style}
-              />
+                fullWidth
+              >
+                {`${buttonConfig.icon} ${buttonConfig.label}`}
+              </BaseButton>
             );
           })()}
-        </View>
+        </YStack>
       </ScrollView>
 
       <FundItemDetailModal
