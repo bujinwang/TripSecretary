@@ -53,7 +53,7 @@ class KeyManagementService {
       const keyBackupDir = new FileSystem.Directory(backupDir);
       const dirExists = await keyBackupDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(backupDir, { intermediates: true });
+        await keyBackupDir.create();
       }
     } catch (error) {
       console.error('Failed to create key backup directory:', error);
@@ -227,7 +227,8 @@ class KeyManagementService {
       );
 
       // Save encrypted backup
-      await FileSystem.writeAsStringAsync(backupPath, encryptedBackup);
+      const backupFile = new FileSystem.File(backupPath);
+      await backupFile.write(encryptedBackup);
 
       // Store backup reference
       const backups = await this.getUserBackups(userId);
@@ -301,7 +302,8 @@ class KeyManagementService {
       console.log(`Attempting key recovery for user ${userId}`);
 
       // Read encrypted backup
-      const encryptedBackup = await FileSystem.readAsStringAsync(backupPath);
+      const backupFile = new FileSystem.File(backupPath);
+      const encryptedBackup = await backupFile.text();
 
       // Decrypt backup
       const decryptedBackup = await this.encryption.decrypt(encryptedBackup, 'recovery');
@@ -352,7 +354,10 @@ class KeyManagementService {
       const backups = await this.getUserBackups(userId);
       for (const backup of backups) {
         try {
-          await FileSystem.deleteAsync(backup.path, { idempotent: true });
+          const backupFile = new FileSystem.File(backup.path);
+          if (await backupFile.exists()) {
+            await backupFile.delete();
+          }
         } catch (error) {
           console.error(`Failed to delete backup ${backup.filename}:`, error);
         }
@@ -448,7 +453,10 @@ class KeyManagementService {
       const toDelete = backups.slice(keepCount);
       for (const backup of toDelete) {
         try {
-          await FileSystem.deleteAsync(backup.path, { idempotent: true });
+          const backupFile = new FileSystem.File(backup.path);
+          if (await backupFile.exists()) {
+            await backupFile.delete();
+          }
           console.log(`Deleted old backup: ${backup.filename}`);
         } catch (error) {
           console.error(`Failed to delete backup ${backup.filename}:`, error);
