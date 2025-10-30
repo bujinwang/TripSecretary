@@ -1,8 +1,8 @@
 # Entry Requirements Engine - Design Document
 
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2025-10-26
-**Status:** Design Phase
+**Status:** Design Phase - Ready for Implementation
 
 ---
 
@@ -175,15 +175,38 @@ app/screens/thailand/
 | `EntryInfoService` | Manage entry packs | No |
 | `EntryGuideService` | Multi-country guide base | No |
 | `ThailandEntryGuideService` | Thailand-specific | No |
+| `JapanEntryGuideService` | Japan-specific | No |
+| `SingaporeEntryGuideService` | Singapore-specific | No |
+| `MalaysiaEntryGuideService` | Malaysia-specific | No |
+| `KoreaEntryGuideService` | Korea-specific | No |
+| `USEntryGuideService` | US-specific | No |
+| **+6 more country services** | Other destinations | No |
 | `TDACAPIService` | TDAC API integration | No |
+| `NationalityContentResolver` | Translation resolution | ⚠️ **Partial** |
+| `TravelInfoFormUtils` | Form field management | No |
+
+**Total:** 11 country-specific services, all destination-aware only (not passport-nationality-aware)
+
+### Critical Discovery: Severe Coverage Gap
+
+**Current Coverage:**
+- `nationalityRequirements.js` only has **8 combinations** configured:
+  - US: 3 nationalities (CHN, CAN, GBR)
+  - Japan: 2 nationalities (CHN, CAN)
+  - Singapore: 3 nationalities (CHN, CAN, IND)
+- **Gap:** 8 combinations vs 10,000+ needed (50 destinations × 200 passports)
+- **Impact:** 99.92% of combinations are unconfigured!
 
 ### Architecture Gaps
 
 1. **No Rules Engine**: No centralized service to compute `getRequirements(passport, destination)`
 2. **No Merging Logic**: Can't combine base rules + nationality exceptions
-3. **No Fallbacks**: If combination not configured, app has no graceful handling
-4. **No Caching**: Repeated lookups hit config files each time
-5. **No Validation**: No type checking or schema validation for config data
+3. **Severe Coverage Gap**: Only 8 combinations configured vs 10,000+ needed
+4. **No Fallbacks**: If combination not configured, app has no graceful handling
+5. **No Caching**: Repeated lookups hit config files each time
+6. **No Validation**: No type checking or schema validation for config data
+7. **Code Duplication**: 40+ destination screens with 2000+ lines of duplicated requirement logic
+8. **NationalityContentResolver Underutilized**: Created but barely integrated
 
 ---
 
@@ -383,6 +406,181 @@ const SelectDestinationScreen = ({ route, navigation }) => {
   );
 };
 ```
+
+---
+
+## How This Integrates With Existing Code
+
+### Relationship With Current Services
+
+The EntryRequirementsEngine **complements** (not replaces) existing services:
+
+#### 1. EntryRequirementsEngine (NEW) vs EntryGuideService (EXISTING)
+
+**EntryRequirementsEngine:**
+- Purpose: Compute **what** requirements apply (visa, forms, documents)
+- Input: Passport nationality + destination code
+- Output: Personalized ComputedRequirements object
+- Scope: Requirements logic only
+
+**EntryGuideService + Country-Specific Services (Keep These!):**
+- Purpose: Provide destination-specific **features** and **content**
+- Examples:
+  - `ThailandEntryGuideService`: TDAC API integration, ATM locations, taxi info
+  - `JapanEntryGuideService`: Immigration Q&A, useful phrases
+  - `SingaporeEntryGuideService`: MRT guide, arrival card help
+- Scope: Destination features, guides, local info
+
+**Integration:**
+```javascript
+// Step 1: Use engine to get requirements
+const engine = new EntryRequirementsEngine();
+const requirements = engine.getRequirements('CHN', 'TH');
+
+// Step 2: Use existing service for destination features
+const thaiService = new ThailandEntryGuideService();
+if (requirements.forms.some(f => f.id === 'TDAC')) {
+  await thaiService.submitTDAC(passportData, travelInfo);
+}
+```
+
+#### 2. EntryRequirementsEngine (NEW) vs NationalityContentResolver (EXISTING)
+
+**EntryRequirementsEngine:**
+- Handles **requirements computation**
+- Merges base rules + nationality overrides
+- Returns structured data (visa required, forms needed, etc.)
+
+**NationalityContentResolver (Enhanced):**
+- Handles **i18n and content localization**
+- Resolves nationality-specific translations
+- Used after requirements are computed
+
+**Integration:**
+```javascript
+// Step 1: Get requirements from engine
+const requirements = engine.getRequirements('CHN', 'TH');
+
+// Step 2: Localize content with NationalityContentResolver
+const resolver = new NationalityContentResolver('CHN', 'TH');
+const localizedTitle = resolver.resolveContent('countries.TH.visa.title');
+const localizedNotes = requirements.specialNotes.map(note =>
+  resolver.resolveContent(`countries.TH.notes.${note}`)
+);
+```
+
+#### 3. EntryRequirementsEngine vs TravelInfoFormUtils
+
+**EntryRequirementsEngine:**
+- Determines **which fields are required** based on passport + destination
+- Example: Indian passport to Thailand → needs visa field, Chinese passport doesn't
+
+**TravelInfoFormUtils (Keep This!):**
+- Manages **form field interactions** (user-modified tracking, validation, completion)
+- Destination-aware but not nationality-aware
+- Handles form state, not requirements logic
+
+**Integration:**
+```javascript
+// Step 1: Get requirements to know which fields to show
+const requirements = engine.getRequirements('CHN', 'TH');
+const needsVisaField = requirements.visaRequired;
+
+// Step 2: Use TravelInfoFormUtils for form management
+const { handleUserInteraction, calculateCompletionMetrics } = useTravelInfoForm('thailand');
+
+// In the form:
+{needsVisaField && (
+  <Input
+    label="Visa Number"
+    value={visaNumber}
+    onChangeText={text => handleUserInteraction('visaNumber', text)}
+  />
+)}
+```
+
+### Non-Breaking Integration Strategy
+
+The new architecture can be rolled out **incrementally** without breaking existing code:
+
+#### Phase 1: Add Engine Alongside Existing Code
+
+```javascript
+// SelectDestinationScreen.js
+const handleSelectDestination = (destCode) => {
+  const engine = new EntryRequirementsEngine();
+
+  // Try new flow first
+  if (engine.isSupported(passport.nationality, destCode)) {
+    const checklist = engine.getChecklist(passport.nationality, destCode);
+    navigation.navigate('ChecklistScreen', { checklist, passport, destCode });
+  } else {
+    // Fall back to existing flow for unconfigured combinations
+    const screenMap = {
+      'th': 'ThailandInfo',
+      'jp': 'JapanInfo',
+      'sg': 'SingaporeInfo',
+      // ... other destinations
+    };
+    navigation.navigate(screenMap[destCode], { passport });
+  }
+};
+```
+
+**Benefits:**
+- ✅ New combinations use unified ChecklistScreen
+- ✅ Unconfigured combinations use existing destination screens
+- ✅ Zero breaking changes
+- ✅ Can migrate incrementally
+
+#### Phase 2: Migrate Screens Gradually
+
+As you expand coverage from 8 → 100 combinations:
+1. Week 1-2: Thailand fully configured → routes to ChecklistScreen
+2. Week 3-4: Singapore + Japan configured → routes to ChecklistScreen
+3. Week 5-8: 20 destinations configured → mostly ChecklistScreen
+4. Existing screens remain as fallback for edge cases
+
+#### Phase 3: Deprecate Old Screens (Optional)
+
+Once all major combinations are configured:
+- Add deprecation warnings to old destination screens
+- Eventually remove old screens in v2.0
+- Keep country-specific services (they provide value beyond requirements)
+
+### What to Keep vs What to Add
+
+#### ✅ KEEP (Still Valuable)
+
+| Component | Why Keep It | How It's Used |
+|-----------|-------------|---------------|
+| Country-specific services | Destination features (TDAC API, guides) | Called by ChecklistScreen when needed |
+| TravelInfoFormUtils | Form field management | Used in form screens after checklist |
+| Existing destination screens | Fallback for unconfigured combos | Route to these when engine.isSupported() = false |
+| NationalityContentResolver | i18n and localization | Enhanced for use with engine output |
+| All 40+ screens | Backward compatibility | Gradual migration, deprecate in v2.0 |
+
+#### ➕ ADD (New Components)
+
+| Component | Purpose | Lines of Code |
+|-----------|---------|---------------|
+| EntryRequirementsEngine.js | Rules engine service | ~500 lines |
+| baseDestinationRules.js | Base requirements config | ~1000 lines |
+| nationalityOverrides.js (expanded) | Nationality-specific rules | ~2000 lines |
+| ChecklistScreen.js | Unified requirements UI | ~300 lines |
+| EntryRequirementsCacheManager.js | Caching layer | ~150 lines |
+| **Total new code** | | **~3,950 lines** |
+
+**Net Result:** Add 3,950 lines, eventually deprecate 2,000+ lines of duplicate screen code = **+1,950 lines for 12x coverage increase**
+
+### Compatibility Matrix
+
+| Scenario | Behavior |
+|----------|----------|
+| **Configured combination** (e.g., CHN → TH) | Engine returns requirements → navigate to ChecklistScreen |
+| **Unconfigured combination** (e.g., AFG → TH) | Engine returns unsupported → fall back to ThailandInfoScreen |
+| **Destination without old screen** (e.g., new country) | Must configure in engine, no fallback available |
+| **Existing user with saved data** | TravelInfoFormUtils migrates data to new flow seamlessly |
 
 ---
 
@@ -2139,8 +2337,17 @@ This design document proposes a **scalable, maintainable, and extensible** archi
 
 ---
 
-**Document Version:** 1.1
+**Document Version:** 1.2
 **Last Updated:** 2025-10-26
 **Author:** Claude (AI Assistant)
 **Status:** 🟡 Awaiting Approval
-**Changelog:** v1.1 - Updated Phase 3 scope from "5 destinations × 20 nationalities" to "20 destinations × 5 nationalities" for broader destination coverage
+
+**Changelog:**
+- v1.2 - Reconsidered design based on latest codebase analysis
+  - Added comprehensive integration guide with existing services
+  - Clarified relationship with EntryGuideService, NationalityContentResolver, TravelInfoFormUtils
+  - Documented non-breaking integration strategy with fallback
+  - Highlighted critical gap: only 8 combinations currently configured vs 10,000+ needed
+  - Added "What to Keep vs What to Add" decision matrix
+- v1.1 - Updated Phase 3 scope from "5 destinations × 20 nationalities" to "20 destinations × 5 nationalities" for broader destination coverage
+- v1.0 - Initial design document
