@@ -55,6 +55,10 @@ const AccommodationSubSection = ({
   handleDistrictSelect,
   handleSubDistrictSelect,
   handleHotelReservationPhotoUpload,
+  // Location data loaders
+  regionsData,
+  getDistrictsFunc,
+  getSubDistrictsFunc,
 }) => {
   const accommodationOptions = [
     { value: 'HOTEL', label: '酒店', icon: '🏨' },
@@ -246,6 +250,7 @@ const AccommodationSubSection = ({
             helpText="选择酒店所在的省份"
             error={!!errors.province}
             errorMessage={errors.province}
+            regionsData={regionsData}
           />
 
           {needsDetailedLocation && province && (
@@ -258,6 +263,7 @@ const AccommodationSubSection = ({
               helpText="选择酒店所在的区/县"
               error={!!errors.district}
               errorMessage={errors.district}
+              getDistrictsFunc={getDistrictsFunc}
             />
           )}
 
@@ -271,6 +277,7 @@ const AccommodationSubSection = ({
               helpText="选择酒店所在的街道/分区"
               error={!!errors.subDistrict}
               errorMessage={errors.subDistrict}
+              getSubDistrictsFunc={getSubDistrictsFunc}
             />
           )}
 
