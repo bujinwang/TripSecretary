@@ -34,7 +34,7 @@ class GDPRComplianceService {
       const exportDir = new FileSystem.Directory(this.EXPORT_DIR);
       const dirExists = await exportDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.EXPORT_DIR, { intermediates: true });
+        await exportDir.create();
       }
     } catch (error) {
       console.error('Failed to create export directory:', error);

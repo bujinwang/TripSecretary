@@ -22,7 +22,7 @@ class AuditLogService {
       const auditDir = new FileSystem.Directory(this.auditStorageDir);
       const dirExists = await auditDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.auditStorageDir, { intermediates: true });
+        await auditDir.create();
         console.log('Audit log storage directory created:', this.auditStorageDir);
       }
     } catch (error) {
@@ -428,9 +428,10 @@ class AuditLogService {
       const exportPath = `${FileSystem.documentDirectory}exports/${exportFileName}`;
 
       // Create exports directory
-      await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}exports/`, { 
-        intermediates: true 
-      });
+      const exportsDir = new FileSystem.Directory(`${FileSystem.documentDirectory}exports/`);
+      if (!await exportsDir.exists()) {
+        await exportsDir.create();
+      }
 
       let exportContent;
       
