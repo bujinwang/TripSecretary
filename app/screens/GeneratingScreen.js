@@ -53,6 +53,7 @@ const GeneratingScreen = ({ navigation, route }) => {
       }, 1200);
 
       // Call API to generate entry form
+      // Note: Fallback to 'th' for legacy compatibility if destination.id not provided
       const result = await api.generateEntryForm({
         passportId: passportId || 1,
         destination: {

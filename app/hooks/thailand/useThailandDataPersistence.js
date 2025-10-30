@@ -147,7 +147,11 @@ export const useThailandDataPersistence = ({
       // Ensure UserDataService is initialized before accessing data
       await UserDataService.initialize(userId);
 
+      // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
       const destinationId = destination?.id || 'th';
+      if (!destination?.id) {
+        console.warn('⚠️ useThailandDataPersistence: No destination.id provided, defaulting to "th"');
+      }
       console.log('🔍 Initializing entry info for destination:', destinationId);
 
       // Try to find existing entry_info
@@ -564,6 +568,7 @@ export const useThailandDataPersistence = ({
 
       // Load travel info
       try {
+        // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
         const destinationId = destination?.id || 'th';
         console.log('Loading travel info for destination:', destinationId);
         let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
@@ -766,6 +771,7 @@ export const useThailandDataPersistence = ({
       }
 
       // Save travel info data
+      // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
       const destinationId = destination?.id || 'th';
       const finalTravelPurpose = getCurrentValue('travelPurpose', travelPurpose) === 'OTHER'
         ? getCurrentValue('customTravelPurpose', customTravelPurpose)
@@ -1040,6 +1046,7 @@ export const useThailandDataPersistence = ({
 
       // Reload travel info
       try {
+        // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
         const destinationId = destination?.id || 'th';
         const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
         if (travelInfo) {
