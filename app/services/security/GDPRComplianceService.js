@@ -102,11 +102,8 @@ class GDPRComplianceService {
       const filename = `gdpr_export_${userId}_${exportId}.json`;
       const filePath = this.EXPORT_DIR + filename;
 
-      await FileSystem.writeAsStringAsync(
-        filePath,
-        JSON.stringify(gdprExport, null, 2),
-        { encoding: FileSystem.EncodingType.UTF8 }
-      );
+      const exportFile = new FileSystem.File(filePath);
+      await exportFile.write(JSON.stringify(gdprExport, null, 2));
 
       // Log successful export
       await this.logAuditEvent('DATA_EXPORT_COMPLETED', userId, {
@@ -432,12 +429,16 @@ class GDPRComplianceService {
   async deleteUserFiles(userId) {
     try {
       // Delete export files
-      const exportFiles = await FileSystem.readDirectoryAsync(this.EXPORT_DIR);
+      const exportDir = new FileSystem.Directory(this.EXPORT_DIR);
+      const exportFiles = await exportDir.list();
       const userExports = exportFiles.filter(file => file.includes(userId));
 
       for (const file of userExports) {
         try {
-          await FileSystem.deleteAsync(this.EXPORT_DIR + file, { idempotent: true });
+          const exportFile = new FileSystem.File(this.EXPORT_DIR + file);
+          if (await exportFile.exists()) {
+            await exportFile.delete();
+          }
         } catch (error) {
           console.error(`Failed to delete export file ${file}:`, error);
         }
@@ -446,11 +447,15 @@ class GDPRComplianceService {
       // Delete cached passport photos (if any)
       const photoDir = FileSystem.documentDirectory + 'passport_photos/';
       try {
-        const photoFiles = await FileSystem.readDirectoryAsync(photoDir);
+        const photoDirObj = new FileSystem.Directory(photoDir);
+        const photoFiles = await photoDirObj.list();
         const userPhotos = photoFiles.filter(file => file.includes(userId));
 
         for (const photo of userPhotos) {
-          await FileSystem.deleteAsync(photoDir + photo, { idempotent: true });
+          const photoFile = new FileSystem.File(photoDir + photo);
+          if (await photoFile.exists()) {
+            await photoFile.delete();
+          }
         }
       } catch (error) {
         // Photo directory might not exist, ignore
