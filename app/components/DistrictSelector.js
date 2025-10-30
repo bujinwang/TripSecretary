@@ -1,9 +1,11 @@
-// Thailand District Selector Component
-// Displays districts for a given province with bilingual labels
+// District Selector Component
+// Displays districts for a given province/region with bilingual labels
+//
+// ⚠️ IMPORTANT: getDistrictsFunc prop is REQUIRED
+// This component is country-agnostic and does not have default data.
 
 import React, { useMemo, useEffect } from 'react';
 import { BaseSearchableSelector } from './tamagui';
-import { getDistrictsByProvince } from '../data/thailandLocations';
 import { useLocale } from '../i18n/LocaleContext';
 
 const normalize = (value) => (value || '').toLowerCase().trim();
@@ -20,14 +22,19 @@ const DistrictSelector = ({
   helpText,
   style,
   showSearch = true,
+  getDistrictsFunc, // ⚠️ REQUIRED: Function to get districts for a province
 }) => {
   const { language } = useLocale();
   const isChinese = language?.startsWith('zh');
 
   const districts = useMemo(() => {
     if (!provinceCode) return [];
-    return getDistrictsByProvince(provinceCode);
-  }, [provinceCode]);
+    if (!getDistrictsFunc) {
+      console.error('❌ DistrictSelector: getDistrictsFunc prop is required but was not provided');
+      return [];
+    }
+    return getDistrictsFunc(provinceCode);
+  }, [provinceCode, getDistrictsFunc]);
 
   const getDisplayLabel = (district) => {
     if (!district) return '';

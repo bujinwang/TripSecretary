@@ -6,6 +6,19 @@
 
 // Import will be done dynamically to avoid module resolution issues
 import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
+import { parseFullName } from '../../utils/nameUtils';
+import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
+import { formatLocationCode } from '../../utils/locationUtils';
+import tdacSessionManager from './TDACSessionManager';
+import {
+  normalizeAccommodationType,
+  getAccommodationTypeDisplay,
+  requiresDetailedAddress
+} from '../../config/destinations/thailand/accommodationTypes';
+import {
+  normalizeTravelPurpose,
+  getTravelPurposeDisplay
+} from '../../config/destinations/thailand/travelPurposes';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -57,6 +70,12 @@ class ThailandTravelerContextBuilder {
       } else {
         console.log('❌ No travel info found - this will cause validation to fail');
       }
+
+      // Initialize TDAC session manager to fetch/cache dropdown IDs
+      console.log('🔄 Initializing TDAC session manager...');
+      await tdacSessionManager.initialize();
+      console.log('✅ TDAC session manager ready');
+
       // Validate that we have the required data
       const validationResult = ThailandTravelerContextBuilder.validateUserData(userData);
       if (!validationResult.isValid) {
@@ -246,8 +265,8 @@ class ThailandTravelerContextBuilder {
       flightNumber: travelInfo?.arrivalFlightNumber
     });
 
-    // Parse full name into family and first name
-    const nameInfo = ThailandTravelerContextBuilder.parseFullName(passport?.fullName || '');
+    // Parse full name into family and first name using centralized utility
+    const nameInfo = parseFullName(passport?.fullName || '', { debug: true });
 
     // Transform passport data - use ONLY actual user data, no fallbacks
     const tdacData = {
@@ -300,15 +319,16 @@ class ThailandTravelerContextBuilder {
       province: ThailandTravelerContextBuilder.transformProvince(travelInfo?.province),
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
       // For HOTEL accommodation, district/subDistrict/postCode are not required and should be empty
-      district: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.district || ''),
-      districtDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
+      // Use requiresDetailedAddress() helper to determine if detailed address is needed
+      district: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.district || '') : '',
+      districtDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
         travelInfo?.districtDisplay || travelInfo?.district
-      ),
-      subDistrict: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.subDistrict || ''),
-      subDistrictDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
+      ) : '',
+      subDistrict: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.subDistrict || '') : '',
+      subDistrictDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
         travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
-      ),
-      postCode: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.postalCode || ''),
+      ) : '',
+      postCode: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.postalCode || '') : '',
       address: travelInfo?.hotelAddress || travelInfo?.address || '',
       
       // Visa (optional, from user's travel info)
@@ -336,79 +356,13 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Parse full name into components
-   * For Chinese names like "LI A MAO":
-   * - Family Name: LI (姓)
-   * - Middle Name: A (中间名)  
-   * - First Name: MAO (名)
+   * @deprecated Use parseFullName from utils/nameUtils.js instead
    * @param {string} fullName - Full name string
    * @returns {Object} - Name components
    */
   static parseFullName(fullName) {
-    if (!fullName) {
-      return { familyName: '', firstName: '', middleName: '' };
-    }
-
-    console.log('🔍 Parsing full name:', fullName);
-
-    // Clean the full name - remove extra spaces and normalize
-    const cleanedName = fullName.trim().replace(/\s+/g, ' ');
-
-    // Try comma-separated format first (e.g., "ZHANG, WEI MING" or "WANG, BAOBAO")
-    if (cleanedName.includes(',')) {
-      const parts = cleanedName.split(',').map(part => part.trim());
-      if (parts.length === 2) {
-        const givenNames = parts[1].split(' ').filter(name => name.length > 0);
-        const result = {
-          familyName: parts[0].replace(/,+$/, '').trim(), // Remove trailing commas
-          // If only one given name, it's the first name with no middle name
-          // If two or more given names, first is middle, rest is first name
-          middleName: givenNames.length >= 2 ? givenNames[0] : '',
-          firstName: givenNames.length >= 2 ? givenNames.slice(1).join(' ') : (givenNames[0] || '')
-        };
-        console.log('✅ Comma format parsed:', result);
-        return result;
-      }
-    }
-
-    // Try space-separated format (e.g., "LI A MAO")
-    const spaceParts = cleanedName.split(/\s+/);
-    if (spaceParts.length === 3) {
-      // Three parts: Family Middle First
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
-        middleName: spaceParts[1].replace(/,+$/, '').trim(),    // Remove trailing commas
-        firstName: spaceParts[2].replace(/,+$/, '').trim()      // Remove trailing commas
-      };
-      console.log('✅ Three-part name parsed:', result);
-      return result;
-    } else if (spaceParts.length === 2) {
-      // Two parts: Family First (no middle name)
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
-        middleName: '',                                         // (empty)
-        firstName: spaceParts[1].replace(/,+$/, '').trim()      // Remove trailing commas
-      };
-      console.log('✅ Two-part name parsed:', result);
-      return result;
-    } else if (spaceParts.length > 3) {
-      // More than three parts: First is family, second is middle, rest is first
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),                    // First part as family
-        middleName: spaceParts[1].replace(/,+$/, '').trim(),                    // Second part as middle
-        firstName: spaceParts.slice(2).join(' ').replace(/,+$/, '').trim()     // Rest as first name
-      };
-      console.log('✅ Multi-part name parsed:', result);
-      return result;
-    }
-
-    // Single name - treat as first name
-    const result = {
-      familyName: '',
-      middleName: '',
-      firstName: cleanedName.replace(/,+$/, '').trim()
-    };
-    console.log('✅ Single name parsed:', result);
-    return result;
+    // Delegate to centralized utility
+    return parseFullName(fullName, { debug: true });
   }
 
   /**
@@ -500,95 +454,35 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Extract phone code from phone number (legacy fallback method)
+   * @deprecated Use extractCountryCode from utils/phoneUtils.js instead
    * @param {string} phoneNumber - Full phone number
    * @returns {string} - Phone code
    */
   static extractPhoneCode(phoneNumber) {
-    if (!phoneNumber) return ''; // No default - user must provide
-
-    // Remove all non-digit characters except +
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Extract country code - be more specific to avoid false matches
-    if (cleaned.startsWith('+86')) {
-      return '86';
-    } else if (cleaned.startsWith('86') && cleaned.length > 13) {
-      // Only treat as country code if it's a long number (86 + 11+ digits)
-      return '86';
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return '852';
-    } else if (cleaned.startsWith('+853') || cleaned.startsWith('853')) {
-      return '853';
-    } else if (cleaned.startsWith('+1')) {
-      return '1';
-    } else if (cleaned.startsWith('1') && cleaned.length > 11) {
-      // Only treat as US/Canada code if it's a long number (1 + 10+ digits)
-      return '1';
-    } else if (cleaned.startsWith('+')) {
-      // Extract first 1-3 digits after +
-      const match = cleaned.match(/^\+(\d{1,3})/);
-      return match ? match[1] : '';
-    }
-
-    return ''; // No fallback - return empty if can't determine
+    // Delegate to centralized utility
+    return extractCountryCode(phoneNumber, { strict: true });
   }
 
   /**
    * Extract phone number without country code
+   * @deprecated Use extractNationalNumber from utils/phoneUtils.js instead
    * @param {string} phoneNumber - Full phone number
    * @returns {string} - Phone number without country code
    */
   static extractPhoneNumber(phoneNumber) {
-    if (!phoneNumber) return '';
-
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Remove country codes - be more specific to avoid false matches
-    if (cleaned.startsWith('+86')) {
-      return cleaned.replace(/^\+86/, '');
-    } else if (cleaned.startsWith('86') && cleaned.length > 13) {
-      // Only treat as country code if it's a long number (86 + 11+ digits)
-      return cleaned.replace(/^86/, '');
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return cleaned.replace(/^\+?852/, '');
-    } else if (cleaned.startsWith('+853') || cleaned.startsWith('853')) {
-      return cleaned.replace(/^\+?853/, '');
-    } else if (cleaned.startsWith('+1')) {
-      return cleaned.replace(/^\+1/, '');
-    } else if (cleaned.startsWith('1') && cleaned.length > 11) {
-      // Only treat as US/Canada code if it's a long number (1 + 10+ digits)
-      return cleaned.replace(/^1/, '');
-    } else if (cleaned.startsWith('+')) {
-      // Remove any country code (1-3 digits after +)
-      return cleaned.replace(/^\+\d{1,3}/, '');
-    }
-
-    return cleaned;
+    // Delegate to centralized utility
+    return extractNationalNumber(phoneNumber);
   }
 
   /**
    * Transform travel purpose to TDAC format
+   * @deprecated Use normalizeTravelPurpose from config/destinations/thailand/travelPurposes.js instead
    * @param {string} purpose - Travel purpose from user input
    * @returns {string} - TDAC purpose format
    */
   static transformTravelPurpose(purpose) {
-    if (!purpose) return ''; // No default - user must provide
-    
-    const purposeMap = {
-      '度假旅游': 'HOLIDAY',
-      '商务': 'BUSINESS',
-      '会议': 'BUSINESS',
-      '体育活动': 'SPORT',
-      '奖励旅游': 'HOLIDAY',
-      '会展': 'BUSINESS',
-      '教育': 'EDUCATION',
-      '就业': 'EMPLOYMENT',
-      '展览': 'BUSINESS',
-      '医疗': 'MEDICAL',
-      '其他': 'OTHER'
-    };
-    
-    return purposeMap[purpose] || purpose; // Return original if not mapped
+    // Delegate to centralized config for backward compatibility
+    return normalizeTravelPurpose(purpose);
   }
 
   /**
@@ -650,35 +544,24 @@ class ThailandTravelerContextBuilder {
       const normalized = provinceCode.toUpperCase().trim();
       const match = provinces.find((item) => item.code === normalized);
       if (!match) {
-        return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+        return formatLocationCode(provinceCode);
       }
       return `${match.name} - ${match.nameZh}`;
     } catch (error) {
       console.warn('⚠️ Failed to load province display data:', error.message);
-      return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+      return formatLocationCode(provinceCode);
     }
   }
 
   /**
    * Format location strings for display (convert codes like AMNAT_CHAROEN → Amnat Charoen)
+   * @deprecated Use formatLocationCode from utils/locationUtils.js instead
    * @param {string} value - Location string or code
    * @returns {string} - Formatted display string
    */
   static formatLocationDisplay(value) {
-    if (!value) return '';
-    const raw = value.toString().trim();
-    if (!raw) return '';
-    
-    if (/^[A-Z_]+$/.test(raw)) {
-      return raw
-        .toLowerCase()
-        .split('_')
-        .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' ');
-    }
-    
-    return raw;
+    // Delegate to centralized utility for backward compatibility
+    return formatLocationCode(value);
   }
 
   /**
@@ -947,7 +830,7 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Get transport mode ID based on travel mode
-   * Uses TDAC's encoded transport mode IDs with specific subtypes
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {Object} travelInfo - Travel information
    * @returns {string} - TDAC encoded transport mode ID
    */
@@ -955,244 +838,171 @@ class ThailandTravelerContextBuilder {
     console.log('🚨 getTransportModeId called with travelInfo:', travelInfo?.arrivalFlightNumber);
     const travelMode = ThailandTravelerContextBuilder.getTravelMode(travelInfo);
     console.log('🚨 Determined travel mode:', travelMode);
-    
-    // TDAC transport mode IDs (extracted from HAR file)
-    const TDAC_TRANSPORT_MODE_IDS = {
-      // Air transport subtypes
-      'COMMERCIAL_FLIGHT': '6XcrGmsUxFe9ua1gehBv/Q==',     // Commercial flights (most common)
-      'PRIVATE_CARGO': 'yYdaVPLIpwqddAuVOLDorQ==',         // Private/Cargo airline
-      'OTHERS_AIR': 'mhapxYyzDmGnIyuZ0XgD8Q==',           // Others (please specify)
-      
-      // General transport modes (fallback)
-      'AIR_GENERAL': 'ZUSsbcDrA+GoD4mQxvf7Ag==',           // General air transport
-      'LAND_GENERAL': 'roui+vydIOBtjzLaEq6hCg==',          // General land transport
-      'SEA_GENERAL': 'kFiGEpiBus5ZgYvP6i3CNQ==',          // General sea transport
-      
-      // Fallback mappings
-      'AIR': '6XcrGmsUxFe9ua1gehBv/Q==',                   // Default to commercial flight
-      'LAND': 'roui+vydIOBtjzLaEq6hCg==',                  // Land transport
-      'SEA': 'kFiGEpiBus5ZgYvP6i3CNQ=='                    // Sea transport
-    };
-    
+
     // For air travel, determine specific subtype
     if (travelMode === 'AIR') {
       // Check if we can determine the specific flight type
       if (travelInfo?.arrivalFlightNumber) {
         const flightNo = travelInfo.arrivalFlightNumber.toUpperCase();
-        
+
         // Commercial flights typically have airline codes (2 letters + numbers)
         const isCommercial = /^[A-Z]{2}\d+$/.test(flightNo);
-        
+
         if (isCommercial) {
-          console.log('🚨 TDAC_TRANSPORT_MODE_IDS keys:', Object.keys(TDAC_TRANSPORT_MODE_IDS));
-          console.log('🚨 COMMERCIAL_FLIGHT value:', TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT']);
-          const result = TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
-          console.log('🚨 Returning result:', result);
-          return result;
+          console.log('🚨 Using COMMERCIAL_FLIGHT mode');
+          try {
+            return tdacSessionManager.getTransportModeId('COMMERCIAL_FLIGHT');
+          } catch (error) {
+            console.error('Error getting transport mode ID from session manager:', error);
+            return '';
+          }
         }
       }
-      
+
       // Default to commercial flight for air travel (most common case)
-      return TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+      try {
+        return tdacSessionManager.getTransportModeId('COMMERCIAL_FLIGHT');
+      } catch (error) {
+        console.error('Error getting transport mode ID from session manager:', error);
+        return '';
+      }
     }
-    
-    return TDAC_TRANSPORT_MODE_IDS[travelMode] || TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+
+    // Use session manager to get encrypted ID for other modes
+    try {
+      return tdacSessionManager.getTransportModeId(travelMode);
+    } catch (error) {
+      console.error('Error getting transport mode ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get gender ID based on gender string
-   * Uses TDAC's encoded gender IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} gender - Gender string (MALE, FEMALE, etc.)
    * @returns {string} - TDAC encoded gender ID
    */
   static getGenderId(gender) {
-    // TDAC gender IDs (extracted from HAR file)
-    const TDAC_GENDER_IDS = {
-      'MALE': 'g5iW15ADyFWOAxDewREkVA==',
-      'FEMALE': 'JGb85pWhehCWn5EM6PeL5A==',
-      'UNDEFINED': 'W6iZt0z/ayaCvyGt6LXKIA=='
-    };
-
     // If gender is missing or undefined, return empty string
     // The TDAC API validation will catch this and show a proper error message
     if (!gender) return '';
 
     const normalizedGender = gender.toUpperCase().trim();
 
-    // Map common variations
-    if (normalizedGender === 'M' || normalizedGender === 'MALE' || normalizedGender === '男性') {
-      return TDAC_GENDER_IDS['MALE'];
-    }
-    if (normalizedGender === 'F' || normalizedGender === 'FEMALE' || normalizedGender === '女性') {
-      return TDAC_GENDER_IDS['FEMALE'];
+    // Map common variations to standard values
+    let standardGender = normalizedGender;
+    if (normalizedGender === 'M' || normalizedGender === '男性') {
+      standardGender = 'MALE';
+    } else if (normalizedGender === 'F' || normalizedGender === '女性') {
+      standardGender = 'FEMALE';
     }
 
     // IMPORTANT: TDAC API does not accept UNDEFINED gender
     // Return empty string so validation will catch it and show proper error
-    return '';
+    if (standardGender === 'UNDEFINED') {
+      return '';
+    }
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getGenderId(standardGender);
+    } catch (error) {
+      console.error('Error getting gender ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get accommodation type ID based on accommodation type
-   * Uses TDAC's encoded accommodation IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - TDAC encoded accommodation ID
    */
   static getAccommodationTypeId(accommodationType) {
-    if (!accommodationType) return '';
-    
-    // TDAC accommodation type IDs (extracted from HAR file)
-    const TDAC_ACCOMMODATION_IDS = {
-      'HOTEL': 'kSqK152aNAx9HQigxwgnUg==',
-      'YOUTH_HOSTEL': 'Bsldsb4eRsgtHy+rwxGvyQ==',
-      'GUEST_HOUSE': 'xyft2pbI953g9FKKER4OZw==',
-      'FRIEND_HOUSE': 'ze+djQZsddZtZdi37G7mZg==',
-      'APARTMENT': 'PUB3ud2M4eOVGBmCEe4q2Q==',
-      'OTHERS': 'lIaJ6Z7teVjIeRF2RT97Hw=='
-    };
-    
+    if (!accommodationType) {
+      // Use session manager to get default HOTEL ID
+      try {
+        return tdacSessionManager.getAccommodationId('HOTEL');
+      } catch (error) {
+        console.error('Error getting accommodation ID from session manager:', error);
+        return '';
+      }
+    }
+
     const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
-    return TDAC_ACCOMMODATION_IDS[normalizedType] || TDAC_ACCOMMODATION_IDS.HOTEL;
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getAccommodationId(normalizedType);
+    } catch (error) {
+      console.error('Error getting accommodation ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Normalize accommodation type to TDAC key
+   * @deprecated Use normalizeAccommodationType from config/destinations/thailand/accommodationTypes.js instead
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - Normalized accommodation type key
    */
   static normalizeAccommodationType(accommodationType) {
-    if (!accommodationType) return 'HOTEL';
-    const normalizedType = accommodationType.toUpperCase().trim();
-    
-    const typeMapping = {
-      'HOTEL': 'HOTEL',
-      '酒店': 'HOTEL',
-      'RESORT': 'HOTEL',  // TDAC doesn't have resort option, map to HOTEL
-      'YOUTH HOSTEL': 'YOUTH_HOSTEL',
-      'HOSTEL': 'YOUTH_HOSTEL',
-      '青年旅舍': 'YOUTH_HOSTEL',
-      'GUEST HOUSE': 'GUEST_HOUSE',
-      'GUESTHOUSE': 'GUEST_HOUSE',
-      '民宿': 'GUEST_HOUSE',
-      'FRIEND\'S HOUSE': 'FRIEND_HOUSE',
-      'FRIENDS HOUSE': 'FRIEND_HOUSE',
-      'FRIEND': 'FRIEND_HOUSE',  // Map UI's FRIEND to TDAC's FRIEND_HOUSE
-      '朋友家': 'FRIEND_HOUSE',
-      'APARTMENT': 'APARTMENT',
-      '公寓': 'APARTMENT',
-      'OTHER': 'OTHERS',
-      'OTHERS': 'OTHERS',
-      '其他': 'OTHERS'
-    };
-    
-    return typeMapping[normalizedType] || 'HOTEL';
+    // Delegate to centralized config for backward compatibility
+    return normalizeAccommodationType(accommodationType);
   }
 
   /**
    * Get human-readable accommodation type display value
+   * @deprecated Use getAccommodationTypeDisplay from config/destinations/thailand/accommodationTypes.js instead
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - Friendly accommodation description
    */
   static getAccommodationTypeDisplay(accommodationType) {
-    if (!accommodationType) return '';
-    const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
-    
-    const displayMap = {
-      'HOTEL': 'Hotel (酒店)',
-      'YOUTH_HOSTEL': 'Youth Hostel (青年旅舍)',
-      'GUEST_HOUSE': 'Guest House (民宿)',
-      'FRIEND_HOUSE': "Friend's House (朋友家)",
-      'APARTMENT': 'Apartment (公寓)',
-      'OTHERS': 'Other (其他)'
-    };
-    
-    return displayMap[normalizedType] || accommodationType;
+    // Delegate to centralized config for backward compatibility
+    return getAccommodationTypeDisplay(accommodationType);
   }
 
   /**
    * Get purpose ID based on travel purpose
-   * Uses TDAC's encoded purpose IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} purpose - Travel purpose string
    * @returns {string} - TDAC encoded purpose ID
    */
   static getPurposeId(purpose) {
     if (!purpose) return '';
-    
-    // TDAC purpose IDs (extracted from HAR file)
-    const TDAC_PURPOSE_IDS = {
-      'HOLIDAY': 'ZUSsbcDrA+GoD4mQxvf7Ag==',
-      'MEETING': 'roui+vydIOBtjzLaEq6hCg==',
-      'SPORTS': 'kFiGEpiBus5ZgYvP6i3CNQ==',
-      'BUSINESS': '//wEUc0hKyGLuN5vojDBgA==',
-      'INCENTIVE': 'g3Kfs7hn033IoeTa5VYrKQ==',
-      'MEDICAL_WELLNESS': 'Khu8eZW5Xt/2dVTwRTc7oA==',
-      'EDUCATION': '/LDehQQnXbGFGUe2mSC2lw==',
-      'CONVENTION': 'a7NwNw5YbtyIQQClpkDxiQ==',
-      'EMPLOYMENT': 'MIIPKOQBf05A/1ueNg8gSA==',
-      'EXHIBITION': 'DeSHtTxpXJk+XIG5nUlW6w==',
-      'OTHERS': 'J4Ru2J4RqpnDSHeA0k32PQ=='
-    };
-    
-    const normalizedPurpose = purpose.toUpperCase().trim();
-    
-    // Map common variations
-    const purposeMapping = {
-      'HOLIDAY': 'HOLIDAY',
-      'VACATION': 'HOLIDAY',
-      'TOURISM': 'HOLIDAY',
-      '度假': 'HOLIDAY',
-      '旅游': 'HOLIDAY',
-      'BUSINESS': 'BUSINESS',
-      '商务': 'BUSINESS',
-      'MEETING': 'MEETING',
-      '会议': 'MEETING',
-      'SPORTS': 'SPORTS',
-      'SPORT': 'SPORTS',
-      '体育': 'SPORTS',
-      'EDUCATION': 'EDUCATION',
-      'STUDY': 'EDUCATION',
-      '教育': 'EDUCATION',
-      '学习': 'EDUCATION',
-      'EMPLOYMENT': 'EMPLOYMENT',
-      'WORK': 'EMPLOYMENT',
-      '就业': 'EMPLOYMENT',
-      '工作': 'EMPLOYMENT',
-      'MEDICAL': 'MEDICAL_WELLNESS',
-      'WELLNESS': 'MEDICAL_WELLNESS',
-      '医疗': 'MEDICAL_WELLNESS',
-      'CONVENTION': 'CONVENTION',
-      'EXHIBITION': 'EXHIBITION',
-      'INCENTIVE': 'INCENTIVE',
-      'OTHER': 'OTHERS',
-      'OTHERS': 'OTHERS',
-      '其他': 'OTHERS'
-    };
-    
-    const mappedPurpose = purposeMapping[normalizedPurpose] || 'HOLIDAY'; // Default to holiday
-    return TDAC_PURPOSE_IDS[mappedPurpose];
+
+    // Normalize purpose using centralized config
+    const normalizedPurpose = normalizeTravelPurpose(purpose);
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getPurposeId(normalizedPurpose);
+    } catch (error) {
+      console.error('Error getting purpose ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get nationality ID based on nationality code
-   * Uses TDAC's encoded nationality IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} nationality - Nationality code (CHN, USA, etc.)
    * @returns {string} - TDAC encoded nationality ID
    */
   static getNationalityId(nationality) {
     if (!nationality) return '';
-    
-    // TDAC nationality IDs (extracted from HAR file - sample set)
-    const TDAC_NATIONALITY_IDS = {
-      'CHN': 'n8NVa/feQ+F5Ok859Oywuw==',  // China
-      'HKG': 'g6ud3ID/+b3U95emMTZsBw==',  // Hong Kong
-      'MAC': '6H4SM3pACzdpLaJx/SR7sg=='   // Macao
-      // Note: More nationality IDs would need to be extracted from additional HAR captures
-    };
-    
+
     const normalizedNationality = nationality.toUpperCase().trim();
-    
-    // Return the encoded ID if available, otherwise return empty (will need API lookup)
-    return TDAC_NATIONALITY_IDS[normalizedNationality] || '';
+
+    // Use session manager to get encrypted ID
+    // Returns empty string if nationality not in fallback list
+    try {
+      return tdacSessionManager.getNationalityId(normalizedNationality);
+    } catch (error) {
+      console.error('Error getting nationality ID from session manager:', error);
+      return '';
+    }
   }
 
   /**

@@ -22,10 +22,30 @@ import EntryInfoService from '../services/EntryInfoService';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
+import { getDestination } from '../config/destinations';
 
+// TODO: Migrate all destinations to config system (see app/config/destinations/)
+// Currently only Thailand ('th') is fully configured
+// For other countries, add configs to app/config/destinations/{country}/ directory
 const HOT_COUNTRIES = [
   { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
-  { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true },
+  // Thailand loaded from destination config system
+  (() => {
+    try {
+      const thailand = getDestination('th');
+      return {
+        id: thailand.id,
+        flag: thailand.flag,
+        name: thailand.name,
+        flightTimeKey: thailand.flightTimeKey,
+        enabled: thailand.enabled
+      };
+    } catch (error) {
+      // Fallback if config not available
+      console.warn('Failed to load Thailand from config, using hardcoded values:', error.message);
+      return { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true };
+    }
+  })(),
   { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: true },
   { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: true },
   { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: true },

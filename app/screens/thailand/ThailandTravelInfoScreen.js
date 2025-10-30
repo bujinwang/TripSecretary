@@ -26,7 +26,7 @@ import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator
 import { useUserInteractionTracker } from '../../utils/UserInteractionTracker';
 import SuggestionProviders from '../../utils/SuggestionProviders';
 import FieldStateManager from '../../utils/FieldStateManager';
-import { getDistrictsByProvince, getSubDistrictsByDistrictId } from '../../data/thailandLocations';
+import { getLocationLoaders } from '../../utils/locationDataLoader';
 
 // Import secure data models and services
 import Passport from '../../models/Passport';
@@ -88,6 +88,12 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
 
   // User interaction tracking
   const userInteractionTracker = useUserInteractionTracker('thailand_travel_info');
+
+  // Load location data for Thailand
+  const { provinces: thailandProvinces, getDistricts, getSubDistricts } = useMemo(
+    () => getLocationLoaders('th'),
+    []
+  );
 
   // Initialize persistence hook - handles data loading and saving
   const persistence = useThailandDataPersistence({
@@ -519,6 +525,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
           handleFlightTicketPhotoUpload={wrappedHandleFlightTicketPhotoUpload}
           handleDepartureFlightTicketPhotoUpload={wrappedHandleDepartureFlightTicketPhotoUpload}
           handleHotelReservationPhotoUpload={wrappedHandleHotelReservationPhotoUpload}
+          // Location data loaders
+          regionsData={thailandProvinces}
+          getDistrictsFunc={getDistricts}
+          getSubDistrictsFunc={getSubDistricts}
         />
 
 

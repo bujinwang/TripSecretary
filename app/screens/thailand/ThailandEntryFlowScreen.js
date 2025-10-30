@@ -104,7 +104,11 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const fundItems = await UserDataService.getFundItems(currentUserId);
 
       // Load travel info for Thailand - use currentUserId directly
+      // Note: This screen is Thailand-specific, so 'th' is the expected destinationId
       const destinationId = route.params?.destination?.id || 'th';
+      if (!route.params?.destination?.id) {
+        console.warn('⚠️ ThailandEntryFlowScreen: No destination.id in route params, defaulting to "th"');
+      }
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
 
       // Get entry info ID for this destination
@@ -296,6 +300,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
 
       // Find entry info for Thailand
+      // Note: This screen is Thailand-specific, so 'th' is the expected destinationId
       const destinationId = route.params?.destination?.id || 'th';
       const thailandEntryInfo = allEntryInfos?.find(info =>
         info.destinationId === destinationId

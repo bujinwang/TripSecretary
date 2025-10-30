@@ -88,6 +88,10 @@ const TravelDetailsSection = ({
   handleFlightTicketPhotoUpload,
   handleDepartureFlightTicketPhotoUpload,
   handleHotelReservationPhotoUpload,
+  // Location data loaders
+  regionsData,
+  getDistrictsFunc,
+  getSubDistrictsFunc,
 }) => {
   return (
     <CollapsibleSection
@@ -184,6 +188,9 @@ const TravelDetailsSection = ({
         handleDistrictSelect={handleDistrictSelect}
         handleSubDistrictSelect={handleSubDistrictSelect}
         handleHotelReservationPhotoUpload={handleHotelReservationPhotoUpload}
+        regionsData={regionsData}
+        getDistrictsFunc={getDistrictsFunc}
+        getSubDistrictsFunc={getSubDistrictsFunc}
       />
     </CollapsibleSection>
   );
