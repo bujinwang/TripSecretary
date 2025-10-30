@@ -268,17 +268,20 @@ const EnhancedTravelInfoTemplate = ({
       }
 
       updateFormState({ ...loadedData, isLoading: false });
+      console.log('[Template V2] Data loaded successfully, isLoading set to false');
     } catch (error) {
       console.error('[Template V2] Error loading data:', error);
       updateFormState({ isLoading: false });
     }
-  }, [userId, config.destinationId, userInteractionTracker, updateFormState]);
+  }, [userId, config.destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState]);
 
+  // Load data when user ID is available and tracker is initialized
   useEffect(() => {
     if (userId && userInteractionTracker.isInitialized) {
+      console.log('[Template V2] Triggering data load - userId:', userId, 'tracker initialized:', userInteractionTracker.isInitialized);
       loadDataFromUserDataService();
     }
-  }, [userId, userInteractionTracker.isInitialized, loadDataFromUserDataService]);
+  }, [userId, userInteractionTracker.isInitialized]);
 
   // ============================================
   // DATA SAVING (V2: With Field Filtering)
