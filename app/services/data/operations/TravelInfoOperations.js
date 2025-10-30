@@ -12,6 +12,7 @@
 
 import SecureStorageService from '../../security/SecureStorageService';
 import CacheManager from '../cache/CacheManager';
+import { parseLocalDate } from '../../../utils/dateUtils';
 
 /**
  * @class TravelInfoOperations
@@ -218,9 +219,9 @@ class TravelInfoOperations {
         return;
       }
 
-      // Parse dates
-      const oldDate = oldArrivalDate ? new Date(oldArrivalDate) : null;
-      const newDate = newArrivalDate ? new Date(newArrivalDate) : null;
+      // Parse dates with timezone-safe parsing to prevent date shifts
+      const oldDate = oldArrivalDate ? parseLocalDate(oldArrivalDate) : null;
+      const newDate = newArrivalDate ? parseLocalDate(newArrivalDate) : null;
 
       // Handle notification scheduling
       await NotificationCoordinator.handleArrivalDateChange(

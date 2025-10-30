@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { Card, CardProps, styled } from 'tamagui';
+import { Card, CardProps } from 'tamagui';
 
 export interface BaseCardProps extends CardProps {
   /**
@@ -45,72 +45,36 @@ export interface BaseCardProps extends CardProps {
   onPress?: () => void;
 }
 
-const StyledCard = styled(Card, {
-  backgroundColor: '$card',
-  borderRadius: '$md',
-  overflow: 'hidden',
-
-  variants: {
-    variant: {
-      elevated: {
-        elevation: 2,
-        shadowColor: '$shadowColor',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        borderWidth: 0,
-      },
-      bordered: {
-        borderWidth: 1,
-        borderColor: '$borderColor',
-        elevation: 0,
-        shadowOpacity: 0,
-      },
-      flat: {
-        borderWidth: 0,
-        elevation: 0,
-        shadowOpacity: 0,
-      },
-    },
-
-    padding: {
-      none: {
-        padding: 0,
-      },
-      sm: {
-        padding: '$sm',
-      },
-      md: {
-        padding: '$md',
-      },
-      lg: {
-        padding: '$lg',
-      },
-      xl: {
-        padding: '$xl',
-      },
-    },
-
-    pressable: {
-      true: {
-        cursor: 'pointer',
-        hoverStyle: {
-          backgroundColor: '$backgroundHover',
-        },
-        pressStyle: {
-          backgroundColor: '$backgroundPress',
-          scale: 0.98,
-        },
-      },
-    },
-  } as const,
-
-  defaultVariants: {
-    variant: 'elevated',
-    padding: 'md',
-    pressable: false,
+// Variant style maps - static and optimizable
+const variantStyles = {
+  elevated: {
+    elevation: 2,
+    shadowColor: '$shadowColor',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 0,
   },
-});
+  bordered: {
+    borderWidth: 1,
+    borderColor: '$borderColor',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  flat: {
+    borderWidth: 0,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+};
+
+const paddingMap = {
+  none: 0,
+  sm: '$sm',
+  md: '$md',
+  lg: '$lg',
+  xl: '$xl',
+};
 
 /**
  * BaseCard Component
@@ -123,16 +87,29 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   children,
   ...props
 }) => {
+  const isPressable = pressable || !!onPress;
+
   return (
-    <StyledCard
-      variant={variant}
-      padding={padding}
-      pressable={pressable || !!onPress}
+    <Card
+      backgroundColor="$card"
+      borderRadius="$md"
+      overflow="hidden"
+      padding={paddingMap[padding]}
+      animation="quick"
+      cursor={isPressable ? 'pointer' : undefined}
+      hoverStyle={isPressable ? {
+        backgroundColor: '$backgroundHover',
+      } : undefined}
+      pressStyle={isPressable ? {
+        backgroundColor: '$backgroundPress',
+        scale: 0.98,
+      } : undefined}
       onPress={onPress}
+      {...variantStyles[variant]}
       {...props}
     >
       {children}
-    </StyledCard>
+    </Card>
   );
 };
 

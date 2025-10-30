@@ -1,0 +1,28 @@
+{
+  "id": "7d9abd99-6a42-473e-bfb3-7fb73402764e",
+  "travelInfoId": "0dde5d4c-3b54-45a7-ae87-774d99501d29",
+  "country": "thailand",
+  "data": {
+    "personalInfo": {
+      "email": "test@example.com",
+      "passportNumber": "AB1234567",
+      "nationality": "US",
+      "firstName": "John",
+      "lastName": "Doe",
+      "dateOfBirth": "1990-01-01",
+      "gender": "M"
+    },
+    "travelDetails": {
+      "arrivalDate": "2025-11-06",
+      "arrivalFlight": "TG123",
+      "departureDate": "2025-11-13",
+      "accommodationAddress": "123 Bangkok Street, Bangkok, Thailand",
+      "purposeOfVisit": "Tourism"
+    },
+    "thailandSpecific": {
+      "accommodationType": "Hotel",
+      "hotelName": "Test Hotel Bangkok"
+    }
+  },
+  "createdAt": 1761785389272
+}

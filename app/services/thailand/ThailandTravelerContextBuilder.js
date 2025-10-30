@@ -5,6 +5,7 @@
  */
 
 // Import will be done dynamically to avoid module resolution issues
+import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -763,17 +764,22 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Format date for TDAC (YYYY-MM-DD)
-   * @param {string} dateStr - Date string
-   * @returns {string} - Formatted date
+   * Uses timezone-safe formatting to prevent date shifts
+   * @param {string|Date} dateStr - Date string or Date object
+   * @returns {string} - Formatted date in YYYY-MM-DD format
    */
   static formatDateForTDAC(dateStr) {
     if (!dateStr) return '';
 
     try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '';
+      // If already in valid YYYY-MM-DD format, return as-is
+      if (typeof dateStr === 'string' && isValidDateString(dateStr)) {
+        return dateStr;
+      }
 
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      // Otherwise, format using timezone-safe utility
+      const formatted = formatLocalDate(dateStr);
+      return formatted || '';
     } catch (error) {
       console.error('Failed to format date:', error);
       return '';

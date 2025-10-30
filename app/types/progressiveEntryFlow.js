@@ -129,10 +129,9 @@
 /**
  * @typedef {Object} EntryPackSnapshot
  * @property {string} snapshotId - Unique snapshot ID
- * @property {string} entryPackId - Original entry pack ID
+ * @property {string} entryInfoId - Original entry info ID
  * @property {string} userId - User ID
  * @property {string} destinationId - Destination ID
- * @property {string} tripId - Trip ID
  * @property {'completed'|'cancelled'|'expired'} status - Snapshot status
  * @property {string} createdAt - Creation timestamp
  * @property {string} arrivalDate - Arrival date
@@ -239,7 +238,7 @@
  * @property {Object} metadata - Event metadata
  * @property {string} userId - User who triggered event
  * @property {string} [snapshotId] - Related snapshot ID
- * @property {string} [entryPackId] - Related entry pack ID
+ * @property {string} [entryInfoId] - Related entry info ID
  */
 
 /**
@@ -367,7 +366,7 @@ export const TypeValidators = {
   isEntryPackSnapshot(obj) {
     return obj &&
            typeof obj.snapshotId === 'string' &&
-           typeof obj.entryPackId === 'string' &&
+           typeof obj.entryInfoId === 'string' &&
            typeof obj.userId === 'string' &&
            ['completed', 'cancelled', 'expired'].includes(obj.status) &&
            typeof obj.createdAt === 'string' &&

@@ -147,7 +147,7 @@ export const useThailandDataPersistence = ({
       // Ensure UserDataService is initialized before accessing data
       await UserDataService.initialize(userId);
 
-      const destinationId = destination?.id || 'thailand';
+      const destinationId = destination?.id || 'th';
       console.log('🔍 Initializing entry info for destination:', destinationId);
 
       // Try to find existing entry_info
@@ -564,7 +564,7 @@ export const useThailandDataPersistence = ({
 
       // Load travel info
       try {
-        const destinationId = destination?.id || 'thailand';
+        const destinationId = destination?.id || 'th';
         console.log('Loading travel info for destination:', destinationId);
         let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
@@ -766,7 +766,7 @@ export const useThailandDataPersistence = ({
       }
 
       // Save travel info data
-      const destinationId = destination?.id || 'thailand';
+      const destinationId = destination?.id || 'th';
       const finalTravelPurpose = getCurrentValue('travelPurpose', travelPurpose) === 'OTHER'
         ? getCurrentValue('customTravelPurpose', customTravelPurpose)
         : getCurrentValue('travelPurpose', travelPurpose);
@@ -1040,7 +1040,7 @@ export const useThailandDataPersistence = ({
 
       // Reload travel info
       try {
-        const destinationId = destination?.id || 'thailand';
+        const destinationId = destination?.id || 'th';
         const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
         if (travelInfo) {
           // Update travel info state...

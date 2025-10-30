@@ -302,8 +302,7 @@ class TDACSubmissionService {
     } catch (error) {
       console.error('❌ Failed to create entry info snapshot:', error);
 
-      // Handle snapshot creation failure gracefully
-      // Don't block the user flow, but log the error for debugging
+      // Log the failure for debugging
       try {
         const failureLog = {
           timestamp: new Date().toISOString(),
@@ -320,7 +319,8 @@ class TDACSubmissionService {
         console.error('❌ Failed to log snapshot creation failure:', logError);
       }
 
-      return null;
+      // Re-throw error to prevent silent data loss
+      throw new Error(`Failed to create snapshot: ${error.message}`);
     }
   }
 
@@ -333,7 +333,7 @@ class TDACSubmissionService {
   static async findOrCreateEntryInfoId(travelerInfo) {
     try {
       const userId = travelerInfo?.userId || 'current_user';
-      const destinationId = 'thailand';
+      const destinationId = 'th';
 
       console.log('🔍 Looking for existing entry info...');
 

@@ -19,6 +19,7 @@ import CompletionSummaryCard from '../CompletionSummaryCard';
 import SubmissionCountdown from '../SubmissionCountdown';
 import Button from '../Button';
 import { colors, spacing } from '../../theme';
+import { formatChineseDate } from '../../utils/dateUtils';
 
 // Styled Tamagui components
 const PressableCard = styled(YStack, {
@@ -35,15 +36,18 @@ const AnimatedCard = styled(YStack, {
 /**
  * Success Celebration Component
  */
-const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo }) => (
-  <YStack marginBottom="$lg">
-    {/* Primary Success Actions */}
-    <YStack gap="$md">
-      {/* Start Immigration Process */}
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={onStartImmigration}
-      >
+const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo }) => {
+  console.log('SuccessCelebration rendered with handlers:', {
+    hasOnStartImmigration: !!onStartImmigration,
+    hasOnViewEntryPack: !!onViewEntryPack,
+    hasOnEditInfo: !!onEditInfo
+  });
+
+  return (
+    <YStack marginBottom="$lg">
+      {/* Primary Success Actions */}
+      <YStack gap="$md">
+        {/* Start Immigration Process */}
         <AnimatedCard
           borderRadius={24}
           overflow="hidden"
@@ -52,60 +56,69 @@ const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo })
           shadowOpacity={0.3}
           shadowRadius={15}
           elevation={8}
+          onPress={() => {
+            console.log('Start Immigration button pressed');
+            console.log('onStartImmigration exists:', !!onStartImmigration);
+            if (onStartImmigration) {
+              console.log('Calling onStartImmigration...');
+              onStartImmigration();
+            } else {
+              console.error('onStartImmigration is not available!');
+            }
+          }}
         >
-          <LinearGradient
-            colors={['#0BD67B', colors.primary]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: spacing.xl,
-              paddingVertical: 20,
-            }}
+        <LinearGradient
+          colors={['#0BD67B', colors.primary]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: spacing.xl,
+            paddingVertical: 20,
+          }}
+        >
+          <YStack
+            width={56}
+            height={56}
+            borderRadius={28}
+            backgroundColor="rgba(255, 255, 255, 0.3)"
+            alignItems="center"
+            justifyContent="center"
+            marginRight="$lg"
           >
-            <YStack
-              width={56}
-              height={56}
-              borderRadius={28}
-              backgroundColor="rgba(255, 255, 255, 0.3)"
-              alignItems="center"
-              justifyContent="center"
-              marginRight="$lg"
+            <Text fontSize={28}>🛂</Text>
+          </YStack>
+          <YStack flex={1}>
+            <Text
+              fontSize={18}
+              fontWeight="800"
+              color="$white"
+              letterSpacing={0.3}
             >
-              <Text fontSize={28}>🛂</Text>
-            </YStack>
-            <YStack flex={1}>
-              <Text
-                fontSize={18}
-                fontWeight="800"
-                color="$white"
-                letterSpacing={0.3}
-              >
-                开始入境流程
-              </Text>
-              <Text
-                fontSize={14}
-                color="rgba(255, 255, 255, 0.9)"
-                marginTop={2}
-              >
-                查看完整的入境指引和注意事项
-              </Text>
-            </YStack>
-            <YStack
-              width={36}
-              height={36}
-              borderRadius={18}
-              backgroundColor="rgba(255, 255, 255, 0.3)"
-              alignItems="center"
-              justifyContent="center"
-              marginLeft="$md"
+              开始入境流程
+            </Text>
+            <Text
+              fontSize={14}
+              color="rgba(255, 255, 255, 0.9)"
+              marginTop={2}
             >
-              <Text fontSize={20} fontWeight="800" color="$white">›</Text>
-            </YStack>
-          </LinearGradient>
-        </AnimatedCard>
-      </TouchableOpacity>
+              查看完整的入境指引和注意事项
+            </Text>
+          </YStack>
+          <YStack
+            width={36}
+            height={36}
+            borderRadius={18}
+            backgroundColor="rgba(255, 255, 255, 0.3)"
+            alignItems="center"
+            justifyContent="center"
+            marginLeft="$md"
+          >
+            <Text fontSize={20} fontWeight="800" color="$white">›</Text>
+          </YStack>
+        </LinearGradient>
+      </AnimatedCard>
 
       {/* Secondary Actions Row */}
       <XStack gap="$md">
@@ -195,7 +208,8 @@ const SuccessCelebration = ({ onStartImmigration, onViewEntryPack, onEditInfo })
       </XStack>
     </YStack>
   </YStack>
-);
+  );
+};
 
 /**
  * Progress Encouragement Component
@@ -234,59 +248,140 @@ const ProgressEncouragement = ({
     }
   };
 
+  // Determine if we should show Submit TDAC as primary action
+  const shouldShowSubmitPrimary = buttonState.action === 'submit_tdac';
+
   return (
     <YStack marginBottom="$lg">
       {/* Action Buttons */}
       <YStack gap="$md">
-        {/* Primary Action - Edit Travel Info (Most Important for Incomplete State) */}
-        <PressableCard
-          borderRadius={20}
-          overflow="hidden"
-          shadowColor="#000"
-          shadowOffset={{ width: 0, height: 6 }}
-          shadowOpacity={0.15}
-          shadowRadius={10}
-          elevation={5}
-          onPress={() => {
-            console.log('Primary Edit Travel Info button pressed');
-            console.log('Navigation available:', !!navigation);
-            console.log('Passport param:', passportParam);
-            console.log('Destination:', destination);
-
-            if (!navigation) {
-              console.error('Navigation is not available!');
-              Alert.alert('错误', '导航功能不可用');
-              return;
-            }
-
-            navigation.navigate('ThailandTravelInfo', {
-              passport: passportParam,
-              destination: destination,
-            });
-          }}
-        >
-          <LinearGradient
-            colors={['#FF9800', '#F57C00']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: spacing.xl,
-              paddingVertical: 18,
-              justifyContent: 'center',
+        {/* Primary Action - Submit TDAC (when ready) or Edit Travel Info */}
+        {shouldShowSubmitPrimary ? (
+          // Submit TDAC - Primary Action at 100% completion
+          <AnimatedCard
+            borderRadius={24}
+            overflow="hidden"
+            shadowColor="#0C8A52"
+            shadowOffset={{ width: 0, height: 10 }}
+            shadowOpacity={0.3}
+            shadowRadius={15}
+            elevation={8}
+            onPress={() => {
+              console.log('Primary Submit TDAC button pressed');
+              console.log('onContinuePreparation exists:', !!onContinuePreparation);
+              console.log('onContinuePreparation type:', typeof onContinuePreparation);
+              if (onContinuePreparation) {
+                console.log('Calling onContinuePreparation...');
+                onContinuePreparation();
+                console.log('onContinuePreparation called successfully');
+              } else {
+                console.error('onContinuePreparation is not available!');
+              }
             }}
           >
-            <Text
-              fontSize={18}
-              fontWeight="800"
-              color="$white"
-              letterSpacing={0.3}
+              <LinearGradient
+                colors={['#0BD67B', colors.primary]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: spacing.xl,
+                  paddingVertical: 20,
+                }}
+              >
+                <YStack
+                  width={56}
+                  height={56}
+                  borderRadius={28}
+                  backgroundColor="rgba(255, 255, 255, 0.3)"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginRight="$lg"
+                >
+                  <Text fontSize={28}>✈️</Text>
+                </YStack>
+                <YStack flex={1}>
+                  <Text
+                    fontSize={18}
+                    fontWeight="800"
+                    color="$white"
+                    letterSpacing={0.3}
+                  >
+                    提交入境卡
+                  </Text>
+                  <Text
+                    fontSize={14}
+                    color="rgba(255, 255, 255, 0.9)"
+                    marginTop={2}
+                  >
+                    准备完成！现在可以提交泰国入境卡了
+                  </Text>
+                </YStack>
+                <YStack
+                  width={36}
+                  height={36}
+                  borderRadius={18}
+                  backgroundColor="rgba(255, 255, 255, 0.3)"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginLeft="$md"
+                >
+                  <Text fontSize={20} fontWeight="800" color="$white">›</Text>
+                </YStack>
+              </LinearGradient>
+          </AnimatedCard>
+        ) : (
+          // Edit Travel Info - Primary Action for incomplete state
+          <PressableCard
+            borderRadius={20}
+            overflow="hidden"
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 6 }}
+            shadowOpacity={0.15}
+            shadowRadius={10}
+            elevation={5}
+            onPress={() => {
+              console.log('Primary Edit Travel Info button pressed');
+              console.log('Navigation available:', !!navigation);
+              console.log('Passport param:', passportParam);
+              console.log('Destination:', destination);
+
+              if (!navigation) {
+                console.error('Navigation is not available!');
+                Alert.alert('错误', '导航功能不可用');
+                return;
+              }
+
+              navigation.navigate('ThailandTravelInfo', {
+                passport: passportParam,
+                destination: destination,
+              });
+            }}
+          >
+            <LinearGradient
+              colors={['#FF9800', '#F57C00']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: spacing.xl,
+                paddingVertical: 18,
+                justifyContent: 'center',
+              }}
             >
-              ✏️ 修改旅行信息
-            </Text>
-          </LinearGradient>
-        </PressableCard>
+              <Text
+                fontSize={18}
+                fontWeight="800"
+                color="$white"
+                letterSpacing={0.3}
+              >
+                ✏️ 修改旅行信息
+              </Text>
+            </LinearGradient>
+          </PressableCard>
+        )}
 
         {/* Countdown Section - High Priority Alert */}
         {(arrivalDate || buttonState.action === 'wait_for_window') && (
@@ -346,57 +441,177 @@ const ProgressEncouragement = ({
                 marginTop="$sm"
                 textAlign="center"
               >
-                抵达日期 {arrivalDate ? new Date(arrivalDate).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '年').replace(/年(\d+)年/, '年$1月') + '日' : ''}
+                抵达日期 {arrivalDate ? formatChineseDate(arrivalDate) : ''}
               </Text>
             </YStack>
           </AnimatedCard>
         )}
 
-        {/* Secondary Action - Preview Entry Pack */}
-        <PressableCard
-          backgroundColor="$white"
-          borderRadius={16}
-          padding="$lg"
-          borderWidth={2}
-          borderColor="rgba(11, 214, 123, 0.4)"
-          shadowColor="#000"
-          shadowOffset={{ width: 0, height: 3 }}
-          shadowOpacity={0.12}
-          shadowRadius={8}
-          elevation={3}
-          onPress={() => {
-            console.log('Preview Entry Pack button pressed');
-            console.log('Navigation available:', !!navigation);
-            console.log('UserData:', userData);
+        {/* Secondary Actions Row - When Submit TDAC is primary */}
+        {shouldShowSubmitPrimary ? (
+          <XStack gap="$md">
+            {/* Preview Entry Pack */}
+            <AnimatedCard
+              flex={1}
+              backgroundColor="$white"
+              borderRadius={16}
+              padding="$lg"
+              borderWidth={1.5}
+              borderColor="rgba(11, 214, 123, 0.3)"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 3 }}
+              shadowOpacity={0.12}
+              shadowRadius={8}
+              elevation={3}
+              onPress={() => {
+                console.log('Preview Entry Pack button pressed');
+                if (!navigation) {
+                  console.error('Navigation is not available!');
+                  Alert.alert('错误', '导航功能不可用');
+                  return;
+                }
 
-            if (!navigation) {
-              console.error('Navigation is not available!');
-              Alert.alert('错误', '导航功能不可用');
-              return;
-            }
+                navigation.navigate('EntryPackPreview', {
+                  userData,
+                  passport: passportParam,
+                  destination: destination,
+                  entryPackData: {
+                    personalInfo: userData?.personalInfo,
+                    travelInfo: userData?.travel,
+                    funds: userData?.funds,
+                    tdacSubmission: null
+                  }
+                });
+              }}
+            >
+              <YStack alignItems="center">
+                <YStack
+                  width={48}
+                  height={48}
+                  borderRadius={24}
+                  backgroundColor="#E8F5E9"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginBottom="$sm"
+                >
+                  <Text fontSize={24}>📋</Text>
+                </YStack>
+                <Text
+                  fontSize={14}
+                  fontWeight="700"
+                  color="$text"
+                  textAlign="center"
+                  marginBottom="$xs"
+                >
+                  预览入境包
+                </Text>
+                <Text fontSize={12} color="$textSecondary" textAlign="center">
+                  查看准备好的资料
+                </Text>
+              </YStack>
+            </AnimatedCard>
 
-            navigation.navigate('EntryPackPreview', {
-              userData,
-              passport: passportParam,
-              destination: destination,
-              entryPackData: {
-                personalInfo: userData?.personalInfo,
-                travelInfo: userData?.travel,
-                funds: userData?.funds,
-                tdacSubmission: null
+            {/* Edit Travel Info */}
+            <AnimatedCard
+              flex={1}
+              backgroundColor="$white"
+              borderRadius={16}
+              padding="$lg"
+              borderWidth={1.5}
+              borderColor="rgba(255, 152, 0, 0.3)"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 3 }}
+              shadowOpacity={0.12}
+              shadowRadius={8}
+              elevation={3}
+              onPress={() => {
+                console.log('Secondary Edit Travel Info button pressed');
+                if (!navigation) {
+                  console.error('Navigation is not available!');
+                  Alert.alert('错误', '导航功能不可用');
+                  return;
+                }
+
+                navigation.navigate('ThailandTravelInfo', {
+                  passport: passportParam,
+                  destination: destination,
+                });
+              }}
+            >
+              <YStack alignItems="center">
+                <YStack
+                  width={48}
+                  height={48}
+                  borderRadius={24}
+                  backgroundColor="#FFF3E0"
+                  alignItems="center"
+                  justifyContent="center"
+                  marginBottom="$sm"
+                >
+                  <Text fontSize={24}>✏️</Text>
+                </YStack>
+                <Text
+                  fontSize={14}
+                  fontWeight="700"
+                  color="$text"
+                  textAlign="center"
+                  marginBottom="$xs"
+                >
+                  编辑旅行信息
+                </Text>
+                <Text fontSize={12} color="$textSecondary" textAlign="center">
+                  如需修改，返回编辑
+                </Text>
+              </YStack>
+            </AnimatedCard>
+          </XStack>
+        ) : (
+          // Preview Entry Pack - Single secondary action when Edit is primary
+          <PressableCard
+            backgroundColor="$white"
+            borderRadius={16}
+            padding="$lg"
+            borderWidth={2}
+            borderColor="rgba(11, 214, 123, 0.4)"
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 3 }}
+            shadowOpacity={0.12}
+            shadowRadius={8}
+            elevation={3}
+            onPress={() => {
+              console.log('Preview Entry Pack button pressed');
+              console.log('Navigation available:', !!navigation);
+              console.log('UserData:', userData);
+
+              if (!navigation) {
+                console.error('Navigation is not available!');
+                Alert.alert('错误', '导航功能不可用');
+                return;
               }
-            });
-          }}
-        >
-          <YStack alignItems="center">
-            <Text fontSize={18} fontWeight="700" color="$text">
-              👁️ 预览入境包
-            </Text>
-            <Text fontSize={13} color="$textSecondary" marginTop="$xs" textAlign="center">
-              查看你已经准备好的入境信息
-            </Text>
-          </YStack>
-        </PressableCard>
+
+              navigation.navigate('EntryPackPreview', {
+                userData,
+                passport: passportParam,
+                destination: destination,
+                entryPackData: {
+                  personalInfo: userData?.personalInfo,
+                  travelInfo: userData?.travel,
+                  funds: userData?.funds,
+                  tdacSubmission: null
+                }
+              });
+            }}
+          >
+            <YStack alignItems="center">
+              <Text fontSize={18} fontWeight="700" color="$text">
+                👁️ 预览入境包
+              </Text>
+              <Text fontSize={13} color="$textSecondary" marginTop="$xs" textAlign="center">
+                查看你已经准备好的入境信息
+              </Text>
+            </YStack>
+          </PressableCard>
+        )}
 
         {/* Tertiary Actions Row */}
         <XStack justifyContent="center">

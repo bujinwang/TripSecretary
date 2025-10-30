@@ -259,6 +259,33 @@ class DatabaseSchema {
           )
         `);
 
+        // Snapshots table (historical entry pack records)
+        // Purpose: Immutable point-in-time copies of completed/expired/cancelled entry packs
+        // for travel history, data reuse, and audit trails
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS snapshots (
+            snapshot_id TEXT PRIMARY KEY,
+            entry_info_id TEXT,
+            user_id TEXT NOT NULL,
+            destination_id TEXT,
+            status TEXT NOT NULL CHECK (status IN ('completed', 'cancelled', 'expired')),
+            created_at TEXT NOT NULL,
+            arrival_date TEXT,
+            version INTEGER DEFAULT 1,
+            metadata TEXT,
+            passport_data TEXT,
+            personal_info_data TEXT,
+            funds_data TEXT,
+            travel_data TEXT,
+            tdac_submission_data TEXT,
+            completeness_indicator TEXT,
+            photo_manifest TEXT,
+            encryption_info TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE SET NULL
+          )
+        `);
+
         // ========================================
         // Database Triggers
         // ========================================
@@ -448,7 +475,7 @@ class DatabaseSchema {
         await db.execAsync(`
           CREATE TABLE IF NOT EXISTS entry_guide_progress (
             id TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
+            user_id TEXT NOT NULL,
             country_code TEXT NOT NULL,
             current_step INTEGER DEFAULT 0,
             total_steps INTEGER NOT NULL,
@@ -483,7 +510,7 @@ class DatabaseSchema {
         await db.execAsync(`
           CREATE TABLE IF NOT EXISTS tdac_submission_logs (
             id TEXT PRIMARY KEY,
-            user_id INTEGER,
+            user_id TEXT,
             submission_method TEXT NOT NULL,
             arr_card_no TEXT,
             traveler_data TEXT,
@@ -507,6 +534,99 @@ class DatabaseSchema {
         `);
 
         console.log('✅ Migration completed: tdac_submission_logs table created');
+      }
+
+      // Migration: Update snapshots table schema (v1.5.0)
+      const snapshotsTableInfo = await db.getAllAsync("PRAGMA table_info(snapshots)");
+      const hasOldId = snapshotsTableInfo.some(col => col.name === 'id');
+      const hasEntryPackId = snapshotsTableInfo.some(col => col.name === 'entry_pack_id');
+      const hasTripId = snapshotsTableInfo.some(col => col.name === 'trip_id');
+
+      if (hasOldId || hasEntryPackId || hasTripId) {
+        console.log('Applying migration: Updating snapshots table schema');
+        await db.withTransactionAsync(async () => {
+          // Drop any existing snapshots_old table from previous failed migrations
+          await db.execAsync('DROP TABLE IF EXISTS snapshots_old;');
+
+          // Rename old table
+          await db.execAsync('ALTER TABLE snapshots RENAME TO snapshots_old;');
+
+          // Create new table with updated schema
+          await db.execAsync(`
+            CREATE TABLE snapshots (
+              snapshot_id TEXT PRIMARY KEY,
+              entry_info_id TEXT,
+              user_id TEXT NOT NULL,
+              destination_id TEXT,
+              status TEXT NOT NULL CHECK (status IN ('completed', 'cancelled', 'expired')),
+              created_at TEXT NOT NULL,
+              arrival_date TEXT,
+              version INTEGER DEFAULT 1,
+              metadata TEXT,
+              passport_data TEXT,
+              personal_info_data TEXT,
+              funds_data TEXT,
+              travel_data TEXT,
+              tdac_submission_data TEXT,
+              completeness_indicator TEXT,
+              photo_manifest TEXT,
+              encryption_info TEXT,
+              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+              FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE SET NULL
+            );
+          `);
+
+          // Migrate data from old table (if it exists and has data)
+          const oldSnapshotsCount = await db.getFirstAsync('SELECT COUNT(*) as count FROM snapshots_old');
+          if (oldSnapshotsCount && oldSnapshotsCount.count > 0) {
+            console.log(`Migrating ${oldSnapshotsCount.count} snapshots to new schema...`);
+
+            // Check if old table has user_id column (required for migration)
+            const oldTableInfo = await db.getAllAsync("PRAGMA table_info(snapshots_old)");
+            const oldHasUserId = oldTableInfo.some(col => col.name === 'user_id');
+
+            if (!oldHasUserId) {
+              console.warn('⚠️ Old snapshots table missing user_id column, skipping data migration');
+              await db.execAsync('DROP TABLE snapshots_old;');
+              return;
+            }
+
+            // Map old columns to new columns (entry_pack_id -> entry_info_id, drop trip_id and id)
+            await db.execAsync(`
+              INSERT INTO snapshots (
+                snapshot_id, entry_info_id, user_id, destination_id, status,
+                created_at, arrival_date, version, metadata,
+                passport_data, personal_info_data, funds_data, travel_data,
+                tdac_submission_data, completeness_indicator, photo_manifest, encryption_info
+              )
+              SELECT
+                snapshot_id,
+                entry_pack_id as entry_info_id,
+                user_id,
+                destination_id,
+                status,
+                created_at,
+                arrival_date,
+                version,
+                metadata,
+                passport_data,
+                personal_info_data,
+                funds_data,
+                travel_data,
+                tdac_submission_data,
+                completeness_indicator,
+                photo_manifest,
+                encryption_info
+              FROM snapshots_old;
+            `);
+
+            console.log(`✅ Migrated ${oldSnapshotsCount.count} snapshots`);
+          }
+
+          // Drop old table
+          await db.execAsync('DROP TABLE snapshots_old;');
+        });
+        console.log('✅ Migration completed: snapshots table updated to v1.5.0 schema');
       }
     } catch (error) {
       console.error('Migration error:', error);
@@ -566,6 +686,12 @@ class DatabaseSchema {
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_timestamp ON tdac_submission_logs(submission_timestamp);
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_created ON tdac_submission_logs(created_at);
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_arr_card ON tdac_submission_logs(arr_card_no);
+
+      CREATE INDEX IF NOT EXISTS idx_snapshots_user ON snapshots(user_id);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_entry_info ON snapshots(entry_info_id);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_destination ON snapshots(user_id, destination_id);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_status ON snapshots(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_created ON snapshots(created_at DESC);
     `);
   }
 }

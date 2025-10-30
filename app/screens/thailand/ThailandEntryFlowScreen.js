@@ -103,7 +103,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const fundItems = await UserDataService.getFundItems(currentUserId);
 
       // Load travel info for Thailand - use currentUserId directly
-      const destinationId = route.params?.destination?.id || 'thailand';
+      const destinationId = route.params?.destination?.id || 'th';
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
       
       // Prepare entry info for completion calculation
@@ -276,9 +276,9 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
 
       // Find entry info for Thailand
-      const destinationId = route.params?.destination?.id || 'thailand';
+      const destinationId = route.params?.destination?.id || 'th';
       const thailandEntryInfo = allEntryInfos?.find(info =>
-        info.destinationId === destinationId || info.destinationId === 'thailand'
+        info.destinationId === destinationId
       );
 
       if (thailandEntryInfo) {
@@ -467,7 +467,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     text: '继续提交',
                     style: 'default',
                     onPress: () => {
-                      navigation.navigate('TDACSelection', {
+                      navigation.navigate('TDACHybrid', {
                         passport: passportParam,
                         destination: route.params?.destination,
                         travelerInfo: contextResult.payload,
@@ -477,8 +477,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                 ]
               );
             } else {
-              // No warnings, proceed directly
-              navigation.navigate('TDACSelection', {
+              // No warnings, proceed directly to flash submission
+              navigation.navigate('TDACHybrid', {
                 passport: passportParam,
                 destination: route.params?.destination,
                 travelerInfo: contextResult.payload,

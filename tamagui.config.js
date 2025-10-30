@@ -1,6 +1,6 @@
 // Tamagui configuration seeded from existing TripSecretary theme tokens.
-import { createFont, createTamagui, createTokens } from 'tamagui';
-import { shorthands } from '@tamagui/shorthands';
+const { createFont, createTamagui, createTokens } = require('tamagui');
+const { shorthands } = require('@tamagui/shorthands');
 
 // Inline theme values to avoid runtime dependencies
 const themeColors = {
@@ -238,7 +238,7 @@ const media = {
   tall: { minHeight: 820 },
 };
 
-const config = createTamagui({
+const tamaguiConfig = createTamagui({
   fonts: {
     body: bodyFont,
     heading: headingFont,
@@ -264,4 +264,4 @@ const config = createTamagui({
   shouldAddPrefersColorThemes: true,
 });
 
-export default config;
+module.exports = tamaguiConfig;

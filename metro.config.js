@@ -12,7 +12,7 @@ config.resolver.sourceExts = Array.from(
 );
 
 if (process.env.NODE_ENV !== 'production') {
-  const tamaguiConfigPath = path.join(__dirname, 'tamagui.config.ts');
+  const tamaguiConfigPath = path.join(__dirname, 'tamagui.config.js');
   watchTamaguiConfig({
     config: tamaguiConfigPath,
   }).catch((error) => {
