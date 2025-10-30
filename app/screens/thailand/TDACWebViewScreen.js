@@ -1952,11 +1952,13 @@ ${index + 1}. ${field.labelCn} (${field.label})
               <Text style={styles.cloudflareIcon}>🔒</Text>
             </View>
             <Text style={styles.cloudflareTitle}>安全验证</Text>
-            <Text style={styles.cloudflareTextCn}>请在下方网页中点击</Text>
-            <Text style={styles.cloudflareTextEn}>"我不是机器人" ✓</Text>
+            <Text style={styles.cloudflareTextCn}>请在下方网页中点击方框</Text>
+            <Text style={styles.cloudflareTextEn}>验证真人操作 ✓</Text>
+            <Text style={styles.cloudflareTextEnSmall}>(Verify you are human)</Text>
             <Text style={styles.cloudflareSubtext}>验证完成后将自动提交</Text>
             <View style={styles.cloudflareArrow}>
               <Text style={styles.cloudflareArrowIcon}>👇</Text>
+              <Text style={styles.cloudflareArrowText}>点击下方验证框</Text>
             </View>
           </View>
         </View>

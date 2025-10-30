@@ -259,6 +259,32 @@ class DatabaseSchema {
           )
         `);
 
+        // Snapshots table (historical entry pack records)
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS snapshots (
+            id TEXT PRIMARY KEY,
+            snapshot_id TEXT UNIQUE NOT NULL,
+            entry_pack_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            destination_id TEXT,
+            trip_id TEXT,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            arrival_date TEXT,
+            version INTEGER DEFAULT 1,
+            metadata TEXT,
+            passport_data TEXT,
+            personal_info_data TEXT,
+            funds_data TEXT,
+            travel_data TEXT,
+            tdac_submission_data TEXT,
+            completeness_indicator TEXT,
+            photo_manifest TEXT,
+            encryption_info TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+          )
+        `);
+
         // ========================================
         // Database Triggers
         // ========================================
@@ -566,6 +592,12 @@ class DatabaseSchema {
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_timestamp ON tdac_submission_logs(submission_timestamp);
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_created ON tdac_submission_logs(created_at);
       CREATE INDEX IF NOT EXISTS idx_tdac_logs_arr_card ON tdac_submission_logs(arr_card_no);
+
+      CREATE INDEX IF NOT EXISTS idx_snapshots_user ON snapshots(user_id);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_entry_pack ON snapshots(entry_pack_id);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_status ON snapshots(status);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_created ON snapshots(created_at);
+      CREATE INDEX IF NOT EXISTS idx_snapshots_snapshot_id ON snapshots(snapshot_id);
     `);
   }
 }

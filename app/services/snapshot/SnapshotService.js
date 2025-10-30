@@ -7,6 +7,7 @@
 
 import EntryPackSnapshot from '../../models/EntryPackSnapshot';
 import * as FileSystem from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import DataEncryptionService from '../security/DataEncryptionService';
 
 class SnapshotService {
@@ -23,12 +24,12 @@ class SnapshotService {
    */
   async initializeStorage() {
     if (this.initialized) return;
-    
+
     try {
       const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir);
       const dirExists = await snapshotDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
+        await LegacyFileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
         console.log('Snapshot storage directory created:', this.snapshotStorageDir);
       }
       this.initialized = true;
@@ -238,7 +239,7 @@ class SnapshotService {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
       // Create snapshot photo directory
-      await FileSystem.makeDirectoryAsync(snapshotPhotoDir, { intermediates: true });
+      await LegacyFileSystem.makeDirectoryAsync(snapshotPhotoDir, { intermediates: true });
 
       console.log(`Copying ${funds.length} fund photos to snapshot storage:`, snapshotPhotoDir);
 
@@ -694,7 +695,7 @@ class SnapshotService {
           try {
             const photoInfo = await FileSystem.getInfoAsync(photo.snapshotPath);
             if (photoInfo.exists) {
-              const base64 = await FileSystem.readAsStringAsync(photo.snapshotPath, {
+              const base64 = await LegacyFileSystem.readAsStringAsync(photo.snapshotPath, {
                 encoding: FileSystem.EncodingType.Base64
               });
               photoData[photo.fundItemId] = base64;
@@ -777,11 +778,11 @@ class SnapshotService {
 
       // Check if file is readable
       try {
-        const base64 = await FileSystem.readAsStringAsync(photoUri, { 
+        const base64 = await LegacyFileSystem.readAsStringAsync(photoUri, {
           encoding: FileSystem.EncodingType.Base64,
           length: 100 // Just read first 100 bytes to test
         });
-        
+
         if (!base64) {
           return { isValid: false, error: 'Photo file is not readable' };
         }
@@ -820,7 +821,7 @@ class SnapshotService {
         createdAt: new Date().toISOString()
       }, null, 2);
 
-      await FileSystem.writeAsStringAsync(placeholderPath, placeholderContent);
+      await LegacyFileSystem.writeAsStringAsync(placeholderPath, placeholderContent);
 
       console.log('Missing photo placeholder created:', {
         snapshotId,

@@ -59,7 +59,15 @@
       "Read(//dev/**)",
       "Bash(npx react-native log-ios:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm view:*)",
+      "Read(//Users/bujin/Library/Developer/CoreSimulator/Devices/**)",
+      "Bash(npx tsc:*)",
+      "Bash(npx expo start:*)",
+      "Bash(DB_PATH=\"/Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/D2C892B1-6872-4624-BA10-5AEABC8E69C2/Documents/ExponentExperienceData/@anonymous/chujingtong-949aa9fd-5f29-4180-8e63-54175ac2c5e3/SQLite/tripsecretary_secure\")",
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"SELECT id, destination_id, status FROM entry_info ORDER BY created_at;\")",
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\n-- Delete the duplicate entry with wrong destination_id=''thailand'' and empty completion_metrics\nDELETE FROM entry_info \nWHERE id = ''entry_1761781405645_8ztf0sf1u'';\n\n-- Show remaining entries\nSELECT ''Remaining entry_info records:'' as message;\nSELECT '''' as message;\nSELECT id, destination_id, status, created_at FROM entry_info ORDER BY created_at;\n\")"
     ],
     "deny": [],
     "ask": []

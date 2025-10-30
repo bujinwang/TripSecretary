@@ -17,7 +17,7 @@ async function diagnoseTravelInfoError() {
 
   try {
     // Open database
-    const db = await SQLite.openDatabaseAsync('TripSecretaryDB.db');
+    const db = await SQLite.openDatabaseAsync('tripsecretary_secure');
     console.log('✅ Database opened successfully\n');
 
     // Check travel_info table structure

@@ -161,10 +161,17 @@ const SubmissionCountdown = ({
           {locale === 'zh' ? '抵达日期' : 'Arrival Date'}
         </Text>
         <Text style={styles.arrivalDate}>
-          {DateFormatter.formatLongDate(
-            new Date(arrivalDate),
-            locale === 'zh' ? 'zh-CN' : locale
-          )}
+          {(() => {
+            // Parse date string correctly to avoid timezone issues
+            // "2025-10-31" should be interpreted as local date, not UTC
+            const dateStr = typeof arrivalDate === 'string' ? arrivalDate : arrivalDate.toISOString().split('T')[0];
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day);
+            return DateFormatter.formatLongDate(
+              localDate,
+              locale === 'zh' ? 'zh-CN' : locale
+            );
+          })()}
         </Text>
       </View>
 

@@ -26,7 +26,15 @@ class ArrivalWindowCalculator {
       };
     }
 
-    const arrival = new Date(arrivalDate);
+    // Parse date string correctly to avoid timezone issues
+    // "2025-10-31" should be interpreted as local date, not UTC
+    let arrival;
+    if (typeof arrivalDate === 'string') {
+      const [year, month, day] = arrivalDate.split('-').map(Number);
+      arrival = new Date(year, month - 1, day);
+    } else {
+      arrival = new Date(arrivalDate);
+    }
     const now = new Date();
     
     // Calculate 72 hours (3 days) before arrival
@@ -341,7 +349,16 @@ class ArrivalWindowCalculator {
     }
 
     const window = this.calculateWindow(arrivalDate);
-    const arrival = new Date(arrivalDate);
+
+    // Parse date string correctly to avoid timezone issues
+    // "2025-10-31" should be interpreted as local date, not UTC
+    let arrival;
+    if (typeof arrivalDate === 'string') {
+      const [year, month, day] = arrivalDate.split('-').map(Number);
+      arrival = new Date(year, month - 1, day);
+    } else {
+      arrival = new Date(arrivalDate);
+    }
     const now = new Date();
     
     // Calculate time remaining until arrival

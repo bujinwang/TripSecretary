@@ -229,10 +229,23 @@ const TDACHybridScreen = ({ navigation, route }) => {
               {
                 text: '完成',
                 onPress: () => {
-                  // Pop back twice to return to ThailandEntryFlowScreen
-                  // TDACHybridScreen (modal) -> TDACSelectionScreen (modal) -> ThailandEntryFlowScreen
-                  // The flow screen will reload via useFocusEffect and show the submitted state
-                  navigation.pop(2);
+                  // Dismiss all modals and navigate back to ThailandEntryFlowScreen
+                  // Since TDACHybrid and TDACSelection are both full screen modals,
+                  // we need to use popToTop to clear them, then navigate to entry flow
+                  const passport = route.params?.passport;
+                  const destination = route.params?.destination;
+
+                  // Pop to top first to dismiss all modals
+                  navigation.popToTop();
+
+                  // Then navigate to the entry flow screen
+                  setTimeout(() => {
+                    navigation.navigate('ThailandEntryFlow', {
+                      passport,
+                      destination,
+                      refresh: true,
+                    });
+                  }, 100);
                 },
                 style: 'default'
               }
@@ -669,14 +682,21 @@ const TDACHybridScreen = ({ navigation, route }) => {
             <Text style={styles.cloudflareEmoji}>🔐</Text>
             <Text style={styles.cloudflareTitle}>安全验证</Text>
             <Text style={styles.cloudflareText}>
-              请在下方网页中点击
+              请在下方网页中点击方框
             </Text>
             <Text style={styles.cloudflareHighlight}>
-              "我不是机器人" ✓
+              验证真人操作 ✓
+            </Text>
+            <Text style={styles.cloudflareSubText}>
+              (Verify you are human)
             </Text>
             <Text style={styles.cloudflareText}>
               验证完成后将自动提交
             </Text>
+            <View style={styles.cloudflareArrowContainer}>
+              <Text style={styles.cloudflareArrow}>👇</Text>
+              <Text style={styles.cloudflareArrowText}>点击下方验证框</Text>
+            </View>
           </View>
         </View>
       )}
@@ -913,7 +933,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1b6ca3',
-    marginVertical: 12,
+    marginVertical: 8,
+  },
+  cloudflareSubText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 12,
+  },
+  cloudflareArrowContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  cloudflareArrow: {
+    fontSize: 40,
+    marginBottom: 4,
+  },
+  cloudflareArrowText: {
+    fontSize: 14,
+    color: '#1b6ca3',
+    fontWeight: '600',
   },
 });
 

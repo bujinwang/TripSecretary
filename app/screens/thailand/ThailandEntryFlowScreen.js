@@ -467,7 +467,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     text: '继续提交',
                     style: 'default',
                     onPress: () => {
-                      navigation.navigate('TDACSelection', {
+                      navigation.navigate('TDACHybrid', {
                         passport: passportParam,
                         destination: route.params?.destination,
                         travelerInfo: contextResult.payload,
@@ -477,8 +477,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                 ]
               );
             } else {
-              // No warnings, proceed directly
-              navigation.navigate('TDACSelection', {
+              // No warnings, proceed directly to flash submission
+              navigation.navigate('TDACHybrid', {
                 passport: passportParam,
                 destination: route.params?.destination,
                 travelerInfo: contextResult.payload,

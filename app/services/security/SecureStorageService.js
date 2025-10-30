@@ -13,6 +13,7 @@
 
 import { openDatabaseAsync } from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import { Directory, Paths } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import EncryptionService from './EncryptionService';
@@ -23,6 +24,7 @@ import TravelInfoRepository from './repositories/TravelInfoRepository';
 import FundItemRepository from './repositories/FundItemRepository';
 import EntryInfoRepository from './repositories/EntryInfoRepository';
 import DigitalArrivalCardRepository from './repositories/DigitalArrivalCardRepository';
+import SnapshotRepository from './repositories/SnapshotRepository';
 import DataSerializer from './utils/DataSerializer';
 
 class SecureStorageService {
@@ -43,6 +45,7 @@ class SecureStorageService {
     this.fundItemRepository = null;
     this.entryInfoRepository = null;
     this.digitalArrivalCardRepository = null;
+    this.snapshotRepository = null;
   }
 
   /**
@@ -78,6 +81,7 @@ class SecureStorageService {
       this.fundItemRepository = new FundItemRepository(this.modernDb);
       this.entryInfoRepository = new EntryInfoRepository(this.modernDb);
       this.digitalArrivalCardRepository = new DigitalArrivalCardRepository(this.modernDb);
+      this.snapshotRepository = new SnapshotRepository(this.modernDb);
 
       await this.ensureBackupDirectory();
       await this.ensureUser(userId);
@@ -627,6 +631,71 @@ class SecureStorageService {
     } catch (error) {
       console.error('Failed to close database:', error);
       throw error;
+    }
+  }
+
+  // ========================================
+  // Snapshot Methods (Database-based storage)
+  // Note: Snapshot metadata is stored in the database
+  // Photos are stored in FileSystem.documentDirectory/snapshots/{snapshotId}/
+  // ========================================
+
+  async saveSnapshot(snapshot) {
+    try {
+      await this.ensureInitialized();
+
+      // Export snapshot data and save to database
+      const snapshotData = snapshot.exportData ? snapshot.exportData() : snapshot;
+      const result = await this.snapshotRepository.save(snapshotData);
+
+      await this.logAudit('INSERT', 'snapshots', snapshotData.snapshotId);
+      return { id: snapshotData.snapshotId };
+    } catch (error) {
+      console.error('Failed to save snapshot to database:', error);
+      throw error;
+    }
+  }
+
+  async getSnapshot(snapshotId) {
+    try {
+      await this.ensureInitialized();
+      return await this.snapshotRepository.getById(snapshotId);
+    } catch (error) {
+      console.error('Failed to load snapshot from database:', error);
+      return null;
+    }
+  }
+
+  async getSnapshotsByUserId(userId) {
+    try {
+      await this.ensureInitialized();
+      return await this.snapshotRepository.getByUserId(userId);
+    } catch (error) {
+      console.error('Failed to load snapshots by user ID:', error);
+      return [];
+    }
+  }
+
+  async deleteSnapshot(snapshotId) {
+    try {
+      await this.ensureInitialized();
+
+      // Delete from database
+      await this.snapshotRepository.delete(snapshotId);
+
+      // Delete photo directory
+      const snapshotPhotoDir = `${FileSystem.documentDirectory}snapshots/${snapshotId}/`;
+      const dirInfo = await FileSystem.getInfoAsync(snapshotPhotoDir);
+      if (dirInfo.exists) {
+        await FileSystem.deleteAsync(snapshotPhotoDir);
+        console.log('Snapshot photo directory deleted:', snapshotPhotoDir);
+      }
+
+      await this.logAudit('DELETE', 'snapshots', snapshotId);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to delete snapshot:', error);
+      return { success: false, error: error.message };
     }
   }
 }

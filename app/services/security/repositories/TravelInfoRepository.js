@@ -7,6 +7,7 @@
  */
 
 import DataSerializer from '../utils/DataSerializer';
+import { formatLocalDate, isValidDateString } from '../../../utils/dateUtils';
 
 class TravelInfoRepository {
   constructor(db) {
@@ -32,11 +33,23 @@ class TravelInfoRepository {
 
       if (typeof value === 'string') {
         const trimmed = value.trim();
-        return trimmed.length > 0 ? trimmed : null;
+        if (trimmed.length === 0) {
+          return null;
+        }
+
+        // CRITICAL: Preserve date strings in YYYY-MM-DD format without conversion
+        // Converting to Date and back can cause timezone bugs (e.g., Oct 31 → Oct 30)
+        if (isValidDateString(trimmed)) {
+          return trimmed;
+        }
+
+        return trimmed;
       }
 
       if (value instanceof Date) {
-        return value.toISOString();
+        // For Date objects, use timezone-safe formatting
+        // This preserves the local date without UTC conversion
+        return formatLocalDate(value);
       }
 
       if (typeof value === 'object') {
