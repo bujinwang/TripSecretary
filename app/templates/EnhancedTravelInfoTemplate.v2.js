@@ -92,33 +92,22 @@ const EnhancedTravelInfoTemplate = ({
   }, [passport?.id]);
 
   // ============================================
-  // LOCATION DATA (dynamically loaded from config)
+  // LOCATION DATA (from config)
   // ============================================
-  const [locationData, setLocationData] = useState({
-    provinces: [],
-    getDistricts: null,
-  });
-
-  // Load location data based on config
-  useEffect(() => {
-    const loadLocationData = async () => {
-      if (config.sections.travel?.locationHierarchy) {
-        const { dataSourceModule, getLevel1Data, getLevel2Data } = config.sections.travel.locationHierarchy;
-
-        try {
-          const locationModule = await import(dataSourceModule);
-          setLocationData({
-            provinces: locationModule[getLevel1Data] || [],
-            getDistricts: locationModule[getLevel2Data] || null,
-          });
-        } catch (error) {
-          console.error('[Template V2] Error loading location data:', error);
-        }
-      }
+  // Extract location data directly from config (no dynamic import needed)
+  const locationData = useMemo(() => {
+    if (config.sections.travel?.locationHierarchy) {
+      const { provincesData, getDistrictsFunc } = config.sections.travel.locationHierarchy;
+      return {
+        provinces: provincesData || [],
+        getDistricts: getDistrictsFunc || null,
+      };
+    }
+    return {
+      provinces: [],
+      getDistricts: null,
     };
-
-    loadLocationData();
-  }, [config]);
+  }, [config.sections.travel?.locationHierarchy]);
 
   // ============================================
   // FORM STATE (dynamically created from config)

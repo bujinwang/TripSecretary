@@ -9,6 +9,7 @@
 
 import { vietnamLabels, vietnamConfig } from '../../labels/vietnam';
 import { metadata } from './metadata';
+import { vietnamProvinces, getDistrictsByProvince } from '../../../data/vietnamLocations';
 
 export const vietnamComprehensiveTravelInfoConfig = {
   // ============================================
@@ -428,10 +429,9 @@ export const vietnamComprehensiveTravelInfoConfig = {
       // Location hierarchy configuration
       locationHierarchy: {
         levels: 2, // Vietnam: Province → District (2 levels, no subDistrict)
-        dataSource: 'vietnamLocations', // Import from app/data/vietnamLocations
-        dataSourceModule: '../../data/vietnamLocations',
-        getLevel1Data: 'vietnamProvinces', // Export name
-        getLevel2Data: 'getDistrictsByProvince', // Function name
+        // Direct data/functions (no dynamic import - React Native doesn't support it)
+        provincesData: vietnamProvinces,
+        getDistrictsFunc: getDistrictsByProvince,
         labels: {
           level1: { key: 'vietnam.locations.province', default: '省份/城市' },
           level2: { key: 'vietnam.locations.district', default: '区/郡' },
