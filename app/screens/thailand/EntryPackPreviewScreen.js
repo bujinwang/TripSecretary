@@ -25,7 +25,13 @@ const { height: screenHeight } = Dimensions.get('window');
 
 const EntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+
+  // Memoize passport to prevent infinite re-renders
+  const passport = useMemo(() =>
+    UserDataService.toSerializablePassport(rawPassport),
+    [rawPassport]
+  );
+
   const { t } = useTranslation();
 
   // State
@@ -33,6 +39,8 @@ const EntryPackPreviewScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [loadedTravelData, setLoadedTravelData] = useState(null);
+  const [loadedFundsData, setLoadedFundsData] = useState(null);
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
 
@@ -41,16 +49,70 @@ const EntryPackPreviewScreen = ({ route, navigation }) => {
     initializeAnimations();
   }, []);
 
+  // Load missing data if not provided in userData (only run once on mount)
+  useEffect(() => {
+    const loadMissingData = async () => {
+      try {
+        // Get user ID from passport (could be passport.id or passport.userId)
+        const userId = passport?.id || passport?.userId;
+
+        if (!userId) {
+          console.log('No user ID available in passport, cannot load data');
+          return;
+        }
+
+        console.log('Loading data for user ID:', userId);
+
+        // Check if travel data is missing or empty
+        const hasTravelData = userData?.travel && Object.keys(userData.travel).length > 0;
+        // Check if funds data is missing or empty
+        const hasFundsData = userData?.funds && Array.isArray(userData.funds) && userData.funds.length > 0;
+
+        // Load travel data if missing
+        if (!hasTravelData && destination?.id) {
+          console.log('Travel data missing, loading from database...');
+          const travelInfo = await UserDataService.getTravelInfo(userId, destination.id);
+          console.log('Loaded travel info:', travelInfo);
+          setLoadedTravelData(travelInfo);
+        }
+
+        // Load funds data if missing
+        if (!hasFundsData) {
+          console.log('Funds data missing, loading from database...');
+          const fundsInfo = await UserDataService.getFundItems(userId);
+          console.log('Loaded funds info:', fundsInfo);
+          setLoadedFundsData(fundsInfo);
+        }
+      } catch (error) {
+        console.error('Failed to load missing data:', error);
+      }
+    };
+
+    loadMissingData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
   // Create entry pack data structure
   const mockEntryPack = useMemo(() => ({
     id: 'preview',
     status: 'preview',
     tdacSubmission: entryPackData?.tdacSubmission || null,
     personalInfo: userData?.personalInfo || {},
-    travel: userData?.travel || {},
-    funds: userData?.funds || [],
+    travel: loadedTravelData || userData?.travel || {},
+    funds: loadedFundsData || userData?.funds || [],
     passport: userData?.passport || passport || {},
-  }), [entryPackData, userData, passport]);
+  }), [entryPackData, userData, passport, loadedTravelData, loadedFundsData]);
+
+  // Check if this is an official entry pack (with real TDAC submission) or just a preview
+  const isOfficialPack = useMemo(() => {
+    const hasOfficialTDAC = !!(mockEntryPack.tdacSubmission && mockEntryPack.tdacSubmission.arrCardNo);
+    console.log('🔍 Entry Pack Status Check:', {
+      hasTdacSubmission: !!mockEntryPack.tdacSubmission,
+      arrCardNo: mockEntryPack.tdacSubmission?.arrCardNo,
+      isOfficial: hasOfficialTDAC
+    });
+    return hasOfficialTDAC;
+  }, [mockEntryPack.tdacSubmission]);
 
   // Validate entry pack with error handling
   const validation = useMemo(() => {
@@ -138,8 +200,17 @@ const EntryPackPreviewScreen = ({ route, navigation }) => {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      // Simulate data loading/validation
-      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Wait for travel data to load if needed
+      const hasTravelData = userData?.travel && Object.keys(userData.travel).length > 0;
+      if (!hasTravelData && passport?.userId && destination?.id) {
+        // Wait a bit longer for travel data to load
+        await new Promise(resolve => setTimeout(resolve, 1200));
+      } else {
+        // Simulate data loading/validation
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+
       setIsLoading(false);
 
       // Auto-scroll to first incomplete section after loading
@@ -149,7 +220,7 @@ const EntryPackPreviewScreen = ({ route, navigation }) => {
     };
 
     loadData();
-  }, []);
+  }, [userData, passport, destination]);
 
   // Handle navigation with error handling
   const handleClose = useCallback(() => {
@@ -250,7 +321,9 @@ if (isLoading) {
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง{'\n'}Entry Pack Preview
+            {isOfficialPack
+              ? 'ชุดข้อมูลตรวจคนเข้าเมือง\nEntry Pack'
+              : 'ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง\nEntry Pack Preview'}
           </Text>
           <View style={styles.headerRight} />
         </View>
@@ -268,7 +341,9 @@ if (isLoading) {
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง{'\n'}Entry Pack Preview
+          {isOfficialPack
+            ? 'ชุดข้อมูลตรวจคนเข้าเมือง\nEntry Pack'
+            : 'ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง\nEntry Pack Preview'}
         </Text>
         <View style={styles.headerRight} />
       </View>

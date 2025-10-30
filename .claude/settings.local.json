@@ -10,7 +10,10 @@
       "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"SELECT COUNT(*) as snapshot_count FROM snapshots;\")",
       "Bash(do echo \"=== $table ===\" sqlite3 \"$DB_PATH\" \"PRAGMA table_info($table);\")",
       "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"PRAGMA table_info(passports);\")",
-      "Bash(DB_PATH=\"/Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/D2C892B1-6872-4624-BA10-5AEABC8E69C2/Documents/ExponentExperienceData/@anonymous/chujingtong-949aa9fd-5f29-4180-8e63-54175ac2c5e3/SQLite/tripsecretary_secure\" sqlite3:*)"
+      "Bash(DB_PATH=\"/Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/D2C892B1-6872-4624-BA10-5AEABC8E69C2/Documents/ExponentExperienceData/@anonymous/chujingtong-949aa9fd-5f29-4180-8e63-54175ac2c5e3/SQLite/tripsecretary_secure\" sqlite3:*)",
+      "Bash(npx react-native log-ios:*)",
+      "Bash(DB_PATH=\"/Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/D2C892B1-6872-4624-BA10-5AEABC8E69C2/Documents/ExponentExperienceData/@anonymous/chujingtong-949aa9fd-5f29-4180-8e63-54175ac2c5e3/SQLite/tripsecretary_secure\")",
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"SELECT id, entry_info_id, card_type, status, arr_card_no, qr_uri, pdf_url FROM digital_arrival_cards;\")"
     ],
     "deny": [],
     "ask": []

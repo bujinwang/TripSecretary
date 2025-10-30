@@ -42,7 +42,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [resubmissionWarning, setResubmissionWarning] = useState(null);
   const [entryPackStatus, setEntryPackStatus] = useState(null);
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
-  
+  const [latestTdacData, setLatestTdacData] = useState(null);
+
   // Passport selection state
   const [userId, setUserId] = useState(null);
 
@@ -105,7 +106,25 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       // Load travel info for Thailand - use currentUserId directly
       const destinationId = route.params?.destination?.id || 'th';
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
-      
+
+      // Get entry info ID for this destination
+      let entryInfoId = null;
+      try {
+        const EntryInfoService = require('../../services/EntryInfoService').default;
+        if (EntryInfoService && typeof EntryInfoService.getAllEntryInfos === 'function') {
+          const allEntryInfos = await EntryInfoService.getAllEntryInfos(currentUserId);
+          const thailandEntryInfo = allEntryInfos?.find(info => info.destinationId === destinationId);
+          if (thailandEntryInfo) {
+            entryInfoId = thailandEntryInfo.id;
+            console.log('✅ Found entry info ID:', entryInfoId);
+          }
+        } else {
+          console.log('EntryInfoService not available, skipping entry info ID lookup');
+        }
+      } catch (error) {
+        console.error('Failed to get entry info ID:', error);
+      }
+
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
       const personalInfoFromStore = allUserData.personalInfo || {};
@@ -115,13 +134,14 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       // Gender normalization logic removed - handled by passport model
 
       const entryInfo = {
+        entryInfoId, // Include the entry info ID
         passport: passportInfo,
         personalInfo: normalizedPersonalInfo,
         funds: fundItems || [],
         travel: travelInfo || {},
         lastUpdatedAt: new Date().toISOString()
       };
-      
+
       setUserData(entryInfo);
       
       // Extract arrival date for countdown
@@ -290,6 +310,21 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           setEntryPackStatus('submitted');
           setShowSupersededStatus(latestDAC.status === 'superseded');
 
+          // Store the latest TDAC data for use in preview
+          setLatestTdacData({
+            arrCardNo: latestDAC.arrCardNo,
+            qrUri: latestDAC.qrUri,
+            pdfUrl: latestDAC.pdfUrl,
+            submittedAt: latestDAC.submittedAt,
+            submissionMethod: latestDAC.submissionMethod,
+          });
+
+          console.log('📌 Stored TDAC data:', {
+            arrCardNo: latestDAC.arrCardNo,
+            hasQr: !!latestDAC.qrUri,
+            hasPdf: !!latestDAC.pdfUrl
+          });
+
           // Check for pending resubmission warnings
           try {
             const warning = UserDataService.getResubmissionWarning(thailandEntryInfo.id);
@@ -311,10 +346,12 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           setEntryPackStatus('in_progress');
           setShowSupersededStatus(false);
           setResubmissionWarning(null);
+          setLatestTdacData(null);
         }
       } else {
         setEntryPackStatus(null);
         setShowSupersededStatus(false);
+        setLatestTdacData(null);
         setResubmissionWarning(null);
       }
     } catch (error) {
@@ -393,6 +430,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const handlePreviewEntryCard = () => {
+    console.log('🎯 Opening entry pack with TDAC data:', latestTdacData);
+
     // Navigate to EntryPackPreview to show the complete entry pack preview
     navigation.navigate('EntryPackPreview', {
       userData,
@@ -402,7 +441,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         personalInfo: userData?.personalInfo,
         travelInfo: userData?.travel,
         funds: userData?.funds,
-        tdacSubmission: null // Will be populated when TDAC is submitted
+        tdacSubmission: latestTdacData // Use the loaded TDAC data
       }
     });
   };

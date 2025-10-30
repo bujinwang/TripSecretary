@@ -721,35 +721,11 @@ const EntryPackDisplay = ({
 
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🛂 {config.entryCardTitle}</Text>
-
         {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
           <>
-            <TDACInfoCard
-              tdacSubmission={entryPack.tdacSubmission}
-              isReadOnly={true}
-              country={country}
-            />
-
             {/* PDF Viewer Section */}
             {(entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath) && (
               <View style={styles.pdfContainer}>
-                <Text style={styles.pdfTitle}>
-                  {pdfDocumentTitle[country] || pdfDocumentTitle.thailand}
-                </Text>
-                <Text style={styles.pdfHint}>
-                  {country === 'thailand'
-                    ? 'เลื่อนดูทุกหน้าของเอกสาร'
-                    : country === 'malaysia'
-                    ? 'Scroll to view all pages'
-                    : country === 'singapore' || country === 'usa'
-                    ? 'Scroll to view all pages'
-                    : country === 'hongkong'
-                    ? '滾動查看所有頁面'
-                    : country === 'japan'
-                    ? 'スクロールしてすべてのページを表示'
-                    : 'Scroll to view all pages'}
-                </Text>
                 <PDFViewer
                   source={{
                     uri: entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath

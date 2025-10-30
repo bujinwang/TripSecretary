@@ -511,16 +511,49 @@ const HomeScreen = ({ navigation }) => {
     return activeEntryPacks.map((pack) => {
       const flag = getDestinationFlag(pack.destinationId);
       const destinationName = pack.destinationName || getDestinationName(pack.destinationId);
-      
+
       // Get arrival date from entry info (we'll need to load this)
       const arrivalCountdown = getArrivalCountdown(pack.arrivalDate);
-      
+
       return (
         <Card
           key={pack.id}
           style={[styles.historyCard, styles.entryPackCard]}
           pressable
-          onPress={() => navigation.navigate('EntryInfoDetail', { entryInfoId: pack.id })}
+          onPress={() => {
+            // Navigate to the appropriate entry flow screen for this destination
+            const entryFlowScreenMap = {
+              'jp': 'JapanEntryFlow',
+              'th': 'ThailandEntryFlow',
+              'hk': 'HongKongEntryFlow',
+              'kr': 'KoreaEntryFlow',
+              'sg': 'SingaporeEntryFlow',
+              'my': 'MalaysiaEntryFlow',
+            };
+
+            const screenName = entryFlowScreenMap[pack.destinationId];
+            if (screenName) {
+              navigation.navigate(screenName, {
+                destination: {
+                  id: pack.destinationId,
+                  name: destinationName,
+                  flag: flag
+                },
+                passport: passportData ? {
+                  id: 'user_001', // TODO: Get from auth context
+                  type: t('home.passport.type'),
+                  name: passportData.fullName || '',
+                  nameEn: passportData.fullName || '',
+                  passportNo: passportData.passportNumber || '',
+                  expiry: passportData.expiryDate || '',
+                } : null,
+                entryPackId: pack.id, // Pass the entry info ID for loading existing data
+              });
+            } else {
+              // Fallback for destinations without Entry Flow screen
+              navigation.navigate('EntryInfoDetail', { entryInfoId: pack.id });
+            }
+          }}
         >
           <View style={styles.entryPackItem}>
             <View style={styles.entryPackLeft}>
@@ -531,7 +564,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.entryPackInfo}>
               <Text style={styles.entryPackTitle}>
-                {t('progressiveEntryFlow.entryPack.title', { 
+                {t('progressiveEntryFlow.entryPack.title', {
                   destination: destinationName,
                   defaultValue: `${destinationName} Entry Pack - Submitted`
                 })}
@@ -548,7 +581,7 @@ const HomeScreen = ({ navigation }) => {
         </Card>
       );
     });
-  }, [activeEntryPacks, t, navigation]);
+  }, [activeEntryPacks, t, navigation, passportData]);
 
   const renderInProgressDestinationCards = useCallback(() => {
     if (!inProgressDestinations.length) {
