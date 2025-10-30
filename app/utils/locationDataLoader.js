@@ -49,10 +49,6 @@ const locationDataCache = {};
  * Destination configuration for location data loading
  * Maps destination IDs to their data module paths and export keys
  * @private
- *
- * NOTE: Only include destinations with existing data files.
- * Vietnam and Malaysia location data exists, but province/state data files
- * need to be created before adding them here.
  */
 const DESTINATION_CONFIG = {
   th: {
@@ -68,6 +64,20 @@ const DESTINATION_CONFIG = {
     locationModule: '../data/thailandLocations',
     districtGetter: 'getDistrictsByProvince',
     subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  vn: {
+    provinceModule: '../data/vietnamLocations',
+    provinceKey: 'vietnamProvinces',
+    locationModule: '../data/vietnamLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: null, // Vietnam doesn't use sub-districts
+  },
+  vietnam: {
+    provinceModule: '../data/vietnamLocations',
+    provinceKey: 'vietnamProvinces',
+    locationModule: '../data/vietnamLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: null, // Vietnam doesn't use sub-districts
   },
   sg: {
     // Singapore doesn't have provinces/states
@@ -86,9 +96,8 @@ const DESTINATION_CONFIG = {
     subDistrictGetter: null,
   },
 
-  // TODO: Add these when province/state data files are created:
-  // vn/vietnam - needs vietnamProvinces.js
-  // my/malaysia - needs malaysiaStates.js
+  // TODO: Add Malaysia when malaysiaStates.js is created
+  // my/malaysia - needs malaysiaStates.js file
 };
 
 /**
