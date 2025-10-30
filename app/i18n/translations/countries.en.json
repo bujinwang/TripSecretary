@@ -452,6 +452,80 @@
       "startButton": "Start filling"
     }
   },
+  "vietnam": {
+    "info": {
+      "headerTitle": "Vietnam Entry Info",
+      "title": "Vietnam Entry Guide",
+      "subtitle": "E-Visa & Entry Requirements",
+      "sections": {
+        "visa": {
+          "title": "Visa Requirements",
+          "items": [
+            "Chinese citizens can apply for e-Visa online",
+            "E-Visa valid for 90 days, single or multiple entry",
+            "Processing time: 3 business days",
+            "E-Visa fee: $25 USD"
+          ]
+        },
+        "onsite": {
+          "title": "On-Site Requirements",
+          "items": [
+            "Present your passport and approved e-Visa",
+            "Immigration form may be required on arrival",
+            "Customs declaration form for goods over $5,000 USD"
+          ]
+        },
+        "appFeatures": {
+          "title": "App Features",
+          "items": [
+            "✅ E-Visa application guidance",
+            "✅ Entry form templates",
+            "✅ Bilingual support (Vietnamese, English, Chinese)"
+          ]
+        }
+      },
+      "continueButton": "Continue to Travel Info"
+    },
+    "requirements": {
+      "headerTitle": "Entry Requirements",
+      "introTitle": "What You Need to Enter Vietnam",
+      "introSubtitle": "Please ensure you have the following documents and requirements ready",
+      "items": {
+        "validPassport": {
+          "title": "Valid Passport",
+          "description": "Passport must be valid for at least 6 months",
+          "details": "Your passport must have at least 6 months validity from your date of entry into Vietnam."
+        },
+        "visa": {
+          "title": "E-Visa or Visa",
+          "description": "Apply for e-Visa online or obtain visa on arrival",
+          "details": "Chinese citizens can apply for e-Visa online (90 days validity) or obtain visa on arrival with pre-approval letter."
+        },
+        "onwardTicket": {
+          "title": "Return or Onward Ticket",
+          "description": "Proof of departure from Vietnam",
+          "details": "You must show proof of onward or return travel (flight, bus, or train ticket)."
+        },
+        "accommodation": {
+          "title": "Accommodation Proof",
+          "description": "Hotel booking or address in Vietnam",
+          "details": "Provide hotel reservation or address of where you will stay in Vietnam."
+        },
+        "funds": {
+          "title": "Sufficient Funds",
+          "description": "Proof of financial means",
+          "details": "Be prepared to show proof of sufficient funds for your stay (cash, credit cards, or bank statements)."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Ready to Fill Entry Information",
+          "subtitle": "The app will help you organize these details for a smooth entry process"
+        }
+      },
+      "startButton": "Continue to Travel Details"
+    }
+  },
   "hongkong": {
     "info": {
       "headerTitle": "Hong Kong Entry Information",

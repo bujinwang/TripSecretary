@@ -30,6 +30,7 @@ export { default as JapanEntryFlowScreen } from './japan/JapanEntryFlowScreen';
 
 // Country-specific screens
 export * from './thailand';
+export * from './vietnam';
 export * from './malaysia';
 export * from './singapore';
 export * from './taiwan';
