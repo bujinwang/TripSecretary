@@ -86,32 +86,18 @@ const DESTINATION_CONFIG = {
     subDistrictGetter: 'getSubDistrictsByDistrictId',
   },
   vn: {
-    provinceModule: '../data/vietnamProvinces',
+    provinceModule: '../data/vietnamLocations',
     provinceKey: 'vietnamProvinces',
     locationModule: '../data/vietnamLocations',
     districtGetter: 'getDistrictsByProvince',
-    subDistrictGetter: 'getSubDistrictsByDistrictId',
+    subDistrictGetter: null, // Vietnam doesn't use sub-districts
   },
   vietnam: {
-    provinceModule: '../data/vietnamProvinces',
+    provinceModule: '../data/vietnamLocations',
     provinceKey: 'vietnamProvinces',
     locationModule: '../data/vietnamLocations',
     districtGetter: 'getDistrictsByProvince',
-    subDistrictGetter: 'getSubDistrictsByDistrictId',
-  },
-  my: {
-    provinceModule: '../data/malaysiaStates',
-    provinceKey: 'malaysiaStates',
-    locationModule: '../data/malaysiaLocations',
-    districtGetter: 'getDistrictsByState',
-    subDistrictGetter: 'getSubDistrictsByDistrictId',
-  },
-  malaysia: {
-    provinceModule: '../data/malaysiaStates',
-    provinceKey: 'malaysiaStates',
-    locationModule: '../data/malaysiaLocations',
-    districtGetter: 'getDistrictsByState',
-    subDistrictGetter: 'getSubDistrictsByDistrictId',
+    subDistrictGetter: null, // Vietnam doesn't use sub-districts
   },
   sg: {
     // Singapore doesn't have provinces/states
@@ -129,6 +115,9 @@ const DESTINATION_CONFIG = {
     districtGetter: null,
     subDistrictGetter: null,
   },
+
+  // TODO: Add Malaysia when malaysiaStates.js is created
+  // my/malaysia - needs malaysiaStates.js file
 };
 
 /**
