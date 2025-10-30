@@ -14,7 +14,10 @@
       "Bash(fi)",
       "Bash(if [ -d \"arrival-cards\" ])",
       "Bash(then )",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(for file in docs/architecture/*.md)",
+      "Bash(head:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

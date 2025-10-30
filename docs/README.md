@@ -27,11 +27,8 @@ New to the project? Start here:
 - [QUICK_REFERENCE_DEV_DATABASE.md](QUICK_REFERENCE_DEV_DATABASE.md) - Database operations
 
 **Architecture:**
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture (consolidated)
 - [architecture/Architecture-Decision-Records.md](architecture/Architecture-Decision-Records.md) - All ADRs
-- [architecture/Multi-Country-Platform-Architecture.md](architecture/Multi-Country-Platform-Architecture.md)
-- [architecture/Component-Reuse-Dynamic-Rendering.md](architecture/Component-Reuse-Dynamic-Rendering.md)
-- [architecture/Config-Distribution-Architecture.md](architecture/Config-Distribution-Architecture.md)
 
 **Integration & Development:**
 - [ADDING_NEW_COUNTRY.md](ADDING_NEW_COUNTRY.md) - Country integration workflow
@@ -100,11 +97,8 @@ docs/
 ├── ADDING_NEW_COUNTRY.md  # Country integration guide
 ├── TODO.md                # Current tasks
 │
-├── architecture/          # Architecture docs & ADRs (13 files)
-│   ├── Architecture-Decision-Records.md
-│   ├── Multi-Country-Platform-Architecture.md
-│   ├── Component-Reuse-Dynamic-Rendering.md
-│   └── ...
+├── architecture/          # Architecture decisions (1 file)
+│   └── Architecture-Decision-Records.md  # All ADRs in one place
 │
 ├── design/                # Design decisions & UX (10 files)
 │   ├── UI设计规范.md
@@ -129,14 +123,16 @@ docs/
 ├── wireframes/            # Design wireframes
 ├── examples/              # Code examples
 │
-└── history/               # 📦 ARCHIVED (106 files - read-only)
-    ├── fixes/             # Bug fix summaries (35 files)
-    ├── implementations/   # "Complete" status docs (26 files)
+└── history/               # 📦 ARCHIVED (157 files - read-only)
+    ├── fixes/             # Bug fix summaries (42 files)
+    ├── implementations/   # "Complete" status docs (43 files)
     ├── migrations/        # Migration guides (6 files)
     ├── consolidated/      # Old refactoring docs (22 files)
+    ├── architecture/      # Detailed architecture docs (12 files)
+    ├── planning/          # Chinese planning docs (7 files)
     ├── i18n/              # i18n implementation summaries (7 files)
     ├── implementation/    # Old implementation docs (3 files)
-    └── ...                # Other historical docs (7 files)
+    └── ...                # Other historical docs (15 files)
 ```
 
 ---
@@ -217,15 +213,17 @@ docs/
 
 ## 🗄️ About the history/ Folder
 
-The `history/` folder contains **106 archived documents** from 2024-2025:
+The `history/` folder contains **157 archived documents** from 2024-2025:
 
-- **fixes/** (35) - Bug fix summaries
-- **implementations/** (26) - "Complete" status docs
-- **migrations/** (6) - Schema/security migrations
+- **fixes/** (42) - Bug fix summaries & solutions
+- **implementations/** (43) - Implementation & status docs
 - **consolidated/** (22) - Old refactoring docs
+- **architecture/** (12) - Detailed architecture docs (now consolidated)
+- **planning/** (7) - Chinese planning & design docs
 - **i18n/** (7) - i18n implementation summaries
+- **migrations/** (6) - Schema/security migrations
 - **implementation/** (3) - Old implementation plans
-- **Other** (7) - Misc historical docs
+- **Other** (15) - Misc historical docs
 
 These are **read-only** and may be outdated. Kept for:
 - Historical reference
@@ -259,11 +257,12 @@ find docs -name "*.md" -not -path "*/history/*" -exec ls -lt {} + | head -20
 
 ## 📊 Documentation Stats
 
-- **Total docs:** 229 files
-- **Living docs:** 123 files (54%)
-- **Archived:** 106 files (46%)
+- **Total docs:** 227 files
+- **Living docs:** 70 files (31%)
+- **Archived:** 157 files (69%)
 - **Last cleanup:** 2025-10-30
-- **Reduction:** 46% of old docs archived
+- **Reduction:** 69% archived (was 230 → now 70 essential docs!)
+- **Root folder:** 13 files (was 40+, 67% cleaner!)
 
 ---
 

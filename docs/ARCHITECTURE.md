@@ -1,8 +1,10 @@
 # TripSecretary Multi-Country Architecture
 
 **Version:** 2.0 (Post-Refactoring)
-**Last Updated:** 2025-01-30
+**Last Updated:** 2025-10-30
 **Status:** Production Ready
+
+> **Note:** This is the consolidated architecture document. For architecture decisions (ADRs), see [architecture/Architecture-Decision-Records.md](architecture/Architecture-Decision-Records.md). Historical architecture docs are in [history/architecture/](history/architecture/).
 
 ---
 
