@@ -28,9 +28,10 @@ class TDACSubmissionService {
    * @param {string} submissionData.submittedAt - Submission timestamp
    * @param {string} submissionData.submissionMethod - Method used (API/WebView/Hybrid)
    * @param {Object} travelerInfo - Traveler information context
+   * @param {string} [destinationId='th'] - Destination ID (defaults to 'th' for backward compatibility)
    * @returns {Promise<Object>} Result object with success status and data
    */
-  static async handleTDACSubmissionSuccess(submissionData, travelerInfo) {
+  static async handleTDACSubmissionSuccess(submissionData, travelerInfo, destinationId = 'th') {
     try {
       console.log('🎉 Handling TDAC submission success:', {
         arrCardNo: submissionData.arrCardNo,
@@ -70,7 +71,7 @@ class TDACSubmissionService {
       console.log('📋 Submission history entry:', submissionHistoryEntry);
 
       // Find or create entry info ID
-      const entryInfoId = await this.findOrCreateEntryInfoId(travelerInfo);
+      const entryInfoId = await this.findOrCreateEntryInfoId(travelerInfo, destinationId);
       const userId = travelerInfo?.userId || 'current_user';
 
       if (entryInfoId) {
@@ -328,14 +329,13 @@ class TDACSubmissionService {
    * Find or create entry info ID for the traveler
    *
    * @param {Object} travelerInfo - Traveler information
+   * @param {string} [destinationId='th'] - Destination ID (defaults to 'th' for backward compatibility)
    * @returns {Promise<string|null>} Entry info ID or null if failed
    */
-  static async findOrCreateEntryInfoId(travelerInfo) {
+  static async findOrCreateEntryInfoId(travelerInfo, destinationId = 'th') {
     try {
       const userId = travelerInfo?.userId || 'current_user';
-      const destinationId = 'th';
-
-      console.log('🔍 Looking for existing entry info...');
+      console.log(`🔍 Looking for existing entry info for destination: ${destinationId}...`);
 
       // Try to find existing entry info for this user and destination
       let entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
