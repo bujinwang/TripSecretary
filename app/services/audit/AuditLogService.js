@@ -22,7 +22,7 @@ class AuditLogService {
       const auditDir = new FileSystem.Directory(this.auditStorageDir);
       const dirExists = await auditDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.auditStorageDir, { intermediates: true });
+        FileSystem.makeDirectory(this.auditStorageDir, { intermediates: true });
         console.log('Audit log storage directory created:', this.auditStorageDir);
       }
     } catch (error) {
@@ -178,13 +178,13 @@ class AuditLogService {
       const eventDir = `${this.auditStorageDir}${datePath}/`;
       
       // Create directory if it doesn't exist
-      await FileSystem.makeDirectoryAsync(eventDir, { intermediates: true });
+      FileSystem.makeDirectory(eventDir, { intermediates: true });
       
       // Save event as JSON file
       const eventFileName = `${auditEvent.id}.json`;
       const eventFilePath = `${eventDir}${eventFileName}`;
       
-      await FileSystem.writeAsStringAsync(
+      FileSystem.writeAsString(
         eventFilePath, 
         JSON.stringify(auditEvent, null, 2)
       );
@@ -241,7 +241,7 @@ class AuditLogService {
       
       // This is a simplified implementation - in production you'd want to
       // index files by snapshot ID for better performance
-      const auditDirInfo = await FileSystem.getInfoAsync(this.auditStorageDir);
+      const auditDirInfo = FileSystem.getInfo(this.auditStorageDir);
       if (!auditDirInfo.exists) {
         return events;
       }
@@ -265,11 +265,11 @@ class AuditLogService {
    */
   async searchAuditFiles(dirPath, snapshotId, events) {
     try {
-      const items = await FileSystem.readDirectoryAsync(dirPath);
+      const items = FileSystem.readDirectory(dirPath);
       
       for (const item of items) {
         const itemPath = `${dirPath}${item}`;
-        const itemInfo = await FileSystem.getInfoAsync(itemPath);
+        const itemInfo = FileSystem.getInfo(itemPath);
         
         if (itemInfo.isDirectory) {
           // Recursively search subdirectories
@@ -277,7 +277,7 @@ class AuditLogService {
         } else if (item.endsWith('.json')) {
           // Load and check audit event file
           try {
-            const eventContent = await FileSystem.readAsStringAsync(itemPath);
+            const eventContent = FileSystem.readAsString(itemPath);
             const auditEvent = JSON.parse(eventContent);
             
             if (auditEvent.snapshotId === snapshotId) {
@@ -427,7 +427,7 @@ class AuditLogService {
       const exportPath = `${FileSystem.documentDirectory}exports/${exportFileName}`;
 
       // Create exports directory
-      await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}exports/`, { 
+      FileSystem.makeDirectory(`${FileSystem.documentDirectory}exports/`, { 
         intermediates: true 
       });
 
@@ -464,7 +464,7 @@ class AuditLogService {
       }
 
       // Write export file
-      await FileSystem.writeAsStringAsync(exportPath, exportContent);
+      FileSystem.writeAsString(exportPath, exportContent);
 
       // Record export event in audit log
       await this.record('exported', {
@@ -514,7 +514,7 @@ class AuditLogService {
       };
 
       // Calculate storage usage
-      const auditDirInfo = await FileSystem.getInfoAsync(this.auditStorageDir);
+      const auditDirInfo = FileSystem.getInfo(this.auditStorageDir);
       if (auditDirInfo.exists) {
         stats.storageUsage = await this.calculateDirectorySize(this.auditStorageDir);
       }
@@ -543,16 +543,16 @@ class AuditLogService {
     try {
       let totalSize = 0;
       
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
+      const dirInfo = FileSystem.getInfo(dirPath);
       if (!dirInfo.exists || !dirInfo.isDirectory) {
         return 0;
       }
 
-      const items = await FileSystem.readDirectoryAsync(dirPath);
+      const items = FileSystem.readDirectory(dirPath);
       
       for (const item of items) {
         const itemPath = `${dirPath}${item}`;
-        const itemInfo = await FileSystem.getInfoAsync(itemPath);
+        const itemInfo = FileSystem.getInfo(itemPath);
         
         if (itemInfo.isDirectory) {
           totalSize += await this.calculateDirectorySize(`${itemPath}/`);

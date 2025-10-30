@@ -88,7 +88,7 @@ const PDFViewer = ({
 
         // Try to read the file
         try {
-          base64Data = await FileSystem.readAsStringAsync(fileUri, {
+          base64Data = FileSystem.readAsString(fileUri, {
             encoding: FileSystem.EncodingType.Base64,
           });
           console.log('✅ PDF read successfully, size:', Math.round(base64Data.length / 1024), 'KB');
@@ -97,7 +97,7 @@ const PDFViewer = ({
 
           // Try with file:// prefix
           try {
-            base64Data = await FileSystem.readAsStringAsync('file://' + fileUri, {
+            base64Data = FileSystem.readAsString('file://' + fileUri, {
               encoding: FileSystem.EncodingType.Base64,
             });
             console.log('✅ PDF read with file:// prefix');
@@ -109,7 +109,7 @@ const PDFViewer = ({
                 source.uri,
                 FileSystem.documentDirectory + 'temp_pdf.pdf'
               );
-              base64Data = await FileSystem.readAsStringAsync(downloadResult.uri, {
+              base64Data = FileSystem.readAsString(downloadResult.uri, {
                 encoding: FileSystem.EncodingType.Base64,
               });
               console.log('✅ PDF downloaded and read');

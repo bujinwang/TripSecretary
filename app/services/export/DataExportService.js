@@ -166,12 +166,12 @@ class DataExportService {
 
       // Write JSON file
       const jsonString = JSON.stringify(exportData, null, 2);
-      await FileSystem.writeAsStringAsync(filePath, jsonString, {
+      FileSystem.writeAsString(filePath, jsonString, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileInfo = FileSystem.getInfo(filePath);
 
       console.log('JSON export completed:', {
         filename,
@@ -234,13 +234,13 @@ class DataExportService {
       });
 
       // Move the generated PDF to our export directory
-      await FileSystem.moveAsync({
+      FileSystem.move({
         from: uri,
         to: filePath
       });
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileInfo = FileSystem.getInfo(filePath);
 
       console.log('PDF export completed:', {
         filename,
@@ -432,7 +432,7 @@ class DataExportService {
         try {
           if (latestDAC.qrUri.startsWith('file://') || latestDAC.qrUri.startsWith('/')) {
             // Local file - copy it
-            await FileSystem.copyAsync({
+            FileSystem.copy({
               from: latestDAC.qrUri,
               to: filePath
             });
@@ -470,7 +470,7 @@ class DataExportService {
       }
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileInfo = FileSystem.getInfo(filePath);
 
       console.log('QR code image export completed:', {
         filename,
@@ -525,12 +525,12 @@ class DataExportService {
       const imageData = await this.generateSummaryImageData(completeData, options);
       
       // Write the image data to file
-      await FileSystem.writeAsStringAsync(filePath, imageData.base64, {
+      FileSystem.writeAsString(filePath, imageData.base64, {
         encoding: FileSystem.EncodingType.Base64
       });
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileInfo = FileSystem.getInfo(filePath);
 
       console.log('Summary image export completed:', {
         filename,
@@ -644,7 +644,7 @@ class DataExportService {
 
       // Convert SVG to base64 and save
       const base64Data = Buffer.from(svgContent).toString('base64');
-      await FileSystem.writeAsStringAsync(outputPath, base64Data, {
+      FileSystem.writeAsString(outputPath, base64Data, {
         encoding: FileSystem.EncodingType.Base64
       });
 
@@ -1448,7 +1448,7 @@ class DataExportService {
             const fileExists = await photoFile.exists();
             if (fileExists) {
               // Read file as base64
-              const base64Data = await FileSystem.readAsStringAsync(fund.photoUri, {
+              const base64Data = FileSystem.readAsString(fund.photoUri, {
                 encoding: FileSystem.EncodingType.Base64
               });
 
@@ -1652,7 +1652,7 @@ class DataExportService {
       const directory = new FileSystem.Directory(dirPath);
       const dirExists = await directory.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        FileSystem.makeDirectory(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }
     } catch (error) {
@@ -1668,21 +1668,21 @@ class DataExportService {
    */
   async cleanupOldExports(maxAgeHours = 24) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
+      const dirInfo = FileSystem.getInfo(this.exportDirectory);
       if (!dirInfo.exists) {
         return { deletedCount: 0, message: 'Export directory does not exist' };
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = FileSystem.readDirectory(this.exportDirectory);
       const cutoffTime = Date.now() - (maxAgeHours * 60 * 60 * 1000);
       let deletedCount = 0;
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
-        
+        const fileInfo = FileSystem.getInfo(filePath);
+
         if (fileInfo.exists && fileInfo.modificationTime < cutoffTime) {
-          await FileSystem.deleteAsync(filePath);
+          FileSystem.delete(filePath);
           deletedCount++;
           console.log('Deleted old export file:', filename);
         }
@@ -1707,8 +1707,8 @@ class DataExportService {
    */
   async getExportDirectoryInfo() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
-      
+      const dirInfo = FileSystem.getInfo(this.exportDirectory);
+
       if (!dirInfo.exists) {
         return {
           exists: false,
@@ -1717,12 +1717,12 @@ class DataExportService {
         };
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = FileSystem.readDirectory(this.exportDirectory);
       let totalSize = 0;
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
+        const fileInfo = FileSystem.getInfo(filePath);
         if (fileInfo.exists) {
           totalSize += fileInfo.size || 0;
         }
@@ -1753,10 +1753,10 @@ class DataExportService {
   async deleteExportFile(filename) {
     try {
       const filePath = this.exportDirectory + filename;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      
+      const fileInfo = FileSystem.getInfo(filePath);
+
       if (fileInfo.exists) {
-        await FileSystem.deleteAsync(filePath);
+        FileSystem.delete(filePath);
         console.log('Deleted export file:', filename);
         return true;
       }
@@ -1806,7 +1806,7 @@ class DataExportService {
         if (result.result && result.result.filePath) {
           try {
             // Read the exported file content
-            const fileContent = await FileSystem.readAsStringAsync(result.result.filePath, {
+            const fileContent = FileSystem.readAsString(result.result.filePath, {
               encoding: FileSystem.EncodingType.UTF8
             });
 
@@ -1829,12 +1829,12 @@ class DataExportService {
 
       // Write the archive as a JSON file (simulating ZIP structure)
       const archiveContent = JSON.stringify(archiveData, null, 2);
-      await FileSystem.writeAsStringAsync(zipFilePath, archiveContent, {
+      FileSystem.writeAsString(zipFilePath, archiveContent, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(zipFilePath);
+      const fileInfo = FileSystem.getInfo(zipFilePath);
 
       return {
         success: true,
@@ -1864,7 +1864,7 @@ class DataExportService {
           try {
             // Only delete if it's in temp directory
             if (result.result.filePath.includes(this.tempDirectory)) {
-              await FileSystem.deleteAsync(result.result.filePath);
+              FileSystem.delete(result.result.filePath);
               console.log('Cleaned up temp file:', result.result.filename);
             }
           } catch (error) {
@@ -1977,17 +1977,17 @@ class DataExportService {
    */
   async listExportFiles() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
+      const dirInfo = FileSystem.getInfo(this.exportDirectory);
       if (!dirInfo.exists) {
         return [];
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = FileSystem.readDirectory(this.exportDirectory);
       const fileInfos = [];
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
+        const fileInfo = FileSystem.getInfo(filePath);
         
         if (fileInfo.exists) {
           fileInfos.push({

@@ -169,8 +169,8 @@ class BackupService {
       // Move export file to backup directory with proper naming
       const backupFilename = `backup_${backupId}_${timestamp.replace(/[:.]/g, '-')}.json`;
       const backupFilePath = this.backupDirectory + backupFilename;
-      
-      await FileSystem.moveAsync({
+
+      FileSystem.move({
         from: exportResult.zipPackage.filePath,
         to: backupFilePath
       });
@@ -230,7 +230,7 @@ class BackupService {
         return [];
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.backupDirectory);
+      const files = FileSystem.readDirectory(this.backupDirectory);
       const backups = [];
 
       for (const filename of files) {
@@ -320,7 +320,7 @@ class BackupService {
         const backupFile = new FileSystem.File(metadata.filePath);
         const fileExists = await backupFile.exists();
         if (fileExists) {
-          await FileSystem.deleteAsync(metadata.filePath);
+          FileSystem.delete(metadata.filePath);
           console.log('Deleted backup file:', metadata.filename);
         }
       }
@@ -620,7 +620,7 @@ class BackupService {
 
       // Save to cloud backup directory
       const cloudBackupPath = this.cloudBackupDirectory + `cloud_${cloudBackupMetadata.cloudBackupId}.enc`;
-      await FileSystem.moveAsync({
+      FileSystem.move({
         from: encryptedBackup.filePath,
         to: cloudBackupPath
       });
@@ -691,7 +691,7 @@ class BackupService {
         return [];
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.cloudBackupDirectory);
+      const files = FileSystem.readDirectory(this.cloudBackupDirectory);
       const cloudBackups = [];
 
       for (const filename of files) {
@@ -772,7 +772,7 @@ class BackupService {
       });
 
       // Clean up decrypted file
-      await FileSystem.deleteAsync(decryptedBackup.filePath);
+      FileSystem.delete(decryptedBackup.filePath);
 
       console.log('Cloud backup restored successfully:', {
         cloudBackupId,
@@ -936,9 +936,9 @@ class BackupService {
 
       // Delete local encrypted file
       if (metadata.cloudFilePath) {
-        const fileInfo = await FileSystem.getInfoAsync(metadata.cloudFilePath);
+        const fileInfo = FileSystem.getInfo(metadata.cloudFilePath);
         if (fileInfo.exists) {
-          await FileSystem.deleteAsync(metadata.cloudFilePath);
+          FileSystem.delete(metadata.cloudFilePath);
           console.log('Deleted cloud backup file:', metadata.cloudFilePath);
         }
       }
@@ -1044,7 +1044,7 @@ class BackupService {
       console.log('Encrypting backup file');
 
       // Read source file
-      const sourceData = await FileSystem.readAsStringAsync(filePath, {
+      const sourceData = FileSystem.readAsString(filePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -1052,14 +1052,14 @@ class BackupService {
       // If password is provided, use it as a custom field type for key derivation
       const fieldType = password ? `backup_${password.slice(0, 8)}` : 'backup_data';
       const encryptedData = await SecureStorageService.encryption.encrypt(sourceData, fieldType);
-      
+
       // Create encrypted file
       const encryptedFilePath = filePath.replace('.json', '.enc');
-      await FileSystem.writeAsStringAsync(encryptedFilePath, encryptedData, {
+      FileSystem.writeAsString(encryptedFilePath, encryptedData, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
-      const fileInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      const fileInfo = FileSystem.getInfo(encryptedFilePath);
 
       console.log('Backup file encrypted successfully');
 
@@ -1087,7 +1087,7 @@ class BackupService {
       console.log('Decrypting backup file');
 
       // Read encrypted file
-      const encryptedData = await FileSystem.readAsStringAsync(encryptedFilePath, {
+      const encryptedData = FileSystem.readAsString(encryptedFilePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -1095,14 +1095,14 @@ class BackupService {
       // If password is provided, use it as a custom field type for key derivation
       const fieldType = password ? `backup_${password.slice(0, 8)}` : 'backup_data';
       const decryptedData = await SecureStorageService.encryption.decrypt(encryptedData, fieldType);
-      
+
       // Create decrypted file
       const decryptedFilePath = encryptedFilePath.replace('.enc', '_decrypted.json');
-      await FileSystem.writeAsStringAsync(decryptedFilePath, decryptedData, {
+      FileSystem.writeAsString(decryptedFilePath, decryptedData, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
-      const fileInfo = await FileSystem.getInfoAsync(decryptedFilePath);
+      const fileInfo = FileSystem.getInfo(decryptedFilePath);
 
       console.log('Backup file decrypted successfully');
 
@@ -1180,14 +1180,14 @@ class BackupService {
       if (backupType === 'local') {
         metadata = await this.loadBackupMetadata(backupId);
         if (metadata && metadata.filePath) {
-          const fileInfo = await FileSystem.getInfoAsync(metadata.filePath);
+          const fileInfo = FileSystem.getInfo(metadata.filePath);
           fileExists = fileInfo.exists;
           fileSize = fileInfo.size;
         }
       } else if (backupType === 'cloud') {
         metadata = await this.loadCloudBackupMetadata(backupId);
         if (metadata && metadata.cloudFilePath) {
-          const fileInfo = await FileSystem.getInfoAsync(metadata.cloudFilePath);
+          const fileInfo = FileSystem.getInfo(metadata.cloudFilePath);
           fileExists = fileInfo.exists;
           fileSize = fileInfo.size;
         }
@@ -1271,7 +1271,7 @@ class BackupService {
       }
 
       // Check if file exists
-      const fileInfo = await FileSystem.getInfoAsync(backupFilePath);
+      const fileInfo = FileSystem.getInfo(backupFilePath);
       if (!fileInfo.exists) {
         throw new Error('Backup file does not exist');
       }
@@ -1301,7 +1301,7 @@ class BackupService {
 
       // Clean up decrypted file if it was created
       if (isEncrypted && recoveryFilePath !== backupFilePath) {
-        await FileSystem.deleteAsync(recoveryFilePath);
+        FileSystem.delete(recoveryFilePath);
       }
 
       console.log('Selective recovery completed:', {
@@ -1423,7 +1423,7 @@ class BackupService {
       }
 
       // Read and parse backup contents
-      const backupData = await FileSystem.readAsStringAsync(previewFilePath, {
+      const backupData = FileSystem.readAsString(previewFilePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -1460,7 +1460,7 @@ class BackupService {
 
       // Clean up decrypted file if it was created
       if (isEncrypted && previewFilePath !== backupFilePath) {
-        await FileSystem.deleteAsync(previewFilePath);
+        FileSystem.delete(previewFilePath);
       }
 
       return {
@@ -1513,7 +1513,7 @@ class BackupService {
 
       // Check file existence
       const filePath = backupType === 'local' ? metadata.filePath : metadata.cloudFilePath;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileInfo = FileSystem.getInfo(filePath);
       
       if (!fileInfo.exists) {
         validationResult.errors.push('Backup file does not exist');
@@ -1686,7 +1686,7 @@ class BackupService {
   async saveCloudBackupMetadata(cloudBackupId, metadata) {
     try {
       const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
-      await FileSystem.writeAsStringAsync(metadataPath, JSON.stringify(metadata, null, 2), {
+      FileSystem.writeAsString(metadataPath, JSON.stringify(metadata, null, 2), {
         encoding: FileSystem.EncodingType.UTF8
       });
     } catch (error) {
@@ -1703,13 +1703,13 @@ class BackupService {
   async loadCloudBackupMetadata(cloudBackupId) {
     try {
       const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
-      const fileInfo = await FileSystem.getInfoAsync(metadataPath);
-      
+      const fileInfo = FileSystem.getInfo(metadataPath);
+
       if (!fileInfo.exists) {
         return null;
       }
 
-      const metadataJson = await FileSystem.readAsStringAsync(metadataPath, {
+      const metadataJson = FileSystem.readAsString(metadataPath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -1728,10 +1728,10 @@ class BackupService {
   async deleteCloudBackupMetadata(cloudBackupId) {
     try {
       const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
-      const fileInfo = await FileSystem.getInfoAsync(metadataPath);
-      
+      const fileInfo = FileSystem.getInfo(metadataPath);
+
       if (fileInfo.exists) {
-        await FileSystem.deleteAsync(metadataPath);
+        FileSystem.delete(metadataPath);
       }
     } catch (error) {
       console.error('Failed to delete cloud backup metadata:', error);
@@ -1782,7 +1782,7 @@ class BackupService {
   async saveBackupMetadata(backupId, metadata) {
     try {
       const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
-      await FileSystem.writeAsStringAsync(metadataPath, JSON.stringify(metadata, null, 2), {
+      FileSystem.writeAsString(metadataPath, JSON.stringify(metadata, null, 2), {
         encoding: FileSystem.EncodingType.UTF8
       });
     } catch (error) {
@@ -1799,13 +1799,13 @@ class BackupService {
   async loadBackupMetadata(backupId) {
     try {
       const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
-      const fileInfo = await FileSystem.getInfoAsync(metadataPath);
-      
+      const fileInfo = FileSystem.getInfo(metadataPath);
+
       if (!fileInfo.exists) {
         return null;
       }
 
-      const metadataJson = await FileSystem.readAsStringAsync(metadataPath, {
+      const metadataJson = FileSystem.readAsString(metadataPath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -1824,10 +1824,10 @@ class BackupService {
   async deleteBackupMetadata(backupId) {
     try {
       const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
-      const fileInfo = await FileSystem.getInfoAsync(metadataPath);
-      
+      const fileInfo = FileSystem.getInfo(metadataPath);
+
       if (fileInfo.exists) {
-        await FileSystem.deleteAsync(metadataPath);
+        FileSystem.delete(metadataPath);
       }
     } catch (error) {
       console.error('Failed to delete backup metadata:', error);
@@ -1880,7 +1880,7 @@ class BackupService {
       const directory = new FileSystem.Directory(dirPath);
       const dirExists = await directory.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        FileSystem.makeDirectory(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }
     } catch (error) {

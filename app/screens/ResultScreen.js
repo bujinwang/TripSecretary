@@ -478,7 +478,7 @@ const ResultScreen = ({ navigation, route }) => {
 
     try {
       const downloadPath = `${FileSystem.documentDirectory}${destination?.name || 'entry'}_form_${Date.now()}.pdf`;
-      await FileSystem.copyAsync({
+      FileSystem.copy({
         from: uri,
         to: downloadPath,
       });

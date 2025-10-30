@@ -121,7 +121,7 @@ const GDPRDataExportScreen = ({ navigation, route }) => {
       const filename = `tripsecretary_data_export_${new Date().toISOString().split('T')[0]}.json`;
       const fileUri = FileSystem.documentDirectory + filename;
 
-      await FileSystem.writeAsStringAsync(fileUri, jsonString, {
+      FileSystem.writeAsString(fileUri, jsonString, {
         encoding: FileSystem.EncodingType.UTF8
       });
 

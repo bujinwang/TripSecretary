@@ -101,12 +101,12 @@ class DataEncryptionService {
 
       // Save encrypted data to file
       const encryptedFilePath = `${this.encryptedStorageDir}snapshot_${snapshotId}.enc`;
-      await FileSystem.writeAsStringAsync(encryptedFilePath, encryptedData, {
+      FileSystem.writeAsString(encryptedFilePath, encryptedData, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
       // Verify file was created
-      const fileInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      const fileInfo = FileSystem.getInfo(encryptedFilePath);
       if (!fileInfo.exists) {
         throw new Error('Failed to save encrypted snapshot data');
       }
@@ -143,13 +143,13 @@ class DataEncryptionService {
       console.log('Decrypting snapshot data:', snapshotId);
 
       // Check if file exists
-      const fileInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      const fileInfo = FileSystem.getInfo(encryptedFilePath);
       if (!fileInfo.exists) {
         throw new Error(`Encrypted snapshot file not found: ${encryptedFilePath}`);
       }
 
       // Read encrypted data
-      const encryptedData = await FileSystem.readAsStringAsync(encryptedFilePath, {
+      const encryptedData = FileSystem.readAsString(encryptedFilePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -205,7 +205,7 @@ class DataEncryptionService {
       for (const photo of photoFiles) {
         try {
           // Read photo file as base64
-          const photoData = await FileSystem.readAsStringAsync(photo.filePath, {
+          const photoData = FileSystem.readAsString(photo.filePath, {
             encoding: FileSystem.EncodingType.Base64
           });
 
@@ -215,12 +215,12 @@ class DataEncryptionService {
 
           // Save encrypted photo
           const encryptedPhotoPath = `${encryptedPhotoDir}${photo.fundItemId}_encrypted.enc`;
-          await FileSystem.writeAsStringAsync(encryptedPhotoPath, encryptedPhotoData, {
+          FileSystem.writeAsString(encryptedPhotoPath, encryptedPhotoData, {
             encoding: FileSystem.EncodingType.UTF8
           });
 
           // Verify encrypted file
-          const encryptedFileInfo = await FileSystem.getInfoAsync(encryptedPhotoPath);
+          const encryptedFileInfo = FileSystem.getInfo(encryptedPhotoPath);
           if (!encryptedFileInfo.exists) {
             throw new Error(`Failed to save encrypted photo: ${photo.fundItemId}`);
           }
@@ -284,10 +284,10 @@ class DataEncryptionService {
           if (!photo.encrypted || !photo.encryptedPath) {
             // Photo was not encrypted, copy original if it exists
             if (photo.filePath) {
-              const originalInfo = await FileSystem.getInfoAsync(photo.filePath);
+              const originalInfo = FileSystem.getInfo(photo.filePath);
               if (originalInfo.exists) {
                 const outputPath = `${outputDir}${photo.fundItemId}_original.jpg`;
-                await FileSystem.copyAsync({
+                FileSystem.copy({
                   from: photo.filePath,
                   to: outputPath
                 });
@@ -301,7 +301,7 @@ class DataEncryptionService {
           }
 
           // Read encrypted photo data
-          const encryptedPhotoData = await FileSystem.readAsStringAsync(photo.encryptedPath, {
+          const encryptedPhotoData = FileSystem.readAsString(photo.encryptedPath, {
             encoding: FileSystem.EncodingType.UTF8
           });
 
@@ -311,12 +311,12 @@ class DataEncryptionService {
 
           // Save decrypted photo
           const decryptedPhotoPath = `${outputDir}${photo.fundItemId}_decrypted.jpg`;
-          await FileSystem.writeAsStringAsync(decryptedPhotoPath, decryptedPhotoData, {
+          FileSystem.writeAsString(decryptedPhotoPath, decryptedPhotoData, {
             encoding: FileSystem.EncodingType.Base64
           });
 
           // Verify decrypted file
-          const decryptedFileInfo = await FileSystem.getInfoAsync(decryptedPhotoPath);
+          const decryptedFileInfo = FileSystem.getInfo(decryptedPhotoPath);
           if (!decryptedFileInfo.exists) {
             throw new Error(`Failed to save decrypted photo: ${photo.fundItemId}`);
           }
@@ -361,7 +361,7 @@ class DataEncryptionService {
       console.log('Encrypting export file:', filePath);
 
       // Read export file
-      const exportData = await FileSystem.readAsStringAsync(filePath, {
+      const exportData = FileSystem.readAsString(filePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -377,12 +377,12 @@ class DataEncryptionService {
 
       // Create encrypted file path
       const encryptedFilePath = filePath.replace(/\.(json|zip)$/, '.enc');
-      await FileSystem.writeAsStringAsync(encryptedFilePath, encryptedData, {
+      FileSystem.writeAsString(encryptedFilePath, encryptedData, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
       // Verify encrypted file
-      const encryptedFileInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      const encryptedFileInfo = FileSystem.getInfo(encryptedFilePath);
       if (!encryptedFileInfo.exists) {
         throw new Error('Failed to save encrypted export file');
       }
@@ -422,7 +422,7 @@ class DataEncryptionService {
       console.log('Decrypting export file:', encryptedFilePath);
 
       // Read encrypted file
-      const encryptedData = await FileSystem.readAsStringAsync(encryptedFilePath, {
+      const encryptedData = FileSystem.readAsString(encryptedFilePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -437,12 +437,12 @@ class DataEncryptionService {
 
       // Create decrypted file path
       const decryptedFilePath = encryptedFilePath.replace('.enc', '_decrypted.json');
-      await FileSystem.writeAsStringAsync(decryptedFilePath, decryptedData, {
+      FileSystem.writeAsString(decryptedFilePath, decryptedData, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
       // Verify decrypted file
-      const decryptedFileInfo = await FileSystem.getInfoAsync(decryptedFilePath);
+      const decryptedFileInfo = FileSystem.getInfo(decryptedFilePath);
       if (!decryptedFileInfo.exists) {
         throw new Error('Failed to save decrypted export file');
       }
@@ -632,7 +632,7 @@ class DataEncryptionService {
     const plainFilePath = `${this.encryptedStorageDir}snapshot_${snapshotId}.json`;
     const serializedData = JSON.stringify(snapshotData, null, 2);
     
-    await FileSystem.writeAsStringAsync(plainFilePath, serializedData, {
+    FileSystem.writeAsString(plainFilePath, serializedData, {
       encoding: FileSystem.EncodingType.UTF8
     });
     
@@ -662,9 +662,9 @@ class DataEncryptionService {
    */
   async ensureDirectoryExists(dirPath) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
+      const dirInfo = FileSystem.getInfo(dirPath);
       if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        FileSystem.makeDirectory(dirPath, { intermediates: true });
       }
     } catch (error) {
       console.error('Failed to create directory:', dirPath, error);

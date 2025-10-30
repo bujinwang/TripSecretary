@@ -23,12 +23,12 @@ class SnapshotService {
    */
   async initializeStorage() {
     if (this.initialized) return;
-    
+
     try {
       const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir);
       const dirExists = await snapshotDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
+        FileSystem.makeDirectory(this.snapshotStorageDir, { intermediates: true });
         console.log('Snapshot storage directory created:', this.snapshotStorageDir);
       }
       this.initialized = true;
@@ -238,7 +238,7 @@ class SnapshotService {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
       // Create snapshot photo directory
-      await FileSystem.makeDirectoryAsync(snapshotPhotoDir, { intermediates: true });
+      FileSystem.makeDirectory(snapshotPhotoDir, { intermediates: true });
 
       console.log(`Copying ${funds.length} fund photos to snapshot storage:`, snapshotPhotoDir);
 
@@ -251,18 +251,18 @@ class SnapshotService {
             const snapshotPhotoPath = `${snapshotPhotoDir}${fileName}`;
 
             // Check if original photo exists
-            const originalInfo = await FileSystem.getInfoAsync(fund.photoUri);
+            const originalInfo = FileSystem.getInfo(fund.photoUri);
             if (originalInfo.exists) {
               // Validate photo file size (prevent copying corrupted files)
               if (originalInfo.size > 0) {
                 // Copy photo to snapshot storage
-                await FileSystem.copyAsync({
+                FileSystem.copy({
                   from: fund.photoUri,
                   to: snapshotPhotoPath
                 });
 
                 // Verify copy was successful
-                const copiedInfo = await FileSystem.getInfoAsync(snapshotPhotoPath);
+                const copiedInfo = FileSystem.getInfo(snapshotPhotoPath);
                 if (copiedInfo.exists && copiedInfo.size === originalInfo.size) {
                   copiedPhotos.push({
                     fundItemId: fund.id,
@@ -467,12 +467,12 @@ class SnapshotService {
   async deleteSnapshotPhotos(snapshotId) {
     try {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
-      
+
       // Check if directory exists
-      const dirInfo = await FileSystem.getInfoAsync(snapshotPhotoDir);
+      const dirInfo = FileSystem.getInfo(snapshotPhotoDir);
       if (dirInfo.exists) {
         // Delete entire snapshot photo directory
-        await FileSystem.deleteAsync(snapshotPhotoDir);
+        FileSystem.delete(snapshotPhotoDir);
         console.log('Snapshot photos deleted:', snapshotPhotoDir);
       }
     } catch (error) {
@@ -506,7 +506,7 @@ class SnapshotService {
         // Add photo sizes
         for (const photo of snapshot.photoManifest) {
           try {
-            const photoInfo = await FileSystem.getInfoAsync(photo.snapshotPath);
+            const photoInfo = FileSystem.getInfo(photo.snapshotPath);
             if (photoInfo.exists) {
               totalSize += photoInfo.size || 0;
               photoCount++;
@@ -545,13 +545,13 @@ class SnapshotService {
       // For now, we'll scan the snapshot storage directory to find all snapshots
       // This is a temporary implementation until proper storage layer is implemented
       const snapshots = [];
-      
-      const snapshotDirInfo = await FileSystem.getInfoAsync(this.snapshotStorageDir);
+
+      const snapshotDirInfo = FileSystem.getInfo(this.snapshotStorageDir);
       if (!snapshotDirInfo.exists) {
         return [];
       }
 
-      const snapshotDirs = await FileSystem.readDirectoryAsync(this.snapshotStorageDir);
+      const snapshotDirs = FileSystem.readDirectory(this.snapshotStorageDir);
       
       for (const dirName of snapshotDirs) {
         try {
@@ -692,9 +692,9 @@ class SnapshotService {
         const photoData = {};
         for (const photo of snapshot.photoManifest) {
           try {
-            const photoInfo = await FileSystem.getInfoAsync(photo.snapshotPath);
+            const photoInfo = FileSystem.getInfo(photo.snapshotPath);
             if (photoInfo.exists) {
-              const base64 = await FileSystem.readAsStringAsync(photo.snapshotPath, {
+              const base64 = FileSystem.readAsString(photo.snapshotPath, {
                 encoding: FileSystem.EncodingType.Base64
               });
               photoData[photo.fundItemId] = base64;
@@ -756,8 +756,8 @@ class SnapshotService {
         return { isValid: false, error: 'Photo URI is required' };
       }
 
-      const photoInfo = await FileSystem.getInfoAsync(photoUri);
-      
+      const photoInfo = FileSystem.getInfo(photoUri);
+
       if (!photoInfo.exists) {
         return { isValid: false, error: 'Photo file does not exist' };
       }
@@ -769,15 +769,15 @@ class SnapshotService {
       // Check file size limits (max 10MB)
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (photoInfo.size > maxSize) {
-        return { 
-          isValid: false, 
-          error: `Photo file too large: ${(photoInfo.size / (1024 * 1024)).toFixed(2)}MB (max 10MB)` 
+        return {
+          isValid: false,
+          error: `Photo file too large: ${(photoInfo.size / (1024 * 1024)).toFixed(2)}MB (max 10MB)`
         };
       }
 
       // Check if file is readable
       try {
-        const base64 = await FileSystem.readAsStringAsync(photoUri, { 
+        const base64 = FileSystem.readAsString(photoUri, {
           encoding: FileSystem.EncodingType.Base64,
           length: 100 // Just read first 100 bytes to test
         });
@@ -820,7 +820,7 @@ class SnapshotService {
         createdAt: new Date().toISOString()
       }, null, 2);
 
-      await FileSystem.writeAsStringAsync(placeholderPath, placeholderContent);
+      FileSystem.writeAsString(placeholderPath, placeholderContent);
 
       console.log('Missing photo placeholder created:', {
         snapshotId,
@@ -900,25 +900,25 @@ class SnapshotService {
       };
 
       // Get all snapshot directories
-      const snapshotDirInfo = await FileSystem.getInfoAsync(this.snapshotStorageDir);
+      const snapshotDirInfo = FileSystem.getInfo(this.snapshotStorageDir);
       if (!snapshotDirInfo.exists) {
         return cleanupResult;
       }
 
-      const snapshotDirs = await FileSystem.readDirectoryAsync(this.snapshotStorageDir);
+      const snapshotDirs = FileSystem.readDirectory(this.snapshotStorageDir);
       cleanupResult.scannedDirectories = snapshotDirs.length;
 
       for (const dirName of snapshotDirs) {
         try {
           // Check if snapshot record exists
           const snapshot = await EntryPackSnapshot.load(dirName);
-          
+
           if (!snapshot) {
             // Orphaned directory - calculate size and delete
             const dirPath = `${this.snapshotStorageDir}${dirName}`;
             const dirSize = await this.calculateDirectorySize(dirPath);
-            
-            await FileSystem.deleteAsync(dirPath);
+
+            FileSystem.delete(dirPath);
             
             cleanupResult.orphanedDirectories++;
             cleanupResult.deletedDirectories.push(dirName);
@@ -958,17 +958,17 @@ class SnapshotService {
   async calculateDirectorySize(dirPath) {
     try {
       let totalSize = 0;
-      
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
+
+      const dirInfo = FileSystem.getInfo(dirPath);
       if (!dirInfo.exists || !dirInfo.isDirectory) {
         return 0;
       }
 
-      const items = await FileSystem.readDirectoryAsync(dirPath);
-      
+      const items = FileSystem.readDirectory(dirPath);
+
       for (const item of items) {
         const itemPath = `${dirPath}/${item}`;
-        const itemInfo = await FileSystem.getInfoAsync(itemPath);
+        const itemInfo = FileSystem.getInfo(itemPath);
         
         if (itemInfo.isDirectory) {
           totalSize += await this.calculateDirectorySize(itemPath);
@@ -1010,7 +1010,7 @@ class SnapshotService {
       for (const photoEntry of snapshot.photoManifest) {
         if (photoEntry.status === 'success' && photoEntry.snapshotPath) {
           try {
-            const photoInfo = await FileSystem.getInfoAsync(photoEntry.snapshotPath);
+            const photoInfo = FileSystem.getInfo(photoEntry.snapshotPath);
             
             if (!photoInfo.exists) {
               verificationResult.missingPhotos++;

@@ -34,7 +34,7 @@ class GDPRComplianceService {
       const exportDir = new FileSystem.Directory(this.EXPORT_DIR);
       const dirExists = await exportDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.EXPORT_DIR, { intermediates: true });
+        FileSystem.makeDirectory(this.EXPORT_DIR, { intermediates: true });
       }
     } catch (error) {
       console.error('Failed to create export directory:', error);
@@ -102,7 +102,7 @@ class GDPRComplianceService {
       const filename = `gdpr_export_${userId}_${exportId}.json`;
       const filePath = this.EXPORT_DIR + filename;
 
-      await FileSystem.writeAsStringAsync(
+      FileSystem.writeAsString(
         filePath,
         JSON.stringify(gdprExport, null, 2),
         { encoding: FileSystem.EncodingType.UTF8 }
@@ -432,12 +432,12 @@ class GDPRComplianceService {
   async deleteUserFiles(userId) {
     try {
       // Delete export files
-      const exportFiles = await FileSystem.readDirectoryAsync(this.EXPORT_DIR);
+      const exportFiles = FileSystem.readDirectory(this.EXPORT_DIR);
       const userExports = exportFiles.filter(file => file.includes(userId));
 
       for (const file of userExports) {
         try {
-          await FileSystem.deleteAsync(this.EXPORT_DIR + file, { idempotent: true });
+          FileSystem.delete(this.EXPORT_DIR + file, { idempotent: true });
         } catch (error) {
           console.error(`Failed to delete export file ${file}:`, error);
         }
@@ -446,11 +446,11 @@ class GDPRComplianceService {
       // Delete cached passport photos (if any)
       const photoDir = FileSystem.documentDirectory + 'passport_photos/';
       try {
-        const photoFiles = await FileSystem.readDirectoryAsync(photoDir);
+        const photoFiles = FileSystem.readDirectory(photoDir);
         const userPhotos = photoFiles.filter(file => file.includes(userId));
 
         for (const photo of userPhotos) {
-          await FileSystem.deleteAsync(photoDir + photo, { idempotent: true });
+          FileSystem.delete(photoDir + photo, { idempotent: true });
         }
       } catch (error) {
         // Photo directory might not exist, ignore
