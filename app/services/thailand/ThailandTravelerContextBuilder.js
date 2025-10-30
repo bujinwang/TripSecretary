@@ -8,6 +8,7 @@
 import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 import { parseFullName } from '../../utils/nameUtils';
 import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
+import tdacSessionManager from './TDACSessionManager';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -59,6 +60,12 @@ class ThailandTravelerContextBuilder {
       } else {
         console.log('❌ No travel info found - this will cause validation to fail');
       }
+
+      // Initialize TDAC session manager to fetch/cache dropdown IDs
+      console.log('🔄 Initializing TDAC session manager...');
+      await tdacSessionManager.initialize();
+      console.log('✅ TDAC session manager ready');
+
       // Validate that we have the required data
       const validationResult = ThailandTravelerContextBuilder.validateUserData(userData);
       if (!validationResult.isValid) {
@@ -837,7 +844,7 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Get transport mode ID based on travel mode
-   * Uses TDAC's encoded transport mode IDs with specific subtypes
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {Object} travelInfo - Travel information
    * @returns {string} - TDAC encoded transport mode ID
    */
@@ -845,104 +852,107 @@ class ThailandTravelerContextBuilder {
     console.log('🚨 getTransportModeId called with travelInfo:', travelInfo?.arrivalFlightNumber);
     const travelMode = ThailandTravelerContextBuilder.getTravelMode(travelInfo);
     console.log('🚨 Determined travel mode:', travelMode);
-    
-    // TDAC transport mode IDs (extracted from HAR file)
-    const TDAC_TRANSPORT_MODE_IDS = {
-      // Air transport subtypes
-      'COMMERCIAL_FLIGHT': '6XcrGmsUxFe9ua1gehBv/Q==',     // Commercial flights (most common)
-      'PRIVATE_CARGO': 'yYdaVPLIpwqddAuVOLDorQ==',         // Private/Cargo airline
-      'OTHERS_AIR': 'mhapxYyzDmGnIyuZ0XgD8Q==',           // Others (please specify)
-      
-      // General transport modes (fallback)
-      'AIR_GENERAL': 'ZUSsbcDrA+GoD4mQxvf7Ag==',           // General air transport
-      'LAND_GENERAL': 'roui+vydIOBtjzLaEq6hCg==',          // General land transport
-      'SEA_GENERAL': 'kFiGEpiBus5ZgYvP6i3CNQ==',          // General sea transport
-      
-      // Fallback mappings
-      'AIR': '6XcrGmsUxFe9ua1gehBv/Q==',                   // Default to commercial flight
-      'LAND': 'roui+vydIOBtjzLaEq6hCg==',                  // Land transport
-      'SEA': 'kFiGEpiBus5ZgYvP6i3CNQ=='                    // Sea transport
-    };
-    
+
     // For air travel, determine specific subtype
     if (travelMode === 'AIR') {
       // Check if we can determine the specific flight type
       if (travelInfo?.arrivalFlightNumber) {
         const flightNo = travelInfo.arrivalFlightNumber.toUpperCase();
-        
+
         // Commercial flights typically have airline codes (2 letters + numbers)
         const isCommercial = /^[A-Z]{2}\d+$/.test(flightNo);
-        
+
         if (isCommercial) {
-          console.log('🚨 TDAC_TRANSPORT_MODE_IDS keys:', Object.keys(TDAC_TRANSPORT_MODE_IDS));
-          console.log('🚨 COMMERCIAL_FLIGHT value:', TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT']);
-          const result = TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
-          console.log('🚨 Returning result:', result);
-          return result;
+          console.log('🚨 Using COMMERCIAL_FLIGHT mode');
+          try {
+            return tdacSessionManager.getTransportModeId('COMMERCIAL_FLIGHT');
+          } catch (error) {
+            console.error('Error getting transport mode ID from session manager:', error);
+            return '';
+          }
         }
       }
-      
+
       // Default to commercial flight for air travel (most common case)
-      return TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+      try {
+        return tdacSessionManager.getTransportModeId('COMMERCIAL_FLIGHT');
+      } catch (error) {
+        console.error('Error getting transport mode ID from session manager:', error);
+        return '';
+      }
     }
-    
-    return TDAC_TRANSPORT_MODE_IDS[travelMode] || TDAC_TRANSPORT_MODE_IDS['COMMERCIAL_FLIGHT'];
+
+    // Use session manager to get encrypted ID for other modes
+    try {
+      return tdacSessionManager.getTransportModeId(travelMode);
+    } catch (error) {
+      console.error('Error getting transport mode ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get gender ID based on gender string
-   * Uses TDAC's encoded gender IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} gender - Gender string (MALE, FEMALE, etc.)
    * @returns {string} - TDAC encoded gender ID
    */
   static getGenderId(gender) {
-    // TDAC gender IDs (extracted from HAR file)
-    const TDAC_GENDER_IDS = {
-      'MALE': 'g5iW15ADyFWOAxDewREkVA==',
-      'FEMALE': 'JGb85pWhehCWn5EM6PeL5A==',
-      'UNDEFINED': 'W6iZt0z/ayaCvyGt6LXKIA=='
-    };
-
     // If gender is missing or undefined, return empty string
     // The TDAC API validation will catch this and show a proper error message
     if (!gender) return '';
 
     const normalizedGender = gender.toUpperCase().trim();
 
-    // Map common variations
-    if (normalizedGender === 'M' || normalizedGender === 'MALE' || normalizedGender === '男性') {
-      return TDAC_GENDER_IDS['MALE'];
-    }
-    if (normalizedGender === 'F' || normalizedGender === 'FEMALE' || normalizedGender === '女性') {
-      return TDAC_GENDER_IDS['FEMALE'];
+    // Map common variations to standard values
+    let standardGender = normalizedGender;
+    if (normalizedGender === 'M' || normalizedGender === '男性') {
+      standardGender = 'MALE';
+    } else if (normalizedGender === 'F' || normalizedGender === '女性') {
+      standardGender = 'FEMALE';
     }
 
     // IMPORTANT: TDAC API does not accept UNDEFINED gender
     // Return empty string so validation will catch it and show proper error
-    return '';
+    if (standardGender === 'UNDEFINED') {
+      return '';
+    }
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getGenderId(standardGender);
+    } catch (error) {
+      console.error('Error getting gender ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get accommodation type ID based on accommodation type
-   * Uses TDAC's encoded accommodation IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - TDAC encoded accommodation ID
    */
   static getAccommodationTypeId(accommodationType) {
-    if (!accommodationType) return '';
-    
-    // TDAC accommodation type IDs (extracted from HAR file)
-    const TDAC_ACCOMMODATION_IDS = {
-      'HOTEL': 'kSqK152aNAx9HQigxwgnUg==',
-      'YOUTH_HOSTEL': 'Bsldsb4eRsgtHy+rwxGvyQ==',
-      'GUEST_HOUSE': 'xyft2pbI953g9FKKER4OZw==',
-      'FRIEND_HOUSE': 'ze+djQZsddZtZdi37G7mZg==',
-      'APARTMENT': 'PUB3ud2M4eOVGBmCEe4q2Q==',
-      'OTHERS': 'lIaJ6Z7teVjIeRF2RT97Hw=='
-    };
-    
+    if (!accommodationType) {
+      // Use session manager to get default HOTEL ID
+      try {
+        return tdacSessionManager.getAccommodationId('HOTEL');
+      } catch (error) {
+        console.error('Error getting accommodation ID from session manager:', error);
+        return '';
+      }
+    }
+
     const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
-    return TDAC_ACCOMMODATION_IDS[normalizedType] || TDAC_ACCOMMODATION_IDS.HOTEL;
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getAccommodationId(normalizedType);
+    } catch (error) {
+      console.error('Error getting accommodation ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
@@ -1001,31 +1011,16 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Get purpose ID based on travel purpose
-   * Uses TDAC's encoded purpose IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} purpose - Travel purpose string
    * @returns {string} - TDAC encoded purpose ID
    */
   static getPurposeId(purpose) {
     if (!purpose) return '';
-    
-    // TDAC purpose IDs (extracted from HAR file)
-    const TDAC_PURPOSE_IDS = {
-      'HOLIDAY': 'ZUSsbcDrA+GoD4mQxvf7Ag==',
-      'MEETING': 'roui+vydIOBtjzLaEq6hCg==',
-      'SPORTS': 'kFiGEpiBus5ZgYvP6i3CNQ==',
-      'BUSINESS': '//wEUc0hKyGLuN5vojDBgA==',
-      'INCENTIVE': 'g3Kfs7hn033IoeTa5VYrKQ==',
-      'MEDICAL_WELLNESS': 'Khu8eZW5Xt/2dVTwRTc7oA==',
-      'EDUCATION': '/LDehQQnXbGFGUe2mSC2lw==',
-      'CONVENTION': 'a7NwNw5YbtyIQQClpkDxiQ==',
-      'EMPLOYMENT': 'MIIPKOQBf05A/1ueNg8gSA==',
-      'EXHIBITION': 'DeSHtTxpXJk+XIG5nUlW6w==',
-      'OTHERS': 'J4Ru2J4RqpnDSHeA0k32PQ=='
-    };
-    
+
     const normalizedPurpose = purpose.toUpperCase().trim();
-    
-    // Map common variations
+
+    // Map common variations to standard values
     const purposeMapping = {
       'HOLIDAY': 'HOLIDAY',
       'VACATION': 'HOLIDAY',
@@ -1057,32 +1052,37 @@ class ThailandTravelerContextBuilder {
       'OTHERS': 'OTHERS',
       '其他': 'OTHERS'
     };
-    
+
     const mappedPurpose = purposeMapping[normalizedPurpose] || 'HOLIDAY'; // Default to holiday
-    return TDAC_PURPOSE_IDS[mappedPurpose];
+
+    // Use session manager to get encrypted ID
+    try {
+      return tdacSessionManager.getPurposeId(mappedPurpose);
+    } catch (error) {
+      console.error('Error getting purpose ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
    * Get nationality ID based on nationality code
-   * Uses TDAC's encoded nationality IDs
+   * Uses TDAC session manager for dynamic ID retrieval
    * @param {string} nationality - Nationality code (CHN, USA, etc.)
    * @returns {string} - TDAC encoded nationality ID
    */
   static getNationalityId(nationality) {
     if (!nationality) return '';
-    
-    // TDAC nationality IDs (extracted from HAR file - sample set)
-    const TDAC_NATIONALITY_IDS = {
-      'CHN': 'n8NVa/feQ+F5Ok859Oywuw==',  // China
-      'HKG': 'g6ud3ID/+b3U95emMTZsBw==',  // Hong Kong
-      'MAC': '6H4SM3pACzdpLaJx/SR7sg=='   // Macao
-      // Note: More nationality IDs would need to be extracted from additional HAR captures
-    };
-    
+
     const normalizedNationality = nationality.toUpperCase().trim();
-    
-    // Return the encoded ID if available, otherwise return empty (will need API lookup)
-    return TDAC_NATIONALITY_IDS[normalizedNationality] || '';
+
+    // Use session manager to get encrypted ID
+    // Returns empty string if nationality not in fallback list
+    try {
+      return tdacSessionManager.getNationalityId(normalizedNationality);
+    } catch (error) {
+      console.error('Error getting nationality ID from session manager:', error);
+      return '';
+    }
   }
 
   /**
