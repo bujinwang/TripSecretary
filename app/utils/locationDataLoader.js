@@ -46,6 +46,99 @@
 const locationDataCache = {};
 
 /**
+ * Destination configuration for location data loading
+ * Maps destination IDs to their data module paths and export keys
+ * @private
+ */
+const DESTINATION_CONFIG = {
+  th: {
+    provinceModule: '../data/thailandProvinces',
+    provinceKey: 'thailandProvinces',
+    locationModule: '../data/thailandLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  thailand: {
+    provinceModule: '../data/thailandProvinces',
+    provinceKey: 'thailandProvinces',
+    locationModule: '../data/thailandLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  vn: {
+    provinceModule: '../data/vietnamProvinces',
+    provinceKey: 'vietnamProvinces',
+    locationModule: '../data/vietnamLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  vietnam: {
+    provinceModule: '../data/vietnamProvinces',
+    provinceKey: 'vietnamProvinces',
+    locationModule: '../data/vietnamLocations',
+    districtGetter: 'getDistrictsByProvince',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  my: {
+    provinceModule: '../data/malaysiaStates',
+    provinceKey: 'malaysiaStates',
+    locationModule: '../data/malaysiaLocations',
+    districtGetter: 'getDistrictsByState',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  malaysia: {
+    provinceModule: '../data/malaysiaStates',
+    provinceKey: 'malaysiaStates',
+    locationModule: '../data/malaysiaLocations',
+    districtGetter: 'getDistrictsByState',
+    subDistrictGetter: 'getSubDistrictsByDistrictId',
+  },
+  sg: {
+    // Singapore doesn't have provinces/states
+    provinceModule: null,
+    provinceKey: null,
+    locationModule: null,
+    districtGetter: null,
+    subDistrictGetter: null,
+  },
+  singapore: {
+    // Singapore doesn't have provinces/states
+    provinceModule: null,
+    provinceKey: null,
+    locationModule: null,
+    districtGetter: null,
+    subDistrictGetter: null,
+  },
+};
+
+/**
+ * Validate province/region data array
+ * @private
+ * @param {*} data - Data to validate
+ * @param {string} destinationId - Destination ID for error messages
+ * @throws {Error} If data is invalid
+ */
+const validateProvinceData = (data, destinationId) => {
+  if (!Array.isArray(data)) {
+    throw new Error(`Province data for ${destinationId} is not an array. Got: ${typeof data}`);
+  }
+
+  if (data.length === 0) {
+    console.warn(`⚠️ Province data for ${destinationId} is empty`);
+    return;
+  }
+
+  // Validate first item has required structure
+  const sample = data[0];
+  if (!sample.code && !sample.id) {
+    throw new Error(`Province data for ${destinationId} is missing required 'code' or 'id' field`);
+  }
+  if (!sample.name && !sample.nameEn) {
+    throw new Error(`Province data for ${destinationId} is missing required 'name' or 'nameEn' field`);
+  }
+};
+
+/**
  * Load province/region data for a destination
  *
  * @param {string} destinationId - Destination ID (e.g., 'th', 'vn', 'my')
@@ -72,44 +165,29 @@ export const loadProvinces = (destinationId) => {
   }
 
   try {
-    let provinceData;
-
-    switch (destinationId.toLowerCase()) {
-      case 'th':
-      case 'thailand':
-        provinceData = require('../data/thailandProvinces');
-        locationDataCache[cacheKey] = provinceData.thailandProvinces || provinceData.default || provinceData;
-        break;
-
-      case 'vn':
-      case 'vietnam':
-        provinceData = require('../data/vietnamProvinces');
-        locationDataCache[cacheKey] = provinceData.vietnamProvinces || provinceData.default || provinceData;
-        break;
-
-      case 'my':
-      case 'malaysia':
-        provinceData = require('../data/malaysiaStates');
-        locationDataCache[cacheKey] = provinceData.malaysiaStates || provinceData.default || provinceData;
-        break;
-
-      case 'sg':
-      case 'singapore':
-        // Singapore doesn't have provinces, return empty array
-        locationDataCache[cacheKey] = [];
-        break;
-
-      // TODO: Add more countries as needed
-      // case 'jp':
-      //   provinceData = require('../data/japanPrefectures');
-      //   locationDataCache[cacheKey] = provinceData.japanPrefectures || provinceData.default || provinceData;
-      //   break;
-
-      default:
-        throw new Error(`No province data available for destination: ${destinationId}`);
+    // Get destination configuration
+    const config = DESTINATION_CONFIG[destinationId.toLowerCase()];
+    if (!config) {
+      throw new Error(`Unsupported destination: ${destinationId}. Supported destinations: ${Object.keys(DESTINATION_CONFIG).filter(k => !k.includes('_')).join(', ')}`);
     }
 
-    return locationDataCache[cacheKey];
+    // Handle special cases (e.g., Singapore has no provinces)
+    if (!config.provinceModule) {
+      locationDataCache[cacheKey] = [];
+      return [];
+    }
+
+    // Load province data using configuration
+    const provinceModule = require(config.provinceModule);
+    const data = provinceModule[config.provinceKey] || provinceModule.default || provinceModule;
+
+    // Validate the loaded data
+    validateProvinceData(data, destinationId);
+
+    // Cache and return
+    locationDataCache[cacheKey] = data;
+    return data;
+
   } catch (error) {
     console.error(`Error loading provinces for ${destinationId}:`, error);
     throw new Error(`Failed to load province data for ${destinationId}: ${error.message}`);
@@ -166,38 +244,31 @@ export const loadDistrictGetter = (destinationId) => {
   }
 
   try {
-    switch (destinationId.toLowerCase()) {
-      case 'th':
-      case 'thailand': {
-        const locationData = require('../data/thailandLocations');
-        return locationData.getDistrictsByProvince || (() => []);
-      }
-
-      case 'vn':
-      case 'vietnam': {
-        const locationData = require('../data/vietnamLocations');
-        return locationData.getDistrictsByProvince || (() => []);
-      }
-
-      case 'my':
-      case 'malaysia': {
-        const locationData = require('../data/malaysiaLocations');
-        return locationData.getDistrictsByState || (() => []);
-      }
-
-      case 'sg':
-      case 'singapore':
-        // Singapore doesn't have districts
-        return () => [];
-
-      // TODO: Add more countries
-      default:
-        console.warn(`No district data available for ${destinationId}, returning empty function`);
-        return () => [];
+    // Get destination configuration
+    const config = DESTINATION_CONFIG[destinationId.toLowerCase()];
+    if (!config) {
+      throw new Error(`Unsupported destination: ${destinationId}`);
     }
+
+    // Handle destinations without districts (e.g., Singapore)
+    if (!config.locationModule || !config.districtGetter) {
+      return () => [];
+    }
+
+    // Load location module and get district getter function
+    const locationModule = require(config.locationModule);
+    const getterFunc = locationModule[config.districtGetter];
+
+    if (typeof getterFunc !== 'function') {
+      console.warn(`⚠️ District getter for ${destinationId} is not a function`);
+      return () => [];
+    }
+
+    return getterFunc;
+
   } catch (error) {
     console.error(`Error loading district getter for ${destinationId}:`, error);
-    // Return empty function instead of throwing
+    // Return safe fallback function
     return () => [];
   }
 };
@@ -220,38 +291,31 @@ export const loadSubDistrictGetter = (destinationId) => {
   }
 
   try {
-    switch (destinationId.toLowerCase()) {
-      case 'th':
-      case 'thailand': {
-        const locationData = require('../data/thailandLocations');
-        return locationData.getSubDistrictsByDistrictId || (() => []);
-      }
-
-      case 'vn':
-      case 'vietnam': {
-        const locationData = require('../data/vietnamLocations');
-        return locationData.getSubDistrictsByDistrictId || (() => []);
-      }
-
-      case 'my':
-      case 'malaysia': {
-        const locationData = require('../data/malaysiaLocations');
-        return locationData.getSubDistrictsByDistrictId || (() => []);
-      }
-
-      case 'sg':
-      case 'singapore':
-        // Singapore doesn't have sub-districts
-        return () => [];
-
-      // TODO: Add more countries
-      default:
-        console.warn(`No sub-district data available for ${destinationId}, returning empty function`);
-        return () => [];
+    // Get destination configuration
+    const config = DESTINATION_CONFIG[destinationId.toLowerCase()];
+    if (!config) {
+      throw new Error(`Unsupported destination: ${destinationId}`);
     }
+
+    // Handle destinations without sub-districts
+    if (!config.locationModule || !config.subDistrictGetter) {
+      return () => [];
+    }
+
+    // Load location module and get sub-district getter function
+    const locationModule = require(config.locationModule);
+    const getterFunc = locationModule[config.subDistrictGetter];
+
+    if (typeof getterFunc !== 'function') {
+      console.warn(`⚠️ Sub-district getter for ${destinationId} is not a function`);
+      return () => [];
+    }
+
+    return getterFunc;
+
   } catch (error) {
     console.error(`Error loading sub-district getter for ${destinationId}:`, error);
-    // Return empty function instead of throwing
+    // Return safe fallback function
     return () => [];
   }
 };

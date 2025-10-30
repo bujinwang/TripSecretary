@@ -5,7 +5,7 @@
 // ⚠️ IMPORTANT: regionsData prop is REQUIRED
 // This component is country-agnostic and does not have default data.
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { BaseSearchableSelector } from './tamagui';
 
 const ProvinceSelector = ({
@@ -24,30 +24,24 @@ const ProvinceSelector = ({
   searchPlaceholder = "搜索省份（中文或英文）", // Custom search placeholder
   ...rest
 }) => {
-  const [provinces, setProvinces] = useState([]);
-
-  // Load provinces on mount
-  React.useEffect(() => {
+  // Load and validate provinces using useMemo to avoid race conditions
+  // useMemo ensures the data is only recomputed when regionsData changes,
+  // avoiding potential issues with rapid state updates in useEffect
+  const provinces = useMemo(() => {
     // Validate regionsData is provided
     if (!regionsData) {
       console.error('❌ ProvinceSelector: regionsData prop is required but was not provided');
-      setProvinces([]);
-      return;
+      return [];
     }
 
-    try {
-      const dataSource = regionsData;
-
-      if (Array.isArray(dataSource) && dataSource.length > 0) {
-        setProvinces(dataSource);
-      } else {
-        console.warn('⚠️ Regions data is not a valid array:', dataSource);
-        setProvinces([]);
-      }
-    } catch (error) {
-      console.error('Error loading regions:', error);
-      setProvinces([]);
+    // Validate regionsData is a valid array
+    if (!Array.isArray(regionsData)) {
+      console.warn('⚠️ Regions data is not a valid array:', regionsData);
+      return [];
     }
+
+    // Return validated data
+    return regionsData;
   }, [regionsData]);
 
   // Map provinces to BaseSearchableSelector format with bilingual labels

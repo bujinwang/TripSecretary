@@ -91,9 +91,18 @@ class DigitalCardServiceBase {
       console.error(`❌ [${this.serviceName}] Submission failed:`, error);
 
       // Handle error (hook for subclasses)
-      await this.handleError(error, userId, options);
+      // Subclasses can return a transformed error, or null to suppress re-throwing
+      const handledError = await this.handleError(error, userId, options);
 
-      throw error;
+      // If handleError returns an error (transformed or original), throw it
+      // If it returns null/undefined, suppress the error (allowing graceful degradation)
+      if (handledError !== null && handledError !== undefined) {
+        throw handledError;
+      } else if (handledError === undefined) {
+        // Default behavior: re-throw original error if nothing returned
+        throw error;
+      }
+      // If handledError === null, error is suppressed
     }
   }
 
@@ -298,13 +307,37 @@ class DigitalCardServiceBase {
    * Handle submission errors
    * Override this for custom error handling
    *
+   * Return behavior:
+   * - Return undefined (default): Re-throw original error
+   * - Return Error object: Throw the returned error (allows transformation)
+   * - Return null: Suppress error (allows graceful degradation)
+   *
    * @param {Error} error - Error object
    * @param {string} userId - User ID
    * @param {Object} options - Options
+   * @returns {Promise<Error|null|undefined>} Error to throw, null to suppress, or undefined for default
    * @protected
+   *
+   * @example
+   * // Transform error to add context
+   * async handleError(error, userId, options) {
+   *   const enhancedError = new Error(`Submission failed for ${userId}: ${error.message}`);
+   *   enhancedError.originalError = error;
+   *   return enhancedError;
+   * }
+   *
+   * @example
+   * // Suppress error for non-critical failures
+   * async handleError(error, userId, options) {
+   *   if (error.message.includes('timeout')) {
+   *     console.warn('Timeout occurred, continuing...');
+   *     return null; // Suppress error
+   *   }
+   *   return undefined; // Re-throw for other errors
+   * }
    */
   async handleError(error, userId, options) {
-    // Default: just log the error
+    // Default: just log the error and return undefined (re-throw original)
     // Subclasses can override to add custom error handling
     // e.g., save failed attempt, retry logic, notifications, etc.
 
@@ -314,6 +347,9 @@ class DigitalCardServiceBase {
       userId,
       destinationId: this.destinationId,
     });
+
+    // Return undefined to indicate default behavior (re-throw original error)
+    return undefined;
   }
 
   /**
