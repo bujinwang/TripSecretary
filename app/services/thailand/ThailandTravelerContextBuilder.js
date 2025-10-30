@@ -10,6 +10,11 @@ import { parseFullName } from '../../utils/nameUtils';
 import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
 import { formatLocationCode } from '../../utils/locationUtils';
 import tdacSessionManager from './TDACSessionManager';
+import {
+  normalizeAccommodationType,
+  getAccommodationTypeDisplay,
+  requiresDetailedAddress
+} from '../../config/destinations/thailand/accommodationTypes';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -310,15 +315,16 @@ class ThailandTravelerContextBuilder {
       province: ThailandTravelerContextBuilder.transformProvince(travelInfo?.province),
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
       // For HOTEL accommodation, district/subDistrict/postCode are not required and should be empty
-      district: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.district || ''),
-      districtDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : formatLocationCode(
+      // Use requiresDetailedAddress() helper to determine if detailed address is needed
+      district: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.district || '') : '',
+      districtDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
         travelInfo?.districtDisplay || travelInfo?.district
-      ),
-      subDistrict: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.subDistrict || ''),
-      subDistrictDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : formatLocationCode(
+      ) : '',
+      subDistrict: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.subDistrict || '') : '',
+      subDistrictDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
         travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
-      ),
-      postCode: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.postalCode || ''),
+      ) : '',
+      postCode: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.postalCode || '') : '',
       address: travelInfo?.hotelAddress || travelInfo?.address || '',
       
       // Visa (optional, from user's travel info)
@@ -947,56 +953,24 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Normalize accommodation type to TDAC key
+   * @deprecated Use normalizeAccommodationType from config/destinations/thailand/accommodationTypes.js instead
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - Normalized accommodation type key
    */
   static normalizeAccommodationType(accommodationType) {
-    if (!accommodationType) return 'HOTEL';
-    const normalizedType = accommodationType.toUpperCase().trim();
-    
-    const typeMapping = {
-      'HOTEL': 'HOTEL',
-      '酒店': 'HOTEL',
-      'RESORT': 'HOTEL',  // TDAC doesn't have resort option, map to HOTEL
-      'YOUTH HOSTEL': 'YOUTH_HOSTEL',
-      'HOSTEL': 'YOUTH_HOSTEL',
-      '青年旅舍': 'YOUTH_HOSTEL',
-      'GUEST HOUSE': 'GUEST_HOUSE',
-      'GUESTHOUSE': 'GUEST_HOUSE',
-      '民宿': 'GUEST_HOUSE',
-      'FRIEND\'S HOUSE': 'FRIEND_HOUSE',
-      'FRIENDS HOUSE': 'FRIEND_HOUSE',
-      'FRIEND': 'FRIEND_HOUSE',  // Map UI's FRIEND to TDAC's FRIEND_HOUSE
-      '朋友家': 'FRIEND_HOUSE',
-      'APARTMENT': 'APARTMENT',
-      '公寓': 'APARTMENT',
-      'OTHER': 'OTHERS',
-      'OTHERS': 'OTHERS',
-      '其他': 'OTHERS'
-    };
-    
-    return typeMapping[normalizedType] || 'HOTEL';
+    // Delegate to centralized config for backward compatibility
+    return normalizeAccommodationType(accommodationType);
   }
 
   /**
    * Get human-readable accommodation type display value
+   * @deprecated Use getAccommodationTypeDisplay from config/destinations/thailand/accommodationTypes.js instead
    * @param {string} accommodationType - Accommodation type string
    * @returns {string} - Friendly accommodation description
    */
   static getAccommodationTypeDisplay(accommodationType) {
-    if (!accommodationType) return '';
-    const normalizedType = ThailandTravelerContextBuilder.normalizeAccommodationType(accommodationType);
-    
-    const displayMap = {
-      'HOTEL': 'Hotel (酒店)',
-      'YOUTH_HOSTEL': 'Youth Hostel (青年旅舍)',
-      'GUEST_HOUSE': 'Guest House (民宿)',
-      'FRIEND_HOUSE': "Friend's House (朋友家)",
-      'APARTMENT': 'Apartment (公寓)',
-      'OTHERS': 'Other (其他)'
-    };
-    
-    return displayMap[normalizedType] || accommodationType;
+    // Delegate to centralized config for backward compatibility
+    return getAccommodationTypeDisplay(accommodationType);
   }
 
   /**
