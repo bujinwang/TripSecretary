@@ -246,9 +246,9 @@ const EnhancedTravelInfoTemplate = ({
         recentStayCountry: travelData?.recentStayCountry || '',
         boardingCountry: travelData?.boardingCountry || '',
         arrivalFlightNumber: travelData?.arrivalFlightNumber || '',
-        arrivalDate: travelData?.arrivalArrivalDate || formState.arrivalDate,
+        arrivalDate: travelData?.arrivalArrivalDate || '',
         departureFlightNumber: travelData?.departureFlightNumber || '',
-        departureDate: travelData?.departureDepartureDate || formState.departureDate,
+        departureDate: travelData?.departureDepartureDate || '',
         isTransitPassenger: travelData?.isTransitPassenger || false,
         accommodationType: travelData?.accommodationType || '',
         customAccommodationType: travelData?.customAccommodationType || '',
@@ -272,13 +272,13 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template V2] Error loading data:', error);
       updateFormState({ isLoading: false });
     }
-  }, [userId, config.destinationId, userInteractionTracker, formState.arrivalDate, formState.departureDate, updateFormState]);
+  }, [userId, config.destinationId, userInteractionTracker, updateFormState]);
 
   useEffect(() => {
     if (userId && userInteractionTracker.isInitialized) {
       loadDataFromUserDataService();
     }
-  }, [userId, userInteractionTracker.isInitialized]);
+  }, [userId, userInteractionTracker.isInitialized, loadDataFromUserDataService]);
 
   // ============================================
   // DATA SAVING (V2: With Field Filtering)
