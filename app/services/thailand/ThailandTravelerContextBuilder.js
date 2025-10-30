@@ -15,6 +15,10 @@ import {
   getAccommodationTypeDisplay,
   requiresDetailedAddress
 } from '../../config/destinations/thailand/accommodationTypes';
+import {
+  normalizeTravelPurpose,
+  getTravelPurposeDisplay
+} from '../../config/destinations/thailand/travelPurposes';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -472,27 +476,13 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Transform travel purpose to TDAC format
+   * @deprecated Use normalizeTravelPurpose from config/destinations/thailand/travelPurposes.js instead
    * @param {string} purpose - Travel purpose from user input
    * @returns {string} - TDAC purpose format
    */
   static transformTravelPurpose(purpose) {
-    if (!purpose) return ''; // No default - user must provide
-    
-    const purposeMap = {
-      '度假旅游': 'HOLIDAY',
-      '商务': 'BUSINESS',
-      '会议': 'BUSINESS',
-      '体育活动': 'SPORT',
-      '奖励旅游': 'HOLIDAY',
-      '会展': 'BUSINESS',
-      '教育': 'EDUCATION',
-      '就业': 'EMPLOYMENT',
-      '展览': 'BUSINESS',
-      '医疗': 'MEDICAL',
-      '其他': 'OTHER'
-    };
-    
-    return purposeMap[purpose] || purpose; // Return original if not mapped
+    // Delegate to centralized config for backward compatibility
+    return normalizeTravelPurpose(purpose);
   }
 
   /**
@@ -982,46 +972,12 @@ class ThailandTravelerContextBuilder {
   static getPurposeId(purpose) {
     if (!purpose) return '';
 
-    const normalizedPurpose = purpose.toUpperCase().trim();
-
-    // Map common variations to standard values
-    const purposeMapping = {
-      'HOLIDAY': 'HOLIDAY',
-      'VACATION': 'HOLIDAY',
-      'TOURISM': 'HOLIDAY',
-      '度假': 'HOLIDAY',
-      '旅游': 'HOLIDAY',
-      'BUSINESS': 'BUSINESS',
-      '商务': 'BUSINESS',
-      'MEETING': 'MEETING',
-      '会议': 'MEETING',
-      'SPORTS': 'SPORTS',
-      'SPORT': 'SPORTS',
-      '体育': 'SPORTS',
-      'EDUCATION': 'EDUCATION',
-      'STUDY': 'EDUCATION',
-      '教育': 'EDUCATION',
-      '学习': 'EDUCATION',
-      'EMPLOYMENT': 'EMPLOYMENT',
-      'WORK': 'EMPLOYMENT',
-      '就业': 'EMPLOYMENT',
-      '工作': 'EMPLOYMENT',
-      'MEDICAL': 'MEDICAL_WELLNESS',
-      'WELLNESS': 'MEDICAL_WELLNESS',
-      '医疗': 'MEDICAL_WELLNESS',
-      'CONVENTION': 'CONVENTION',
-      'EXHIBITION': 'EXHIBITION',
-      'INCENTIVE': 'INCENTIVE',
-      'OTHER': 'OTHERS',
-      'OTHERS': 'OTHERS',
-      '其他': 'OTHERS'
-    };
-
-    const mappedPurpose = purposeMapping[normalizedPurpose] || 'HOLIDAY'; // Default to holiday
+    // Normalize purpose using centralized config
+    const normalizedPurpose = normalizeTravelPurpose(purpose);
 
     // Use session manager to get encrypted ID
     try {
-      return tdacSessionManager.getPurposeId(mappedPurpose);
+      return tdacSessionManager.getPurposeId(normalizedPurpose);
     } catch (error) {
       console.error('Error getting purpose ID from session manager:', error);
       return '';

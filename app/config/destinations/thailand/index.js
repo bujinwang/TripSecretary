@@ -15,6 +15,7 @@ import metadata from './metadata';
 import financialInfo from './financialInfo';
 import emergencyInfo from './emergencyInfo';
 import accommodationTypes from './accommodationTypes';
+import travelPurposes from './travelPurposes';
 
 // Entry guide is kept in its existing location for now
 // Will be migrated as part of Phase 1.5
@@ -39,6 +40,9 @@ const thailandConfig = {
 
   // Accommodation Types Configuration
   accommodationTypes,
+
+  // Travel Purpose Configuration
+  travelPurposes,
 
   // Validation Rules (to be added in Phase 2)
   // validation: validationRules,
