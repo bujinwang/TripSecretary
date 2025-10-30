@@ -46,6 +46,7 @@ const HOT_COUNTRIES = [
       return { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true };
     }
   })(),
+  { id: 'vn', flag: '🇻🇳', name: 'Vietnam', flightTimeKey: 'home.destinations.vietnam.flightTime', enabled: true },
   { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: true },
   { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: true },
   { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: true },
@@ -115,6 +116,7 @@ const HomeScreen = ({ navigation }) => {
     // Accurate visa and permit requirements for Chinese passport holders (中国护照)
     const requirementMap = {
       th: 'visa_free',            // 泰国免签
+      vn: 'evisa',                // 越南电子签证
       my: 'visa_free',            // 马来西亚免签
       sg: 'visa_free',            // 新加坡免签
       hk: 'hk_permit',            // 香港需要港澳通行证
@@ -362,6 +364,7 @@ const HomeScreen = ({ navigation }) => {
     const screenMap = {
       'jp': 'JapanInfo',
       'th': 'ThailandInfo',
+      'vn': 'VietnamInfo',
       'hk': 'HongKongInfo',
       'tw': 'TaiwanInfo',
       'kr': 'KoreaInfo',
@@ -482,6 +485,7 @@ const HomeScreen = ({ navigation }) => {
   const getDestinationFlag = (destinationId) => {
     const flagMap = {
       'th': '🇹🇭',
+      'vn': '🇻🇳',
       'jp': '🇯🇵',
       'sg': '🇸🇬',
       'my': '🇲🇾',
@@ -589,6 +593,7 @@ const HomeScreen = ({ navigation }) => {
             const screenMap = {
               'jp': 'JapanTravelInfo',
               'th': 'ThailandTravelInfo',
+              'vn': 'VietnamTravelInfo',
               'hk': 'HongkongTravelInfo',
               'tw': 'TaiwanTravelInfo',
               'kr': 'KoreaTravelInfo',
