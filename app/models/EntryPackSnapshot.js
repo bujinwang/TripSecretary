@@ -9,10 +9,9 @@ class EntryPackSnapshot {
   constructor(data = {}) {
     // Core snapshot identification
     this.snapshotId = data.snapshotId || this.generateSnapshotId();
-    this.entryPackId = data.entryPackId;
+    this.entryInfoId = data.entryInfoId || data.entryPackId; // Support both old and new names during migration
     this.userId = data.userId;
     this.destinationId = data.destinationId;
-    this.tripId = data.tripId;
     
     // Snapshot metadata
     this.status = data.status; // 'completed', 'cancelled', 'expired'
@@ -142,10 +141,9 @@ class EntryPackSnapshot {
     }
 
     const snapshot = new EntryPackSnapshot({
-      entryPackId: entryPackData.id,
+      entryInfoId: entryPackData.id,
       userId: entryPackData.userId,
       destinationId: entryPackData.destinationId,
-      tripId: entryPackData.tripId,
       status: reason,
       arrivalDate: entryPackData.travel?.arrivalDate || entryPackData.arrivalDate,
       
@@ -167,9 +165,9 @@ class EntryPackSnapshot {
       }
     });
 
-    console.log('Snapshot created from entry pack:', {
+    console.log('Snapshot created from entry info:', {
       snapshotId: snapshot.snapshotId,
-      entryPackId: entryPackData.id,
+      entryInfoId: entryPackData.id,
       reason: reason,
       completeness: completenessIndicator.overall,
       hasPhotos: photoManifest.length > 0,
@@ -274,8 +272,8 @@ class EntryPackSnapshot {
       errors.push('Snapshot ID is required');
     }
 
-    if (!this.entryPackId) {
-      errors.push('Entry pack ID is required');
+    if (!this.entryInfoId) {
+      errors.push('Entry info ID is required');
     }
 
     if (!this.userId) {
@@ -326,7 +324,7 @@ class EntryPackSnapshot {
       
       console.log('Snapshot saved successfully:', {
         snapshotId: this.snapshotId,
-        entryPackId: this.entryPackId,
+        entryInfoId: this.entryInfoId,
         status: this.status,
         size: this.getEstimatedSize()
       });
@@ -377,8 +375,8 @@ class EntryPackSnapshot {
         filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.destinationId === filters.destinationId);
       }
 
-      if (filters.entryPackId) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.entryPackId === filters.entryPackId);
+      if (filters.entryInfoId) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.entryInfoId === filters.entryInfoId);
       }
 
       if (filters.hasSubmission !== undefined) {
@@ -433,10 +431,9 @@ class EntryPackSnapshot {
   getSummary() {
     return {
       snapshotId: this.snapshotId,
-      entryPackId: this.entryPackId,
+      entryInfoId: this.entryInfoId,
       userId: this.userId,
       destinationId: this.destinationId,
-      tripId: this.tripId,
       status: this.status,
       displayStatus: this.getDisplayStatus(),
       createdAt: this.createdAt,
@@ -538,10 +535,9 @@ class EntryPackSnapshot {
   exportData() {
     return {
       snapshotId: this.snapshotId,
-      entryPackId: this.entryPackId,
+      entryInfoId: this.entryInfoId,
       userId: this.userId,
       destinationId: this.destinationId,
-      tripId: this.tripId,
       status: this.status,
       createdAt: this.createdAt,
       arrivalDate: this.arrivalDate,

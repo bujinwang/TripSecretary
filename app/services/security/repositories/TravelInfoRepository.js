@@ -225,49 +225,103 @@ class TravelInfoRepository {
             userId: normalizedUserId,
             destination: normalizedDestination,
             entryInfoId: normalizedEntryInfoId,
+            error: error.message,
           }
         );
 
         try {
           // Recovery strategy: Delete conflicting records by multiple criteria
           // This handles both (user_id, destination) duplicates and entry_info_id UNIQUE constraint violations
+          const deletedRecords = [];
 
-          // Strategy 1: Delete by user_id + destination (handles most common case)
+          // Strategy 1: Query and delete by user_id + destination (handles most common case)
           if (normalizedDestination) {
-            await this.db.runAsync(
-              `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination = ?`,
+            const existingRecords = await this.db.getAllAsync(
+              `SELECT id, destination, created_at, updated_at FROM ${this.tableName} WHERE user_id = ? AND destination = ?`,
               [normalizedUserId, normalizedDestination]
             );
-            console.log('Deleted records by user_id + destination');
+
+            if (existingRecords.length > 0) {
+              deletedRecords.push(...existingRecords);
+              await this.db.runAsync(
+                `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination = ?`,
+                [normalizedUserId, normalizedDestination]
+              );
+              console.warn('⚠️  TravelInfoRepository: Deleted conflicting records by user_id + destination:', {
+                count: existingRecords.length,
+                records: existingRecords.map(r => ({ id: r.id, destination: r.destination, created_at: r.created_at }))
+              });
+            }
           } else {
-            await this.db.runAsync(
-              `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination IS NULL`,
+            const existingRecords = await this.db.getAllAsync(
+              `SELECT id, destination, created_at, updated_at FROM ${this.tableName} WHERE user_id = ? AND destination IS NULL`,
               [normalizedUserId]
             );
-            console.log('Deleted records by user_id + NULL destination');
+
+            if (existingRecords.length > 0) {
+              deletedRecords.push(...existingRecords);
+              await this.db.runAsync(
+                `DELETE FROM ${this.tableName} WHERE user_id = ? AND destination IS NULL`,
+                [normalizedUserId]
+              );
+              console.warn('⚠️  TravelInfoRepository: Deleted conflicting records by user_id + NULL destination:', {
+                count: existingRecords.length,
+                records: existingRecords.map(r => ({ id: r.id, created_at: r.created_at }))
+              });
+            }
           }
 
           // Strategy 2: If entry_info_id is provided, also delete by entry_info_id to handle UNIQUE constraint
           if (normalizedEntryInfoId) {
-            await this.db.runAsync(
-              `DELETE FROM ${this.tableName} WHERE entry_info_id = ?`,
+            const existingRecords = await this.db.getAllAsync(
+              `SELECT id, destination, created_at, updated_at FROM ${this.tableName} WHERE entry_info_id = ?`,
               [normalizedEntryInfoId]
             );
-            console.log('Deleted records by entry_info_id');
+
+            if (existingRecords.length > 0) {
+              // Avoid duplicates in deletedRecords
+              const newRecords = existingRecords.filter(r => !deletedRecords.some(dr => dr.id === r.id));
+              deletedRecords.push(...newRecords);
+
+              await this.db.runAsync(
+                `DELETE FROM ${this.tableName} WHERE entry_info_id = ?`,
+                [normalizedEntryInfoId]
+              );
+              console.warn('⚠️  TravelInfoRepository: Deleted conflicting records by entry_info_id:', {
+                count: existingRecords.length,
+                records: existingRecords.map(r => ({ id: r.id, destination: r.destination, created_at: r.created_at }))
+              });
+            }
           }
 
           // Retry the insert
           await this.db.runAsync(query, params);
+
           console.warn(
-            'TravelInfoRepository: Recovery succeeded after clearing conflicting travel info records.',
+            '✅ TravelInfoRepository: Recovery succeeded after clearing conflicting travel info records.',
             {
               userId: normalizedUserId,
               destination: normalizedDestination,
               entryInfoId: normalizedEntryInfoId,
+              totalDeletedRecords: deletedRecords.length,
+              warning: 'Previous travel info data was overwritten to resolve constraint violation'
             }
           );
+
+          // Return info about deleted records so caller can handle it
+          return {
+            success: true,
+            deletedRecords: deletedRecords,
+            warning: 'Previous travel info was overwritten due to constraint violation'
+          };
         } catch (recoveryError) {
-          console.error('TravelInfoRepository: Recovery attempt failed.', recoveryError);
+          console.error('❌ TravelInfoRepository: Recovery attempt failed.', {
+            error: recoveryError.message,
+            originalError: error.message,
+            userId: normalizedUserId,
+            destination: normalizedDestination,
+            entryInfoId: normalizedEntryInfoId,
+          });
           recoveryError.cause = error;
           throw recoveryError;
         }

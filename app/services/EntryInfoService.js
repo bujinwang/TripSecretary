@@ -10,6 +10,9 @@ class EntryInfoService {
    */
   static async getAllEntryInfos(userId) {
     try {
+      // Ensure SecureStorageService is initialized
+      await SecureStorageService.initialize(userId);
+
       // Get all entry infos for a user from SecureStorageService
       const entryInfoData = await SecureStorageService.getAllEntryInfos(userId);
       return entryInfoData.map(data => new EntryInfo(data));

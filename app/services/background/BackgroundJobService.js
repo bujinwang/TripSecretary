@@ -156,13 +156,19 @@ class BackgroundJobService {
   async checkAndArchiveExpiredInfosForUser(userId) {
     try {
       console.log(`Checking expired entry infos for user: ${userId}`);
-      
-      // Initialize user data service
+
+      // Initialize user data service and SecureStorageService
       await UserDataService.initialize(userId);
-      
+
       // Get active entry infos for user
-      const activeEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
-      
+      let activeEntryInfos = [];
+      try {
+        activeEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
+      } catch (error) {
+        console.warn(`Failed to get entry infos for archival check (non-critical):`, error.message);
+        return 0;
+      }
+
       if (!activeEntryInfos.length) {
         console.log(`No active entry infos found for user ${userId}`);
         return 0;

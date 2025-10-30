@@ -103,7 +103,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const fundItems = await UserDataService.getFundItems(currentUserId);
 
       // Load travel info for Thailand - use currentUserId directly
-      const destinationId = route.params?.destination?.id || 'thailand';
+      const destinationId = route.params?.destination?.id || 'th';
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
       
       // Prepare entry info for completion calculation
@@ -276,9 +276,9 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
 
       // Find entry info for Thailand
-      const destinationId = route.params?.destination?.id || 'thailand';
+      const destinationId = route.params?.destination?.id || 'th';
       const thailandEntryInfo = allEntryInfos?.find(info =>
-        info.destinationId === destinationId || info.destinationId === 'thailand'
+        info.destinationId === destinationId
       );
 
       if (thailandEntryInfo) {

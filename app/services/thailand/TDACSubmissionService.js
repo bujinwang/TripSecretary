@@ -333,7 +333,7 @@ class TDACSubmissionService {
   static async findOrCreateEntryInfoId(travelerInfo) {
     try {
       const userId = travelerInfo?.userId || 'current_user';
-      const destinationId = 'thailand';
+      const destinationId = 'th';
 
       console.log('🔍 Looking for existing entry info...');
 

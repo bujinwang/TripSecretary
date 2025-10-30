@@ -18,9 +18,10 @@
 -- Core Tables
 -- =====================================================
 
--- Users table (no changes - keep INTEGER for WeChat)
+-- Users table
+-- Note: Using TEXT for id to match mobile schema (generates UUIDs client-side)
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   wechat_openid TEXT UNIQUE,
   phone TEXT,
   name TEXT,
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Passports table (updated with TEXT ID and is_primary)
 CREATE TABLE IF NOT EXISTS passports (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   passport_number TEXT NOT NULL,
   full_name TEXT NOT NULL,
   date_of_birth TEXT,
@@ -83,7 +84,7 @@ CREATE TABLE IF NOT EXISTS passport_countries (
 -- Personal Info table (multiple per user, optionally linked to passport)
 CREATE TABLE IF NOT EXISTS personal_info (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   passport_id TEXT,
 
   -- Contact Information
@@ -133,7 +134,7 @@ END;
 -- Travel Info table (separated from entry_info)
 CREATE TABLE IF NOT EXISTS travel_info (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   destination TEXT,
   travel_purpose TEXT DEFAULT 'HOLIDAY',
   recent_stay_country TEXT,
@@ -180,7 +181,7 @@ CREATE TABLE IF NOT EXISTS travel_info (
 -- Fund Items table
 CREATE TABLE IF NOT EXISTS fund_items (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   type TEXT NOT NULL,
   amount TEXT,
   currency TEXT,
@@ -199,14 +200,14 @@ CREATE TABLE IF NOT EXISTS fund_items (
 -- Status flow: incomplete → ready → submitted → superseded/completed/expired/archived
 CREATE TABLE IF NOT EXISTS entry_info (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
-  passport_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  passport_id TEXT,              -- Nullable: allow creation without passport, can be added later
   personal_info_id TEXT,
   travel_info_id TEXT,
   destination_id TEXT,           -- Country code for fast filtering (e.g., 'THA', 'JPN')
 
   -- Status: incomplete, ready, submitted, superseded, completed, expired, archived
-  status TEXT DEFAULT 'incomplete',
+  status TEXT DEFAULT 'incomplete' CHECK (status IN ('incomplete', 'ready', 'submitted', 'superseded', 'completed', 'expired', 'archived')),
 
   -- Completion tracking (JSON)
   completion_metrics TEXT,
@@ -223,16 +224,16 @@ CREATE TABLE IF NOT EXISTS entry_info (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (passport_id) REFERENCES passports(id),
-  FOREIGN KEY (personal_info_id) REFERENCES personal_info(id),
-  FOREIGN KEY (travel_info_id) REFERENCES travel_info(id)
+  FOREIGN KEY (passport_id) REFERENCES passports(id) ON DELETE SET NULL,
+  FOREIGN KEY (personal_info_id) REFERENCES personal_info(id) ON DELETE SET NULL,
+  FOREIGN KEY (travel_info_id) REFERENCES travel_info(id) ON DELETE SET NULL
 );
 
 -- Entry Info <-> Fund Items junction table
 CREATE TABLE IF NOT EXISTS entry_info_fund_items (
   entry_info_id TEXT NOT NULL,
   fund_item_id TEXT NOT NULL,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   linked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (entry_info_id, fund_item_id),
   FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,
@@ -245,10 +246,10 @@ CREATE TABLE IF NOT EXISTS entry_info_fund_items (
 CREATE TABLE IF NOT EXISTS digital_arrival_cards (
   id TEXT PRIMARY KEY,
   entry_info_id TEXT NOT NULL,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
 
   -- Card type
-  card_type TEXT NOT NULL,                 -- 'TDAC', 'MDAC', 'SDAC', 'HKDAC'
+  card_type TEXT NOT NULL CHECK (card_type IN ('TDAC', 'MDAC', 'SDAC', 'HKDAC')),
   destination_id TEXT,                     -- Denormalized for fast lookup
 
   -- Submission data
@@ -259,7 +260,7 @@ CREATE TABLE IF NOT EXISTS digital_arrival_cards (
   -- Submission metadata
   submitted_at DATETIME NOT NULL,
   submission_method TEXT DEFAULT 'api',
-  status TEXT DEFAULT 'success',
+  status TEXT DEFAULT 'success' CHECK (status IN ('success', 'failed', 'pending')),
 
   -- Response data
   api_response TEXT,
@@ -310,7 +311,7 @@ END;
 -- Generation records table (legacy - may be deprecated)
 CREATE TABLE IF NOT EXISTS generations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
   passport_id INTEGER NOT NULL,
   destination_id TEXT NOT NULL,
   destination_name TEXT NOT NULL,

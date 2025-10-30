@@ -25,25 +25,22 @@ class SnapshotRepository {
       throw new Error('Snapshot data, snapshotId, and userId are required');
     }
 
-    const id = snapshotData.id || this.serializer.generateId();
     const now = new Date().toISOString();
 
     const query = `
       INSERT OR REPLACE INTO ${this.tableName} (
-        id, snapshot_id, entry_pack_id, user_id, destination_id, trip_id,
+        snapshot_id, entry_info_id, user_id, destination_id,
         status, created_at, arrival_date, version,
         metadata, passport_data, personal_info_data, funds_data, travel_data,
         tdac_submission_data, completeness_indicator, photo_manifest, encryption_info
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
-      id,
       snapshotData.snapshotId,
-      snapshotData.entryPackId || null,
+      snapshotData.entryInfoId || null,
       snapshotData.userId,
       snapshotData.destinationId || null,
-      snapshotData.tripId || null,
       snapshotData.status,
       snapshotData.createdAt || now,
       snapshotData.arrivalDate || null,
@@ -61,7 +58,6 @@ class SnapshotRepository {
 
     await this.db.runAsync(query, params);
     console.log('Snapshot saved to database:', {
-      id,
       snapshotId: snapshotData.snapshotId,
       userId: snapshotData.userId,
       status: snapshotData.status
@@ -103,19 +99,19 @@ class SnapshotRepository {
   }
 
   /**
-   * Get snapshot by entry pack ID
-   * @param {string} entryPackId - Entry pack ID
+   * Get snapshot by entry info ID
+   * @param {string} entryInfoId - Entry info ID
    * @returns {Promise<Object|null>} - Snapshot record or null
    */
-  async getByEntryPackId(entryPackId) {
+  async getByEntryInfoId(entryInfoId) {
     const query = `
       SELECT * FROM ${this.tableName}
-      WHERE entry_pack_id = ?
+      WHERE entry_info_id = ?
       ORDER BY created_at DESC
       LIMIT 1
     `;
 
-    const row = await this.db.getFirstAsync(query, [entryPackId]);
+    const row = await this.db.getFirstAsync(query, [entryInfoId]);
 
     if (!row) {
       return null;
@@ -171,12 +167,10 @@ class SnapshotRepository {
    */
   deserializeSnapshot(row) {
     return {
-      id: row.id,
       snapshotId: row.snapshot_id,
-      entryPackId: row.entry_pack_id,
+      entryInfoId: row.entry_info_id,
       userId: row.user_id,
       destinationId: row.destination_id,
-      tripId: row.trip_id,
       status: row.status,
       createdAt: row.created_at,
       arrivalDate: row.arrival_date,
