@@ -12,6 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .js,.jsx",
+    "lint:fix": "eslint . --ext .js,.jsx --fix",
     "bmad:refresh": "bmad-method install -f -i codex",
     "bmad:list": "bmad-method list:agents",
     "bmad:validate": "bmad-method validate"
@@ -80,6 +82,10 @@
     "@tamagui/babel-plugin": "^1.135.6",
     "@testing-library/react-native": "^13.3.3",
     "babel-jest": "^30.2.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-native": "^4.1.0",
     "jest": "~29.7.0",
     "react-test-renderer": "^19.1.0",
     "sqlite3": "^5.1.7"
