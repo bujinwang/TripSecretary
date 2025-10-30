@@ -82,6 +82,36 @@ const EnhancedTravelInfoTemplate = ({
   const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
 
   // ============================================
+  // LOCATION DATA (dynamically loaded from config)
+  // ============================================
+  const [locationData, setLocationData] = useState({
+    provinces: [],
+    getDistricts: null,
+  });
+
+  // Load location data based on config
+  useEffect(() => {
+    const loadLocationData = async () => {
+      if (config.sections.travel?.locationHierarchy) {
+        const { dataSourceModule, getLevel1Data, getLevel2Data } = config.sections.travel.locationHierarchy;
+
+        try {
+          // Dynamically import location data
+          const locationModule = await import(dataSourceModule);
+          setLocationData({
+            provinces: locationModule[getLevel1Data] || [],
+            getDistricts: locationModule[getLevel2Data] || null,
+          });
+        } catch (error) {
+          console.error('[Template] Error loading location data:', error);
+        }
+      }
+    };
+
+    loadLocationData();
+  }, [config]);
+
+  // ============================================
   // FORM STATE (dynamically created from config)
   // ============================================
   const [formState, setFormState] = useState({});
@@ -312,6 +342,28 @@ const EnhancedTravelInfoTemplate = ({
   }, [debouncedSave]);
 
   // ============================================
+  // LOCATION CASCADE HANDLERS
+  // ============================================
+  const handleProvinceSelect = useCallback((province) => {
+    setFormState(prev => ({
+      ...prev,
+      province,
+      district: '', // Reset district when province changes
+      districtId: null,
+    }));
+    debouncedSave();
+  }, [debouncedSave]);
+
+  const handleDistrictSelect = useCallback((district, districtId) => {
+    setFormState(prev => ({
+      ...prev,
+      district,
+      districtId,
+    }));
+    debouncedSave();
+  }, [debouncedSave]);
+
+  // ============================================
   // NAVIGATION HANDLERS
   // ============================================
   const handleContinue = useCallback(async () => {
@@ -368,6 +420,9 @@ const EnhancedTravelInfoTemplate = ({
     debouncedSave,
     handleContinue,
     handleGoBack,
+    handleProvinceSelect,
+    handleDistrictSelect,
+    locationData,
     t,
     navigation,
     route,
@@ -444,6 +499,96 @@ const EnhancedTravelInfoTemplate = ({
               debouncedSaveData={debouncedSave}
               labels={config.i18n.labelSource.passport}
               config={config.sections.passport}
+            />
+          )}
+
+          {/* Personal Info Section */}
+          {config.sections.personal?.enabled && (
+            <PersonalInfoSection
+              isExpanded={formState.expandedSections.personal}
+              onToggle={() => toggleSection('personal')}
+              fieldCount={getFieldCount('personal')}
+              occupation={formState.occupation}
+              customOccupation={formState.customOccupation}
+              cityOfResidence={formState.cityOfResidence}
+              countryOfResidence={formState.countryOfResidence}
+              phoneCode={formState.phoneCode}
+              phoneNumber={formState.phoneNumber}
+              email={formState.email}
+              setOccupation={(v) => updateField('occupation', v)}
+              setCustomOccupation={(v) => updateField('customOccupation', v)}
+              setCityOfResidence={(v) => updateField('cityOfResidence', v)}
+              setCountryOfResidence={(v) => updateField('countryOfResidence', v)}
+              setPhoneCode={(v) => updateField('phoneCode', v)}
+              setPhoneNumber={(v) => updateField('phoneNumber', v)}
+              setEmail={(v) => updateField('email', v)}
+              errors={formState.errors}
+              warnings={formState.warnings}
+              debouncedSaveData={debouncedSave}
+              labels={config.i18n.labelSource.personalInfo}
+              config={config.sections.personal}
+            />
+          )}
+
+          {/* Funds Section */}
+          {config.sections.funds?.enabled && (
+            <FundsSection
+              isExpanded={formState.expandedSections.funds}
+              onToggle={() => toggleSection('funds')}
+              fieldCount={getFieldCount('funds')}
+              funds={formState.funds || []}
+              setFunds={(v) => updateField('funds', v)}
+              debouncedSaveData={debouncedSave}
+              labels={config.i18n.labelSource.funds}
+              config={config.sections.funds}
+            />
+          )}
+
+          {/* Travel Details Section */}
+          {config.sections.travel?.enabled && (
+            <TravelDetailsSection
+              isExpanded={formState.expandedSections.travel}
+              onToggle={() => toggleSection('travel')}
+              fieldCount={getFieldCount('travel')}
+              travelPurpose={formState.travelPurpose}
+              customTravelPurpose={formState.customTravelPurpose}
+              recentStayCountry={formState.recentStayCountry}
+              boardingCountry={formState.boardingCountry}
+              arrivalFlightNumber={formState.arrivalFlightNumber}
+              arrivalArrivalDate={formState.arrivalDate}
+              departureFlightNumber={formState.departureFlightNumber}
+              departureDepartureDate={formState.departureDate}
+              isTransitPassenger={formState.isTransitPassenger}
+              accommodationType={formState.accommodationType}
+              customAccommodationType={formState.customAccommodationType}
+              province={formState.province}
+              district={formState.district}
+              districtId={formState.districtId}
+              hotelAddress={formState.hotelAddress}
+              setTravelPurpose={(v) => updateField('travelPurpose', v)}
+              setCustomTravelPurpose={(v) => updateField('customTravelPurpose', v)}
+              setRecentStayCountry={(v) => updateField('recentStayCountry', v)}
+              setBoardingCountry={(v) => updateField('boardingCountry', v)}
+              setArrivalFlightNumber={(v) => updateField('arrivalFlightNumber', v)}
+              setArrivalArrivalDate={(v) => updateField('arrivalDate', v)}
+              setDepartureFlightNumber={(v) => updateField('departureFlightNumber', v)}
+              setDepartureDepartureDate={(v) => updateField('departureDate', v)}
+              setIsTransitPassenger={(v) => updateField('isTransitPassenger', v)}
+              setAccommodationType={(v) => updateField('accommodationType', v)}
+              setCustomAccommodationType={(v) => updateField('customAccommodationType', v)}
+              setProvince={(v) => updateField('province', v)}
+              setDistrict={(v) => updateField('district', v)}
+              setDistrictId={(v) => updateField('districtId', v)}
+              setHotelAddress={(v) => updateField('hotelAddress', v)}
+              handleProvinceSelect={handleProvinceSelect}
+              handleDistrictSelect={handleDistrictSelect}
+              regionsData={locationData.provinces}
+              getDistrictsFunc={locationData.getDistricts}
+              errors={formState.errors}
+              warnings={formState.warnings}
+              debouncedSaveData={debouncedSave}
+              labels={config.i18n.labelSource.travelDetails}
+              config={config.sections.travel}
             />
           )}
 
