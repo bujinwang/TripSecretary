@@ -6,6 +6,7 @@
 
 // Import will be done dynamically to avoid module resolution issues
 import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
+import { parseFullName } from '../../utils/nameUtils';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -246,8 +247,8 @@ class ThailandTravelerContextBuilder {
       flightNumber: travelInfo?.arrivalFlightNumber
     });
 
-    // Parse full name into family and first name
-    const nameInfo = ThailandTravelerContextBuilder.parseFullName(passport?.fullName || '');
+    // Parse full name into family and first name using centralized utility
+    const nameInfo = parseFullName(passport?.fullName || '', { debug: true });
 
     // Transform passport data - use ONLY actual user data, no fallbacks
     const tdacData = {
@@ -336,79 +337,13 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Parse full name into components
-   * For Chinese names like "LI A MAO":
-   * - Family Name: LI (姓)
-   * - Middle Name: A (中间名)  
-   * - First Name: MAO (名)
+   * @deprecated Use parseFullName from utils/nameUtils.js instead
    * @param {string} fullName - Full name string
    * @returns {Object} - Name components
    */
   static parseFullName(fullName) {
-    if (!fullName) {
-      return { familyName: '', firstName: '', middleName: '' };
-    }
-
-    console.log('🔍 Parsing full name:', fullName);
-
-    // Clean the full name - remove extra spaces and normalize
-    const cleanedName = fullName.trim().replace(/\s+/g, ' ');
-
-    // Try comma-separated format first (e.g., "ZHANG, WEI MING" or "WANG, BAOBAO")
-    if (cleanedName.includes(',')) {
-      const parts = cleanedName.split(',').map(part => part.trim());
-      if (parts.length === 2) {
-        const givenNames = parts[1].split(' ').filter(name => name.length > 0);
-        const result = {
-          familyName: parts[0].replace(/,+$/, '').trim(), // Remove trailing commas
-          // If only one given name, it's the first name with no middle name
-          // If two or more given names, first is middle, rest is first name
-          middleName: givenNames.length >= 2 ? givenNames[0] : '',
-          firstName: givenNames.length >= 2 ? givenNames.slice(1).join(' ') : (givenNames[0] || '')
-        };
-        console.log('✅ Comma format parsed:', result);
-        return result;
-      }
-    }
-
-    // Try space-separated format (e.g., "LI A MAO")
-    const spaceParts = cleanedName.split(/\s+/);
-    if (spaceParts.length === 3) {
-      // Three parts: Family Middle First
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
-        middleName: spaceParts[1].replace(/,+$/, '').trim(),    // Remove trailing commas
-        firstName: spaceParts[2].replace(/,+$/, '').trim()      // Remove trailing commas
-      };
-      console.log('✅ Three-part name parsed:', result);
-      return result;
-    } else if (spaceParts.length === 2) {
-      // Two parts: Family First (no middle name)
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),    // Remove trailing commas
-        middleName: '',                                         // (empty)
-        firstName: spaceParts[1].replace(/,+$/, '').trim()      // Remove trailing commas
-      };
-      console.log('✅ Two-part name parsed:', result);
-      return result;
-    } else if (spaceParts.length > 3) {
-      // More than three parts: First is family, second is middle, rest is first
-      const result = {
-        familyName: spaceParts[0].replace(/,+$/, '').trim(),                    // First part as family
-        middleName: spaceParts[1].replace(/,+$/, '').trim(),                    // Second part as middle
-        firstName: spaceParts.slice(2).join(' ').replace(/,+$/, '').trim()     // Rest as first name
-      };
-      console.log('✅ Multi-part name parsed:', result);
-      return result;
-    }
-
-    // Single name - treat as first name
-    const result = {
-      familyName: '',
-      middleName: '',
-      firstName: cleanedName.replace(/,+$/, '').trim()
-    };
-    console.log('✅ Single name parsed:', result);
-    return result;
+    // Delegate to centralized utility
+    return parseFullName(fullName, { debug: true });
   }
 
   /**
