@@ -16,6 +16,7 @@ import financialInfo from './financialInfo';
 import emergencyInfo from './emergencyInfo';
 import accommodationTypes from './accommodationTypes';
 import travelPurposes from './travelPurposes';
+import validationRules from './validationRules';
 
 // Entry guide is kept in its existing location for now
 // Will be migrated as part of Phase 1.5
@@ -44,8 +45,8 @@ const thailandConfig = {
   // Travel Purpose Configuration
   travelPurposes,
 
-  // Validation Rules (to be added in Phase 2)
-  // validation: validationRules,
+  // Validation Rules
+  validation: validationRules,
 
   // Location Data (provinces, districts, sub-districts)
   // Kept in existing location for now: app/data/thailandProvinces.js
