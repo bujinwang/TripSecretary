@@ -1,9 +1,11 @@
-// Thailand Sub-District Selector Component
-// Displays sub-districts (tambon) for a given district and auto-provides postal codes
+// Sub-District Selector Component
+// Displays sub-districts (tambon) for a given district with postal codes
+//
+// ⚠️ IMPORTANT: getSubDistrictsFunc prop is REQUIRED
+// This component is country-agnostic and does not have default data.
 
 import React, { useMemo } from 'react';
 import { BaseSearchableSelector } from './tamagui';
-import { getSubDistrictsByDistrictId } from '../data/thailandLocations';
 import { useLocale } from '../i18n/LocaleContext';
 
 const normalize = (value) => (value || '').toLowerCase().trim();
@@ -20,14 +22,19 @@ const SubDistrictSelector = ({
   helpText,
   showSearch = true,
   style,
+  getSubDistrictsFunc, // ⚠️ REQUIRED: Function to get sub-districts for a district
 }) => {
   const { language } = useLocale();
   const isChinese = language?.startsWith('zh');
 
   const subDistricts = useMemo(() => {
     if (!districtId) return [];
-    return getSubDistrictsByDistrictId(districtId);
-  }, [districtId]);
+    if (!getSubDistrictsFunc) {
+      console.error('❌ SubDistrictSelector: getSubDistrictsFunc prop is required but was not provided');
+      return [];
+    }
+    return getSubDistrictsFunc(districtId);
+  }, [districtId, getSubDistrictsFunc]);
 
   const getDisplayLabel = (subDistrict) => {
     if (!subDistrict) return '';

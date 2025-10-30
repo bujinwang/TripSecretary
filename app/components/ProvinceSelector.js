@@ -1,10 +1,12 @@
 // 入境通 - Region/Province Selector Component
 // Dropdown selector for regions/provinces with bilingual display (English - Chinese)
 // Supports different country data sources
+//
+// ⚠️ IMPORTANT: regionsData prop is REQUIRED
+// This component is country-agnostic and does not have default data.
 
 import React, { useState, useMemo } from 'react';
 import { BaseSearchableSelector } from './tamagui';
-import { thailandProvinces, getProvinceDisplayNameBilingual } from '../data/thailandProvinces';
 
 const ProvinceSelector = ({
   label,
@@ -16,7 +18,7 @@ const ProvinceSelector = ({
   helpText,
   style,
   showSearch = true,
-  regionsData = null, // Custom regions data for different countries
+  regionsData, // ⚠️ REQUIRED: Regions data for the destination country
   getDisplayNameFunc = null, // Custom display name function
   modalTitle = "选择省份", // Custom modal title
   searchPlaceholder = "搜索省份（中文或英文）", // Custom search placeholder
@@ -26,14 +28,20 @@ const ProvinceSelector = ({
 
   // Load provinces on mount
   React.useEffect(() => {
+    // Validate regionsData is provided
+    if (!regionsData) {
+      console.error('❌ ProvinceSelector: regionsData prop is required but was not provided');
+      setProvinces([]);
+      return;
+    }
+
     try {
-      // Use custom regionsData if provided, otherwise fall back to thailandProvinces
-      const dataSource = regionsData || thailandProvinces;
+      const dataSource = regionsData;
 
       if (Array.isArray(dataSource) && dataSource.length > 0) {
         setProvinces(dataSource);
       } else {
-        console.warn('Regions data is not a valid array:', dataSource);
+        console.warn('⚠️ Regions data is not a valid array:', dataSource);
         setProvinces([]);
       }
     } catch (error) {
@@ -46,18 +54,26 @@ const ProvinceSelector = ({
   const options = useMemo(() => {
     return provinces.map(province => ({
       label: `${province.name} - ${province.nameZh}`,
-      value: province.code || '',
+      value: province.code || province.id || '',
     }));
   }, [provinces]);
 
   // Custom display value function
   const getDisplayValue = (val) => {
     if (!val) return '';
-    // Use custom display function if provided, otherwise use default Thailand function
+
+    // Use custom display function if provided
     if (getDisplayNameFunc) {
       return getDisplayNameFunc(val);
     }
-    return getProvinceDisplayNameBilingual(val);
+
+    // Default: find and format from regionsData
+    const province = provinces.find(p => p.code === val || p.id === val);
+    if (province) {
+      return `${province.name} - ${province.nameZh}`;
+    }
+
+    return val;
   };
 
   // Custom filter function for bilingual search
