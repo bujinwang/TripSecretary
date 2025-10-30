@@ -67,7 +67,7 @@ class DataImportService {
       console.log('Importing from JSON:', filePath);
 
       // Read and parse JSON file
-      const jsonContent = FileSystem.readAsString(filePath, {
+      const jsonContent = await FileSystem.readAsStringAsync(filePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -134,7 +134,7 @@ class DataImportService {
       // In a real implementation, you would extract the ZIP file first
       
       // Read the "ZIP" file as JSON (our batch export format)
-      const archiveContent = FileSystem.readAsString(filePath, {
+      const archiveContent = await FileSystem.readAsStringAsync(filePath, {
         encoding: FileSystem.EncodingType.UTF8
       });
 
@@ -580,7 +580,7 @@ class DataImportService {
       await this.ensureDirectoryExists(FileSystem.documentDirectory + 'funds/');
 
       // Write base64 data to file
-      FileSystem.writeAsString(photoPath, photoData.base64Data, {
+      await FileSystem.writeAsStringAsync(photoPath, photoData.base64Data, {
         encoding: FileSystem.EncodingType.Base64
       });
 
@@ -610,7 +610,7 @@ class DataImportService {
       const directory = new FileSystem.Directory(dirPath);
       const dirExists = await directory.exists();
       if (!dirExists) {
-        FileSystem.makeDirectory(dirPath, { intermediates: true });
+        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
         console.log('Created directory:', dirPath);
       }
     } catch (error) {

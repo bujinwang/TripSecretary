@@ -125,7 +125,7 @@ const DigitalArrivalCardInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
 
     try {
       // Check if file exists
-      const fileInfo = FileSystem.getInfo(pdfUrl);
+      const fileInfo = await FileSystem.getInfoAsync(pdfUrl);
       if (!fileInfo.exists) {
         Alert.alert('错误', 'PDF文件不存在，可能已被删除');
         return;

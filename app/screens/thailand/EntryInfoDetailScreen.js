@@ -184,7 +184,7 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
       const pdfPath = entryInfo.documents.pdfDocument;
       
       // Check if file exists
-      const fileInfo = FileSystem.getInfo(pdfPath);
+      const fileInfo = await FileSystem.getInfoAsync(pdfPath);
       if (!fileInfo.exists) {
         Alert.alert('错误', 'PDF文件不存在，可能已被删除');
         return;
@@ -439,7 +439,7 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
       const fileName = `thailand_entry_info_${data.digitalArrivalCard?.arrCardNo || Date.now()}.txt`;
       const filePath = `${FileSystem.cacheDirectory}${fileName}`;
       
-      FileSystem.writeAsString(filePath, textContent, {
+      await FileSystem.writeAsStringAsync(filePath, textContent, {
         encoding: FileSystem.EncodingType.UTF8,
       });
 

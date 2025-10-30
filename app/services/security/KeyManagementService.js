@@ -53,7 +53,7 @@ class KeyManagementService {
       const keyBackupDir = new FileSystem.Directory(backupDir);
       const dirExists = await keyBackupDir.exists();
       if (!dirExists) {
-        FileSystem.makeDirectory(backupDir, { intermediates: true });
+        await FileSystem.makeDirectoryAsync(backupDir, { intermediates: true });
       }
     } catch (error) {
       console.error('Failed to create key backup directory:', error);
@@ -227,7 +227,7 @@ class KeyManagementService {
       );
 
       // Save encrypted backup
-      FileSystem.writeAsString(backupPath, encryptedBackup);
+      await FileSystem.writeAsStringAsync(backupPath, encryptedBackup);
 
       // Store backup reference
       const backups = await this.getUserBackups(userId);
@@ -301,7 +301,7 @@ class KeyManagementService {
       console.log(`Attempting key recovery for user ${userId}`);
 
       // Read encrypted backup
-      const encryptedBackup = FileSystem.readAsString(backupPath);
+      const encryptedBackup = await FileSystem.readAsStringAsync(backupPath);
 
       // Decrypt backup
       const decryptedBackup = await this.encryption.decrypt(encryptedBackup, 'recovery');
@@ -352,7 +352,7 @@ class KeyManagementService {
       const backups = await this.getUserBackups(userId);
       for (const backup of backups) {
         try {
-          FileSystem.delete(backup.path, { idempotent: true });
+          await FileSystem.deleteAsync(backup.path, { idempotent: true });
         } catch (error) {
           console.error(`Failed to delete backup ${backup.filename}:`, error);
         }
@@ -448,7 +448,7 @@ class KeyManagementService {
       const toDelete = backups.slice(keepCount);
       for (const backup of toDelete) {
         try {
-          FileSystem.delete(backup.path, { idempotent: true });
+          await FileSystem.deleteAsync(backup.path, { idempotent: true });
           console.log(`Deleted old backup: ${backup.filename}`);
         } catch (error) {
           console.error(`Failed to delete backup ${backup.filename}:`, error);
