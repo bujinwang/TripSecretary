@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== All DELETE operations on travel_info ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  record_id,\n  details\nFROM audit_log\nWHERE table_name = ''travel_info'' AND action = ''DELETE''\nORDER BY timestamp DESC\nLIMIT 50;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== Last 10 operations on mh9pqhp5fziejfhtta7 ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mh9pqhp5fziejfhtta7''\nORDER BY timestamp DESC\nLIMIT 10;\n\nSELECT '''' as separator;\nSELECT ''=== First operation on new record mhct8mp7ji2ip9d56bs ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mhct8mp7ji2ip9d56bs''\nORDER BY timestamp ASC\nLIMIT 5;\n\")"
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== Last 10 operations on mh9pqhp5fziejfhtta7 ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mh9pqhp5fziejfhtta7''\nORDER BY timestamp DESC\nLIMIT 10;\n\nSELECT '''' as separator;\nSELECT ''=== First operation on new record mhct8mp7ji2ip9d56bs ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mhct8mp7ji2ip9d56bs''\nORDER BY timestamp ASC\nLIMIT 5;\n\")",
+      "Bash(find:*)",
+      "Bash(awk:*)",
+      "Bash(sort:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/cleanup-docs.sh:*)",
+      "Bash(tree:*)",
+      "Bash(if [ -d \"implementation\" ])",
+      "Bash(then mv implementation history/)",
+      "Bash(fi)",
+      "Bash(if [ -d \"arrival-cards\" ])",
+      "Bash(then )",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

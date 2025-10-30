@@ -40,7 +40,6 @@ import { vietnamLabels, vietnamConfig } from '../../config/labels/vietnam';
 // Import Tamagui components
 import {
   YStack,
-  ProgressOverviewCard,
   BaseCard,
   BaseButton,
   Text as TamaguiText,
@@ -322,17 +321,21 @@ const VietnamTravelInfoScreen = ({ navigation, route }) => {
 
         <TravelInfoScreenTemplate.PrivacyNotice />
 
-        {/* Progress Overview */}
-        <YStack paddingHorizontal="$md" marginBottom="$md">
-          <ProgressOverviewCard
-            sections={[
-              { name: vietnamLabels.passport.title, ...getFieldCount('passport') },
-              { name: vietnamLabels.personalInfo.title, ...getFieldCount('personalInfo') },
-              { name: vietnamLabels.funds.title, ...getFieldCount('funds') },
-              { name: vietnamLabels.travelDetails.title, ...getFieldCount('travelDetails') },
-            ]}
-          />
-        </YStack>
+        {/*
+          DESIGN DECISION (ADR 9): Progress Overview Card Removed
+
+          We have decided NOT to include the completion progress overview card
+          at the top of the travel info screen.
+
+          Reasons:
+          1. Space optimization - Mobile screen space is limited
+          2. Each section header already shows field count (e.g., "7/7")
+          3. Reduces visual clutter and cognitive load
+          4. Users prefer to focus on one section at a time
+
+          See: docs/architecture/Architecture-Decision-Records.md - ADR 9
+          Date: 2025-10-30
+        */}
 
         {/* Passport Section */}
         <PassportSection
