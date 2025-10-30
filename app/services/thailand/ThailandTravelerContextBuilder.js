@@ -7,6 +7,7 @@
 // Import will be done dynamically to avoid module resolution issues
 import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 import { parseFullName } from '../../utils/nameUtils';
+import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
 
 class ThailandTravelerContextBuilder {
   /**
@@ -435,70 +436,24 @@ class ThailandTravelerContextBuilder {
 
   /**
    * Extract phone code from phone number (legacy fallback method)
+   * @deprecated Use extractCountryCode from utils/phoneUtils.js instead
    * @param {string} phoneNumber - Full phone number
    * @returns {string} - Phone code
    */
   static extractPhoneCode(phoneNumber) {
-    if (!phoneNumber) return ''; // No default - user must provide
-
-    // Remove all non-digit characters except +
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Extract country code - be more specific to avoid false matches
-    if (cleaned.startsWith('+86')) {
-      return '86';
-    } else if (cleaned.startsWith('86') && cleaned.length > 13) {
-      // Only treat as country code if it's a long number (86 + 11+ digits)
-      return '86';
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return '852';
-    } else if (cleaned.startsWith('+853') || cleaned.startsWith('853')) {
-      return '853';
-    } else if (cleaned.startsWith('+1')) {
-      return '1';
-    } else if (cleaned.startsWith('1') && cleaned.length > 11) {
-      // Only treat as US/Canada code if it's a long number (1 + 10+ digits)
-      return '1';
-    } else if (cleaned.startsWith('+')) {
-      // Extract first 1-3 digits after +
-      const match = cleaned.match(/^\+(\d{1,3})/);
-      return match ? match[1] : '';
-    }
-
-    return ''; // No fallback - return empty if can't determine
+    // Delegate to centralized utility
+    return extractCountryCode(phoneNumber, { strict: true });
   }
 
   /**
    * Extract phone number without country code
+   * @deprecated Use extractNationalNumber from utils/phoneUtils.js instead
    * @param {string} phoneNumber - Full phone number
    * @returns {string} - Phone number without country code
    */
   static extractPhoneNumber(phoneNumber) {
-    if (!phoneNumber) return '';
-
-    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-    
-    // Remove country codes - be more specific to avoid false matches
-    if (cleaned.startsWith('+86')) {
-      return cleaned.replace(/^\+86/, '');
-    } else if (cleaned.startsWith('86') && cleaned.length > 13) {
-      // Only treat as country code if it's a long number (86 + 11+ digits)
-      return cleaned.replace(/^86/, '');
-    } else if (cleaned.startsWith('+852') || cleaned.startsWith('852')) {
-      return cleaned.replace(/^\+?852/, '');
-    } else if (cleaned.startsWith('+853') || cleaned.startsWith('853')) {
-      return cleaned.replace(/^\+?853/, '');
-    } else if (cleaned.startsWith('+1')) {
-      return cleaned.replace(/^\+1/, '');
-    } else if (cleaned.startsWith('1') && cleaned.length > 11) {
-      // Only treat as US/Canada code if it's a long number (1 + 10+ digits)
-      return cleaned.replace(/^1/, '');
-    } else if (cleaned.startsWith('+')) {
-      // Remove any country code (1-3 digits after +)
-      return cleaned.replace(/^\+\d{1,3}/, '');
-    }
-
-    return cleaned;
+    // Delegate to centralized utility
+    return extractNationalNumber(phoneNumber);
   }
 
   /**
