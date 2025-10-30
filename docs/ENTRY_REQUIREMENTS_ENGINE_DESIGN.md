@@ -1939,15 +1939,17 @@ getChecklist(passportNationality, destinationCode, locale = 'en') {
 - [ ] Integrate rules engine into `SelectDestinationScreen`
 - [ ] Add passport nationality detection
 - [ ] Test with **Thailand** as pilot destination
-  - Chinese passport → Thailand
-  - US passport → Thailand
-  - Indian passport → Thailand
+  - 🇨🇳 CHN → 🇹🇭 TH (most common, visa-free)
+  - CA → 🇹🇭 TH (visa required case)
+  - 🇺🇸 USA → 🇹🇭 TH (western passport)
+  - EU → 🇹🇭 TH (unconfigured, should fallback to ThailandInfoScreen)
+  - **Note:** CA is visa-free for Thailand; for visa-required testing use BGD/DZA/AFG. EU is not a valid country code; use DEU/FRA/ITA for EU countries.
 - [ ] Add fallback for unconfigured combinations
 
 **Deliverables:**
 - `app/screens/ChecklistScreen.js` (✅ Tested with Thailand)
 - Updated `SelectDestinationScreen.js`
-- User testing with 3 passport nationalities
+- User testing with 4 test scenarios (including fallback verification)
 
 ### Phase 3: Expansion (Week 5-8)
 

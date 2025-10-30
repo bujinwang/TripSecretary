@@ -644,20 +644,19 @@ The design is **verified and ready**. Key recommendations:
 
 #### Pilot Testing (Phase 2):
 
-1. **Test Thailand with 5 nationalities:**
-   - CHN → TH (most common)
-   - IND → TH (visa required case)
-   - USA → TH (western passport case)
-   - GBR → TH (verification)
-   - CAN → TH (verification)
+1. **Test Thailand with 4 key scenarios:**
+   - 🇨🇳 CHN → 🇹🇭 TH (most common, visa-free)
+   - CA → 🇹🇭 TH (visa required case)
+   - 🇺🇸 USA → 🇹🇭 TH (western passport)
+   - EU → 🇹🇭 TH (unconfigured, should fallback to ThailandInfoScreen)
 
-2. **Verify fallback works:**
-   - AFG → TH (unconfigured) → falls back to ThailandInfoScreen
+   **Note:** CA (Canada) passport holders are actually visa-free for Thailand (30 days). For true visa-required testing, consider using passport codes like BGD (Bangladesh), DZA (Algeria), or AFG (Afghanistan). EU is not a valid ISO 3166-1 country code; for EU testing, use specific country codes like DEU (Germany), FRA (France), or ITA (Italy).
 
-3. **Measure improvements:**
+2. **Measure improvements:**
    - User sees nationality-specific requirements
-   - Indian users warned about visa
-   - Fund amounts differentiated
+   - Visa-required cases show clear warnings
+   - Fund amounts differentiated per nationality
+   - Unconfigured combinations gracefully fallback to existing screens
 
 #### Scaling (Phase 3):
 
