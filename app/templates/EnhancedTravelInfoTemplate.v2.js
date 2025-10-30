@@ -173,6 +173,24 @@ const EnhancedTravelInfoTemplate = ({
       }
     });
 
+    // Pre-fill with passport data from route params if available
+    if (passport) {
+      console.log('[Template V2] Pre-filling from route.params passport:', passport);
+      if (passport.surname) initialState.surname = passport.surname;
+      if (passport.middleName) initialState.middleName = passport.middleName;
+      if (passport.givenName) initialState.givenName = passport.givenName;
+      if (passport.passportNumber || passport.passportNo) {
+        initialState.passportNo = passport.passportNumber || passport.passportNo;
+      }
+      if (passport.nationality) initialState.nationality = passport.nationality;
+      if (passport.dateOfBirth || passport.dob) {
+        initialState.dob = passport.dateOfBirth || passport.dob;
+      }
+      if (passport.expiryDate) initialState.expiryDate = passport.expiryDate;
+      if (passport.sex) initialState.sex = passport.sex;
+      if (passport.visaNumber) initialState.visaNumber = passport.visaNumber;
+    }
+
     // UI state
     initialState.expandedSections = {};
     initialState.errors = {};
@@ -192,7 +210,7 @@ const EnhancedTravelInfoTemplate = ({
 
     console.log('[Template V2] Initializing formState with fields:', Object.keys(initialState));
     setFormState(initialState);
-  }, [config]);
+  }, [config, passport]);
 
   // ============================================
   // V2 HOOK: USER INTERACTION TRACKER
