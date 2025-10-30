@@ -8,6 +8,7 @@
 import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 import { parseFullName } from '../../utils/nameUtils';
 import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
+import { formatLocationCode } from '../../utils/locationUtils';
 import tdacSessionManager from './TDACSessionManager';
 
 class ThailandTravelerContextBuilder {
@@ -310,11 +311,11 @@ class ThailandTravelerContextBuilder {
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
       // For HOTEL accommodation, district/subDistrict/postCode are not required and should be empty
       district: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.district || ''),
-      districtDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
+      districtDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : formatLocationCode(
         travelInfo?.districtDisplay || travelInfo?.district
       ),
       subDistrict: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.subDistrict || ''),
-      subDistrictDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : ThailandTravelerContextBuilder.formatLocationDisplay(
+      subDistrictDisplay: travelInfo?.accommodationType === 'HOTEL' ? '' : formatLocationCode(
         travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
       ),
       postCode: travelInfo?.accommodationType === 'HOTEL' ? '' : (travelInfo?.postalCode || ''),
@@ -547,35 +548,24 @@ class ThailandTravelerContextBuilder {
       const normalized = provinceCode.toUpperCase().trim();
       const match = provinces.find((item) => item.code === normalized);
       if (!match) {
-        return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+        return formatLocationCode(provinceCode);
       }
       return `${match.name} - ${match.nameZh}`;
     } catch (error) {
       console.warn('⚠️ Failed to load province display data:', error.message);
-      return ThailandTravelerContextBuilder.formatLocationDisplay(provinceCode);
+      return formatLocationCode(provinceCode);
     }
   }
 
   /**
    * Format location strings for display (convert codes like AMNAT_CHAROEN → Amnat Charoen)
+   * @deprecated Use formatLocationCode from utils/locationUtils.js instead
    * @param {string} value - Location string or code
    * @returns {string} - Formatted display string
    */
   static formatLocationDisplay(value) {
-    if (!value) return '';
-    const raw = value.toString().trim();
-    if (!raw) return '';
-    
-    if (/^[A-Z_]+$/.test(raw)) {
-      return raw
-        .toLowerCase()
-        .split('_')
-        .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' ');
-    }
-    
-    return raw;
+    // Delegate to centralized utility for backward compatibility
+    return formatLocationCode(value);
   }
 
   /**
