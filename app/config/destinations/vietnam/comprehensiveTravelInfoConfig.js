@@ -467,9 +467,23 @@ export const vietnamComprehensiveTravelInfoConfig = {
   // FEATURES (Thailand-style)
   // ============================================
   features: {
-    // Data persistence
-    autoSave: true,
-    autoSaveDelay: 1000, // 1 second debounce (Vietnam uses 1s, Thailand uses 2s)
+    // Data persistence (V2 structure)
+    autoSave: {
+      enabled: true,
+      delay: 1000, // 1 second debounce (Vietnam uses 1s, Thailand uses 2s)
+
+      // Critical fields that save immediately (bypass debounce)
+      // These are identity/date fields that should persist right away
+      immediateSaveFields: [
+        'dob',
+        'expiryDate',
+        'sex',
+        'nationality',
+        'issueDate',
+        'arrivalDate',
+        'departureDate',
+      ],
+    },
 
     // UI features
     saveStatusIndicator: true, // Show ⏳💾✅❌ status
@@ -498,10 +512,33 @@ export const vietnamComprehensiveTravelInfoConfig = {
     previous: 'VietnamRequirements',
     next: 'VietnamEntryFlow',
     saveBeforeNavigate: true, // Auto-save before navigation
+
+    // Smart button configuration (V2 feature)
+    submitButton: {
+      dynamic: true, // Enable smart button with dynamic labels
+
+      // Thresholds for label changes (0-1 scale)
+      thresholds: {
+        incomplete: 0.7,   // Below 70% shows "incomplete" label
+        almostDone: 0.9,   // 70-90% shows "almostDone" label
+        ready: 0.9,        // 90%+ shows "ready" label
+      },
+
+      // Labels for each state
+      labels: {
+        incomplete: '完成必填项 - Complete Required Fields',
+        almostDone: '快完成了 - Almost Done',
+        ready: '继续 - Continue',
+      },
+
+      // Default fallback if dynamic is disabled
+      default: '继续 - Continue',
+    },
+
+    // Deprecated - kept for backward compatibility
     submitButtonLabel: {
       key: 'vietnam.travelInfo.submitButton',
       default: '继续 - Continue',
-      dynamic: true, // Change based on completion (e.g., "Complete Required Fields")
     },
   },
 
