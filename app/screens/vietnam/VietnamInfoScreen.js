@@ -19,9 +19,7 @@ const VietnamInfoScreen = ({ navigation, route }) => {
   const { t } = useLocale();
 
   const handleContinue = () => {
-    // TODO: Create VietnamRequirementsScreen
-    // For now, navigate directly to VietnamTravelInfo
-    navigation.navigate('VietnamTravelInfo', { passport, destination });
+    navigation.navigate('VietnamRequirements', { passport, destination });
   };
 
   const normalizeItems = (value) => {
