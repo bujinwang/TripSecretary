@@ -27,23 +27,13 @@
     "camelcase": [
       "error",
       {
-        "properties": "always",
+        "properties": "never",
         "ignoreDestructuring": false,
         "ignoreImports": false,
         "allow": [
           "^UNSAFE_",
           "^[A-Z_]+$"
         ]
-      }
-    ],
-    "id-match": [
-      "error",
-      "^([a-z][a-zA-Z0-9]*|[A-Z][a-zA-Z0-9]*|[A-Z_][A-Z0-9_]*)$",
-      {
-        "properties": true,
-        "classFields": true,
-        "onlyDeclarations": false,
-        "ignoreDestructuring": false
       }
     ],
     "react/react-in-jsx-scope": "off",

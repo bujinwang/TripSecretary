@@ -129,6 +129,45 @@ const active = true;            // Ambiguous
 const permission = false;       // Ambiguous
 ```
 
+### 7. Object Properties and Enum-like Values: Flexible Naming
+Object property names (used as keys) may use snake_case when they represent:
+- Enum-like values or constants
+- API response fields
+- Configuration keys
+- External system identifiers
+
+**✅ Acceptable:**
+```javascript
+// Enum-like object properties
+const visaTypes = {
+  visa_free: 'Free',
+  visa_on_arrival: 'On Arrival',
+  visa_required: 'Required'
+};
+
+// Payment method configuration
+const paymentMethods = {
+  credit_card: 'Credit Card',
+  debit_card: 'Debit Card',
+  bank_balance: 'Bank Balance'
+};
+
+// Accessing properties (allowed)
+const type = visaTypes.visa_free;
+```
+
+**❌ Incorrect (Variable Names):**
+```javascript
+// Variables should still use camelCase
+const visa_type = 'free';        // Should be: visaType
+const payment_method = 'card';   // Should be: paymentMethod
+```
+
+**Why this exception?**
+- Object properties often represent external data formats (API keys, database columns)
+- Changing property names would break compatibility with external systems
+- ESLint `camelcase` rule has `"properties": "never"` to allow this flexibility
+
 ---
 
 ## Database Layer Conventions
@@ -400,8 +439,7 @@ user.displayName = newName;  // Mutating directly
 
 This project uses ESLint to enforce naming conventions. The configuration includes:
 
-- `camelcase` rule: Enforces camelCase for variables and functions
-- `id-match` rule: Pattern matching for identifier names
+- `camelcase` rule: Enforces camelCase for variables and functions (with `properties: "never"` to allow flexible object keys)
 - Exceptions for database-related snake_case in serialization layer
 - Special overrides for repository and schema files
 
@@ -444,6 +482,7 @@ The `.eslintrc.json` file includes:
 | Classes | PascalCase | `UserRepository`, `PassportValidator` |
 | Interfaces/Types | PascalCase | `PersonalInfo`, `EntryInfoStatus` |
 | React Components | PascalCase | `PassportForm`, `TDACInfoCard` |
+| Object Properties | Flexible | `visa_free` (enum-like) or `visaFree` (both OK) |
 | Database Columns | snake_case | `user_id`, `created_at` (intentional) |
 | Booleans | is/has/should prefix | `isActive`, `hasPermission` |
 
