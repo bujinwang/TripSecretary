@@ -770,26 +770,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     </View>
   );
 
-  /**
-   * Simulate submitted TDAC state (Development Only)
-   */
-  const simulateSubmittedState = () => {
-    setEntryPackStatus('submitted');
-    setShowSupersededStatus(false);
-    Alert.alert(
-      '✅ 模拟成功',
-      '已模拟TDAC提交成功状态\n\n注意：这是模拟状态，通关包内容可能不完整，仅用于界面预览。请实际提交TDAC来测试完整流程。'
-    );
-  };
-
-  /**
-   * Reset to initial state (Development Only)
-   */
-  const resetToInitialState = () => {
-    loadData(); // Reload real data
-    Alert.alert('🔄 已重置', '已恢复真实数据状态');
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -801,24 +781,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         <Text style={styles.headerTitle}>
           我的泰国之旅 🌺
         </Text>
-        {/* Dev Buttons (Development Only) */}
-        {__DEV__ && (
-          <View style={styles.devButtonContainer}>
-            <TouchableOpacity
-              style={styles.devButton}
-              onPress={simulateSubmittedState}
-            >
-              <Text style={styles.devButtonText}>✅</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.devButton, styles.resetButton]}
-              onPress={resetToInitialState}
-            >
-              <Text style={styles.devButtonText}>🔄</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {!__DEV__ && <View style={styles.headerRight} />}
+        <View style={styles.headerRight} />
       </View>
 
       <ScrollView 
@@ -887,24 +850,6 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 40,
-  },
-  devButtonContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  devButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resetButton: {
-    backgroundColor: '#FF9800',
-  },
-  devButtonText: {
-    fontSize: 16,
   },
   scrollContainer: {
     paddingBottom: spacing.lg,

@@ -44,7 +44,7 @@
       "batchMigrationResult": "成功迁移 {{success}} 个记录，失败 {{failed}} 个记录。"
     },
     "entryPack": {
-      "title": "{{destination}} 入境包 - 已提交",
+      "title": "{{destination}} 入境包",
       "submitted": "已提交",
       "arrivedToday": "今日抵达",
       "arrivesTomorrow": "明日抵达",

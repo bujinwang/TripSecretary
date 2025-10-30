@@ -128,6 +128,17 @@ class EntryInfoService {
       const inProgressDestinations = [];
 
       for (const entryInfo of allEntryInfos) {
+        // Load associated travel info if available
+        let travelInfo = null;
+        if (entryInfo.travelInfoId) {
+          try {
+            const travelData = await SecureStorageService.getTravelInfoById(entryInfo.travelInfoId);
+            travelInfo = travelData;
+          } catch (error) {
+            console.warn(`Failed to load travel info ${entryInfo.travelInfoId}:`, error);
+          }
+        }
+
         // Check if entry info has a successful DAC submission
         const latestDAC = await this.getLatestSuccessfulDigitalArrivalCard(entryInfo.id, 'TDAC');
         if (latestDAC) {
@@ -137,9 +148,14 @@ class EntryInfoService {
             destinationId: entryInfo.destinationId,
             destinationName: entryInfo.destinationName,
             status: 'submitted',
-            arrivalDate: entryInfo.travel?.arrivalDate,
+            arrivalDate: travelInfo?.arrivalArrivalDate || entryInfo.travel?.arrivalDate,
             submittedAt: latestDAC.submittedAt,
-            cardType: latestDAC.cardType
+            cardType: latestDAC.cardType,
+            // Additional travel information
+            flightNumber: travelInfo?.arrivalFlightNumber,
+            departureDate: travelInfo?.arrivalDepartureDate,
+            visaNumber: travelInfo?.visaNumber,
+            hotelName: travelInfo?.hotelName
           });
         } else {
           // No successful DAC - add to in-progress destinations
@@ -152,7 +168,10 @@ class EntryInfoService {
             destinationName: entryInfo.destinationName,
             completionPercent: completionPercent,
             isReady: completionPercent >= 80, // Consider ready if 80%+ complete
-            entryInfoId: entryInfo.id // Add ID for navigation
+            entryInfoId: entryInfo.id, // Add ID for navigation
+            // Include arrival date for submission countdown
+            arrivalDate: travelInfo?.arrivalArrivalDate,
+            flightNumber: travelInfo?.arrivalFlightNumber
           });
         }
       }

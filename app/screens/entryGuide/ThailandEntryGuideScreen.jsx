@@ -310,7 +310,18 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
         {isLastStep ? (
           <TouchableOpacity
             style={styles.completeButton}
-            onPress={() => Alert.alert('恭喜！', '您已完成泰国入境指引！')}
+            onPress={() => {
+              Alert.alert(
+                '恭喜！',
+                '您已完成泰国入境指引！',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('MainTabs', { screen: 'Home' })
+                  }
+                ]
+              );
+            }}
           >
             <Text style={styles.completeButtonText}>完成入境指引 ✅</Text>
           </TouchableOpacity>

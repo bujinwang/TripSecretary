@@ -143,6 +143,12 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const localizedHotCountries = useMemo(() => {
+    // Get IDs of destinations that already have active entry packs or in-progress entries
+    const activeDestinationIds = new Set([
+      ...activeEntryPacks.map(pack => pack.destinationId),
+      ...inProgressDestinations.map(dest => dest.destinationId)
+    ]);
+
     const countriesWithVisaInfo = HOT_COUNTRIES.map((country) => {
       const visaRequirement = getVisaRequirement(country.id);
       return {
@@ -158,8 +164,13 @@ const HomeScreen = ({ navigation }) => {
       };
     });
 
+    // Filter out destinations that already have active entry packs
+    const availableCountries = countriesWithVisaInfo.filter(
+      country => !activeDestinationIds.has(country.id)
+    );
+
     // Sort by visa priority (easiest entry first), then by flight time
-    return countriesWithVisaInfo.sort((a, b) => {
+    return availableCountries.sort((a, b) => {
       if (a.visaPriority !== b.visaPriority) {
         return a.visaPriority - b.visaPriority;
       }
@@ -168,7 +179,7 @@ const HomeScreen = ({ navigation }) => {
       const bTime = parseFloat(b.flightTime) || 999;
       return aTime - bTime;
     });
-  }, [language, t]);
+  }, [language, t, activeEntryPacks, inProgressDestinations]);
 
   const upcomingTrips = useMemo(() => {
     const DAY_MS = 24 * 60 * 60 * 1000;
@@ -493,24 +504,39 @@ const HomeScreen = ({ navigation }) => {
     return flagMap[destinationId] || '🌍';
   };
 
+  // Get estimated flight duration based on destination
+  const getFlightDuration = (destinationId) => {
+    const durationMap = {
+      'th': '3小时',
+      'jp': '3小时',
+      'sg': '5小时',
+      'my': '4小时',
+      'hk': '1小时',
+      'tw': '2小时',
+      'kr': '2小时',
+      'us': '13小时'
+    };
+    return durationMap[destinationId] || '';
+  };
+
   const getArrivalCountdown = (arrivalDate) => {
     if (!arrivalDate) return '';
-    
+
     try {
       const arrival = new Date(arrivalDate);
       const now = new Date();
       const diffMs = arrival.getTime() - now.getTime();
-      
+
       if (diffMs <= 0) {
         return t('progressiveEntryFlow.entryPack.arrivedToday', { defaultValue: '今日抵达' });
       }
-      
+
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 1) {
         return t('progressiveEntryFlow.entryPack.arrivesTomorrow', { defaultValue: '明日抵达' });
       } else if (diffDays <= 7) {
-        return t('progressiveEntryFlow.entryPack.arrivesInDays', { 
+        return t('progressiveEntryFlow.entryPack.arrivesInDays', {
           days: diffDays,
           defaultValue: `${diffDays}天后抵达`
         });
@@ -523,6 +549,57 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // Get submission countdown - recommends submitting 3-7 days before arrival
+  const getSubmissionCountdown = (arrivalDate) => {
+    if (!arrivalDate) return null;
+
+    try {
+      const arrival = new Date(arrivalDate);
+      const now = new Date();
+      const diffMs = arrival.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      // If already passed or today
+      if (diffDays <= 0) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitNow', { defaultValue: '请尽快提交' }),
+          urgent: true
+        };
+      }
+
+      // Recommend submitting 3-7 days before arrival
+      const recommendedSubmitDays = 3; // Submit at least 3 days before
+
+      if (diffDays <= recommendedSubmitDays) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitSoon', {
+            days: diffDays,
+            defaultValue: `建议 ${diffDays} 天内提交`
+          }),
+          urgent: true
+        };
+      } else if (diffDays <= 7) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.canSubmitNow', {
+            defaultValue: '可以提交了'
+          }),
+          urgent: false
+        };
+      } else {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitLater', {
+            days: diffDays - recommendedSubmitDays,
+            defaultValue: `还有 ${diffDays - recommendedSubmitDays} 天可提交`
+          }),
+          urgent: false
+        };
+      }
+    } catch (error) {
+      console.log('Error calculating submission countdown:', error);
+      return null;
+    }
+  };
+
   const renderEntryPackCards = useCallback(() => {
     if (!activeEntryPacks.length) {
       return null;
@@ -532,8 +609,16 @@ const HomeScreen = ({ navigation }) => {
       const flag = getDestinationFlag(pack.destinationId);
       const destinationName = pack.destinationName || getDestinationName(pack.destinationId);
 
-      // Get arrival date from entry info (we'll need to load this)
+      // Get arrival date from entry info
       const arrivalCountdown = getArrivalCountdown(pack.arrivalDate);
+
+      // Get flight duration
+      const flightDuration = getFlightDuration(pack.destinationId);
+
+      // Format visa info
+      const visaInfo = pack.visaNumber
+        ? t('progressiveEntryFlow.entryPack.visaRequired', { defaultValue: '需要签证' })
+        : t('progressiveEntryFlow.entryPack.visaFree', { defaultValue: '免签' });
 
       return (
         <Card
@@ -586,15 +671,37 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.entryPackTitle}>
                 {t('progressiveEntryFlow.entryPack.title', {
                   destination: destinationName,
-                  defaultValue: `${destinationName} Entry Pack - Submitted`
+                  defaultValue: `${destinationName}`
                 })}
               </Text>
               <Text style={styles.entryPackStatus}>
                 {t('progressiveEntryFlow.entryPack.submitted', { defaultValue: '已提交' })}
               </Text>
-              <Text style={styles.entryPackCountdown}>
-                {arrivalCountdown}
-              </Text>
+              {/* Prominent arrival countdown */}
+              {pack.arrivalDate ? (
+                <Text style={styles.entryPackArrivalCountdown}>
+                  📅 {arrivalCountdown}
+                </Text>
+              ) : (
+                <Text style={styles.entryPackArrivalCountdownMissing}>
+                  📅 {t('progressiveEntryFlow.entryPack.noArrivalDate', { defaultValue: '待填写入境日期' })}
+                </Text>
+              )}
+              <View style={styles.entryPackDetailsRow}>
+                {pack.flightNumber && (
+                  <Text style={styles.entryPackDetail}>
+                    🎫 {pack.flightNumber}
+                  </Text>
+                )}
+                {flightDuration && (
+                  <Text style={styles.entryPackDetail}>
+                    ✈️ {flightDuration}
+                  </Text>
+                )}
+                <Text style={styles.entryPackDetail}>
+                  {pack.visaNumber ? '📋 需要签证' : '✅ 免签'}
+                </Text>
+              </View>
             </View>
             <Text style={styles.historyArrow}>›</Text>
           </View>
@@ -611,7 +718,10 @@ const HomeScreen = ({ navigation }) => {
     return inProgressDestinations.map((destination) => {
       const flag = getDestinationFlag(destination.destinationId);
       const destinationName = destination.destinationName || getDestinationName(destination.destinationId);
-      
+
+      // Get submission countdown if arrival date is set
+      const submissionCountdown = getSubmissionCountdown(destination.arrivalDate);
+
       return (
         <Card
           key={destination.destinationId}
@@ -629,7 +739,7 @@ const HomeScreen = ({ navigation }) => {
               'my': 'MalaysiaTravelInfo',
               'us': 'USATravelInfo',
             };
-            
+
             const screenName = screenMap[destination.destinationId];
             if (screenName) {
               navigation.navigate(screenName, {
@@ -658,23 +768,38 @@ const HomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.entryPackInfo}>
               <Text style={styles.entryPackTitle}>
-                {t('progressiveEntryFlow.inProgress.title', { 
+                {t('progressiveEntryFlow.inProgress.title', {
                   destination: destinationName,
-                  defaultValue: `${destinationName} - In Progress`
+                  defaultValue: `${destinationName}`
                 })}
               </Text>
               <Text style={styles.inProgressStatus}>
-                {destination.isReady 
+                {destination.isReady
                   ? t('progressiveEntryFlow.inProgress.ready', { defaultValue: '准备提交' })
                   : t('progressiveEntryFlow.inProgress.incomplete', { defaultValue: '填写中' })
                 }
               </Text>
-              <Text style={styles.entryPackCountdown}>
-                {t('progressiveEntryFlow.inProgress.completionPercent', { 
-                  percent: destination.completionPercent,
-                  defaultValue: `${destination.completionPercent}% 完成`
-                })}
-              </Text>
+              <View style={styles.entryPackDetailsRow}>
+                <Text style={styles.entryPackDetail}>
+                  {t('progressiveEntryFlow.inProgress.completionPercent', {
+                    percent: destination.completionPercent,
+                    defaultValue: `${destination.completionPercent}% 完成`
+                  })}
+                </Text>
+                {destination.flightNumber && (
+                  <Text style={styles.entryPackDetail}>
+                    🎫 {destination.flightNumber}
+                  </Text>
+                )}
+              </View>
+              {submissionCountdown && (
+                <Text style={[
+                  styles.submissionCountdown,
+                  submissionCountdown.urgent && styles.submissionCountdownUrgent
+                ]}>
+                  ⏰ {submissionCountdown.text}
+                </Text>
+              )}
             </View>
             <Text style={styles.historyArrow}>›</Text>
           </View>
@@ -1180,6 +1305,32 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
   },
+  entryPackArrivalCountdown: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  entryPackArrivalCountdownMissing: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  entryPackDetailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+    flexWrap: 'wrap',
+  },
+  entryPackDetail: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 11,
+  },
 
   // In-Progress Destination Card Styles
   inProgressCard: {
@@ -1218,6 +1369,16 @@ const styles = StyleSheet.create({
     color: colors.warning,
     fontWeight: '600',
     marginBottom: 2,
+  },
+  submissionCountdown: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 11,
+    marginTop: spacing.xs,
+  },
+  submissionCountdownUrgent: {
+    color: colors.error,
+    fontWeight: '600',
   },
 
   // Multi-destination Summary Card Styles
