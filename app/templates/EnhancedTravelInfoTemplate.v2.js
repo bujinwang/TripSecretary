@@ -85,7 +85,11 @@ const EnhancedTravelInfoTemplate = ({
     return UserDataService.toSerializablePassport(rawPassport);
   }, [rawPassport?.id, rawPassport?.passportNo]);
 
-  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
+  const userId = useMemo(() => {
+    const id = passport?.id || 'user_001';
+    console.log('[Template V2] userId resolved:', id, 'from passport:', passport);
+    return id;
+  }, [passport?.id]);
 
   // ============================================
   // LOCATION DATA (dynamically loaded from config)
@@ -186,6 +190,7 @@ const EnhancedTravelInfoTemplate = ({
     // Scroll position state
     initialState.scrollPosition = 0;
 
+    console.log('[Template V2] Initializing formState with fields:', Object.keys(initialState));
     setFormState(initialState);
   }, [config]);
 
@@ -268,7 +273,10 @@ const EnhancedTravelInfoTemplate = ({
       }
 
       updateFormState({ ...loadedData, isLoading: false });
-      console.log('[Template V2] Data loaded successfully, isLoading set to false');
+      console.log('[Template V2] Data loaded successfully. Fields with data:',
+        Object.entries(loadedData).filter(([k, v]) => v && v !== '' && k !== 'funds').map(([k]) => k),
+        'Funds count:', loadedData.funds?.length || 0
+      );
     } catch (error) {
       console.error('[Template V2] Error loading data:', error);
       updateFormState({ isLoading: false });
