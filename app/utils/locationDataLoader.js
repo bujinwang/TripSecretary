@@ -13,6 +13,26 @@
  * @module utils/locationDataLoader
  */
 
+// Static imports for all location data modules
+import * as thailandProvincesModule from '../data/thailandProvinces';
+import * as thailandLocationsModule from '../data/thailandLocations';
+import * as vietnamLocationsModule from '../data/vietnamLocations';
+import * as malaysiaLocationsModule from '../data/malaysiaLocations';
+
+/**
+ * Module mapping for static imports
+ * Maps module paths to their imported modules
+ * @private
+ */
+const MODULE_REGISTRY = {
+  '../data/thailandProvinces': thailandProvincesModule,
+  '../data/thailandLocations': thailandLocationsModule,
+  '../data/vietnamProvinces': vietnamLocationsModule, // vietnamProvinces exported from vietnamLocations
+  '../data/vietnamLocations': vietnamLocationsModule,
+  '../data/malaysiaStates': malaysiaLocationsModule, // malaysiaStates exported from malaysiaLocations
+  '../data/malaysiaLocations': malaysiaLocationsModule,
+};
+
 /**
  * @typedef {Object} Province
  * @property {string} code - Province code
@@ -178,7 +198,10 @@ export const loadProvinces = (destinationId) => {
     }
 
     // Load province data using configuration
-    const provinceModule = require(config.provinceModule);
+    const provinceModule = MODULE_REGISTRY[config.provinceModule];
+    if (!provinceModule) {
+      throw new Error(`Province module not found: ${config.provinceModule}`);
+    }
     const data = provinceModule[config.provinceKey] || provinceModule.default || provinceModule;
 
     // Validate the loaded data
@@ -256,7 +279,10 @@ export const loadDistrictGetter = (destinationId) => {
     }
 
     // Load location module and get district getter function
-    const locationModule = require(config.locationModule);
+    const locationModule = MODULE_REGISTRY[config.locationModule];
+    if (!locationModule) {
+      throw new Error(`Location module not found: ${config.locationModule}`);
+    }
     const getterFunc = locationModule[config.districtGetter];
 
     if (typeof getterFunc !== 'function') {
@@ -303,7 +329,10 @@ export const loadSubDistrictGetter = (destinationId) => {
     }
 
     // Load location module and get sub-district getter function
-    const locationModule = require(config.locationModule);
+    const locationModule = MODULE_REGISTRY[config.locationModule];
+    if (!locationModule) {
+      throw new Error(`Location module not found: ${config.locationModule}`);
+    }
     const getterFunc = locationModule[config.subDistrictGetter];
 
     if (typeof getterFunc !== 'function') {
