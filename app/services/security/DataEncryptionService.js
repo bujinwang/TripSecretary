@@ -109,10 +109,12 @@ class DataEncryptionService {
         throw new Error('Failed to save encrypted snapshot data');
       }
 
+      const encryptedSize = await encryptedFile.size();
+
       console.log('Snapshot data encrypted successfully:', {
         snapshotId,
         originalSize: serializedData.length,
-        encryptedSize: encryptedFile.size
+        encryptedSize: encryptedSize
       });
 
       return {
@@ -121,7 +123,7 @@ class DataEncryptionService {
         encryptionMethod: 'AES-256-GCM',
         fieldType: fieldType,
         originalSize: serializedData.length,
-        encryptedSize: fileInfo.size
+        encryptedSize: encryptedSize
       };
 
     } catch (error) {
@@ -149,6 +151,8 @@ class DataEncryptionService {
       // Read encrypted data
       const encryptedData = await encryptedFile.text();
 
+      const encryptedSize = await encryptedFile.size();
+
       // Decrypt using snapshot-specific field type
       const fieldType = `snapshot_${snapshotId}`;
       const decryptedData = await this.encryption.decrypt(encryptedData, fieldType);
@@ -158,7 +162,7 @@ class DataEncryptionService {
 
       console.log('Snapshot data decrypted successfully:', {
         snapshotId,
-        encryptedSize: fileInfo.size,
+        encryptedSize: encryptedSize,
         decryptedSize: decryptedData.length
       });
 
@@ -218,6 +222,8 @@ class DataEncryptionService {
             throw new Error(`Failed to save encrypted photo: ${photo.fundItemId}`);
           }
 
+          const encryptedPhotoSize = await encryptedPhotoFile.size();
+
           encryptedPhotos.push({
             ...photo,
             encryptedPath: encryptedPhotoPath,
@@ -225,7 +231,7 @@ class DataEncryptionService {
             encryptionMethod: 'AES-256-GCM',
             fieldType: fieldType,
             originalSize: photoData.length,
-            encryptedSize: encryptedFileInfo.size
+            encryptedSize: encryptedPhotoSize
           });
 
           console.log('Photo encrypted successfully:', {
@@ -310,10 +316,12 @@ class DataEncryptionService {
             throw new Error(`Failed to save decrypted photo: ${photo.fundItemId}`);
           }
 
+          const decryptedPhotoSize = await decryptedPhotoFile.size();
+
           decryptedPhotos.push({
             ...photo,
             decryptedPath: decryptedPhotoPath,
-            decryptedSize: decryptedFileInfo.size
+            decryptedSize: decryptedPhotoSize
           });
 
           console.log('Photo decrypted successfully:', {
@@ -373,11 +381,13 @@ class DataEncryptionService {
         throw new Error('Failed to save encrypted export file');
       }
 
+      const encryptedSize = await encryptedFile.size();
+
       console.log('Export file encrypted successfully:', {
         originalPath: filePath,
         encryptedPath: encryptedFilePath,
         originalSize: exportData.length,
-        encryptedSize: encryptedFile.size
+        encryptedSize: encryptedSize
       });
 
       return {
@@ -387,7 +397,7 @@ class DataEncryptionService {
         encryptionMethod: 'AES-256-GCM',
         fieldType: fieldType,
         originalSize: exportData.length,
-        encryptedSize: encryptedFileInfo.size,
+        encryptedSize: encryptedSize,
         passwordProtected: !!password
       };
 
@@ -430,17 +440,19 @@ class DataEncryptionService {
         throw new Error('Failed to save decrypted export file');
       }
 
+      const decryptedSize = await decryptedFile.size();
+
       console.log('Export file decrypted successfully:', {
         encryptedPath: encryptedFilePath,
         decryptedPath: decryptedFilePath,
-        decryptedSize: decryptedFileInfo.size
+        decryptedSize: decryptedSize
       });
 
       return {
         decrypted: true,
         encryptedPath: encryptedFilePath,
         decryptedPath: decryptedFilePath,
-        decryptedSize: decryptedFileInfo.size
+        decryptedSize: decryptedSize
       };
 
     } catch (error) {

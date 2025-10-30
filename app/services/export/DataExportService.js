@@ -1446,6 +1446,7 @@ class DataExportService {
             if (fileExists) {
               // Read file as base64
               const base64Data = await photoFile.base64();
+              const fileSize = await photoFile.size();
 
               photoData.push({
                 fundItemId: fund.id,
@@ -1453,7 +1454,7 @@ class DataExportService {
                 filename: fund.photoUri.split('/').pop(),
                 mimeType: 'image/jpeg',
                 base64Data: base64Data,
-                fileSize: fileInfo.size,
+                fileSize: fileSize,
                 exportedAt: new Date().toISOString()
               });
             } else {

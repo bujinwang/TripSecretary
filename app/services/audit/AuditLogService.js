@@ -561,7 +561,7 @@ class AuditLogService {
         if (await itemDir.exists()) {
           totalSize += await this.calculateDirectorySize(`${itemPath}/`);
         } else if (await itemFile.exists()) {
-          totalSize += itemFile.size || 0;
+          totalSize += (await itemFile.size()) || 0;
         }
       }
 

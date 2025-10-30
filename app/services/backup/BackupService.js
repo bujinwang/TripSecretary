@@ -195,7 +195,7 @@ class BackupService {
       console.log('Backup created successfully:', {
         backupId,
         filename: backupFilename,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         entryInfoCount: entryInfoIds.length
       });
 
@@ -204,7 +204,7 @@ class BackupService {
         backupId,
         filename: backupFilename,
         filePath: backupFilePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         entryInfoCount: entryInfoIds.length,
         createdAt: backupMetadata.createdAt,
         metadata: backupMetadata
@@ -286,13 +286,14 @@ class BackupService {
       }
 
       const backupFile = new FileSystem.File(metadata.filePath);
-      const fileInfo = await backupFile.getInfo();
-      
+      const fileExists = await backupFile.exists();
+      const currentFileSize = fileExists ? await backupFile.size() : 0;
+
       return {
         ...metadata,
-        fileExists: fileInfo.exists,
-        currentFileSize: fileInfo.size,
-        isCorrupted: fileInfo.exists && fileInfo.size !== metadata.fileSize
+        fileExists: fileExists,
+        currentFileSize: currentFileSize,
+        isCorrupted: fileExists && currentFileSize !== metadata.fileSize
       };
 
     } catch (error) {
@@ -1554,7 +1555,7 @@ class BackupService {
       // Set validation result
       validationResult.isValid = validationResult.errors.length === 0;
       validationResult.details = {
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         entryInfoCount: actualCount,
         hasPhotos: entryInfos.some(info => info.hasPhotos),
         totalPhotos: entryInfos.reduce((sum, info) => sum + info.photoCount, 0),
