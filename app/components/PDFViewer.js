@@ -88,18 +88,16 @@ const PDFViewer = ({
 
         // Try to read the file
         try {
-          base64Data = await FileSystem.readAsStringAsync(fileUri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
+          const pdfFile = new FileSystem.File(fileUri);
+          base64Data = await pdfFile.base64();
           console.log('✅ PDF read successfully, size:', Math.round(base64Data.length / 1024), 'KB');
         } catch (readError) {
           console.log('⚠️ Direct read failed, trying with file:// prefix...');
 
           // Try with file:// prefix
           try {
-            base64Data = await FileSystem.readAsStringAsync('file://' + fileUri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
+            const pdfFileWithPrefix = new FileSystem.File('file://' + fileUri);
+            base64Data = await pdfFileWithPrefix.base64();
             console.log('✅ PDF read with file:// prefix');
           } catch (secondError) {
             // Last attempt: try original URI as-is if it had http/https
@@ -109,9 +107,8 @@ const PDFViewer = ({
                 source.uri,
                 FileSystem.documentDirectory + 'temp_pdf.pdf'
               );
-              base64Data = await FileSystem.readAsStringAsync(downloadResult.uri, {
-                encoding: FileSystem.EncodingType.Base64,
-              });
+              const downloadedFile = new FileSystem.File(downloadResult.uri);
+              base64Data = await downloadedFile.base64();
               console.log('✅ PDF downloaded and read');
             } else {
               throw new Error('PDF file not found or cannot be read: ' + source.uri);

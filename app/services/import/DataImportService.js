@@ -67,9 +67,8 @@ class DataImportService {
       console.log('Importing from JSON:', filePath);
 
       // Read and parse JSON file
-      const jsonContent = await FileSystem.readAsStringAsync(filePath, {
-        encoding: FileSystem.EncodingType.UTF8
-      });
+      const jsonFile = new FileSystem.File(filePath);
+      const jsonContent = await jsonFile.text();
 
       let importData;
       try {
@@ -134,9 +133,8 @@ class DataImportService {
       // In a real implementation, you would extract the ZIP file first
       
       // Read the "ZIP" file as JSON (our batch export format)
-      const archiveContent = await FileSystem.readAsStringAsync(filePath, {
-        encoding: FileSystem.EncodingType.UTF8
-      });
+      const archiveFile = new FileSystem.File(filePath);
+      const archiveContent = await archiveFile.text();
 
       let archiveData;
       try {
@@ -580,9 +578,10 @@ class DataImportService {
       await this.ensureDirectoryExists(FileSystem.documentDirectory + 'funds/');
 
       // Write base64 data to file
-      await FileSystem.writeAsStringAsync(photoPath, photoData.base64Data, {
-        encoding: FileSystem.EncodingType.Base64
-      });
+      const photoFile = new FileSystem.File(photoPath);
+      // Convert base64 string to bytes and write
+      const bytes = Uint8Array.from(atob(photoData.base64Data), c => c.charCodeAt(0));
+      await photoFile.write(bytes);
 
       console.log('Restored photo:', filename);
       return photoPath;
@@ -610,7 +609,7 @@ class DataImportService {
       const directory = new FileSystem.Directory(dirPath);
       const dirExists = await directory.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        await directory.create();
         console.log('Created directory:', dirPath);
       }
     } catch (error) {

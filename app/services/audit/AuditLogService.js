@@ -22,7 +22,7 @@ class AuditLogService {
       const auditDir = new FileSystem.Directory(this.auditStorageDir);
       const dirExists = await auditDir.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(this.auditStorageDir, { intermediates: true });
+        await auditDir.create();
         console.log('Audit log storage directory created:', this.auditStorageDir);
       }
     } catch (error) {
@@ -178,16 +178,15 @@ class AuditLogService {
       const eventDir = `${this.auditStorageDir}${datePath}/`;
       
       // Create directory if it doesn't exist
-      await FileSystem.makeDirectoryAsync(eventDir, { intermediates: true });
+      const eventDirectory = new FileSystem.Directory(eventDir);
+      await eventDirectory.create();
       
       // Save event as JSON file
       const eventFileName = `${auditEvent.id}.json`;
       const eventFilePath = `${eventDir}${eventFileName}`;
-      
-      await FileSystem.writeAsStringAsync(
-        eventFilePath, 
-        JSON.stringify(auditEvent, null, 2)
-      );
+
+      const eventFile = new FileSystem.File(eventFilePath);
+      await eventFile.write(JSON.stringify(auditEvent, null, 2));
 
       console.log('Audit event saved to file system:', {
         eventId: auditEvent.id,
@@ -241,8 +240,8 @@ class AuditLogService {
       
       // This is a simplified implementation - in production you'd want to
       // index files by snapshot ID for better performance
-      const auditDirInfo = await FileSystem.getInfoAsync(this.auditStorageDir);
-      if (!auditDirInfo.exists) {
+      const auditDir = new FileSystem.Directory(this.auditStorageDir);
+      if (!await auditDir.exists()) {
         return events;
       }
 
@@ -265,19 +264,21 @@ class AuditLogService {
    */
   async searchAuditFiles(dirPath, snapshotId, events) {
     try {
-      const items = await FileSystem.readDirectoryAsync(dirPath);
-      
+      const dir = new FileSystem.Directory(dirPath);
+      const items = await dir.list();
+
       for (const item of items) {
         const itemPath = `${dirPath}${item}`;
-        const itemInfo = await FileSystem.getInfoAsync(itemPath);
-        
-        if (itemInfo.isDirectory) {
+        const itemDir = new FileSystem.Directory(itemPath);
+        const itemFile = new FileSystem.File(itemPath);
+
+        if (await itemDir.exists()) {
           // Recursively search subdirectories
           await this.searchAuditFiles(`${itemPath}/`, snapshotId, events);
-        } else if (item.endsWith('.json')) {
+        } else if (item.endsWith('.json') && await itemFile.exists()) {
           // Load and check audit event file
           try {
-            const eventContent = await FileSystem.readAsStringAsync(itemPath);
+            const eventContent = await itemFile.text();
             const auditEvent = JSON.parse(eventContent);
             
             if (auditEvent.snapshotId === snapshotId) {
@@ -427,9 +428,10 @@ class AuditLogService {
       const exportPath = `${FileSystem.documentDirectory}exports/${exportFileName}`;
 
       // Create exports directory
-      await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}exports/`, { 
-        intermediates: true 
-      });
+      const exportsDir = new FileSystem.Directory(`${FileSystem.documentDirectory}exports/`);
+      if (!await exportsDir.exists()) {
+        await exportsDir.create();
+      }
 
       let exportContent;
       
@@ -464,7 +466,8 @@ class AuditLogService {
       }
 
       // Write export file
-      await FileSystem.writeAsStringAsync(exportPath, exportContent);
+      const exportFile = new FileSystem.File(exportPath);
+      await exportFile.write(exportContent);
 
       // Record export event in audit log
       await this.record('exported', {
@@ -514,8 +517,8 @@ class AuditLogService {
       };
 
       // Calculate storage usage
-      const auditDirInfo = await FileSystem.getInfoAsync(this.auditStorageDir);
-      if (auditDirInfo.exists) {
+      const auditDir = new FileSystem.Directory(this.auditStorageDir);
+      if (await auditDir.exists()) {
         stats.storageUsage = await this.calculateDirectorySize(this.auditStorageDir);
       }
 
@@ -542,22 +545,23 @@ class AuditLogService {
   async calculateDirectorySize(dirPath) {
     try {
       let totalSize = 0;
-      
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists || !dirInfo.isDirectory) {
+
+      const dir = new FileSystem.Directory(dirPath);
+      if (!await dir.exists()) {
         return 0;
       }
 
-      const items = await FileSystem.readDirectoryAsync(dirPath);
+      const items = await dir.list();
       
       for (const item of items) {
         const itemPath = `${dirPath}${item}`;
-        const itemInfo = await FileSystem.getInfoAsync(itemPath);
-        
-        if (itemInfo.isDirectory) {
+        const itemDir = new FileSystem.Directory(itemPath);
+        const itemFile = new FileSystem.File(itemPath);
+
+        if (await itemDir.exists()) {
           totalSize += await this.calculateDirectorySize(`${itemPath}/`);
-        } else {
-          totalSize += itemInfo.size || 0;
+        } else if (await itemFile.exists()) {
+          totalSize += (await itemFile.size()) || 0;
         }
       }
 

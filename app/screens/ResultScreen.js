@@ -478,10 +478,8 @@ const ResultScreen = ({ navigation, route }) => {
 
     try {
       const downloadPath = `${FileSystem.documentDirectory}${destination?.name || 'entry'}_form_${Date.now()}.pdf`;
-      await FileSystem.copyAsync({
-        from: uri,
-        to: downloadPath,
-      });
+      const sourceFile = new FileSystem.File(uri);
+      await sourceFile.copy(downloadPath);
       Alert.alert('成功', `PDF已保存到: ${downloadPath}`);
     } catch (error) {
       Alert.alert('错误', '下载失败');

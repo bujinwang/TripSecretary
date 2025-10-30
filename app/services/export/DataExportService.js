@@ -166,17 +166,16 @@ class DataExportService {
 
       // Write JSON file
       const jsonString = JSON.stringify(exportData, null, 2);
-      await FileSystem.writeAsStringAsync(filePath, jsonString, {
-        encoding: FileSystem.EncodingType.UTF8
-      });
+      const file = new FileSystem.File(filePath);
+      await file.write(jsonString);
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileSize = await file.size();
 
       console.log('JSON export completed:', {
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         dataSize: jsonString.length
       });
 
@@ -185,7 +184,7 @@ class DataExportService {
         format: 'json',
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         dataSize: jsonString.length,
         exportData: options.returnData ? exportData : null,
         sharingOptions: await this.getSharingOptions(filePath, 'application/json')
@@ -234,18 +233,17 @@ class DataExportService {
       });
 
       // Move the generated PDF to our export directory
-      await FileSystem.moveAsync({
-        from: uri,
-        to: filePath
-      });
+      const sourceFile = new FileSystem.File(uri);
+      await sourceFile.move(filePath);
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const file = new FileSystem.File(filePath);
+      const fileSize = await file.size();
 
       console.log('PDF export completed:', {
         filename,
         filePath,
-        fileSize: fileInfo.size
+        fileSize: fileSize
       });
 
       return {
@@ -253,7 +251,7 @@ class DataExportService {
         format: 'pdf',
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         sharingOptions: await this.getSharingOptions(filePath, 'application/pdf')
       };
     } catch (error) {
@@ -432,10 +430,8 @@ class DataExportService {
         try {
           if (latestDAC.qrUri.startsWith('file://') || latestDAC.qrUri.startsWith('/')) {
             // Local file - copy it
-            await FileSystem.copyAsync({
-              from: latestDAC.qrUri,
-              to: filePath
-            });
+            const sourceFile = new FileSystem.File(latestDAC.qrUri);
+            await sourceFile.copy(filePath);
             exportedFromSource = 'qr_image';
           } else {
             // Remote URL - download it
@@ -470,12 +466,13 @@ class DataExportService {
       }
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const file = new FileSystem.File(filePath);
+      const fileSize = await file.size();
 
       console.log('QR code image export completed:', {
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         source: exportedFromSource
       });
 
@@ -485,7 +482,7 @@ class DataExportService {
         type: 'qr',
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         source: exportedFromSource,
         qrData: {
           arrCardNo: latestDAC.arrCardNo,
@@ -525,17 +522,17 @@ class DataExportService {
       const imageData = await this.generateSummaryImageData(completeData, options);
       
       // Write the image data to file
-      await FileSystem.writeAsStringAsync(filePath, imageData.base64, {
-        encoding: FileSystem.EncodingType.Base64
-      });
+      const bytes = Uint8Array.from(atob(imageData.base64), c => c.charCodeAt(0));
+      const file = new FileSystem.File(filePath);
+      await file.write(bytes);
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      const fileSize = await file.size();
 
       console.log('Summary image export completed:', {
         filename,
         filePath,
-        fileSize: fileInfo.size
+        fileSize: fileSize
       });
 
       return {
@@ -544,7 +541,7 @@ class DataExportService {
         type: 'summary',
         filename,
         filePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         summaryData: {
           destination: this.getDestinationName(entryPack.destinationId),
           arrivalDate: travel?.arrivalDate,
@@ -644,9 +641,9 @@ class DataExportService {
 
       // Convert SVG to base64 and save
       const base64Data = Buffer.from(svgContent).toString('base64');
-      await FileSystem.writeAsStringAsync(outputPath, base64Data, {
-        encoding: FileSystem.EncodingType.Base64
-      });
+      const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const outputFile = new FileSystem.File(outputPath);
+      await outputFile.write(bytes);
 
       console.log('Generated QR placeholder image');
     } catch (error) {
@@ -1448,9 +1445,8 @@ class DataExportService {
             const fileExists = await photoFile.exists();
             if (fileExists) {
               // Read file as base64
-              const base64Data = await FileSystem.readAsStringAsync(fund.photoUri, {
-                encoding: FileSystem.EncodingType.Base64
-              });
+              const base64Data = await photoFile.base64();
+              const fileSize = await photoFile.size();
 
               photoData.push({
                 fundItemId: fund.id,
@@ -1458,7 +1454,7 @@ class DataExportService {
                 filename: fund.photoUri.split('/').pop(),
                 mimeType: 'image/jpeg',
                 base64Data: base64Data,
-                fileSize: fileInfo.size,
+                fileSize: fileSize,
                 exportedAt: new Date().toISOString()
               });
             } else {
@@ -1652,7 +1648,7 @@ class DataExportService {
       const directory = new FileSystem.Directory(dirPath);
       const dirExists = await directory.exists();
       if (!dirExists) {
-        await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        await directory.create();
         console.log('Created directory:', dirPath);
       }
     } catch (error) {
@@ -1668,23 +1664,26 @@ class DataExportService {
    */
   async cleanupOldExports(maxAgeHours = 24) {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(this.exportDirectory);
+      if (!await directory.exists()) {
         return { deletedCount: 0, message: 'Export directory does not exist' };
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = await directory.list();
       const cutoffTime = Date.now() - (maxAgeHours * 60 * 60 * 1000);
       let deletedCount = 0;
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
-        
-        if (fileInfo.exists && fileInfo.modificationTime < cutoffTime) {
-          await FileSystem.deleteAsync(filePath);
-          deletedCount++;
-          console.log('Deleted old export file:', filename);
+        const file = new FileSystem.File(filePath);
+
+        if (await file.exists()) {
+          const modificationTime = await file.modificationTime();
+          if (modificationTime < cutoffTime) {
+            await file.delete();
+            deletedCount++;
+            console.log('Deleted old export file:', filename);
+          }
         }
       }
 
@@ -1707,9 +1706,9 @@ class DataExportService {
    */
   async getExportDirectoryInfo() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
-      
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(this.exportDirectory);
+
+      if (!await directory.exists()) {
         return {
           exists: false,
           fileCount: 0,
@@ -1717,14 +1716,14 @@ class DataExportService {
         };
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = await directory.list();
       let totalSize = 0;
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
-        if (fileInfo.exists) {
-          totalSize += fileInfo.size || 0;
+        const file = new FileSystem.File(filePath);
+        if (await file.exists()) {
+          totalSize += (await file.size()) || 0;
         }
       }
 
@@ -1753,14 +1752,14 @@ class DataExportService {
   async deleteExportFile(filename) {
     try {
       const filePath = this.exportDirectory + filename;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      
-      if (fileInfo.exists) {
-        await FileSystem.deleteAsync(filePath);
+      const file = new FileSystem.File(filePath);
+
+      if (await file.exists()) {
+        await file.delete();
         console.log('Deleted export file:', filename);
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Failed to delete export file:', filename, error);
@@ -1806,9 +1805,8 @@ class DataExportService {
         if (result.result && result.result.filePath) {
           try {
             // Read the exported file content
-            const fileContent = await FileSystem.readAsStringAsync(result.result.filePath, {
-              encoding: FileSystem.EncodingType.UTF8
-            });
+            const resultFile = new FileSystem.File(result.result.filePath);
+            const fileContent = await resultFile.text();
 
             archiveData.entryInfos.push({
               entryInfoId: result.entryInfoId,
@@ -1829,18 +1827,17 @@ class DataExportService {
 
       // Write the archive as a JSON file (simulating ZIP structure)
       const archiveContent = JSON.stringify(archiveData, null, 2);
-      await FileSystem.writeAsStringAsync(zipFilePath, archiveContent, {
-        encoding: FileSystem.EncodingType.UTF8
-      });
+      const zipFile = new FileSystem.File(zipFilePath);
+      await zipFile.write(archiveContent);
 
       // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(zipFilePath);
+      const fileSize = await zipFile.size();
 
       return {
         success: true,
         filename: zipFilename,
         filePath: zipFilePath,
-        fileSize: fileInfo.size,
+        fileSize: fileSize,
         entryPackCount: successfulExports.length,
         failureCount: archiveData.failures.length,
         format: 'json-archive' // Since we're creating a JSON archive instead of true ZIP
@@ -1864,7 +1861,8 @@ class DataExportService {
           try {
             // Only delete if it's in temp directory
             if (result.result.filePath.includes(this.tempDirectory)) {
-              await FileSystem.deleteAsync(result.result.filePath);
+              const tempFile = new FileSystem.File(result.result.filePath);
+              await tempFile.delete();
               console.log('Cleaned up temp file:', result.result.filename);
             }
           } catch (error) {
@@ -1977,25 +1975,26 @@ class DataExportService {
    */
   async listExportFiles() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(this.exportDirectory);
-      if (!dirInfo.exists) {
+      const directory = new FileSystem.Directory(this.exportDirectory);
+      if (!await directory.exists()) {
         return [];
       }
 
-      const files = await FileSystem.readDirectoryAsync(this.exportDirectory);
+      const files = await directory.list();
       const fileInfos = [];
 
       for (const filename of files) {
         const filePath = this.exportDirectory + filename;
-        const fileInfo = await FileSystem.getInfoAsync(filePath);
-        
-        if (fileInfo.exists) {
+        const file = new FileSystem.File(filePath);
+
+        if (await file.exists()) {
+          const modificationTime = await file.modificationTime();
           fileInfos.push({
             filename,
             filePath,
-            size: fileInfo.size,
-            modificationTime: fileInfo.modificationTime,
-            createdAt: new Date(fileInfo.modificationTime).toISOString(),
+            size: await file.size(),
+            modificationTime: modificationTime,
+            createdAt: new Date(modificationTime).toISOString(),
             isBatchExport: filename.includes('batch-export')
           });
         }
