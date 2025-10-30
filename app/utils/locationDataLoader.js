@@ -1,0 +1,351 @@
+/**
+ * Location Data Loader
+ *
+ * Centralized utility for loading location data (provinces, districts, sub-districts)
+ * for different destinations/countries.
+ *
+ * This abstraction allows:
+ * - Centralized loading logic
+ * - Easy addition of new countries
+ * - Consistent error handling
+ * - Lazy loading of location data
+ *
+ * @module utils/locationDataLoader
+ */
+
+/**
+ * @typedef {Object} Province
+ * @property {string} code - Province code
+ * @property {string} id - Province ID (may be same as code)
+ * @property {string} name - English name
+ * @property {string} nameZh - Chinese name
+ * @property {string} [nameTh] - Thai name (if applicable)
+ */
+
+/**
+ * @typedef {Object} District
+ * @property {string} id - District ID
+ * @property {string} nameEn - English name
+ * @property {string} nameZh - Chinese name
+ * @property {string} [nameTh] - Thai name (if applicable)
+ */
+
+/**
+ * @typedef {Object} SubDistrict
+ * @property {string} id - Sub-district ID
+ * @property {string} nameEn - English name
+ * @property {string} nameZh - Chinese name
+ * @property {string} [nameTh] - Thai name (if applicable)
+ * @property {string} [postalCode] - Postal/ZIP code
+ */
+
+/**
+ * Cache for loaded location data to avoid repeated imports
+ * @private
+ */
+const locationDataCache = {};
+
+/**
+ * Load province/region data for a destination
+ *
+ * @param {string} destinationId - Destination ID (e.g., 'th', 'vn', 'my')
+ * @returns {Array<Province>} Array of provinces/regions
+ * @throws {Error} If destination location data is not found
+ *
+ * @example
+ * const thailandProvinces = loadProvinces('th');
+ * // → Array of Thai provinces
+ *
+ * @example
+ * const vietnamProvinces = loadProvinces('vn');
+ * // → Array of Vietnamese provinces
+ */
+export const loadProvinces = (destinationId) => {
+  if (!destinationId) {
+    throw new Error('destinationId is required');
+  }
+
+  // Check cache first
+  const cacheKey = `provinces_${destinationId}`;
+  if (locationDataCache[cacheKey]) {
+    return locationDataCache[cacheKey];
+  }
+
+  try {
+    let provinceData;
+
+    switch (destinationId.toLowerCase()) {
+      case 'th':
+      case 'thailand':
+        provinceData = require('../data/thailandProvinces');
+        locationDataCache[cacheKey] = provinceData.thailandProvinces || provinceData.default || provinceData;
+        break;
+
+      case 'vn':
+      case 'vietnam':
+        provinceData = require('../data/vietnamProvinces');
+        locationDataCache[cacheKey] = provinceData.vietnamProvinces || provinceData.default || provinceData;
+        break;
+
+      case 'my':
+      case 'malaysia':
+        provinceData = require('../data/malaysiaStates');
+        locationDataCache[cacheKey] = provinceData.malaysiaStates || provinceData.default || provinceData;
+        break;
+
+      case 'sg':
+      case 'singapore':
+        // Singapore doesn't have provinces, return empty array
+        locationDataCache[cacheKey] = [];
+        break;
+
+      // TODO: Add more countries as needed
+      // case 'jp':
+      //   provinceData = require('../data/japanPrefectures');
+      //   locationDataCache[cacheKey] = provinceData.japanPrefectures || provinceData.default || provinceData;
+      //   break;
+
+      default:
+        throw new Error(`No province data available for destination: ${destinationId}`);
+    }
+
+    return locationDataCache[cacheKey];
+  } catch (error) {
+    console.error(`Error loading provinces for ${destinationId}:`, error);
+    throw new Error(`Failed to load province data for ${destinationId}: ${error.message}`);
+  }
+};
+
+/**
+ * Get display name for a province (bilingual format)
+ *
+ * @param {string} destinationId - Destination ID
+ * @param {string} provinceCode - Province code
+ * @returns {string} Display name (e.g., "Bangkok - 曼谷")
+ *
+ * @example
+ * getProvinceDisplayName('th', 'BANGKOK')
+ * // → "Bangkok - 曼谷"
+ */
+export const getProvinceDisplayName = (destinationId, provinceCode) => {
+  if (!provinceCode) return '';
+
+  try {
+    const provinces = loadProvinces(destinationId);
+    const province = provinces.find(p => p.code === provinceCode || p.id === provinceCode);
+
+    if (province) {
+      return `${province.name} - ${province.nameZh}`;
+    }
+
+    return provinceCode;
+  } catch (error) {
+    console.error('Error getting province display name:', error);
+    return provinceCode;
+  }
+};
+
+/**
+ * Load district data functions for a destination
+ *
+ * Different countries have different location data structures,
+ * so this returns a function that can be used to get districts.
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {Function} Function that takes provinceCode and returns districts
+ * @throws {Error} If destination location data is not found
+ *
+ * @example
+ * const getDistricts = loadDistrictGetter('th');
+ * const districts = getDistricts('BANGKOK');
+ * // → Array of districts in Bangkok
+ */
+export const loadDistrictGetter = (destinationId) => {
+  if (!destinationId) {
+    throw new Error('destinationId is required');
+  }
+
+  try {
+    switch (destinationId.toLowerCase()) {
+      case 'th':
+      case 'thailand': {
+        const locationData = require('../data/thailandLocations');
+        return locationData.getDistrictsByProvince || (() => []);
+      }
+
+      case 'vn':
+      case 'vietnam': {
+        const locationData = require('../data/vietnamLocations');
+        return locationData.getDistrictsByProvince || (() => []);
+      }
+
+      case 'my':
+      case 'malaysia': {
+        const locationData = require('../data/malaysiaLocations');
+        return locationData.getDistrictsByState || (() => []);
+      }
+
+      case 'sg':
+      case 'singapore':
+        // Singapore doesn't have districts
+        return () => [];
+
+      // TODO: Add more countries
+      default:
+        console.warn(`No district data available for ${destinationId}, returning empty function`);
+        return () => [];
+    }
+  } catch (error) {
+    console.error(`Error loading district getter for ${destinationId}:`, error);
+    // Return empty function instead of throwing
+    return () => [];
+  }
+};
+
+/**
+ * Load sub-district data functions for a destination
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {Function} Function that takes districtId and returns sub-districts
+ * @throws {Error} If destination location data is not found
+ *
+ * @example
+ * const getSubDistricts = loadSubDistrictGetter('th');
+ * const subDistricts = getSubDistricts('district_id_123');
+ * // → Array of sub-districts
+ */
+export const loadSubDistrictGetter = (destinationId) => {
+  if (!destinationId) {
+    throw new Error('destinationId is required');
+  }
+
+  try {
+    switch (destinationId.toLowerCase()) {
+      case 'th':
+      case 'thailand': {
+        const locationData = require('../data/thailandLocations');
+        return locationData.getSubDistrictsByDistrictId || (() => []);
+      }
+
+      case 'vn':
+      case 'vietnam': {
+        const locationData = require('../data/vietnamLocations');
+        return locationData.getSubDistrictsByDistrictId || (() => []);
+      }
+
+      case 'my':
+      case 'malaysia': {
+        const locationData = require('../data/malaysiaLocations');
+        return locationData.getSubDistrictsByDistrictId || (() => []);
+      }
+
+      case 'sg':
+      case 'singapore':
+        // Singapore doesn't have sub-districts
+        return () => [];
+
+      // TODO: Add more countries
+      default:
+        console.warn(`No sub-district data available for ${destinationId}, returning empty function`);
+        return () => [];
+    }
+  } catch (error) {
+    console.error(`Error loading sub-district getter for ${destinationId}:`, error);
+    // Return empty function instead of throwing
+    return () => [];
+  }
+};
+
+/**
+ * Check if destination has province/region data
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {boolean} True if destination has province data
+ *
+ * @example
+ * hasProvinceData('th')  // → true
+ * hasProvinceData('sg')  // → false (city-state)
+ */
+export const hasProvinceData = (destinationId) => {
+  try {
+    const provinces = loadProvinces(destinationId);
+    return Array.isArray(provinces) && provinces.length > 0;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Check if destination has district data
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {boolean} True if destination has district data
+ */
+export const hasDistrictData = (destinationId) => {
+  try {
+    const getter = loadDistrictGetter(destinationId);
+    return typeof getter === 'function';
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Check if destination has sub-district data
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {boolean} True if destination has sub-district data
+ */
+export const hasSubDistrictData = (destinationId) => {
+  try {
+    const getter = loadSubDistrictGetter(destinationId);
+    return typeof getter === 'function';
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Clear location data cache
+ * Useful for testing or forcing reload
+ */
+export const clearLocationDataCache = () => {
+  Object.keys(locationDataCache).forEach(key => {
+    delete locationDataCache[key];
+  });
+};
+
+/**
+ * Get all location data loaders for a destination
+ * Convenience function that returns all three loaders at once
+ *
+ * @param {string} destinationId - Destination ID
+ * @returns {Object} Object with provinces, getDistricts, and getSubDistricts
+ *
+ * @example
+ * const { provinces, getDistricts, getSubDistricts } = getLocationLoaders('th');
+ * const thailandProvinces = provinces;
+ * const bangkokDistricts = getDistricts('BANGKOK');
+ */
+export const getLocationLoaders = (destinationId) => {
+  return {
+    provinces: loadProvinces(destinationId),
+    getDistricts: loadDistrictGetter(destinationId),
+    getSubDistricts: loadSubDistrictGetter(destinationId),
+  };
+};
+
+/**
+ * Default export
+ */
+export default {
+  loadProvinces,
+  getProvinceDisplayName,
+  loadDistrictGetter,
+  loadSubDistrictGetter,
+  hasProvinceData,
+  hasDistrictData,
+  hasSubDistrictData,
+  clearLocationDataCache,
+  getLocationLoaders,
+};
