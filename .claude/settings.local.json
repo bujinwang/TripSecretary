@@ -17,7 +17,15 @@
       "Bash(xargs:*)",
       "Bash(for file in docs/architecture/*.md)",
       "Bash(head:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npx expo start)",
+      "Bash(kill:*)",
+      "Bash(npm install)",
+      "Bash(npx expo start:*)",
+      "Bash(pkill:*)",
+      "Bash(npx expo install:*)",
+      "Bash(watchman watch-del:*)",
+      "Bash(watchman watch-project:*)"
     ],
     "deny": [],
     "ask": []

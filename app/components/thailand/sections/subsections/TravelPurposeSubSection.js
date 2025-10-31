@@ -6,8 +6,8 @@
  */
 
 import React from 'react';
-import { NationalitySelector, TravelPurposeSelector } from '../../../../components';
-import DebouncedSave from '../../../../utils/DebouncedSave';
+import { NationalitySelector, TravelPurposeSelector } from '@app/components';
+import DebouncedSave from '@app/utils/DebouncedSave';
 
 const TravelPurposeSubSection = ({
   // Form state

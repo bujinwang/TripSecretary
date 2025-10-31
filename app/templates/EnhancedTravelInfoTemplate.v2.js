@@ -77,6 +77,21 @@ const EnhancedTravelInfoTemplate = ({
   navigation,
   children, // Custom render mode
 }) => {
+  // Early validation - config is required
+  if (!config) {
+    console.error('[Template V2] ERROR: config prop is required but not provided');
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <TamaguiText fontSize="$5" color="$error" textAlign="center" marginBottom="$md">
+          Configuration Error
+        </TamaguiText>
+        <TamaguiText fontSize="$3" color="$textSecondary" textAlign="center">
+          Template configuration is missing. Please check the screen implementation.
+        </TamaguiText>
+      </SafeAreaView>
+    );
+  }
+
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
 
@@ -96,7 +111,7 @@ const EnhancedTravelInfoTemplate = ({
   // ============================================
   // Extract location data directly from config (no dynamic import needed)
   const locationData = useMemo(() => {
-    if (config.sections.travel?.locationHierarchy) {
+    if (config?.sections?.travel?.locationHierarchy) {
       const { provincesData, getDistrictsFunc } = config.sections.travel.locationHierarchy;
       return {
         provinces: provincesData || [],
@@ -107,12 +122,17 @@ const EnhancedTravelInfoTemplate = ({
       provinces: [],
       getDistricts: null,
     };
-  }, [config.sections.travel?.locationHierarchy]);
+  }, [config?.sections?.travel?.locationHierarchy]);
 
   // ============================================
   // FORM STATE (dynamically created from config)
   // ============================================
-  const [formState, setFormState] = useState({});
+  const [formState, setFormState] = useState({
+    expandedSections: {},
+    errors: {},
+    warnings: {},
+    isLoading: true,
+  });
 
   // Helper to update form state
   const updateFormState = useCallback((updates) => {
@@ -124,6 +144,12 @@ const EnhancedTravelInfoTemplate = ({
     const initialState = {};
 
     // Build state object from config sections
+    if (!config?.sections) {
+      console.warn('[Template V2] config.sections is undefined, skipping form initialization');
+      setFormState(initialState);
+      return;
+    }
+
     Object.entries(config.sections).forEach(([sectionKey, sectionConfig]) => {
       if (sectionConfig.enabled && sectionConfig.fields) {
         Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
@@ -493,8 +519,13 @@ const EnhancedTravelInfoTemplate = ({
   // ============================================
   const handleContinue = useCallback(async () => {
     await saveDataToUserDataService();
-    navigation.navigate(config.navigation.next, { passport, destination });
-  }, [saveDataToUserDataService, navigation, config.navigation.next, passport, destination]);
+    if (config?.navigation?.next) {
+      navigation.navigate(config.navigation.next, { passport, destination });
+    } else {
+      console.warn('[Template V2] No next navigation route configured');
+      navigation.goBack();
+    }
+  }, [saveDataToUserDataService, navigation, config?.navigation?.next, passport, destination]);
 
   const handleGoBack = useCallback(async () => {
     await saveDataToUserDataService();
@@ -585,9 +616,9 @@ const EnhancedTravelInfoTemplate = ({
           {config.features?.privacyNotice && <PrivacyNotice t={t} />}
 
           {/* Sections - auto-render from config */}
-          {config.sections.passport?.enabled && (
+          {config?.sections?.passport?.enabled && (
             <PassportSection
-              isExpanded={formState.expandedSections.passport}
+              isExpanded={formState.expandedSections?.passport}
               onToggle={() => toggleSection('passport')}
               fieldCount={validation.getFieldCount('passport')}
               surname={formState.surname}
@@ -612,13 +643,13 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.passport}
-              config={config.sections.passport}
+              labels={config?.i18n?.labelSource?.passport || {}}
+              config={config?.sections?.passport || {}}
             />
           )}
 
           {/* Personal Info Section */}
-          {config.sections.personal?.enabled && (
+          {config?.sections?.personal?.enabled && (
             <PersonalInfoSection
               isExpanded={formState.expandedSections.personal}
               onToggle={() => toggleSection('personal')}
@@ -641,13 +672,13 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.personalInfo}
-              config={config.sections.personal}
+              labels={config?.i18n?.labelSource?.personalInfo || {}}
+              config={config?.sections?.personal || {}}
             />
           )}
 
           {/* Funds Section */}
-          {config.sections.funds?.enabled && (
+          {config?.sections?.funds?.enabled && (
             <FundsSection
               isExpanded={formState.expandedSections.funds}
               onToggle={() => toggleSection('funds')}
@@ -657,13 +688,13 @@ const EnhancedTravelInfoTemplate = ({
               addFund={fundManagement.addFund}
               onFundItemPress={fundManagement.handleFundItemPress}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.funds}
-              config={config.sections.funds}
+              labels={config?.i18n?.labelSource?.funds || {}}
+              config={config?.sections?.funds || {}}
             />
           )}
 
           {/* Travel Details Section */}
-          {config.sections.travel?.enabled && (
+          {config?.sections?.travel?.enabled && (
             <TravelDetailsSection
               isExpanded={formState.expandedSections.travel}
               onToggle={() => toggleSection('travel')}
@@ -706,8 +737,8 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.travelDetails}
-              config={config.sections.travel}
+              labels={config?.i18n?.labelSource?.travelDetails || {}}
+              config={config?.sections?.travel || {}}
             />
           )}
 
@@ -744,7 +775,7 @@ const EnhancedTravelInfoTemplate = ({
 
 // Rich Hero Section (Thailand-style)
 const RichHeroSection = ({ config }) => {
-  if (config.hero.type !== 'rich') return null;
+  if (!config?.hero || config.hero.type !== 'rich') return null;
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$md">

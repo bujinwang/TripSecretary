@@ -158,8 +158,12 @@ export const useTemplateValidation = ({
    * Get field config from template config
    */
   const getFieldConfig = useCallback((fieldName) => {
-    for (const sectionKey of Object.keys(config.sections || {})) {
+    if (!config?.sections) return null;
+
+    for (const sectionKey of Object.keys(config.sections)) {
       const section = config.sections[sectionKey];
+      if (!section) continue;
+
       if (section.fields && section.fields[fieldName]) {
         return section.fields[fieldName];
       }
@@ -172,7 +176,7 @@ export const useTemplateValidation = ({
       }
     }
     return null;
-  }, [config.sections]);
+  }, [config?.sections]);
 
   /**
    * Handle field blur with validation
@@ -272,8 +276,11 @@ export const useTemplateValidation = ({
     let totalFields = 0;
     let filledFields = 0;
 
-    Object.keys(config.sections || {}).forEach(sectionKey => {
-      if (config.sections[sectionKey].enabled) {
+    if (!config?.sections) return 0;
+
+    Object.keys(config.sections).forEach(sectionKey => {
+      const section = config.sections[sectionKey];
+      if (section?.enabled) {
         const count = getFieldCount(sectionKey);
         totalFields += count.total;
         filledFields += count.filled;
@@ -281,7 +288,7 @@ export const useTemplateValidation = ({
     });
 
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
-  }, [config.sections, getFieldCount]);
+  }, [config?.sections, getFieldCount]);
 
   /**
    * Check if form is valid (meets minimum requirements)

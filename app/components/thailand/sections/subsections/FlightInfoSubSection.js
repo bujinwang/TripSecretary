@@ -15,7 +15,7 @@ import {
   BaseButton,
   Text as TamaguiText,
 } from '../../../tamagui';
-import { DateTimeInput } from '../../../../components';
+import { DateTimeInput } from '@app/components';
 
 const FlightInfoSubSection = ({
   // Form state

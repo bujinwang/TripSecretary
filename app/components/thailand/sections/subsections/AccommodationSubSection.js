@@ -15,9 +15,9 @@ import {
   BaseButton,
   Text as TamaguiText,
 } from '../../../tamagui';
-import { ProvinceSelector, DistrictSelector, SubDistrictSelector } from '../../../../components';
-import Input from '../../../../components/Input';
-import DebouncedSave from '../../../../utils/DebouncedSave';
+import { ProvinceSelector, DistrictSelector, SubDistrictSelector } from '@app/components';
+import Input from '@app/components/Input';
+import DebouncedSave from '@app/utils/DebouncedSave';
 
 const AccommodationSubSection = ({
   // Form state

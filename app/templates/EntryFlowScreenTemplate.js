@@ -106,8 +106,8 @@ const EntryFlowScreenTemplate = ({
 
       // Prepare entry info for completion calculation
       const entryInfo = {
-        passport: allUserData.passport || {},
-        personalInfo: allUserData.personalInfo || {},
+        passport: allUserData?.passport || {},
+        personalInfo: allUserData?.personalInfo || {},
         funds: fundItems || [],
         travel: travelInfo || {},
         lastUpdatedAt: new Date().toISOString(),
