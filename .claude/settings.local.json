@@ -25,7 +25,16 @@
       "Bash(pkill:*)",
       "Bash(npx expo install:*)",
       "Bash(watchman watch-del:*)",
-      "Bash(watchman watch-project:*)"
+      "Bash(watchman watch-project:*)",
+      "Bash(npx openspec:*)",
+      "Bash(export DB_PATH:*)",
+      "Bash(if [ -f \"$DB_PATH\" ])",
+      "Bash(then sqlite3 \"$DB_PATH\" \".schema\")",
+      "Bash(else echo \"Database not found at $DB_PATH\")",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Read(//Users/bujin/Library/Developer/CoreSimulator/**)",
+      "Bash(xargs ls:*)"
     ],
     "deny": [],
     "ask": []

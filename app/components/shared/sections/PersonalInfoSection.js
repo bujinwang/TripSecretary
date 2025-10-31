@@ -46,6 +46,7 @@ const PersonalInfoSection = ({
   customOccupation,
   cityOfResidence,
   residentCountry,
+  countryOfResidence,
   phoneCode,
   phoneNumber,
   email,
@@ -55,6 +56,7 @@ const PersonalInfoSection = ({
   setCustomOccupation,
   setCityOfResidence,
   setResidentCountry,
+  setCountryOfResidence,
   setPhoneCode,
   setPhoneNumber,
   setEmail,
@@ -113,6 +115,20 @@ const PersonalInfoSection = ({
   // Merge defaults with provided values
   const l = { ...defaultLabels, ...labels };
   const c = { ...defaultConfig, ...config };
+
+  // Support both residentCountry and countryOfResidence prop names
+  const resolvedCountry = countryOfResidence ?? residentCountry ?? '';
+  const updateCountry = (code) => {
+    setResidentCountry?.(code);
+    setCountryOfResidence?.(code);
+  };
+  const countryFieldName =
+    config?.fields?.countryOfResidence?.fieldName ||
+    config?.fields?.residentCountry?.fieldName ||
+    'countryOfResidence';
+  const countryLabel = l.countryOfResidence ?? l.residentCountry;
+  const countryHelpText = l.countryOfResidenceHelp ?? l.residentCountryHelp;
+  const countryError = errors?.countryOfResidence || errors?.residentCountry;
 
   return (
     <CollapsibleSection
@@ -206,16 +222,17 @@ const PersonalInfoSection = ({
 
       {/* Country of Residence */}
       <NationalitySelector
-        label={l.residentCountry}
-        value={residentCountry}
+        label={countryLabel}
+        value={resolvedCountry}
         onValueChange={(code) => {
-          setResidentCountry(code);
-          setPhoneCode(getPhoneCode(code));
+          updateCountry(code);
+          setPhoneCode?.(getPhoneCode(code));
+          handleFieldBlur?.(countryFieldName, code);
           debouncedSaveData && debouncedSaveData();
         }}
-        helpText={l.residentCountryHelp}
-        error={!!errors.residentCountry}
-        errorMessage={errors.residentCountry}
+        helpText={countryHelpText}
+        error={!!countryError}
+        errorMessage={countryError}
       />
 
       {/* Phone Number (Code + Number) */}

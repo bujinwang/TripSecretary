@@ -182,6 +182,12 @@ const PassportSection = ({
           helpText={l.fullNameHelp}
           error={!!errors.fullName}
           errorMessage={errors.fullName}
+          surnameLabel={l.surnameLabel}
+          middleNameLabel={l.middleNameLabel}
+          givenNameLabel={l.givenNameLabel}
+          surnamePlaceholder={l.surnamePlaceholder}
+          middleNamePlaceholder={l.middleNamePlaceholder}
+          givenNamePlaceholder={l.givenNamePlaceholder}
         />
         {warnings.fullName && !errors.fullName && (
           <TamaguiText fontSize="$1" color="$warning" marginTop="$xs">

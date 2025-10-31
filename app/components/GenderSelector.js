@@ -35,7 +35,11 @@ const GenderSelector = ({
     <XStack gap="$sm" style={style}>
       {options.map((option) => {
         const isActive = value === option.value;
-        const label = t ? t(option.translationKey, { defaultValue: option.defaultLabel }) : option.defaultLabel;
+        const fallbackLabel = option.defaultLabel ?? option.label ?? '';
+        const label =
+          t && option.translationKey
+            ? t(option.translationKey, { defaultValue: fallbackLabel })
+            : fallbackLabel;
 
         return (
           <BaseCard

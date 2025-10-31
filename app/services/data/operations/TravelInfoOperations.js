@@ -60,7 +60,15 @@ class TravelInfoOperations {
       nonEmptyUpdates.userId = userId;
 
       // Check if travel info already exists
-      const existing = await TravelInfoOperations.getTravelInfo(userId, travelData.destination);
+      let existing = await TravelInfoOperations.getTravelInfo(userId, travelData.destination);
+
+      if (!existing && travelData.destination) {
+        const legacyTravelInfo = await TravelInfoOperations.getTravelInfo(userId);
+        if (legacyTravelInfo && !legacyTravelInfo.destination) {
+          console.log('Found legacy travel info without destination; migrating to destination:', travelData.destination);
+          existing = legacyTravelInfo;
+        }
+      }
       
       let savedTravelInfo;
       if (existing) {

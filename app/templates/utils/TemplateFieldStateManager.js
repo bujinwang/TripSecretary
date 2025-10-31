@@ -172,13 +172,16 @@ class TemplateFieldStateManager {
 
     requiredFields.forEach(fieldName => {
       const value = fields[fieldName];
-      const isUserModified = validatedState[fieldName]?.isUserModified || false;
+      const fieldState = validatedState[fieldName];
+      const isUserModified = fieldState?.isUserModified || false;
+      const hasInitialValue = fieldState?.initialValue !== undefined && fieldState?.initialValue !== null;
 
       // Count as filled if:
       // 1. User has modified it and it has a value, OR
-      // 2. It has a value and we're not tracking (preserveExisting mode)
+      // 2. It has a tracked initial value (pre-filled), OR
+      // 3. Tracking disabled (no field state recorded)
       if (value !== null && value !== undefined && value !== '') {
-        if (isUserModified || !validatedState[fieldName]) {
+        if (isUserModified || hasInitialValue || !fieldState) {
           filled++;
         }
       }

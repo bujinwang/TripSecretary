@@ -74,6 +74,27 @@ const EnhancedTravelInfoTemplate = ({
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
 
+  const destinationId = useMemo(() => {
+    if (config?.destinationId) {
+      return config.destinationId;
+    }
+    if (!destination) {
+      return null;
+    }
+    if (typeof destination === 'string') {
+      return destination;
+    }
+    if (typeof destination === 'object') {
+      return (
+        destination.id ||
+        destination.destinationId ||
+        destination.code ||
+        null
+      );
+    }
+    return null;
+  }, [config?.destinationId, destination]);
+
   // Memoize passport and userId
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
@@ -175,10 +196,27 @@ const EnhancedTravelInfoTemplate = ({
         UserDataService.getPassport(userId),
         UserDataService.getPersonalInfo(userId),
         UserDataService.getFundItems(userId),
-        UserDataService.getTravelInfo(userId, config.destinationId),
+        UserDataService.getTravelInfo(userId, destinationId),
       ]);
 
-      console.log('[Template] Loaded data:', { passportData, personalData, fundsData, travelData });
+      let resolvedTravelData = travelData;
+
+      if (!resolvedTravelData && destinationId) {
+        const legacyTravelData = await UserDataService.getTravelInfo(userId);
+        if (legacyTravelData && !legacyTravelData.destination) {
+          console.log('[Template] Found legacy travel info without destination; using fallback record');
+          resolvedTravelData = { ...legacyTravelData };
+          try {
+            await UserDataService.saveTravelInfo(userId, { destination: destinationId });
+            resolvedTravelData.destination = destinationId;
+            console.log('[Template] Migrated legacy travel info to destination:', destinationId);
+          } catch (migrationError) {
+            console.warn('[Template] Failed to migrate legacy travel info destination:', migrationError);
+          }
+        }
+      }
+
+      console.log('[Template] Loaded data:', { passportData, personalData, fundsData, travelData: resolvedTravelData });
 
       // Update form state with loaded data
       setFormState(prev => ({
@@ -206,21 +244,21 @@ const EnhancedTravelInfoTemplate = ({
         funds: fundsData || [],
 
         // Travel fields
-        travelPurpose: travelData?.travelPurpose || '',
-        customTravelPurpose: travelData?.customTravelPurpose || '',
-        recentStayCountry: travelData?.recentStayCountry || '',
-        boardingCountry: travelData?.boardingCountry || '',
-        arrivalFlightNumber: travelData?.arrivalFlightNumber || '',
-        arrivalDate: travelData?.arrivalArrivalDate || prev.arrivalDate, // Keep smart default if no data
-        departureFlightNumber: travelData?.departureFlightNumber || '',
-        departureDate: travelData?.departureDepartureDate || prev.departureDate,
-        isTransitPassenger: travelData?.isTransitPassenger || false,
-        accommodationType: travelData?.accommodationType || '',
-        customAccommodationType: travelData?.customAccommodationType || '',
-        province: travelData?.province || '',
-        district: travelData?.district || '',
-        districtId: travelData?.districtId || null,
-        hotelAddress: travelData?.hotelAddress || '',
+        travelPurpose: resolvedTravelData?.travelPurpose || '',
+        customTravelPurpose: resolvedTravelData?.customTravelPurpose || '',
+        recentStayCountry: resolvedTravelData?.recentStayCountry || '',
+        boardingCountry: resolvedTravelData?.boardingCountry || '',
+        arrivalFlightNumber: resolvedTravelData?.arrivalFlightNumber || '',
+        arrivalDate: resolvedTravelData?.arrivalArrivalDate || prev.arrivalDate, // Keep smart default if no data
+        departureFlightNumber: resolvedTravelData?.departureFlightNumber || '',
+        departureDate: resolvedTravelData?.departureDepartureDate || prev.departureDate,
+        isTransitPassenger: resolvedTravelData?.isTransitPassenger || false,
+        accommodationType: resolvedTravelData?.accommodationType || '',
+        customAccommodationType: resolvedTravelData?.customAccommodationType || '',
+        province: resolvedTravelData?.province || '',
+        district: resolvedTravelData?.district || '',
+        districtId: resolvedTravelData?.districtId || null,
+        hotelAddress: resolvedTravelData?.hotelAddress || '',
 
         isLoading: false,
       }));
@@ -228,7 +266,7 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template] Error loading data:', error);
       setFormState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [userId, config.destinationId]);
+  }, [userId, destinationId]);
 
   useEffect(() => {
     if (userId) {
@@ -296,8 +334,16 @@ const EnhancedTravelInfoTemplate = ({
         hotelAddress: formState.hotelAddress,
       };
 
-      if (Object.values(travelInfoUpdates).some(v => v)) {
-        await UserDataService.saveTravelInfo(userId, travelInfoUpdates);
+      const hasTravelUpdates = Object.entries(travelInfoUpdates).some(
+        ([, value]) => value !== null && value !== undefined && value !== ''
+      );
+
+      if (hasTravelUpdates) {
+        const travelInfoPayload = {
+          ...travelInfoUpdates,
+          ...(destinationId ? { destination: destinationId } : {}),
+        };
+        await UserDataService.saveTravelInfo(userId, travelInfoPayload);
       }
 
       setFormState(prev => ({
@@ -316,7 +362,7 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template] Error saving data:', error);
       setFormState(prev => ({ ...prev, saveStatus: 'error' }));
     }
-  }, [userId, formState, config.destinationId]);
+  }, [userId, formState, destinationId]);
 
   // Debounced save
   const saveTimerRef = useRef(null);

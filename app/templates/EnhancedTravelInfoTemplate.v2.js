@@ -95,6 +95,27 @@ const EnhancedTravelInfoTemplate = ({
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
 
+  const destinationId = useMemo(() => {
+    if (config?.destinationId) {
+      return config.destinationId;
+    }
+    if (!destination) {
+      return null;
+    }
+    if (typeof destination === 'string') {
+      return destination;
+    }
+    if (typeof destination === 'object') {
+      return (
+        destination.id ||
+        destination.destinationId ||
+        destination.code ||
+        null
+      );
+    }
+    return null;
+  }, [config?.destinationId, destination]);
+
   // Memoize passport and userId
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
@@ -249,22 +270,76 @@ const EnhancedTravelInfoTemplate = ({
         UserDataService.getPassport(userId),
         UserDataService.getPersonalInfo(userId),
         UserDataService.getFundItems(userId),
-        UserDataService.getTravelInfo(userId, config.destinationId),
+        UserDataService.getTravelInfo(userId, destinationId),
       ]);
 
-      console.log('[Template V2] Loaded data:', { passportData, personalData, fundsData, travelData });
+      let resolvedTravelData = travelData;
+
+      if (!resolvedTravelData && destinationId) {
+        const legacyTravelData = await UserDataService.getTravelInfo(userId);
+        if (legacyTravelData && !legacyTravelData.destination) {
+          console.log('[Template V2] Found legacy travel info without destination; using fallback record');
+          resolvedTravelData = { ...legacyTravelData };
+          try {
+            await UserDataService.saveTravelInfo(userId, { destination: destinationId });
+            resolvedTravelData.destination = destinationId;
+            console.log('[Template V2] Migrated legacy travel info to destination:', destinationId);
+          } catch (migrationError) {
+            console.warn('[Template V2] Failed to migrate legacy travel info destination:', migrationError);
+          }
+        }
+      }
+
+      console.log('[Template V2] Loaded data:', { passportData, personalData, fundsData, travelData: resolvedTravelData });
+
+      // Parse fullName into individual name parts
+      let surname = '', middleName = '', givenName = '';
+      if (passportData?.fullName) {
+        const fullName = passportData.fullName.trim();
+        // Check for comma-separated format (SURNAME, MIDDLENAME, GIVENNAME or SURNAME, GIVENNAME)
+        if (fullName.includes(',')) {
+          const parts = fullName.split(',').map(p => p.trim()).filter(Boolean);
+          if (parts.length === 3) {
+            surname = parts[0];
+            middleName = parts[1];
+            givenName = parts[2];
+          } else if (parts.length === 2) {
+            surname = parts[0];
+            givenName = parts[1];
+          } else if (parts.length === 1) {
+            surname = parts[0];
+          }
+        } else {
+          // Space-separated format (SURNAME MIDDLENAME GIVENNAME or SURNAME GIVENNAME)
+          const parts = fullName.split(/\s+/).filter(Boolean);
+          if (parts.length >= 3) {
+            surname = parts[0];
+            middleName = parts.slice(1, -1).join(' ');
+            givenName = parts[parts.length - 1];
+          } else if (parts.length === 2) {
+            surname = parts[0];
+            givenName = parts[1];
+          } else if (parts.length === 1) {
+            surname = parts[0];
+          }
+        }
+      }
 
       // Mark loaded fields as pre-filled
       const loadedData = {
+        // Store record IDs (CRITICAL for updates)
+        passportId: passportData?.id || null,
+        personalInfoId: personalData?.id || null,
+
         // Passport fields
-        surname: passportData?.surname || '',
-        middleName: passportData?.middleName || '',
-        givenName: passportData?.givenName || '',
+        surname: surname || '',
+        middleName: middleName || '',
+        givenName: givenName || '',
         passportNo: passportData?.passportNumber || '',
         nationality: passportData?.nationality || '',
         dob: passportData?.dateOfBirth || '',
         expiryDate: passportData?.expiryDate || '',
-        sex: passportData?.sex || '',
+        sex: passportData?.gender || '', // Map gender to sex
         visaNumber: passportData?.visaNumber || '',
 
         // Personal fields
@@ -279,21 +354,21 @@ const EnhancedTravelInfoTemplate = ({
         funds: fundsData || [],
 
         // Travel fields
-        travelPurpose: travelData?.travelPurpose || '',
-        customTravelPurpose: travelData?.customTravelPurpose || '',
-        recentStayCountry: travelData?.recentStayCountry || '',
-        boardingCountry: travelData?.boardingCountry || '',
-        arrivalFlightNumber: travelData?.arrivalFlightNumber || '',
-        arrivalDate: travelData?.arrivalArrivalDate || '',
-        departureFlightNumber: travelData?.departureFlightNumber || '',
-        departureDate: travelData?.departureDepartureDate || '',
-        isTransitPassenger: travelData?.isTransitPassenger || false,
-        accommodationType: travelData?.accommodationType || '',
-        customAccommodationType: travelData?.customAccommodationType || '',
-        province: travelData?.province || '',
-        district: travelData?.district || '',
-        districtId: travelData?.districtId || null,
-        hotelAddress: travelData?.hotelAddress || '',
+        travelPurpose: resolvedTravelData?.travelPurpose || '',
+        customTravelPurpose: resolvedTravelData?.customTravelPurpose || '',
+        recentStayCountry: resolvedTravelData?.recentStayCountry || '',
+        boardingCountry: resolvedTravelData?.boardingCountry || '',
+        arrivalFlightNumber: resolvedTravelData?.arrivalFlightNumber || '',
+        arrivalDate: resolvedTravelData?.arrivalDate || resolvedTravelData?.arrivalArrivalDate || '',
+        departureFlightNumber: resolvedTravelData?.departureFlightNumber || '',
+        departureDate: resolvedTravelData?.departureDate || resolvedTravelData?.departureDepartureDate || '',
+        isTransitPassenger: resolvedTravelData?.isTransitPassenger || false,
+        accommodationType: resolvedTravelData?.accommodationType || '',
+        customAccommodationType: resolvedTravelData?.customAccommodationType || '',
+        province: resolvedTravelData?.province || '',
+        district: resolvedTravelData?.district || '',
+        districtId: resolvedTravelData?.districtId || null,
+        hotelAddress: resolvedTravelData?.hotelAddress || '',
       };
 
       // Mark all loaded fields as pre-filled (not user-modified)
@@ -314,7 +389,7 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template V2] Error loading data:', error);
       updateFormState({ isLoading: false });
     }
-  }, [userId, config.destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState]);
+  }, [userId, destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState]);
 
   // Load data when user ID is available and tracker is initialized
   useEffect(() => {
@@ -343,16 +418,22 @@ const EnhancedTravelInfoTemplate = ({
         preserveExisting: true,
       };
 
+      // Combine name parts into fullName for database
+      const nameParts = [formState.surname, formState.middleName, formState.givenName]
+        .filter(Boolean)
+        .map(part => part.trim())
+        .filter(part => part.length > 0);
+      const fullName = nameParts.length > 0 ? nameParts.join(', ') : '';
+
       // Passport fields - filter based on user interaction
       const allPassportFields = {
-        surname: formState.surname,
-        middleName: formState.middleName,
-        givenName: formState.givenName,
+        id: formState.passportId, // CRITICAL: Pass ID to update existing record
+        fullName: fullName, // Combine name parts into fullName
         passportNumber: formState.passportNo,
         nationality: formState.nationality,
         dateOfBirth: formState.dob,
         expiryDate: formState.expiryDate,
-        sex: formState.sex,
+        gender: formState.sex, // Map sex to gender
         visaNumber: formState.visaNumber,
       };
 
@@ -395,8 +476,10 @@ const EnhancedTravelInfoTemplate = ({
         recentStayCountry: formState.recentStayCountry,
         boardingCountry: formState.boardingCountry,
         arrivalFlightNumber: formState.arrivalFlightNumber,
+        arrivalDate: formState.arrivalDate,
         arrivalArrivalDate: formState.arrivalDate,
         departureFlightNumber: formState.departureFlightNumber,
+        departureDate: formState.departureDate,
         departureDepartureDate: formState.departureDate,
         isTransitPassenger: formState.isTransitPassenger,
         accommodationType: formState.accommodationType,
@@ -414,7 +497,12 @@ const EnhancedTravelInfoTemplate = ({
       );
 
       if (Object.keys(travelInfoUpdates).length > 0) {
-        await UserDataService.saveTravelInfo(userId, travelInfoUpdates);
+        const travelInfoPayload = {
+          ...travelInfoUpdates,
+          ...(destinationId ? { destination: destinationId } : {}),
+        };
+
+        await UserDataService.saveTravelInfo(userId, travelInfoPayload);
         console.log('[Template V2] Saved travel info fields:', Object.keys(travelInfoUpdates));
       }
 
@@ -644,7 +732,13 @@ const EnhancedTravelInfoTemplate = ({
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
               labels={config?.i18n?.labelSource?.passport || {}}
-              config={config?.sections?.passport || {}}
+              config={{
+                ...config?.sections?.passport,
+                genderOptions: config?.sections?.passport?.fields?.sex?.options || [
+                  { label: 'Male', value: 'M' },
+                  { label: 'Female', value: 'F' },
+                ],
+              }}
             />
           )}
 
@@ -704,9 +798,9 @@ const EnhancedTravelInfoTemplate = ({
               recentStayCountry={formState.recentStayCountry}
               boardingCountry={formState.boardingCountry}
               arrivalFlightNumber={formState.arrivalFlightNumber}
-              arrivalArrivalDate={formState.arrivalDate}
+              arrivalDate={formState.arrivalDate}
               departureFlightNumber={formState.departureFlightNumber}
-              departureDepartureDate={formState.departureDate}
+              departureDate={formState.departureDate}
               isTransitPassenger={formState.isTransitPassenger}
               accommodationType={formState.accommodationType}
               customAccommodationType={formState.customAccommodationType}
@@ -719,9 +813,9 @@ const EnhancedTravelInfoTemplate = ({
               setRecentStayCountry={(v) => updateField('recentStayCountry', v)}
               setBoardingCountry={(v) => updateField('boardingCountry', v)}
               setArrivalFlightNumber={(v) => updateField('arrivalFlightNumber', v)}
-              setArrivalArrivalDate={(v) => updateField('arrivalDate', v)}
+              setArrivalDate={(v) => updateField('arrivalDate', v)}
               setDepartureFlightNumber={(v) => updateField('departureFlightNumber', v)}
-              setDepartureDepartureDate={(v) => updateField('departureDate', v)}
+              setDepartureDate={(v) => updateField('departureDate', v)}
               setIsTransitPassenger={(v) => updateField('isTransitPassenger', v)}
               setAccommodationType={(v) => updateField('accommodationType', v)}
               setCustomAccommodationType={(v) => updateField('customAccommodationType', v)}

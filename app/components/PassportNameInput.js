@@ -30,6 +30,13 @@ const PassportNameInput = ({
   errorMessage,
   helpText,
   style,
+  // Configurable labels
+  surnameLabel = '姓',
+  middleNameLabel = '中间名（可选）',
+  givenNameLabel = '名',
+  surnamePlaceholder = 'LI',
+  middleNamePlaceholder = '可选',
+  givenNamePlaceholder = 'MAOA',
   ...rest
 }) => {
   const [surnameError, setSurnameError] = useState('');
@@ -138,7 +145,7 @@ const PassportNameInput = ({
 
       <XStack gap="$sm">
         {renderNameField({
-          labelText: '姓',
+          labelText: surnameLabel,
           value: currentSurname,
           onChange: (text) => {
             if (onSurnameChange) {
@@ -150,11 +157,11 @@ const PassportNameInput = ({
           },
           setError: setSurnameError,
           errorFlag: surnameError,
-          placeholderText: 'LI',
+          placeholderText: surnamePlaceholder,
         })}
 
         {renderNameField({
-          labelText: '中间名（可选）',
+          labelText: middleNameLabel,
           value: currentMiddleName,
           onChange: (text) => {
             if (onMiddleNameChange) {
@@ -166,11 +173,11 @@ const PassportNameInput = ({
           },
           setError: setMiddleNameError,
           errorFlag: middleNameError,
-          placeholderText: '可选',
+          placeholderText: middleNamePlaceholder,
         })}
 
         {renderNameField({
-          labelText: '名',
+          labelText: givenNameLabel,
           value: currentGivenName,
           onChange: (text) => {
             if (onGivenNameChange) {
@@ -182,7 +189,7 @@ const PassportNameInput = ({
           },
           setError: setGivenNameError,
           errorFlag: givenNameError,
-          placeholderText: 'MAOA',
+          placeholderText: givenNamePlaceholder,
         })}
       </XStack>
 

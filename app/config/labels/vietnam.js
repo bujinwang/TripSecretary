@@ -21,6 +21,15 @@ export const vietnamLabels = {
     // Fields
     fullName: '护照上的姓名 - Họ và tên',
     fullNameHelp: '请按照护照上的顺序填写',
+
+    // Individual name field labels
+    surnameLabel: '姓',
+    surnamePlaceholder: 'LI',
+    middleNameLabel: '中间名（可选）',
+    middleNamePlaceholder: '可选',
+    givenNameLabel: '名',
+    givenNamePlaceholder: 'MAOA',
+
     nationality: '国籍 - Quốc tịch',
     nationalityHelp: '选择您的国籍',
     passportNo: '护照号码 - Số hộ chiếu',
