@@ -1,0 +1,115 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "react-native/react-native": true,
+    "jest": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "react-native",
+    "react-hooks"
+  ],
+  "rules": {
+    "camelcase": [
+      "error",
+      {
+        "properties": "never",
+        "ignoreDestructuring": false,
+        "ignoreImports": false,
+        "allow": [
+          "^UNSAFE_",
+          "^[A-Z_]+$"
+        ]
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "prefer-const": "error",
+    "no-var": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "brace-style": ["error", "1tbs"]
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*",
+        "**/*.test.js",
+        "**/*.test.jsx",
+        "**/*.spec.js",
+        "**/*.spec.jsx"
+      ],
+      "env": {
+        "jest": true
+      }
+    },
+    {
+      "files": [
+        "**/services/security/repositories/**/*.js",
+        "**/services/security/schema/**/*.js",
+        "**/services/security/utils/DataSerializer.js",
+        "**/services/security/utils/DecryptionHelper.js"
+      ],
+      "rules": {
+        "camelcase": [
+          "error",
+          {
+            "properties": "never",
+            "ignoreDestructuring": true,
+            "allow": [
+              "^UNSAFE_",
+              "^[A-Z_]+$",
+              "^[a-z]+(_[a-z]+)+$"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/scripts/**/*.js"],
+      "rules": {
+        "camelcase": [
+          "warn",
+          {
+            "properties": "never",
+            "ignoreDestructuring": true
+          }
+        ]
+      }
+    }
+  ]
+}

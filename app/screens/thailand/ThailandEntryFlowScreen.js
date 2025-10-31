@@ -42,7 +42,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const [resubmissionWarning, setResubmissionWarning] = useState(null);
   const [entryPackStatus, setEntryPackStatus] = useState(null);
   const [showSupersededStatus, setShowSupersededStatus] = useState(false);
-  
+  const [latestTdacData, setLatestTdacData] = useState(null);
+
   // Passport selection state
   const [userId, setUserId] = useState(null);
 
@@ -109,7 +110,25 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         console.warn('⚠️ ThailandEntryFlowScreen: No destination.id in route params, defaulting to "th"');
       }
       const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
-      
+
+      // Get entry info ID for this destination
+      let entryInfoId = null;
+      try {
+        const EntryInfoService = require('../../services/EntryInfoService').default;
+        if (EntryInfoService && typeof EntryInfoService.getAllEntryInfos === 'function') {
+          const allEntryInfos = await EntryInfoService.getAllEntryInfos(currentUserId);
+          const thailandEntryInfo = allEntryInfos?.find(info => info.destinationId === destinationId);
+          if (thailandEntryInfo) {
+            entryInfoId = thailandEntryInfo.id;
+            console.log('✅ Found entry info ID:', entryInfoId);
+          }
+        } else {
+          console.log('EntryInfoService not available, skipping entry info ID lookup');
+        }
+      } catch (error) {
+        console.error('Failed to get entry info ID:', error);
+      }
+
       // Prepare entry info for completion calculation
       const passportInfo = allUserData.passport || {};
       const personalInfoFromStore = allUserData.personalInfo || {};
@@ -119,13 +138,14 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       // Gender normalization logic removed - handled by passport model
 
       const entryInfo = {
+        entryInfoId, // Include the entry info ID
         passport: passportInfo,
         personalInfo: normalizedPersonalInfo,
         funds: fundItems || [],
         travel: travelInfo || {},
         lastUpdatedAt: new Date().toISOString()
       };
-      
+
       setUserData(entryInfo);
       
       // Extract arrival date for countdown
@@ -295,6 +315,21 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           setEntryPackStatus('submitted');
           setShowSupersededStatus(latestDAC.status === 'superseded');
 
+          // Store the latest TDAC data for use in preview
+          setLatestTdacData({
+            arrCardNo: latestDAC.arrCardNo,
+            qrUri: latestDAC.qrUri,
+            pdfUrl: latestDAC.pdfUrl,
+            submittedAt: latestDAC.submittedAt,
+            submissionMethod: latestDAC.submissionMethod,
+          });
+
+          console.log('📌 Stored TDAC data:', {
+            arrCardNo: latestDAC.arrCardNo,
+            hasQr: !!latestDAC.qrUri,
+            hasPdf: !!latestDAC.pdfUrl
+          });
+
           // Check for pending resubmission warnings
           try {
             const warning = UserDataService.getResubmissionWarning(thailandEntryInfo.id);
@@ -316,10 +351,12 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
           setEntryPackStatus('in_progress');
           setShowSupersededStatus(false);
           setResubmissionWarning(null);
+          setLatestTdacData(null);
         }
       } else {
         setEntryPackStatus(null);
         setShowSupersededStatus(false);
+        setLatestTdacData(null);
         setResubmissionWarning(null);
       }
     } catch (error) {
@@ -398,6 +435,8 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   };
 
   const handlePreviewEntryCard = () => {
+    console.log('🎯 Opening entry pack with TDAC data:', latestTdacData);
+
     // Navigate to EntryPackPreview to show the complete entry pack preview
     navigation.navigate('EntryPackPreview', {
       userData,
@@ -407,7 +446,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         personalInfo: userData?.personalInfo,
         travelInfo: userData?.travel,
         funds: userData?.funds,
-        tdacSubmission: null // Will be populated when TDAC is submitted
+        tdacSubmission: latestTdacData // Use the loaded TDAC data
       }
     });
   };
@@ -731,26 +770,6 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     </View>
   );
 
-  /**
-   * Simulate submitted TDAC state (Development Only)
-   */
-  const simulateSubmittedState = () => {
-    setEntryPackStatus('submitted');
-    setShowSupersededStatus(false);
-    Alert.alert(
-      '✅ 模拟成功',
-      '已模拟TDAC提交成功状态\n\n注意：这是模拟状态，通关包内容可能不完整，仅用于界面预览。请实际提交TDAC来测试完整流程。'
-    );
-  };
-
-  /**
-   * Reset to initial state (Development Only)
-   */
-  const resetToInitialState = () => {
-    loadData(); // Reload real data
-    Alert.alert('🔄 已重置', '已恢复真实数据状态');
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -762,24 +781,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         <Text style={styles.headerTitle}>
           我的泰国之旅 🌺
         </Text>
-        {/* Dev Buttons (Development Only) */}
-        {__DEV__ && (
-          <View style={styles.devButtonContainer}>
-            <TouchableOpacity
-              style={styles.devButton}
-              onPress={simulateSubmittedState}
-            >
-              <Text style={styles.devButtonText}>✅</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.devButton, styles.resetButton]}
-              onPress={resetToInitialState}
-            >
-              <Text style={styles.devButtonText}>🔄</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {!__DEV__ && <View style={styles.headerRight} />}
+        <View style={styles.headerRight} />
       </View>
 
       <ScrollView 
@@ -848,24 +850,6 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 40,
-  },
-  devButtonContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  devButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resetButton: {
-    backgroundColor: '#FF9800',
-  },
-  devButtonText: {
-    fontSize: 16,
   },
   scrollContainer: {
     paddingBottom: spacing.lg,

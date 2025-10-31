@@ -1,16 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\n-- Clean up leftover migration tables\nDROP TABLE IF EXISTS snapshots_old;\nDROP TABLE IF EXISTS entry_info_old;\n\n-- Show remaining tables\nSELECT ''Remaining tables:'' as message;\nSELECT name FROM sqlite_master WHERE type=''table'' AND name NOT LIKE ''sqlite_%'' ORDER BY name;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\n-- Backup existing data\nCREATE TEMP TABLE dac_backup AS SELECT * FROM digital_arrival_cards;\n\n-- Drop old table with wrong foreign key\nDROP TABLE digital_arrival_cards;\n\n-- Recreate with correct foreign key\nCREATE TABLE digital_arrival_cards (\n  id TEXT PRIMARY KEY,\n  entry_info_id TEXT NOT NULL,\n  user_id TEXT NOT NULL,\n  card_type TEXT NOT NULL,\n  destination_id TEXT,\n  arr_card_no TEXT,\n  qr_uri TEXT,\n  pdf_url TEXT,\n  submitted_at TEXT NOT NULL,\n  submission_method TEXT DEFAULT ''api'',\n  status TEXT DEFAULT ''success'',\n  api_response TEXT,\n  processing_time INTEGER,\n  retry_count INTEGER DEFAULT 0,\n  error_details TEXT,\n  is_superseded INTEGER DEFAULT 0,\n  superseded_at TEXT,\n  superseded_by TEXT,\n  superseded_reason TEXT,\n  version INTEGER DEFAULT 1,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL,\n  FOREIGN KEY (entry_info_id) REFERENCES entry_info(id) ON DELETE CASCADE,\n  FOREIGN KEY (user_id) REFERENCES users(id)\n);\n\n-- Restore data\nINSERT INTO digital_arrival_cards SELECT * FROM dac_backup;\n\n-- Recreate trigger\nCREATE TRIGGER mark_previous_dac_superseded\nAFTER INSERT ON digital_arrival_cards\nWHEN NEW.status = ''success'' AND NEW.is_superseded = 0\nBEGIN\n  UPDATE digital_arrival_cards\n  SET\n    is_superseded = 1,\n    superseded_at = CURRENT_TIMESTAMP,\n    superseded_by = NEW.id,\n    superseded_reason = ''Replaced by newer successful submission''\n  WHERE\n    entry_info_id = NEW.entry_info_id\n    AND card_type = NEW.card_type\n    AND id != NEW.id\n    AND is_superseded = 0;\nEND;\n\n-- Recreate indexes\nCREATE INDEX idx_dac_entry_info ON digital_arrival_cards(entry_info_id);\nCREATE INDEX idx_dac_user ON digital_arrival_cards(user_id);\nCREATE INDEX idx_dac_card_type ON digital_arrival_cards(card_type);\nCREATE INDEX idx_dac_status ON digital_arrival_cards(user_id, status);\nCREATE INDEX idx_dac_superseded ON digital_arrival_cards(entry_info_id, card_type, is_superseded);\nCREATE INDEX idx_dac_arr_card_no ON digital_arrival_cards(arr_card_no);\nCREATE INDEX idx_dac_latest ON digital_arrival_cards(entry_info_id, card_type, is_superseded, status);\n\nSELECT ''Fixed digital_arrival_cards foreign key'' as result;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== Database Health Check ==='' as check;\nSELECT '''' as check;\n\nSELECT ''Digital Arrival Cards:'' as detail;\nSELECT id, entry_info_id, card_type, status, arr_card_no FROM digital_arrival_cards;\n\nSELECT '''' as detail;\n\nSELECT ''Entry Info:'' as detail;\nSELECT id, destination_id, status FROM entry_info;\n\nSELECT '''' as detail;\n\nSELECT ''All Foreign Keys Valid:'' as validation;\nSELECT ''DACs reference valid entry_info IDs: '' || \n  CASE \n    WHEN COUNT(*) = 0 THEN ''✅ YES''\n    ELSE ''❌ NO - '' || COUNT(*) || '' orphaned''\n  END as result\nFROM digital_arrival_cards dac\nLEFT JOIN entry_info ei ON dac.entry_info_id = ei.id\nWHERE ei.id IS NULL;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT id, entry_info_id, card_type, status, arr_card_no FROM digital_arrival_cards;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''entry_guide_progress count:'' as info, COUNT(*) as count FROM entry_guide_progress\nUNION ALL\nSELECT ''tdac_submission_logs count:'', COUNT(*) FROM tdac_submission_logs;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\n-- Drop tables with wrong user_id type\nDROP TABLE entry_guide_progress;\nDROP TABLE tdac_submission_logs;\n\nSELECT ''Dropped tables with incorrect user_id type'' as result;\n\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"SELECT COUNT(*) as snapshot_count FROM snapshots;\")",
-      "Bash(do echo \"=== $table ===\" sqlite3 \"$DB_PATH\" \"PRAGMA table_info($table);\")",
-      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"PRAGMA table_info(passports);\")",
-      "Bash(DB_PATH=\"/Users/bujin/Library/Developer/CoreSimulator/Devices/69A62B34-93E6-4C79-89E8-3674756671DA/data/Containers/Data/Application/D2C892B1-6872-4624-BA10-5AEABC8E69C2/Documents/ExponentExperienceData/@anonymous/chujingtong-949aa9fd-5f29-4180-8e63-54175ac2c5e3/SQLite/tripsecretary_secure\" sqlite3:*)"
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== All DELETE operations on travel_info ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  record_id,\n  details\nFROM audit_log\nWHERE table_name = ''travel_info'' AND action = ''DELETE''\nORDER BY timestamp DESC\nLIMIT 50;\n\")",
+      "Bash(__NEW_LINE__ sqlite3 \"$DB_PATH\" \"\nSELECT ''=== Last 10 operations on mh9pqhp5fziejfhtta7 ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mh9pqhp5fziejfhtta7''\nORDER BY timestamp DESC\nLIMIT 10;\n\nSELECT '''' as separator;\nSELECT ''=== First operation on new record mhct8mp7ji2ip9d56bs ==='' as header;\n\nSELECT \n  datetime(timestamp, ''localtime'') as time,\n  action,\n  table_name,\n  record_id\nFROM audit_log\nWHERE record_id = ''mhct8mp7ji2ip9d56bs''\nORDER BY timestamp ASC\nLIMIT 5;\n\")",
+      "Bash(find:*)",
+      "Bash(awk:*)",
+      "Bash(sort:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/cleanup-docs.sh:*)",
+      "Bash(tree:*)",
+      "Bash(if [ -d \"implementation\" ])",
+      "Bash(then mv implementation history/)",
+      "Bash(fi)",
+      "Bash(if [ -d \"arrival-cards\" ])",
+      "Bash(then )",
+      "Bash(xargs:*)",
+      "Bash(for file in docs/architecture/*.md)",
+      "Bash(head:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

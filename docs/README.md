@@ -1,190 +1,281 @@
 # TripSecretary Documentation
 
-## 📚 Documentation Structure
+**Last updated:** 2025-10-30
+**Total living docs:** 123 files | **Archived docs:** 106 files
 
-This documentation is organized into focused directories for easy navigation:
+Welcome to TripSecretary! This index will help you find what you need quickly.
 
-### 📁 Directory Structure
+---
+
+## 🚀 Quick Start
+
+New to the project? Start here:
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get up and running in 5 minutes
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture overview
+- **[ADDING_NEW_COUNTRY.md](ADDING_NEW_COUNTRY.md)** - How to add a new country
+
+---
+
+## 📚 Essential Documentation
+
+### For Developers
+
+**Getting Started:**
+- [QUICKSTART.md](QUICKSTART.md) - Development setup
+- [AGENTS.md](AGENTS.md) - AI agents documentation
+- [QUICK_REFERENCE_DEV_DATABASE.md](QUICK_REFERENCE_DEV_DATABASE.md) - Database operations
+
+**Architecture:**
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture (consolidated)
+- [architecture/Architecture-Decision-Records.md](architecture/Architecture-Decision-Records.md) - All ADRs
+
+**Integration & Development:**
+- [ADDING_NEW_COUNTRY.md](ADDING_NEW_COUNTRY.md) - Country integration workflow
+- [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) - API integration guide
+- [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md) - Current integration status
+- [GLASSCARD_INTEGRATION_GUIDE.md](GLASSCARD_INTEGRATION_GUIDE.md) - Glasscard integration
+- [DEV_MODE_DATABASE_SIMPLIFICATION.md](DEV_MODE_DATABASE_SIMPLIFICATION.md) - Dev database
+
+**Troubleshooting:**
+- [IOS_SIMULATOR_SOLUTION.md](IOS_SIMULATOR_SOLUTION.md) - iOS simulator issues
+- [NETWORKING_TEST_CLEANUP.md](NETWORKING_TEST_CLEANUP.md) - Network debugging
+- [ASYNCSTORAGE_USAGE_AUDIT.md](ASYNCSTORAGE_USAGE_AUDIT.md) - AsyncStorage audit
+
+### For Designers
+
+**Design System:**
+- [design/UI设计规范.md](design/UI设计规范.md) - UI design standards (Chinese)
+- [design/智能出入境助手-产品设计文档.md](design/智能出入境助手-产品设计文档.md) - Product design (Chinese)
+
+**UX Decisions:**
+- [design/TRAVEL_INFO_SCREEN_DESIGN_DECISIONS.md](design/TRAVEL_INFO_SCREEN_DESIGN_DECISIONS.md) - Travel info screen UX
+- [design/ThailandTravelInfoScreen-UX-Review.md](design/ThailandTravelInfoScreen-UX-Review.md) - Thailand UX review
+- [design/ThailandEntryFlow-UX-Improvements.md](design/ThailandEntryFlow-UX-Improvements.md) - Entry flow improvements
+- [design/EntryGuide-Template-Design.md](design/EntryGuide-Template-Design.md) - Entry guide templates
+
+**Wireframes:**
+- [wireframes/](wireframes/) - UI wireframes and mockups
+- [ai/AI_TRIP_ASSISTANT_WIREFRAMES.md](ai/AI_TRIP_ASSISTANT_WIREFRAMES.md) - AI assistant wireframes
+
+### For Product Managers
+
+**Feature Specifications:**
+- [features/ELDERLY_USER_FEATURES.md](features/ELDERLY_USER_FEATURES.md) - Elderly user accessibility
+- [features/SETUP_ELDERLY_FEATURES.md](features/SETUP_ELDERLY_FEATURES.md) - Setup guide
+- [PDF_EXPORT_FEATURE.md](PDF_EXPORT_FEATURE.md) - PDF export functionality
+- [ai/AI_TRIP_ASSISTANT_MVP_SPEC.md](ai/AI_TRIP_ASSISTANT_MVP_SPEC.md) - AI assistant MVP spec
+
+**AI Features:**
+- [ai/AI_TRIP_ASSISTANT_SUMMARY.md](ai/AI_TRIP_ASSISTANT_SUMMARY.md) - AI assistant overview
+- [ai/AI_TRIP_ASSISTANT_DESIGN.md](ai/AI_TRIP_ASSISTANT_DESIGN.md) - AI design doc
+- [ai/AI_PROVIDERS_CHINA.md](ai/AI_PROVIDERS_CHINA.md) - AI providers in China
+
+**Product Documentation:**
+- [出境通-最终确认.md](出境通-最终确认.md) - Product overview (Chinese)
+- [MULTI_COUNTRY_AUDIT.md](MULTI_COUNTRY_AUDIT.md) - Multi-country status
+- [TODO.md](TODO.md) - Current tasks
+
+### Internationalization (i18n)
+
+- [i18n/HOW_TO_SELECT_SIMPLIFIED_CHINESE.md](i18n/HOW_TO_SELECT_SIMPLIFIED_CHINESE.md)
+- [i18n/JAPAN_I18N_STATUS.md](i18n/JAPAN_I18N_STATUS.md)
+
+### Integrations
+
+- [integrations/登录方案对比分析.md](integrations/登录方案对比分析.md) - Login solutions (Chinese)
+
+---
+
+## 📂 Directory Structure
 
 ```
 docs/
-├── README.md                    # This file - Master documentation index
-├── ai/                         # AI and machine learning documentation
-│   ├── AI_PROVIDERS_CHINA.md   # AI providers in China
-│   ├── AI_TRIP_ASSISTANT_DESIGN.md # AI trip assistant design
-│   ├── AI_TRIP_ASSISTANT_MVP_SPEC.md # AI assistant MVP specifications
-│   ├── AI_TRIP_ASSISTANT_SUMMARY.md # AI assistant summary
-│   ├── AI_TRIP_ASSISTANT_WIREFRAMES.md # AI assistant wireframes
-│   ├── AI模型跨境调用解决方案.md # Cross-border AI model solutions
-│   └── 本地AI模型方案.md # Local AI model solutions
-├── architecture/               # System architecture and technical stack
-│   ├── Cloudflare-Workers详解.md # Cloudflare Workers detailed guide
-│   ├── Cloudflare数据库选项.md # Cloudflare database options
-│   ├── MVP技术栈最终确认.md # MVP tech stack final confirmation
-│   ├── PROJECT_STRUCTURE.md # Project structure overview
-│   ├── 技术栈最终确定版.md # Final tech stack confirmation
-│   └── 最终技术栈确认.md # Ultimate tech stack confirmation
-├── consolidated/               # Consolidated summary documents
-│   ├── FINAL_SUMMARY_CN.md     # Taiwan/Singapore/Malaysia info pages summary
-│   ├── INFO_PAGES_COMPLETION_SUMMARY.md # Info pages completion details
-│   ├── CHINESE_LOCALE_IMPLEMENTATION_COMPLETE.md # Chinese i18n implementation
-│   ├── I18N_IMPLEMENTATION_COMPLETE.md # General i18n implementation
-│   ├── KOREA_USA_IMPLEMENTATION_COMPLETE.md # Korea/USA i18n implementation
-│   ├── TDAC_HYBRID_FIXES_SUMMARY.md # TDAC hybrid fixes summary
-│   └── TDAC_VIBE_CODING_SUMMARY.md # TDAC vibe coding summary
-├── design/                     # UI/UX and product design
-│   ├── UI设计规范.md # UI design specifications
-│   └── 智能出入境助手-产品设计文档.md # Product design document
-├── features/                   # Feature-specific documentation
-│   ├── ELDERLY_USER_FEATURES.md # Elderly user features
-│   ├── SETUP_ELDERLY_FEATURES.md # Elderly features setup
-│   └── TDAC_DUAL_MODE.md # TDAC dual mode features
-├── fixes/                      # Bug fixes and summaries
-│   ├── FIX_GUIDE.md # General fix guide
-│   ├── FIXES_SUMMARY.md # Complete fixes summary
-│   └── VALIDATION_CHECKLIST.md # Validation checklist
-├── i18n/                       # Internationalization documentation
-│   ├── CHINESE_LOCALIZATION.md # Chinese localization strategy
-│   ├── HOW_TO_SELECT_SIMPLIFIED_CHINESE.md # Simplified Chinese selection guide
-│   ├── I18N_COMPLETION_STATUS.md # i18n completion status
-│   ├── I18N_REFACTORING_SUMMARY.md # i18n refactoring summary
-│   ├── JAPAN_I18N_STATUS.md # Japan i18n status
-│   ├── LANGUAGE_SELECTOR_FIX.md # Language selector fixes
-│   ├── NATIVE_LANGUAGE_NAMES_FIX.md # Native language names fixes
-│   ├── NAVIGATION_FIX_GUIDE.md # Navigation fixes
-│   └── TWO_ROW_LANGUAGE_SELECTOR.md # Two-row language selector
-├── implementation/             # Implementation plans and status
-│   ├── IMPLEMENTATION_PLAN.md # Original implementation plan
-│   ├── IMPLEMENTATION_STATUS.md # Current implementation status
-│   └── PHASE1_API_INTEGRATION_GUIDE.md # Phase 1 API integration guide
-├── integrations/               # Third-party integrations
-│   ├── 微信支付集成方案.md # WeChat payment integration
-│   ├── 微信登录集成方案.md # WeChat login integration
-│   └── 登录方案对比分析.md # Login solutions comparison
-└── arrival-cards/              # Arrival card system documentation
-    ├── README.md # Arrival cards overview
-    ├── ASIA_ARRIVAL_CARDS_COMPARISON.md # Asia arrival cards comparison
-    ├── COMPLETE_ASIA_ARRIVAL_CARDS.md # Complete Asia arrival cards
-    ├── NORTH_AMERICA_ENTRY_SYSTEMS.md # North America entry systems
-    ├── SGAC_vs_TDAC_COMPARISON.md # SGAC vs TDAC comparison
-    ├── TDAC_API_ANALYSIS.md # TDAC API analysis
-    ├── TDAC_API_CAPTURE_GUIDE.md # TDAC API capture guide
-    ├── TDAC_API_FINAL_STATUS.md # TDAC API final status
-    ├── TDAC_API_IMPLEMENTATION_GUIDE.md # TDAC API implementation guide
-    ├── TDAC_HYBRID_IMPLEMENTATION.md # TDAC hybrid implementation
-    ├── TDAC_STATUS.md # TDAC status
-    ├── TDAC_TEST_DATA_CORRECTED.md # TDAC test data corrected
-    ├── TDAC_TEST_DATA.md # TDAC test data
-    ├── TDAC_TIMEOUT_FIX.md # TDAC timeout fix
-    └── DEBUGGING_API_SUBMISSION.md # API debugging guide
+├── README.md              # 👈 You are here
+├── QUICKSTART.md          # Quick start guide
+├── ARCHITECTURE.md        # System architecture
+├── ADDING_NEW_COUNTRY.md  # Country integration guide
+├── TODO.md                # Current tasks
+│
+├── architecture/          # Architecture decisions (1 file)
+│   └── Architecture-Decision-Records.md  # All ADRs in one place
+│
+├── design/                # Design decisions & UX (10 files)
+│   ├── UI设计规范.md
+│   ├── TRAVEL_INFO_SCREEN_DESIGN_DECISIONS.md
+│   ├── ThailandTravelInfoScreen-UX-Review.md
+│   └── ...
+│
+├── features/              # Feature specifications (4 files)
+│   ├── ELDERLY_USER_FEATURES.md
+│   ├── SETUP_ELDERLY_FEATURES.md
+│   └── ...
+│
+├── ai/                    # AI assistant docs (7 files)
+│   ├── AI_TRIP_ASSISTANT_MVP_SPEC.md
+│   ├── AI_TRIP_ASSISTANT_DESIGN.md
+│   ├── AI_PROVIDERS_CHINA.md
+│   └── ...
+│
+├── i18n/                  # i18n guides (2 files)
+├── integrations/          # Third-party integrations (3 files)
+├── templates/             # Code templates (1 file)
+├── wireframes/            # Design wireframes
+├── examples/              # Code examples
+│
+└── history/               # 📦 ARCHIVED (157 files - read-only)
+    ├── fixes/             # Bug fix summaries (42 files)
+    ├── implementations/   # "Complete" status docs (43 files)
+    ├── migrations/        # Migration guides (6 files)
+    ├── consolidated/      # Old refactoring docs (22 files)
+    ├── architecture/      # Detailed architecture docs (12 files)
+    ├── planning/          # Chinese planning docs (7 files)
+    ├── i18n/              # i18n implementation summaries (7 files)
+    ├── implementation/    # Old implementation docs (3 files)
+    └── ...                # Other historical docs (15 files)
 ```
 
-### 🎯 Quick Start Guides
+---
 
-- **[QUICKSTART.md](../QUICKSTART.md)** - Complete setup and testing guide
-- **[IMPLEMENTATION_STATUS.md](implementation/IMPLEMENTATION_STATUS.md)** - Current project status
-- **[VALIDATION_CHECKLIST.md](fixes/VALIDATION_CHECKLIST.md)** - Testing checklist
+## 🎯 How to Find What You Need
 
-### 🔧 Development Documentation
+### "How do I...?"
 
-- **[IMPLEMENTATION_PLAN.md](implementation/IMPLEMENTATION_PLAN.md)** - Original implementation plan
-- **[FIXES_SUMMARY.md](fixes/FIXES_SUMMARY.md)** - All bug fixes and solutions
-- **[I18N_COMPLETION_STATUS.md](i18n/I18N_COMPLETION_STATUS.md)** - Internationalization status
+| Task | Document |
+|------|----------|
+| Add a new country? | [ADDING_NEW_COUNTRY.md](ADDING_NEW_COUNTRY.md) |
+| Set up development? | [QUICKSTART.md](QUICKSTART.md) |
+| Understand architecture? | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Make a design decision? | Add to [ADRs](architecture/Architecture-Decision-Records.md) |
+| Debug an issue? | Search [history/fixes/](history/fixes/) |
+| Integrate with API? | [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) |
+| Fix iOS simulator? | [IOS_SIMULATOR_SOLUTION.md](IOS_SIMULATOR_SOLUTION.md) |
 
-### 🌏 Internationalization (i18n)
+### "Where is...?"
 
-- **[CHINESE_LOCALIZATION.md](i18n/CHINESE_LOCALIZATION.md)** - Chinese localization strategy
-- **[TWO_ROW_LANGUAGE_SELECTOR.md](i18n/TWO_ROW_LANGUAGE_SELECTOR.md)** - Language selector implementation
-- **[LANGUAGE_SELECTOR_FIX.md](i18n/LANGUAGE_SELECTOR_FIX.md)** - Language selector fixes
-
-### 🎫 Arrival Cards System
-
-- **[README.md](arrival-cards/README.md)** - Arrival cards overview
-- **[TDAC_API_IMPLEMENTATION_GUIDE.md](arrival-cards/TDAC_API_IMPLEMENTATION_GUIDE.md)** - TDAC API guide
-- **[SGAC_vs_TDAC_COMPARISON.md](arrival-cards/SGAC_vs_TDAC_COMPARISON.md)** - SGAC vs TDAC comparison
-
-### ✨ Features
-
-- **[ELDERLY_USER_FEATURES.md](features/ELDERLY_USER_FEATURES.md)** - Elderly user features
-- **[TDAC_DUAL_MODE.md](features/TDAC_DUAL_MODE.md)** - TDAC dual mode features
-
-### 🏗️ Architecture & Technical
-
-- **[PROJECT_STRUCTURE.md](architecture/PROJECT_STRUCTURE.md)** - Project structure overview
-- **[MVP技术栈最终确认.md](architecture/MVP技术栈最终确认.md)** - Technology stack confirmation
-- **[数据安全与合规方案.md](数据安全与合规方案.md)** - Security and compliance
-
-### 🤖 AI & Machine Learning
-
-- **[AI_TRIP_ASSISTANT_SUMMARY.md](ai/AI_TRIP_ASSISTANT_SUMMARY.md)** - AI trip assistant summary
-- **[AI模型跨境调用解决方案.md](ai/AI模型跨境调用解决方案.md)** - AI model cross-border solutions
-- **[本地AI模型方案.md](ai/本地AI模型方案.md)** - Local AI model solutions
-
-### 📱 UI/UX Design
-
-- **[UI设计规范.md](design/UI设计规范.md)** - UI design specifications
-- **[智能出入境助手-产品设计文档.md](design/智能出入境助手-产品设计文档.md)** - Product design document
-
-### 🔗 Integration Guides
-
-- **[微信登录集成方案.md](integrations/微信登录集成方案.md)** - WeChat login integration
-- **[微信支付集成方案.md](integrations/微信支付集成方案.md)** - WeChat payment integration
-- **[登录方案对比分析.md](integrations/登录方案对比分析.md)** - Login solutions comparison
-
-### 📊 Project Management
-
-- **[项目总结-精简版.md](项目总结-精简版.md)** - Project summary (concise)
-- **[AI_TRIP_ASSISTANT_SUMMARY.md](ai/AI_TRIP_ASSISTANT_SUMMARY.md)** - AI trip assistant summary
+| Looking for | Location |
+|-------------|----------|
+| API documentation | Root folder (integration guides) |
+| Old fix summaries | [history/fixes/](history/fixes/) |
+| Migration guides | [history/migrations/](history/migrations/) |
+| Implementation notes | [history/implementations/](history/implementations/) |
+| Country templates | [templates/country-template/](templates/country-template/) |
+| Design decisions | [design/](design/) folder |
+| Feature specs | [features/](features/) folder |
 
 ---
 
-## 📋 Recent Updates
+## 📝 Documentation Guidelines
 
-- **2025-01**: Consolidated duplicate documentation into `consolidated/` folder
-- **2025-01**: Organized docs by category (i18n, features, fixes, implementation, arrival-cards)
-- **2025-01**: Updated all cross-references after reorganization
-- **2025-01**: Removed outdated and redundant documentation
-- **2025-10**: Further consolidation - created ai/, architecture/, integrations/, design/ subdirectories
-- **2025-10**: Moved AI docs to `ai/` subdirectory
-- **2025-10**: Moved architecture/tech stack docs to `architecture/` subdirectory
-- **2025-10**: Moved integration docs to `integrations/` subdirectory
-- **2025-10**: Moved design/product docs to `design/` subdirectory
-- **2025-10**: Updated master README with new directory structure and navigation
+### ✅ When to Create a Doc
 
----
+**DO create:**
+- Architecture decisions → Use ADR format in `architecture/`
+- Feature specifications → Add to `features/`
+- How-to guides → Add to root or appropriate folder
+- Design decisions → Add to `design/`
+- API/integration guides → Add to root
 
-## 🔍 Finding Documentation
+**DON'T create:**
+- ❌ Bug fix summaries (use git commit messages)
+- ❌ "Implementation complete" docs (update TODO.md)
+- ❌ Test result summaries (use CI/CD)
+- ❌ Temporary notes (use PR descriptions)
 
-### By Topic
-- **Setup/Getting Started**: Look in root level or `QUICKSTART.md`
-- **AI & Machine Learning**: `docs/ai/` directory
-- **Architecture & Tech Stack**: `docs/architecture/` directory
-- **Internationalization**: `docs/i18n/` directory
-- **Bug Fixes**: `docs/fixes/` directory
-- **Features**: `docs/features/` directory
-- **Arrival Cards**: `docs/arrival-cards/` directory
-- **Implementation**: `docs/implementation/` directory
-- **UI/UX Design**: `docs/design/` directory
-- **Third-party Integrations**: `docs/integrations/` directory
+### Document Lifecycle
 
-### By File Type
-- **Guides**: Files ending in `GUIDE.md`
-- **Summaries**: Files containing `SUMMARY` or `STATUS`
-- **Implementation**: Files containing `IMPLEMENTATION`
-- **Fixes**: Files in `fixes/` directory
+1. **Living docs** - Updated as system evolves
+   - `architecture/`, `design/`, `features/`, root guides
+   - Examples: ARCHITECTURE.md, ADRs, feature specs
 
----
+2. **Reference docs** - Stable, updated when needed
+   - API guides, integration docs
+   - Examples: INTEGRATION_GUIDE.md
 
-## 🤝 Contributing to Documentation
+3. **Historical docs** - Never updated, archived
+   - `history/` folder
+   - Examples: Fix summaries, migration guides
 
-When adding new documentation:
-1. Choose the appropriate category directory
-2. Follow existing naming conventions
-3. Update this README if adding new categories
-4. Update cross-references in related documents
-5. Add to the directory structure above
+### Contributing
+
+1. **Check if doc exists** - Update existing doc if possible
+2. **Choose right location:**
+   - Root: Essential guides everyone needs
+   - `architecture/`: System design, ADRs
+   - `design/`: UX decisions
+   - `features/`: Feature specs
+   - Specialized: `ai/`, `i18n/`, etc.
+3. **Use clear naming:** `lowercase-with-hyphens.md`
+4. **Update this README** - Add link in appropriate section
+5. **Archive when obsolete** - Move to `history/`
 
 ---
 
-**Last Updated**: October 2025
-**Maintained by**: TripSecretary Development Team
+## 🗄️ About the history/ Folder
+
+The `history/` folder contains **157 archived documents** from 2024-2025:
+
+- **fixes/** (42) - Bug fix summaries & solutions
+- **implementations/** (43) - Implementation & status docs
+- **consolidated/** (22) - Old refactoring docs
+- **architecture/** (12) - Detailed architecture docs (now consolidated)
+- **planning/** (7) - Chinese planning & design docs
+- **i18n/** (7) - i18n implementation summaries
+- **migrations/** (6) - Schema/security migrations
+- **implementation/** (3) - Old implementation plans
+- **Other** (15) - Misc historical docs
+
+These are **read-only** and may be outdated. Kept for:
+- Historical reference
+- Understanding past decisions
+- Troubleshooting similar issues
+
+**Don't update these** - they represent completed work.
+
+---
+
+## 🔍 Search Tips
+
+**Find a specific topic:**
+```bash
+# Search all docs
+grep -r "keyword" docs/ --include="*.md"
+
+# Search living docs only (exclude history)
+grep -r "keyword" docs/ --include="*.md" --exclude-dir=history
+
+# Find all ADRs
+grep -r "^## ADR" docs/architecture/Architecture-Decision-Records.md
+```
+
+**List recent docs:**
+```bash
+find docs -name "*.md" -not -path "*/history/*" -exec ls -lt {} + | head -20
+```
+
+---
+
+## 📊 Documentation Stats
+
+- **Total docs:** 227 files
+- **Living docs:** 70 files (31%)
+- **Archived:** 157 files (69%)
+- **Last cleanup:** 2025-10-30
+- **Reduction:** 69% archived (was 230 → now 70 essential docs!)
+- **Root folder:** 13 files (was 40+, 67% cleaner!)
+
+---
+
+## 📮 Need Help?
+
+- Check [QUICKSTART.md](QUICKSTART.md) for setup questions
+- Review [ADRs](architecture/Architecture-Decision-Records.md) for design decisions
+- Search [history/fixes/](history/fixes/) for similar issues
+- Check [TODO.md](TODO.md) for current work
+- Ask in team chat
+
+---
+
+**Happy coding! 🚀**
+
+*Last updated: 2025-10-30 - After major documentation cleanup*

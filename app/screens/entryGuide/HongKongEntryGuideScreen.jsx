@@ -78,12 +78,7 @@ const HongKongEntryGuideScreen = ({ navigation, route }) => {
         <Text style={styles.stepIndicatorTitle}>
           {language?.startsWith('zh') ? '入境步骤进度' : 'Entry Steps Progress'}
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.stepIndicatorScroll}
-          contentContainerStyle={styles.stepIndicatorContent}
-        >
+        <View style={styles.stepIndicatorGrid}>
           {HONGKONG_ENTRY_STEPS.map((step, index) => {
             const status = getStepStatus(index);
             return (
@@ -117,7 +112,7 @@ const HongKongEntryGuideScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
+        </View>
       </View>
     );
   };
@@ -331,19 +326,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
-  stepIndicatorScroll: {
-    maxHeight: 80,
-  },
-  stepIndicatorContent: {
-    paddingVertical: spacing.xs,
+  stepIndicatorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
   },
   stepIndicatorItem: {
     alignItems: 'center',
-    marginHorizontal: spacing.xs,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: 8,
-    minWidth: 60,
+    width: '30%',
+    marginBottom: spacing.sm,
+    marginHorizontal: '1%',
   },
   stepIndicatorCompleted: {
     backgroundColor: colors.success + '20',

@@ -3,7 +3,7 @@
  * 提供泰国入境完整流程的逐步指导
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLocale } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
@@ -29,9 +30,67 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [latestTdacSubmission, setLatestTdacSubmission] = useState(completionData?.tdacSubmission || null);
 
   const currentStep = THAILAND_ENTRY_STEPS[currentStepIndex];
   const progress = ((currentStepIndex + 1) / THAILAND_ENTRY_STEPS.length) * 100;
+
+  // Load latest TDAC submission when screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadLatestTdacSubmission = async () => {
+        try {
+          // Get the entry info ID from completionData
+          const entryInfoId = completionData?.entryInfoId;
+
+          console.log('🔍 Loading TDAC submission, entryInfoId:', entryInfoId);
+          console.log('🔍 completionData:', completionData);
+
+          if (!entryInfoId) {
+            console.log('⚠️ No entry info ID available, cannot load TDAC submission');
+            return;
+          }
+
+          // Load all digital arrival cards for this entry info
+          const cards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
+
+          console.log('📋 Found digital arrival cards:', cards?.length || 0);
+
+          if (cards && cards.length > 0) {
+            // Find the latest non-superseded successful submission
+            const latestCard = cards.find(card =>
+              card.status === 'success' &&
+              !card.isSuperseded &&
+              card.arrCardNo
+            );
+
+            if (latestCard) {
+              console.log('✅ Loaded latest TDAC submission:', {
+                arrCardNo: latestCard.arrCardNo,
+                qrUri: latestCard.qrUri ? 'Present' : 'Missing',
+                pdfUrl: latestCard.pdfUrl ? 'Present' : 'Missing'
+              });
+              setLatestTdacSubmission({
+                arrCardNo: latestCard.arrCardNo,
+                qrUri: latestCard.qrUri,
+                pdfUrl: latestCard.pdfUrl,
+                submittedAt: latestCard.submittedAt,
+                submissionMethod: latestCard.submissionMethod,
+              });
+            } else {
+              console.log('⚠️ No successful TDAC submission found');
+            }
+          } else {
+            console.log('⚠️ No digital arrival cards found for this entry info');
+          }
+        } catch (error) {
+          console.error('❌ Failed to load latest TDAC submission:', error);
+        }
+      };
+
+      loadLatestTdacSubmission();
+    }, [completionData?.entryInfoId])
+  );
 
   const handleStepComplete = (stepId) => {
     setCompletedSteps(prev => new Set([...prev, stepId]));
@@ -139,7 +198,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
         personalInfo: completionData?.personalInfo,
         travelInfo: completionData?.travel,
         funds: completionData?.funds,
-        tdacSubmission: completionData?.tdacSubmission || null,
+        tdacSubmission: latestTdacSubmission, // Use the latest loaded TDAC submission
       },
     });
   };
@@ -177,17 +236,17 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
           <View style={styles.entryPackCompactContainer}>
             <Button
               title={
-                completionData?.tdacSubmission
+                latestTdacSubmission
                   ? `${t('immigrationGuide.openEntryPack', { defaultValue: '打开通关包' })} 📋`
                   : `${t('immigrationGuide.previewEntryPack', { defaultValue: '预览通关包' })} 👁️`
               }
               onPress={handleOpenEntryPack}
               size="medium"
               style={styles.entryPackButton}
-              variant={completionData?.tdacSubmission ? 'primary' : 'secondary'}
+              variant={latestTdacSubmission ? 'primary' : 'secondary'}
             />
             <Text style={styles.entryPackCompactHint}>
-              {completionData?.tdacSubmission
+              {latestTdacSubmission
                 ? t('thailand.entryGuide.entryPackHintOfficial', {
                     defaultValue: '护照、TDAC二维码与资金凭证一键展示给移民官。',
                   })
@@ -251,7 +310,18 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
         {isLastStep ? (
           <TouchableOpacity
             style={styles.completeButton}
-            onPress={() => Alert.alert('恭喜！', '您已完成泰国入境指引！')}
+            onPress={() => {
+              Alert.alert(
+                '恭喜！',
+                '您已完成泰国入境指引！',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('MainTabs', { screen: 'Home' })
+                  }
+                ]
+              );
+            }}
           >
             <Text style={styles.completeButtonText}>完成入境指引 ✅</Text>
           </TouchableOpacity>

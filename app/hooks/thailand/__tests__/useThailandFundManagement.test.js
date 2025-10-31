@@ -367,9 +367,9 @@ describe('useThailandFundManagement', () => {
 
       // Test the filter function
       const filterFn = mockFormState.setFunds.mock.calls[0][0];
-      const result_funds = filterFn(funds);
-      expect(result_funds).toHaveLength(1);
-      expect(result_funds[0].id).toBe('fund2');
+      const resultFunds = filterFn(funds);
+      expect(resultFunds).toHaveLength(1);
+      expect(resultFunds[0].id).toBe('fund2');
     });
 
     it('should refresh fund items after deletion', async () => {

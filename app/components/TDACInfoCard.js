@@ -31,39 +31,7 @@ const DigitalArrivalCardInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
     arrCardNo,
     qrUri,
     pdfUrl,
-    submittedAt,
-    submissionMethod,
   } = tdacSubmission;
-
-  const formatSubmissionMethod = (method) => {
-    switch (method) {
-      case 'API':
-        return 'API自动提交';
-      case 'WebView':
-        return 'WebView填表';
-      case 'Hybrid':
-        return '混合模式';
-      default:
-        return method || '未知方式';
-    }
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      return dateString;
-    }
-  };
 
   const handleSaveToAlbum = async () => {
     try {
@@ -126,7 +94,7 @@ const DigitalArrivalCardInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
     try {
       // Check if file exists
       const pdfFile = new FileSystem.File(pdfUrl);
-      if (!await pdfFile.exists()) {
+      if (!pdfFile.exists) {
         Alert.alert('错误', 'PDF文件不存在，可能已被删除');
         return;
       }
@@ -251,33 +219,6 @@ const DigitalArrivalCardInfoCard = ({ tdacSubmission, isReadOnly = false }) => {
           <Text style={styles.pdfButtonText}>📄 查看PDF文件</Text>
         </TouchableOpacity>
       )}
-
-      {/* Submission Details */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.detailsTitle}>提交详情</Text>
-        
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>提交方式:</Text>
-          <Text style={styles.detailValue}>
-            {formatSubmissionMethod(submissionMethod)}
-          </Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>提交时间:</Text>
-          <Text style={styles.detailValue}>
-            {formatDateTime(submittedAt)}
-          </Text>
-        </View>
-
-        {isReadOnly && (
-          <View style={styles.readOnlyNotice}>
-            <Text style={styles.readOnlyText}>
-              📖 这是历史记录中的数字入境卡信息
-            </Text>
-          </View>
-        )}
-      </View>
     </View>
   );
 };
@@ -407,43 +348,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.surface,
     fontWeight: '600',
-  },
-  detailsContainer: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-  },
-  detailsTitle: {
-    ...typography.h4,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-  },
-  detailLabel: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  detailValue: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  readOnlyNotice: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    alignItems: 'center',
-  },
-  readOnlyText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
   },
 });
 

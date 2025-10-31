@@ -2020,6 +2020,10 @@ const baseTranslations = {
           flight: 'Flight {{flight}}',
           missing: 'Please complete travel details',
         },
+        official: {
+          title: '✅ Official Entry Pack',
+          message: 'This entry pack contains the real TDAC QR code and PDF document. You can show this directly to Thai immigration officers.',
+        },
       },
       historyBanner: {
         badge: 'Pending Trip',
@@ -4359,6 +4363,10 @@ const baseTranslations = {
           arrival: '到达 {{date}}',
           flight: '航班 {{flight}}',
           missing: '请补齐行程信息',
+        },
+        official: {
+          title: '✅ 正式通关包',
+          message: '此通关包包含真实的TDAC二维码和PDF文档，可直接展示给泰国移民官。',
         },
       },
       historyBanner: {

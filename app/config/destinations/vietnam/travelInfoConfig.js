@@ -161,6 +161,11 @@ export const vietnamTravelInfoConfig = {
     locationAutoComplete: false,
     multiLanguage: true,
     offlineMode: true,
+
+    // DESIGN DECISION: Do not show completion progress overview at screen top
+    // Each section header already shows its own progress (e.g., "7/7")
+    // See: docs/architecture/Architecture-Decision-Records.md - ADR 9
+    showProgressOverview: false,
   },
 
   // Submission window (for digital arrival cards)

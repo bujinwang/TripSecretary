@@ -826,6 +826,9 @@ export const useThailandDataPersistence = ({
 
       console.log('💾 Travel info save - travelInfoUpdates:', travelInfoUpdates);
 
+      // 🔧 FIX: Declare at function scope to be accessible for entry_info update
+      let savedTravelInfo = null;
+
       if (Object.keys(travelInfoUpdates).length > 0) {
         try {
           // 🔧 FIX: Load existing travel info from database to prevent data loss
@@ -865,7 +868,9 @@ export const useThailandDataPersistence = ({
           console.log('💾 Explicit overrides:', Object.keys(fieldOverrides || {}));
           console.log('💾 Merged keys:', Object.keys(mergedTravelData));
 
-          await UserDataService.saveTravelInfo(userId, mergedTravelData);
+          // 🔧 FIX: Capture the saved travel info with its ID
+          savedTravelInfo = await UserDataService.saveTravelInfo(userId, mergedTravelData);
+          console.log('✅ Travel info saved with ID:', savedTravelInfo.id);
           saveResults.travelInfo.success = true;
         } catch (travelSaveError) {
           console.error('Failed to save travel info:', travelSaveError);
@@ -883,11 +888,21 @@ export const useThailandDataPersistence = ({
         let entryInfo = existingEntryInfos?.find(entry => entry.destinationId === destinationId);
 
         if (entryInfo) {
+          // 🔧 FIX: Update travel_info_id reference if we just saved travel info
+          if (saveResults.travelInfo.success && savedTravelInfo && savedTravelInfo.id) {
+            const oldTravelInfoId = entryInfo.travelInfoId;
+            entryInfo.travelInfoId = savedTravelInfo.id;
+            console.log('✅ Updated entry_info.travel_info_id:', {
+              old: oldTravelInfoId,
+              new: savedTravelInfo.id
+            });
+          }
+
           // Load fresh data to calculate metrics
           const savedPassport = await UserDataService.getPassport(userId);
           const savedPersonalInfo = await UserDataService.getPersonalInfo(userId);
           const savedFunds = await UserDataService.getFundItems(userId);
-          const savedTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+          const freshTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
           // Update completion metrics using the EntryInfo model method
           // which now uses EntryCompletionCalculator internally
@@ -895,7 +910,7 @@ export const useThailandDataPersistence = ({
             savedPassport || {},
             savedPersonalInfo || {},
             savedFunds || [],
-            savedTravelInfo || {}
+            freshTravelInfo || {}
           );
 
           // Save updated metrics back to database
