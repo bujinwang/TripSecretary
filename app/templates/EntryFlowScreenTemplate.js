@@ -38,13 +38,14 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { ScrollView, RefreshControl, Alert } from 'react-native';
+import { ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import BackButton from '../components/BackButton';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 import EntryCompletionCalculator from '../utils/EntryCompletionCalculator';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   YStack,
   XStack,
@@ -333,6 +334,398 @@ EntryFlowScreenTemplate.ScrollContainer = ({ children }) => {
 };
 
 /**
+ * Auto Content - Thai-style layout (progress hero, countdown, actions)
+ */
+EntryFlowScreenTemplate.AutoContent = () => {
+  const {
+    isLoading,
+    completionPercent,
+    completionStatus,
+    t,
+    navigation,
+    route,
+    config,
+    arrivalDate,
+    userData,
+  } = useEntryFlowTemplate();
+
+  const destinationName = config.nameZh || config.name || '';
+
+  if (isLoading) {
+    return <EntryFlowScreenTemplate.LoadingIndicator />;
+  }
+
+  const minPercent = config.completion?.minPercent || 80;
+  const isReady = completionPercent >= 100;
+  const isAlmost = !isReady && completionPercent >= minPercent;
+
+  return (
+    <EntryFlowScreenTemplate.ScrollContainer>
+      <ProgressHeroCard
+        percent={completionPercent}
+        t={t}
+        destination={destinationName}
+        status={completionStatus}
+        isReady={isReady}
+        isAlmost={isAlmost}
+      />
+
+      <PrimaryActionCard
+        t={t}
+        navigation={navigation}
+        route={route}
+        config={config}
+        isReady={isReady}
+        completionStatus={completionStatus}
+        userData={userData}
+        destination={destinationName}
+      />
+
+      {arrivalDate && (
+        <CountdownCard
+          arrivalDate={arrivalDate}
+          t={t}
+          config={config}
+        />
+      )}
+
+      <QuickActionsRow
+        t={t}
+        navigation={navigation}
+        route={route}
+        userData={userData}
+        config={config}
+      />
+
+      <HelpCard t={t} />
+    </EntryFlowScreenTemplate.ScrollContainer>
+  );
+};
+
+function ProgressHeroCard({ percent, t, destination, isReady, isAlmost }) {
+  const accentColor = isReady ? '#0AA35C' : isAlmost ? '#FF8C00' : '#1E88E5';
+  const backgroundColor = isReady ? '#E5F8EE' : isAlmost ? '#FFF6E6' : '#E6F1FF';
+  const remaining = Math.max(0, 100 - percent);
+
+  const headline = isReady
+    ? `${destination}准备就绪！🌴`
+    : isAlmost
+    ? '进展不错！💪'
+    : '让我们开始吧！🌺';
+
+  const subtitle = isReady
+    ? `太棒了！${destination}之旅准备就绪！🌴`
+    : isAlmost
+    ? `继续加油！还差 ${remaining}% 就能完成${destination}行程准备！`
+    : '继续完善资料，让旅程更顺利。';
+
+  return (
+    <YStack paddingHorizontal="$md" marginBottom="$lg">
+      <BaseCard
+        variant="flat"
+        padding="lg"
+        backgroundColor={backgroundColor}
+        borderRadius="$lg"
+        borderWidth={1.5}
+        borderColor="rgba(0,0,0,0.05)"
+      >
+        <YStack gap="$sm" alignItems="center">
+          <TamaguiText fontSize="$9" fontWeight="800" color={accentColor}>
+            {percent}%
+          </TamaguiText>
+          <TamaguiText fontSize="$3" color={accentColor}>
+            准备进度
+          </TamaguiText>
+          <YStack
+            width="100%"
+            height={10}
+            borderRadius={5}
+            backgroundColor="rgba(0,0,0,0.08)"
+            overflow="hidden"
+            marginTop="$md"
+          >
+            <YStack
+              height="100%"
+              width={`${Math.min(percent, 100)}%`}
+              backgroundColor={accentColor}
+            />
+          </YStack>
+          <TamaguiText fontSize="$4" fontWeight="700" color={accentColor} marginTop="$md">
+            {headline}
+          </TamaguiText>
+          <TamaguiText fontSize="$3" color="$textSecondary" textAlign="center">
+            {subtitle}
+          </TamaguiText>
+        </YStack>
+      </BaseCard>
+    </YStack>
+  );
+}
+
+function PrimaryActionCard({ t, navigation, route, config, isReady, destination }) {
+  const hasSubmitScreen = Boolean(config.screens?.submit);
+
+  const handlePress = () => {
+    if (isReady && hasSubmitScreen) {
+      navigation.navigate(config.screens.submit, route.params);
+      return;
+    }
+    const travelInfoScreen = config.screens?.travelInfo || 'VietnamTravelInfo';
+    navigation.navigate(travelInfoScreen, route.params);
+  };
+
+  const gradientColors = isReady && hasSubmitScreen ? ['#22C55E', '#16A34A'] : ['#F97316', '#F59E0B'];
+  const icon = isReady && hasSubmitScreen ? '🛫' : '✏️';
+  const title = isReady && hasSubmitScreen
+    ? t('entryFlow.actions.submitThai', { defaultValue: '提交入境卡' })
+    : t('entryFlow.actions.editThai', { defaultValue: '修改旅行信息' });
+  const subtitle = isReady && hasSubmitScreen
+    ? t('entryFlow.actions.submitThai.subtitle', { defaultValue: `准备完成！现在可以提交${destination}入境卡了` })
+    : t('entryFlow.actions.editThai.subtitle', { defaultValue: '如需修改，返回编辑' });
+
+  return (
+    <YStack paddingHorizontal="$md" marginBottom="$lg">
+      <TouchableOpacity activeOpacity={0.9} onPress={handlePress} style={{ borderRadius: 24, overflow: 'hidden' }}>
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={{
+            paddingVertical: 22,
+            paddingHorizontal: 24,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <YStack
+            width={52}
+            height={52}
+            borderRadius={26}
+            backgroundColor="rgba(255,255,255,0.25)"
+            alignItems="center"
+            justifyContent="center"
+            marginRight="$md"
+          >
+            <TamaguiText fontSize={26} color="$white">
+              {icon}
+            </TamaguiText>
+          </YStack>
+          <YStack flex={1}>
+            <TamaguiText fontSize="$4" fontWeight="700" color="$white">
+              {title}
+            </TamaguiText>
+            <TamaguiText fontSize="$2" color="rgba(255,255,255,0.9)" marginTop="$xs">
+              {subtitle}
+            </TamaguiText>
+          </YStack>
+          <YStack
+            width={36}
+            height={36}
+            borderRadius={18}
+            backgroundColor="rgba(255,255,255,0.25)"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <TamaguiText fontSize={20} fontWeight="700" color="$white">
+              ›
+            </TamaguiText>
+          </YStack>
+        </LinearGradient>
+      </TouchableOpacity>
+    </YStack>
+  );
+}
+
+function CountdownCard({ arrivalDate, t, config }) {
+  if (!arrivalDate) {
+    return null;
+  }
+
+  const arrival = new Date(arrivalDate);
+  const now = new Date();
+  const diff = arrival - now;
+
+  if (Number.isNaN(diff)) {
+    return null;
+  }
+
+  const totalSeconds = Math.max(0, Math.floor(diff / 1000));
+  const days = Math.floor(totalSeconds / (24 * 3600));
+  const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const formattedArrival = arrival.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return (
+    <YStack paddingHorizontal="$md" marginBottom="$lg">
+      <BaseCard
+        variant="flat"
+        padding="lg"
+        borderRadius="$lg"
+        backgroundColor="#FFF3E0"
+        borderWidth={2}
+        borderColor="#FF9800"
+      >
+        <YStack gap="$md">
+          <XStack alignItems="center" gap="$sm">
+            <YStack
+              width={32}
+              height={32}
+              borderRadius={16}
+              backgroundColor="#FFE0B2"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <TamaguiText fontSize={18}>🛂</TamaguiText>
+            </YStack>
+            <TamaguiText fontSize="$3" fontWeight="700" color="#D97706">
+              {t('entryFlow.countdown.titleThai', { defaultValue: '距离提交入境卡还有' })}
+            </TamaguiText>
+          </XStack>
+
+          <TamaguiText fontSize="$2" color="#D97706" textAlign="center">
+            {t('entryFlow.countdown.subtitleThai', { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
+          </TamaguiText>
+
+          <TamaguiText fontSize="$6" fontWeight="800" color="#D97706" textAlign="center">
+            {t('entryFlow.countdown.timeThai', {
+              defaultValue: `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`,
+              days,
+              hours,
+              minutes,
+              seconds,
+            })}
+          </TamaguiText>
+
+          <BaseCard
+            variant="flat"
+            padding="md"
+            backgroundColor="#FFFFFF"
+            borderRadius="$md"
+            borderWidth={1}
+            borderColor="rgba(255,152,0,0.25)"
+          >
+            <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
+              {t('entryFlow.countdown.arrivalThai', { defaultValue: `抵达日期 ${formattedArrival}` })}
+            </TamaguiText>
+          </BaseCard>
+        </YStack>
+      </BaseCard>
+    </YStack>
+  );
+}
+
+function QuickActionsRow({ t, navigation, route, userData, config }) {
+  const handlePreview = () => {
+    navigation.navigate('EntryPackPreview', {
+      userData,
+      ...route.params,
+      entryPackData: {
+        personalInfo: userData?.personalInfo,
+        travelInfo: userData?.travel,
+        funds: userData?.funds,
+      },
+    });
+  };
+
+  const handleEdit = () => {
+    const target =
+      config.screens?.travelInfo ||
+      route?.params?.travelInfoScreen ||
+      route?.params?.nextScreen ||
+      'VietnamTravelInfo';
+    navigation.navigate(target, route.params);
+  };
+
+  return (
+    <XStack paddingHorizontal="$md" gap="$md" marginBottom="$lg">
+      <BaseCard
+        variant="flat"
+        padding="lg"
+        flex={1}
+        pressable
+        onPress={handlePreview}
+        borderWidth={2}
+        borderColor="rgba(11,214,123,0.3)"
+      >
+        <YStack alignItems="center" gap="$sm">
+          <TamaguiText fontSize={26}>👁️</TamaguiText>
+          <TamaguiText fontSize="$3" fontWeight="700">
+            {t('entryFlow.actions.previewPack', { defaultValue: '预览入境包' })}
+          </TamaguiText>
+          <TamaguiText fontSize="$2" color="$textSecondary">
+            {t('entryFlow.actions.previewPack.subtitle', { defaultValue: '查看已经准备好的资料' })}
+          </TamaguiText>
+        </YStack>
+      </BaseCard>
+      <BaseCard
+        variant="flat"
+        padding="lg"
+        flex={1}
+        pressable
+        onPress={handleEdit}
+        borderWidth={2}
+        borderColor="rgba(255,152,0,0.3)"
+      >
+        <YStack alignItems="center" gap="$sm">
+          <TamaguiText fontSize={26}>✏️</TamaguiText>
+          <TamaguiText fontSize="$3" fontWeight="700">
+            {t('entryFlow.actions.editInfoThai', { defaultValue: '编辑旅行信息' })}
+          </TamaguiText>
+          <TamaguiText fontSize="$2" color="$textSecondary">
+            {t('entryFlow.actions.editInfoThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
+          </TamaguiText>
+        </YStack>
+      </BaseCard>
+    </XStack>
+  );
+}
+
+function HelpCard({ t }) {
+  const handleHelp = () => {
+    Alert.alert(
+      t('entryFlow.actions.help.title', { defaultValue: '寻求帮助 🤝' }),
+      t('entryFlow.actions.help.message', {
+        defaultValue: '你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档',
+      }),
+      [
+        { text: t('entryFlow.actions.help.share', { defaultValue: '截图分享' }) },
+        { text: t('entryFlow.actions.help.contact', { defaultValue: '联系客服' }) },
+        { text: t('common.cancel', { defaultValue: '取消' }), style: 'cancel' },
+      ]
+    );
+  };
+
+  return (
+    <YStack paddingHorizontal="$md" marginBottom="$xl">
+      <BaseCard
+        variant="flat"
+        padding="lg"
+        pressable
+        onPress={handleHelp}
+        borderWidth={1.5}
+        borderColor="rgba(38,132,255,0.25)"
+      >
+        <YStack alignItems="center" gap="$sm">
+          <TamaguiText fontSize={24}>🙌</TamaguiText>
+          <TamaguiText fontSize="$3" fontWeight="700">
+            {t('entryFlow.actions.help.callout', { defaultValue: '寻求帮助' })}
+          </TamaguiText>
+          <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
+            {t('entryFlow.actions.help.callout.subtitle', { defaultValue: '遇到问题？点我获取协助' })}
+          </TamaguiText>
+        </YStack>
+      </BaseCard>
+    </YStack>
+  );
+}
+
+/**
  * Completion Card Component
  */
 EntryFlowScreenTemplate.CompletionCard = () => {
@@ -384,62 +777,7 @@ EntryFlowScreenTemplate.CompletionCard = () => {
  * Categories Component
  */
 EntryFlowScreenTemplate.Categories = () => {
-  const { categories, navigation, route, t } = useEntryFlowTemplate();
-
-  const handleCategoryPress = (category) => {
-    // Navigate to travel info screen to edit
-    navigation.navigate('VietnamTravelInfo', route.params);
-  };
-
-  return (
-    <YStack paddingHorizontal="$md" gap="$md">
-      <TamaguiText fontSize="$5" fontWeight="bold">
-        {t('entryFlow.categories.title', { defaultValue: 'Information Categories' })}
-      </TamaguiText>
-
-      {categories.map((category) => (
-        <BaseCard
-          key={category.id}
-          variant="elevated"
-          padding="md"
-          onPress={() => handleCategoryPress(category)}
-          cursor="pointer"
-        >
-          <XStack alignItems="center" gap="$md">
-            <TamaguiText fontSize={32}>{category.icon}</TamaguiText>
-            <YStack flex={1}>
-              <TamaguiText fontSize="$4" fontWeight="600">
-                {category.name}
-              </TamaguiText>
-              <TamaguiText fontSize="$2" color="$textSecondary">
-                {category.completedCount}/{category.totalCount} {t('entryFlow.categories.fieldsComplete', { defaultValue: 'fields complete' })}
-              </TamaguiText>
-              {category.missingFields.length > 0 && (
-                <TamaguiText fontSize="$2" color="$warning" marginTop="$xs">
-                  {t('entryFlow.categories.missingFields', {
-                    defaultValue: 'Missing: {{fields}}',
-                    fields: category.missingFields.slice(0, 3).join(', '),
-                  })}
-                </TamaguiText>
-              )}
-            </YStack>
-            <YStack
-              width={20}
-              height={20}
-              borderRadius={10}
-              backgroundColor={category.status === 'completed' ? '$success' : '$gray300'}
-              alignItems="center"
-              justifyContent="center"
-            >
-              {category.status === 'completed' && (
-                <TamaguiText color="$white" fontSize={12}>✓</TamaguiText>
-              )}
-            </YStack>
-          </XStack>
-        </BaseCard>
-      ))}
-    </YStack>
-  );
+  return null;
 };
 
 /**

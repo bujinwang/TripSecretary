@@ -89,6 +89,129 @@ export const vietnamEntryFlowConfig = {
     // calculateCompletion: (userData) => { ... },
   },
 
+  // UI configuration for template states
+  ui: {
+    successCelebration: {
+      enabled: true,
+      completionPercent: 100,
+      hero: {
+        icon: '🎉',
+        defaultTitle: '100% 越南准备就绪！🌴',
+        defaultSubtitle: '入境资料已准备完成，可以随时查看与分享。',
+      },
+      primaryAction: {
+        type: 'navigate',
+        screenKey: 'requirements',
+        icon: '🛂',
+        defaultTitle: '开始入境流程',
+        defaultSubtitle: '查看完整的入境指引和注意事项',
+        gradientColors: ['#0BD67B', '#16A34A'],
+      },
+      secondaryCards: [
+        {
+          id: 'view_info',
+          icon: '📂',
+          defaultTitle: '查看我的入境资料',
+          defaultSubtitle: '重新查看所有已经填写的信息',
+          type: 'navigate',
+          screenKey: 'travelInfo',
+          borderColor: 'rgba(11, 214, 123, 0.3)',
+        },
+        {
+          id: 'edit_info',
+          icon: '✏️',
+          defaultTitle: '编辑旅行信息',
+          defaultSubtitle: '如需修改，可以随时返回编辑',
+          type: 'navigate',
+          screenKey: 'travelInfo',
+          borderColor: 'rgba(255, 152, 0, 0.3)',
+        },
+      ],
+    },
+    noDataState: {
+      enabled: true,
+      defaultTitle: '准备开始越南之旅吧！',
+      defaultSubtitle: '我们会一步步帮你完成所有必需的入境资料。',
+      hints: [
+        { icon: '📘', defaultText: '护照信息 - 让越南认识你' },
+        { icon: '📞', defaultText: '联系方式 - 越南怎么找到你' },
+        { icon: '💰', defaultText: '资金证明 - 证明你能好好玩' },
+        { icon: '✈️', defaultText: '航班与住宿 - 你的旅行计划' },
+      ],
+      primaryAction: {
+        type: 'navigate',
+        screenKey: 'travelInfo',
+        defaultTitle: '开始填写越南入境信息',
+      },
+    },
+    progressEncouragement: {
+      enabled: true,
+      primaryAction: {
+        type: 'navigate',
+        screenKey: 'travelInfo',
+        icon: '✏️',
+        defaultTitle: '修改旅行信息',
+        defaultSubtitle: '如需修改，返回编辑',
+        gradientColors: ['#FF9D3A', '#FF6F3C'],
+      },
+      gradientColors: ['#FFB347', '#FF7E5F'],
+      progressBarColor: 'rgba(255,255,255,0.9)',
+      progressLabelKey: 'entryFlow.progress.percentLabel',
+      quickActionsLayout: 'stack',
+      statusMessages: {
+        ready: {
+          headline: { default: '准备完成！🎉' },
+          subtitle: { default: '{{destination}}行程准备完成，可以提交啦！' },
+        },
+        almost: {
+          headline: { default: '进展不错！💪' },
+          subtitle: { default: '继续加油！还差 {{remainingPercent}}% 就能完成{{destination}}行程准备！' },
+        },
+        progress: {
+          headline: { default: '继续加油！' },
+          subtitle: { default: '还差 {{remainingPercent}}% 就能完成！' },
+        },
+        start: {
+          headline: { default: '让我们开始吧！' },
+          subtitle: { default: '点击下方按钮，我们会引导你完成Vietnam入境准备。' },
+        },
+      },
+      countdown: {
+        enabled: true,
+        accentColor: '#FF7043',
+        backgroundColor: '#FFF5E6',
+        borderColor: 'rgba(255,159,64,0.4)',
+        icon: '⏰',
+        messages: {
+          defaultTitle: '距离提交入境卡还有',
+          defaultMessage: '提交窗口已开启，请在倒计时结束前完成提交',
+          defaultArrivalDate: '抵达日期 {{arrivalDate}}',
+        },
+      },
+      quickActions: [
+        {
+          id: 'view_info',
+          icon: '📂',
+          defaultTitle: '查看我的入境资料',
+          defaultSubtitle: '快速查看已填写的所有信息',
+          type: 'navigate',
+          targetScreen: 'EntryPackPreview',
+          includeUserData: true,
+          includeCompletionSummary: true,
+          params: { mode: 'preview' },
+          borderColor: 'rgba(11, 214, 123, 0.3)',
+          iconBackgroundColor: 'rgba(11, 214, 123, 0.12)',
+        },
+      ],
+      helpAction: {
+        type: 'alert',
+        defaultTitle: '寻找帮助',
+        defaultMessage: '📸 请截图分享给亲友或联系客服获取帮助。',
+        variant: 'outline',
+      },
+    },
+  },
+
   // Status messages
   status: {
     ready: {

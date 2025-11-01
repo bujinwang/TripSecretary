@@ -1,5 +1,5 @@
 // 入境通 - Home Screen
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/Button';
@@ -93,6 +94,8 @@ const HomeScreen = ({ navigation }) => {
   const [multiDestinationData, setMultiDestinationData] = useState(null);
   const [inProgressDestinations, setInProgressDestinations] = useState([]);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   const { t, language, setLanguage } = useLocale();
 
@@ -244,6 +247,21 @@ const HomeScreen = ({ navigation }) => {
     loadPassportData();
     loadHistory();
     loadMultiDestinationData();
+
+    // Animate empty state when component mounts
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   const loadPassportData = async () => {
@@ -881,17 +899,22 @@ const HomeScreen = ({ navigation }) => {
         {/* Empty State - No Active Trips */}
         {activeEntryPacks.length === 0 && inProgressDestinations.length === 0 && hasPassport && (
           <View style={styles.section}>
-            <Card style={styles.emptyStateCard}>
-              <View style={styles.emptyStateContent}>
-                <Text style={styles.emptyStateIcon}>🗺️</Text>
-                <Text style={styles.emptyStateTitle}>
+            <Animated.View
+              style={[
+                styles.emptyStateCard,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
+            >
+              <View style={styles.emptyStateContentCompact}>
+                <Text style={styles.emptyStateIconCompact}>🗺️</Text>
+                <Text style={styles.emptyStateTitleCompact}>
                   {t('home.emptyState.title', { defaultValue: '还没有行程计划' })}
                 </Text>
-                <Text style={styles.emptyStateText}>
-                  {t('home.emptyState.subtitle', { defaultValue: '选择一个目的地开始规划您的旅行' })}
-                </Text>
               </View>
-            </Card>
+            </Animated.View>
           </View>
         )}
 
@@ -1181,19 +1204,33 @@ const styles = StyleSheet.create({
 
   // Empty State Styles
   emptyStateCard: {
-    backgroundColor: colors.backgroundLight,
-    borderWidth: 2,
-    borderColor: colors.border,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
     borderStyle: 'dashed',
+    borderRadius: borderRadius.lg,
   },
   emptyStateContent: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
+  emptyStateContentCompact: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
   emptyStateIcon: {
     fontSize: 64,
     marginBottom: spacing.md,
+  },
+  emptyStateIconSmall: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
+  },
+  emptyStateIconCompact: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
   },
   emptyStateTitle: {
     ...typography.h3,
@@ -1201,6 +1238,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.xs,
+  },
+  emptyStateTitleCompact: {
+    ...typography.body1,
+    fontWeight: '500',
+    color: colors.primary,
+    textAlign: 'center',
   },
   emptyStateText: {
     ...typography.body1,

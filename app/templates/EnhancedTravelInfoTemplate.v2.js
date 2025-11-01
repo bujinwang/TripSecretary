@@ -605,15 +605,48 @@ const EnhancedTravelInfoTemplate = ({
   // ============================================
   // NAVIGATION HANDLERS
   // ============================================
+  const nextRouteName = useMemo(() => {
+    if (!config) {
+      return null;
+    }
+
+    return (
+      config?.navigation?.next ||
+      config?.navigation?.nextScreen ||
+      config?.screens?.next ||
+      config?.screens?.entryFlow ||
+      null
+    );
+  }, [
+    config?.navigation?.next,
+    config?.navigation?.nextScreen,
+    config?.screens?.next,
+    config?.screens?.entryFlow,
+  ]);
+
   const handleContinue = useCallback(async () => {
     await saveDataToUserDataService();
-    if (config?.navigation?.next) {
-      navigation.navigate(config.navigation.next, { passport, destination });
+
+    if (nextRouteName) {
+      const nextParams = {
+        ...(route?.params || {}),
+        passport,
+        destination,
+      };
+
+      navigation.navigate(nextRouteName, nextParams);
     } else {
       console.warn('[Template V2] No next navigation route configured');
       navigation.goBack();
     }
-  }, [saveDataToUserDataService, navigation, config?.navigation?.next, passport, destination]);
+  }, [
+    saveDataToUserDataService,
+    navigation,
+    nextRouteName,
+    passport,
+    destination,
+    route,
+  ]);
 
   const handleGoBack = useCallback(async () => {
     await saveDataToUserDataService();

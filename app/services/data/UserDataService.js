@@ -712,6 +712,33 @@ class UserDataService {
   }
 
   /**
+   * Create a new entry info record for a user
+   * @param {Object} entryInfoData - Entry info data (must include userId)
+   * @returns {Promise<EntryInfo>} - Newly created entry info instance
+   */
+  static async createEntryInfo(entryInfoData) {
+    try {
+      const { userId } = entryInfoData || {};
+      if (!userId) {
+        throw new Error('createEntryInfo requires entryInfoData.userId');
+      }
+
+      const entryInfo = await EntryInfoOperations.saveEntryInfo(entryInfoData, userId);
+
+      this.triggerDataChangeEvent('entryInfo', userId, {
+        action: 'created',
+        entryInfoId: entryInfo.id,
+        destinationId: entryInfo.destinationId
+      });
+
+      return entryInfo;
+    } catch (error) {
+      console.error('Failed to create entry info:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Save entry info for a user
    * @param {Object} entryInfoData - Entry info data
    * @param {string} userId - User ID

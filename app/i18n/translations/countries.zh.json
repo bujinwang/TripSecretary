@@ -887,6 +887,80 @@
       "startButton": "开始填写"
     }
   },
+  "vietnam": {
+    "info": {
+      "headerTitle": "越南入境信息",
+      "title": "越南入境指南",
+      "subtitle": "电子签证与入境要求",
+      "sections": {
+        "visa": {
+          "title": "签证要求",
+          "items": [
+            "中国公民可在线申请越南电子签证",
+            "电子签证有效期90天，可单次或多次入境",
+            "办理时间约3个工作日",
+            "电子签证费用：25 美元"
+          ]
+        },
+        "onsite": {
+          "title": "入境现场要求",
+          "items": [
+            "抵达时需出示护照和获批的电子签证",
+            "抵达口岸可能需要填写入境表格",
+            "携带价值超过 5,000 美元的物品需填写海关申报表"
+          ]
+        },
+        "appFeatures": {
+          "title": "应用特色",
+          "items": [
+            "✅ 电子签证申请指引",
+            "✅ 入境表格模板",
+            "✅ 全程中文指引（附越南语/英语模板）"
+          ]
+        }
+      },
+      "continueButton": "继续填写出行信息"
+    },
+    "requirements": {
+      "headerTitle": "越南入境准备清单",
+      "introTitle": "越南入境需要准备什么？",
+      "introSubtitle": "请确认以下证件和材料都已准备好",
+      "items": {
+        "validPassport": {
+          "title": "有效护照",
+          "description": "护照有效期至少还有 6 个月",
+          "details": "您的护照需要在入境日期之后至少仍有 6 个月的有效期。"
+        },
+        "visa": {
+          "title": "电子签证或落地签",
+          "description": "在线申请电子签证或持批文办理落地签",
+          "details": "中国公民可在线申请有效期 90 天的电子签证，也可凭批文办理落地签。"
+        },
+        "onwardTicket": {
+          "title": "返程或续程票据",
+          "description": "提供离开越南的交通凭证",
+          "details": "需要提供返程或续程行程证明，例如机票、巴士或火车票。"
+        },
+        "accommodation": {
+          "title": "住宿证明",
+          "description": "酒店预订或在越南的居住地址",
+          "details": "请准备好酒店预订单或在越南停留的联系地址。"
+        },
+        "funds": {
+          "title": "充足资金证明",
+          "description": "证明具备足够旅费",
+          "details": "建议准备现金、信用卡或银行流水，以证明旅费充足。"
+        }
+      },
+      "status": {
+        "info": {
+          "title": "随时开始填写入境信息",
+          "subtitle": "应用会帮您整理这些资料，轻松完成入境流程"
+        }
+      },
+      "startButton": "继续填写出行信息"
+    }
+  },
   "hongkong": {
     "info": {
       "headerTitle": "香港入境信息",

@@ -32,31 +32,10 @@ const VietnamEntryFlowScreen = ({ navigation, route }) => {
       route={route}
       navigation={navigation}
     >
-      {/* Header with back button + title */}
       <EntryFlowScreenTemplate.Header
         title="Vietnam Entry Preparation"
       />
-
-      {/* Loading indicator */}
-      <EntryFlowScreenTemplate.LoadingIndicator />
-
-      {/* Status banner (Ready ✅ / Almost There ⏳ / Please Complete 📝) */}
-      <EntryFlowScreenTemplate.StatusBanner />
-
-      {/* Scrollable content with pull-to-refresh */}
-      <EntryFlowScreenTemplate.ScrollContainer>
-        {/* Completion progress card with percentage */}
-        <EntryFlowScreenTemplate.CompletionCard />
-
-        {/* Category cards (Passport, Personal, Funds, Travel) */}
-        <EntryFlowScreenTemplate.Categories />
-
-        {/* Submission countdown (not shown for Vietnam - no submission window) */}
-        <EntryFlowScreenTemplate.SubmissionCountdown />
-
-        {/* Action buttons (Continue Editing / Ready) */}
-        <EntryFlowScreenTemplate.ActionButtons />
-      </EntryFlowScreenTemplate.ScrollContainer>
+      <EntryFlowScreenTemplate.AutoContent />
     </EntryFlowScreenTemplate>
   );
 };
