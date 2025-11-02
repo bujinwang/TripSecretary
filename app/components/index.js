@@ -14,6 +14,7 @@ export { default as PassportNameInput } from './PassportNameInput';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as FundItemDetailModal } from './FundItemDetailModal';
 export { default as OptimizedImage } from './OptimizedImage';
+export { default as LocationHierarchySelector } from './shared/LocationHierarchySelector';
 export { default as ProvinceSelector } from './ProvinceSelector';
 export { default as DistrictSelector } from './DistrictSelector';
 export { default as SubDistrictSelector } from './SubDistrictSelector';

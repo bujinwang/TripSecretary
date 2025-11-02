@@ -381,7 +381,7 @@ EntryFlowScreenTemplate.AutoContent = () => {
         destination={destinationName}
       />
 
-      {arrivalDate && (
+      {arrivalDate && config.features?.submissionCountdown !== false && (
         <CountdownCard
           arrivalDate={arrivalDate}
           t={t}
@@ -621,6 +621,14 @@ function CountdownCard({ arrivalDate, t, config }) {
 }
 
 function QuickActionsRow({ t, navigation, route, userData, config }) {
+  const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
+  const showEditQuickAction = config.features?.disableEditQuickAction !== true;
+  const showEntryGuideQuickAction = config.features?.entryGuideQuickAction === true;
+
+  if (!showPreviewQuickAction && !showEditQuickAction && !showEntryGuideQuickAction) {
+    return null;
+  }
+
   const handlePreview = () => {
     navigation.navigate('EntryPackPreview', {
       userData,
@@ -642,46 +650,79 @@ function QuickActionsRow({ t, navigation, route, userData, config }) {
     navigation.navigate(target, route.params);
   };
 
+  const handleEntryGuide = () => {
+    const target =
+      config.screens?.entryGuide ||
+      route?.params?.entryGuideScreen ||
+      'VietnamEntryGuide';
+    navigation.navigate(target, route.params);
+  };
+
   return (
     <XStack paddingHorizontal="$md" gap="$md" marginBottom="$lg">
-      <BaseCard
-        variant="flat"
-        padding="lg"
-        flex={1}
-        pressable
-        onPress={handlePreview}
-        borderWidth={2}
-        borderColor="rgba(11,214,123,0.3)"
-      >
-        <YStack alignItems="center" gap="$sm">
-          <TamaguiText fontSize={26}>👁️</TamaguiText>
-          <TamaguiText fontSize="$3" fontWeight="700">
-            {t('entryFlow.actions.previewPack', { defaultValue: '预览入境包' })}
-          </TamaguiText>
-          <TamaguiText fontSize="$2" color="$textSecondary">
-            {t('entryFlow.actions.previewPack.subtitle', { defaultValue: '查看已经准备好的资料' })}
-          </TamaguiText>
-        </YStack>
-      </BaseCard>
-      <BaseCard
-        variant="flat"
-        padding="lg"
-        flex={1}
-        pressable
-        onPress={handleEdit}
-        borderWidth={2}
-        borderColor="rgba(255,152,0,0.3)"
-      >
-        <YStack alignItems="center" gap="$sm">
-          <TamaguiText fontSize={26}>✏️</TamaguiText>
-          <TamaguiText fontSize="$3" fontWeight="700">
-            {t('entryFlow.actions.editInfoThai', { defaultValue: '编辑旅行信息' })}
-          </TamaguiText>
-          <TamaguiText fontSize="$2" color="$textSecondary">
-            {t('entryFlow.actions.editInfoThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
-          </TamaguiText>
-        </YStack>
-      </BaseCard>
+      {showPreviewQuickAction && (
+        <BaseCard
+          variant="flat"
+          padding="lg"
+          flex={1}
+          pressable
+          onPress={handlePreview}
+          borderWidth={2}
+          borderColor="rgba(11,214,123,0.3)"
+        >
+          <YStack alignItems="center" gap="$sm">
+            <TamaguiText fontSize={26}>👁️</TamaguiText>
+            <TamaguiText fontSize="$3" fontWeight="700">
+              {t('entryFlow.actions.previewPack', { defaultValue: '预览入境包' })}
+            </TamaguiText>
+            <TamaguiText fontSize="$2" color="$textSecondary">
+              {t('entryFlow.actions.previewPack.subtitle', { defaultValue: '查看已经准备好的资料' })}
+            </TamaguiText>
+          </YStack>
+        </BaseCard>
+      )}
+      {showEntryGuideQuickAction && (
+        <BaseCard
+          variant="flat"
+          padding="lg"
+          flex={1}
+          pressable
+          onPress={handleEntryGuide}
+          borderWidth={2}
+          borderColor="rgba(25,118,210,0.3)"
+        >
+          <YStack alignItems="center" gap="$sm">
+            <TamaguiText fontSize={26}>🛂</TamaguiText>
+            <TamaguiText fontSize="$3" fontWeight="700">
+              {t('entryFlow.actions.entryGuide', { defaultValue: '入境手续指南' })}
+            </TamaguiText>
+            <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
+              {t('entryFlow.actions.entryGuide.subtitle', { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
+            </TamaguiText>
+          </YStack>
+        </BaseCard>
+      )}
+      {showEditQuickAction && (
+        <BaseCard
+          variant="flat"
+          padding="lg"
+          flex={1}
+          pressable
+          onPress={handleEdit}
+          borderWidth={2}
+          borderColor="rgba(255,152,0,0.3)"
+        >
+          <YStack alignItems="center" gap="$sm">
+            <TamaguiText fontSize={26}>✏️</TamaguiText>
+            <TamaguiText fontSize="$3" fontWeight="700">
+              {t('entryFlow.actions.editInfoThai', { defaultValue: '编辑旅行信息' })}
+            </TamaguiText>
+            <TamaguiText fontSize="$2" color="$textSecondary">
+              {t('entryFlow.actions.editInfoThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
+            </TamaguiText>
+          </YStack>
+        </BaseCard>
+      )}
     </XStack>
   );
 }

@@ -22,6 +22,7 @@ export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 export { default as ThailandEntryGuideScreen } from './entryGuide/ThailandEntryGuideScreen';
 export { default as JapanInteractiveImmigrationGuide } from './japan/JapanInteractiveImmigrationGuide';
 export { default as InteractiveImmigrationGuide } from './japan/InteractiveImmigrationGuide';
+export { default as VietnamEntryGuideScreen } from './entryGuide/VietnamEntryGuideScreen';
 export { default as JapanInfoScreen } from './japan/JapanInfoScreen';
 export { default as JapanRequirementsScreen } from './japan/JapanRequirementsScreen';
 export { default as JapanProceduresScreen } from './japan/JapanProceduresScreen';

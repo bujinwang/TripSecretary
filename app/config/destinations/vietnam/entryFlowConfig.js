@@ -22,6 +22,7 @@ export const vietnamEntryFlowConfig = {
     current: 'VietnamEntryFlow',
     travelInfo: 'VietnamTravelInfo',
     submit: null, // Vietnam doesn't have digital arrival card submission
+    entryGuide: 'VietnamEntryGuide',
   },
 
   // Categories to track
@@ -257,6 +258,8 @@ export const vietnamEntryFlowConfig = {
     submissionCountdown: false, // No submission window
     dataChangeAlerts: false, // No resubmission needed
     shareFeature: false, // Optional: share entry pack with friend
+    disableEditQuickAction: true,
+    entryGuideQuickAction: true,
   },
 };
 

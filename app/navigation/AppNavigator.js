@@ -100,6 +100,7 @@ import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuide
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 import HongKongEntryGuideScreen from '../screens/entryGuide/HongKongEntryGuideScreen';
+import VietnamEntryGuideScreen from '../screens/entryGuide/VietnamEntryGuideScreen';
 import KoreaEntryPackPreviewScreen from '../screens/korea/KoreaEntryPackPreviewScreen';
 
 import { colors } from '../theme';
@@ -645,6 +646,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="VietnamEntryFlow"
           component={VietnamEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="VietnamEntryGuide"
+          component={VietnamEntryGuideScreen}
           options={{
             headerShown: false,
           }}

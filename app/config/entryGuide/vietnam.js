@@ -1,6 +1,8 @@
 // 越南入境指引配置文件 - 内排机场HAN/新山一机场SGN/岘港机场DAD完整流程
 // 基于实际机场体验和越南电子签证系统
 
+const vietnamArrivalCardImage = require('../../../assets/forms/vietnam-entry-card.png');
+
 export const vietnamEntryGuide = {
   country: 'vietnam',
   countryName: '越南',
@@ -68,13 +70,79 @@ export const vietnamEntryGuide = {
       ]
     },
     {
+      id: 'arrival_card',
+      title: '纸质入境/出境卡',
+      titleZh: '纸质入境卡填写',
+      description: '飞机上或入境柜台领取的纸质入出境联合表格，建议提前准备',
+      descriptionZh: '飞机上或入境柜台领取的纸质入出境联合表格，建议提前准备',
+      category: 'pre-arrival',
+      categoryZh: '表格填写',
+      priority: 3,
+      estimatedTime: '10分钟',
+      icon: '📝',
+      required: true,
+      media: {
+        type: 'image',
+        source: vietnamArrivalCardImage,
+        caption: 'Vietnam Entry/Exit Form Sample',
+        captionZh: '越南入境/出境卡填写示例',
+      },
+      warnings: [
+        '每位旅客都需要填写，同行旅伴不可共用',
+        '建议使用蓝色或黑色签字笔，用英文大写填写'
+      ],
+      formFields: [
+        {
+          label: 'Surname / Given Name',
+          labelZh: '姓名（Surname / Given Name）',
+          guidance: 'Match your passport, use uppercase letters; leave middle name blank if not applicable',
+          guidanceZh: '与护照一致，英文字母全部大写；若无中间名可留空'
+        },
+        {
+          label: 'Passport Number',
+          labelZh: '护照号码',
+          guidance: 'Enter the full passport number, e.g. E12345678, without missing letters',
+          guidanceZh: '填写完整护照号，例如 E12345678，不要遗漏字母'
+        },
+        {
+          label: 'Nationality',
+          labelZh: '国籍',
+          guidance: 'Write CHINA / CHINESE to match the passport information',
+          guidanceZh: '填写 CHINA 或 CHINESE，保持与护照信息一致'
+        },
+        {
+          label: 'Flight Number',
+          labelZh: '航班号',
+          guidance: 'Enter your arriving flight number, e.g. VN123',
+          guidanceZh: '填写抵达越南的航班号，例如 VN123'
+        },
+        {
+          label: 'Purpose of Entry',
+          labelZh: '入境目的',
+          guidance: 'Tick Tourism / Business / Visit as appropriate',
+          guidanceZh: '勾选 Tourism / Business / Visit 等对应选项'
+        },
+        {
+          label: 'Address in Vietnam',
+          labelZh: '在越南的地址',
+          guidance: 'Provide your accommodation address in Vietnam, preferably in English',
+          guidanceZh: '填写酒店或住宿的详细地址，可提前准备英文版'
+        }
+      ],
+      tips: [
+        '随身携带一支签字笔，避免在飞机上临时向空乘索要',
+        '可提前打印空白表格练习填写，减少现场压力',
+        '忘记领取或填写可在入境柜台前领取补填，但可能需要重新排队'
+      ]
+    },
+    {
       id: 'health_declaration',
       title: '健康申报',
       titleZh: '健康申报',
       description: '完成健康申报表，确认疫苗要求',
       descriptionZh: '完成健康申报表，确认疫苗要求',
       category: 'pre-flight',
-      priority: 3,
+      priority: 4,
       estimatedTime: '15分钟',
       icon: '🏥',
       required: true,
@@ -96,7 +164,7 @@ export const vietnamEntryGuide = {
       description: '关闭蜂窝网络，准备越南dong兑换',
       descriptionZh: '关闭蜂窝网络，准备越南dong兑换',
       category: 'post-landing',
-      priority: 4,
+      priority: 5,
       estimatedTime: '2分钟',
       icon: '📱',
       required: true,
@@ -117,7 +185,7 @@ export const vietnamEntryGuide = {
       description: '出示护照和签证，完成入境检查',
       descriptionZh: '出示护照和签证，完成入境检查',
       category: 'immigration',
-      priority: 5,
+      priority: 6,
       estimatedTime: '20分钟',
       icon: '🛂',
       required: true,
@@ -135,7 +203,7 @@ export const vietnamEntryGuide = {
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
       category: 'baggage',
-      priority: 6,
+      priority: 7,
       estimatedTime: '20分钟',
       icon: '🧳',
       required: true,
@@ -152,7 +220,7 @@ export const vietnamEntryGuide = {
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 7,
+      priority: 8,
       estimatedTime: '15分钟',
       icon: '🔍',
       required: true,

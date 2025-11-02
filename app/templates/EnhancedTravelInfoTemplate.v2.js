@@ -133,17 +133,41 @@ const EnhancedTravelInfoTemplate = ({
   // Extract location data directly from config (no dynamic import needed)
   const locationData = useMemo(() => {
     if (config?.sections?.travel?.locationHierarchy) {
-      const { provincesData, getDistrictsFunc } = config.sections.travel.locationHierarchy;
+      const {
+        provincesData,
+        getDistrictsFunc,
+        getSubDistrictsFunc,
+        levels,
+      } = config.sections.travel.locationHierarchy;
+
       return {
         provinces: provincesData || [],
-        getDistricts: getDistrictsFunc || null,
+        getDistricts: typeof getDistrictsFunc === 'function' ? getDistrictsFunc : null,
+        getSubDistricts: typeof getSubDistrictsFunc === 'function' ? getSubDistrictsFunc : null,
+        levels: typeof levels === 'number' ? levels : null,
       };
     }
+
     return {
       provinces: [],
       getDistricts: null,
+      getSubDistricts: null,
+      levels: null,
     };
   }, [config?.sections?.travel?.locationHierarchy]);
+
+  // Travel section config (inject location depth if provided in hierarchy)
+  const travelSectionConfig = useMemo(() => {
+    const section = config?.sections?.travel || {};
+    const hierarchyLevels =
+      section?.locationHierarchy?.levels ?? locationData.levels;
+
+    if (hierarchyLevels && section.locationDepth !== hierarchyLevels) {
+      return { ...section, locationDepth: hierarchyLevels };
+    }
+
+    return section;
+  }, [config?.sections?.travel, locationData.levels]);
 
   // ============================================
   // FORM STATE (dynamically created from config)
@@ -858,14 +882,15 @@ const EnhancedTravelInfoTemplate = ({
               setHotelAddress={(v) => updateField('hotelAddress', v)}
               handleProvinceSelect={handleProvinceSelect}
               handleDistrictSelect={handleDistrictSelect}
-              regionsData={locationData.provinces}
-              getDistrictsFunc={locationData.getDistricts}
+              getProvinceData={locationData.provinces}
+              getDistrictData={locationData.getDistricts}
+              getSubDistrictData={locationData.getSubDistricts}
               errors={formState.errors}
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
               labels={config?.i18n?.labelSource?.travelDetails || {}}
-              config={config?.sections?.travel || {}}
+              config={travelSectionConfig}
             />
           )}
 
