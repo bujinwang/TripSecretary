@@ -358,6 +358,9 @@ EntryFlowScreenTemplate.AutoContent = () => {
   const minPercent = config.completion?.minPercent || 80;
   const isReady = completionPercent >= 100;
   const isAlmost = !isReady && completionPercent >= minPercent;
+  const hasSubmitScreen = Boolean(config.screens?.submit);
+  const hasEntryGuideScreen = Boolean(config.screens?.entryGuide);
+  const useEntryGuideAsPrimary = isReady && !hasSubmitScreen && hasEntryGuideScreen;
 
   return (
     <EntryFlowScreenTemplate.ScrollContainer>
@@ -376,10 +379,20 @@ EntryFlowScreenTemplate.AutoContent = () => {
         route={route}
         config={config}
         isReady={isReady}
+        useEntryGuideAsPrimary={useEntryGuideAsPrimary}
         completionStatus={completionStatus}
         userData={userData}
         destination={destinationName}
       />
+
+      {useEntryGuideAsPrimary && (
+        <SecondaryEditActionCard
+          t={t}
+          navigation={navigation}
+          route={route}
+          config={config}
+        />
+      )}
 
       {arrivalDate && config.features?.submissionCountdown !== false && (
         <CountdownCard
@@ -395,6 +408,7 @@ EntryFlowScreenTemplate.AutoContent = () => {
         route={route}
         userData={userData}
         config={config}
+        useEntryGuideAsPrimary={useEntryGuideAsPrimary}
       />
 
       <HelpCard t={t} />
@@ -462,25 +476,52 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost }) {
   );
 }
 
-function PrimaryActionCard({ t, navigation, route, config, isReady, destination }) {
+function PrimaryActionCard({
+  t,
+  navigation,
+  route,
+  config,
+  isReady,
+  useEntryGuideAsPrimary,
+  destination,
+}) {
   const hasSubmitScreen = Boolean(config.screens?.submit);
+  const entryGuideScreen = config.screens?.entryGuide;
 
   const handlePress = () => {
-    if (isReady && hasSubmitScreen) {
-      navigation.navigate(config.screens.submit, route.params);
-      return;
+    if (isReady) {
+      if (hasSubmitScreen) {
+        navigation.navigate(config.screens.submit, route.params);
+        return;
+      }
+      if (useEntryGuideAsPrimary && entryGuideScreen) {
+        navigation.navigate(entryGuideScreen, route.params);
+        return;
+      }
     }
     const travelInfoScreen = config.screens?.travelInfo || 'VietnamTravelInfo';
     navigation.navigate(travelInfoScreen, route.params);
   };
 
-  const gradientColors = isReady && hasSubmitScreen ? ['#22C55E', '#16A34A'] : ['#F97316', '#F59E0B'];
-  const icon = isReady && hasSubmitScreen ? '🛫' : '✏️';
-  const title = isReady && hasSubmitScreen
+  const gradientColors = useEntryGuideAsPrimary
+    ? ['#3B82F6', '#2563EB']
+    : isReady && hasSubmitScreen
+    ? ['#22C55E', '#16A34A']
+    : ['#F97316', '#F59E0B'];
+  const icon = useEntryGuideAsPrimary ? '🛂' : isReady && hasSubmitScreen ? '🛫' : '✏️';
+  const title = useEntryGuideAsPrimary
+    ? t('entryFlow.actions.startEntryGuide', { defaultValue: '开始入境' })
+    : isReady && hasSubmitScreen
     ? t('entryFlow.actions.submitThai', { defaultValue: '提交入境卡' })
     : t('entryFlow.actions.editThai', { defaultValue: '修改旅行信息' });
-  const subtitle = isReady && hasSubmitScreen
-    ? t('entryFlow.actions.submitThai.subtitle', { defaultValue: `准备完成！现在可以提交${destination}入境卡了` })
+  const subtitle = useEntryGuideAsPrimary
+    ? t('entryFlow.actions.entryGuide.subtitle', {
+        defaultValue: '查看纸质入境卡与海关申报填写步骤',
+      })
+    : isReady && hasSubmitScreen
+    ? t('entryFlow.actions.submitThai.subtitle', {
+        defaultValue: `准备完成！现在可以提交${destination}入境卡了`,
+      })
     : t('entryFlow.actions.editThai.subtitle', { defaultValue: '如需修改，返回编辑' });
 
   return (
@@ -510,11 +551,24 @@ function PrimaryActionCard({ t, navigation, route, config, isReady, destination 
               {icon}
             </TamaguiText>
           </YStack>
-          <YStack flex={1}>
-            <TamaguiText fontSize="$4" fontWeight="700" color="$white">
+          <YStack
+            flex={1}
+            alignItems={useEntryGuideAsPrimary ? 'center' : 'flex-start'}
+          >
+            <TamaguiText
+              fontSize="$4"
+              fontWeight="700"
+              color="$white"
+              textAlign={useEntryGuideAsPrimary ? 'center' : 'left'}
+            >
               {title}
             </TamaguiText>
-            <TamaguiText fontSize="$2" color="rgba(255,255,255,0.9)" marginTop="$xs">
+            <TamaguiText
+              fontSize="$2"
+              color="rgba(255,255,255,0.9)"
+              marginTop="$xs"
+              textAlign={useEntryGuideAsPrimary ? 'center' : 'left'}
+            >
               {subtitle}
             </TamaguiText>
           </YStack>
@@ -532,6 +586,54 @@ function PrimaryActionCard({ t, navigation, route, config, isReady, destination 
           </YStack>
         </LinearGradient>
       </TouchableOpacity>
+    </YStack>
+  );
+}
+
+function SecondaryEditActionCard({ t, navigation, route, config }) {
+  const handlePress = () => {
+    const travelInfoScreen =
+      config.screens?.travelInfo || route?.params?.travelInfoScreen || 'VietnamTravelInfo';
+    navigation.navigate(travelInfoScreen, route.params);
+  };
+
+  return (
+    <YStack paddingHorizontal="$md" marginBottom="$lg">
+      <BaseCard
+        variant="flat"
+        padding="md"
+        pressable
+        onPress={handlePress}
+        borderWidth={1.5}
+        borderColor="rgba(37,99,235,0.15)"
+        backgroundColor="#FFFFFF"
+      >
+        <XStack alignItems="center" justifyContent="center" gap="$sm">
+          <YStack
+            width={40}
+            height={40}
+            borderRadius={20}
+            backgroundColor="rgba(37,99,235,0.12)"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <TamaguiText fontSize={22}>✏️</TamaguiText>
+          </YStack>
+          <YStack alignItems="center">
+            <TamaguiText fontSize="$3" fontWeight="700" color="#1D4ED8">
+              {t('entryFlow.actions.editThai', { defaultValue: '修改旅行信息' })}
+            </TamaguiText>
+            <TamaguiText
+              fontSize="$2"
+              color="#475569"
+              marginTop="$xs"
+              textAlign="center"
+            >
+              {t('entryFlow.actions.editThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
+            </TamaguiText>
+          </YStack>
+        </XStack>
+      </BaseCard>
     </YStack>
   );
 }
@@ -620,10 +722,11 @@ function CountdownCard({ arrivalDate, t, config }) {
   );
 }
 
-function QuickActionsRow({ t, navigation, route, userData, config }) {
+function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuideAsPrimary }) {
   const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
   const showEditQuickAction = config.features?.disableEditQuickAction !== true;
-  const showEntryGuideQuickAction = config.features?.entryGuideQuickAction === true;
+  const showEntryGuideQuickAction =
+    config.features?.entryGuideQuickAction === true && !useEntryGuideAsPrimary;
 
   if (!showPreviewQuickAction && !showEditQuickAction && !showEntryGuideQuickAction) {
     return null;

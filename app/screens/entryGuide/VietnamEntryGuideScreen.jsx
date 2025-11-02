@@ -4,7 +4,7 @@
  * including paper arrival card instructions with visual references.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,9 @@ const VietnamEntryGuideScreen = ({ navigation }) => {
   const { language } = useLocale();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set());
+  const scrollViewRef = useRef(null);
+  const stepLayouts = useRef({});
+  const stepContainerWidth = useRef(0);
 
   const currentStep = useMemo(
     () => VIETNAM_ENTRY_STEPS[currentStepIndex],
@@ -63,6 +66,46 @@ const VietnamEntryGuideScreen = ({ navigation }) => {
     }
   };
 
+  const centerStepInView = useCallback((index) => {
+    const layout = stepLayouts.current[index];
+    const containerWidth = stepContainerWidth.current;
+
+    if (!layout || !scrollViewRef.current || !containerWidth) {
+      return;
+    }
+
+    const targetOffset = Math.max(
+      0,
+      layout.x + layout.width / 2 - containerWidth / 2
+    );
+
+    scrollViewRef.current.scrollTo({ x: targetOffset, animated: true });
+  }, []);
+
+  const handleStepLayout = useCallback(
+    (index, event) => {
+      const { x, width } = event.nativeEvent.layout;
+      stepLayouts.current[index] = { x, width };
+
+      if (index === currentStepIndex) {
+        centerStepInView(index);
+      }
+    },
+    [centerStepInView, currentStepIndex]
+  );
+
+  const handleScrollViewLayout = useCallback(
+    (event) => {
+      stepContainerWidth.current = event.nativeEvent.layout.width;
+      centerStepInView(currentStepIndex);
+    },
+    [centerStepInView, currentStepIndex]
+  );
+
+  useEffect(() => {
+    centerStepInView(currentStepIndex);
+  }, [centerStepInView, currentStepIndex]);
+
   const getStepStatus = (index) => {
     const step = VIETNAM_ENTRY_STEPS[index];
     if (index < currentStepIndex) {
@@ -87,6 +130,8 @@ const VietnamEntryGuideScreen = ({ navigation }) => {
         showsHorizontalScrollIndicator={false}
         style={styles.stepIndicatorScroll}
         contentContainerStyle={styles.stepIndicatorContent}
+        ref={scrollViewRef}
+        onLayout={handleScrollViewLayout}
       >
         {VIETNAM_ENTRY_STEPS.map((step, index) => {
           const status = getStepStatus(index);
@@ -106,6 +151,7 @@ const VietnamEntryGuideScreen = ({ navigation }) => {
               ]}
               onPress={() => handleStepPress(index)}
               disabled={isPending && index > currentStepIndex}
+              onLayout={(event) => handleStepLayout(index, event)}
             >
               <Text
                 style={[
@@ -605,4 +651,3 @@ const styles = StyleSheet.create({
 });
 
 export default VietnamEntryGuideScreen;
-

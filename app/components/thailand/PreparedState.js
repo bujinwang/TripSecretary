@@ -19,7 +19,6 @@ import CompletionSummaryCard from '../CompletionSummaryCard';
 import SubmissionCountdown from '../SubmissionCountdown';
 import Button from '../Button';
 import { colors, spacing } from '../../theme';
-import { formatChineseDate } from '../../utils/dateUtils';
 
 // Styled Tamagui components
 const PressableCard = styled(YStack, {
@@ -219,6 +218,7 @@ const ProgressEncouragement = ({
   primaryActionState,
   onContinuePreparation,
   onPreviewPack,
+  onPreviewGuide,
   onGetHelp,
   arrivalDate,
   t,
@@ -383,6 +383,29 @@ const ProgressEncouragement = ({
           </PressableCard>
         )}
 
+        {/* Quick Preview Entry Card */}
+        {shouldShowSubmitPrimary && typeof onPreviewGuide === 'function' && (
+          <Button
+            title="预览入境指引"
+            icon="👁️"
+            variant="secondary"
+            size="large"
+            onPress={() => {
+              console.log('Quick preview entry guide button pressed');
+              try {
+                onPreviewGuide();
+              } catch (error) {
+                console.error('Failed to open entry guide preview:', error);
+                Alert.alert('错误', '暂时无法预览入境指引，请稍后重试。');
+              }
+            }}
+            style={{
+              width: '100%',
+              marginTop: spacing.sm,
+            }}
+          />
+        )}
+
         {/* Countdown Section - High Priority Alert */}
         {(arrivalDate || buttonState.action === 'wait_for_window') && (
           <AnimatedCard
@@ -416,6 +439,7 @@ const ProgressEncouragement = ({
                 locale={t('locale', { defaultValue: 'zh' })}
                 showIcon={false}
                 updateInterval={1000} // Update every second for dynamic countdown
+                variant="compact"
               />
               {buttonState.action === 'submit_now' && (
                 <YStack
@@ -435,14 +459,6 @@ const ProgressEncouragement = ({
                   </Text>
                 </YStack>
               )}
-              <Text
-                fontSize={12}
-                color="#EF6C00"
-                marginTop="$sm"
-                textAlign="center"
-              >
-                抵达日期 {arrivalDate ? formatChineseDate(arrivalDate) : ''}
-              </Text>
             </YStack>
           </AnimatedCard>
         )}
@@ -707,6 +723,15 @@ const PreparedState = ({
         primaryActionState={primaryActionState}
         onContinuePreparation={onPrimaryAction}
         onPreviewPack={handlePreviewEntryCard}
+        onPreviewGuide={() => {
+          console.log('Navigating to ThailandEntryGuide preview');
+          navigation.navigate('ThailandEntryGuide', {
+            passport: passportParam,
+            destination,
+            completionData: userData,
+            previewMode: true,
+          });
+        }}
         onGetHelp={() => {
           Alert.alert(
             '寻求帮助 🤝',

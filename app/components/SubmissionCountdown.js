@@ -14,10 +14,13 @@ const SubmissionCountdown = ({
    arrivalDate,
    locale = 'zh',
    showIcon = true,
-   updateInterval = 1000 // Update every second for real-time countdown
+   updateInterval = 1000, // Update every second for real-time countdown
+   variant = 'default',
+   showArrivalDate = true,
  }) => {
   const [windowInfo, setWindowInfo] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(null);
+  const isCompact = variant === 'compact';
 
   // Update countdown information
   const updateCountdown = () => {
@@ -116,37 +119,56 @@ const SubmissionCountdown = ({
   const colorScheme = getColors();
 
   return (
-    <View style={[styles.container, { 
+    <View style={[
+      styles.container,
+      isCompact && styles.compactContainer,
+      { 
       backgroundColor: colorScheme.background,
       borderColor: colorScheme.border 
     }]}>
       {/* Status Icon */}
       {showIcon && (
-        <View style={styles.iconContainer}>
-          <Text style={styles.statusIcon}>{windowInfo.icon}</Text>
+        <View style={[styles.iconContainer, isCompact && styles.iconContainerCompact]}>
+          <Text style={[styles.statusIcon, isCompact && styles.statusIconCompact]}>{windowInfo.icon}</Text>
         </View>
       )}
 
       {/* Main Message */}
-      <View style={styles.messageContainer}>
-        <Text style={[styles.statusMessage, { color: colorScheme.text }]}>
+      <View style={[styles.messageContainer, isCompact && styles.messageContainerCompact]}>
+        <Text style={[
+          styles.statusMessage,
+          isCompact && styles.statusMessageCompact,
+          { color: colorScheme.text }
+        ]}>
           {windowInfo.message}
         </Text>
       </View>
 
       {/* Countdown Display */}
       {windowInfo.showCountdown && timeRemaining && (
-        <View style={styles.countdownContainer}>
-          <Text style={[styles.countdownLabel, { color: colorScheme.text }]}>
+        <View style={[styles.countdownContainer, isCompact && styles.countdownContainerCompact]}>
+          <Text style={[
+            styles.countdownLabel,
+            isCompact && styles.countdownLabelCompact,
+            { color: colorScheme.text }
+          ]}>
             {locale === 'zh' ? '倒计时' : 'Countdown'}
           </Text>
-          <Text style={[styles.countdownTime, { color: colorScheme.accent }]}>
+          <Text style={[
+            styles.countdownTime,
+            isCompact && styles.countdownTimeCompact,
+            { color: colorScheme.accent }
+          ]}>
             {timeRemaining.display}
           </Text>
           
           {/* Urgency indicator */}
           {timeRemaining.isUrgent && (
-            <View style={[styles.urgencyBadge, { backgroundColor: colorScheme.accent }]}>
+            <View style={[
+              styles.urgencyBadge,
+              isCompact && styles.urgencyBadgeCompact,
+              { backgroundColor: colorScheme.accent }
+            ]}>
               <Text style={styles.urgencyText}>
                 {locale === 'zh' ? '紧急' : 'URGENT'}
               </Text>
@@ -156,32 +178,46 @@ const SubmissionCountdown = ({
       )}
 
       {/* Arrival Date Display */}
-      <View style={styles.arrivalContainer}>
-        <Text style={styles.arrivalLabel}>
-          {locale === 'zh' ? '抵达日期' : 'Arrival Date'}
-        </Text>
-        <Text style={styles.arrivalDate}>
-          {(() => {
-            // Parse date string correctly to avoid timezone issues
-            // "2025-10-31" should be interpreted as local date, not UTC
-            const dateStr = typeof arrivalDate === 'string' ? arrivalDate : arrivalDate.toISOString().split('T')[0];
-            const [year, month, day] = dateStr.split('-').map(Number);
-            const localDate = new Date(year, month - 1, day);
-            return DateFormatter.formatLongDate(
-              localDate,
-              locale === 'zh' ? 'zh-CN' : locale
-            );
-          })()}
-        </Text>
-      </View>
+      {showArrivalDate && (
+        <View style={[styles.arrivalContainer, isCompact && styles.arrivalContainerCompact]}>
+          <Text style={[
+            styles.arrivalLabel,
+            isCompact && styles.arrivalLabelCompact
+          ]}>
+            {locale === 'zh' ? '抵达日期' : 'Arrival Date'}
+          </Text>
+          <Text style={[
+            styles.arrivalDate,
+            isCompact && styles.arrivalDateCompact
+          ]}>
+            {(() => {
+              // Parse date string correctly to avoid timezone issues
+              // "2025-10-31" should be interpreted as local date, not UTC
+              const dateStr = typeof arrivalDate === 'string' ? arrivalDate : arrivalDate.toISOString().split('T')[0];
+              const [year, month, day] = dateStr.split('-').map(Number);
+              const localDate = new Date(year, month - 1, day);
+              return DateFormatter.formatLongDate(
+                localDate,
+                locale === 'zh' ? 'zh-CN' : locale
+              );
+            })()}
+          </Text>
+        </View>
+      )}
 
       {/* Submission Window Info */}
       {windowInfo.state === 'pre-window' && windowInfo.submissionOpensAt && (
-        <View style={styles.windowInfoContainer}>
-          <Text style={styles.windowInfoLabel}>
+        <View style={[styles.windowInfoContainer, isCompact && styles.windowInfoContainerCompact]}>
+          <Text style={[
+            styles.windowInfoLabel,
+            isCompact && styles.windowInfoLabelCompact
+          ]}>
             {locale === 'zh' ? '提交窗口开启时间' : 'Submission Window Opens'}
           </Text>
-          <Text style={styles.windowInfoTime}>
+          <Text style={[
+            styles.windowInfoTime,
+            isCompact && styles.windowInfoTimeCompact
+          ]}>
             {DateFormatter.formatDateTime(
               windowInfo.submissionOpensAt,
               locale === 'zh' ? 'zh-CN' : locale
@@ -199,6 +235,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     alignItems: 'center',
+  },
+  compactContainer: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: 10,
   },
   noDateContainer: {
     alignItems: 'center',
@@ -222,11 +263,20 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginBottom: spacing.sm,
   },
+  iconContainerCompact: {
+    marginBottom: spacing.xs,
+  },
   statusIcon: {
     fontSize: 32,
   },
+  statusIconCompact: {
+    fontSize: 26,
+  },
   messageContainer: {
     marginBottom: spacing.md,
+  },
+  messageContainerCompact: {
+    marginBottom: spacing.sm,
   },
   statusMessage: {
     ...typography.body1,
@@ -234,19 +284,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  statusMessageCompact: {
+    ...typography.body2,
+    lineHeight: 18,
+  },
   countdownContainer: {
     alignItems: 'center',
     marginBottom: spacing.md,
   },
+  countdownContainerCompact: {
+    marginBottom: spacing.sm,
+  },
   countdownLabel: {
     ...typography.body2,
     marginBottom: spacing.xs,
+  },
+  countdownLabelCompact: {
+    ...typography.caption,
+    marginBottom: spacing.xs / 2,
   },
   countdownTime: {
     ...typography.h2,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: spacing.xs,
+  },
+  countdownTimeCompact: {
+    ...typography.h3,
+    fontWeight: '700',
+    marginBottom: spacing.xs / 2,
   },
   urgencyBadge: {
     paddingHorizontal: spacing.sm,
@@ -259,14 +325,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
+  urgencyBadgeCompact: {
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+  },
   arrivalContainer: {
     alignItems: 'center',
     marginBottom: spacing.sm,
+  },
+  arrivalContainerCompact: {
+    marginBottom: spacing.xs,
   },
   arrivalLabel: {
     ...typography.body2,
     color: colors.textSecondary,
     marginBottom: 2,
+  },
+  arrivalLabelCompact: {
+    ...typography.caption,
   },
   arrivalDate: {
     ...typography.body1,
@@ -274,22 +350,36 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
   },
+  arrivalDateCompact: {
+    ...typography.body2,
+    fontWeight: '600',
+  },
   windowInfoContainer: {
     alignItems: 'center',
     paddingTop: spacing.sm,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
+  windowInfoContainerCompact: {
+    paddingTop: spacing.xs,
+  },
   windowInfoLabel: {
     ...typography.body2,
     color: colors.textSecondary,
     marginBottom: 2,
+  },
+  windowInfoLabelCompact: {
+    ...typography.caption,
   },
   windowInfoTime: {
     ...typography.body2,
     fontWeight: '500',
     color: colors.text,
     textAlign: 'center',
+  },
+  windowInfoTimeCompact: {
+    ...typography.body2,
+    fontSize: typography.body2.fontSize - 1,
   },
 });
 

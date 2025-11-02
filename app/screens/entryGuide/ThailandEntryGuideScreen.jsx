@@ -3,7 +3,7 @@
  * 提供泰国入境完整流程的逐步指导
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,10 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [latestTdacSubmission, setLatestTdacSubmission] = useState(completionData?.tdacSubmission || null);
+  const stepScrollRef = useRef(null);
+  const [stepLayouts, setStepLayouts] = useState({});
+  const [stepScrollWidth, setStepScrollWidth] = useState(0);
+  const [stepContentWidth, setStepContentWidth] = useState(0);
 
   const currentStep = THAILAND_ENTRY_STEPS[currentStepIndex];
   const progress = ((currentStepIndex + 1) / THAILAND_ENTRY_STEPS.length) * 100;
@@ -131,6 +135,42 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleStepLayout = useCallback((index, layout) => {
+    setStepLayouts((prev) => {
+      const existing = prev[index];
+      if (
+        existing &&
+        Math.abs(existing.x - layout.x) < 0.5 &&
+        Math.abs(existing.width - layout.width) < 0.5
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [index]: layout,
+      };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!stepScrollRef.current) {
+      return;
+    }
+    const layout = stepLayouts[currentStepIndex];
+    if (!layout || stepScrollWidth <= 0) {
+      return;
+    }
+    const targetCenter = layout.x + layout.width / 2;
+    const rawOffset = targetCenter - stepScrollWidth / 2;
+    const maxOffset = Math.max(0, stepContentWidth - stepScrollWidth);
+    const clampedOffset = Math.max(0, Math.min(rawOffset, maxOffset));
+
+    stepScrollRef.current.scrollTo({
+      x: clampedOffset,
+      animated: true,
+    });
+  }, [currentStepIndex, stepLayouts, stepScrollWidth, stepContentWidth]);
+
   const renderStepIndicator = () => {
     return (
       <View style={styles.stepIndicatorContainer}>
@@ -141,7 +181,22 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.stepIndicatorScroll}
-          contentContainerStyle={styles.stepIndicatorContent}
+          contentContainerStyle={[
+            styles.stepIndicatorContent,
+            stepScrollWidth > 0 && { paddingHorizontal: stepScrollWidth / 2 },
+          ]}
+          ref={stepScrollRef}
+          onLayout={({ nativeEvent }) => {
+            const width = nativeEvent.layout.width;
+            if (Math.abs(width - stepScrollWidth) > 0.5) {
+              setStepScrollWidth(width);
+            }
+          }}
+          onContentSizeChange={(contentWidth) => {
+            if (Math.abs(contentWidth - stepContentWidth) > 0.5) {
+              setStepContentWidth(contentWidth);
+            }
+          }}
         >
           {THAILAND_ENTRY_STEPS.map((step, index) => {
             const status = getStepStatus(index);
@@ -156,6 +211,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
                 ]}
                 onPress={() => handleStepPress(index)}
                 disabled={status === 'pending' && index > currentStepIndex}
+                onLayout={({ nativeEvent }) => handleStepLayout(index, nativeEvent.layout)}
               >
                 <Text style={[
                   styles.stepIndicatorIcon,

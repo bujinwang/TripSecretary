@@ -18,23 +18,23 @@ const CompletionSummaryCard = ({
     const configs = {
       thailand: {
         readyText: '泰国准备就绪！🌴',
-        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去泰国了 🌺`,
-        completeText: '太棒了！泰国之旅准备就绪！🌴'
+        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        completeText: null
       },
       malaysia: {
         readyText: '马来西亚准备就绪！🇲🇾',
-        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去马来西亚了 🌺`,
-        completeText: '太棒了！马来西亚之旅准备就绪！🇲🇾'
+        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        completeText: null
       },
       hongkong: {
         readyText: '香港准备就绪！🇭🇰',
-        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去香港了 ✨`,
-        completeText: '太棒了！香港之旅准备就绪！🇭🇰'
+        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        completeText: null
       },
       japan: {
         readyText: '日本准备就绪！🌸',
-        progressText: (remaining) => `继续加油！还差 ${remaining}% 就能去日本了 🗾`,
-        completeText: '太棒了！日本之旅准备就绪！🌸'
+        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        completeText: null
       }
     };
     return configs[country] || configs.thailand;
@@ -94,8 +94,14 @@ const CompletionSummaryCard = ({
 
       {/* Progress Bar */}
       {showProgressBar && (
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBarBackground}>
+        <View style={[
+          styles.progressBarContainer,
+          completionPercent === 100 && styles.progressBarContainerCompact
+        ]}>
+          <View style={[
+            styles.progressBarBackground,
+            completionPercent === 100 && styles.progressBarBackgroundCompact
+          ]}>
             <View
               style={[
                 styles.progressBarFill,
@@ -106,12 +112,11 @@ const CompletionSummaryCard = ({
               ]}
             />
           </View>
-          <Text style={styles.progressText}>
-            {completionPercent < 100
-              ? config.progressText(100 - completionPercent)
-              : config.completeText
-            }
-          </Text>
+          {completionPercent < 100 && (
+            <Text style={styles.progressText}>
+              {config.progressText(100 - completionPercent)}
+            </Text>
+          )}
         </View>
       )}
     </View>
@@ -152,6 +157,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  progressBarContainerCompact: {
+    marginBottom: 0,
+  },
   progressBarBackground: {
     width: '100%',
     height: 8,
@@ -159,6 +167,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: spacing.sm,
+  },
+  progressBarBackgroundCompact: {
+    marginBottom: 0,
   },
   progressBarFill: {
     height: '100%',
