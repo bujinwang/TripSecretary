@@ -554,6 +554,7 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
         <FundItemDetailModal
           visible={formState.fundItemModalVisible}
           fundItem={formState.currentFundItem}
+          isCreateMode={!formState.currentFundItem && !!formState.newFundItemType}
           createItemType={formState.newFundItemType}
           onClose={handleFundItemModalClose}
           onUpdate={handleFundItemUpdate}

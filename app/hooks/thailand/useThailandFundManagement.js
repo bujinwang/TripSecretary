@@ -44,6 +44,7 @@ export const useThailandFundManagement = ({
    * Opens the fund item modal for editing an existing fund item
    */
   const handleFundItemPress = useCallback((fund) => {
+    formState.setNewFundItemType(null);
     formState.setCurrentFundItem(fund);
     formState.setFundItemModalVisible(true);
   }, [formState]);
@@ -54,6 +55,7 @@ export const useThailandFundManagement = ({
   const handleFundItemModalClose = useCallback(() => {
     formState.setFundItemModalVisible(false);
     formState.setCurrentFundItem(null);
+    formState.setNewFundItemType(null);
   }, [formState]);
 
   /**
