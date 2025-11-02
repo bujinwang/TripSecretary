@@ -630,7 +630,12 @@ function QuickActionsRow({ t, navigation, route, userData, config }) {
   }
 
   const handlePreview = () => {
-    navigation.navigate('EntryPackPreview', {
+    const previewScreen =
+      config.screens?.entryPackPreview ||
+      route?.params?.entryPackPreviewScreen ||
+      'EntryPackPreview';
+
+    navigation.navigate(previewScreen, {
       userData,
       ...route.params,
       entryPackData: {

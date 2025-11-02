@@ -189,6 +189,8 @@ export const vietnamEntryGuide = {
       estimatedTime: '20分钟',
       icon: '🛂',
       required: true,
+      showEntryPack: true,
+      entryPackHint: '整理好的通关资料（护照、签证、旅行计划、资金证明）可直接展示给检查官。',
       tips: [
         '排队等候相应通道',
         '准备护照和签证文件',

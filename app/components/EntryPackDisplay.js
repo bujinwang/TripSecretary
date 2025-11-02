@@ -200,6 +200,37 @@ const countryConfigs = {
       amount: 'Amount / 金额'
     },
     dateLocales: ['en-US', 'zh-CN']
+  },
+  vietnam: {
+    entryCardName: 'Vietnam Entry Pack',
+    entryCardTab: 'personal',
+    entryCardTitle: 'Vietnam Entry Information / 越南入境资料',
+    personalInfoTitle: 'Thông tin cá nhân / 个人信息',
+    travelInfoTitle: 'Thông tin hành trình / 旅行信息',
+    fundsTitle: 'Chứng minh tài chính / 资金证明',
+    currency: 'VND',
+    currencyName: '₫',
+    notProvided: 'Chưa cung cấp / 未提供',
+    fallbackHotelText: 'Vui lòng cung cấp địa chỉ lưu trú / 请提供住宿地址',
+    labels: {
+      fullName: 'Họ và tên / 姓名',
+      passportNumber: 'Số hộ chiếu / 护照号码',
+      passportExpiryDate: 'Ngày hết hạn hộ chiếu / 护照有效期',
+      nationality: 'Quốc tịch / 国籍',
+      dateOfBirth: 'Ngày sinh / 出生日期',
+      arrivalDate: 'Ngày nhập cảnh / 入境日期',
+      arrivalFlightNumber: 'Chuyến bay nhập cảnh / 入境航班',
+      departureDate: 'Ngày rời Việt Nam / 离境日期',
+      departureFlightNumber: 'Chuyến bay rời đi / 离境航班',
+      flightNumber: 'Chuyến bay / 航班',
+      stayLocation: 'Địa chỉ lưu trú / 住宿地址',
+      lengthOfStay: 'Thời gian lưu trú / 停留时长',
+      purpose: 'Mục đích chuyến đi / 入境目的',
+      totalFunds: 'Tổng số tiền mang theo / 资金总额',
+      fundType: 'Loại / 类型',
+      amount: 'Số tiền / 金额'
+    },
+    dateLocales: ['vi-VN', 'zh-CN'],
   }
 };
 
@@ -599,22 +630,24 @@ const EntryPackDisplay = ({
       thailand: '📸 มีหลักฐานรูปภาพแล้ว',
       malaysia: '📸 Proof photo uploaded',
       singapore: '📸 Proof photo uploaded',
-      usa: '📸 Proof photo uploaded',
-      hongkong: '📸 已上載證明照片',
-      taiwan: '📸 已上傳證明照片',
-      japan: '📸 証明写真アップロード済み'
-    };
-    const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
+    usa: '📸 Proof photo uploaded',
+    hongkong: '📸 已上載證明照片',
+    taiwan: '📸 已上傳證明照片',
+    japan: '📸 証明写真アップロード済み',
+    vietnam: '📸 Ảnh chứng minh tài chính'
+  };
+  const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
 
-    const noDataTexts = {
-      thailand: 'ยังไม่มีข้อมูลเงินทุน',
-      malaysia: 'No funds information',
-      singapore: 'No funds information',
-      usa: 'No funds information',
-      japan: '資金情報なし',
-      hongkong: '未提供資金證明',
-      taiwan: '未提供資金證明'
-    };
+  const noDataTexts = {
+    thailand: 'ยังไม่มีข้อมูลเงินทุน',
+    malaysia: 'No funds information',
+    singapore: 'No funds information',
+    usa: 'No funds information',
+    japan: '資金情報なし',
+    hongkong: '未提供資金證明',
+    taiwan: '未提供資金證明',
+    vietnam: 'Chưa có thông tin tài chính / 尚未提供资金信息'
+  };
     const noDataText = noDataTexts[country] || noDataTexts.thailand;
 
     return (
@@ -747,8 +780,18 @@ const EntryPackDisplay = ({
                   <Text style={styles.placeholderIconText}>📱</Text>
                 </View>
                 <Text style={styles.placeholderTitle}>
-                  {placeholderTitles[country] || placeholderTitles.thailand}
+                  {config.placeholderTitle || placeholderTitles[country] || placeholderTitles.thailand}
                 </Text>
+                {(config.placeholderDescription || placeholderDescriptions[country]) && (
+                  <Text style={styles.placeholderDescription}>
+                    {config.placeholderDescription || placeholderDescriptions[country]}
+                  </Text>
+                )}
+                {(config.placeholderNote || placeholderNotes[country]) && (
+                  <Text style={styles.placeholderNote}>
+                    {config.placeholderNote || placeholderNotes[country]}
+                  </Text>
+                )}
               </View>
             )}
 
@@ -787,6 +830,7 @@ const EntryPackDisplay = ({
                 </Text>
               </View>
             )}
+
           </>
         )}
       </View>
@@ -916,9 +960,30 @@ const EntryPackDisplay = ({
             q: 'Q: 日本での滞在先はどこですか？ / Where will you be staying in Japan?',
             a: stayLocationAnswer
           },
+      {
+        q: 'Q: いくら所持していますか？ / How much money do you have?',
+        a: `${formatBilingualCurrency(totalFunds)} (現金とカード / Cash and cards)`
+      }
+    ]
+      },
+      vietnam: {
+        title: '💡 Câu hỏi thường gặp / 常见问题',
+        questions: [
           {
-            q: 'Q: いくら所持していますか？ / How much money do you have?',
-            a: `${formatBilingualCurrency(totalFunds)} (現金とカード / Cash and cards)`
+            q: 'Q: Bạn đến Việt Nam với mục đích gì? / 你来越南的目的是什么？',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Du lịch / 旅游'
+          },
+          {
+            q: 'Q: Bạn sẽ ở lại Việt Nam bao lâu? / 你会在越南停留多久？',
+            a: travelInfo?.lengthOfStay || '7 ngày / 7天'
+          },
+          {
+            q: 'Q: Bạn sẽ lưu trú ở đâu? / 你会住在哪里？',
+            a: stayLocationAnswer
+          },
+          {
+            q: 'Q: Bạn mang theo bao nhiêu tiền? / 你带了多少资金？',
+            a: `${formatBilingualCurrency(totalFunds)} (Tiền mặt & thẻ ngân hàng / 现金和银行卡)`
           }
         ]
       }
@@ -1009,6 +1074,11 @@ const EntryPackDisplay = ({
       { key: 'personal', label: '個人情報', labelEn: 'Personal' },
       { key: 'travel', label: '旅行情報', labelEn: 'Travel' },
       { key: 'funds', label: '資金情報', labelEn: 'Funds' },
+    ],
+    vietnam: [
+      { key: 'personal', label: '个人信息', labelEn: 'Personal' },
+      { key: 'travel', label: '旅行信息', labelEn: 'Travel' },
+      { key: 'funds', label: '资金', labelEn: 'Funds' },
     ]
   };
 
@@ -1017,22 +1087,24 @@ const EntryPackDisplay = ({
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง',
     malaysia: '🇲🇾 Entry Pack',
-    singapore: '🇸🇬 Entry Pack',
-    taiwan: '🇹🇼 臺灣入境資料包',
-    usa: '🇺🇸 Entry Pack',
-    hongkong: '🇭🇰 入境資料包',
-    japan: '🇯🇵 入国情報パック'
-  };
+  singapore: '🇸🇬 Entry Pack',
+  taiwan: '🇹🇼 臺灣入境資料包',
+  usa: '🇺🇸 Entry Pack',
+  hongkong: '🇭🇰 入境資料包',
+  japan: '🇯🇵 入国情報パック',
+  vietnam: '🇻🇳 越南入境资料包'
+};
 
   const headerSubtitles = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง',
     malaysia: 'Important information for immigration officer',
-    singapore: 'Important information for immigration officer',
-    taiwan: '入境處重要資料',
-    usa: 'Important information for immigration officer',
-    hongkong: '入境處重要資料',
-    japan: '入国審査官への重要情報'
-  };
+  singapore: 'Important information for immigration officer',
+  taiwan: '入境處重要資料',
+  usa: 'Important information for immigration officer',
+  hongkong: '入境處重要資料',
+  japan: '入国審査官への重要情報',
+  vietnam: 'Thông tin quan trọng dành cho cán bộ nhập cảnh'
+};
 
   return (
     <View style={[styles.container, isModal && styles.modalContainer]}>
@@ -1055,10 +1127,14 @@ const EntryPackDisplay = ({
         style={styles.tabContainer}
         contentContainerStyle={styles.tabContentContainer}
       >
-        {tabs.map((tab) => (
+        {tabs.map((tab, index) => (
           <TouchableOpacity
             key={tab.key}
-            style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+            style={[
+              styles.tab,
+              index === tabs.length - 1 && styles.lastTab,
+              activeTab === tab.key && styles.activeTab,
+            ]}
             onPress={() => setActiveTab(tab.key)}
           >
             <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
@@ -1175,17 +1251,23 @@ const styles = StyleSheet.create({
   tabContentContainer: {
     paddingHorizontal: spacing.md,
     paddingRight: spacing.lg,
+    flexGrow: 1,
+    justifyContent: 'space-between',
   },
   tab: {
+    flex: 1,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    marginRight: spacing.xs,
+    marginRight: spacing.sm,
     borderRadius: 20,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     minWidth: 70,
     alignItems: 'center',
+  },
+  lastTab: {
+    marginRight: 0,
   },
   activeTab: {
     backgroundColor: '#3B82F6',

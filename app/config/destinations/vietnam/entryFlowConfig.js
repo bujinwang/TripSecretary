@@ -23,6 +23,7 @@ export const vietnamEntryFlowConfig = {
     travelInfo: 'VietnamTravelInfo',
     submit: null, // Vietnam doesn't have digital arrival card submission
     entryGuide: 'VietnamEntryGuide',
+    entryPackPreview: 'VietnamEntryPackPreview',
   },
 
   // Categories to track
