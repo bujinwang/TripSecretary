@@ -259,6 +259,12 @@ const EnhancedTravelInfoTemplate = ({
     initialState.lastEditedAt = null;
     initialState.lastEditedField = null;
     initialState.isLoading = true;
+    initialState.travelInfoId = null;
+
+    // Entry info tracking
+    initialState.entryInfoId = null;
+    initialState.entryInfoInitialized = false;
+    initialState.lastEntryInfoUpdate = null;
 
     // Fund modal state
     initialState.fundItemModalVisible = false;
@@ -279,6 +285,125 @@ const EnhancedTravelInfoTemplate = ({
     config.destinationId,
     config
   );
+
+  // ============================================
+  // ENTRY INFO MANAGEMENT
+  // ============================================
+  const ensureEntryInfoRecord = useCallback(async (overrides = {}) => {
+    if (!destinationId) {
+      console.warn('[Template V2] Entry info sync skipped: destinationId is missing');
+      return null;
+    }
+
+    try {
+      await UserDataService.initialize(userId);
+
+      const hasPassportOverride = Object.prototype.hasOwnProperty.call(overrides, 'passport');
+      const hasPersonalOverride = Object.prototype.hasOwnProperty.call(overrides, 'personalInfo');
+      const hasTravelOverride = Object.prototype.hasOwnProperty.call(overrides, 'travelInfo');
+      const hasFundsOverride = Object.prototype.hasOwnProperty.call(overrides, 'funds');
+
+      const [
+        entryInfos,
+        passportRaw,
+        personalInfoRaw,
+        fundsRaw,
+        travelRaw,
+      ] = await Promise.all([
+        UserDataService.getAllEntryInfosForUser(userId),
+        hasPassportOverride ? Promise.resolve(overrides.passport) : UserDataService.getPassport(userId),
+        hasPersonalOverride ? Promise.resolve(overrides.personalInfo) : UserDataService.getPersonalInfo(userId),
+        hasFundsOverride ? Promise.resolve(overrides.funds) : UserDataService.getFundItems(userId),
+        hasTravelOverride ? Promise.resolve(overrides.travelInfo) : UserDataService.getTravelInfo(userId, destinationId),
+      ]);
+
+      const normalizeRecord = (record) => {
+        if (!record) {
+          return record;
+        }
+
+        if (typeof record.toJSON === 'function') {
+          try {
+            return record.toJSON();
+          } catch (jsonError) {
+            console.warn('[Template V2] Failed to normalize record via toJSON:', jsonError);
+          }
+        }
+
+        if (typeof record === 'object') {
+          return { ...record };
+        }
+
+        return record;
+      };
+
+      const passportData = normalizeRecord(passportRaw) || {};
+      const personalInfoData = normalizeRecord(personalInfoRaw) || {};
+      const travelInfoData = normalizeRecord(travelRaw) || {};
+      const fundsData = Array.isArray(fundsRaw)
+        ? fundsRaw.map((item) => normalizeRecord(item)).filter(Boolean)
+        : [];
+
+      let entryInfo = (entryInfos || []).find((info) => info.destinationId === destinationId);
+      const timestamp = new Date().toISOString();
+      const fundIds = fundsData.map((item) => item.id).filter(Boolean);
+
+      if (!entryInfo) {
+        const entryInfoPayload = {
+          userId,
+          passportId: passportRaw?.id || null,
+          personalInfoId: personalInfoRaw?.id || null,
+          travelInfoId: travelRaw?.id || null,
+          destinationId,
+          status: 'incomplete',
+          fundItemIds: fundIds,
+          lastUpdatedAt: timestamp,
+          createdAt: timestamp,
+        };
+
+        entryInfo = await UserDataService.createEntryInfo(entryInfoPayload);
+      } else {
+        if (passportRaw?.id && entryInfo.passportId !== passportRaw.id) {
+          entryInfo.passportId = passportRaw.id;
+        }
+        if (personalInfoRaw?.id && entryInfo.personalInfoId !== personalInfoRaw.id) {
+          entryInfo.personalInfoId = personalInfoRaw.id;
+        }
+        if (travelRaw?.id && entryInfo.travelInfoId !== travelRaw.id) {
+          entryInfo.travelInfoId = travelRaw.id;
+        }
+        entryInfo.destinationId = destinationId;
+      }
+
+      entryInfo.fundItemIds = new Set(fundIds);
+
+      entryInfo.updateCompletionMetrics(
+        passportData,
+        personalInfoData,
+        fundsData,
+        travelInfoData
+      );
+
+      if (['incomplete', 'ready'].includes(entryInfo.status)) {
+        entryInfo.status = entryInfo.isReadyForSubmission() ? 'ready' : 'incomplete';
+      }
+
+      entryInfo.lastUpdatedAt = timestamp;
+      await entryInfo.save({ skipValidation: true });
+
+      updateFormState({
+        entryInfoId: entryInfo.id,
+        entryInfoInitialized: true,
+        lastEntryInfoUpdate: timestamp,
+      });
+
+      return entryInfo;
+    } catch (error) {
+      console.error('[Template V2] Failed to ensure entry info record:', error);
+      updateFormState({ entryInfoInitialized: false });
+      return null;
+    }
+  }, [destinationId, userId, updateFormState]);
 
   // ============================================
   // DATA LOADING
@@ -354,6 +479,7 @@ const EnhancedTravelInfoTemplate = ({
         // Store record IDs (CRITICAL for updates)
         passportId: passportData?.id || null,
         personalInfoId: personalData?.id || null,
+        travelInfoId: resolvedTravelData?.id || null,
 
         // Passport fields
         surname: surname || '',
@@ -405,6 +531,13 @@ const EnhancedTravelInfoTemplate = ({
       }
 
       updateFormState({ ...loadedData, isLoading: false });
+
+      await ensureEntryInfoRecord({
+        passport: passportData,
+        personalInfo: personalData,
+        travelInfo: resolvedTravelData,
+        funds: fundsData,
+      });
       console.log('[Template V2] Data loaded successfully. Fields with data:',
         Object.entries(loadedData).filter(([k, v]) => v && v !== '' && k !== 'funds').map(([k]) => k),
         'Funds count:', loadedData.funds?.length || 0
@@ -413,7 +546,7 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template V2] Error loading data:', error);
       updateFormState({ isLoading: false });
     }
-  }, [userId, destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState]);
+  }, [userId, destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState, ensureEntryInfoRecord]);
 
   // Load data when user ID is available and tracker is initialized
   useEffect(() => {
@@ -432,6 +565,10 @@ const EnhancedTravelInfoTemplate = ({
       updateFormState({ saveStatus: 'saving' });
 
       await UserDataService.initialize(userId);
+
+      let savedPassport = null;
+      let savedPersonalInfo = null;
+      let savedTravelInfo = null;
 
       // Get always-save fields from config
       const alwaysSaveFields = TemplateFieldStateManager.getAlwaysSaveFieldsFromConfig(config);
@@ -468,7 +605,11 @@ const EnhancedTravelInfoTemplate = ({
       );
 
       if (Object.keys(passportUpdates).length > 0) {
-        await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+        const passportResult = await UserDataService.savePassport(passportUpdates, userId, { skipValidation: true });
+        savedPassport = passportResult;
+        updateFormState({
+          passportId: passportResult?.id || formState.passportId || null,
+        });
         console.log('[Template V2] Saved passport fields:', Object.keys(passportUpdates));
       }
 
@@ -489,7 +630,11 @@ const EnhancedTravelInfoTemplate = ({
       );
 
       if (Object.keys(personalInfoUpdates).length > 0) {
-        await UserDataService.savePersonalInfo(personalInfoUpdates, userId);
+        const personalInfoResult = await UserDataService.savePersonalInfo(personalInfoUpdates, userId);
+        savedPersonalInfo = personalInfoResult;
+        updateFormState({
+          personalInfoId: personalInfoResult?.id || formState.personalInfoId || null,
+        });
         console.log('[Template V2] Saved personal info fields:', Object.keys(personalInfoUpdates));
       }
 
@@ -526,9 +671,26 @@ const EnhancedTravelInfoTemplate = ({
           ...(destinationId ? { destination: destinationId } : {}),
         };
 
-        await UserDataService.saveTravelInfo(userId, travelInfoPayload);
+        const travelInfoResult = await UserDataService.saveTravelInfo(userId, travelInfoPayload);
+        savedTravelInfo = travelInfoResult;
+        updateFormState({
+          travelInfoId: travelInfoResult?.id || formState.travelInfoId || null,
+        });
         console.log('[Template V2] Saved travel info fields:', Object.keys(travelInfoUpdates));
       }
+
+      const ensureOverrides = {};
+      if (savedPassport) {
+        ensureOverrides.passport = savedPassport;
+      }
+      if (savedPersonalInfo) {
+        ensureOverrides.personalInfo = savedPersonalInfo;
+      }
+      if (savedTravelInfo) {
+        ensureOverrides.travelInfo = savedTravelInfo;
+      }
+
+      await ensureEntryInfoRecord(ensureOverrides);
 
       updateFormState({
         saveStatus: 'saved',
@@ -545,7 +707,7 @@ const EnhancedTravelInfoTemplate = ({
       console.error('[Template V2] Error saving data:', error);
       updateFormState({ saveStatus: 'error' });
     }
-  }, [userId, formState, config, userInteractionTracker.interactionState, updateFormState]);
+  }, [userId, formState, config, userInteractionTracker.interactionState, updateFormState, destinationId, ensureEntryInfoRecord]);
 
   // Debounced save
   const saveTimerRef = useRef(null);
@@ -715,6 +877,8 @@ const EnhancedTravelInfoTemplate = ({
     userInteractionTracker,
     validation,
     fundManagement,
+    entryInfoId: formState.entryInfoId,
+    entryInfoInitialized: formState.entryInfoInitialized,
   };
 
   // ============================================

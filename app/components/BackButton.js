@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
@@ -14,6 +15,9 @@ const BackButton = ({
   hitSlop = { top: 8, bottom: 8, left: 8, right: 8 },
   ...props
 }) => {
+  const resolvedLabel =
+    typeof label === 'string' && label.trim().length > 0 ? label.trim() : 'Back';
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -26,8 +30,8 @@ const BackButton = ({
       </Text>
       {children
         ? children
-        : showLabel && label ? (
-        <Text style={[styles.label, labelStyle]}>{label}</Text>
+        : showLabel && resolvedLabel ? (
+        <Text style={[styles.label, labelStyle]}>{resolvedLabel}</Text>
       ) : null}
     </TouchableOpacity>
   );

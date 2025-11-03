@@ -32,9 +32,8 @@ const VietnamEntryFlowScreen = ({ navigation, route }) => {
       route={route}
       navigation={navigation}
     >
-      <EntryFlowScreenTemplate.Header
-        title="Vietnam Entry Preparation"
-      />
+      <EntryFlowScreenTemplate.Header />
+      <EntryFlowScreenTemplate.StatusBanner />
       <EntryFlowScreenTemplate.AutoContent />
     </EntryFlowScreenTemplate>
   );
