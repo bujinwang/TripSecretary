@@ -5,7 +5,7 @@
  */
 
 export const malaysiaEntryPackPreviewConfig = {
-  countryCode: 'malaysia',
+  countryCode: 'my',
   header: {
     title: 'Malaysia Entry Pack - Preview / 马来西亚入境包预览',
     closeIcon: '✕',

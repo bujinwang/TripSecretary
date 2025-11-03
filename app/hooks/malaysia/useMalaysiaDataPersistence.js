@@ -98,7 +98,7 @@ export const useMalaysiaDataPersistence = ({
       const allUserData = await UserDataService.getAllUserData(userId);
 
       // Load travel info
-      const destinationId = destination?.id || 'malaysia';
+      const destinationId = destination?.id || 'my';
       const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
       // Load fund items
@@ -159,7 +159,7 @@ export const useMalaysiaDataPersistence = ({
       });
 
       // Save travel info
-      const destinationId = destination?.id || 'malaysia';
+      const destinationId = destination?.id || 'my';
       await UserDataService.updateTravelInfo(userId, destinationId, {
         travelPurpose: formState.travelPurpose,
         arrivalFlightNumber: formState.arrivalFlightNumber,
@@ -226,7 +226,7 @@ export const useMalaysiaDataPersistence = ({
     try {
       // Initialize entry info if needed
       // Malaysia-specific entry info initialization
-      const destinationId = destination?.id || 'malaysia';
+      const destinationId = destination?.id || 'my';
       const entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
 
       if (entryInfo) {
