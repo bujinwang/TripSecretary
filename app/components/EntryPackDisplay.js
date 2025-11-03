@@ -234,15 +234,34 @@ const countryConfigs = {
   }
 };
 
+const COUNTRY_ALIASES = {
+  my: 'malaysia',
+  sg: 'singapore',
+  th: 'thailand',
+  hk: 'hongkong',
+  tw: 'taiwan',
+  us: 'usa',
+  jp: 'japan',
+  vn: 'vietnam',
+};
+
 const EntryPackDisplay = ({
-  entryPack,
+  entryPack: rawEntryPack,
   personalInfo,
   travelInfo,
   funds,
   onClose,
   isModal = false,
-  country = 'thailand'
+  country: rawCountry = 'thailand'
 }) => {
+  const country = COUNTRY_ALIASES[rawCountry] || rawCountry || 'thailand';
+  const entryPack = useMemo(
+    () =>
+      rawEntryPack && rawEntryPack.country !== country
+        ? { ...rawEntryPack, country }
+        : rawEntryPack,
+    [rawEntryPack, country]
+  );
   const config = countryConfigs[country] || countryConfigs.thailand;
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
