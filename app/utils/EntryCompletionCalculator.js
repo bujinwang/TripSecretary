@@ -6,6 +6,8 @@
  * Requirements: 2.1-2.6, 7.1-7.5, 15.1-15.7
  */
 
+import { isTestOrDummyAddress } from './addressValidation.js';
+
 class EntryCompletionCalculator {
   constructor() {
     // Cache for performance optimization
@@ -66,6 +68,14 @@ class EntryCompletionCalculator {
 
     // Type-specific validation
     switch (fieldType) {
+      case 'address': {
+        const trimmedValue = typeof value === 'string' ? value.trim() : '';
+        const looksValid = trimmedValue.length > 0 && !isTestOrDummyAddress(trimmedValue);
+        result.hasValue = looksValid;
+        result.isValid = looksValid;
+        result.value = trimmedValue;
+        break;
+      }
       case 'email':
         result.isValid = this.validateEmail(value);
         break;
@@ -457,7 +467,7 @@ class EntryCompletionCalculator {
       requiredFields.push(
         { name: 'accommodationType', type: 'text', value: accommodationType },
         { name: 'province', type: 'text', value: province },
-        { name: 'hotelAddress', type: 'text', value: hotelAddress }
+        { name: 'hotelAddress', type: 'address', value: hotelAddress }
       );
     }
 

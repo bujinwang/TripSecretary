@@ -9,6 +9,7 @@ import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 import { parseFullName } from '../../utils/nameUtils';
 import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
 import { formatLocationCode } from '../../utils/locationUtils';
+import { isTestOrDummyAddress } from '../../utils/addressValidation.js';
 import tdacSessionManager from './TDACSessionManager';
 import {
   normalizeAccommodationType,
@@ -219,7 +220,7 @@ class ThailandTravelerContextBuilder {
       } else {
         // Validate address quality
         const address = userData.travelInfo.hotelAddress || userData.travelInfo.address;
-        if (ThailandTravelerContextBuilder.isTestOrDummyAddress(address)) {
+        if (isTestOrDummyAddress(address)) {
           errors.push('住宿地址看起来像测试数据，请提供真实的酒店地址');
         }
       }
@@ -766,43 +767,6 @@ class ThailandTravelerContextBuilder {
     if (!email) return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
-
-  /**
-   * Check if address appears to be test or dummy data
-   * @param {string} address - Address string
-   * @returns {boolean} - Is test/dummy address
-   */
-  static isTestOrDummyAddress(address) {
-    if (!address) return false;
-    
-    const lowerAddress = address.toLowerCase().trim();
-    
-    // Common test/dummy patterns
-    const testPatterns = [
-      'test', 'dummy', 'fake', 'sample', 'example',
-      'add add', 'adidas dad', 'abc', '123', 'xxx',
-      'temp', 'placeholder', 'default', 'lorem ipsum'
-    ];
-    
-    // Check for test patterns
-    for (const pattern of testPatterns) {
-      if (lowerAddress.includes(pattern)) {
-        return true;
-      }
-    }
-    
-    // Check for very short addresses (likely incomplete)
-    if (lowerAddress.length < 5) {
-      return true;
-    }
-    
-    // Check for repeated characters (e.g., "aaaa", "1111")
-    if (/(.)\1{3,}/.test(lowerAddress)) {
-      return true;
-    }
-    
-    return false;
   }
 
   /**

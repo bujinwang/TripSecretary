@@ -27,13 +27,24 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
     it('should calculate metrics for multiple destinations', () => {
       const allDestinationData = {
         'th': {
-          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01' },
+          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01', gender: 'Male' },
           personalInfo: { occupation: 'Engineer', provinceCity: 'New York', countryRegion: 'US', phoneNumber: '+1234567890', email: 'john@example.com', gender: 'M' },
           funds: [{ type: 'cash', amount: 1000, currency: 'USD' }],
-          travel: { travelPurpose: 'tourism', arrivalDate: '2024-12-01', departureDate: '2024-12-10', flightNumber: 'AA123', accommodation: 'Hotel ABC' }
+          travel: {
+            travelPurpose: 'tourism',
+            arrivalArrivalDate: '2024-12-01',
+            arrivalFlightNumber: 'AA123',
+            departureDepartureDate: '2024-12-10',
+            departureFlightNumber: 'AA124',
+            recentStayCountry: 'US',
+            boardingCountry: 'US',
+            accommodationType: 'HOTEL',
+            province: 'Bangkok',
+            hotelAddress: 'Sukhumvit Soi 11, Bangkok'
+          }
         },
         'jp': {
-          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01' },
+          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01', gender: 'Male' },
           personalInfo: { occupation: 'Engineer', provinceCity: 'New York', countryRegion: 'US', phoneNumber: '+1234567890', email: 'john@example.com', gender: 'M' },
           funds: [],
           travel: { travelPurpose: 'business' }
@@ -49,8 +60,8 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       expect(result.destinations).toHaveProperty('jp');
       expect(result.destinations).toHaveProperty('sg');
 
-      // Thailand should be complete (but passport is optional, so completion is 94% without passport)
-      expect(result.destinations.th.totalPercent).toBe(94);
+      // Thailand should be complete with validated travel details
+      expect(result.destinations.th.totalPercent).toBe(100);
       expect(result.destinations.th.isReady).toBe(true);
 
       // Japan should be partial (missing funds and some travel info)
@@ -96,17 +107,28 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
   describe('getDestinationCompletionSummary', () => {
     it('should calculate completion summary for specific destination', () => {
       const entryInfo = {
-        passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01' },
+        passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01', gender: 'Male' },
         personalInfo: { occupation: 'Engineer', provinceCity: 'New York', countryRegion: 'US', phoneNumber: '+1234567890', email: 'john@example.com', gender: 'M' },
         funds: [{ type: 'cash', amount: 1000, currency: 'USD' }],
-        travel: { travelPurpose: 'tourism', arrivalDate: '2024-12-01', departureDate: '2024-12-10', flightNumber: 'AA123', accommodation: 'Hotel ABC' },
+        travel: {
+          travelPurpose: 'tourism',
+          arrivalArrivalDate: '2024-12-01',
+          arrivalFlightNumber: 'AA123',
+          departureDepartureDate: '2024-12-10',
+          departureFlightNumber: 'AA124',
+          recentStayCountry: 'US',
+          boardingCountry: 'US',
+          accommodationType: 'HOTEL',
+          province: 'Bangkok',
+          hotelAddress: 'Sukhumvit Soi 11, Bangkok'
+        },
         lastUpdatedAt: '2024-10-17T10:00:00Z'
       };
 
       const result = calculator.getDestinationCompletionSummary('th', entryInfo);
 
       expect(result.destinationId).toBe('th');
-      expect(result.totalPercent).toBe(94); // Passport is optional, so 94% instead of 100%
+      expect(result.totalPercent).toBe(100);
       expect(result.isReady).toBe(true);
       expect(result.lastUpdated).toBe('2024-10-17T10:00:00Z');
       expect(result.categorySummary).toHaveProperty('passport');
@@ -164,7 +186,7 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       UserDataService.getAllEntryInfosForUser.mockResolvedValue([
         {
           destinationId: 'th',
-          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01' },
+          passport: { passportNumber: 'E12345678', fullName: 'John Doe', nationality: 'US', dateOfBirth: '1990-01-01', expiryDate: '2030-01-01', gender: 'Male' },
           personalInfo: { occupation: 'Engineer', provinceCity: 'New York', countryRegion: 'US', phoneNumber: '+1234567890', email: 'john@example.com', gender: 'M' },
           funds: [{ type: 'cash', amount: 1000, currency: 'USD' }],
           travel: { travelPurpose: 'tourism', arrivalDate: '2024-12-01', departureDate: '2024-12-10', flightNumber: 'AA123', accommodation: 'Hotel ABC' },
