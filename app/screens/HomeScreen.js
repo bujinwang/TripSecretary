@@ -391,7 +391,7 @@ const HomeScreen = ({ navigation }) => {
 
     // Map country ID to screen name
     const screenMap = {
-      'jp': 'JapanInfo',
+      'jp': 'JapanInfo', // Info → Requirements → TravelInfo flow
       'th': 'ThailandInfo',
       'vn': 'VietnamInfo',
       'hk': 'HongKongInfo',

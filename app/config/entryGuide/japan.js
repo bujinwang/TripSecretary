@@ -1,165 +1,255 @@
-// 日本入境指引配置文件 - 成田/羽田/关西机场完整流程
-// 基于实际机场体验和日本入境管理系统
+// 日本入境指引配置文件 - 成田NRT/羽田HND/关西KIX/中部NGO/福冈FUK完整流程
+// 基于实际机场体验和日本签证免签系统
+
+const japanArrivalCardImage = require('../../../assets/forms/japan-entry-card-sample.jpg');
+const japanCustomsDeclarationImage = require('../../../assets/forms/japan-customs-declaration.jpg');
+const japanBiometricImage = require('../../../assets/forms/japan-biometric-scan.jpg');
 
 export const japanEntryGuide = {
   country: 'japan',
-  countryName: '日本',
+  countryName: 'Japan',
   countryNameZh: '日本',
-  airports: ['NRT', 'HND', 'KIX'], // 成田、羽田、关西
+  airports: ['NRT', 'HND', 'KIX', 'NGO', 'FUK'], // 成田、羽田、关西、中部、福冈机场
   currency: 'JPY',
-  language: ['ja', 'en'],
+  language: ['ja', 'en', 'zh'], // 日语、英语、汉语
 
   // 重要提醒
   importantNotes: [
-    '抵达前准备好护照、居留卡和入境卡',
-    '准备好通关包，包含个人信息、旅行计划等材料',
-    '落地后立即关闭蜂窝网络数据',
-    '准备现金或IC卡用于交通',
-    '了解日本的入境规定和文化礼仪'
+    '大多数国家公民享受日本90天免签待遇',
+    '准备充足的资金证明，建议每人10万日元以上',
+    '日本对食品和植物入境有严格限制',
+    '现金准备：日本接受信用卡，但现金仍是主流',
+    '准时到达，机场安检和入境可能需要1-2小时'
   ],
 
-  // 7步骤完整流程 (包含紧急联系方式准备)
+  // 6步骤完整流程 (日本流程相对简单，免签国家无需签证)
   steps: [
     {
       id: 'emergency_contacts',
-      title: '紧急联系方式',
+      title: 'Emergency Contacts',
       titleZh: '紧急联系方式',
-      description: '保存日本紧急联系电话，以备不时之需',
+      description: 'Save Japan emergency contact numbers for emergencies',
       descriptionZh: '保存日本紧急联系电话，以备不时之需',
       category: 'pre-arrival',
       priority: 1,
-      estimatedTime: '2分钟',
+      estimatedTime: '2 minutes',
       icon: '🆘',
       required: false,
       tips: [
-        '警察：110',
-        '救护车/火警：119',
-        '旅游咨询：0570-000-330（有中文服务）',
-        '中国大使馆：+81-3-3403-3066',
-        '台湾驻日办事处：+81-3-3263-4244',
-        '将这些号码保存到手机通讯录',
-        '遇到紧急情况立即拨打',
-        '旅游咨询提供中文服务'
+        'Police: 110',
+        'Ambulance/Fire: 119',
+        'Tourist Hotline (English): 050-3816-2787',
+        'China Embassy: +81-3-3403-3388',
+        'US Embassy: +81-3-3224-5000',
+        'Immigration Information: +81-57-001-200',
+        'Airport Service (Narita): +81-476-34-5000',
+        'Save these numbers in your phone contacts',
+        'Call immediately in case of emergency'
+      ]
+    },
+    {
+      id: 'visa_check',
+      title: 'Visa Requirements Check',
+      titleZh: '签证要求确认',
+      description: 'Check if your country qualifies for visa-free entry',
+      descriptionZh: '确认您的国家是否符合免签入境条件',
+      category: 'pre-arrival',
+      priority: 2,
+      estimatedTime: '5 minutes',
+      icon: '📋',
+      required: true,
+      warnings: [
+        'Visa-free status only for tourism purposes',
+        'Working is strictly prohibited',
+        'Stay period is usually 90 days maximum'
+      ],
+      tips: [
+        'Check if your country is on the visa-free list',
+        'Prepare proof of return ticket',
+        'Confirm your passport validity (6+ months)',
+        'Have travel insurance ready'
+      ]
+    },
+    {
+      id: 'arrival_card',
+      title: 'Paper Arrival Card',
+      titleZh: '纸质入境卡填写',
+      description: 'Fill out the paper arrival/departure card (available in flight or at airport)',
+      descriptionZh: '填写飞机上或入境柜台领取的纸质入出境卡，建议提前准备',
+      category: 'pre-arrival',
+      categoryZh: '表格填写',
+      priority: 3,
+      estimatedTime: '10 minutes',
+      icon: '📝',
+      required: true,
+      media: {
+        type: 'image',
+        source: japanArrivalCardImage,
+        caption: 'Japan Arrival Card Sample',
+        captionZh: '日本入境卡填写示例',
+      },
+      warnings: [
+        'Every traveler must complete their own card',
+        'Use blue or black pen, write in English block letters',
+        'Keep the departure portion for when you leave Japan'
+      ],
+      formFields: [
+        {
+          label: 'Family Name / Given Name',
+          labelZh: '姓 / 名',
+          guidance: 'Write exactly as shown in passport, use English block letters',
+          guidanceZh: '与护照完全一致，使用英文字母大写'
+        },
+        {
+          label: 'Nationality',
+          labelZh: '国籍',
+          guidance: 'Write your country name, e.g., CHINA, USA, KOREA',
+          guidanceZh: '填写您的国家名称，例如 CHINA、USA、KOREA'
+        },
+        {
+          label: 'Date of Birth',
+          labelZh: '出生日期',
+          guidance: 'Write in DD/MM/YYYY format',
+          guidanceZh: '按日/月/年格式填写'
+        },
+        {
+          label: 'Passport Number',
+          labelZh: '护照号码',
+          guidance: 'Enter complete passport number including letters',
+          guidanceZh: '填写完整护照号码，包括字母'
+        },
+        {
+          label: 'Flight Number',
+          labelZh: '航班号',
+          guidance: 'Enter your arriving flight number, e.g., JL123',
+          guidanceZh: '填写抵达日本的航班号，例如 JL123'
+        },
+        {
+          label: 'Purpose of Visit',
+          labelZh: '入境目的',
+          guidance: 'Tick Tourism / Business / Study / etc.',
+          guidanceZh: '勾选旅游/商务/留学等对应选项'
+        },
+        {
+          label: 'Address in Japan',
+          labelZh: '在日本住宿地址',
+          guidance: 'Write your hotel or accommodation address in Japan',
+          guidanceZh: '填写在日本住宿的酒店或住宿地址'
+        }
+      ],
+      tips: [
+        'Bring your own pen to avoid asking flight attendants',
+        'Practice filling the form before traveling to reduce stress',
+        'If you forget to take one, you can get it at immigration but may need to queue again'
       ]
     },
     {
       id: 'landing_setup',
-      title: '落地前准备',
+      title: 'Pre-Landing Preparation',
       titleZh: '落地前准备',
-      description: '关闭蜂窝网络数据，激活日本eSIM卡',
-      descriptionZh: '关闭蜂窝网络数据，激活日本eSIM卡',
+      description: 'Turn off mobile data, prepare for Japanese customs',
+      descriptionZh: '关闭蜂窝数据，准备日本入境',
       category: 'post-landing',
-      priority: 2,
-      estimatedTime: '2分钟',
+      priority: 4,
+      estimatedTime: '2 minutes',
       icon: '📱',
       required: true,
       warnings: [
-        '飞机滑行时勿使用手机',
-        '确保WiFi也已关闭'
+        'Do not use mobile phones when aircraft is landing',
+        'WiFi should also be turned off during landing'
       ],
       tips: [
-        '跟着人群走，看Arrivals或Immigration标识',
-        '准备手机离线模式',
-        '确认护照和居留卡在手'
+        'Follow "Arrivals" signs',
+        'Prepare for offline mode',
+        'Be ready for Japanese efficiency and politeness'
       ]
     },
     {
-      id: 'immigration',
-      title: '移民局检查',
-      titleZh: '移民局检查',
-      description: '出示通关包、护照和居留卡，核验入境信息',
-      descriptionZh: '出示通关包、护照和居留卡，核验入境信息',
+      id: 'immigration_check',
+      title: 'Immigration Check',
+      titleZh: '入境检查',
+      description: 'Present passport and arrival card for immigration verification',
+      descriptionZh: '出示护照和入境卡完成入境检查',
       category: 'immigration',
-      priority: 3,
-      estimatedTime: '20分钟',
+      priority: 5,
+      estimatedTime: '15 minutes',
       icon: '🛂',
       required: true,
-      showEntryPack: true, // 重点显示通关包
+      showEntryPack: true,
+      entryPackHint: 'Organize your entry materials (passport, arrival card, travel plan, fund proof) to show directly to the officer.',
       tips: [
-        '排队等候Immigration检查柜台',
-        '准备护照、居留卡和手机通关包页面',
-        '出示：护照、居留卡、目的声明书',
-        '配合官员：拍照、按指纹',
-        '保持入境通APP开启',
-        '通关包包含：个人信息、旅行信息、住宿信息、资金证明、常见问题回答',
-        '外国人通道：Foreign Passport或Residents'
+        'Queue for the appropriate lane (Visitor/Visa)',
+        'Place passport and arrival card ready to present',
+        'Be polite and answer questions clearly',
+        'Fingerprints and photo may be required',
+        'Keep arrival card departure portion safe for exit'
       ]
     },
     {
       id: 'baggage_claim',
-      title: '行李领取',
+      title: 'Baggage Claim',
       titleZh: '行李领取',
-      description: '找到行李转盘，认领行李',
-      descriptionZh: '找到行李转盘，认领行李',
+      description: 'Collect your luggage from the carousel',
+      descriptionZh: '从行李转盘领取行李',
       category: 'baggage',
-      priority: 4,
-      estimatedTime: '15分钟',
+      priority: 6,
+      estimatedTime: '20 minutes',
       icon: '🧳',
       required: true,
       tips: [
-        '看屏幕找航班号和行李转盘编号',
-        '去对应行李转盘',
-        '拿好所有行李',
-        '确认行李标签'
+        'Check screens for carousel number',
+        'Japanese airports usually have efficient baggage systems',
+        'Report missing baggage immediately',
+        'Make sure you have all your luggage before proceeding'
       ]
     },
     {
       id: 'customs_inspection',
-      title: '海关物品检查',
-      titleZh: '海关物品检查',
-      description: '申报物品，海关X光机检查',
-      descriptionZh: '申报物品，海关X光机检查',
+      title: 'Customs Inspection',
+      titleZh: '海关检查',
+      description: 'Declare items and go through customs inspection',
+      descriptionZh: '申报物品，通过海关检查',
       category: 'customs',
-      priority: 5,
-      estimatedTime: '10分钟',
+      priority: 7,
+      estimatedTime: '10 minutes',
       icon: '🔍',
       required: true,
+      media: {
+        type: 'image',
+        source: japanCustomsDeclarationImage,
+        caption: 'Japan Customs Declaration Form',
+        captionZh: '日本海关申报表',
+      },
       tips: [
-        '根据物品选择申报通道',
-        '绿色通道：无申报物品',
-        '红色通道：有申报物品',
-        '申报物品：酒类、烟草、现金超过100万日元',
-        '准备好申报单和物品清单'
+        'Declare all items honestly',
+        'Food and plant items have strict restrictions',
+        'Duty-free allowance: 1 liter alcohol, 200 cigarettes per person',
+        'High-value electronics may need declaration'
       ]
     },
     {
-      id: 'transport_arrangement',
-      title: '交通安排',
-      titleZh: '交通安排',
-      description: '选择交通方式前往目的地',
-      descriptionZh: '选择交通方式前往目的地',
-      category: 'transportation',
-      priority: 6,
-      estimatedTime: '30分钟',
-      icon: '🚆',
+      id: 'biometric_scan',
+      title: 'Biometric Registration',
+      titleZh: '生物信息登记',
+      description: 'Fingerprints and photo for foreign visitors (biometric data)',
+      descriptionZh: '为外国访客进行指纹和拍照登记（生物信息）',
+      category: 'immigration',
+      priority: 8,
+      estimatedTime: '5 minutes',
+      icon: '👆',
       required: true,
+      media: {
+        type: 'image',
+        source: japanBiometricImage,
+        caption: 'Japan Biometric Scan Process',
+        captionZh: '日本生物信息扫描流程',
+      },
       tips: [
-        '机场铁路：JR线最便捷',
-        '购买Suica或Pasmo IC卡',
-        '出租车：费用较高但舒适',
-        '机场大巴：经济实惠',
-        '提前规划路线和时间',
-        '准备现金或IC卡'
-      ]
-    },
-    {
-      id: 'arrival_destination',
-      title: '抵达目的地',
-      titleZh: '抵达目的地',
-      description: '安全抵达住宿地点，完成入境手续',
-      descriptionZh: '安全抵达住宿地点，完成入境手续',
-      category: 'arrival',
-      priority: 7,
-      estimatedTime: '45分钟',
-      icon: '🏨',
-      required: true,
-      tips: [
-        '跟据导航找到住宿地点',
-        '办理酒店入住手续',
-        '确认入境章和停留期限',
-        '保存重要文件',
-        '开启日本旅行模式',
-        '享受日本之旅'
+        'Required for all foreign visitors aged 16+',
+        'Place all fingers on scanner as instructed',
+        'Look at camera for photo capture',
+        'Process is quick and automated',
+        'Data used for border security purposes'
       ]
     }
   ],
@@ -168,69 +258,173 @@ export const japanEntryGuide = {
   customs: {
     declarationRequired: true,
     prohibitedItems: [
-      '新鲜水果和蔬菜',
-      '肉类制品',
-      '种子和土壤',
-      '现金超过100万日元（需申报）'
+      'Fresh fruits and vegetables',
+      'Meat and meat products',
+      'Seeds and soil',
+      'Weapons and ammunition',
+      'Drugs and narcotics'
+    ],
+    restrictedItems: [
+      'Traditional Chinese medicine',
+      'Tobacco products',
+      'Alcoholic beverages',
+      'Electronics over certain value',
+      'Large amounts of cash (over 1 million yen)'
     ],
     dutyFree: {
-      alcohol: '3瓶（每瓶760ml）',
-      tobacco: '200支香烟或50支雪茄或250g烟丝',
-      perfume: '2盎司',
-      gifts: '价值不超过20万日元'
-    },
-    declarationChannels: {
-      green: '无申报物品',
-      red: '有申报物品',
-      blue: '特殊申报'
+      alcohol: '1 liter',
+      tobacco: '200 cigarettes or 50 cigars',
+      perfume: '2 ounces',
+      gifts: 'Up to 200,000 yen value'
     }
+  },
+
+  // 签证信息
+  visa: {
+    types: [
+      {
+        name: 'Visa-Free Entry',
+        duration: '90 days',
+        cost: 'Free',
+        processingTime: 'On arrival',
+        validity: 'Must leave within 90 days',
+        eligible: ['USA', 'China', 'UK', 'Canada', 'Australia', 'South Korea', 'Singapore', 'Malaysia', 'Thailand', 'Taiwan', 'Hong Kong', 'Macau']
+      },
+      {
+        name: 'Tourist Visa',
+        duration: '90 days',
+        cost: 'Varies by country',
+        processingTime: '5-10 business days',
+        notes: 'For non-visa-free countries'
+      },
+      {
+        name: 'Work Visa',
+        duration: '1-5 years',
+        cost: 'Varies',
+        notes: 'Requires employer sponsorship'
+      }
+    ],
+    requirements: [
+      'Valid passport (6+ months remaining)',
+      'Return or onward ticket',
+      'Sufficient funds proof',
+      'No work intention (for visa-free/tourist)',
+      'Accommodation details'
+    ],
+    processingTime: '5-10 business days (if visa required)',
+    cost: 'Free (visa-free countries), varies otherwise'
+  },
+
+  // 健康要求
+  health: {
+    yellowFever: {
+      required: false,
+      regions: ['Not typically required for most travelers'],
+      notes: 'Only required if arriving from endemic areas'
+    },
+    covidRequirements: {
+      current: 'Check latest requirements',
+      testing: 'PCR test may be required',
+      vaccination: 'Recommended but not mandatory',
+      notes: 'Requirements change frequently'
+    },
+    healthDeclaration: {
+      required: false,
+      form: null,
+      languages: [],
+      submission: null
+    }
+  },
+
+  // 资金证明要求
+  fundingRequirements: {
+    minimumAmount: {
+      perPerson: 100000, // JPY (approximately $700 USD)
+      family: 200000
+    },
+    acceptedProofs: [
+      'Cash in hand',
+      'Credit cards (multiple recommended)',
+      'Bank statements',
+      'Traveler\'s checks',
+      'Employer guarantee letter'
+    ],
+    validityPeriod: 'Recent statements preferred',
+    notes: [
+      'Cash is still preferred in Japan',
+      'Credit cards widely accepted but cash backup recommended',
+      'Large amounts may need to be declared'
+    ]
   },
 
   // 交通信息
   transport: {
-    airportRail: {
-      name: 'JR线',
-      description: '从机场直达东京市区',
-      options: [
-        { name: '成田特快', destination: '东京', time: '60分钟', price: '¥3,020' },
-        { name: '京成 Skyliner', destination: '日暮里', time: '36分钟', price: '¥2,470' }
-      ]
-    },
-    icCard: {
-      types: ['Suica', 'Pasmo'],
-      purchase: '机场自动售票机或便利店',
-      initialCharge: '¥500',
-      usage: '地铁、公交、商店'
-    },
-    taxi: {
-      cost: '从成田到东京约¥20,000-30,000',
-      tips: '预约或使用机场出租车柜台'
-    },
-    bus: {
-      cost: '¥1,000-3,000',
-      routes: '直达主要酒店和车站'
+    options: [
+      {
+        type: 'train',
+        name: 'Airport Express Train',
+        from: 'Airport',
+        to: 'City Center',
+        duration: '30-60 minutes',
+        cost: 'JPY 1,000-3,000',
+        frequency: 'Every 10-15 minutes'
+      },
+      {
+        type: 'bus',
+        name: 'Airport Limousine Bus',
+        from: 'Airport',
+        to: 'Major Hotels/Stations',
+        duration: '45-90 minutes',
+        cost: 'JPY 1,000-2,500',
+        frequency: 'Every 20-30 minutes'
+      },
+      {
+        type: 'taxi',
+        name: 'Airport Taxi',
+        from: 'Airport',
+        to: 'City Center',
+        duration: '45-90 minutes',
+        cost: 'JPY 10,000-20,000',
+        frequency: '24 hours'
+      },
+      {
+        type: 'car_rental',
+        name: 'Car Rental',
+        from: 'Airport',
+        to: 'Various',
+        duration: 'Flexible',
+        cost: 'JPY 5,000-10,000 per day',
+        notes: 'International driving permit may be required'
+      }
+    ],
+    recommendations: {
+      narita: 'Narita Express train to Tokyo',
+      haneda: 'Monorail to Hamamatsucho, then subway',
+      kansai: 'Haruka Express to Osaka/Kyoto',
+      chubu: 'Meitetsu train to Nagoya',
+      fukuoka: 'Subway or taxi to city center'
     }
   },
 
   // 货币和ATM信息
-  currency: {
-    name: '日元',
+  financialInfo: {
     code: 'JPY',
+    name: 'Japanese Yen',
     denominations: [
-      { amount: 10000, color: '蓝色', usage: '大额支付' },
-      { amount: 5000, color: '紫色', usage: '中等金额' },
-      { amount: 1000, color: '绿色', usage: '日常使用' },
-      { amount: 500, color: '红色', usage: '小额支付' }
+      { value: 10000, color: 'Brown', usage: 'Large payments' },
+      { value: 5000, color: 'Blue', usage: 'Medium payments' },
+      { value: 1000, color: 'Green', usage: 'Small payments' },
+      { value: 500, color: 'Silver', usage: 'Coins' }
     ],
     atm: {
-      location: '机场到达大厅',
-      recommendedBanks: ['三菱UFJ', '三井住友', '瑞穂'],
-      fees: '约¥200-300/次',
+      location: 'Airport arrival halls and city centers',
+      banks: ['Seven Bank', 'Japan Post Bank', 'Mitsubishi UFJ', 'Sumitomo Mitsui'],
+      fees: 'Usually JPY 200-300 for international cards',
       tips: [
-        '选择英文界面',
-        '确认手续费',
-        '建议多取一些现金',
-        '机场ATM汇率较好'
+        'Seven Bank ATMs at 7-Eleven accept international cards',
+        'Japan Post ATMs widely available',
+        'Check your card supports international transactions',
+        'Have your PIN ready'
       ]
     }
   },
@@ -239,33 +433,47 @@ export const japanEntryGuide = {
   emergency: {
     police: '110',
     ambulance: '119',
-    fire: '119',
+    touristHotline: '050-3816-2787',
     embassy: {
-      china: '+81-3-3403-3066',
-      taiwan: '+81-3-3263-4244'
+      china: '+81-3-3403-3388',
+      usa: '+81-3-3224-5000',
+      canada: '+81-3-5212-4111',
+      australia: '+81-3-5232-4111',
+      uk: '+81-3-5211-1100'
     },
-    touristInfo: '0570-000-330（有中文服务）'
+    immigration: '+81-57-001-200',
+    airport: {
+      narita: '+81-476-34-5000',
+      haneda: '+81-3-5757-8111',
+      kansai: '+81-72-455-2500',
+      chubu: '+81-569-38-1111',
+      fukuoka: '+81-92-477-1111'
+    }
   },
 
-  // 语言帮助卡
+  // 文化和礼仪提醒
+  cultureTips: [
+    'Japanese people value politeness and quiet behavior',
+    'Remove shoes when entering homes and traditional buildings',
+    'Do not eat or drink while walking',
+    'Bow when greeting (slight bow is sufficient for foreigners)',
+    'Be punctual - Japanese timekeeping is precise',
+    'Quiet in public transportation',
+    'Respect photography restrictions'
+  ],
+
+  // 语言帮助卡（备用）
   languageHelp: {
-    whereIsTaxi: 'Taxi wa doko desu ka?',
-    howMuch: 'Ikura desu ka?',
-    receipt: 'Receipt onegaishimasu',
-    help: 'Tasukete kudasai',
     thankYou: 'Arigatou gozaimasu',
     excuseMe: 'Sumimasen',
-    iDontUnderstand: 'Wakarimasen'
-  },
-
-  // 文化提示
-  cultureTips: [
-    '日本人说话礼貌，常用"请"和"谢谢"',
-    '排队时保持秩序',
-    '在公共场合保持安静',
-    '脱鞋进入室内',
-    '使用湿巾清洁餐具'
-  ]
+    whereIs: 'Doko desu ka?',
+    howMuch: 'Ikura desu ka?',
+    english: 'Eigo wo hanashimasu ka?',
+    help: 'Tasukete kudasai',
+    no: 'Iie',
+    yes: 'Hai',
+    sorry: 'Gomen nasai'
+  }
 };
 
 export default japanEntryGuide;

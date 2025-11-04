@@ -3,17 +3,16 @@ module.exports = function(api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      // Tamagui babel plugin temporarily disabled due to config loading issues
-      // ['module:@tamagui/babel-plugin', {
-      //   config: './tamagui.config.js',
-      //   components: ['tamagui'],
-      //   // Temporarily disable extraction until config issues are resolved
-      //   disableExtraction: true,
-      //   // Keep logging off for now
-      //   logTimings: false,
-      //   // Optimize imports
-      //   importsWhitelist: ['Constants.js', 'colors.js'],
-      // }],
+      ['module:@tamagui/babel-plugin', {
+        config: './tamagui.config.js',
+        components: ['tamagui'],
+        // Enable extraction for better performance
+        disableExtraction: false,
+        // Keep logging off for now
+        logTimings: false,
+        // Optimize imports
+        importsWhitelist: ['Constants.js', 'colors.js'],
+      }],
       'react-native-reanimated/plugin',
     ],
     env: {

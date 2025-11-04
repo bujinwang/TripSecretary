@@ -25,7 +25,7 @@ const deepMergeTranslations = (base = {}, overrides = {}) => {
   return result;
 };
 
-export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es'];
+export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es', 'ms'];
 
 // Progressive Entry Flow namespaces
 export const PROGRESSIVE_FLOW_NAMESPACES = ['progressiveFlow', 'entryPack', 'notifications'];
@@ -51,6 +51,19 @@ const baseTranslations = {
       de: 'Deutsch',
       es: 'Español',
       zh: '中文',
+      ms: 'Bahasa Melayu',
+    },
+    ms: {
+      languages: {
+        en: '[ms] English',
+        'zh-CN': '[ms] 简体中文',
+        'zh-TW': '[ms] 繁體中文',
+        fr: '[ms] Français',
+        de: '[ms] Deutsch',
+        es: '[ms] Español',
+        zh: '[ms] 中文',
+        ms: 'Bahasa Melayu',
+      },
     },
     malaysia: {
       info: {
@@ -2394,6 +2407,19 @@ const baseTranslations = {
       de: 'Deutsch',
       es: 'Español',
       zh: '中文',
+      ms: 'Bahasa Melayu',
+    },
+    ms: {
+      languages: {
+        en: '[ms] English',
+        'zh-CN': '[ms] 简体中文',
+        'zh-TW': '[ms] 繁體中文',
+        fr: '[ms] Français',
+        de: '[ms] Deutsch',
+        es: '[ms] Español',
+        zh: '[ms] 中文',
+        ms: 'Bahasa Melayu',
+      },
     },
     login: {
       tagline: '跨境入境 • 畅通无阻',

@@ -11,21 +11,21 @@ export const malaysiaEntryGuide = {
 
   // 重要提醒
   importantNotes: [
-    '必须在抵达前3天提交MDAC数字入境卡',
-    '准备好充足的资金证明，每人至少350林吉特',
-    '马来西亚有东马和西马两个区域，入境要求不同',
-    '热带气候，注意防晒和饮水',
-    '穆斯林国家，尊重当地文化和宗教习俗'
+    'malaysia.entryGuide.importantNotes.0',
+    'malaysia.entryGuide.importantNotes.1',
+    'malaysia.entryGuide.importantNotes.2',
+    'malaysia.entryGuide.importantNotes.3',
+    'malaysia.entryGuide.importantNotes.4'
   ],
 
   // 8步骤完整流程 (包含紧急联系方式准备)
   steps: [
     {
       id: 'emergency_contacts',
-      title: '紧急联系方式',
-      titleZh: '紧急联系方式',
-      description: '保存马来西亚紧急联系电话，以备不时之需',
-      descriptionZh: '保存马来西亚紧急联系电话，以备不时之需',
+      titleKey: 'malaysia.entryGuide.steps.emergency_contacts.title',
+      defaultTitle: 'Emergency Contacts',
+      descriptionKey: 'malaysia.entryGuide.steps.emergency_contacts.description',
+      defaultDescription: 'Save Malaysia emergency contact numbers for emergencies',
       category: 'pre-arrival',
       priority: 1,
       estimatedTime: '2分钟',
@@ -45,10 +45,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'mdac_submission',
-      title: 'MDAC数字入境卡提交',
-      titleZh: 'MDAC数字入境卡提交',
-      description: '抵达前3天提交马来西亚数字入境卡',
-      descriptionZh: '抵达前3天提交马来西亚数字入境卡',
+      titleKey: 'malaysia.entryGuide.steps.mdac_submission.title',
+      defaultTitle: 'MDAC Digital Arrival Card Submission',
+      descriptionKey: 'malaysia.entryGuide.steps.mdAC_submission.description',
+      defaultDescription: 'Submit Malaysia Digital Arrival Card 3 days before arrival',
       category: 'pre-arrival',
       priority: 2,
       estimatedTime: '10分钟',
@@ -68,10 +68,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'visa_check',
-      title: '签证确认',
-      titleZh: '签证确认',
-      description: '确认签证类型和有效性',
-      descriptionZh: '确认签证类型和有效性',
+      titleKey: 'malaysia.entryGuide.steps.visa_check.title',
+      defaultTitle: 'Visa Confirmation',
+      descriptionKey: 'malaysia.entryGuide.steps.visa_check.description',
+      defaultDescription: 'Confirm visa type and validity',
       category: 'pre-flight',
       priority: 3,
       estimatedTime: '5分钟',
@@ -89,10 +89,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'preparation',
-      title: '飞机内准备通关包',
-      titleZh: '飞机内准备通关包',
-      description: '整理通关包，确认MDAC状态',
-      descriptionZh: '整理通关包，确认MDAC状态',
+      titleKey: 'malaysia.entryGuide.steps.preparation.title',
+      defaultTitle: 'In-flight Preparation',
+      descriptionKey: 'malaysia.entryGuide.steps.preparation.description',
+      defaultDescription: 'Organize entry pack and confirm MDAC status',
       category: 'in-flight',
       priority: 4,
       estimatedTime: '5分钟',
@@ -106,10 +106,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'landing_setup',
-      title: '落地前准备',
-      titleZh: '落地前准备',
-      description: '关闭蜂窝网络，准备马来西亚eSIM卡',
-      descriptionZh: '关闭蜂窝网络，准备马来西亚eSIM卡',
+      titleKey: 'malaysia.entryGuide.steps.landing_setup.title',
+      defaultTitle: 'Pre-landing Setup',
+      descriptionKey: 'malaysia.entryGuide.steps.landing_setup.description',
+      defaultDescription: 'Turn off cellular data and prepare Malaysia eSIM',
       category: 'post-landing',
       priority: 5,
       estimatedTime: '2分钟',
@@ -127,10 +127,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'immigration',
-      title: '移民局检查',
-      titleZh: '移民局检查',
-      description: '出示护照和MDAC，完成检查',
-      descriptionZh: '出示护照和MDAC，完成检查',
+      titleKey: 'malaysia.entryGuide.steps.immigration.title',
+      defaultTitle: 'Immigration Check',
+      descriptionKey: 'malaysia.entryGuide.steps.immigration.description',
+      defaultDescription: 'Present passport and MDAC, complete check',
       category: 'immigration',
       priority: 6,
       estimatedTime: '15分钟',
@@ -145,10 +145,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'baggage_claim',
-      title: '行李领取',
-      titleZh: '行李领取',
-      description: '找到行李转盘，认领行李',
-      descriptionZh: '找到行李转盘，认领行李',
+      titleKey: 'malaysia.entryGuide.steps.baggage_claim.title',
+      defaultTitle: 'Baggage Claim',
+      descriptionKey: 'malaysia.entryGuide.steps.baggage_claim.description',
+      defaultDescription: 'Find the baggage carousel and claim your luggage',
       category: 'baggage',
       priority: 7,
       estimatedTime: '15分钟',
@@ -162,10 +162,10 @@ export const malaysiaEntryGuide = {
     },
     {
       id: 'customs_inspection',
-      title: '海关物品检查',
-      titleZh: '海关物品检查',
-      description: '申报物品，通过海关检查',
-      descriptionZh: '申报物品，通过海关检查',
+      titleKey: 'malaysia.entryGuide.steps.customs_inspection.title',
+      defaultTitle: 'Customs Inspection',
+      descriptionKey: 'malaysia.entryGuide.steps.customs_inspection.description',
+      defaultDescription: 'Declare items and pass through customs inspection',
       category: 'customs',
       priority: 8,
       estimatedTime: '10分钟',
@@ -183,40 +183,44 @@ export const malaysiaEntryGuide = {
   customs: {
     declarationRequired: true,
     prohibitedItems: [
-      '猪肉及其制品',
-      '毒品及其制品',
-      '枪支弹药',
-      '淫秽物品',
-      '超过免税额度的烟酒'
+      'malaysia.entryGuide.customs.prohibitedItems.0',
+      'malaysia.entryGuide.customs.prohibitedItems.1',
+      'malaysia.entryGuide.customs.prohibitedItems.2',
+      'malaysia.entryGuide.customs.prohibitedItems.3',
+      'malaysia.entryGuide.customs.prohibitedItems.4'
     ],
     restrictedItems: [
-      '新鲜水果和蔬菜',
-      '种子和土壤',
-      '中药材'
+      'malaysia.entryGuide.customs.restrictedItems.0',
+      'malaysia.entryGuide.customs.restrictedItems.1',
+      'malaysia.entryGuide.customs.restrictedItems.2'
     ],
     dutyFree: {
-      alcohol: '1升',
-      tobacco: '200支香烟或225克烟丝',
-      perfume: '250ml',
-      gifts: '相当于500林吉特'
+      alcohol: 'malaysia.entryGuide.customs.dutyFree.alcohol',
+      tobacco: 'malaysia.entryGuide.customs.dutyFree.tobacco',
+      perfume: 'malaysia.entryGuide.customs.dutyFree.perfume',
+      gifts: 'malaysia.entryGuide.customs.dutyFree.gifts'
     }
   },
 
   // MDAC信息
   mdac: {
-    systemName: 'Malaysia Digital Arrival Card',
-    submissionWindow: '3天',
+    systemName: 'malaysia.entryGuide.mdac.systemName',
+    submissionWindow: 'malaysia.entryGuide.mdac.submissionWindow',
     requiredDocuments: [
-      '有效护照',
-      '旅行信息',
-      '住宿地址',
-      '资金证明',
-      '返程机票'
+      'malaysia.entryGuide.mdac.requiredDocuments.0',
+      'malaysia.entryGuide.mdac.requiredDocuments.1',
+      'malaysia.entryGuide.mdac.requiredDocuments.2',
+      'malaysia.entryGuide.mdac.requiredDocuments.3',
+      'malaysia.entryGuide.mdac.requiredDocuments.4'
     ],
-    processingTime: '通常几分钟',
-    validity: '从抵达之日起6个月',
-    cost: '免费',
-    languages: ['ms', 'en', 'zh']
+    processingTime: 'malaysia.entryGuide.mdac.processingTime',
+    validity: 'malaysia.entryGuide.mdac.validity',
+    cost: 'malaysia.entryGuide.mdac.cost',
+    languages: [
+      'malaysia.entryGuide.mdac.languages.0',
+      'malaysia.entryGuide.mdac.languages.1',
+      'malaysia.entryGuide.mdac.languages.2'
+    ]
   },
 
   // 资金证明要求
@@ -226,33 +230,39 @@ export const malaysiaEntryGuide = {
       family: 500
     },
     acceptedProofs: [
-      '银行存款证明',
-      '信用卡对账单',
-      '旅行支票',
-      '雇主担保信',
-      '房产证明'
+      'malaysia.entryGuide.fundingRequirements.acceptedProofs.0',
+      'malaysia.entryGuide.fundingRequirements.acceptedProofs.1',
+      'malaysia.entryGuide.fundingRequirements.acceptedProofs.2',
+      'malaysia.entryGuide.fundingRequirements.acceptedProofs.3',
+      'malaysia.entryGuide.fundingRequirements.acceptedProofs.4'
     ],
-    validityPeriod: '3个月内',
+    validityPeriod: 'malaysia.entryGuide.fundingRequirements.validityPeriod',
     notes: [
-      '资金证明必须是英文',
-      '金额必须是马来西亚林吉特或等值货币',
-      '家庭成员可合并计算'
+      'malaysia.entryGuide.fundingRequirements.notes.0',
+      'malaysia.entryGuide.fundingRequirements.notes.1',
+      'malaysia.entryGuide.fundingRequirements.notes.2'
     ]
   },
 
   // 地区差异 (东马/西马)
   regionalDifferences: {
     westMalaysia: {
-      name: '西马来西亚',
+      name: 'malaysia.entryGuide.regionalDifferences.westMalaysia.name',
       airports: ['KUL', 'PEN'],
-      requirements: '标准入境要求',
-      notes: ['吉隆坡是主要入境点', '基础设施完善']
+      requirements: 'malaysia.entryGuide.regionalDifferences.westMalaysia.requirements',
+      notes: [
+        'malaysia.entryGuide.regionalDifferences.westMalaysia.notes.0',
+        'malaysia.entryGuide.regionalDifferences.westMalaysia.notes.1'
+      ]
     },
     eastMalaysia: {
-      name: '东马来西亚',
+      name: 'malaysia.entryGuide.regionalDifferences.eastMalaysia.name',
       airports: ['BKI', 'KCH'],
-      requirements: '可能需要额外许可',
-      notes: ['沙巴和砂拉越有不同要求', '可能需要额外签证']
+      requirements: 'malaysia.entryGuide.regionalDifferences.eastMalaysia.requirements',
+      notes: [
+        'malaysia.entryGuide.regionalDifferences.eastMalaysia.notes.0',
+        'malaysia.entryGuide.regionalDifferences.eastMalaysia.notes.1'
+      ]
     }
   },
 
@@ -261,84 +271,84 @@ export const malaysiaEntryGuide = {
     options: [
       {
         type: 'taxi',
-        name: '出租车',
-        from: '机场',
-        to: '市区',
-        duration: '45-75分钟',
-        cost: 'MYR 50-100',
-        frequency: '24小时'
+        name: 'malaysia.entryGuide.transport.options.taxi.name',
+        from: 'malaysia.entryGuide.transport.options.taxi.from',
+        to: 'malaysia.entryGuide.transport.options.taxi.to',
+        duration: 'malaysia.entryGuide.transport.options.taxi.duration',
+        cost: 'malaysia.entryGuide.transport.options.taxi.cost',
+        frequency: 'malaysia.entryGuide.transport.options.taxi.frequency'
       },
       {
         type: 'grab',
-        name: 'Grab打车',
-        from: '机场',
-        to: '市区',
-        duration: '45-75分钟',
-        cost: 'MYR 30-80',
-        frequency: '24小时'
+        name: 'malaysia.entryGuide.transport.options.grab.name',
+        from: 'malaysia.entryGuide.transport.options.grab.from',
+        to: 'malaysia.entryGuide.transport.options.grab.to',
+        duration: 'malaysia.entryGuide.transport.options.grab.duration',
+        cost: 'malaysia.entryGuide.transport.options.grab.cost',
+        frequency: 'malaysia.entryGuide.transport.options.grab.frequency'
       },
       {
         type: 'bus',
-        name: '机场巴士',
-        from: '机场',
-        to: '市区',
-        duration: '60-90分钟',
-        cost: 'MYR 10-15',
-        frequency: '每30分钟一班'
+        name: 'malaysia.entryGuide.transport.options.bus.name',
+        from: 'malaysia.entryGuide.transport.options.bus.from',
+        to: 'malaysia.entryGuide.transport.options.bus.to',
+        duration: 'malaysia.entryGuide.transport.options.bus.duration',
+        cost: 'malaysia.entryGuide.transport.options.bus.cost',
+        frequency: 'malaysia.entryGuide.transport.options.bus.frequency'
       },
       {
         type: 'kliaexpress',
-        name: 'KLIA Express',
-        from: 'KUL',
-        to: 'KL Sentral',
-        duration: '28分钟',
-        cost: 'MYR 55',
-        frequency: '每15分钟一班'
+        name: 'malaysia.entryGuide.transport.options.kliaexpress.name',
+        from: 'malaysia.entryGuide.transport.options.kliaexpress.from',
+        to: 'malaysia.entryGuide.transport.options.kliaexpress.to',
+        duration: 'malaysia.entryGuide.transport.options.kliaexpress.duration',
+        cost: 'malaysia.entryGuide.transport.options.kliaexpress.cost',
+        frequency: 'malaysia.entryGuide.transport.options.kliaexpress.frequency'
       }
     ],
     recommendations: {
-      kul: 'KLIA Express最快捷',
-      budget: '机场巴士最经济',
-      comfort: 'Grab打车最方便',
-      night: '出租车最安全'
+      kul: 'malaysia.entryGuide.transport.recommendations.kul',
+      budget: 'malaysia.entryGuide.transport.recommendations.budget',
+      comfort: 'malaysia.entryGuide.transport.recommendations.comfort',
+      night: 'malaysia.entryGuide.transport.recommendations.night'
     }
   },
 
   // 货币和ATM信息
   currency: {
     code: 'MYR',
-    name: '马来西亚林吉特',
+    name: 'malaysia.entryGuide.currency.name',
     denominations: [
-      { value: 100, color: '紫色', usage: '大额支付' },
-      { value: 50, color: '红色', usage: '中等金额' },
-      { value: 20, color: '黄色', usage: '小额支付' },
-      { value: 10, color: '蓝色', usage: '找零' }
+      { value: 100, color: 'malaysia.entryGuide.currency.denominations.0.color', usage: 'malaysia.entryGuide.currency.denominations.0.usage' },
+      { value: 50, color: 'malaysia.entryGuide.currency.denominations.1.color', usage: 'malaysia.entryGuide.currency.denominations.1.usage' },
+      { value: 20, color: 'malaysia.entryGuide.currency.denominations.2.color', usage: 'malaysia.entryGuide.currency.denominations.2.usage' },
+      { value: 10, color: 'malaysia.entryGuide.currency.denominations.3.color', usage: 'malaysia.entryGuide.currency.denominations.3.usage' }
     ],
     atm: {
-      location: '机场到达大厅',
+      location: 'malaysia.entryGuide.currency.atm.location',
       banks: ['Maybank', 'CIMB', 'Public Bank', 'RHB'],
-      fees: '约MYR 5-10',
+      fees: 'malaysia.entryGuide.currency.atm.fees',
       tips: [
-        '机场ATM汇率较差',
-        '建议使用市区ATM',
-        '银行卡需支持国际交易',
-        '准备好PIN码'
+        'malaysia.entryGuide.currency.atm.tips.0',
+        'malaysia.entryGuide.currency.atm.tips.1',
+        'malaysia.entryGuide.currency.atm.tips.2',
+        'malaysia.entryGuide.currency.atm.tips.3'
       ]
     }
   },
 
   // 紧急联系方式
   emergency: {
-    police: '999',
-    ambulance: '999',
-    touristPolice: '03-2115-9999',
+    police: 'malaysia.entryGuide.emergency.police',
+    ambulance: 'malaysia.entryGuide.emergency.police',
+    touristPolice: 'malaysia.entryGuide.emergency.touristPolice',
     embassy: {
-      china: '+60-3-2161-6000',
-      usa: '+60-3-2168-5000',
-      korea: '+60-3-4251-5000'
+      china: 'malaysia.entryGuide.emergency.embassy.china',
+      usa: 'malaysia.entryGuide.emergency.embassy.usa',
+      korea: 'malaysia.entryGuide.emergency.embassy.korea'
     },
-    immigration: '+60-3-8000-8000',
-    airport: '+60-3-8776-4000'
+    immigration: 'malaysia.entryGuide.emergency.immigration',
+    airport: 'malaysia.entryGuide.emergency.airport'
   },
 
   // 文化和礼仪提醒
@@ -352,14 +362,14 @@ export const malaysiaEntryGuide = {
 
   // 语言帮助卡（备用）
   languageHelp: {
-    useGrab: 'Grab please',
-    howMuch: 'How much?',
-    noThankYou: 'No, thank you',
-    needHelp: 'I need help',
-    needChange: 'I need change please',
-    receipt: 'Receipt please',
-    whereIs: 'Where is...?',
-    thankYou: 'Terima kasih'
+    useGrab: 'malaysia.entryGuide.languageHelp.useGrab',
+    howMuch: 'malaysia.entryGuide.languageHelp.howMuch',
+    noThankYou: 'malaysia.entryGuide.languageHelp.noThankYou',
+    needHelp: 'malaysia.entryGuide.languageHelp.needHelp',
+    needChange: 'malaysia.entryGuide.languageHelp.needChange',
+    receipt: 'malaysia.entryGuide.languageHelp.receipt',
+    whereIs: 'malaysia.entryGuide.languageHelp.whereIs',
+    thankYou: 'malaysia.entryGuide.languageHelp.thankYou'
   }
 };
 

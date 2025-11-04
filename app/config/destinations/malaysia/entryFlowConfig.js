@@ -29,7 +29,7 @@ export const malaysiaEntryFlowConfig = {
   categories: [
     {
       id: 'passport',
-      nameKey: 'progressiveEntryFlow.categories.passport',
+      nameKey: 'malaysia.progressiveEntryFlow.categories.passport',
       defaultName: 'Passport Information',
       icon: '📘',
       requiredFields: [
@@ -44,7 +44,7 @@ export const malaysiaEntryFlowConfig = {
     },
     {
       id: 'personal',
-      nameKey: 'progressiveEntryFlow.categories.personal',
+      nameKey: 'malaysia.progressiveEntryFlow.categories.personal',
       defaultName: 'Personal Information',
       icon: '👤',
       requiredFields: [
@@ -58,7 +58,7 @@ export const malaysiaEntryFlowConfig = {
     },
     {
       id: 'funds',
-      nameKey: 'progressiveEntryFlow.categories.funds',
+      nameKey: 'malaysia.progressiveEntryFlow.categories.funds',
       defaultName: 'Proof of Funds',
       icon: '💰',
       minRequired: 1,
@@ -66,7 +66,7 @@ export const malaysiaEntryFlowConfig = {
     },
     {
       id: 'travel',
-      nameKey: 'progressiveEntryFlow.categories.travel',
+      nameKey: 'malaysia.progressiveEntryFlow.categories.travel',
       defaultName: 'Travel Information',
       icon: '✈️',
       requiredFields: [

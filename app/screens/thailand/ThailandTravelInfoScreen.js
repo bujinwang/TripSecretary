@@ -285,10 +285,10 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
             borderRadius="$md"
           >
             <TamaguiText fontSize={16}>
-              {formState.saveStatus === 'pending' && '⏳'}
-              {formState.saveStatus === 'saving' && '💾'}
-              {formState.saveStatus === 'saved' && '✅'}
-              {formState.saveStatus === 'error' && '❌'}
+              {formState.saveStatus === 'pending' && <TamaguiText>⏳</TamaguiText>}
+              {formState.saveStatus === 'saving' && <TamaguiText>💾</TamaguiText>}
+              {formState.saveStatus === 'saved' && <TamaguiText>✅</TamaguiText>}
+              {formState.saveStatus === 'error' && <TamaguiText>❌</TamaguiText>}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary" flex={1}>
               {formState.saveStatus === 'pending' && t('thailand.travelInfo.saveStatus.pending', { defaultValue: '等待保存...' })}
@@ -543,7 +543,9 @@ const ThailandTravelInfoScreen = ({ navigation, route }) => {
                 onPress={handleContinue}
                 fullWidth
               >
-                {`${buttonConfig.icon} ${buttonConfig.label}`}
+                <TamaguiText>
+                  {`${buttonConfig.icon} ${buttonConfig.label}`}
+                </TamaguiText>
               </BaseButton>
             );
           })()}

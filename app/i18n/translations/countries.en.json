@@ -299,10 +299,84 @@
   },
   "malaysia": {
     "travelInfo": {
+      "hero": {
+        "title": "Malaysia Entry Preparation Guide",
+        "subtitle": "Complete MDAC in 3 minutes, stress-free entry!",
+        "valuePropositions": [
+          "3 minutes to complete",
+          "Smart MDAC reminders",
+          "Offline friendly, secure storage"
+        ],
+        "beginnerTip": "MDAC must be submitted within 3 days before arrival. We remind you at the perfect time."
+      },
       "sections": {
         "passport": "Passport Information",
         "personal": "Personal Information",
+        "funds": "Proof of Funds",
         "travel": "Travel Information"
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Recent Country of Stay",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Transit Passenger",
+        "accommodationType": "Accommodation Type",
+        "province": "State",
+        "district": "District",
+        "hotelAddress": "Hotel Address"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "FREELANCER": "Freelancer",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISITING_RELATIVES": "Visiting Relatives",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "state": "State",
+        "district": "District"
+      },
+      "validation": {
+        "arrivalDateWithinWindow": "Arrival date must be within the next 30 days to comply with MDAC submission window."
+      },
+      "navigation": {
+        "submitButton": {
+          "incomplete": "Complete Required Fields",
+          "almostDone": "Almost Done",
+          "ready": "Continue to MDAC"
+        }
       }
     },
     "info": {
@@ -378,6 +452,38 @@
         }
       },
       "startButton": "Start filling"
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Information"
+      }
+    },
+    "entryFlow": {
+      "submissionWindow": "Submit within 3 days of arrival"
+    },
+    "entryPack": {
+      "preview": {
+        "actions": {
+          "editInfo": "Edit Information / 编辑信息 / Edit Maklumat",
+          "viewGuide": "MDAC Guide / MDAC指南 / Panduan MDAC",
+          "submitMdac": "Submit MDAC / 提交MDAC / Hantar MDAC"
+        },
+        "completion": {
+          "title": "Ready for MDAC! / 准备提交MDAC！ / Sedia untuk MDAC!",
+          "subtitle": "Your Malaysia entry information is complete. Submit your MDAC within 3 days before arrival. / 您的马来西亚入境信息已完整。请在入境前3天内提交MDAC。/ Maklumat kemasukan Malaysia anda lengkap. Hantar MDAC anda dalam tempoh 3 hari sebelum ketibaan."
+        },
+        "validation": {
+          "title": "Complete Required Information / 完成必填信息 / Lengkapkan Maklumat Diperlukan",
+          "message": "Please complete all required fields before submitting your MDAC. / 请完成所有必填项目后再提交MDAC。/ Sila lengkapkan semua medan yang diperlukan sebelum menghantar MDAC anda."
+        },
+        "documents": {
+          "title": "Malaysia Digital Arrival Card (MDAC) / 马来西亚数字入境卡 / Kad Ketibaan Digital Malaysia",
+          "subtitle": "Your information will be submitted digitally to Malaysian immigration authorities. / 您的信息将数字提交给马来西亚移民局。/ Maklumat anda akan dihantar secara digital kepada pihak berkuasa imigresen Malaysia."
+        }
+      }
     },
     "entryPackPreview": {
       "header": {

@@ -15,8 +15,8 @@ const MalaysiaEntryGuideScreen = ({ navigation, route }) => (
     route={route}
   >
     <EntryGuideTemplate.Header
-      titleZh="马来西亚入境指引 🇲🇾"
-      titleEn="Malaysia Entry Guide 🇲🇾"
+      titleKey="malaysia.entryGuide.title"
+      defaultTitle="Malaysia Entry Guide 🇲🇾"
     />
     <EntryGuideTemplate.AutoContent />
   </EntryGuideTemplate>

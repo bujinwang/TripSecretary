@@ -366,7 +366,12 @@ TravelInfoScreenTemplate.SubmitButton = ({
         fullWidth
         disabled={disabled}
       >
-        {icon && `${icon} `}{buttonLabel}
+        {icon && `${icon} `}
+        {typeof buttonLabel === 'string' ? (
+          <TamaguiText>{buttonLabel}</TamaguiText>
+        ) : (
+          buttonLabel
+        )}
       </BaseButton>
     </YStack>
   );

@@ -1,0 +1,321 @@
+
+{
+    "malaysia": {
+        "entryFlow": {
+            "submissionWindow": "[ms] Submit within 3 days of arrival"
+        },
+        "travelInfo": {
+            "sections": {
+                "passport": {
+                    "title": "[ms] Passport"
+                },
+                "personal": {
+                    "title": "[ms] Personal Information"
+                },
+                "funds": {
+                    "title": "[ms] Funds"
+                },
+                "travel": {
+                    "title": "[ms] Travel"
+                }
+            },
+            "fields": {
+                "surname": "[ms] Surname",
+                "middleName": "[ms] Middle Name",
+                "givenName": "[ms] Given Name",
+                "passportNo": "[ms] Passport No.",
+                "nationality": "[ms] Nationality",
+                "dob": "[ms] Date of Birth",
+                "expiryDate": "[ms] Expiry Date",
+                "sex": "[ms] Sex",
+                "visaNumber": "[ms] Visa Number",
+                "occupation": "[ms] Occupation",
+                "cityOfResidence": "[ms] City of Residence",
+                "countryOfResidence": "[ms] Country of Residence",
+                "phoneCode": "[ms] Phone Code",
+                "phoneNumber": "[ms] Phone Number",
+                "email": "[ms] Email",
+                "travelPurpose": "[ms] Travel Purpose",
+                "recentStayCountry": "[ms] Recent Country of Stay",
+                "boardingCountry": "[ms] Boarding Country",
+                "arrivalFlightNumber": "[ms] Arrival Flight Number",
+                "arrivalDate": "[ms] Arrival Date",
+                "departureFlightNumber": "[ms] Departure Flight Number",
+                "departureDate": "[ms] Departure Date",
+                "isTransitPassenger": "[ms] Transit Passenger",
+                "accommodationType": "[ms] Accommodation Type",
+                "province": "[ms] Province",
+                "district": "[ms] District",
+                "hotelAddress": "[ms] Hotel Address"
+            },
+            "hero": {
+                "title": "[ms] Malaysia Entry Preparation Guide",
+                "subtitle": "[ms] Complete MDAC in 3 minutes, stress-free entry!",
+                "valuePropositions": {
+                    "0": "[ms] 3 minutes to complete",
+                    "1": "[ms] Smart MDAC reminders",
+                    "2": "[ms] Offline friendly, secure storage"
+                },
+                "beginnerTip": "[ms] MDAC must be submitted within 3 days before arrival. We remind you at the perfect time."
+            },
+            "personal": {
+                "occupationOptions": {
+                    "OFFICE": "[ms] Office Worker",
+                    "FREELANCER": "[ms] Freelancer",
+                    "STUDENT": "[ms] Student",
+                    "SELF_EMPLOYED": "[ms] Self-employed",
+                    "HOMEMAKER": "[ms] Homemaker",
+                    "RETIRED": "[ms] Retired",
+                    "OTHER": "[ms] Other"
+                }
+            },
+            "travel": {
+                "travelPurposeOptions": {
+                    "TOURISM": "[ms] Tourism",
+                    "BUSINESS": "[ms] Business",
+                    "VISITING_RELATIVES": "[ms] Visiting Relatives",
+                    "TRANSIT": "[ms] Transit",
+                    "OTHER": "[ms] Other"
+                }
+            },
+            "locations": {
+                "state": "[ms] State",
+                "district": "[ms] District"
+            },
+            "validation": {
+                "arrivalDateWithinWindow": "[ms] Arrival date must be within the next 30 days to comply with MDAC submission window."
+            },
+            "navigation": {
+                "submitButton": {
+                    "incomplete": "[ms] Continue Filling",
+                    "almostDone": "[ms] Almost there, keep going 💪",
+                    "ready": "[ms] Proceed to MDAC Submission 🇲🇾"
+                }
+            }
+        },
+        "progressiveEntryFlow": {
+            "categories": {
+                "passport": "[ms] Passport Information",
+                "personal": "[ms] Personal Information",
+                "funds": "[ms] Proof of Funds",
+                "travel": "[ms] Travel Information"
+            }
+        },
+        "entryGuide": {
+            "title": "[ms] Malaysia Entry Guide 🇲🇾",
+            "importantNotes": {
+                "0": "[ms] MDAC must be submitted within 3 days before arrival",
+                "1": "[ms] Prepare sufficient proof of funds, at least 350 MYR per person",
+                "2": "[ms] Malaysia has two regions, East and West, with different entry requirements",
+                "3": "[ms] Tropical climate, pay attention to sun protection and hydration",
+                "4": "[ms] Muslim country, respect local culture and religious customs"
+            },
+            "steps": {
+                "emergency_contacts": {
+                    "title": "[ms] Emergency Contacts",
+                    "description": "[ms] Save Malaysia emergency contact numbers for emergencies"
+                },
+                "mdac_submission": {
+                    "title": "[ms] MDAC Digital Arrival Card Submission",
+                    "description": "[ms] Submit Malaysia Digital Arrival Card 3 days before arrival"
+                },
+                "visa_check": {
+                    "title": "[ms] Visa Confirmation",
+                    "description": "[ms] Confirm visa type and validity"
+                },
+                "preparation": {
+                    "title": "[ms] In-flight Preparation",
+                    "description": "[ms] Organize entry pack and confirm MDAC status"
+                },
+                "landing_setup": {
+                    "title": "[ms] Pre-landing Setup",
+                    "description": "[ms] Turn off cellular data and prepare Malaysia eSIM"
+                },
+                "immigration": {
+                    "title": "[ms] Immigration Check",
+                    "description": "[ms] Present passport and MDAC, complete check"
+                },
+                "baggage_claim": {
+                    "title": "[ms] Baggage Claim",
+                    "description": "[ms] Find the baggage carousel and claim your luggage"
+                },
+                "customs_inspection": {
+                    "title": "[ms] Customs Inspection",
+                    "description": "[ms] Declare items and pass through customs inspection"
+                }
+            },
+            "customs": {
+                "prohibitedItems": {
+                    "0": "[ms] Pork and its products",
+                    "1": "[ms] Drugs and their products",
+                    "2": "[ms] Firearms and ammunition",
+                    "3": "[ms] Obscene materials",
+                    "4": "[ms] Tobacco and alcohol exceeding the duty-free allowance"
+                },
+                "restrictedItems": {
+                    "0": "[ms] Fresh fruits and vegetables",
+                    "1": "[ms] Seeds and soil",
+                    "2": "[ms] Chinese medicinal materials"
+                },
+                "dutyFree": {
+                    "alcohol": "[ms] 1 liter",
+                    "tobacco": "[ms] 200 cigarettes or 225g of tobacco",
+                    "perfume": "[ms] 250ml",
+                    "gifts": "[ms] Equivalent to 500 MYR"
+                }
+            },
+            "mdac": {
+                "systemName": "[ms] Malaysia Digital Arrival Card",
+                "submissionWindow": "[ms] 3 days",
+                "requiredDocuments": {
+                    "0": "[ms] Valid passport",
+                    "1": "[ms] Travel information",
+                    "2": "[ms] Accommodation address",
+                    "3": "[ms] Proof of funds",
+                    "4": "[ms] Return ticket"
+                },
+                "processingTime": "[ms] Usually a few minutes",
+                "validity": "[ms] 6 months from the date of arrival",
+                "cost": "[ms] Free",
+                "languages": {
+                    "0": "[ms] ms",
+                    "1": "[ms] en",
+                    "2": "[ms] zh"
+                }
+            },
+            "fundingRequirements": {
+                "acceptedProofs": {
+                    "0": "[ms] Bank statement",
+                    "1": "[ms] Credit card statement",
+                    "2": "[ms] Traveler's cheques",
+                    "3": "[ms] Employer's guarantee letter",
+                    "4": "[ms] Property ownership certificate"
+                },
+                "validityPeriod": "[ms] Within 3 months",
+                "notes": {
+                    "0": "[ms] Proof of funds must be in English",
+                    "1": "[ms] Amount must be in Malaysian Ringgit or equivalent currency",
+                    "2": "[ms] Family members can be combined"
+                }
+            },
+            "regionalDifferences": {
+                "westMalaysia": {
+                    "name": "[ms] West Malaysia",
+                    "requirements": "[ms] Standard entry requirements",
+                    "notes": {
+                        "0": "[ms] Kuala Lumpur is the main entry point",
+                        "1": "[ms] Well-developed infrastructure"
+                    }
+                },
+                "eastMalaysia": {
+                    "name": "[ms] East Malaysia",
+                    "requirements": "[ms] May require additional permits",
+                    "notes": {
+                        "0": "[ms] Sabah and Sarawak have different requirements",
+                        "1": "[ms] May require additional visa"
+                    }
+                }
+            },
+            "transport": {
+                "options": {
+                    "taxi": {
+                        "name": "[ms] Taxi",
+                        "from": "[ms] Airport",
+                        "to": "[ms] City center",
+                        "duration": "[ms] 45-75 minutes",
+                        "cost": "[ms] MYR 50-100",
+                        "frequency": "[ms] 24 hours"
+                    },
+                    "grab": {
+                        "name": "[ms] Grab",
+                        "from": "[ms] Airport",
+                        "to": "[ms] City center",
+                        "duration": "[ms] 45-75 minutes",
+                        "cost": "[ms] MYR 30-80",
+                        "frequency": "[ms] 24 hours"
+                    },
+                    "bus": {
+                        "name": "[ms] Airport Bus",
+                        "from": "[ms] Airport",
+                        "to": "[ms] City center",
+                        "duration": "[ms] 60-90 minutes",
+                        "cost": "[ms] MYR 10-15",
+                        "frequency": "[ms] Every 30 minutes"
+                    },
+                    "kliaexpress": {
+                        "name": "[ms] KLIA Express",
+                        "from": "[ms] KUL",
+                        "to": "[ms] KL Sentral",
+                        "duration": "[ms] 28 minutes",
+                        "cost": "[ms] MYR 55",
+                        "frequency": "[ms] Every 15 minutes"
+                    }
+                },
+                "recommendations": {
+                    "kul": "[ms] KLIA Express is the fastest",
+                    "budget": "[ms] Airport bus is the most economical",
+                    "comfort": "[ms] Grab is the most convenient",
+                    "night": "[ms] Taxi is the safest"
+                }
+            },
+            "currency": {
+                "name": "[ms] Malaysian Ringgit",
+                "denominations": {
+                    "0": {
+                        "color": "[ms] Purple",
+                        "usage": "[ms] Large payments"
+                    },
+                    "1": {
+                        "color": "[ms] Red",
+                        "usage": "[ms] Medium amounts"
+                    },
+                    "2": {
+                        "color": "[ms] Yellow",
+                        "usage": "[ms] Small payments"
+                    },
+                    "3": {
+                        "color": "[ms] Change"
+                    }
+                },
+                "atm": {
+                    "location": "[ms] Airport arrival hall",
+                    "fees": "[ms] Approximately MYR 5-10",
+                    "tips": {
+                        "0": "[ms] Airport ATM exchange rates are poor",
+                        "1": "[ms] Recommended to use city ATMs",
+                        "2": "[ms] Bank card must support international transactions",
+                        "3": "[ms] Prepare PIN code"
+                    }
+                }
+            },
+            "emergency": {
+                "police": "[ms] Police/Ambulance",
+                "touristPolice": "[ms] Tourist Police",
+                "embassy": {
+                    "china": "[ms] Chinese Embassy",
+                    "usa": "[ms] US Embassy",
+                    "korea": "[ms] Korean Embassy"
+                },
+                "immigration": "[ms] Immigration Department",
+                "airport": "[ms] Kuala Lumpur Airport"
+            },
+            "cultureTips": {
+                "0": "[ms] Malaysia is a Muslim country, respect Islamic teachings",
+                "1": "[ms] Dress modestly in public places",
+                "2": "[ms] Use your right hand to give and receive items",
+                "3": "[ms] Halal signs in Muslim restaurants",
+                "4": "[ms] Pay attention to changes in business hours during Ramadan"
+            },
+            "languageHelp": {
+                "useGrab": "[ms] Grab please",
+                "howMuch": "[ms] How much?",
+                "noThankYou": "[ms] No, thank you",
+                "needHelp": "[ms] I need help",
+                "needChange": "[ms] I need change please",
+                "receipt": "[ms] Receipt please",
+                "whereIs": "[ms] Where is...?",
+                "thankYou": "[ms] Terima kasih"
+            }
+        }
+    }
+}

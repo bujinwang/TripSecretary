@@ -6,6 +6,7 @@ const countriesFr = require('./countries.fr.json');
 const countriesDe = require('./countries.de.json');
 const countriesEs = require('./countries.es.json');
 const countriesZh = require('./countries.zh.json');
+const countriesMs = require('./countries.ms.json');
 
 // Lazy conversion cache for Traditional Chinese variants
 let zhTWCache = null;
@@ -24,6 +25,7 @@ const countryTranslations = {
   fr: countriesFr,
   de: countriesDe,
   es: countriesEs,
+  ms: countriesMs,
   // Add fallback for legacy 'zh' - use Traditional
   get 'zh'() {
     if (!zhTWCache) {

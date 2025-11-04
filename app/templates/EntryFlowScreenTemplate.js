@@ -464,7 +464,7 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost }) {
               backgroundColor={accentColor}
             />
           </YStack>
-          <TamaguiText fontSize="$4" fontWeight="700" color={accentColor} marginTop="$md">
+          <TamaguiText fontSize="$4" fontWeight="700" color={accentColor} marginTop="$md" textAlign="center">
             {headline}
           </TamaguiText>
           <TamaguiText fontSize="$3" color="$textSecondary" textAlign="center">

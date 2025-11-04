@@ -5,7 +5,7 @@
  * Mirrors the Vietnam setup but with MDAC-specific copy and fields.
  */
 
-import { malaysiaLabels, malaysiaConfig } from '../../labels/malaysia';
+import { malaysiaLabels, malaysiaConfig } from '../../../config/labels/malaysia';
 import { malaysiaStates, getDistrictsByState } from '../../../data/malaysiaLocations';
 
 export const malaysiaComprehensiveTravelInfoConfig = {
@@ -23,24 +23,27 @@ export const malaysiaComprehensiveTravelInfoConfig = {
   // HERO SECTION
   // ============================================
   hero: {
-    type: 'rich',
+    type: 'rich', // 'rich' uses LinearGradient, 'basic' uses simple layout
     title: '马来西亚入境准备指南',
     titleEn: 'Malaysia Entry Preparation Guide',
-    subtitle: '3分钟搞定 MDAC，安心入境！',
-    subtitleEn: 'Complete MDAC in 3 minutes, stress-free entry!',
+    subtitle: '3分钟完成MDAC，轻松入境！',
+    subtitleEn: "Complete MDAC in 3 minutes, stress-free entry!",
+
     gradient: {
-      colors: ['#1D4ED8', '#1E3A8A'],
+      colors: ['#1D4ED8', '#1E3A8A'], // Malaysia blue gradient
       start: { x: 0, y: 0 },
       end: { x: 1, y: 1 },
     },
+
     valuePropositions: [
-      { icon: '⏱️', text: '3分钟填写', textEn: '3 minutes to complete' },
-      { icon: '🛂', text: '自动提醒提交时间', textEn: 'Smart MDAC reminders' },
-      { icon: '🔒', text: '离线保存，安心备份', textEn: 'Offline friendly, secure storage' },
+      { icon: '⏱️', text: '3分钟完成', textEn: '3 minutes to complete' },
+      { icon: '🛂', text: '智能MDAC提醒', textEn: 'Smart MDAC reminders' },
+      { icon: '🔒', text: '离线友好，安全存储', textEn: 'Offline friendly, secure storage' },
     ],
+
     beginnerTip: {
       icon: '💡',
-      text: 'MDAC 必须在抵达前3天内提交。我们会提醒最佳时间，确保不超时、不太早。',
+      text: 'MDAC必须在入境前3天内提交。我们在最佳时间提醒您。',
       textEn: 'MDAC must be submitted within 3 days before arrival. We remind you at the perfect time.',
     },
   },
@@ -158,13 +161,13 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { label: '上班族 - Office Worker', value: 'OFFICE' },
-            { label: '自由职业 - Freelancer', value: 'FREELANCER' },
-            { label: '学生 - Student', value: 'STUDENT' },
-            { label: '个体户 - Self-employed', value: 'SELF_EMPLOYED' },
-            { label: '家庭主妇 - Homemaker', value: 'HOMEMAKER' },
-            { label: '退休 - Retired', value: 'RETIRED' },
-            { label: '其他 - Other', value: 'OTHER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OFFICE', defaultLabel: 'Office Worker', value: 'OFFICE' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.FREELANCER', defaultLabel: 'Freelancer', value: 'FREELANCER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.STUDENT', defaultLabel: 'Student', value: 'STUDENT' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.SELF_EMPLOYED', defaultLabel: 'Self-employed', value: 'SELF_EMPLOYED' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.HOMEMAKER', defaultLabel: 'Homemaker', value: 'HOMEMAKER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.RETIRED', defaultLabel: 'Retired', value: 'RETIRED' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OTHER', defaultLabel: 'Other', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customOccupation',
@@ -258,11 +261,11 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { label: '旅游 - Tourism', value: 'TOURISM' },
-            { label: '商务 - Business', value: 'BUSINESS' },
-            { label: '探亲访友 - Visiting Relatives', value: 'VISITING_RELATIVES' },
-            { label: '过境 - Transit', value: 'TRANSIT' },
-            { label: '其他 - Other', value: 'OTHER' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TOURISM', defaultLabel: 'Tourism', value: 'TOURISM' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.BUSINESS', defaultLabel: 'Business', value: 'BUSINESS' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.VISITING_RELATIVES', defaultLabel: 'Visiting Relatives', value: 'VISITING_RELATIVES' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TRANSIT', defaultLabel: 'Transit', value: 'TRANSIT' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.OTHER', defaultLabel: 'Other', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customTravelPurpose',
@@ -401,8 +404,8 @@ export const malaysiaComprehensiveTravelInfoConfig = {
         provincesData: malaysiaStates,
         getDistrictsFunc: getDistrictsByState,
         labels: {
-          level1: { key: 'malaysia.locations.state', default: '州/State' },
-          level2: { key: 'malaysia.locations.district', default: '城市/地区' },
+          level1: { key: 'malaysia.travelInfo.locations.state', default: 'State' },
+          level2: { key: 'malaysia.travelInfo.locations.district', default: 'District' },
         },
       },
       photoUploads: {
@@ -434,7 +437,8 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           const diffHours = (arrival - now) / 36e5;
           return diffHours >= 0 && diffHours <= 720; // 30 days window sanity check
         },
-        message: '抵达日期需在未来30天内，以便符合 MDAC 提交时间。',
+        messageKey: 'malaysia.travelInfo.validation.arrivalDateWithinWindow',
+        defaultMessage: 'Arrival date must be within the next 30 days to comply with MDAC submission window.',
       },
     },
   },
@@ -476,21 +480,45 @@ export const malaysiaComprehensiveTravelInfoConfig = {
     next: 'MalaysiaEntryFlow',
     saveBeforeNavigate: true,
     submitButton: {
-      dynamic: true,
+      dynamic: true, // Enable smart button with dynamic labels
+
+      // Thresholds for label changes (0-1 scale)
       thresholds: {
-        incomplete: 0.6,
-        ready: 1.0,
+        incomplete: 0.6,   // Below 60% shows "incomplete" label
+        almostDone: 0.8,   // 60-80% shows "almostDone" label
+        ready: 0.9,        // 90%+ shows "ready" label
       },
+
+      // Labels for each state
       labels: {
-        incomplete: '继续填写',
-        almostDone: '准备差一点点，继续加油 💪',
-        ready: '前往 MDAC 提交 🇲🇾',
+        incomplete: '完成必填项 - Complete Required Fields',
+        almostDone: '快完成了 - Almost Done',
+        ready: '继续 - Continue',
       },
+
+      // Default fallback if dynamic is disabled
+      default: '继续 - Continue',
+
       readyAction: {
         type: 'navigate',
         screen: 'MalaysiaEntryFlow',
       },
     },
+
+    // Fallback submit button label
+    submitButtonLabel: {
+      key: 'malaysia.travelInfo.continue',
+      default: '继续 - Continue',
+    },
+  },
+
+  // ============================================
+  // I18N
+  // ============================================
+  i18n: {
+    defaultLocale: 'zh-CN',
+    supportedLocales: ['zh-CN', 'en', 'ms', 'zh-TW'],
+    labelSource: malaysiaLabels,
   },
 };
 
