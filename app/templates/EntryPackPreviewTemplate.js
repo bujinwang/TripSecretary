@@ -28,6 +28,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import UserDataService from '../services/data/UserDataService';
 import EntryPackDisplay from '../components/EntryPackDisplay';
+import { useLocale } from '../i18n/LocaleContext';
 
 const EntryPackPreviewTemplateContext = createContext(null);
 
@@ -170,6 +171,131 @@ const EntryPackPreviewTemplate = ({
     return Boolean(submission && submission.arrCardNo);
   }, [entryPack]);
 
+  const { t, language } = useLocale();
+  const fallbackLanguage = config?.i18n?.fallbackLanguage;
+
+  const namespace = useMemo(() => {
+    if (config?.i18n?.namespace) {
+      return config.i18n.namespace;
+    }
+    if (config?.countryCode) {
+      return `entryPackPreview.${config.countryCode}`;
+    }
+    return null;
+  }, [config?.i18n?.namespace, config?.countryCode]);
+
+  const resolveTranslationKey = useCallback(
+    (key) => {
+      if (!key) {
+        return key;
+      }
+      if (!namespace) {
+        return key;
+      }
+      return key.startsWith(namespace) ? key : `${namespace}.${key}`;
+    },
+    [namespace]
+  );
+
+  const resolveText = useCallback(
+    (value, { preserveArray = false } = {}) => {
+      if (value === null || value === undefined) {
+        return preserveArray ? [] : null;
+      }
+
+      const resolveSingle = (input) => {
+        if (input === null || input === undefined) {
+          return null;
+        }
+
+        if (typeof input === 'string' || typeof input === 'number') {
+          return String(input);
+        }
+
+        if (Array.isArray(input)) {
+          const aggregated = [];
+          input.forEach((item) => {
+            const resolved = resolveSingle(item);
+            if (Array.isArray(resolved)) {
+              resolved.forEach((nested) => {
+                if (nested !== null && nested !== undefined && nested !== '') {
+                  aggregated.push(nested);
+                }
+              });
+            } else if (resolved !== null && resolved !== undefined && resolved !== '') {
+              aggregated.push(resolved);
+            }
+          });
+          return aggregated;
+        }
+
+        if (typeof input === 'object') {
+          const { key: providedKey, defaultValue, params, values, ...languageMap } = input;
+
+          if (providedKey) {
+            const translationKey = resolveTranslationKey(providedKey);
+            return t(translationKey, { defaultValue, ...(params || {}) });
+          }
+
+          if (values && typeof values === 'object') {
+            const languageCandidates = [
+              language,
+              typeof language === 'string' ? language.split('-')[0] : null,
+              fallbackLanguage,
+              'en',
+              'zh-CN',
+              'zh-TW',
+            ].filter(Boolean);
+
+            for (const langKey of languageCandidates) {
+              if (typeof values[langKey] === 'string') {
+                return values[langKey];
+              }
+            }
+
+            if (defaultValue !== undefined) {
+              return defaultValue;
+            }
+          }
+
+          const languageCandidates = [
+            language,
+            typeof language === 'string' ? language.split('-')[0] : null,
+            fallbackLanguage,
+            'en',
+            'zh-CN',
+            'zh-TW',
+          ].filter(Boolean);
+
+          for (const langKey of languageCandidates) {
+            if (typeof languageMap[langKey] === 'string') {
+              return languageMap[langKey];
+            }
+          }
+
+          if (defaultValue !== undefined) {
+            return defaultValue;
+          }
+        }
+
+        return null;
+      };
+
+      const result = resolveSingle(value);
+
+      if (Array.isArray(result)) {
+        return preserveArray ? result : result.join('\n');
+      }
+
+      if (preserveArray) {
+        return result ? [result] : [];
+      }
+
+      return result;
+    },
+    [fallbackLanguage, language, resolveTranslationKey, t]
+  );
+
   const scrollViewRef = useRef(null);
 
   const helpers = useMemo(
@@ -264,6 +390,9 @@ const EntryPackPreviewTemplate = ({
       isLoading,
       loadError,
       handleActionPress,
+      resolveText,
+      language,
+      namespace,
     }),
     [
       config,
@@ -278,6 +407,9 @@ const EntryPackPreviewTemplate = ({
       isLoading,
       loadError,
       handleActionPress,
+      resolveText,
+      language,
+      namespace,
     ]
   );
 
@@ -379,12 +511,17 @@ const EntryPackPreviewTemplateHeader = ({
   onClose,
   rightComponent = null,
 }) => {
-  const { navigation, config } = useEntryPackPreviewTemplate();
+  const { navigation, config, resolveText } = useEntryPackPreviewTemplate();
 
   const headerTitle =
-    title || config?.header?.title || 'Entry Pack Preview';
-  const headerSubtitle = subtitle || config?.header?.subtitle || null;
-  const closeIcon = config?.header?.closeIcon || '✕';
+    resolveText(title) ||
+    resolveText(config?.header?.title) ||
+    'Entry Pack Preview';
+  const headerSubtitle =
+    resolveText(subtitle) ||
+    resolveText(config?.header?.subtitle) ||
+    null;
+  const closeIcon = resolveText(config?.header?.closeIcon) || '✕';
 
   const handleClose = () => {
     if (typeof onClose === 'function') {
@@ -411,7 +548,7 @@ const EntryPackPreviewTemplateHeader = ({
 };
 
 const EntryPackPreviewTemplatePreviewBanner = () => {
-  const { config } = useEntryPackPreviewTemplate();
+  const { config, resolveText } = useEntryPackPreviewTemplate();
   const banner = config?.previewBanner;
 
   if (!banner) {
@@ -419,23 +556,24 @@ const EntryPackPreviewTemplatePreviewBanner = () => {
   }
 
   const {
-    icon = '👁️',
-    title = 'Preview Mode',
-    descriptions = [],
+    icon,
+    title,
+    descriptions,
     description,
   } = banner;
 
-  const combinedDescriptions = Array.isArray(descriptions)
-    ? descriptions
-    : description
-    ? [description]
-    : [];
+  const resolvedIcon = resolveText(icon) || '👁️';
+  const resolvedTitle = resolveText(title) || 'Preview Mode';
+  const combinedDescriptions = descriptions !== undefined
+    ? resolveText(descriptions, { preserveArray: true })
+    : resolveText(description, { preserveArray: true });
+  const descriptionLines = Array.isArray(combinedDescriptions) ? combinedDescriptions : [];
 
   return (
     <View style={styles.previewBanner}>
-      <Text style={styles.previewIcon}>{icon}</Text>
-      <Text style={styles.previewTitle}>{title}</Text>
-      {combinedDescriptions.map((text, index) => (
+      <Text style={styles.previewIcon}>{resolvedIcon}</Text>
+      <Text style={styles.previewTitle}>{resolvedTitle}</Text>
+      {descriptionLines.map((text, index) => (
         <Text
           key={`banner-desc-${index}`}
           style={[
@@ -469,7 +607,7 @@ const EntryPackPreviewTemplateEntryPack = (props) => {
 };
 
 const EntryPackPreviewTemplateActions = () => {
-  const { config, handleActionPress } = useEntryPackPreviewTemplate();
+  const { config, handleActionPress, resolveText } = useEntryPackPreviewTemplate();
   const actions = config?.actions;
 
   if (!actions) {
@@ -498,7 +636,7 @@ const EntryPackPreviewTemplateActions = () => {
               index === 0 ? styles.primaryButtonText : styles.secondaryButtonText,
             ]}
           >
-            {action.label}
+            {resolveText(action?.label) || action?.label}
           </Text>
         </TouchableOpacity>
       ))}
@@ -507,15 +645,24 @@ const EntryPackPreviewTemplateActions = () => {
 };
 
 const EntryPackPreviewTemplateInfoSection = () => {
-  const { config } = useEntryPackPreviewTemplate();
+  const { config, resolveText } = useEntryPackPreviewTemplate();
   const infoSection = config?.infoSection;
 
   if (!infoSection) {
     return null;
   }
 
-  const { icon = '💡', items = [], text } = infoSection;
-  const lines = Array.isArray(items) ? items : text ? [text] : [];
+  const { icon, items, text } = infoSection;
+  const resolvedIcon = resolveText(icon) || '💡';
+
+  const linesSource =
+    Array.isArray(items) && items.length > 0
+      ? items
+      : text !== undefined
+      ? text
+      : [];
+
+  const lines = resolveText(linesSource, { preserveArray: true });
 
   if (!lines.length) {
     return null;
@@ -523,7 +670,7 @@ const EntryPackPreviewTemplateInfoSection = () => {
 
   return (
     <View style={styles.infoSection}>
-      <Text style={styles.infoIcon}>{icon}</Text>
+      <Text style={styles.infoIcon}>{resolvedIcon}</Text>
       {lines.map((line, index) => (
         <Text
           key={`info-line-${index}`}
@@ -543,7 +690,7 @@ const EntryPackPreviewTemplateLoadingState = () => (
 );
 
 const EntryPackPreviewTemplateErrorState = () => {
-  const { loadError } = useEntryPackPreviewTemplate();
+  const { loadError, config, resolveText } = useEntryPackPreviewTemplate();
 
   if (!loadError) {
     return null;
@@ -551,8 +698,12 @@ const EntryPackPreviewTemplateErrorState = () => {
 
   return (
     <View style={styles.errorContainer}>
-      <Text style={styles.errorTitle}>Failed to load entry pack</Text>
-      <Text style={styles.errorMessage}>{loadError.message}</Text>
+      <Text style={styles.errorTitle}>
+        {resolveText(config?.errorState?.title) || 'Failed to load entry pack'}
+      </Text>
+      <Text style={styles.errorMessage}>
+        {resolveText(config?.errorState?.message) || loadError.message}
+      </Text>
     </View>
   );
 };

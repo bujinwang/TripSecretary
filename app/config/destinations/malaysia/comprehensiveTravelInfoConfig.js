@@ -478,12 +478,12 @@ export const malaysiaComprehensiveTravelInfoConfig = {
     submitButton: {
       dynamic: true,
       thresholds: {
-        editing: 0.6,
+        incomplete: 0.6,
         ready: 1.0,
       },
       labels: {
-        default: '继续填写',
-        editing: '准备差一点点，继续加油 💪',
+        incomplete: '继续填写',
+        almostDone: '准备差一点点，继续加油 💪',
         ready: '前往 MDAC 提交 🇲🇾',
       },
       readyAction: {
