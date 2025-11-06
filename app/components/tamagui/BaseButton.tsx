@@ -184,6 +184,25 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   };
 
   const isDisabled = disabled || loading;
+  const renderSlotContent = (slot: React.ReactNode) => {
+    if (slot === null || slot === undefined || typeof slot === 'boolean') {
+      return null;
+    }
+
+    if (typeof slot === 'string' || typeof slot === 'number') {
+      return (
+        <Text
+          fontSize={sizeStyles[size].fontSize}
+          fontWeight="600"
+          color={textColors[variant]}
+        >
+          {slot}
+        </Text>
+      );
+    }
+
+    return slot;
+  };
 
   return (
     <Button
@@ -207,19 +226,9 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
         <Spinner size="small" color={spinnerColors[variant]} />
       ) : (
         <>
-          {icon}
-          {typeof children === 'string' ? (
-            <Text
-              fontSize={sizeStyles[size].fontSize}
-              fontWeight="600"
-              color={textColors[variant]}
-            >
-              {children}
-            </Text>
-          ) : (
-            children
-          )}
-          {iconAfter}
+          {renderSlotContent(icon)}
+          {React.Children.map(children, (child) => renderSlotContent(child))}
+          {renderSlotContent(iconAfter)}
         </>
       )}
     </Button>

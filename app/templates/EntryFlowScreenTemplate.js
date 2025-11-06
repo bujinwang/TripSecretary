@@ -276,20 +276,32 @@ EntryFlowScreenTemplate.StatusBanner = () => {
     ready: {
       color: '#E6F9E6',
       icon: '✅',
-      title: t('entryFlow.status.ready.title', { defaultValue: 'Ready to Submit!' }),
-      subtitle: t('entryFlow.status.ready.subtitle', { defaultValue: 'All information complete' }),
+      title: t(config.status?.ready?.titleKey || 'entryFlow.status.ready.title', {
+        defaultValue: 'Ready to Submit!'
+      }),
+      subtitle: t(config.status?.ready?.subtitleKey || 'entryFlow.status.ready.subtitle', {
+        defaultValue: 'All information complete'
+      }),
     },
     mostly_complete: {
       color: '#FFF9E6',
       icon: '⏳',
-      title: t('entryFlow.status.mostlyComplete.title', { defaultValue: 'Almost There' }),
-      subtitle: t('entryFlow.status.mostlyComplete.subtitle', { defaultValue: `${completionPercent}% complete` }),
+      title: t(config.status?.mostly_complete?.titleKey || 'entryFlow.status.mostlyComplete.title', {
+        defaultValue: 'Almost There'
+      }),
+      subtitle: t(config.status?.mostly_complete?.subtitleKey || 'entryFlow.status.mostlyComplete.subtitle', {
+        defaultValue: `${completionPercent}% complete`
+      }),
     },
     needs_improvement: {
       color: '#FFE6E6',
       icon: '📝',
-      title: t('entryFlow.status.needsImprovement.title', { defaultValue: 'Please Complete' }),
-      subtitle: t('entryFlow.status.needsImprovement.subtitle', { defaultValue: 'More information needed' }),
+      title: t(config.status?.needs_improvement?.titleKey || 'entryFlow.status.needsImprovement.title', {
+        defaultValue: 'Please Complete'
+      }),
+      subtitle: t(config.status?.needs_improvement?.subtitleKey || 'entryFlow.status.needsImprovement.subtitle', {
+        defaultValue: 'More information needed'
+      }),
     },
   };
 
@@ -371,6 +383,7 @@ EntryFlowScreenTemplate.AutoContent = () => {
         status={completionStatus}
         isReady={isReady}
         isAlmost={isAlmost}
+        config={config}
       />
 
       <PrimaryActionCard
@@ -416,22 +429,38 @@ EntryFlowScreenTemplate.AutoContent = () => {
   );
 };
 
-function ProgressHeroCard({ percent, t, destination, isReady, isAlmost }) {
+function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }) {
   const accentColor = isReady ? '#0AA35C' : isAlmost ? '#FF8C00' : '#1E88E5';
   const backgroundColor = isReady ? '#E5F8EE' : isAlmost ? '#FFF6E6' : '#E6F1FF';
   const remaining = Math.max(0, 100 - percent);
 
   const headline = isReady
-    ? `${destination}准备就绪！🌴`
+    ? t(config.entryFlow?.progress?.headline?.ready || 'entryFlow.progress.headline.ready', {
+        defaultValue: `${destination} Ready! 🌴`,
+        destination
+      })
     : isAlmost
-    ? '进展不错！💪'
-    : '让我们开始吧！🌺';
+    ? t(config.entryFlow?.progress?.headline?.almost || 'entryFlow.progress.headline.almost', {
+        defaultValue: 'Good progress! 💪'
+      })
+    : t(config.entryFlow?.progress?.headline?.start || 'entryFlow.progress.headline.start', {
+        defaultValue: "Let's get started! 🌺"
+      });
 
   const subtitle = isReady
-    ? `太棒了！${destination}之旅准备就绪！🌴`
+    ? t(config.entryFlow?.progress?.subtitle?.ready || 'entryFlow.progress.subtitle.ready', {
+        defaultValue: `Awesome! Your ${destination} trip is ready! 🌴`,
+        destination
+      })
     : isAlmost
-    ? `继续加油！还差 ${remaining}% 就能完成${destination}行程准备！`
-    : '继续完善资料，让旅程更顺利。';
+    ? t(config.entryFlow?.progress?.subtitle?.almost || 'entryFlow.progress.subtitle.almost', {
+        defaultValue: `Keep it up! Just ${remaining}% left to complete your ${destination} trip preparation!`,
+        remaining,
+        destination
+      })
+    : t(config.entryFlow?.progress?.subtitle?.start || 'entryFlow.progress.subtitle.start', {
+        defaultValue: 'Continue filling out your information to make the journey smoother.'
+      });
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -510,19 +539,19 @@ function PrimaryActionCard({
     : ['#F97316', '#F59E0B'];
   const icon = useEntryGuideAsPrimary ? '🛂' : isReady && hasSubmitScreen ? '🛫' : '✏️';
   const title = useEntryGuideAsPrimary
-    ? t('entryFlow.actions.startEntryGuide', { defaultValue: '开始入境' })
+    ? t(`${config.destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: '开始入境' })
     : isReady && hasSubmitScreen
-    ? t('entryFlow.actions.submitThai', { defaultValue: '提交入境卡' })
-    : t('entryFlow.actions.editThai', { defaultValue: '修改旅行信息' });
+    ? t(`${config.destinationId}.entryFlow.actions.submitThai`, { defaultValue: '提交入境卡' })
+    : t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '修改旅行信息' });
   const subtitle = useEntryGuideAsPrimary
-    ? t('entryFlow.actions.entryGuide.subtitle', {
+    ? t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
       })
     : isReady && hasSubmitScreen
-    ? t('entryFlow.actions.submitThai.subtitle', {
+    ? t(`${config.destinationId}.entryFlow.actions.submitThai.subtitle`, {
         defaultValue: `准备完成！现在可以提交${destination}入境卡了`,
       })
-    : t('entryFlow.actions.editThai.subtitle', { defaultValue: '如需修改，返回编辑' });
+    : t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' });
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -621,7 +650,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
           </YStack>
           <YStack alignItems="center">
             <TamaguiText fontSize="$3" fontWeight="700" color="#1D4ED8">
-              {t('entryFlow.actions.editThai', { defaultValue: '修改旅行信息' })}
+              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '修改旅行信息' })}
             </TamaguiText>
             <TamaguiText
               fontSize="$2"
@@ -629,7 +658,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
               marginTop="$xs"
               textAlign="center"
             >
-              {t('entryFlow.actions.editThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
+              {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
             </TamaguiText>
           </YStack>
         </XStack>
@@ -686,16 +715,16 @@ function CountdownCard({ arrivalDate, t, config }) {
               <TamaguiText fontSize={18}>🛂</TamaguiText>
             </YStack>
             <TamaguiText fontSize="$3" fontWeight="700" color="#D97706">
-              {t('entryFlow.countdown.titleThai', { defaultValue: '距离提交入境卡还有' })}
+              {t(`${config.destinationId}.entryFlow.countdown.titleThai`, { defaultValue: '距离提交入境卡还有' })}
             </TamaguiText>
           </XStack>
 
           <TamaguiText fontSize="$2" color="#D97706" textAlign="center">
-            {t('entryFlow.countdown.subtitleThai', { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
+            {t(`${config.destinationId}.entryFlow.countdown.subtitleThai`, { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
           </TamaguiText>
 
           <TamaguiText fontSize="$6" fontWeight="800" color="#D97706" textAlign="center">
-            {t('entryFlow.countdown.timeThai', {
+            {t(`${config.destinationId}.entryFlow.countdown.timeThai`, {
               defaultValue: `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`,
               days,
               hours,
@@ -713,7 +742,7 @@ function CountdownCard({ arrivalDate, t, config }) {
             borderColor="rgba(255,152,0,0.25)"
           >
             <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
-              {t('entryFlow.countdown.arrivalThai', { defaultValue: `抵达日期 ${formattedArrival}` })}
+              {t(`${config.destinationId}.entryFlow.countdown.arrivalThai`, { defaultValue: `抵达日期 ${formattedArrival}` })}
             </TamaguiText>
           </BaseCard>
         </YStack>
@@ -781,10 +810,10 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
           <YStack alignItems="center" gap="$sm">
             <TamaguiText fontSize={26}>👁️</TamaguiText>
             <TamaguiText fontSize="$3" fontWeight="700">
-              {t('entryFlow.actions.previewPack', { defaultValue: '预览入境包' })}
+              {t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' })}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary">
-              {t('entryFlow.actions.previewPack.subtitle', { defaultValue: '查看已经准备好的资料' })}
+              {t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, { defaultValue: '查看已经准备好的资料' })}
             </TamaguiText>
           </YStack>
         </BaseCard>
@@ -802,10 +831,10 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
           <YStack alignItems="center" gap="$sm">
             <TamaguiText fontSize={26}>🛂</TamaguiText>
             <TamaguiText fontSize="$3" fontWeight="700">
-              {t('entryFlow.actions.entryGuide', { defaultValue: '入境手续指南' })}
+              {t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' })}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
-              {t('entryFlow.actions.entryGuide.subtitle', { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
+              {t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
             </TamaguiText>
           </YStack>
         </BaseCard>
@@ -823,10 +852,10 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
           <YStack alignItems="center" gap="$sm">
             <TamaguiText fontSize={26}>✏️</TamaguiText>
             <TamaguiText fontSize="$3" fontWeight="700">
-              {t('entryFlow.actions.editInfoThai', { defaultValue: '编辑旅行信息' })}
+              {t(`${config.destinationId}.entryFlow.actions.editInfoThai`, { defaultValue: '编辑旅行信息' })}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary">
-              {t('entryFlow.actions.editInfoThai.subtitle', { defaultValue: '如需修改，返回编辑' })}
+              {t(`${config.destinationId}.entryFlow.actions.editInfoThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
             </TamaguiText>
           </YStack>
         </BaseCard>
@@ -835,16 +864,18 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
   );
 }
 
-function HelpCard({ t }) {
+function HelpCard() {
+  const { t, config } = useEntryFlowTemplate();
+  
   const handleHelp = () => {
     Alert.alert(
-      t('entryFlow.actions.help.title', { defaultValue: '寻求帮助 🤝' }),
-      t('entryFlow.actions.help.message', {
+      t(`${config.destinationId}.entryFlow.actions.help.title`, { defaultValue: '寻求帮助 🤝' }),
+      t(`${config.destinationId}.entryFlow.actions.help.message`, {
         defaultValue: '你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档',
       }),
       [
-        { text: t('entryFlow.actions.help.share', { defaultValue: '截图分享' }) },
-        { text: t('entryFlow.actions.help.contact', { defaultValue: '联系客服' }) },
+        { text: t(`${config.destinationId}.entryFlow.actions.help.share`, { defaultValue: '截图分享' }) },
+        { text: t(`${config.destinationId}.entryFlow.actions.help.contact`, { defaultValue: '联系客服' }) },
         { text: t('common.cancel', { defaultValue: '取消' }), style: 'cancel' },
       ]
     );
@@ -863,10 +894,10 @@ function HelpCard({ t }) {
         <YStack alignItems="center" gap="$sm">
           <TamaguiText fontSize={24}>🙌</TamaguiText>
           <TamaguiText fontSize="$3" fontWeight="700">
-            {t('entryFlow.actions.help.callout', { defaultValue: '寻求帮助' })}
+            {t(`${config.destinationId}.entryFlow.actions.help.callout`, { defaultValue: '寻求帮助' })}
           </TamaguiText>
           <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
-            {t('entryFlow.actions.help.callout.subtitle', { defaultValue: '遇到问题？点我获取协助' })}
+            {t(`${config.destinationId}.entryFlow.actions.help.callout.subtitle`, { defaultValue: '遇到问题？点我获取协助' })}
           </TamaguiText>
         </YStack>
       </BaseCard>
@@ -878,7 +909,7 @@ function HelpCard({ t }) {
  * Completion Card Component
  */
 EntryFlowScreenTemplate.CompletionCard = () => {
-  const { completionPercent, categories, t } = useEntryFlowTemplate();
+  const { completionPercent, categories, t, config } = useEntryFlowTemplate();
 
   const completedCategories = categories.filter((c) => c.status === 'completed').length;
   const totalCategories = categories.length;
@@ -887,7 +918,7 @@ EntryFlowScreenTemplate.CompletionCard = () => {
     <YStack paddingHorizontal="$md" marginBottom="$md">
       <BaseCard variant="elevated" padding="lg">
         <TamaguiText fontSize="$5" fontWeight="bold" marginBottom="$md">
-          {t('entryFlow.completionCard.title', { defaultValue: 'Completion Progress' })}
+          {t(`${config.destinationId}.entryFlow.completionCard.title`, { defaultValue: 'Completion Progress' })}
         </TamaguiText>
 
         {/* Progress Bar */}
@@ -911,7 +942,7 @@ EntryFlowScreenTemplate.CompletionCard = () => {
 
         {/* Category Summary */}
         <TamaguiText fontSize="$3" color="$textSecondary">
-          {t('entryFlow.completionCard.summary', {
+          {t(`${config.destinationId}.entryFlow.completionCard.summary`, {
             defaultValue: `${completedCategories} of ${totalCategories} sections complete`,
             completedCategories,
             totalCategories,
@@ -956,10 +987,10 @@ EntryFlowScreenTemplate.SubmissionCountdown = () => {
           <TamaguiText fontSize={32}>⏰</TamaguiText>
           <YStack flex={1}>
             <TamaguiText fontSize="$4" fontWeight="600">
-              {t('entryFlow.countdown.title', { defaultValue: 'Submission Window' })}
+              {t(`${config.destinationId}.entryFlow.countdown.title`, { defaultValue: 'Submission Window' })}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary">
-              {t('entryFlow.countdown.days', {
+              {t(`${config.destinationId}.entryFlow.countdown.days`, {
                 defaultValue: `${daysUntilArrival} days until arrival`,
                 days: daysUntilArrival,
               })}
@@ -985,8 +1016,8 @@ EntryFlowScreenTemplate.ActionButtons = () => {
   const handleSubmit = () => {
     if (completionPercent < (config.completion?.minPercent || 80)) {
       Alert.alert(
-        t('entryFlow.actions.incomplete.title', { defaultValue: 'Incomplete Information' }),
-        t('entryFlow.actions.incomplete.message', {
+        t(`${config.destinationId}.entryFlow.actions.incomplete.title`, { defaultValue: 'Incomplete Information' }),
+        t(`${config.destinationId}.entryFlow.actions.incomplete.message`, {
           defaultValue: 'Please complete at least 80% of the information before submitting.',
         })
       );
@@ -998,8 +1029,8 @@ EntryFlowScreenTemplate.ActionButtons = () => {
       navigation.navigate(config.screens.submit, route.params);
     } else {
       Alert.alert(
-        t('entryFlow.actions.success.title', { defaultValue: 'Ready!' }),
-        t('entryFlow.actions.success.message', {
+        t(`${config.destinationId}.entryFlow.actions.success.title`, { defaultValue: 'Ready!' }),
+        t(`${config.destinationId}.entryFlow.actions.success.message`, {
           defaultValue: 'Your information is complete and ready for entry.',
         })
       );
@@ -1016,8 +1047,8 @@ EntryFlowScreenTemplate.ActionButtons = () => {
         disabled={completionPercent < (config.completion?.minPercent || 80)}
       >
         {completionPercent >= 100
-          ? t('entryFlow.actions.submit', { defaultValue: 'Submit Entry Card' })
-          : t('entryFlow.actions.continue', { defaultValue: 'Continue Editing' })
+          ? t(`${config.destinationId}.entryFlow.actions.submit`, { defaultValue: 'Submit Entry Card' })
+          : t(`${config.destinationId}.entryFlow.actions.continue`, { defaultValue: 'Continue Editing' })
         }
       </BaseButton>
 
@@ -1027,7 +1058,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
         onPress={handleContinueEditing}
         fullWidth
       >
-        {t('entryFlow.actions.edit', { defaultValue: 'Edit Information' })}
+        {t(`${config.destinationId}.entryFlow.actions.edit`, { defaultValue: 'Edit Information' })}
       </BaseButton>
     </YStack>
   );

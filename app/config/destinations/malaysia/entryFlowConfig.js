@@ -6,7 +6,7 @@
 
 export const malaysiaEntryFlowConfig = {
   // Metadata
-  destinationId: 'my',
+  destinationId: 'malaysia',
   name: 'Malaysia',
   nameZh: '马来西亚',
   flag: '🇲🇾',
@@ -30,7 +30,6 @@ export const malaysiaEntryFlowConfig = {
     {
       id: 'passport',
       nameKey: 'malaysia.progressiveEntryFlow.categories.passport',
-      defaultName: 'Passport Information',
       icon: '📘',
       requiredFields: [
         'surname',
@@ -45,7 +44,6 @@ export const malaysiaEntryFlowConfig = {
     {
       id: 'personal',
       nameKey: 'malaysia.progressiveEntryFlow.categories.personal',
-      defaultName: 'Personal Information',
       icon: '👤',
       requiredFields: [
         'occupation',
@@ -59,7 +57,6 @@ export const malaysiaEntryFlowConfig = {
     {
       id: 'funds',
       nameKey: 'malaysia.progressiveEntryFlow.categories.funds',
-      defaultName: 'Proof of Funds',
       icon: '💰',
       minRequired: 1,
       validator: (funds) => Array.isArray(funds) && funds.length >= 1,
@@ -67,7 +64,6 @@ export const malaysiaEntryFlowConfig = {
     {
       id: 'travel',
       nameKey: 'malaysia.progressiveEntryFlow.categories.travel',
-      defaultName: 'Travel Information',
       icon: '✈️',
       requiredFields: [
         'travelPurpose',
@@ -84,6 +80,38 @@ export const malaysiaEntryFlowConfig = {
   completion: {
     minPercent: 85,
     requiredCategories: ['passport', 'travel'],
+  },
+
+  // Status messages
+  status: {
+    ready: {
+      titleKey: null,
+      subtitleKey: null,
+    },
+    mostly_complete: {
+      titleKey: null,
+      subtitleKey: null,
+    },
+    needs_improvement: {
+      titleKey: null,
+      subtitleKey: null,
+    },
+  },
+
+  // Progress hero card translations
+  entryFlow: {
+    progress: {
+      headline: {
+        ready: null,
+        almost: null,
+        start: null,
+      },
+      subtitle: {
+        ready: null,
+        almost: null,
+        start: null,
+      },
+    },
   },
 
   // Feature flags

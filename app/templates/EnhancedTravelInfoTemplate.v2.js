@@ -987,7 +987,7 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.personalInfo || {}}
+              labels={config?.i18n?.labelSource?.personal || {}}
               config={config?.sections?.personal || {}}
             />
           )}
@@ -1053,7 +1053,7 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.travelDetails || {}}
+              labels={config?.i18n?.labelSource?.travel || {}}
               config={travelSectionConfig}
             />
           )}

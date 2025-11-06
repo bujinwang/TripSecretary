@@ -156,7 +156,21 @@
       "webviewFill": "WebView Auto-fill",
       "incompleteMessage": "This trip is not complete, please continue filling information",
       "resubmissionWarning": "Editing information will require resubmission. Continue?",
-      "completionPercent": "{{percent}}% Complete"
+      "completionPercent": "{{percent}}% Complete",
+      "status": {
+        "ready": {
+          "title": "Ready to Submit!",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      }
     },
     "countdown": {
       "noDate": "No Thailand arrival date set, cannot submit entry card",
@@ -298,6 +312,23 @@
     }
   },
   "malaysia": {
+    "entryFlow": {
+      "submissionWindow": "Submit within 3 days of arrival",
+      "status": {
+        "ready": {
+          "title": "Ready for MDAC!",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      }
+    },
     "travelInfo": {
       "hero": {
         "title": "Malaysia Entry Preparation Guide",
@@ -555,32 +586,91 @@
           "description": "Passport should be valid 6+ months beyond arrival",
           "details": "Singapore recommends at least 6 months validity. Renew or replace damaged passports before travel."
         },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed departure booking",
-          "details": "Provide confirmed flight booking showing you will leave Singapore within authorized stay period."
+        "submissionWindow": {
+          "title": "3-day submission window",
+          "description": "Submit within 3 days before arrival (Singapore time, GMT+8)",
+          "details": "Submitting too early triggers an error. Set a reminder and complete SGAC when the countdown reaches the window."
         },
-        "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or local contact information",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Singapore, including address and phone number."
+        "travelDetails": {
+          "title": "Travel & stay information",
+          "description": "Flight/entry checkpoint, accommodation/contact, purpose of visit",
+          "details": "Prepare your airline/ferry/bus details, stay address, and an international-format phone number. Business travellers may need a local sponsor contact."
         },
-        "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "Cash, credit cards, or bank statements",
-          "details": "You may need to demonstrate sufficient funds for your stay. Bring cash, credit cards, or recent bank statements."
+        "familyGroups": {
+          "title": "Family/group plan",
+          "description": "Decide between individual or family submission",
+          "details": "Family submission supports up to 10 travellers. Collect everyone’s passport details and confirm minors are linked to a guardian."
+        },
+        "sgArrivalHistory": {
+          "title": "Previous submissions",
+          "description": "Each SG Arrival Card is valid for a single entry",
+          "details": "Re-entering soon? Submit a fresh declaration with updated travel details. Old submissions cannot be reused."
         }
       },
       "status": {
+        "success": {
+          "title": "Great! You can proceed.",
+          "subtitle": "Next we will confirm your travel information."
+        },
+        "warning": {
+          "title": "Review each checklist item",
+          "subtitle": "Complete the prerequisites before moving on."
+        },
         "info": {
           "title": "Start anytime",
           "subtitle": "We support progressive completion"
         }
       },
-      "startButton": "Start filling"
+      "startButton": "Start filling",
+      "continueButton": "Continue to travel information"
+    },
+    "entryFlow": {
+      "status": {
+        "ready": {
+          "title": "Ready to submit SGAC",
+          "subtitle": "Everything is complete—submit within the 3-day window."
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "A few more fields to finish before submitting."
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections for SG Arrival Card submission."
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Singapore trip is ready! 🇸🇬",
+          "almost": "Great progress—nearly done!",
+          "start": "Let's get your SG Arrival Card ready"
+        },
+        "subtitle": {
+          "ready": "Submit the SG Arrival Card within the 3-day window to stay compliant.",
+          "almost": "Just {{remainingPercent}}% left—once done you can submit SGAC with one tap.",
+          "start": "Fill in passport, travel, and accommodation details to unlock SGAC submission."
+        }
+      },
+      "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time)."
     }
   },
   "vietnam": {
+    "entryFlow": {
+      "status": {
+        "ready": {
+          "title": "Vietnam Entry Ready",
+          "subtitle": "All information complete, ready for entry process"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      }
+    },
     "info": {
       "headerTitle": "Vietnam Entry Info",
       "title": "Vietnam Entry Guide",
@@ -815,15 +905,15 @@
     "info": {
       "headerTitle": "Japan Entry Information",
       "title": "Japan Entry Guide",
-      "subtitle": "Visa required in advance for Chinese passport holders",
+      "subtitle": "Visa-free for 90 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "⚠️ Visa Requirement",
+          "title": "✓ Great News! Visa-Free Policy",
           "items": [
-            "Chinese passport holders must obtain a visa before traveling to Japan; there is no visa waiver.",
-            "• Most travelers use the short-term stay visa (tourism/business/family) for visits up to 90 days.",
-            "• Apply via the Japanese Embassy/Consulate or accredited Japan Visa Application Centre before departure.",
-            "• Prepare passport, itinerary, and financial proof; allow at least one week for processing."
+            "Chinese passport holders can enjoy visa-free entry for 90 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• Paper arrival card still required on entry"
           ]
         },
         "onsite": {
@@ -886,6 +976,87 @@
         }
       },
       "startButton": "Start filling"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Japan Entry Preparation Guide",
+        "subtitle": "Complete visa-free entry in 3 minutes, stress-free travel!",
+        "valuePropositions": [
+          "3 minutes to complete",
+          "Visa-free for 90 days",
+          "Offline friendly, secure storage"
+        ],
+        "beginnerTip": "Japan offers visa-free entry for 90 days to Chinese passport holders. We help you prepare all entry materials."
+      },
+      "sections": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Information"
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Recent Country of Stay",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Transit Passenger",
+        "accommodationType": "Accommodation Type",
+        "prefecture": "Prefecture",
+        "city": "City",
+        "hotelAddress": "Hotel Address"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "FREELANCER": "Freelancer",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISITING_RELATIVES": "Visiting Relatives",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "prefecture": "Prefecture",
+        "city": "City"
+      },
+      "validation": {
+        "arrivalDateValid": "Arrival date must be within the next 90 days."
+      },
+      "navigation": {
+        "submitButton": {
+          "incomplete": "Complete Required Fields",
+          "almostDone": "Almost Done",
+          "ready": "Continue to Entry Guide"
+        }
+      }
     },
     "procedures": {
       "headerTitle": "Japan Entry Procedures",

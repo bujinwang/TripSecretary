@@ -571,7 +571,7 @@ const EnhancedTravelInfoTemplate = ({
               errors={formState.errors}
               warnings={formState.warnings}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.personalInfo}
+              labels={config.i18n.labelSource.personal}
               config={config.sections.personal}
             />
           )}
@@ -633,7 +633,7 @@ const EnhancedTravelInfoTemplate = ({
               errors={formState.errors}
               warnings={formState.warnings}
               debouncedSaveData={debouncedSave}
-              labels={config.i18n.labelSource.travelDetails}
+              labels={config.i18n.labelSource.travel}
               config={config.sections.travel}
             />
           )}
@@ -641,7 +641,7 @@ const EnhancedTravelInfoTemplate = ({
           {/* Submit Button */}
           <YStack paddingHorizontal="$md" paddingVertical="$lg">
             <BaseButton variant="primary" size="lg" onPress={handleContinue} fullWidth>
-              {config.navigation.submitButtonLabel.default}
+              {config.submitButton?.default || '继续'}
             </BaseButton>
           </YStack>
         </ScrollView>

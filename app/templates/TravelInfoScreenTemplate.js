@@ -357,6 +357,10 @@ TravelInfoScreenTemplate.SubmitButton = ({
     }
   });
 
+  const renderedIcon = icon
+    ? (typeof icon === 'string' ? <TamaguiText>{icon}</TamaguiText> : icon)
+    : undefined;
+
   return (
     <YStack paddingHorizontal="$md" paddingVertical="$lg">
       <BaseButton
@@ -365,8 +369,8 @@ TravelInfoScreenTemplate.SubmitButton = ({
         onPress={handlePress}
         fullWidth
         disabled={disabled}
+        icon={renderedIcon}
       >
-        {icon && `${icon} `}
         {typeof buttonLabel === 'string' ? (
           <TamaguiText>{buttonLabel}</TamaguiText>
         ) : (

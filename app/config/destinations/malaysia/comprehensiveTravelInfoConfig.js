@@ -25,9 +25,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
   hero: {
     type: 'rich', // 'rich' uses LinearGradient, 'basic' uses simple layout
     title: '马来西亚入境准备指南',
-    titleEn: 'Malaysia Entry Preparation Guide',
     subtitle: '3分钟完成MDAC，轻松入境！',
-    subtitleEn: "Complete MDAC in 3 minutes, stress-free entry!",
 
     gradient: {
       colors: ['#1D4ED8', '#1E3A8A'], // Malaysia blue gradient
@@ -36,15 +34,14 @@ export const malaysiaComprehensiveTravelInfoConfig = {
     },
 
     valuePropositions: [
-      { icon: '⏱️', text: '3分钟完成', textEn: '3 minutes to complete' },
-      { icon: '🛂', text: '智能MDAC提醒', textEn: 'Smart MDAC reminders' },
-      { icon: '🔒', text: '离线友好，安全存储', textEn: 'Offline friendly, secure storage' },
+      { icon: '⏱️', text: '3分钟完成' },
+      { icon: '🛂', text: '智能MDAC提醒' },
+      { icon: '🔒', text: '离线友好，安全存储' },
     ],
 
     beginnerTip: {
       icon: '💡',
       text: 'MDAC必须在入境前3天内提交。我们在最佳时间提醒您。',
-      textEn: 'MDAC must be submitted within 3 days before arrival. We remind you at the perfect time.',
     },
   },
 
@@ -65,7 +62,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           maxLength: 50,
           labelKey: 'malaysia.travelInfo.fields.surname',
-          defaultLabel: malaysiaLabels.passport.surnameLabel || '姓 - Surname',
+          defaultLabel: malaysiaLabels.passport.surnameLabel || '姓',
           immediateSave: false,
           uppercaseNormalize: true,
         },
@@ -74,7 +71,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: false,
           maxLength: 50,
           labelKey: 'malaysia.travelInfo.fields.middleName',
-          defaultLabel: malaysiaLabels.passport.middleNameLabel || '中间名 - Middle Name',
+          defaultLabel: malaysiaLabels.passport.middleNameLabel || '中间名',
           immediateSave: false,
           uppercaseNormalize: true,
         },
@@ -83,7 +80,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           maxLength: 50,
           labelKey: 'malaysia.travelInfo.fields.givenName',
-          defaultLabel: malaysiaLabels.passport.givenNameLabel || '名 - Given Name',
+          defaultLabel: malaysiaLabels.passport.givenNameLabel || '名',
           immediateSave: false,
           uppercaseNormalize: true,
         },
@@ -161,13 +158,13 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OFFICE', defaultLabel: 'Office Worker', value: 'OFFICE' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.FREELANCER', defaultLabel: 'Freelancer', value: 'FREELANCER' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.STUDENT', defaultLabel: 'Student', value: 'STUDENT' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.SELF_EMPLOYED', defaultLabel: 'Self-employed', value: 'SELF_EMPLOYED' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.HOMEMAKER', defaultLabel: 'Homemaker', value: 'HOMEMAKER' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.RETIRED', defaultLabel: 'Retired', value: 'RETIRED' },
-            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OTHER', defaultLabel: 'Other', value: 'OTHER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OFFICE', defaultLabel: '上班族', value: 'OFFICE' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.FREELANCER', defaultLabel: '自由职业者', value: 'FREELANCER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.STUDENT', defaultLabel: '学生', value: 'STUDENT' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.SELF_EMPLOYED', defaultLabel: '个体经营', value: 'SELF_EMPLOYED' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.HOMEMAKER', defaultLabel: '家庭主妇/主夫', value: 'HOMEMAKER' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.RETIRED', defaultLabel: '退休人员', value: 'RETIRED' },
+            { labelKey: 'malaysia.travelInfo.personal.occupationOptions.OTHER', defaultLabel: '其他', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customOccupation',
@@ -261,11 +258,11 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TOURISM', defaultLabel: 'Tourism', value: 'TOURISM' },
-            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.BUSINESS', defaultLabel: 'Business', value: 'BUSINESS' },
-            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.VISITING_RELATIVES', defaultLabel: 'Visiting Relatives', value: 'VISITING_RELATIVES' },
-            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TRANSIT', defaultLabel: 'Transit', value: 'TRANSIT' },
-            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.OTHER', defaultLabel: 'Other', value: 'OTHER' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TOURISM', defaultLabel: '旅游', value: 'TOURISM' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.BUSINESS', defaultLabel: '商务', value: 'BUSINESS' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.VISITING_RELATIVES', defaultLabel: '探亲访友', value: 'VISITING_RELATIVES' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.TRANSIT', defaultLabel: '过境', value: 'TRANSIT' },
+            { labelKey: 'malaysia.travelInfo.travel.travelPurposeOptions.OTHER', defaultLabel: '其他', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customTravelPurpose',
@@ -438,7 +435,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           return diffHours >= 0 && diffHours <= 720; // 30 days window sanity check
         },
         messageKey: 'malaysia.travelInfo.validation.arrivalDateWithinWindow',
-        defaultMessage: 'Arrival date must be within the next 30 days to comply with MDAC submission window.',
+        defaultMessage: '抵达日期必须在未来30天内才能符合MDAC提交时间窗口。',
       },
     },
   },
@@ -491,13 +488,13 @@ export const malaysiaComprehensiveTravelInfoConfig = {
 
       // Labels for each state
       labels: {
-        incomplete: '完成必填项 - Complete Required Fields',
-        almostDone: '快完成了 - Almost Done',
-        ready: '继续 - Continue',
+        incomplete: '完成必填项',
+        almostDone: '快完成了',
+        ready: '继续',
       },
 
       // Default fallback if dynamic is disabled
-      default: '继续 - Continue',
+      default: '继续',
 
       readyAction: {
         type: 'navigate',
@@ -508,7 +505,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
     // Fallback submit button label
     submitButtonLabel: {
       key: 'malaysia.travelInfo.continue',
-      default: '继续 - Continue',
+      default: '继续',
     },
   },
 
