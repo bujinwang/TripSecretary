@@ -820,6 +820,294 @@
         }
       },
       "startButton": "Start filling"
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Details"
+      }
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "Passport Information"
+        },
+        "personal": {
+          "title": "Personal Information"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel Details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name (Optional)",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number (if any)",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country/Region of Residence",
+        "phoneCode": "Phone Country Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email (optional)",
+        "travelPurpose": "Purpose of Visit",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country/Region",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Return Flight Number (optional)",
+        "departureDate": "Return Date (optional)",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "region": "Region",
+        "district": "District",
+        "hotelAddress": "Accommodation Address",
+        "hotelReservationPhoto": "Hotel Reservation Screenshot",
+        "flightTicketPhoto": "Flight Ticket Screenshot",
+        "departureFlightTicketPhoto": "Return Ticket Screenshot"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISIT_FAMILY": "Visit family/friends",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "region": "Region",
+        "district": "District"
+      },
+      "continue": "Continue"
+    },
+    "entryFlow": {
+      "title": "Hong Kong Entry Preparation",
+      "submissionWindow": "Visa-free stay is typically 7 days. Keep track of your departure plan.",
+      "progress": {
+        "headline": {
+          "ready": "Ready for Hong Kong! 🇭🇰",
+          "almost": "Almost there, keep going!",
+          "start": "Start preparing your Hong Kong entry pack"
+        },
+        "subtitle": {
+          "ready": "Passport, funds, and accommodation details are complete. Ready for inspection.",
+          "almost": "{{remaining}}% left. Complete the highlighted tasks to be inspection-ready.",
+          "start": "Fill passport, funds, and travel info to breeze through immigration questions."
+        }
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All details prepared for inspection."
+        },
+        "mostlyComplete": {
+          "title": "Almost Complete",
+          "subtitle": "A few more details to finalise."
+        },
+        "needsImprovement": {
+          "title": "Keep Completing",
+          "subtitle": "Finish key details to avoid delays at immigration."
+        }
+      }
+    },
+    "validation": {
+      "region": {
+        "required": "Select your accommodation region."
+      },
+      "district": {
+        "required": "Select the district of your stay."
+      },
+      "accommodationType": {
+        "required": "Select an accommodation type."
+      }
+    }
+  },
+  "usa": {
+    "info": {
+      "headerTitle": "USA Entry Information",
+      "title": "USA Entry Guide",
+      "subtitle": "Chinese passport holders require a visa",
+      "sections": {
+        "visa": {
+          "title": "✓ Visa Policy",
+          "items": [
+            "Visa required. Apply for a B1/B2 visa before travel.",
+            "• Ten-year validity common, each stay usually up to 180 days",
+            "• Covers tourism, visiting family, and business meetings",
+            "• Important: EVUS registration must be valid before travel"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Key Entry Notes",
+          "items": [
+            "• EVUS must stay valid: expired EVUS leads to denied boarding",
+            "• CBP declaration is detailed: mistakes bring extra questioning",
+            "• CBP interview pressure: language gaps or nervous answers impact decisions",
+            "• Multiple systems to manage: EVUS, CBP declaration, I-94 history",
+            "• Overstaying carries serious consequences for future visas"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: EVUS expiry reminders keep you on schedule",
+            "• Zero errors: Smart-fill CBP customs declaration",
+            "• Zero hassle: Enter once, manage everything in one hub",
+            "• Interview prep: Common CBP questions to practise"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "requirements": {
+      "headerTitle": "USA Entry Checklist",
+      "introTitle": "Prepare these items for entry",
+      "introSubtitle": "Fill what you have now, finish the rest later",
+      "items": {
+        "validPassport": {
+          "title": "Valid passport",
+          "description": "At least 6 months validity beyond intended stay",
+          "details": "Ensure your passport is valid at least six months past your planned departure date."
+        },
+        "validVisa": {
+          "title": "Valid US visa + EVUS",
+          "description": "B1/B2 visa with up-to-date EVUS registration",
+          "details": "A valid visa stamp and EVUS enrollment (renew every 2 years) are both required for boarding."
+        },
+        "returnTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed flight leaving the US",
+          "details": "Bring proof of departure such as a return ticket or onward itinerary."
+        },
+        "sufficientFunds": {
+          "title": "Proof of funds",
+          "description": "Financial evidence covering your visit",
+          "details": "Bank statements, credit cards, or cash—anything that proves you can support your stay."
+        },
+        "accommodation": {
+          "title": "Accommodation details",
+          "description": "Hotel booking or host information",
+          "details": "Provide hotel confirmation or complete contact details of the friend/family hosting you."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "Progressive completion supported"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "Passport & EVUS"
+        },
+        "personal": {
+          "title": "Personal & Contact"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel & Stay"
+        }
+      },
+      "fields": {
+        "surname": "Surname (uppercase)",
+        "middleName": "Middle Name (optional)",
+        "givenName": "Given Name (uppercase)",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "evusStatus": "EVUS Status",
+        "occupation": "Occupation",
+        "employer": "Employer / Company (optional)",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country/Region of Residence",
+        "phoneCode": "Phone Country Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email (optional)",
+        "emergencyContact": "Emergency Contact Name (optional)",
+        "travelPurpose": "Purpose of Visit",
+        "arrivalCity": "Port of Entry / Arrival City",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number (optional)",
+        "departureDate": "Departure Date (optional)",
+        "lengthOfStay": "Expected Length of Stay (days)",
+        "accommodationType": "Accommodation Type",
+        "state": "State",
+        "address": "Accommodation Address (with ZIP)",
+        "hotelContactNumber": "Accommodation Phone (optional)",
+        "flightTicketPhoto": "Flight Ticket Screenshot",
+        "hotelReservationPhoto": "Hotel / Stay Confirmation"
+      },
+      "continue": "Continue"
+    },
+    "entryFlow": {
+      "title": "USA Entry Preparation",
+      "submissionWindow": "No fixed submission window, but review EVUS, flights, and stay details before departure.",
+      "progress": {
+        "headline": {
+          "ready": "Ready for the USA! 🇺🇸",
+          "almost": "Almost there—keep it up!",
+          "start": "Start preparing your USA entry pack"
+        },
+        "subtitle": {
+          "ready": "Passport, EVUS, funds, and stay details are ready for CBP questions.",
+          "almost": "{{remaining}}% left. Complete the highlighted tasks for a smooth arrival.",
+          "start": "Fill in passport, travel, and accommodation info to build your customs pack."
+        }
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All documents prepared for inspection."
+        },
+        "mostlyComplete": {
+          "title": "Almost Complete",
+          "subtitle": "Finish the remaining details to be inspection-ready."
+        },
+        "needsImprovement": {
+          "title": "Keep Completing",
+          "subtitle": "Complete key items to avoid issues at the border."
+        }
+      }
+    },
+    "validation": {
+      "state": {
+        "required": "Select the state where you will stay."
+      },
+      "address": {
+        "required": "Provide the full accommodation address including ZIP code."
+      },
+      "lengthOfStay": {
+        "range": "Length of stay must be between 1 and 180 days."
+      }
     }
   },
   "taiwan": {

@@ -91,6 +91,7 @@ import {
   USAInfoScreen,
   USARequirementsScreen,
   USTravelInfoScreen,
+  USAEntryFlowScreen,
 } from '../screens';
 
 // Import NotificationSettingsScreen directly since it's not in the screens index yet
@@ -502,6 +503,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="USTravelInfo"
           component={USTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="USAEntryFlow"
+          component={USAEntryFlowScreen}
           options={{
             headerShown: false,
           }}

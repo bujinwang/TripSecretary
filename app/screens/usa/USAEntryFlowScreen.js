@@ -1,10 +1,10 @@
 import React from 'react';
 import { EntryFlowScreenTemplate } from '../../templates';
-import { hongkongEntryFlowConfig } from '../../config/destinations/hongkong/entryFlowConfig';
+import { usaEntryFlowConfig } from '../../config/destinations/usa/entryFlowConfig';
 
-const HongKongEntryFlowScreen = ({ navigation, route }) => (
+const USAEntryFlowScreen = ({ navigation, route }) => (
   <EntryFlowScreenTemplate
-    config={hongkongEntryFlowConfig}
+    config={usaEntryFlowConfig}
     navigation={navigation}
     route={route}
   >
@@ -14,4 +14,4 @@ const HongKongEntryFlowScreen = ({ navigation, route }) => (
   </EntryFlowScreenTemplate>
 );
 
-export default HongKongEntryFlowScreen;
+export default USAEntryFlowScreen;

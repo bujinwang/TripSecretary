@@ -416,6 +416,127 @@
         }
       },
       "startButton": "开始填写"
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "护照信息",
+        "personal": "个人信息",
+        "funds": "资金证明",
+        "travel": "旅行信息"
+      }
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "护照信息"
+        },
+        "personal": {
+          "title": "个人信息"
+        },
+        "funds": {
+          "title": "资金证明"
+        },
+        "travel": {
+          "title": "旅行信息"
+        }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名（可选）",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码（如有）",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家/地区",
+        "phoneCode": "国际区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱（可选）",
+        "travelPurpose": "访问目的",
+        "recentStayCountry": "近30天访问国家",
+        "boardingCountry": "登机国家/地区",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "返程航班号（可选）",
+        "departureDate": "返程日期（可选）",
+        "isTransitPassenger": "是否为过境旅客",
+        "accommodationType": "住宿类型",
+        "region": "住宿地区",
+        "district": "住宿区",
+        "hotelAddress": "住宿地址",
+        "hotelReservationPhoto": "酒店预订单照片",
+        "flightTicketPhoto": "机票截屏/照片",
+        "departureFlightTicketPhoto": "返程机票截屏/照片"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "上班族",
+          "STUDENT": "学生",
+          "SELF_EMPLOYED": "自由职业者",
+          "HOMEMAKER": "全职家庭",
+          "RETIRED": "退休人员",
+          "OTHER": "其他"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "旅游",
+          "BUSINESS": "商务",
+          "VISIT_FAMILY": "探亲访友",
+          "TRANSIT": "过境",
+          "OTHER": "其他"
+        }
+      },
+      "locations": {
+        "region": "地区",
+        "district": "区"
+      },
+      "continue": "继续"
+    },
+    "entryFlow": {
+      "title": "香港入境准备",
+      "submissionWindow": "香港免签停留通常为7天，请留意离境时间并准备返程行程。",
+      "progress": {
+        "headline": {
+          "ready": "香港行程准备就绪！🇭🇰",
+          "almost": "进度很棒，再补充一点点！",
+          "start": "开始整理香港入境资料吧"
+        },
+        "subtitle": {
+          "ready": "护照、资金与住宿资料已齐全，可随时向入境官出示。",
+          "almost": "还差 {{remaining}}%，完善后即可安心过关。",
+          "start": "填写护照、资金与行程信息，让入境问询更从容。"
+        }
+      },
+      "status": {
+        "ready": {
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时出示。"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "补齐剩余资料即可。"
+        },
+        "needsImprovement": {
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料以免入境受阻。"
+        }
+      }
+    },
+    "validation": {
+      "region": {
+        "required": "请选择住宿所在地区。"
+      },
+      "district": {
+        "required": "请选择住宿所在区。"
+      },
+      "accommodationType": {
+        "required": "请选择住宿类型。"
+      }
     }
   },
   "japan": {
@@ -822,6 +943,96 @@
         }
       },
       "startButton": "开始填写"
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "护照与EVUS信息"
+        },
+        "personal": {
+          "title": "个人与联系方式"
+        },
+        "funds": {
+          "title": "资金证明"
+        },
+        "travel": {
+          "title": "行程与住宿信息"
+        }
+      },
+      "fields": {
+        "surname": "姓（拼音大写）",
+        "middleName": "中间名（如无可留空）",
+        "givenName": "名（拼音大写）",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "evusStatus": "EVUS 状态",
+        "occupation": "职业",
+        "employer": "雇主 / 单位名称（可选）",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家/地区",
+        "phoneCode": "联系电话区号",
+        "phoneNumber": "联系电话",
+        "email": "电子邮箱（可选）",
+        "emergencyContact": "紧急联系人姓名（可选）",
+        "travelPurpose": "访问目的",
+        "arrivalCity": "入境口岸 / 抵达城市",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "离境航班号（可选）",
+        "departureDate": "离境日期（可选）",
+        "lengthOfStay": "预计停留天数",
+        "accommodationType": "住宿类型",
+        "state": "所在州",
+        "address": "住宿地址（含邮编）",
+        "hotelContactNumber": "住宿联系电话（可选）",
+        "flightTicketPhoto": "机票截图",
+        "hotelReservationPhoto": "酒店/住宿预订单"
+      },
+      "continue": "继续"
+    },
+    "entryFlow": {
+      "title": "美国入境准备",
+      "submissionWindow": "美国入境没有固定提交窗口，但建议在出发前再次核对 EVUS、航班与住宿信息。",
+      "progress": {
+        "headline": {
+          "ready": "美国行程准备就绪！🇺🇸",
+          "almost": "进度很棒，再补充一点！",
+          "start": "开始整理美国入境资料吧"
+        },
+        "subtitle": {
+          "ready": "护照、EVUS、资金与住宿资料齐全，可从容面对 CBP 问询。",
+          "almost": "还差 {{remaining}}%，补齐后就能安心入境。",
+          "start": "填写护照、行程与住宿信息，快速生成海关申报资料。"
+        }
+      },
+      "status": {
+        "ready": {
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时应对入境问询。"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "补齐剩余资料，以确保顺利入境。"
+        },
+        "needsImprovement": {
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料避免入境受阻。"
+        }
+      }
+    },
+    "validation": {
+      "state": {
+        "required": "请选择住宿所在州。"
+      },
+      "address": {
+        "required": "请填写住宿地址（含邮编）。"
+      },
+      "lengthOfStay": {
+        "range": "停留天数需在 1-180 天之间。"
+      }
     }
   },
   "singapore": {
@@ -943,83 +1154,33 @@
   "malaysia": {
     "name": "马来西亚",
     "entryFlow": {
-      "title": "马来西亚入境准备",
-      "submissionWindow": "在抵达前3天内提交",
+      "title": "美国入境准备",
+      "submissionWindow": "美国入境没有固定提交窗口，但建议在出发前再次核对 EVUS、航班与住宿信息。",
       "progress": {
         "headline": {
-          "ready": "马来西亚准备就绪！🌴",
-          "almost": "快完成了！💪",
-          "start": "让我们开始吧！🌺"
+          "ready": "美国行程准备就绪！🇺🇸",
+          "almost": "进度很棒，再补充一点！",
+          "start": "开始整理美国入境资料吧"
         },
         "subtitle": {
-          "ready": "太棒了！您的马来西亚之旅已经准备就绪！🌴",
-          "almost": "继续加油！还差{{remaining}}%就能完成马来西亚之旅准备！",
-          "start": "继续填写您的信息，让旅程更顺畅。"
+          "ready": "护照、EVUS、资金与住宿资料齐全，可从容面对 CBP 问询。",
+          "almost": "还差 {{remaining}}%，补齐后就能安心入境。",
+          "start": "填写护照、行程与住宿信息，快速生成海关申报资料。"
         }
       },
       "status": {
         "ready": {
-          "title": "准备好提交MDAC！",
-          "subtitle": "所有信息已完成"
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时应对入境问询。"
         },
         "mostlyComplete": {
           "title": "快完成了",
-          "subtitle": "还需要一些字段"
+          "subtitle": "补齐剩余资料，以确保顺利入境。"
         },
         "needsImprovement": {
-          "title": "请填写",
-          "subtitle": "需要更多信息"
-        },
-        "ready.title": "准备好提交MDAC！",
-        "ready.subtitle": "所有信息已完成",
-        "mostlyComplete.title": "快完成了",
-        "mostlyComplete.subtitle": "还需要一些字段",
-        "needsImprovement.title": "请填写",
-        "needsImprovement.subtitle": "需要更多信息"
-      },
-      "actions": {
-        "startEntryGuide": "开始入境",
-        "submitThai": "提交入境卡",
-        "submitThai.subtitle": "准备完成！现在可以提交马来西亚入境卡了",
-        "editThai": "修改旅行信息",
-        "editThai.subtitle": "如需修改，返回编辑",
-        "previewPack": "预览入境包",
-        "previewPack.subtitle": "查看已经准备好的资料",
-        "entryGuide": "入境手续指南",
-        "entryGuide.subtitle": "查看纸质入境卡与海关申报填写步骤",
-        "editInfoThai": "编辑旅行信息",
-        "editInfoThai.subtitle": "如需修改，返回编辑",
-        "help": {
-          "title": "寻求帮助 🤝",
-          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
-          "share": "截图分享",
-          "contact": "联系客服",
-          "callout": "寻求帮助",
-          "callout.subtitle": "遇到问题？点我获取协助"
-        },
-        "incomplete": {
-          "title": "信息不完整",
-          "message": "请在提交前完成至少80%的信息。"
-        },
-        "success": {
-          "title": "准备就绪！",
-          "message": "您的信息已完成，可以入境了。"
-        },
-        "submit": "提交入境卡",
-        "continue": "继续编辑",
-        "edit": "编辑信息"
-      },
-      "countdown": {
-        "titleThai": "距离提交入境卡还有",
-        "subtitleThai": "提交窗口已开启，请在倒计时结束前完成提交",
-        "timeThai": "{{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
-        "arrivalThai": "抵达日期 {{formattedArrival}}",
-        "title": "提交窗口",
-        "days": "{{days}}天后抵达"
-      },
-      "completionCard": {
-        "title": "完成进度",
-        "summary": "{{completedCategories}}/{{totalCategories}} 部分已完成"
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料避免入境受阻。"
+        }
       }
     },
     "progressiveEntryFlow": {
@@ -1032,65 +1193,50 @@
     },
     "travelInfo": {
       "sections": {
-        "passport": "护照信息",
-        "personal": "个人信息",
-        "travel": "旅行信息"
+        "passport": {
+          "title": "护照与EVUS信息"
+        },
+        "personal": {
+          "title": "个人与联系方式"
+        },
+        "funds": {
+          "title": "资金证明"
+        },
+        "travel": {
+          "title": "行程与住宿信息"
+        }
       },
       "fields": {
-        "surname": "姓",
-        "middleName": "中间名",
-        "givenName": "名",
+        "surname": "姓（拼音大写）",
+        "middleName": "中间名（如无可留空）",
+        "givenName": "名（拼音大写）",
         "passportNo": "护照号码",
         "nationality": "国籍",
         "dob": "出生日期",
         "expiryDate": "护照有效期",
         "sex": "性别",
-        "visaNumber": "签证号码",
+        "evusStatus": "EVUS 状态",
         "occupation": "职业",
+        "employer": "雇主 / 单位名称（可选）",
         "cityOfResidence": "居住城市",
-        "countryOfResidence": "居住国家",
-        "phoneCode": "电话区号",
-        "phoneNumber": "电话号码",
-        "email": "电子邮箱",
-        "travelPurpose": "旅行目的",
-        "recentStayCountry": "最近停留国家",
-        "boardingCountry": "登机国家",
+        "countryOfResidence": "居住国家/地区",
+        "phoneCode": "联系电话区号",
+        "phoneNumber": "联系电话",
+        "email": "电子邮箱（可选）",
+        "emergencyContact": "紧急联系人姓名（可选）",
+        "travelPurpose": "访问目的",
+        "arrivalCity": "入境口岸 / 抵达城市",
         "arrivalFlightNumber": "入境航班号",
         "arrivalDate": "入境日期",
-        "departureFlightNumber": "出境航班号",
-        "departureDate": "出境日期",
-        "isTransitPassenger": "过境乘客",
+        "departureFlightNumber": "离境航班号（可选）",
+        "departureDate": "离境日期（可选）",
+        "lengthOfStay": "预计停留天数",
         "accommodationType": "住宿类型",
-        "province": "州",
-        "district": "区",
-        "hotelAddress": "酒店地址"
-      },
-      "personal": {
-        "occupationOptions": {
-          "OFFICE": "上班族",
-          "FREELANCER": "自由职业者",
-          "STUDENT": "学生",
-          "SELF_EMPLOYED": "个体经营",
-          "HOMEMAKER": "家庭主妇/主夫",
-          "RETIRED": "退休人员",
-          "OTHER": "其他"
-        }
-      },
-      "travel": {
-        "travelPurposeOptions": {
-          "TOURISM": "旅游",
-          "BUSINESS": "商务",
-          "VISITING_RELATIVES": "探亲访友",
-          "TRANSIT": "过境",
-          "OTHER": "其他"
-        }
-      },
-      "locations": {
-        "state": "州",
-        "district": "区"
-      },
-      "validation": {
-        "arrivalDateWithinWindow": "抵达日期必须在未来30天内才能符合MDAC提交时间窗口。"
+        "state": "所在州",
+        "address": "住宿地址（含邮编）",
+        "hotelContactNumber": "住宿联系电话（可选）",
+        "flightTicketPhoto": "机票截图",
+        "hotelReservationPhoto": "酒店/住宿预订单"
       },
       "continue": "继续"
     },
@@ -1168,27 +1314,38 @@
       },
       "startButton": "开始填写"
     },
-    "entryPackPreview": {
-      "header": {
-        "title": "Malaysia Entry Pack - Preview / 马来西亚入境包预览"
+    "validation": {
+      "state": {
+        "required": "请选择住宿所在州。"
       },
-      "previewBanner": {
-        "title": "Preview Mode / Mod Pratonton",
-        "descriptions": [
-          "This is your Malaysia entry information preview. All information helps you pass Malaysian immigration smoothly.",
-          "Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat membantu anda melalui imigresen dengan lancar."
-        ]
+      "address": {
+        "required": "请填写住宿地址（含邮编）。"
       },
-      "actions": {
-        "continueEditing": "✏️ Continue Editing / 继续补充信息",
-        "goToMdac": "🇲🇾 Go to MDAC / 前往MDAC"
-      },
-      "infoSection": {
-        "items": [
-          "Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.",
-          "提示：提交 MDAC 前请确认资料正确，到达前 3 天内完成提交。"
-        ]
+      "lengthOfStay": {
+        "range": "停留天数需在 1-180 天之间。"
       }
+    }
+  },
+  "entryPackPreview": {
+    "header": {
+      "title": "Malaysia Entry Pack - Preview / 马来西亚入境包预览"
+    },
+    "previewBanner": {
+      "title": "Preview Mode / Mod Pratonton",
+      "descriptions": [
+        "This is your Malaysia entry information preview. All information helps you pass Malaysian immigration smoothly.",
+        "Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat membantu anda melalui imigresen dengan lancar."
+      ]
+    },
+    "actions": {
+      "continueEditing": "✏️ Continue Editing / 继续补充信息",
+      "goToMdac": "🇲🇾 Go to MDAC / 前往MDAC"
+    },
+    "infoSection": {
+      "items": [
+        "Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.",
+        "提示：提交 MDAC 前请确认资料正确，到达前 3 天内完成提交。"
+      ]
     }
   },
   "taiwan": {
