@@ -910,71 +910,82 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
   };
 
   return (
-    <XStack paddingHorizontal="$md" gap="$md" marginBottom="$lg">
-      {showPreviewQuickAction && (
-        <BaseCard
-          variant="flat"
-          padding="lg"
-          flex={1}
-          pressable
-          onPress={handlePreview}
-          borderWidth={2}
-          borderColor="rgba(11,214,123,0.3)"
-        >
-          <YStack alignItems="center" gap="$sm">
-            <TamaguiText fontSize={26}>👁️</TamaguiText>
-            <TamaguiText fontSize="$3" fontWeight="700">
-              {t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' })}
-            </TamaguiText>
-            <TamaguiText fontSize="$2" color="$textSecondary">
-              {t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, { defaultValue: '查看已经准备好的资料' })}
-            </TamaguiText>
-          </YStack>
-        </BaseCard>
-      )}
-      {showEntryGuideQuickAction && (
-        <BaseCard
-          variant="flat"
-          padding="lg"
-          flex={1}
-          pressable
-          onPress={handleEntryGuide}
-          borderWidth={2}
-          borderColor="rgba(25,118,210,0.3)"
-        >
-          <YStack alignItems="center" gap="$sm">
-            <TamaguiText fontSize={26}>🛂</TamaguiText>
-            <TamaguiText fontSize="$3" fontWeight="700">
-              {t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' })}
-            </TamaguiText>
-            <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
-              {t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
-            </TamaguiText>
-          </YStack>
-        </BaseCard>
-      )}
-      {showEditQuickAction && (
-        <BaseCard
-          variant="flat"
-          padding="lg"
-          flex={1}
-          pressable
-          onPress={handleEdit}
-          borderWidth={2}
-          borderColor="rgba(255,152,0,0.3)"
-        >
-          <YStack alignItems="center" gap="$sm">
-            <TamaguiText fontSize={26}>✏️</TamaguiText>
-            <TamaguiText fontSize="$3" fontWeight="700">
-              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
-            </TamaguiText>
-            <TamaguiText fontSize="$2" color="$textSecondary">
-              {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
-            </TamaguiText>
-          </YStack>
-        </BaseCard>
-      )}
-    </XStack>
+    <YStack paddingHorizontal="$md" gap="$md" marginBottom="$lg">
+      <XStack gap="$md" alignItems="stretch">
+        {showPreviewQuickAction && (
+          <BaseCard
+            variant="flat"
+            padding="lg"
+            flex={1}
+            pressable
+            onPress={handlePreview}
+            borderWidth={2}
+            borderColor="rgba(11,214,123,0.3)"
+            minHeight={140}
+          >
+            <YStack gap="$sm" flex={1}>
+              <YStack alignItems="center">
+                <TamaguiText fontSize={26}>👁️</TamaguiText>
+              </YStack>
+              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' })}
+              </TamaguiText>
+              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, { defaultValue: '查看已经准备好的资料' })}
+              </TamaguiText>
+            </YStack>
+          </BaseCard>
+        )}
+        {showEntryGuideQuickAction && (
+          <BaseCard
+            variant="flat"
+            padding="lg"
+            flex={1}
+            pressable
+            onPress={handleEntryGuide}
+            borderWidth={2}
+            borderColor="rgba(25,118,210,0.3)"
+            minHeight={140}
+          >
+            <YStack gap="$sm" flex={1}>
+              <YStack alignItems="center">
+                <TamaguiText fontSize={26}>🛂</TamaguiText>
+              </YStack>
+              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' })}
+              </TamaguiText>
+              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
+              </TamaguiText>
+            </YStack>
+          </BaseCard>
+        )}
+        {showEditQuickAction && (
+          <BaseCard
+            variant="flat"
+            padding="lg"
+            flex={1}
+            pressable
+            onPress={handleEdit}
+            borderWidth={2}
+            borderColor="rgba(255,152,0,0.3)"
+            minHeight={140}
+          >
+            <YStack gap="$sm" flex={1}>
+              <YStack alignItems="center">
+                <TamaguiText fontSize={26}>✏️</TamaguiText>
+              </YStack>
+              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
+              </TamaguiText>
+              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
+                {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
+              </TamaguiText>
+            </YStack>
+          </BaseCard>
+        )}
+      </XStack>
+    </YStack>
   );
 }
 
@@ -1002,11 +1013,11 @@ function HelpCard() {
         padding="lg"
         pressable
         onPress={handleHelp}
-        borderWidth={1.5}
-        borderColor="rgba(38,132,255,0.25)"
+        borderWidth={2}
+        borderColor="rgba(38,132,255,0.3)"
       >
         <YStack alignItems="center" gap="$sm">
-          <TamaguiText fontSize={24}>🙌</TamaguiText>
+          <TamaguiText fontSize={26}>🙌</TamaguiText>
           <TamaguiText fontSize="$3" fontWeight="700">
             {t(`${config.destinationId}.entryFlow.actions.help.callout`, { defaultValue: '寻求帮助' })}
           </TamaguiText>
