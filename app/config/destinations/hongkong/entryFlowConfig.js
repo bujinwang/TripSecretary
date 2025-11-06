@@ -112,6 +112,7 @@ export const hongkongEntryFlowConfig = {
         almost: 'hongkong.entryFlow.progress.subtitle.almost',
         start: 'hongkong.entryFlow.progress.subtitle.start',
       },
+      label: 'hongkong.entryFlow.progress.label',
     },
     submissionWindow: 'hongkong.entryFlow.submissionWindow',
     titleKey: 'hongkong.entryFlow.title',

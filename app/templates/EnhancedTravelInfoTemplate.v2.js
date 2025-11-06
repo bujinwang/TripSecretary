@@ -116,6 +116,32 @@ const EnhancedTravelInfoTemplate = ({
     return null;
   }, [config?.destinationId, destination]);
 
+  // Helper function to resolve section labels using i18n
+  const resolveSectionLabels = useCallback((sectionKey, sectionConfig, labelSource = {}) => {
+    const resolvedLabels = { ...labelSource };
+    const destId = config?.destinationId || destinationId || 'hongkong';
+    
+    // Resolve title using titleKey if available
+    if (sectionConfig?.titleKey) {
+      resolvedLabels.title = t(sectionConfig.titleKey, { 
+        defaultValue: sectionConfig.defaultTitle || labelSource.title || sectionKey 
+      });
+    } else if (labelSource.title) {
+      // If labelSource has a title, try to resolve it as a translation key
+      const titleKey = `${destId}.travelInfo.sections.${sectionKey}.title`;
+      resolvedLabels.title = t(titleKey, { defaultValue: labelSource.title });
+    }
+    
+    // Resolve subtitle if there's a subtitleKey
+    if (sectionConfig?.subtitleKey) {
+      resolvedLabels.subtitle = t(sectionConfig.subtitleKey, {
+        defaultValue: sectionConfig.defaultSubtitle || labelSource.subtitle || ''
+      });
+    }
+    
+    return resolvedLabels;
+  }, [t, config?.destinationId, destinationId]);
+
   // Memoize passport and userId
   const passport = useMemo(() => {
     return UserDataService.toSerializablePassport(rawPassport);
@@ -905,7 +931,7 @@ const EnhancedTravelInfoTemplate = ({
   return (
     <EnhancedTemplateContext.Provider value={contextValue}>
       <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
-        <BackButton onPress={handleGoBack} />
+        <BackButton onPress={handleGoBack} label={t('common.back', { defaultValue: 'Back' })} />
 
         <ScrollView>
           {/* Hero Section */}
@@ -952,7 +978,7 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.passport || {}}
+              labels={resolveSectionLabels('passport', config?.sections?.passport, config?.i18n?.labelSource?.passport || {})}
               config={{
                 ...config?.sections?.passport,
                 genderOptions: config?.sections?.passport?.fields?.sex?.options || [
@@ -987,7 +1013,7 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.personal || {}}
+              labels={resolveSectionLabels('personal', config?.sections?.personal, config?.i18n?.labelSource?.personal || {})}
               config={config?.sections?.personal || {}}
             />
           )}
@@ -1003,7 +1029,7 @@ const EnhancedTravelInfoTemplate = ({
               addFund={fundManagement.addFund}
               onFundItemPress={fundManagement.handleFundItemPress}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.funds || {}}
+              labels={resolveSectionLabels('funds', config?.sections?.funds, config?.i18n?.labelSource?.funds || {})}
               config={config?.sections?.funds || {}}
             />
           )}
@@ -1053,7 +1079,7 @@ const EnhancedTravelInfoTemplate = ({
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={config?.i18n?.labelSource?.travel || {}}
+              labels={resolveSectionLabels('travel', config?.sections?.travel, config?.i18n?.labelSource?.travel || {})}
               config={travelSectionConfig}
             />
           )}
@@ -1091,7 +1117,16 @@ const EnhancedTravelInfoTemplate = ({
 
 // Rich Hero Section (Thailand-style)
 const RichHeroSection = ({ config }) => {
+  const { t, locale } = useLocale();
   if (!config?.hero || config.hero.type !== 'rich') return null;
+
+  // Use English text if locale is English and English text is available
+  const isEnglish = locale === 'en' || locale?.startsWith('en');
+  const title = isEnglish && config.hero.titleEn ? config.hero.titleEn : config.hero.title;
+  const subtitle = isEnglish && config.hero.subtitleEn ? config.hero.subtitleEn : config.hero.subtitle;
+  const beginnerTipText = isEnglish && config.hero.beginnerTip?.textEn 
+    ? config.hero.beginnerTip.textEn 
+    : config.hero.beginnerTip?.text;
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$md">
@@ -1112,22 +1147,25 @@ const RichHeroSection = ({ config }) => {
         <YStack alignItems="center">
           <TamaguiText fontSize={36} marginBottom="$xs">{config.flag}</TamaguiText>
           <TamaguiText fontSize={20} fontWeight="700" color="white" marginBottom={4} textAlign="center">
-            {config.hero.title}
+            {title}
           </TamaguiText>
           <TamaguiText fontSize={13} color="#E8F0FF" textAlign="center">
-            {config.hero.subtitle}
+            {subtitle}
           </TamaguiText>
 
           {/* Value Propositions */}
           <XStack justifyContent="space-around" width="100%" marginVertical="$sm" paddingVertical="$xs">
-            {config.hero.valuePropositions.map((vp, idx) => (
-              <YStack key={idx} alignItems="center" flex={1}>
-                <TamaguiText fontSize={24} marginBottom={4}>{vp.icon}</TamaguiText>
-                <TamaguiText fontSize={11} fontWeight="600" color="white" textAlign="center">
-                  {vp.text}
-                </TamaguiText>
-              </YStack>
-            ))}
+            {config.hero.valuePropositions.map((vp, idx) => {
+              const text = isEnglish && vp.textEn ? vp.textEn : vp.text;
+              return (
+                <YStack key={idx} alignItems="center" flex={1}>
+                  <TamaguiText fontSize={24} marginBottom={4}>{vp.icon}</TamaguiText>
+                  <TamaguiText fontSize={11} fontWeight="600" color="white" textAlign="center">
+                    {text}
+                  </TamaguiText>
+                </YStack>
+              );
+            })}
           </XStack>
 
           {/* Beginner Tip */}
@@ -1140,7 +1178,7 @@ const RichHeroSection = ({ config }) => {
           >
             <TamaguiText fontSize={20} marginRight="$xs">{config.hero.beginnerTip.icon}</TamaguiText>
             <TamaguiText fontSize={12} color="#E8F0FF" flex={1} lineHeight={18}>
-              {config.hero.beginnerTip.text}
+              {beginnerTipText}
             </TamaguiText>
           </XStack>
         </YStack>
@@ -1209,7 +1247,13 @@ const PrivacyNotice = ({ t }) => {
 
 // Smart Submit Button (V2 Feature)
 const SmartButton = ({ config, validation, onPress }) => {
+  const { t } = useLocale();
   const buttonConfig = validation.getSmartButtonConfig();
+  
+  // Resolve translation key if label looks like a translation key (contains dots)
+  const label = buttonConfig.label && buttonConfig.label.includes('.') 
+    ? t(buttonConfig.label, { defaultValue: buttonConfig.label })
+    : buttonConfig.label;
 
   return (
     <BaseButton
@@ -1218,7 +1262,7 @@ const SmartButton = ({ config, validation, onPress }) => {
       onPress={onPress}
       fullWidth
     >
-      {`${buttonConfig.icon} ${buttonConfig.label}`}
+      {`${buttonConfig.icon} ${label}`}
     </BaseButton>
   );
 };

@@ -1,7 +1,7 @@
 /**
  * Hong Kong Labels Configuration
  *
- * English/Chinese (Traditional) bilingual labels for all form sections
+ * Chinese (Simplified) labels for all form sections
  * Used by HongKongTravelInfoScreen with shared section components
  */
 
@@ -12,7 +12,7 @@ export const hongkongLabels = {
 
   // Passport Section
   passport: {
-    title: '護照信息 - Passport Information',
+    title: '护照信息',
     subtitle: '請準確填寫護照上的信息',
     icon: '📘',
     introIcon: '🛂',
@@ -36,7 +36,7 @@ export const hongkongLabels = {
 
   // Personal Info Section
   personalInfo: {
-    title: '個人信息 - Personal Information',
+    title: '个人信息',
     subtitle: '聯繫方式和職業信息',
     icon: '👤',
     introIcon: '📋',
@@ -64,7 +64,7 @@ export const hongkongLabels = {
 
   // Funds Section
   funds: {
-    title: '資金證明 - Proof of Funds',
+    title: '资金证明',
     subtitle: '旅遊資金和支付方式',
     icon: '💰',
     introIcon: '💵',
@@ -92,7 +92,7 @@ export const hongkongLabels = {
 
   // Travel Details Section
   travelDetails: {
-    title: '旅行詳情 - Travel Details',
+    title: '旅行详情',
     subtitle: '航班和住宿信息',
     icon: '✈️',
     introIcon: '✈️',

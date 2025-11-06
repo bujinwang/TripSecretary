@@ -483,22 +483,22 @@ export const hongkongTravelInfoConfig = {
     fallbackLanguage: 'zh-CN',
     labelSource: {
       passport: {
-        title: hongkongLabels.passport.title,
+        // Title resolved via titleKey in section config
         subtitle: hongkongLabels.passport.subtitle,
         introText: hongkongLabels.passport.introText,
       },
       personal: {
-        title: hongkongLabels.personalInfo.title,
+        // Title resolved via titleKey in section config
         subtitle: hongkongLabels.personalInfo.subtitle,
         introText: hongkongLabels.personalInfo.introText,
       },
       funds: {
-        title: hongkongLabels.funds.title,
+        // Title resolved via titleKey in section config
         subtitle: hongkongLabels.funds.subtitle,
         introText: hongkongLabels.funds.introText,
       },
       travel: {
-        title: hongkongLabels.travelDetails.title,
+        // Title resolved via titleKey in section config
         subtitle: hongkongLabels.travelDetails.subtitle,
         introText: hongkongLabels.travelDetails.introText,
       },
