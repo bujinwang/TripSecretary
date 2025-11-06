@@ -1,20 +1,20 @@
 /**
- * Vietnam Entry Pack Preview Configuration
+ * South Korea Entry Pack Preview Configuration
  *
- * Configuration for VietnamEntryPackPreviewScreen template.
+ * Configuration for KoreaEntryPackPreviewScreen template.
  * Defines document generation, data export, and sharing capabilities.
  */
 
-export const vietnamEntryPackPreviewConfig = {
+export const koreaEntryPackPreviewConfig = {
   // Basic Metadata
-  destinationId: 'vn',
-  name: 'Vietnam',
-  flag: '🇻🇳',
+  destinationId: 'kr',
+  name: 'South Korea',
+  flag: '🇰🇷',
 
   // Colors
   colors: {
     background: '#F9FAFB',
-    primary: '#2196F3', // Vietnam's blue theme
+    primary: '#2563EB', // Korea's blue theme
     success: '#16A34A',
     warning: '#D97706',
   },
@@ -23,16 +23,23 @@ export const vietnamEntryPackPreviewConfig = {
   documents: {
     arrivalCard: {
       enabled: true,
-      type: 'paper', // Vietnam uses paper arrival cards
-      template: 'vietnam-arrival-card',
-      languages: ['vi', 'en'],
+      type: 'paper', // Korea uses paper arrival cards
+      template: 'korea-arrival-card',
+      languages: ['ko', 'en'],
+      required: true,
+    },
+    keta: {
+      enabled: true,
+      type: 'digital', // K-ETA is digital
+      template: 'keta-approval',
+      languages: ['ko', 'en'],
       required: true,
     },
     customsDeclaration: {
       enabled: true,
       type: 'paper',
-      template: 'vietnam-customs-declaration',
-      languages: ['vi', 'en'],
+      template: 'korea-customs-declaration',
+      languages: ['ko', 'en'],
       required: false,
     },
     healthDeclaration: {
@@ -49,13 +56,13 @@ export const vietnamEntryPackPreviewConfig = {
     pdf: {
       enabled: true,
       includePhotos: true,
-      includeQrCodes: false, // No digital QR codes for Vietnam
+      includeQrCodes: false, // No digital QR codes for arrival card
       pageOrientation: 'portrait',
       includeInstructions: true,
       languages: ['en'],
     },
     shareableLink: {
-      enabled: false, // Vietnam doesn't use digital submission
+      enabled: false, // Korea doesn't use digital arrival card submission
       expiry: null,
     },
     printFormat: {
@@ -116,30 +123,36 @@ export const vietnamEntryPackPreviewConfig = {
     validateFlightNumbers: true,
   },
 
-  // Vietnam-specific requirements
-  vietnam: {
+  // Korea-specific requirements
+  korea: {
     arrivalCard: {
       required: true,
-      languages: ['vietnamese', 'english'],
-      sampleImage: 'vietnam-arrival-card-sample.jpg',
+      languages: ['korean', 'english'],
+      sampleImage: 'korea-arrival-card-sample.jpg',
       instructions: {
-        vietnamese: 'Vui lòng điền thẻ nhập cảnh chính xác.',
+        korean: '입국카드를 정확히填写해주세요.',
         english: 'Please fill out the arrival card accurately.',
         chinese: '请准确填写入境卡。',
       },
     },
+    keta: {
+      required: true,
+      appliesTo: ['most_nationalities'],
+      processingTime: '1-3_business_days',
+      validFor: '2_years',
+      cost: 'USD 10',
+      languages: ['korean', 'english'],
+      instructions: {
+        korean: 'K-ETA는 도착 24시간 전에 신청해야 합니다.',
+        english: 'K-ETA must be applied for at least 24 hours before arrival.',
+        chinese: 'K-ETA 必须在抵达前至少24小时申请。',
+      },
+    },
     customsDeclaration: {
       required: false,
-      threshold: 20000000, // Required if bringing goods over 20 million VND
-      languages: ['vietnamese', 'english'],
-      sampleImage: 'vietnam-customs-declaration-sample.jpg',
-    },
-    evisa: {
-      enabled: true,
-      required: false, // e-Visa is optional for some nationalities
-      processingTime: '3-5_business_days',
-      cost: 'USD 25',
-      validity: '30-90_days',
+      threshold: 800, // Required if bringing goods over $800
+      languages: ['korean', 'english'],
+      sampleImage: 'korea-customs-declaration-sample.jpg',
     },
     workingStatus: {
       allowed: false, // No working under visa-free status
@@ -157,35 +170,35 @@ export const vietnamEntryPackPreviewConfig = {
     dataValidation: true,
     completionTracking: true,
     photoUpload: true,
-    digitalSubmission: false, // Vietnam doesn't have digital arrival card
-    evisaSupport: true, // Support for e-Visa information
+    digitalSubmission: false, // Korea doesn't have digital arrival card
+    ketaSupport: true, // Special support for K-ETA
   },
 
   // UI Messages
   messages: {
     completion: {
-      titleKey: 'vietnam.entryPack.preview.completion.title',
-      subtitleKey: 'vietnam.entryPack.preview.completion.subtitle',
+      titleKey: 'korea.entryPack.preview.completion.title',
+      subtitleKey: 'korea.entryPack.preview.completion.subtitle',
       defaultTitle: '准备就绪！',
-      defaultSubtitle: '您的越南入境资料已完整，准备好打印和使用了。',
+      defaultSubtitle: '您的韩国入境资料已完整，准备好打印和使用了。',
     },
     validation: {
-      titleKey: 'vietnam.entryPack.preview.validation.title',
+      titleKey: 'korea.entryPack.preview.validation.title',
       defaultTitle: '请完善信息',
       defaultMessage: '请完成所有必填项目后再生成文件。',
     },
     documents: {
-      titleKey: 'vietnam.entryPack.preview.documents.title',
+      titleKey: 'korea.entryPack.preview.documents.title',
       defaultTitle: '入境文件',
-      defaultSubtitle: '以下是您需要的越南入境相关文件',
+      defaultSubtitle: '以下是您需要的韩国入境相关文件',
     },
   },
 
   // i18n configuration
   i18n: {
-    namespace: 'vietnam.entryPack',
+    namespace: 'korea.entryPack',
     fallbackLanguage: 'en',
   },
 };
 
-export default vietnamEntryPackPreviewConfig;
+export default koreaEntryPackPreviewConfig;

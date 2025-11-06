@@ -11,6 +11,7 @@
  */
 
 import metadata from './metadata';
+import entryPackPreviewConfig from './entryPackPreviewConfig';
 
 // Entry guide is kept in its existing location
 import entryGuideConfig from '../../entryGuide/vietnam';
@@ -22,6 +23,9 @@ import entryGuideConfig from '../../entryGuide/vietnam';
 const vietnamConfig = {
   // Core Metadata
   ...metadata,
+
+  // Entry pack preview configuration
+  entryPackPreview: entryPackPreviewConfig,
 
   // Entry Guide (airport process)
   entryGuide: entryGuideConfig,
