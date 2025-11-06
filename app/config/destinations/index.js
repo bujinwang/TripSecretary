@@ -26,6 +26,7 @@
 import thailandConfig from './thailand';
 import malaysiaConfig from './malaysia';
 import singaporeConfig from './singapore';
+import taiwanConfig from './taiwan';
 
 /**
  * @typedef {Object} DestinationMetadata
@@ -60,6 +61,7 @@ export const DESTINATIONS = {
   th: thailandConfig,
   my: malaysiaConfig,
   sg: singaporeConfig,
+  tw: taiwanConfig,
 
   // Japan - To be added in Phase 2
   // jp: japanConfig,

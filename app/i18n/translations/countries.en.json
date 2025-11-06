@@ -203,18 +203,19 @@
       "ignore": "Ignore Changes",
       "viewDetails": "View Details"
     },
-          "superseded": {
-            "resubmitHint": "Information updated, resubmission required",
-            "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
-          },
-          "immigrationOfficer": {
-            "title": "Immigration Officer View",
-            "authentication": {
-              "title": "Authentication Required",
-              "message": "To protect your privacy, authentication is required to enter presentation mode",
-              "authenticate": "Authenticate",
-              "cancel": "Cancel"
-            },      "presentation": {
+    "superseded": {
+      "resubmitHint": "Information updated, resubmission required",
+      "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
+    },
+    "immigrationOfficer": {
+      "title": "Immigration Officer View",
+      "authentication": {
+        "title": "Authentication Required",
+        "message": "To protect your privacy, authentication is required to enter presentation mode",
+        "authenticate": "Authenticate",
+        "cancel": "Cancel"
+      },
+      "presentation": {
         "exitTitle": "Exit Presentation Mode",
         "exitMessage": "Are you sure you want to exit presentation mode?",
         "exit": "Exit",
@@ -313,21 +314,7 @@
   },
   "malaysia": {
     "entryFlow": {
-      "submissionWindow": "Submit within 3 days of arrival",
-      "status": {
-        "ready": {
-          "title": "Ready for MDAC!",
-          "subtitle": "All information complete"
-        },
-        "mostlyComplete": {
-          "title": "Almost There",
-          "subtitle": "A few more fields needed"
-        },
-        "needsImprovement": {
-          "title": "Please Complete",
-          "subtitle": "More information needed"
-        }
-      }
+      "submissionWindow": "Submit within 3 days of arrival"
     },
     "travelInfo": {
       "hero": {
@@ -492,9 +479,6 @@
         "travel": "Travel Information"
       }
     },
-    "entryFlow": {
-      "submissionWindow": "Submit within 3 days of arrival"
-    },
     "entryPack": {
       "preview": {
         "actions": {
@@ -651,7 +635,8 @@
           "start": "Fill in passport, travel, and accommodation details to unlock SGAC submission."
         }
       },
-      "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time)."
+      "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time).",
+      "title": "Singapore Entry Preparation"
     }
   },
   "vietnam": {
@@ -742,6 +727,22 @@
         }
       },
       "startButton": "Continue to Travel Details"
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "Passport Information"
+        },
+        "personal": {
+          "title": "Personal Information"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel Details"
+        }
+      }
     }
   },
   "hongkong": {
@@ -898,7 +899,37 @@
           "subtitle": "We support progressive completion"
         }
       },
-      "startButton": "Start filling"
+      "startButton": "Start filling",
+      "continueButton": "Continue to travel information"
+    },
+    "entryFlow": {
+      "status": {
+        "ready": {
+          "title": "Ready to submit Taiwan arrival card",
+          "subtitle": "All sections complete—submit within the 3-day window."
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "Finish the highlighted fields to proceed."
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections before submitting."
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Taiwan trip is ready! 🇹🇼",
+          "almost": "Great progress—almost there!",
+          "start": "Let's prepare your Taiwan arrival documents"
+        },
+        "subtitle": {
+          "ready": "Submit the online arrival card within the 3-day window to stay compliant.",
+          "almost": "Just {{remainingPercent}}% left—complete the info and you can finish the arrival card.",
+          "start": "Fill in passport, contact, and itinerary details to unlock the arrival card helper."
+        }
+      },
+      "submissionWindow": "Taiwan online arrival card must be submitted within 3 days before arrival."
     }
   },
   "japan": {
@@ -1355,5 +1386,23 @@
   },
   "screenTitles": {
     "notificationSettings": "Notification Settings"
+  },
+  "vn": {
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "Passport Information"
+        },
+        "personal": {
+          "title": "Personal Information"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel Details"
+        }
+      }
+    }
   }
 }

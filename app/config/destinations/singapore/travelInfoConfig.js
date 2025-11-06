@@ -4,8 +4,8 @@
  * Structured to work with the shared TravelInfo templates (V1/V2).
  */
 
-import { singaporeLabels, singaporeConfig } from '../../../config/labels/singapore';
-import { singaporeRegions } from '../../../data/singaporeRegions';
+import { singaporeLabels, singaporeConfig } from '../../../config/labels/singapore.js';
+import { singaporeRegions } from '../../../data/singaporeRegions.js';
 
 export const singaporeTravelInfoConfig = {
   destinationId: 'sg',
@@ -439,18 +439,22 @@ export const singaporeTravelInfoConfig = {
     labelSource: {
       passport: {
         title: singaporeLabels.passport.title,
+        subtitle: singaporeLabels.passport.subtitle,
         introText: singaporeLabels.passport.introText,
       },
       personal: {
         title: singaporeLabels.personalInfo.title,
+        subtitle: singaporeLabels.personalInfo.subtitle,
         introText: singaporeLabels.personalInfo.introText,
       },
       funds: {
         title: singaporeLabels.funds.title,
+        subtitle: singaporeLabels.funds.subtitle,
         introText: singaporeLabels.funds.introText,
       },
       travel: {
         title: singaporeLabels.travelDetails.title,
+        subtitle: singaporeLabels.travelDetails.subtitle,
         introText: singaporeLabels.travelDetails.introText,
       },
     },

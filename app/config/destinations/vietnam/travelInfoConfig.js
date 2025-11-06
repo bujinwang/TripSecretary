@@ -174,6 +174,32 @@ export const vietnamTravelInfoConfig = {
     windowHours: null,
     reminderHours: null,
   },
+
+  // i18n translations
+  i18n: {
+    labelSource: {
+      passport: {
+        title: '护照信息',
+        subtitle: '护照详细信息',
+        introText: '请确保与护照完全一致，入境时会核对。',
+      },
+      personal: {
+        title: '个人资料',
+        subtitle: '联系与职业详情',
+        introText: '保持联系方式畅通，方便越南官方联系。',
+      },
+      funds: {
+        title: '资金证明',
+        subtitle: '旅行资金证明',
+        introText: '建议准备足够资金证明以备查验。',
+      },
+      travel: {
+        title: '旅行信息',
+        subtitle: '航班与住宿信息',
+        introText: '提前确认航班与住宿，有助于快速通关。',
+      },
+    },
+  },
 };
 
 export default vietnamTravelInfoConfig;

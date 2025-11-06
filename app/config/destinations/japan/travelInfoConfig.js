@@ -5,7 +5,7 @@
  * TravelInfo templates can auto-render Japan's form.
  */
 
-import { japanPrefectures, getCitiesByPrefecture } from '../../../data/japanLocations';
+import { japanPrefectures, getCitiesByPrefecture } from '../../../data/japanLocations.js';
 
 export const japanTravelInfoConfig = {
   destinationId: 'jp',
@@ -407,18 +407,22 @@ export const japanTravelInfoConfig = {
     labelSource: {
       passport: {
         title: '护照信息',
+        subtitle: '护照详细信息',
         introText: '请确保与护照完全一致，入境时会核对。',
       },
       personal: {
         title: '个人资料',
+        subtitle: '联系与职业详情',
         introText: '保持联系方式畅通，方便日本官方联系。',
       },
       funds: {
         title: '资金证明',
+        subtitle: '旅行资金证明',
         introText: '建议至少准备 10 万日元等值资金作为旅行保障。',
       },
       travel: {
         title: '旅行信息',
+        subtitle: '航班与住宿信息',
         introText: '提前确认航班与住宿，有助于快速通关。',
       },
     },

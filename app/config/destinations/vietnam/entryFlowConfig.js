@@ -31,7 +31,7 @@ export const vietnamEntryFlowConfig = {
     {
       id: 'passport',
       nameKey: 'progressiveEntryFlow.categories.passport',
-      defaultName: 'Passport Information',
+      defaultName: '护照信息',
       icon: '📘',
       requiredFields: [
         'surname',
@@ -46,7 +46,7 @@ export const vietnamEntryFlowConfig = {
     {
       id: 'personal',
       nameKey: 'progressiveEntryFlow.categories.personal',
-      defaultName: 'Personal Information',
+      defaultName: '个人信息',
       icon: '👤',
       requiredFields: [
         'occupation',
@@ -58,7 +58,7 @@ export const vietnamEntryFlowConfig = {
     {
       id: 'funds',
       nameKey: 'progressiveEntryFlow.categories.funds',
-      defaultName: 'Proof of Funds',
+      defaultName: '资金证明',
       icon: '💰',
       minRequired: 1, // At least 1 fund item
       validator: (funds) => funds && funds.length >= 1,
@@ -66,7 +66,7 @@ export const vietnamEntryFlowConfig = {
     {
       id: 'travel',
       nameKey: 'progressiveEntryFlow.categories.travel',
-      defaultName: 'Travel Information',
+      defaultName: '旅行信息',
       icon: '✈️',
       requiredFields: [
         'travelPurpose',

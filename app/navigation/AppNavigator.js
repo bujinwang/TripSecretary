@@ -67,10 +67,12 @@ import {
   // Taiwan screens
   TaiwanInfoScreen,
   TaiwanRequirementsScreen,
+  TaiwanTravelInfoScreen,
+  TaiwanEntryFlowScreen,
+  TaiwanEntryPackPreviewScreen,
   TWArrivalSelectionScreen,
   TWArrivalGuideScreen,
   TWArrivalWebViewScreen,
-  TaiwanTravelInfoScreen,
   // Hong Kong screens
   HongKongInfoScreen,
   HongKongRequirementsScreen,
@@ -383,6 +385,21 @@ const AppNavigator = React.forwardRef((props, ref) => {
           component={TaiwanRequirementsScreen}
           options={{
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TaiwanEntryFlow"
+          component={TaiwanEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TaiwanEntryPackPreview"
+          component={TaiwanEntryPackPreviewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
         <Stack.Screen

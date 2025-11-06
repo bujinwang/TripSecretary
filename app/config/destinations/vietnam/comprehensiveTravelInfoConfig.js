@@ -63,6 +63,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '📘',
       sectionKey: 'passport',
       titleKey: 'vietnam.travelInfo.sections.passport.title',
+      title: vietnamLabels.passport.title,
       defaultTitle: vietnamLabels.passport.title,
 
       fields: {
@@ -71,7 +72,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: true,
           maxLength: 50,
           labelKey: 'vietnam.travelInfo.fields.surname',
-          defaultLabel: '姓 - Surname',
+          defaultLabel: '姓',
           immediateSave: false, // Save via debounce
           uppercaseNormalize: true, // Auto-uppercase
         },
@@ -80,7 +81,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: false,
           maxLength: 50,
           labelKey: 'vietnam.travelInfo.fields.middleName',
-          defaultLabel: '中间名 - Middle Name',
+          defaultLabel: '中间名',
           immediateSave: false,
           uppercaseNormalize: true,
         },
@@ -89,7 +90,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: true,
           maxLength: 50,
           labelKey: 'vietnam.travelInfo.fields.givenName',
-          defaultLabel: '名 - Given Name',
+          defaultLabel: '名',
           immediateSave: false,
           uppercaseNormalize: true,
         },
@@ -138,8 +139,8 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { label: '男性 - Male', value: 'M' },
-            { label: '女性 - Female', value: 'F' },
+            { label: '男性', value: 'M' },
+            { label: '女性', value: 'F' },
           ],
           labelKey: 'vietnam.travelInfo.fields.sex',
           defaultLabel: vietnamLabels.passport.sex,
@@ -165,6 +166,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '👤',
       sectionKey: 'personal',
       titleKey: 'vietnam.travelInfo.sections.personal.title',
+      title: vietnamLabels.personalInfo.title,
       defaultTitle: vietnamLabels.personalInfo.title,
 
       fields: {
@@ -173,11 +175,11 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { label: '学生 - Student', value: 'STUDENT' },
-            { label: '商务 - Business', value: 'BUSINESS' },
-            { label: '退休 - Retired', value: 'RETIRED' },
-            { label: '旅游 - Tourism', value: 'TOURISM' },
-            { label: '其他 - Other', value: 'OTHER' },
+            { label: '学生', value: 'STUDENT' },
+            { label: '商务', value: 'BUSINESS' },
+            { label: '退休', value: 'RETIRED' },
+            { label: '旅游', value: 'TOURISM' },
+            { label: '其他', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customOccupation',
@@ -250,17 +252,18 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '💰',
       sectionKey: 'funds',
       titleKey: 'vietnam.travelInfo.sections.funds.title',
+      title: vietnamLabels.funds.title,
       defaultTitle: vietnamLabels.funds.title,
       minRequired: 1,
       maxAllowed: 10,
 
       types: [
-        { value: 'CASH_VND', label: '越南盾现金 - Cash VND', defaultAmount: 10000000 },
-        { value: 'CASH_USD', label: '美元现金 - Cash USD', defaultAmount: 500 },
-        { value: 'CASH_CNY', label: '人民币现金 - Cash CNY', defaultAmount: 3000 },
-        { value: 'CARD', label: '信用卡/借记卡 - Card', defaultAmount: 5000 },
-        { value: 'TRAVELER_CHECK', label: '旅行支票 - Traveler\'s Check', defaultAmount: 1000 },
-        { value: 'OTHER', label: '其他 - Other', defaultAmount: 0 },
+        { value: 'CASH_VND', label: '越南盾现金', defaultAmount: 10000000 },
+        { value: 'CASH_USD', label: '美元现金', defaultAmount: 500 },
+        { value: 'CASH_CNY', label: '人民币现金', defaultAmount: 3000 },
+        { value: 'CARD', label: '信用卡/借记卡', defaultAmount: 5000 },
+        { value: 'TRAVELER_CHECK', label: '旅行支票', defaultAmount: 1000 },
+        { value: 'OTHER', label: '其他', defaultAmount: 0 },
       ],
 
       modal: {
@@ -279,6 +282,7 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '✈️',
       sectionKey: 'travel',
       titleKey: 'vietnam.travelInfo.sections.travel.title',
+      title: vietnamLabels.travelDetails.title,
       defaultTitle: vietnamLabels.travelDetails.title,
 
       fields: {
@@ -287,11 +291,11 @@ export const vietnamComprehensiveTravelInfoConfig = {
           required: true,
           type: 'select',
           options: [
-            { label: '旅游 - Tourism', value: 'TOURISM' },
-            { label: '商务 - Business', value: 'BUSINESS' },
-            { label: '探亲访友 - Family Visit', value: 'FAMILY_VISIT' },
-            { label: '学习 - Education', value: 'EDUCATION' },
-            { label: '其他 - Other', value: 'OTHER' },
+            { label: '旅游', value: 'TOURISM' },
+            { label: '商务', value: 'BUSINESS' },
+            { label: '探亲访友', value: 'FAMILY_VISIT' },
+            { label: '学习', value: 'EDUCATION' },
+            { label: '其他', value: 'OTHER' },
           ],
           allowCustom: true,
           customFieldName: 'customTravelPurpose',
@@ -518,27 +522,27 @@ export const vietnamComprehensiveTravelInfoConfig = {
       dynamic: true, // Enable smart button with dynamic labels
 
       // Thresholds for label changes (0-1 scale)
-      thresholds: {
-        incomplete: 0.7,   // Below 70% shows "incomplete" label
-        almostDone: 0.9,   // 70-90% shows "almostDone" label
-        ready: 0.9,        // 90%+ shows "ready" label
-      },
+    thresholds: {
+      incomplete: 0.7,   // Below 70% shows "incomplete" label
+      almostDone: 0.9,   // 70-90% shows "almostDone" label
+      ready: 0.9,        // 90%+ shows "ready" label
+    },
 
-      // Labels for each state
-      labels: {
-        incomplete: '完成必填项 - Complete Required Fields',
-        almostDone: '快完成了 - Almost Done',
-        ready: '继续 - Continue',
-      },
+    // Labels for each state
+    labels: {
+      incomplete: '完成必填项',
+      almostDone: '快完成了',
+      ready: '继续',
+    },
 
-      // Default fallback if dynamic is disabled
-      default: '继续 - Continue',
+    // Default fallback if dynamic is disabled
+    default: '继续',
     },
 
     // Deprecated - kept for backward compatibility
     submitButtonLabel: {
       key: 'vietnam.travelInfo.submitButton',
-      default: '继续 - Continue',
+      default: '继续',
     },
   },
 
