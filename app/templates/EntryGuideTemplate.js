@@ -603,12 +603,36 @@ const EntryGuideTemplateCurrentStep = () => {
       return null;
     }
     
+    // Resolve tips - support both direct strings and translation keys
+    const resolvedTips = currentStep.tips.map((tip, index) => {
+      // If tip is a translation key object with key property
+      if (typeof tip === 'object' && tip.key) {
+        // For Chinese, try to use tipsZh key, otherwise use tips key
+        const baseKey = tip.key;
+        const zhKey = baseKey.replace(/\.tips\.(\d+)$/, '.tipsZh.$1');
+        // Check if Chinese translation exists (not equal to the key itself)
+        const zhTranslation = isChinese ? t(zhKey, { defaultValue: null }) : null;
+        const translationKey = (isChinese && zhTranslation && zhTranslation !== zhKey) ? zhKey : baseKey;
+        return t(translationKey, { defaultValue: tip.defaultValue || tip });
+      }
+      // If tip is a string that looks like a translation key (starts with country code)
+      if (typeof tip === 'string' && (tip.startsWith('taiwan.') || tip.startsWith('tw.'))) {
+        // For Chinese, try to use tipsZh key, otherwise use tips key
+        const zhKey = tip.replace(/\.tips\.(\d+)$/, '.tipsZh.$1');
+        const zhTranslation = isChinese ? t(zhKey, { defaultValue: null }) : null;
+        const translationKey = (isChinese && zhTranslation && zhTranslation !== zhKey) ? zhKey : tip;
+        return t(translationKey, { defaultValue: tip });
+      }
+      // Use tip directly if it's already a resolved string
+      return tip;
+    });
+    
     return (
       <View style={styles.tipsContainer}>
         <Text style={styles.tipsTitle}>
           {t('entryGuide.sections.tips', { defaultValue: isChinese ? '💡 实用技巧' : '💡 Pro Tips' })}
         </Text>
-        {currentStep.tips.map((tip, index) => (
+        {resolvedTips.map((tip, index) => (
           <Text key={`tip-${index}`} style={styles.tipText}>
             • {tip}
           </Text>

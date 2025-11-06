@@ -377,11 +377,17 @@ export const useTemplateValidation = ({
       if (labelConfig && typeof labelConfig === 'string') {
         // Check if it looks like a translation key (contains dots)
         if (t && labelConfig.includes('.')) {
-          const translated = t(labelConfig);
+          // Try to translate with a sensible default based on the key
+          const defaultLabel = key === 'ready' ? 'Continue' : 
+                              key === 'almostDone' ? 'Almost Done' : 
+                              key === 'incomplete' ? 'Complete Required Fields' : 'Continue';
+          const translated = t(labelConfig, { defaultValue: defaultLabel });
           // If translation exists (not the same as the key), use it
-          if (translated !== labelConfig) {
+          if (translated !== labelConfig && translated !== 'Default') {
             return translated;
           }
+          // If translation failed or returned "Default", use the default label
+          return defaultLabel;
         }
         // If not a translation key or translation failed, use it as-is
         return labelConfig;

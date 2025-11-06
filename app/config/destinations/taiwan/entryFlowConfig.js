@@ -1,7 +1,7 @@
 export const taiwanEntryFlowConfig = {
   destinationId: 'taiwan',
   name: 'Taiwan',
-  nameZh: '臺灣',
+  nameZh: '台湾',
   flag: '🇹🇼',
 
   colors: {

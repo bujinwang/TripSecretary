@@ -995,6 +995,14 @@
       "lengthOfStay": {
         "range": "停留天数需在 1-180 天之间。"
       }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
+      }
     }
   },
   "sg": {
@@ -1111,6 +1119,14 @@
       },
       "submissionWindow": "SG Arrival Card 需在抵达前3天内按新加坡时间提交。",
       "title": "新加坡入境准备"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
+      }
     }
   },
   "my": {
@@ -1411,6 +1427,24 @@
       },
       "startButton": "开始填写",
       "continueButton": "繼續前往行程資訊"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "台湾入境信息中心",
+        "subtitle": "一次填妥护照、行程与住宿，安心踏上福尔摩沙",
+        "valuePropositions": {
+          "0": "入台证、入境卡一次搞定",
+          "1": "提醒入境卡3日内完成",
+          "2": "信息离线保存、安全无虞"
+        },
+        "beginnerTip": "温馨提醒：抵达前3天内完成线上入境卡，我们会在最佳时间提醒您。"
+      },
+      "buttonLabels": {
+        "incomplete": "继续补齐必填信息",
+        "almostDone": "快完成了，继续！",
+        "ready": "前往入境准备"
+      },
+      "continue": "继续"
     },
     "entryFlow": {
       "status": {

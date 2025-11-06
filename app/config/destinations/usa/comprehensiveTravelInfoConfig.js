@@ -10,25 +10,24 @@ export const usaComprehensiveTravelInfoConfig = {
   version: '2.0',
   template: 'enhanced',
 
-  submitButton: {
-    dynamic: true,
-    thresholds: {
-      incomplete: 0.5,
-      almostDone: 0.8,
-      ready: 0.95,
-    },
-    labels: {
-      incomplete: '继续完善必填项',
-      almostDone: '快完成了',
-      ready: '继续查看入境准备',
-    },
-    default: '继续',
-  },
-
   navigation: {
     previous: 'USARequirements',
     next: 'USAEntryFlow',
     saveBeforeNavigate: true,
+    submitButton: {
+      dynamic: true,
+      thresholds: {
+        incomplete: 0.5,
+        almostDone: 0.8,
+        ready: 0.95,
+      },
+      labels: {
+        incomplete: 'us.navigation.submitButton.incomplete',
+        almostDone: 'us.navigation.submitButton.almostDone',
+        ready: 'us.navigation.submitButton.ready',
+      },
+      default: 'us.navigation.submitButton.default',
+    },
   },
 
   fieldState: {

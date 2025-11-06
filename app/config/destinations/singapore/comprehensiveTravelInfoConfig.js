@@ -10,25 +10,24 @@ export const singaporeComprehensiveTravelInfoConfig = {
   version: '2.0',
   template: 'enhanced',
 
-  submitButton: {
-    dynamic: true,
-    thresholds: {
-      incomplete: 0.6,
-      almostDone: 0.85,
-      ready: 0.95,
-    },
-    labels: {
-      incomplete: '继续完善必填项',
-      almostDone: '快完成了',
-      ready: '继续前往入境准备',
-    },
-    default: '继续',
-  },
-
   navigation: {
     previous: 'SingaporeRequirements',
     next: 'SingaporeEntryFlow',
     saveBeforeNavigate: true,
+    submitButton: {
+      dynamic: true,
+      thresholds: {
+        incomplete: 0.6,
+        almostDone: 0.85,
+        ready: 0.95,
+      },
+      labels: {
+        incomplete: 'sg.navigation.submitButton.incomplete',
+        almostDone: 'sg.navigation.submitButton.almostDone',
+        ready: 'sg.navigation.submitButton.ready',
+      },
+      default: 'sg.navigation.submitButton.default',
+    },
   },
 
   fieldState: {

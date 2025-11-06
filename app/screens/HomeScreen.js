@@ -23,38 +23,7 @@ import EntryInfoService from '../services/EntryInfoService';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
-import { getDestination } from '../config/destinations';
-
-// TODO: Migrate all destinations to config system (see app/config/destinations/)
-// Currently only Thailand ('th') is fully configured
-// For other countries, add configs to app/config/destinations/{country}/ directory
-const HOT_COUNTRIES = [
-  { id: 'jp', flag: '🇯🇵', name: 'Japan', flightTimeKey: 'home.destinations.japan.flightTime', enabled: true },
-  // Thailand loaded from destination config system
-  (() => {
-    try {
-      const thailand = getDestination('th');
-      return {
-        id: thailand.id,
-        flag: thailand.flag,
-        name: thailand.name,
-        flightTimeKey: thailand.flightTimeKey,
-        enabled: thailand.enabled
-      };
-    } catch (error) {
-      // Fallback if config not available
-      console.warn('Failed to load Thailand from config, using hardcoded values:', error.message);
-      return { id: 'th', flag: '🇹🇭', name: 'Thailand', flightTimeKey: 'home.destinations.thailand.flightTime', enabled: true };
-    }
-  })(),
-  { id: 'vn', flag: '🇻🇳', name: 'Vietnam', flightTimeKey: 'home.destinations.vietnam.flightTime', enabled: true },
-  { id: 'hk', flag: '🇭🇰', name: 'Hong Kong', flightTimeKey: 'home.destinations.hongKong.flightTime', enabled: true },
-  { id: 'tw', flag: '🇹🇼', name: 'Taiwan', flightTimeKey: 'home.destinations.taiwan.flightTime', enabled: true },
-  { id: 'kr', flag: '🇰🇷', name: 'South Korea', flightTimeKey: 'home.destinations.korea.flightTime', enabled: true },
-  { id: 'sg', flag: '🇸🇬', name: 'Singapore', flightTimeKey: 'home.destinations.singapore.flightTime', enabled: true },
-  { id: 'my', flag: '🇲🇾', name: 'Malaysia', flightTimeKey: 'home.destinations.malaysia.flightTime', enabled: true },
-  { id: 'us', flag: '🇺🇸', name: 'United States', flightTimeKey: 'home.destinations.usa.flightTime', enabled: true },
-];
+import { getHotCountries, navigateToCountry, getCountryFlag, getCountryName } from '../utils/countriesService';
 
 const UPCOMING_TRIPS_CONFIG = [
   {
@@ -114,39 +83,7 @@ const HomeScreen = ({ navigation }) => {
     setShowLanguageModal(false);
   };
 
-  // Intelligent country prioritization based on visa requirements
-  const getVisaRequirement = (countryId) => {
-    // Accurate visa and permit requirements for Chinese passport holders (中国护照)
-    const requirementMap = {
-      th: 'visa_free',            // 泰国免签
-      vn: 'evisa',                // 越南电子签证
-      my: 'visa_free',            // 马来西亚免签
-      sg: 'visa_free',            // 新加坡免签
-      hk: 'hk_permit',            // 香港需要港澳通行证
-      tw: 'tw_entry_permit',      // 台湾需要入台证
-      jp: 'visa_required',        // 日本需要签证
-      kr: 'visa_required',        // 韩国需要签证
-      us: 'visa_required',        // 美国需要签证
-    };
-
-    return requirementMap[countryId] || 'unknown';
-  };
-
-  const getVisaPriority = (requirement) => {
-    const priorityMap = {
-      visa_free: 1,           // 最容易安排的免签目的地
-      visa_on_arrival: 2,     // 落地签
-      evisa: 3,               // 电子签证
-      eta: 3,                 // ETA电子旅行许可
-      hk_permit: 3,           // 港澳通行证
-      tw_entry_permit: 3,     // 入台证
-      visa_required: 4,       // 传统签证
-      unknown: 5,
-    };
-
-    return priorityMap[requirement] ?? 5;
-  };
-
+  // Get hot countries using centralized service
   const localizedHotCountries = useMemo(() => {
     // Get IDs of destinations that already have active entry packs or in-progress entries
     const activeDestinationIds = new Set([
@@ -154,36 +91,13 @@ const HomeScreen = ({ navigation }) => {
       ...inProgressDestinations.map(dest => dest.destinationId)
     ]);
 
-    const countriesWithVisaInfo = HOT_COUNTRIES.map((country) => {
-      const visaRequirement = getVisaRequirement(country.id);
-      return {
-        ...country,
-        displayName: t(`home.destinationNames.${country.id}`, {
-          defaultValue: country.name || country.id,
-        }),
-        flightTime: t(country.flightTimeKey, {
-          defaultValue: '—',
-        }),
-        visaRequirement,
-        visaPriority: getVisaPriority(visaRequirement),
-      };
-    });
+    // Get hot countries from centralized service
+    const hotCountries = getHotCountries(t, language, Array.from(activeDestinationIds));
 
     // Filter out destinations that already have active entry packs
-    const availableCountries = countriesWithVisaInfo.filter(
+    return hotCountries.filter(
       country => !activeDestinationIds.has(country.id)
     );
-
-    // Sort by visa priority (easiest entry first), then by flight time
-    return availableCountries.sort((a, b) => {
-      if (a.visaPriority !== b.visaPriority) {
-        return a.visaPriority - b.visaPriority;
-      }
-      // If same visa priority, sort by flight time (shorter first)
-      const aTime = parseFloat(a.flightTime) || 999;
-      const bTime = parseFloat(b.flightTime) || 999;
-      return aTime - bTime;
-    });
   }, [language, t, activeEntryPacks, inProgressDestinations]);
 
   const upcomingTrips = useMemo(() => {
@@ -370,12 +284,13 @@ const HomeScreen = ({ navigation }) => {
       return;
     }
 
-    const countryName = t(`home.destinationNames.${country.id}`, {
+    const countryName = country.displayName || t(`home.destinationNames.${country.id}`, {
       defaultValue: country.name || country.id,
     });
     const destinationForNav = {
-      ...country,
+      id: country.id,
       name: countryName,
+      flag: country.flag,
     };
 
     // Convert passport data to legacy format for navigation
@@ -389,32 +304,16 @@ const HomeScreen = ({ navigation }) => {
         }
       : null;
 
-    // Map country ID to screen name
-    const screenMap = {
-      'jp': 'JapanInfo', // Info → Requirements → TravelInfo flow
-      'th': 'ThailandInfo',
-      'vn': 'VietnamInfo',
-      'hk': 'HongKongInfo',
-      'tw': 'TaiwanInfo',
-      'kr': 'KoreaInfo',
-      'sg': 'SingaporeInfo',
-      'my': 'MalaysiaInfo',
-      'us': 'USAInfo',
-    };
-
-    const screenName = screenMap[country.id];
-    if (screenName) {
-      navigation.navigate(screenName, {
+    // Use centralized navigation helper
+    navigateToCountry(
+      navigation,
+      country.id,
+      'info', // Navigate to info screen first
+      {
         passport: passportForNav,
         destination: destinationForNav,
-      });
-    } else {
-      // Default navigation for other countries
-      navigation.navigate('TravelInfo', {
-        destination: destinationForNav,
-        passport: passportForNav,
-      });
-    }
+      }
+    );
   };
 
   const handleViewAllCountries = () => {
@@ -506,39 +405,27 @@ const HomeScreen = ({ navigation }) => {
 
 
   const getDestinationName = (destinationId) => {
-    return t(`home.destinationNames.${destinationId}`, {
+    return getCountryName(destinationId, language) || t(`home.destinationNames.${destinationId}`, {
       defaultValue: destinationId
     });
   };
 
   const getDestinationFlag = (destinationId) => {
-    const flagMap = {
-      'th': '🇹🇭',
-      'vn': '🇻🇳',
-      'jp': '🇯🇵',
-      'sg': '🇸🇬',
-      'my': '🇲🇾',
-      'hk': '🇭🇰',
-      'tw': '🇹🇼',
-      'kr': '🇰🇷',
-      'us': '🇺🇸'
-    };
-    return flagMap[destinationId] || '🌍';
+    return getCountryFlag(destinationId);
   };
 
   // Get estimated flight duration based on destination
   const getFlightDuration = (destinationId) => {
-    const durationMap = {
-      'th': '3小时',
-      'jp': '3小时',
-      'sg': '5小时',
-      'my': '4小时',
-      'hk': '1小时',
-      'tw': '2小时',
-      'kr': '2小时',
-      'us': '13小时'
-    };
-    return durationMap[destinationId] || '';
+    // Try to get from country data
+    try {
+      const country = getHotCountries(t, language, []).find(c => c.id === destinationId);
+      if (country?.flightTime) {
+        return country.flightTime;
+      }
+    } catch (error) {
+      // Fallback to translation key
+    }
+    return t(`home.destinations.${destinationId}.flightTime`, { defaultValue: '' });
   };
 
   const getArrivalCountdown = (arrivalDate) => {
@@ -648,19 +535,12 @@ const HomeScreen = ({ navigation }) => {
           style={[styles.historyCard, styles.entryPackCard]}
           pressable
           onPress={() => {
-            // Navigate to the appropriate entry flow screen for this destination
-            const entryFlowScreenMap = {
-              'jp': 'JapanEntryFlow',
-              'th': 'ThailandEntryFlow',
-              'hk': 'HongKongEntryFlow',
-              'kr': 'KoreaEntryFlow',
-              'sg': 'SingaporeEntryFlow',
-              'my': 'MalaysiaEntryFlow',
-            };
-
-            const screenName = entryFlowScreenMap[pack.destinationId];
-            if (screenName) {
-              navigation.navigate(screenName, {
+            // Use centralized navigation helper for entry flow
+            navigateToCountry(
+              navigation,
+              pack.destinationId,
+              'entryFlow', // Navigate to entry flow screen
+              {
                 destination: {
                   id: pack.destinationId,
                   name: destinationName,
@@ -675,11 +555,8 @@ const HomeScreen = ({ navigation }) => {
                   expiry: passportData.expiryDate || '',
                 } : null,
                 entryPackId: pack.id, // Pass the entry info ID for loading existing data
-              });
-            } else {
-              // Fallback for destinations without Entry Flow screen
-              navigation.navigate('EntryInfoDetail', { entryInfoId: pack.id });
-            }
+              }
+            );
           }}
         >
           <View style={styles.entryPackItem}>
@@ -750,22 +627,12 @@ const HomeScreen = ({ navigation }) => {
           style={[styles.historyCard, styles.inProgressCard]}
           pressable
           onPress={() => {
-            // Navigate to the appropriate travel info screen for this destination
-            const screenMap = {
-              'jp': 'JapanTravelInfo',
-              'th': 'ThailandTravelInfo',
-              'vn': 'VietnamTravelInfo',
-              'hk': 'HongkongTravelInfo',
-              'tw': 'TaiwanTravelInfo',
-              'kr': 'KoreaTravelInfo',
-              'sg': 'SingaporeTravelInfo',
-              'my': 'MalaysiaTravelInfo',
-              'us': 'USTravelInfo',
-            };
-
-            const screenName = screenMap[destination.destinationId];
-            if (screenName) {
-              navigation.navigate(screenName, {
+            // Use centralized navigation helper for travel info screen
+            navigateToCountry(
+              navigation,
+              destination.destinationId,
+              'travelInfo', // Navigate to travel info screen
+              {
                 destination: {
                   id: destination.destinationId,
                   name: destinationName,
@@ -778,8 +645,8 @@ const HomeScreen = ({ navigation }) => {
                   passportNo: passportData.passportNumber || '',
                   expiry: passportData.expiryDate || '',
                 } : null
-              });
-            }
+              }
+            );
           }}
         >
           <View style={styles.entryPackItem}>

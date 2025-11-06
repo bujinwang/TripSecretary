@@ -6,25 +6,25 @@ export const taiwanComprehensiveTravelInfoConfig = {
   version: '2.0',
   template: 'enhanced',
 
-  submitButton: {
-    dynamic: true,
-    thresholds: {
-      incomplete: 0.6,
-      almostDone: 0.85,
-      ready: 0.95,
-    },
-    labels: {
-      incomplete: '繼續補齊必填資訊',
-      almostDone: '快完成了，繼續！',
-      ready: '前往入境準備',
-    },
-    default: '繼續',
-  },
-
   navigation: {
     previous: 'TaiwanRequirements',
     next: 'TaiwanEntryFlow',
     saveBeforeNavigate: true,
+    submitButton: {
+      dynamic: true,
+      thresholds: {
+        incomplete: 0.6,
+        almostDone: 0.85,
+        ready: 0.95,
+      },
+      // Labels will be resolved via i18n: tw.travelInfo.buttonLabels.incomplete/almostDone/ready
+      labels: {
+        incomplete: 'tw.travelInfo.buttonLabels.incomplete',
+        almostDone: 'tw.travelInfo.buttonLabels.almostDone',
+        ready: 'tw.travelInfo.buttonLabels.ready',
+      },
+      default: 'tw.travelInfo.continue',
+    },
   },
 
   fieldState: {

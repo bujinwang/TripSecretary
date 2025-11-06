@@ -1167,9 +1167,10 @@ const RichHeroSection = ({ config }) => {
           {/* Value Propositions */}
           <XStack justifyContent="space-around" width="100%" marginVertical="$sm" paddingVertical="$xs">
             {config.hero.valuePropositions.map((vp, idx) => {
+              // Support both textKey (i18n) and text (direct) properties
               const text = vp.textKey
-                ? t(vp.textKey, { defaultValue: vp.defaultText || vp.text })
-                : vp.text;
+                ? t(vp.textKey, { defaultValue: vp.defaultText || vp.text || '' })
+                : (vp.text || vp.defaultText || '');
               return (
                 <YStack key={idx} alignItems="center" flex={1}>
                   <TamaguiText fontSize={24} marginBottom={4}>{vp.icon}</TamaguiText>

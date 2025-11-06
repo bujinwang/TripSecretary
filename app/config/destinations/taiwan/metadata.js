@@ -7,7 +7,7 @@ export const metadata = {
   code: 'TW',
   code3: 'TWN',
   name: 'Taiwan',
-  nameZh: '臺灣',
+  nameZh: '台湾',
   nameZhTW: '臺灣',
   flag: '🇹🇼',
   enabled: true,

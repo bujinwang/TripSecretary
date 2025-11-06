@@ -655,6 +655,14 @@
       },
       "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time).",
       "title": "Singapore Entry Preparation"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
     }
   },
   "vn": {
@@ -945,6 +953,14 @@
       },
       "continue": "Continue"
     },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    },
     "entryFlow": {
       "title": "Hong Kong Entry Preparation",
       "submissionWindow": "Visa-free stay is typically 7 days. Keep track of your departure plan.",
@@ -993,14 +1009,6 @@
         "lowFunds": {
           "message": "It's recommended to prepare sufficient proof of funds. Hong Kong customs may conduct spot checks."
         }
-      }
-    },
-    "navigation": {
-      "submitButton": {
-        "incomplete": "Complete Required Fields",
-        "almostDone": "Almost Done",
-        "ready": "Continue to Entry Guide",
-        "default": "Continue"
       }
     }
   },
@@ -1169,6 +1177,14 @@
       "lengthOfStay": {
         "range": "Length of stay must be between 1 and 180 days."
       }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
     }
   },
   "tw": {
@@ -1251,6 +1267,24 @@
       "startButton": "Start filling",
       "continueButton": "Continue to travel information"
     },
+    "travelInfo": {
+      "hero": {
+        "title": "Taiwan Entry Information Center",
+        "subtitle": "Fill in passport, itinerary, and accommodation once, and travel to Formosa with peace of mind",
+        "valuePropositions": {
+          "0": "Entry permit & arrival card in one place",
+          "1": "Smart reminder for 3-day arrival card window",
+          "2": "Securely stored, works offline"
+        },
+        "beginnerTip": "Tip: Complete the online arrival card within 3 days before arrival—we'll remind you at the perfect time."
+      },
+      "buttonLabels": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue"
+      },
+      "continue": "Continue"
+    },
     "entryFlow": {
       "status": {
         "ready": {
@@ -1279,6 +1313,141 @@
         }
       },
       "submissionWindow": "Taiwan online arrival card must be submitted within 3 days before arrival."
+    },
+    "guide": {
+      "headerTitle": "Taiwan Arrival Card Guided Mode",
+      "banner": {
+        "title": "Use your entry pack to pass the email verification quickly",
+        "subtitle": "We walk you through requesting the OTP and filling each section"
+      },
+      "stepSectionTitle": "Follow these steps",
+      "steps": [
+        {
+          "title": "Request verification email",
+          "subtitle": "Confirm your email inbox is ready",
+          "details": [
+            "Enter your email and tap \"Send Code\" on the official site.",
+            "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
+            "Paste the code within the time limit to unlock the form."
+          ]
+        },
+        {
+          "title": "Fill traveler & arrival details",
+          "subtitle": "Autofill from your entry pack for speed",
+          "details": [
+            "Verify your passport number, nationality, and date of birth.",
+            "Enter arrival flight number, date/time, and port of entry.",
+            "Provide accommodation address/phone or host details in Taiwan."
+          ]
+        },
+        {
+          "title": "Travel history & confirmation",
+          "subtitle": "Answer the 14-day travel history questions accurately",
+          "details": [
+            "Declare countries visited in the last 14 days and health status truthfully.",
+            "Review the summary page carefully before submitting.",
+            "Wait for the confirmation page/email and save a screenshot for arrival."
+          ]
+        }
+      ],
+      "entryGuide": {
+        "steps": {
+          "request_verification_email": {
+            "title": "Request verification email",
+            "titleZh": "请求验证邮箱",
+            "description": "Confirm your email inbox is ready",
+            "descriptionZh": "确认您的邮箱收件箱已准备好",
+            "tips": {
+              "0": "Enter your email and tap \"Send Code\" on the official site.",
+              "1": "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
+              "2": "Paste the code within the time limit to unlock the form."
+            },
+            "tipsZh": {
+              "0": "在官方网站输入您的邮箱并点击\"发送验证码\"。",
+              "1": "检查收件箱（和垃圾邮件）中来自台湾移民署的6位数字验证码。",
+              "2": "在时限内粘贴验证码以解锁表单。"
+            }
+          },
+          "fill_traveler_details": {
+            "title": "Fill traveler & arrival details",
+            "titleZh": "填写旅客和抵达信息",
+            "description": "Autofill from your entry pack for speed",
+            "descriptionZh": "从您的入境包自动填充以加快速度",
+            "tips": {
+              "0": "Verify your passport number, nationality, and date of birth.",
+              "1": "Enter arrival flight number, date/time, and port of entry.",
+              "2": "Provide accommodation address/phone or host details in Taiwan."
+            },
+            "tipsZh": {
+              "0": "验证您的护照号码、国籍和出生日期。",
+              "1": "输入抵达航班号、日期/时间和入境口岸。",
+              "2": "提供台湾的住宿地址/电话或接待人详细信息。"
+            }
+          },
+          "travel_history_confirmation": {
+            "title": "Travel history & confirmation",
+            "titleZh": "旅行历史和确认",
+            "description": "Answer the 14-day travel history questions accurately",
+            "descriptionZh": "准确回答14天旅行历史问题",
+            "tips": {
+              "0": "Declare countries visited in the last 14 days and health status truthfully.",
+              "1": "Review the summary page carefully before submitting.",
+              "2": "Wait for the confirmation page/email and save a screenshot for arrival."
+            },
+            "tipsZh": {
+              "0": "如实申报过去14天访问的国家和健康状况。",
+              "1": "提交前仔细检查摘要页面。",
+              "2": "等待确认页面/邮件并保存截图以备抵达时使用。"
+            }
+          }
+        },
+        "quickActions": {
+          "title": "Quick tools",
+          "titleZh": "快速工具",
+          "items": {
+            "otp_checker": {
+              "title": "OTP checker",
+              "titleZh": "验证码检查器",
+              "description": "Tick off once the verification email arrives so you don't miss it.",
+              "descriptionZh": "验证邮件到达后勾选，这样您就不会错过。"
+            },
+            "auto_fill_clipboard": {
+              "title": "Auto-fill clipboard",
+              "titleZh": "自动填充剪贴板",
+              "description": "Copy passport/flight info with one tap while filling the form.",
+              "descriptionZh": "填写表单时一键复制护照/航班信息。"
+            },
+            "resubmit_helper": {
+              "title": "Resubmit helper",
+              "titleZh": "重新提交助手",
+              "description": "If plans change, reuse saved info to create a new arrival card quickly.",
+              "descriptionZh": "如果计划改变，快速重用保存的信息创建新的入境卡。"
+            }
+          }
+        }
+      },
+      "quickActions": {
+        "title": "Quick tools",
+        "items": [
+          {
+            "icon": "✉️",
+            "title": "OTP checker",
+            "description": "Tick off once the verification email arrives so you don't miss it."
+          },
+          {
+            "icon": "📄",
+            "title": "Auto-fill clipboard",
+            "description": "Copy passport/flight info with one tap while filling the form."
+          },
+          {
+            "icon": "🔁",
+            "title": "Resubmit helper",
+            "description": "If plans change, reuse saved info to create a new arrival card quickly."
+          }
+        ]
+      },
+      "primaryCta": "Open Taiwan arrival assistant",
+      "ctaHint": "Loads the official arrival card site inside the app."
     }
   },
   "jp": {

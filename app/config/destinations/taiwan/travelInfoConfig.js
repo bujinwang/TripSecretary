@@ -4,7 +4,7 @@ import { taiwanCities } from '../../../data/taiwanLocations.js';
 export const taiwanTravelInfoConfig = {
   destinationId: 'tw',
   name: 'Taiwan',
-  nameZh: '臺灣',
+  nameZh: '台湾',
   flag: '🇹🇼',
 
   colors: {
@@ -20,24 +20,36 @@ export const taiwanTravelInfoConfig = {
 
   hero: {
     type: 'rich',
-    title: '臺灣入境資訊中心',
-    titleEn: 'Taiwan Entry Preparation Hub',
-    subtitle: '一次填妥護照、行程與住宿，安心踏上福爾摩沙',
-    subtitleEn: 'Fill once, stay ready for your Formosa adventure.',
+    titleKey: 'tw.travelInfo.hero.title',
+    defaultTitle: 'Taiwan Entry Information Center',
+    subtitleKey: 'tw.travelInfo.hero.subtitle',
+    defaultSubtitle: 'Fill in passport, itinerary, and accommodation once, and travel to Formosa with peace of mind',
     gradient: {
       colors: ['#EF4444', '#F97316'],
       start: { x: 0, y: 0 },
       end: { x: 1, y: 1 },
     },
     valuePropositions: [
-      { icon: '🛂', text: '入臺證、入境卡一次搞定', textEn: 'Entry permit & arrival card in one place' },
-      { icon: '🕒', text: '提醒入境卡 3 日內完成', textEn: 'Smart reminder for 3-day arrival card window' },
-      { icon: '🔒', text: '資訊離線保存、安全無虞', textEn: 'Securely stored, works offline' },
+      { 
+        icon: '🛂', 
+        textKey: 'tw.travelInfo.hero.valuePropositions.0',
+        defaultText: 'Entry permit & arrival card in one place'
+      },
+      { 
+        icon: '🕒', 
+        textKey: 'tw.travelInfo.hero.valuePropositions.1',
+        defaultText: 'Smart reminder for 3-day arrival card window'
+      },
+      { 
+        icon: '🔒', 
+        textKey: 'tw.travelInfo.hero.valuePropositions.2',
+        defaultText: 'Securely stored, works offline'
+      },
     ],
     beginnerTip: {
       icon: '💡',
-      text: '溫馨提醒：抵達前 3 天內完成線上入境卡，我們會在最佳時間提醒您。',
-      textEn: 'Tip: Complete the online arrival card within 3 days before arrival—we’ll remind you at the perfect time.',
+      textKey: 'tw.travelInfo.hero.beginnerTip',
+      defaultText: 'Tip: Complete the online arrival card within 3 days before arrival—we\'ll remind you at the perfect time.',
     },
   },
 
