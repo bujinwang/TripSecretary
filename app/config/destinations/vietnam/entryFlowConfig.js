@@ -214,6 +214,24 @@ export const vietnamEntryFlowConfig = {
     },
   },
 
+  // Entry flow configuration
+  entryFlow: {
+    titleKey: 'vietnam.entryFlow.title',
+    progress: {
+      headline: {
+        ready: 'vietnam.entryFlow.progress.headline.ready',
+        almost: 'vietnam.entryFlow.progress.headline.almost',
+        start: 'vietnam.entryFlow.progress.headline.start',
+      },
+      subtitle: {
+        ready: 'vietnam.entryFlow.progress.subtitle.ready',
+        almost: 'vietnam.entryFlow.progress.subtitle.almost',
+        start: 'vietnam.entryFlow.progress.subtitle.start',
+      },
+      label: 'vietnam.entryFlow.progress.label',
+    },
+  },
+
   // Status messages
   status: {
     ready: {

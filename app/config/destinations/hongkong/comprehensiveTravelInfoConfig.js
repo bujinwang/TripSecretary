@@ -10,25 +10,24 @@ export const hongkongComprehensiveTravelInfoConfig = {
   version: '2.0',
   template: 'enhanced',
 
-  submitButton: {
-    dynamic: true,
-    thresholds: {
-      incomplete: 0.55,
-      almostDone: 0.8,
-      ready: 0.95,
-    },
-    labels: {
-      incomplete: '继续完善必填项',
-      almostDone: '快完成了',
-      ready: '继续前往入境准备',
-    },
-    default: '继续',
-  },
-
   navigation: {
     previous: 'HongKongRequirements',
     next: 'HongKongEntryFlow',
     saveBeforeNavigate: true,
+    submitButton: {
+      dynamic: true,
+      thresholds: {
+        incomplete: 0.55,
+        almostDone: 0.8,
+        ready: 0.95,
+      },
+      labels: {
+        incomplete: 'hongkong.navigation.submitButton.incomplete',
+        almostDone: 'hongkong.navigation.submitButton.almostDone',
+        ready: 'hongkong.navigation.submitButton.ready',
+      },
+      default: 'hongkong.navigation.submitButton.default',
+    },
   },
 
   fieldState: {
@@ -72,11 +71,11 @@ export const hongkongComprehensiveTravelInfoConfig = {
       enabled: true,
       warnings: {
         noDeparture: {
-          message: '未填写返程信息，建议准备以备入境官询问。',
+          messageKey: 'hongkong.validation.warnings.noDeparture.message',
           severity: 'medium',
         },
         lowFunds: {
-          message: '建议准备足够资金证明，香港海关可能抽查。',
+          messageKey: 'hongkong.validation.warnings.lowFunds.message',
           severity: 'medium',
         },
       },

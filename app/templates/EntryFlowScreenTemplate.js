@@ -240,7 +240,7 @@ EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent
   const { t, navigation, config } = useEntryFlowTemplate();
 
   const headerTitle = title || t(
-    titleKey || `${config.destinationId}.entryFlow.title`,
+    titleKey || config.entryFlow?.titleKey || `${config.destinationId}.entryFlow.title`,
     { defaultValue: `${config.name} Entry Preparation` }
   );
 
@@ -477,7 +477,9 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
             {percent}%
           </TamaguiText>
           <TamaguiText fontSize="$3" color={accentColor}>
-            准备进度
+            {t(config.entryFlow?.progress?.label || `${config.destinationId}.entryFlow.progress.label`, {
+              defaultValue: '准备进度'
+            })}
           </TamaguiText>
           <YStack
             width="100%"

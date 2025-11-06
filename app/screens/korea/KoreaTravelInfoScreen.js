@@ -161,37 +161,79 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
     // Migrate passport data
     if (userData.passport) {
       const passport = userData.passport;
-      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
-      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
-      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
-      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
-      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
-      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+      if (passport.passportNumber) {
+        existingDataToMigrate.passportNo = passport.passportNumber;
+      }
+      if (passport.fullName) {
+        existingDataToMigrate.fullName = passport.fullName;
+      }
+      if (passport.nationality) {
+        existingDataToMigrate.nationality = passport.nationality;
+      }
+      if (passport.dateOfBirth) {
+        existingDataToMigrate.dob = passport.dateOfBirth;
+      }
+      if (passport.expiryDate) {
+        existingDataToMigrate.expiryDate = passport.expiryDate;
+      }
+      if (passport.gender) {
+        existingDataToMigrate.sex = passport.gender;
+      }
     }
 
     // Migrate personal info data
     if (userData.personalInfo) {
       const personalInfo = userData.personalInfo;
-      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
-      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
-      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
-      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
-      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
-      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+      if (personalInfo.phoneCode) {
+        existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+      }
+      if (personalInfo.phoneNumber) {
+        existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+      }
+      if (personalInfo.email) {
+        existingDataToMigrate.email = personalInfo.email;
+      }
+      if (personalInfo.occupation) {
+        existingDataToMigrate.occupation = personalInfo.occupation;
+      }
+      if (personalInfo.provinceCity) {
+        existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
+      }
+      if (personalInfo.countryRegion) {
+        existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+      }
     }
 
     // Migrate travel info data
     if (userData.travelInfo) {
       const travelInfo = userData.travelInfo;
-      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
-      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
-      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
-      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
-      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
-      if (travelInfo.accommodationAddress) existingDataToMigrate.accommodationAddress = travelInfo.accommodationAddress;
-      if (travelInfo.accommodationPhone) existingDataToMigrate.accommodationPhone = travelInfo.accommodationPhone;
-      if (travelInfo.ketaNumber) existingDataToMigrate.ketaNumber = travelInfo.ketaNumber;
+      if (travelInfo.travelPurpose) {
+        existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+      }
+      if (travelInfo.boardingCountry) {
+        existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
+      }
+      if (travelInfo.arrivalFlightNumber) {
+        existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+      }
+      if (travelInfo.arrivalArrivalDate) {
+        existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
+      }
+      if (travelInfo.departureFlightNumber) {
+        existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
+      }
+      if (travelInfo.departureDepartureDate) {
+        existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
+      }
+      if (travelInfo.accommodationAddress) {
+        existingDataToMigrate.accommodationAddress = travelInfo.accommodationAddress;
+      }
+      if (travelInfo.accommodationPhone) {
+        existingDataToMigrate.accommodationPhone = travelInfo.accommodationPhone;
+      }
+      if (travelInfo.ketaNumber) {
+        existingDataToMigrate.ketaNumber = travelInfo.ketaNumber;
+      }
     }
 
     console.log('Data to migrate:', existingDataToMigrate);
@@ -226,7 +268,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
     });
 
     switch (section) {
-      case 'passport':
+      case 'passport': {
         const passportFields = {
           fullName: [surname, middleName, givenName].filter(Boolean).join(', '),
           nationality: nationality,
@@ -246,8 +288,9 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           filled: passportFieldCount.totalWithValues,
           total: passportFieldCount.totalUserModified || Object.keys(passportFields).length
         };
+      }
 
-      case 'personal':
+      case 'personal': {
         const personalFields = {
           occupation: occupation,
           cityOfResidence: cityOfResidence,
@@ -267,16 +310,18 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           filled: personalFieldCount.totalWithValues,
           total: personalFieldCount.totalUserModified || Object.keys(personalFields).length
         };
+      }
 
-      case 'funds':
+      case 'funds': {
         const fundItemCount = funds.length;
         if (fundItemCount === 0) {
           return { filled: 0, total: 1 };
         } else {
           return { filled: fundItemCount, total: fundItemCount };
         }
+      }
 
-      case 'travel':
+      case 'travel': {
         const travelFields = {
           travelPurpose: travelPurpose,
           boardingCountry: boardingCountry,
@@ -302,6 +347,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
           filled: travelFieldCount.totalWithValues,
           total: travelFieldCount.totalUserModified || Object.keys(travelFields).length
         };
+      }
     }
 
     return { filled: 0, total: 0 };
@@ -497,7 +543,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
 
       // Save travel info for Korea
       const destinationId = route.params?.destination?.id || 'korea';
-      await UserDataService.saveTravelInfo(userId, destinationId, {
+      await UserDataService.updateTravelInfo(userId, destinationId, {
         travelPurpose,
         boardingCountry,
         arrivalFlightNumber,
@@ -533,7 +579,9 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
   };
 
   const renderSaveStatus = () => {
-    if (!saveStatus) return null;
+    if (!saveStatus) {
+      return null;
+    }
 
     const statusConfig = {
       saving: { icon: '💾', text: '保存中...', color: colors.textSecondary },
@@ -542,7 +590,9 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
     };
 
     const config = statusConfig[saveStatus];
-    if (!config) return null;
+    if (!config) {
+      return null;
+    }
 
     return (
       <View style={styles.saveStatusContainer}>

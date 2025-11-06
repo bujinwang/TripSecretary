@@ -641,6 +641,7 @@
   },
   "vietnam": {
     "entryFlow": {
+      "title": "Vietnam Entry Preparation",
       "status": {
         "ready": {
           "title": "Vietnam Entry Ready",
@@ -654,6 +655,19 @@
           "title": "Please Complete",
           "subtitle": "More information needed"
         }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Vietnam Ready! 🌴",
+          "almost": "Good progress! 💪",
+          "start": "Let's get started! 🌺"
+        },
+        "subtitle": {
+          "ready": "Awesome! Your Vietnam trip is ready! 🌴",
+          "almost": "Keep it up! Just {{remaining}}% left to complete your Vietnam trip preparation!",
+          "start": "Continue filling out your information to make the journey smoother."
+        },
+        "label": "Preparation Progress"
       }
     },
     "info": {
@@ -731,17 +745,29 @@
     "travelInfo": {
       "sections": {
         "passport": {
-          "title": "Passport Information"
+          "title": "Passport Information",
+          "subtitle": "Please accurately fill in the information on your passport"
         },
         "personal": {
-          "title": "Personal Information"
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
         },
         "funds": {
-          "title": "Proof of Funds"
+          "title": "Proof of Funds",
+          "subtitle": "Travel funds and payment methods"
         },
         "travel": {
-          "title": "Travel Details"
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information"
         }
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
       }
     }
   },
@@ -914,7 +940,8 @@
           "ready": "Passport, funds, and accommodation details are complete. Ready for inspection.",
           "almost": "{{remaining}}% left. Complete the highlighted tasks to be inspection-ready.",
           "start": "Fill passport, funds, and travel info to breeze through immigration questions."
-        }
+        },
+        "label": "Preparation Progress"
       },
       "status": {
         "ready": {
@@ -940,6 +967,22 @@
       },
       "accommodationType": {
         "required": "Select an accommodation type."
+      },
+      "warnings": {
+        "noDeparture": {
+          "message": "Return information not filled. It's recommended to prepare this in case immigration officers ask."
+        },
+        "lowFunds": {
+          "message": "It's recommended to prepare sufficient proof of funds. Hong Kong customs may conduct spot checks."
+        }
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue to Entry Guide",
+        "default": "Continue"
       }
     }
   },

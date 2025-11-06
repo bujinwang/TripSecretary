@@ -63,8 +63,9 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '📘',
       sectionKey: 'passport',
       titleKey: 'vietnam.travelInfo.sections.passport.title',
-      title: vietnamLabels.passport.title,
       defaultTitle: vietnamLabels.passport.title,
+      subtitleKey: 'vietnam.travelInfo.sections.passport.subtitle',
+      defaultSubtitle: vietnamLabels.passport.subtitle,
 
       fields: {
         surname: {
@@ -166,8 +167,9 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '👤',
       sectionKey: 'personal',
       titleKey: 'vietnam.travelInfo.sections.personal.title',
-      title: vietnamLabels.personalInfo.title,
       defaultTitle: vietnamLabels.personalInfo.title,
+      subtitleKey: 'vietnam.travelInfo.sections.personal.subtitle',
+      defaultSubtitle: vietnamLabels.personalInfo.subtitle,
 
       fields: {
         occupation: {
@@ -252,8 +254,9 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '💰',
       sectionKey: 'funds',
       titleKey: 'vietnam.travelInfo.sections.funds.title',
-      title: vietnamLabels.funds.title,
       defaultTitle: vietnamLabels.funds.title,
+      subtitleKey: 'vietnam.travelInfo.sections.funds.subtitle',
+      defaultSubtitle: vietnamLabels.funds.subtitle,
       minRequired: 1,
       maxAllowed: 10,
 
@@ -282,8 +285,9 @@ export const vietnamComprehensiveTravelInfoConfig = {
       icon: '✈️',
       sectionKey: 'travel',
       titleKey: 'vietnam.travelInfo.sections.travel.title',
-      title: vietnamLabels.travelDetails.title,
       defaultTitle: vietnamLabels.travelDetails.title,
+      subtitleKey: 'vietnam.travelInfo.sections.travel.subtitle',
+      defaultSubtitle: vietnamLabels.travelDetails.subtitle,
 
       fields: {
         travelPurpose: {
@@ -528,15 +532,15 @@ export const vietnamComprehensiveTravelInfoConfig = {
       ready: 0.9,        // 90%+ shows "ready" label
     },
 
-    // Labels for each state
+    // Labels for each state (using translation keys)
     labels: {
-      incomplete: '完成必填项',
-      almostDone: '快完成了',
-      ready: '继续',
+      incomplete: 'vietnam.navigation.submitButton.incomplete',
+      almostDone: 'vietnam.navigation.submitButton.almostDone',
+      ready: 'vietnam.navigation.submitButton.ready',
     },
 
     // Default fallback if dynamic is disabled
-    default: '继续',
+    default: 'vietnam.navigation.submitButton.default',
     },
 
     // Deprecated - kept for backward compatibility
@@ -583,9 +587,30 @@ export const vietnamComprehensiveTravelInfoConfig = {
   // I18N
   // ============================================
   i18n: {
-    defaultLocale: 'zh-CN',
-    supportedLocales: ['zh-CN', 'en', 'vi'],
-    labelSource: vietnamLabels,
+    namespace: 'vietnam.travelInfo',
+    fallbackLanguage: 'zh-CN',
+    labelSource: {
+      passport: {
+        // Title resolved via titleKey in section config
+        subtitle: vietnamLabels.passport.subtitle,
+        introText: vietnamLabels.passport.introText,
+      },
+      personal: {
+        // Title resolved via titleKey in section config
+        subtitle: vietnamLabels.personalInfo.subtitle,
+        introText: vietnamLabels.personalInfo.introText,
+      },
+      funds: {
+        // Title resolved via titleKey in section config
+        subtitle: vietnamLabels.funds.subtitle,
+        introText: vietnamLabels.funds.introText,
+      },
+      travel: {
+        // Title resolved via titleKey in section config
+        subtitle: vietnamLabels.travelDetails.subtitle,
+        introText: vietnamLabels.travelDetails.introText,
+      },
+    },
   },
 };
 
