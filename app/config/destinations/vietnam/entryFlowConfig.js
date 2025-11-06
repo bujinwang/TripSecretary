@@ -152,7 +152,7 @@ export const vietnamEntryFlowConfig = {
         type: 'navigate',
         screenKey: 'travelInfo',
         icon: '✏️',
-        defaultTitle: '修改旅行信息',
+        defaultTitle: '编辑旅行信息',
         defaultSubtitle: '如需修改，返回编辑',
         gradientColors: ['#FF9D3A', '#FF6F3C'],
       },

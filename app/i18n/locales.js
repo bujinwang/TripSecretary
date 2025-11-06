@@ -5555,12 +5555,22 @@ export const translations = {
 };
 
 // Merge country-specific translations from JSON files
-Object.keys(countryTranslations).forEach((lang) => {
-  if (lang === 'zh-TW') {
-    return;
+// Use Object.keys() and filter to avoid triggering lazy getters
+const countryLangKeys = Object.keys(countryTranslations).filter(
+  (lang) => lang !== 'zh-TW' && lang !== 'zh'
+);
+countryLangKeys.forEach((lang) => {
+  try {
+    const base = translations[lang] || {};
+    const countryData = countryTranslations[lang];
+    // Only merge if countryData exists and is not a getter
+    if (countryData && typeof countryData === 'object') {
+      translations[lang] = deepMergeTranslations(base, countryData);
+    }
+  } catch (error) {
+    console.error(`Error merging translations for ${lang}:`, error);
+    // Continue with other languages even if one fails
   }
-  const base = translations[lang] || {};
-  translations[lang] = deepMergeTranslations(base, countryTranslations[lang]);
 });
 
 export const getLanguageLabel = (language) =>

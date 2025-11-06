@@ -27,10 +27,12 @@ export const vietnamComprehensiveTravelInfoConfig = {
   // ============================================
   hero: {
     type: 'rich', // 'rich' uses LinearGradient, 'basic' uses simple layout
-    title: '越南入境准备指南',
-    titleEn: 'Vietnam Entry Preparation Guide',
-    subtitle: '别担心，我们来帮你！',
-    subtitleEn: "Don't worry, we're here to help!",
+    titleKey: 'vietnam.travelInfo.hero.title',
+    defaultTitle: '越南入境准备指南',
+    title: 'Vietnam Entry Preparation Guide',
+    subtitleKey: 'vietnam.travelInfo.hero.subtitle',
+    defaultSubtitle: '别担心，我们来帮你！',
+    subtitle: "Don't worry, we're here to help!",
 
     gradient: {
       colors: ['#1a3568', '#102347'], // Thai-style dark blue gradient
@@ -39,15 +41,16 @@ export const vietnamComprehensiveTravelInfoConfig = {
     },
 
     valuePropositions: [
-      { icon: '⏱️', text: '3分钟完成', textEn: '3 minutes to complete' },
-      { icon: '🔒', text: '100%隐私保护', textEn: '100% privacy protection' },
-      { icon: '🎯', text: '避免通关延误', textEn: 'Avoid customs delays' },
+      { icon: '⏱️', textKey: 'vietnam.travelInfo.hero.valuePropositions.0', defaultText: '3分钟完成', text: '3 minutes to complete' },
+      { icon: '🔒', textKey: 'vietnam.travelInfo.hero.valuePropositions.1', defaultText: '100%隐私保护', text: '100% privacy protection' },
+      { icon: '🎯', textKey: 'vietnam.travelInfo.hero.valuePropositions.2', defaultText: '避免通关延误', text: 'Avoid customs delays' },
     ],
 
     beginnerTip: {
       icon: '💡',
-      text: '第一次过越南海关？我们会一步步教你准备所有必需文件，确保顺利通关！',
-      textEn: 'First time crossing Vietnam customs? We\'ll guide you step by step to prepare all necessary documents!',
+      textKey: 'vietnam.travelInfo.hero.beginnerTip',
+      defaultText: '第一次过越南海关？我们会一步步教你准备所有必需文件，确保顺利通关！',
+      text: 'First time crossing Vietnam customs? We\'ll guide you step by step to prepare all necessary documents!',
     },
   },
 

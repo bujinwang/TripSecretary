@@ -49,7 +49,7 @@ export const metadata = {
 
   // Display
   flag: '🇰🇷',
-  enabled: false, // Currently disabled - requires K-ETA implementation
+  enabled: true, // Korea is now available
 
   // Currency
   currency: 'KRW',

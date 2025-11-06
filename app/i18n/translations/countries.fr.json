@@ -730,8 +730,158 @@
       "continueButton": "Continuer vers les informations de voyage"
     }
   },
+  "result": {
+    "manualEntry": {
+      "title": "Guide de Remplissage de la Carte d'Entrée au Japon",
+      "intro": "Veuillez remplir la carte d'entrée papier et le formulaire de déclaration en douane selon les informations ci-dessous. Vous pouvez consulter hors ligne, et nous recommandons de prendre une capture d'écran.",
+      "badges": {
+        "handwritten": "✍️ Carte d'Entrée Papier Écrite à la Main",
+        "backedUp": "📦 Informations Sauvegardées dans le Pack d'Entrée",
+        "offline": "📵 Disponible Hors Ligne"
+      },
+      "sections": {
+        "passport": "Informations Passeport",
+        "personal": "Informations Personnelles",
+        "travel": "Détails du Voyage",
+        "accommodation": "Hébergement et Contact"
+      },
+      "fields": {
+        "fullName": "Nom Complet",
+        "passportNo": "N° de Passeport",
+        "nationality": "Nationalité",
+        "dateOfBirth": "Date de Naissance",
+        "gender": "Sexe",
+        "passportExpiry": "Expiration du Passeport",
+        "occupation": "Profession",
+        "cityOfResidence": "Ville de Résidence",
+        "countryOfResidence": "Pays de Résidence",
+        "phone": "Téléphone",
+        "email": "Email",
+        "purposeOfVisit": "Objectif de la Visite",
+        "flightNumber": "Numéro de Vol",
+        "arrivalDate": "Date d'Arrivée",
+        "lengthOfStay": "Durée du Séjour",
+        "days": "jours",
+        "address": "Adresse",
+        "accommodationPhone": "Téléphone de l'Hébergement"
+      },
+      "funds": "Fonds et Actifs",
+      "noFunds": "Aucune information sur les fonds fournie",
+      "helpTip": "Veuillez remplir la carte d'entrée papier et le formulaire de déclaration en douane dans l'avion ou après votre arrivée à l'aéroport, en vous référant aux informations ci-dessus. Nous recommandons de prendre une capture d'écran pour référence facile.",
+      "loading": "Chargement des informations d'entrée au Japon...",
+      "heroTitle": "Mon voyage au Japon est-il prêt ? 🌸",
+      "heroSubtitle": "Voyez à quel point vous êtes préparé et préparez-vous pour votre aventure au Japon !",
+      "statusText": {
+        "complete": "Préparation d'entrée au Japon terminée ! 🌸",
+        "almost": "Encore quelques vérifications nécessaires~",
+        "incomplete": "Continuez à compléter vos informations !",
+        "loading": "Chargement de vos informations..."
+      },
+      "statusSubtitle": {
+        "complete": "Toutes les informations sont organisées et prêtes à être présentées à l'aéroport à tout moment.",
+        "almost": "Quelques éléments supplémentaires nécessitent une confirmation, complétez-les pour un voyage sans souci.",
+        "incomplete": "Complétez toutes les informations pour générer un pack d'entrée au Japon complet.",
+        "loading": "Veuillez patienter pendant que nous organisons vos informations de voyageur."
+      },
+      "itemsCompleted": "{{completed}}/{{total}} éléments complétés",
+      "editButton": "Modifier à Nouveau",
+      "shareButton": "Demander à la Famille/aux Amis d'Aider à Modifier",
+      "progressLabel": "Progression de la Préparation",
+      "interactiveGuideTitle": "Voir le Guide d'Entrée Interactif",
+      "interactiveGuideSubtitle": "Guide étape par étape · Mode texte large"
+    },
+    "title": "Pack d'Entrée Généré avec Succès !",
+    "subtitle": "Vos informations d'entrée ont été organisées",
+    "entryPack": {
+      "title": "Pack d'Entrée",
+      "subtitleParts": {
+        "departure": "Départ {{date}}",
+        "arrival": "Arrivée {{date}}",
+        "flight": "Vol {{flight}}",
+        "missing": "Veuillez compléter les informations de voyage"
+      },
+      "fields": {
+        "departureDate": "Date de Départ",
+        "flightNo": "Numéro de Vol",
+        "arrivalDate": "Date d'Arrivée",
+        "accommodation": "Hébergement"
+      },
+      "actions": {
+        "startGuide": "Démarrer le Guide d'Arrivée"
+      },
+      "lastUpdated": "Dernière mise à jour : {{time}}"
+    },
+    "historyBanner": {
+      "primaryCta": {
+        "title": "Démarrer le Guide d'Arrivée",
+        "subtitle": "Étape par étape · Texte large disponible"
+      },
+      "secondaryCta": {
+        "editInfo": "Modifier les Informations"
+      }
+    },
+    "digitalInfo": {
+      "title": "Postuler pour {{systemName}}",
+      "button": "Postuler Maintenant"
+    },
+    "infoBox": "Toutes les informations sont sauvegardées localement sur votre appareil uniquement",
+    "share": {
+      "modalTitle": "Demander à la Famille/aux Amis de Vérifier les Informations",
+      "modalSubtitle": "Partagez le lien et le mot de passe ci-dessous avec des membres de la famille/amis de confiance. Le lien est valable pendant 24 heures. Ils peuvent ajouter ou modifier les informations d'entrée, et les mises à jour seront synchronisées avec ce pack d'entrée.",
+      "linkLabel": "Lien de Partage",
+      "passwordLabel": "Mot de Passe d'Accès",
+      "copy": "Copier",
+      "copied": "Copié",
+      "expiryText": "Valide jusqu'au : {{time}}",
+      "primaryAction": "Terminé, Aller Coller pour la Famille/les Amis",
+      "cancelAction": "Annuler ce Partage",
+      "securityNote": "Conseil de Sécurité : Veuillez partager uniquement avec des membres de la famille ou des amis de confiance. Vous pouvez annuler le partage à tout moment pour mettre fin immédiatement à l'accès.",
+      "cancelTitle": "Annuler le Partage",
+      "cancelMessage": "Cette action invalidera immédiatement le lien de partage et le mot de passe, et la famille/les amis ne pourront plus accéder. Êtes-vous sûr de vouloir annuler ?",
+      "keep": "Garder",
+      "confirmCancel": "Annuler le Partage",
+      "active": "Partage Actif",
+      "viewShare": "Voir les Informations de Partage",
+      "invite": "Inviter la Vérification"
+    },
+    "notProvided": "Non fourni",
+    "pending": "En attente de confirmation",
+    "changeInfo": "Modifier les Informations",
+    "kioskGuide": {
+      "title": "Guide {{kioskName}}",
+      "kioskName": "Guichet Libre-Service",
+      "subtitle": "Instructions étape par étape"
+    }
+  },
   "common": {
+    "ok": "OK",
+    "back": "Retour",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "reset": "Réinitialiser",
     "error": "Erreur",
-    "locale": "fr"
+    "yes": "Oui",
+    "no": "Non",
+    "locale": "fr",
+    "qrCode": "Code QR",
+    "generatedBy": "Généré par BorderBuddy",
+    "selectNationality": "Veuillez sélectionner la nationalité",
+    "searchNationality": "Rechercher la nationalité...",
+    "selectOccupation": "Veuillez sélectionner la profession",
+    "searchOccupation": "Rechercher la profession...",
+    "enterOccupation": "Veuillez entrer votre profession",
+    "occupationExample": "ex. COMPTABLE, INGÉNIEUR",
+    "occupationHelp": "Veuillez entrer votre profession en anglais",
+    "selectTravelPurpose": "Veuillez sélectionner l'objectif du voyage",
+    "searchTravelPurpose": "Rechercher l'objectif du voyage...",
+    "enterTravelPurposeDetails": "Veuillez entrer les détails de l'objectif du voyage",
+    "travelPurposeModalTitle": "Sélectionner l'Objectif du Voyage",
+    "notAvailable": "N/A"
+  },
+  "customs": {
+    "yes": "OUI ✓",
+    "no": "NON",
+    "usa": "États-Unis",
+    "otherCountry": "Autre Pays"
   }
 }

@@ -18,6 +18,8 @@ class DatabaseSchema {
    */
   async createTables(db) {
     try {
+      // Use transaction for atomic table creation
+      // If transaction fails, it will automatically rollback
       await db.withTransactionAsync(async () => {
         // ========================================
         // Core Tables

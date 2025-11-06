@@ -43,6 +43,11 @@ class TravelInfoOperations {
    */
   static async saveTravelInfo(userId, travelData, triggerDataChangeEvent) {
     try {
+      // Validate userId first
+      if (!userId) {
+        throw new Error('userId is required for saveTravelInfo');
+      }
+
       console.log('Saving travel info for user:', userId);
       console.log('Travel data fields:', Object.keys(travelData));
 
@@ -56,7 +61,7 @@ class TravelInfoOperations {
         }
       }
 
-      // Add userId to the data
+      // Always add userId to the data (ensure it's set correctly)
       nonEmptyUpdates.userId = userId;
 
       // Check if travel info already exists
@@ -72,13 +77,25 @@ class TravelInfoOperations {
       
       let savedTravelInfo;
       if (existing) {
-        // Merge with existing data
-        const merged = { ...existing, ...nonEmptyUpdates, id: existing.id };
+        // Merge with existing data - ensure userId is always from parameter, not existing
+        const merged = { ...existing, ...nonEmptyUpdates, id: existing.id, userId };
+        console.log('[TravelInfoOperations] Merging with existing data:', {
+          existingUserId: existing.userId,
+          nonEmptyUpdatesUserId: nonEmptyUpdates.userId,
+          paramUserId: userId,
+          mergedUserId: merged.userId,
+          mergedKeys: Object.keys(merged),
+        });
         const result = await SecureStorageService.saveTravelInfo(merged);
         console.log('Travel info updated:', result.id);
         savedTravelInfo = merged;
       } else {
         // Create new travel info
+        console.log('[TravelInfoOperations] Creating new travel info:', {
+          nonEmptyUpdatesUserId: nonEmptyUpdates.userId,
+          paramUserId: userId,
+          nonEmptyUpdatesKeys: Object.keys(nonEmptyUpdates),
+        });
         const result = await SecureStorageService.saveTravelInfo(nonEmptyUpdates);
         console.log('Travel info created:', result.id);
         savedTravelInfo = { ...nonEmptyUpdates, id: result.id };

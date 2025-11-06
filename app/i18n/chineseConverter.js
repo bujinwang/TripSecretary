@@ -4,17 +4,40 @@
  * Uses OpenCC for accurate character and phrase conversion
  */
 
-const OpenCC = require('opencc-js');
+// Lazy-load OpenCC to prevent initialization issues
+let OpenCC = null;
+const getOpenCC = () => {
+  if (!OpenCC) {
+    try {
+      OpenCC = require('opencc-js');
+    } catch (error) {
+      console.error('Failed to load opencc-js:', error);
+      throw error;
+    }
+  }
+  return OpenCC;
+};
 
 // Lazy-load converters to avoid initialization overhead
 let converters = null;
+let convertersError = null;
 
 const initConverters = () => {
+  if (convertersError) {
+    throw convertersError;
+  }
   if (!converters) {
-    converters = {
-      'zh-TW': OpenCC.Converter({ from: 'cn', to: 'tw' }),
-      'zh-HK': OpenCC.Converter({ from: 'cn', to: 'hk' }),
-    };
+    try {
+      const OpenCCLib = getOpenCC();
+      converters = {
+        'zh-TW': OpenCCLib.Converter({ from: 'cn', to: 'tw' }),
+        'zh-HK': OpenCCLib.Converter({ from: 'cn', to: 'hk' }),
+      };
+    } catch (error) {
+      convertersError = error;
+      console.error('Failed to initialize OpenCC converters:', error);
+      throw error;
+    }
   }
   return converters;
 };
@@ -26,7 +49,14 @@ const initConverters = () => {
  * @returns {any} Converted object with same structure
  */
 const deepConvert = (obj, variant) => {
-  const converters = initConverters();
+  let converters;
+  try {
+    converters = initConverters();
+  } catch (error) {
+    console.warn(`OpenCC not available, returning original for ${variant}:`, error.message);
+    return obj;
+  }
+  
   const converter = converters[variant];
 
   if (!converter) {

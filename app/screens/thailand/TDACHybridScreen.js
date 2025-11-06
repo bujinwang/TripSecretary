@@ -41,8 +41,10 @@ import ThailandTravelerContextBuilder from '../../services/thailand/ThailandTrav
 import DigitalArrivalCard from '../../models/DigitalArrivalCard';
 import PDFManagementService from '../../services/PDFManagementService';
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
+import { useLocale } from '../../i18n/LocaleContext';
 
 const TDACHybridScreen = ({ navigation, route }) => {
+  const { t } = useLocale();
   const rawTravelerInfo = (route.params && route.params.travelerInfo) || {};
   const travelerInfo = rawTravelerInfo;
   
@@ -189,7 +191,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       // 🛑 MANUAL CONFIRMATION: Show confirmation dialog in development mode only
       // In production, submit directly without user confirmation
       if (__DEV__) {
-        const shouldProceed = await showSubmissionConfirmation(travelerData);
+        const shouldProceed = await showSubmissionConfirmation(travelerData, t);
 
         if (!shouldProceed) {
           console.log('❌ User cancelled submission (dev mode)');
@@ -966,50 +968,51 @@ const styles = StyleSheet.create({
  * This is a debugging tool - only shown in development mode (__DEV__ = true)
  * In production, submission proceeds automatically without user confirmation
  */
-const showSubmissionConfirmation = (travelerData) => {
+const showSubmissionConfirmation = (travelerData, t) => {
   return new Promise((resolve) => {
     // 创建详细的确认信息
+    const notProvided = t('thailand.devMode.notProvided', { defaultValue: '未填写' });
     const confirmationDetails = `
-🔍 即将提交的信息：
+${t('thailand.devMode.submissionInfo', { defaultValue: '🔍 即将提交的信息：' })}
 
-👤 个人信息：
-• 姓名: ${travelerData.familyName} ${travelerData.firstName}
-• 护照号: ${travelerData.passportNo}
-• 国籍: ${travelerData.nationality}
-• 性别: ${travelerData.gender}
-• 出生日期: ${travelerData.birthDate}
+${t('thailand.devMode.personalInfo', { defaultValue: '👤 个人信息：' })}
+• ${t('thailand.devMode.name', { defaultValue: '姓名' })}: ${travelerData.familyName} ${travelerData.firstName}
+• ${t('thailand.devMode.passportNo', { defaultValue: '护照号' })}: ${travelerData.passportNo}
+• ${t('thailand.devMode.nationality', { defaultValue: '国籍' })}: ${travelerData.nationality}
+• ${t('thailand.devMode.gender', { defaultValue: '性别' })}: ${travelerData.gender}
+• ${t('thailand.devMode.birthDate', { defaultValue: '出生日期' })}: ${travelerData.birthDate}
 
-✈️ 旅行信息：
-• 到达日期: ${travelerData.arrivalDate}
-• 航班号: ${travelerData.flightNo}
-• 出发国家: ${travelerData.countryBoarded}
-• 最近停留国家: ${travelerData.recentStayCountry || '未填写'}
-• 旅行目的: ${travelerData.purpose}
+${t('thailand.devMode.travelInfo', { defaultValue: '✈️ 旅行信息：' })}
+• ${t('thailand.devMode.arrivalDate', { defaultValue: '到达日期' })}: ${travelerData.arrivalDate}
+• ${t('thailand.devMode.flightNo', { defaultValue: '航班号' })}: ${travelerData.flightNo}
+• ${t('thailand.devMode.countryBoarded', { defaultValue: '出发国家' })}: ${travelerData.countryBoarded}
+• ${t('thailand.devMode.recentStayCountry', { defaultValue: '最近停留国家' })}: ${travelerData.recentStayCountry || notProvided}
+• ${t('thailand.devMode.purpose', { defaultValue: '旅行目的' })}: ${travelerData.purpose}
 
-🏨 住宿信息：
-• 住宿类型: ${travelerData.accommodationTypeDisplay || travelerData.accommodationType}
-• 省份: ${travelerData.provinceDisplay || travelerData.province}
-• 区域: ${travelerData.districtDisplay || travelerData.district || '未填写'}
-• 子区域: ${travelerData.subDistrictDisplay || travelerData.subDistrict || '未填写'}
-• 地址: ${travelerData.address}
+${t('thailand.devMode.accommodationInfo', { defaultValue: '🏨 住宿信息：' })}
+• ${t('thailand.devMode.accommodationType', { defaultValue: '住宿类型' })}: ${travelerData.accommodationTypeDisplay || travelerData.accommodationType}
+• ${t('thailand.devMode.province', { defaultValue: '省份' })}: ${travelerData.provinceDisplay || travelerData.province}
+• ${t('thailand.devMode.district', { defaultValue: '区域' })}: ${travelerData.districtDisplay || travelerData.district || notProvided}
+• ${t('thailand.devMode.subDistrict', { defaultValue: '子区域' })}: ${travelerData.subDistrictDisplay || travelerData.subDistrict || notProvided}
+• ${t('thailand.devMode.address', { defaultValue: '地址' })}: ${travelerData.address}
 
-📞 联系信息：
-• 邮箱: ${travelerData.email}
-• 电话: +${travelerData.phoneCode} ${travelerData.phoneNo}
+${t('thailand.devMode.contactInfo', { defaultValue: '📞 联系信息：' })}
+• ${t('thailand.devMode.email', { defaultValue: '邮箱' })}: ${travelerData.email}
+• ${t('thailand.devMode.phone', { defaultValue: '电话' })}: +${travelerData.phoneCode} ${travelerData.phoneNo}
 
-⚠️ 重要提醒：
-• 信息将直接提交给泰国移民局
-• 提交后无法修改
-• 多次提交可能被封禁
-• 请确保与护照信息一致
+${t('thailand.devMode.importantReminder', { defaultValue: '⚠️ 重要提醒：' })}
+• ${t('thailand.devMode.reminder1', { defaultValue: '信息将直接提交给泰国移民局' })}
+• ${t('thailand.devMode.reminder2', { defaultValue: '提交后无法修改' })}
+• ${t('thailand.devMode.reminder3', { defaultValue: '多次提交可能被封禁' })}
+• ${t('thailand.devMode.reminder4', { defaultValue: '请确保与护照信息一致' })}
     `.trim();
 
     Alert.alert(
-      '🛑 确认提交',
+      t('thailand.devMode.confirmTitle', { defaultValue: '🛑 确认提交' }),
       confirmationDetails,
       [
         {
-          text: '❌ 取消',
+          text: t('common.cancel', { defaultValue: '❌ 取消' }),
           style: 'cancel',
           onPress: () => {
             console.log('🛑 用户取消了提交');
@@ -1017,14 +1020,14 @@ const showSubmissionConfirmation = (travelerData) => {
           }
         },
         {
-          text: '📝 查看详细日志',
+          text: t('thailand.devMode.viewLogs', { defaultValue: '📝 查看详细日志' }),
           onPress: () => {
             // 显示更详细的日志信息
-            showDetailedLog(travelerData, resolve);
+            showDetailedLog(travelerData, resolve, t);
           }
         },
         {
-          text: '✅ 确认提交',
+          text: t('thailand.devMode.confirmSubmit', { defaultValue: '✅ 确认提交' }),
           style: 'default',
           onPress: () => {
             console.log('✅ 用户确认提交');

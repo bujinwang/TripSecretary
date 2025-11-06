@@ -2,12 +2,13 @@
 import React, { useState, useMemo } from 'react';
 import { BaseSearchableSelector } from './tamagui';
 import { getDestinationNationalities, getNationalityDisplayName } from '../data/nationalities';
+import { useLocale } from '../i18n/LocaleContext';
 
 const NationalitySelector = ({
   label,
   value,
   onValueChange,
-  placeholder = "请选择国籍",
+  placeholder,
   error,
   errorMessage,
   helpText,
@@ -15,6 +16,8 @@ const NationalitySelector = ({
   showSearch = true,
   ...rest
 }) => {
+  const { t } = useLocale();
+  const defaultPlaceholder = placeholder || t('common.selectNationality', { defaultValue: '请选择国籍' });
   const [nationalities, setNationalities] = useState([]);
 
   // Load nationalities on mount
@@ -54,11 +57,11 @@ const NationalitySelector = ({
       value={value}
       onValueChange={onValueChange}
       options={options}
-      placeholder={placeholder}
+      placeholder={defaultPlaceholder}
       getDisplayValue={getDisplayValue}
       showSearch={showSearch}
-      searchPlaceholder="搜索国籍..."
-      modalTitle="选择国籍"
+      searchPlaceholder={t('common.searchNationality', { defaultValue: '搜索国籍...' })}
+      modalTitle={t('common.selectNationality', { defaultValue: '选择国籍' })}
       error={error}
       errorMessage={errorMessage}
       helpText={helpText}

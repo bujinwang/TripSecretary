@@ -82,6 +82,7 @@ export const taiwanEntryFlowConfig = {
   },
 
   entryFlow: {
+    titleKey: 'taiwan.entryFlow.title',
     progress: {
       headline: {
         ready: 'taiwan.entryFlow.progress.headline.ready',

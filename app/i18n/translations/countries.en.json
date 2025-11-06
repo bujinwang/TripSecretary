@@ -380,6 +380,41 @@
         "district": "District",
         "hotelAddress": "Hotel Address"
       },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select state",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      },
       "personal": {
         "occupationOptions": {
           "OFFICE": "Office Worker",
@@ -403,9 +438,6 @@
       "locations": {
         "state": "State",
         "district": "District"
-      },
-      "validation": {
-        "arrivalDateWithinWindow": "Arrival date must be within the next 30 days to comply with MDAC submission window."
       },
       "navigation": {
         "submitButton": {
@@ -780,7 +812,24 @@
         },
         "funds": {
           "title": "Proof of Funds",
-          "subtitle": "Travel funds and payment methods"
+          "subtitle": "Travel funds and payment methods",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
         },
         "travel": {
           "title": "Travel Details",
@@ -794,6 +843,550 @@
         "almostDone": "Almost Done",
         "ready": "Continue",
         "default": "Continue"
+      }
+    }
+  },
+  "thailand": {
+    "travelInfo": {
+      "hero": {
+        "title": "Thailand Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Thai customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "flightTicketPhoto": "Flight Ticket Photo",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "departureFlightTicketPhoto": "Departure Flight Ticket Photo",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "subDistrict": "Sub-District",
+        "postalCode": "Postal Code",
+        "hotelAddress": "Accommodation Address",
+        "hotelReservationPhoto": "Hotel Reservation Photo"
+      }
+    }
+  },
+  "kr": {
+    "travelInfo": {
+      "hero": {
+        "title": "South Korea Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Korean customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay (recommended: bank cards, cash, etc.)",
+          "introText": "Proof of funds helps with smooth customs clearance",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number (Optional)",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "accommodationAddress": "Accommodation Address",
+        "accommodationPhone": "Accommodation Phone",
+        "ketaNumber": "K-ETA Number",
+        "hasKeta": "I have K-ETA"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "subDistrict": "Select sub-district",
+        "hotelAddress": "Enter full address",
+        "accommodationAddress": "Enter full accommodation address",
+        "accommodationPhone": "Enter accommodation phone number",
+        "ketaNumber": "Enter your K-ETA number if you have one",
+        "hasKeta": "Check if you already have a K-ETA"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      },
+      "submitButton": "Save and Continue"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    }
+  },
+  "vietnam": {
+    "travelInfo": {
+      "hero": {
+        "title": "Vietnam Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Vietnam customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please accurately fill in the information on your passport"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Travel funds and payment methods",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information",
+          "introText": "Customs needs to know your travel plans",
+          "introIcon": "✈️",
+          "isTransitPassenger": "Are you a transit passenger?",
+          "transitYes": "Yes",
+          "transitNo": "No",
+          "hotelAddressPlaceholder": "Enter address",
+          "provincePlaceholder": "Please select province",
+          "districtPlaceholder": "Please select district",
+          "subDistrictPlaceholder": "Please select sub-district",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "hotelAddress": "Accommodation Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      }
+    }
+  },
+  "singapore": {
+    "travelInfo": {
+      "hero": {
+        "title": "Singapore Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Singapore customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "hotelAddress": "Accommodation Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      }
+    }
+  },
+  "taiwan": {
+    "travelInfo": {
+      "hero": {
+        "title": "Taiwan Entry Information Center",
+        "subtitle": "Fill in passport, itinerary, and accommodation once, and travel to Formosa with peace of mind",
+        "valuePropositions": {
+          "0": "Entry permit & arrival card in one place",
+          "1": "Smart reminder for 3-day arrival card window",
+          "2": "Securely stored, works offline"
+        },
+        "beginnerTip": "Tip: Complete the online arrival card within 3 days before arrival—we'll remind you at the perfect time."
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "stayDuration": "Stay Duration",
+        "accommodationType": "Accommodation Type",
+        "city": "City",
+        "hotelAddress": "Accommodation Address",
+        "contactNumber": "Contact Number"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "stayDuration": "Enter number of days you plan to stay",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "hotelAddress": "Enter full address",
+        "contactNumber": "Enter contact phone number"
       }
     }
   },
@@ -882,18 +1475,60 @@
       }
     },
     "travelInfo": {
+      "hero": {
+        "title": "Hong Kong Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Hong Kong customs? We'll guide you step by step to prepare all necessary documents!"
+      },
       "sections": {
         "passport": {
-          "title": "Passport Information"
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
         },
         "personal": {
-          "title": "Personal Information"
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
         },
         "funds": {
-          "title": "Proof of Funds"
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
         },
         "travel": {
-          "title": "Travel Details"
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information",
+          "introText": "Customs needs to know your travel plans",
+          "introIcon": "✈️",
+          "isTransitPassenger": "Are you a transit passenger?",
+          "transitYes": "Yes",
+          "transitNo": "No",
+          "hotelAddressPlaceholder": "Enter address",
+          "provincePlaceholder": "Please select province",
+          "districtPlaceholder": "Please select district",
+          "subDistrictPlaceholder": "Please select sub-district",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
         }
       },
       "fields": {
@@ -928,6 +1563,34 @@
         "flightTicketPhoto": "Flight Ticket Screenshot",
         "departureFlightTicketPhoto": "Return Ticket Screenshot"
       },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "region": "Select region",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
       "personal": {
         "occupationOptions": {
           "OFFICE": "Office Worker",
@@ -944,6 +1607,13 @@
           "BUSINESS": "Business",
           "VISIT_FAMILY": "Visit family/friends",
           "TRANSIT": "Transit",
+          "OTHER": "Other"
+        },
+        "accommodationTypes": {
+          "HOTEL": "Hotel",
+          "GUESTHOUSE": "Guesthouse/Hostel",
+          "FRIEND_HOUSE": "Friend's House",
+          "RELATIVE_HOUSE": "Relative's House",
           "OTHER": "Other"
         }
       },
@@ -1089,18 +1759,51 @@
       "startButton": "Start filling"
     },
     "travelInfo": {
+      "hero": {
+        "title": "USA Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing US customs? We'll guide you step by step to prepare all necessary documents!"
+      },
       "sections": {
         "passport": {
-          "title": "Passport & EVUS"
+          "title": "Passport & EVUS",
+          "subtitle": "Please fill in your passport and EVUS details accurately"
         },
         "personal": {
-          "title": "Personal & Contact"
+          "title": "Personal & Contact",
+          "subtitle": "Contact and personal details"
         },
         "funds": {
-          "title": "Proof of Funds"
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
         },
         "travel": {
-          "title": "Travel & Stay"
+          "title": "Travel & Stay",
+          "subtitle": "Flight and accommodation details",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
         }
       },
       "fields": {
@@ -1134,6 +1837,40 @@
         "hotelContactNumber": "Accommodation Phone (optional)",
         "flightTicketPhoto": "Flight Ticket Screenshot",
         "hotelReservationPhoto": "Hotel / Stay Confirmation"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "arrivalCity": "Enter your port of entry or arrival city (e.g., LAX, JFK)",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number (optional)",
+        "departureDate": "Select your departure date (optional)",
+        "lengthOfStay": "CBP often asks expected stay duration, prepare your answer",
+        "accommodationType": "Select where you will stay",
+        "state": "Select state where accommodation is located",
+        "address": "CBP may require specific address, prepare in advance",
+        "hotelContactNumber": "Enter accommodation phone number (optional)"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel / Apartment",
+        "FRIEND_FAMILY": "Friend/Family",
+        "RENTAL": "Short-term Rental / Airbnb",
+        "OTHER": "Other"
       },
       "continue": "Continue"
     },
@@ -1286,6 +2023,7 @@
       "continue": "Continue"
     },
     "entryFlow": {
+      "title": "Taiwan Entry Preparation",
       "status": {
         "ready": {
           "title": "Ready to submit Taiwan arrival card",
@@ -1487,14 +2225,6 @@
       },
       "continueButton": "Understood, continue to checklist"
     },
-    "travelInfo": {
-      "buttonLabels": {
-        "incomplete": "Complete Required Fields",
-        "almostDone": "Almost Done",
-        "ready": "Continue"
-      },
-      "continue": "Continue"
-    },
     "requirements": {
       "headerTitle": "Japan Entry Checklist",
       "introTitle": "Entry preparation checklist",
@@ -1538,18 +2268,47 @@
       "hero": {
         "title": "Japan Entry Preparation Guide",
         "subtitle": "Complete visa-free entry in 3 minutes, stress-free travel!",
-        "valuePropositions": [
-          "3 minutes to complete",
-          "Visa-free for 90 days",
-          "Offline friendly, secure storage"
-        ],
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "Visa-free for 90 days",
+          "2": "Offline friendly, secure storage"
+        },
         "beginnerTip": "Japan offers visa-free entry for 90 days to Chinese passport holders. We help you prepare all entry materials."
       },
       "sections": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Proof of Funds",
-        "travel": "Travel Information"
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
       },
       "fields": {
         "surname": "Surname",
@@ -1579,6 +2338,41 @@
         "prefecture": "Prefecture",
         "city": "City",
         "hotelAddress": "Hotel Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "prefecture": "Select prefecture",
+        "city": "Select city",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
       },
       "personal": {
         "occupationOptions": {
@@ -1715,6 +2509,129 @@
         ]
       },
       "startButton": "Start preparing entry pack"
+    },
+    "result": {
+      "manualEntry": {
+        "title": "Japan Entry Card Filling Guide",
+        "intro": "Please fill out the paper entry card and customs declaration form according to the information below. You can view offline, and we recommend taking a screenshot.",
+        "badges": {
+          "handwritten": "✍️ Handwritten Paper Entry Card",
+          "backedUp": "📦 Information Backed Up to Entry Pack",
+          "offline": "📵 Available Offline"
+        },
+        "sections": {
+          "passport": "Passport Information",
+          "personal": "Personal Information",
+          "travel": "Travel Details",
+          "accommodation": "Accommodation & Contact"
+        },
+        "fields": {
+          "fullName": "Full Name",
+          "passportNo": "Passport No.",
+          "nationality": "Nationality",
+          "dateOfBirth": "Date of Birth",
+          "gender": "Gender",
+          "passportExpiry": "Passport Expiry",
+          "occupation": "Occupation",
+          "cityOfResidence": "City of Residence",
+          "countryOfResidence": "Country of Residence",
+          "phone": "Phone",
+          "email": "Email",
+          "purposeOfVisit": "Purpose of Visit",
+          "flightNumber": "Flight Number",
+          "arrivalDate": "Arrival Date",
+          "lengthOfStay": "Length of Stay",
+          "days": "days",
+          "address": "Address",
+          "accommodationPhone": "Accommodation Phone"
+        },
+        "funds": "Funds & Assets",
+        "noFunds": "No fund information provided",
+        "helpTip": "Please fill out the paper entry card and customs declaration form on the plane or after arriving at the airport, referring to the information above. We recommend taking a screenshot for easy reference.",
+        "loading": "Loading Japan entry information...",
+        "heroTitle": "Is my Japan trip ready? 🌸",
+        "heroSubtitle": "See how prepared you are and get ready for your Japan adventure!",
+        "statusText": {
+          "complete": "Japan entry preparation complete! 🌸",
+          "almost": "Just a few more checks needed~",
+          "incomplete": "Continue completing your information!",
+          "loading": "Loading your information..."
+        },
+        "statusSubtitle": {
+          "complete": "All information is organized and ready to present at the airport anytime.",
+          "almost": "A few more items need confirmation, complete them for a worry-free trip.",
+          "incomplete": "Complete all information to generate a complete Japan entry pack.",
+          "loading": "Please wait while we organize your traveler information."
+        },
+        "itemsCompleted": "{{completed}}/{{total}} items completed",
+        "editButton": "Edit Again",
+        "shareButton": "Ask Family/Friends to Help Edit",
+        "progressLabel": "Preparation Progress",
+        "interactiveGuideTitle": "View Interactive Entry Guide",
+        "interactiveGuideSubtitle": "Step-by-step guide · Large text mode"
+      },
+      "title": "Entry Pack Generated Successfully!",
+      "subtitle": "Your entry information has been organized",
+      "entryPack": {
+        "title": "Entry Pack",
+        "subtitleParts": {
+          "departure": "Departure {{date}}",
+          "arrival": "Arrival {{date}}",
+          "flight": "Flight {{flight}}",
+          "missing": "Please complete travel information"
+        },
+        "fields": {
+          "departureDate": "Departure Date",
+          "flightNo": "Flight Number",
+          "arrivalDate": "Arrival Date",
+          "accommodation": "Accommodation"
+        },
+        "actions": {
+          "startGuide": "Start Arrival Guide"
+        },
+        "lastUpdated": "Last updated: {{time}}"
+      },
+      "historyBanner": {
+        "primaryCta": {
+          "title": "Start Arrival Guide",
+          "subtitle": "Step-by-step · Large text available"
+        },
+        "secondaryCta": {
+          "editInfo": "Edit Information"
+        }
+      },
+      "digitalInfo": {
+        "title": "Apply for {{systemName}}",
+        "button": "Apply Now"
+      },
+      "infoBox": "All information is saved locally on your device only",
+      "share": {
+        "modalTitle": "Ask Family/Friends to Verify Information",
+        "modalSubtitle": "Share the link and password below with trusted family/friends. The link is valid for 24 hours. They can add or modify entry information, and updates will sync to this entry pack.",
+        "linkLabel": "Share Link",
+        "passwordLabel": "Access Password",
+        "copy": "Copy",
+        "copied": "Copied",
+        "expiryText": "Valid until: {{time}}",
+        "primaryAction": "Done, Go Paste for Family/Friends",
+        "cancelAction": "Cancel This Share",
+        "securityNote": "Security Tip: Please only share with trusted family or friends. You can cancel sharing at any time to immediately terminate access.",
+        "cancelTitle": "Cancel Sharing",
+        "cancelMessage": "This action will immediately invalidate the share link and password, and family/friends will no longer be able to access. Are you sure you want to cancel?",
+        "keep": "Keep",
+        "confirmCancel": "Cancel Sharing",
+        "active": "Share Active",
+        "viewShare": "View Share Info",
+        "invite": "Invite Verification"
+      },
+      "notProvided": "Not provided",
+      "pending": "Pending confirmation",
+      "changeInfo": "Change Information",
+      "kioskGuide": {
+        "title": "{{kioskName}} Guide",
+        "kioskName": "Self-Service Kiosk",
+        "subtitle": "Step-by-step instructions"
+      }
     }
   },
   "profile": {
@@ -1793,6 +2710,41 @@
       "photoUpdatedMessage": "Photo has been updated successfully."
     }
   },
+  "devMode": {
+    "submissionInfo": "🔍 Information to be submitted:",
+    "personalInfo": "👤 Personal Information:",
+    "name": "Name",
+    "passportNo": "Passport No.",
+    "nationality": "Nationality",
+    "gender": "Gender",
+    "birthDate": "Date of Birth",
+    "travelInfo": "✈️ Travel Information:",
+    "arrivalDate": "Arrival Date",
+    "flightNo": "Flight Number",
+    "countryBoarded": "Country Boarded",
+    "recentStayCountry": "Recent Stay Country",
+    "purpose": "Purpose of Visit",
+    "accommodationInfo": "🏨 Accommodation Information:",
+    "accommodationType": "Accommodation Type",
+    "province": "Province",
+    "district": "District",
+    "subDistrict": "Sub-District",
+    "address": "Address",
+    "contactInfo": "📞 Contact Information:",
+    "email": "Email",
+    "phone": "Phone",
+    "importantReminder": "⚠️ Important Reminder:",
+    "reminder1": "Information will be submitted directly to Thailand Immigration",
+    "reminder2": "Cannot be modified after submission",
+    "reminder3": "Multiple submissions may result in ban",
+    "reminder4": "Please ensure information matches passport",
+    "confirmTitle": "🛑 Confirm Submission",
+    "viewLogs": "📝 View Detailed Logs",
+    "confirmSubmit": "✅ Confirm Submission",
+    "notProvided": "Not provided",
+    "tokenObtained": "Obtained ({{length}} characters)",
+    "tokenNotObtained": "Not obtained"
+  },
   "common": {
     "ok": "OK",
     "back": "Back",
@@ -1800,7 +2752,29 @@
     "cancel": "Cancel",
     "reset": "Reset",
     "error": "Error",
-    "locale": "en"
+    "yes": "Yes",
+    "no": "No",
+    "locale": "en",
+    "qrCode": "QR Code",
+    "generatedBy": "Generated by BorderBuddy",
+    "selectNationality": "Please select nationality",
+    "searchNationality": "Search nationality...",
+    "selectOccupation": "Please select occupation",
+    "searchOccupation": "Search occupation...",
+    "enterOccupation": "Please enter your occupation",
+    "occupationExample": "e.g., ACCOUNTANT, ENGINEER",
+    "occupationHelp": "Please enter your occupation in English",
+    "selectTravelPurpose": "Please select travel purpose",
+    "searchTravelPurpose": "Search travel purpose...",
+    "enterTravelPurposeDetails": "Please enter travel purpose details",
+    "travelPurposeModalTitle": "Select Travel Purpose",
+    "notAvailable": "N/A"
+  },
+  "customs": {
+    "yes": "YES ✓",
+    "no": "NO",
+    "usa": "U.S.A.",
+    "otherCountry": "Other Country"
   },
   "notificationSettings": {
     "loading": "Loading settings...",
@@ -1977,6 +2951,94 @@
     },
     "entryPack": {
       "openButton": "Open Entry Pack 📋"
+    }
+  },
+  "canada": {
+    "pikGuide": {
+      "headerTitle": "Self-Service Kiosk Guide",
+      "title": "Primary Inspection Kiosk (PIK) Operation Guide",
+      "subtitle": "Primary Inspection Kiosk (PIK)",
+      "description": "Canada's border self-service kiosk is simple. Just follow this guide step by step.",
+      "fontSizeLabel": "Font Size:",
+      "step": "Step {{number}}",
+      "stepImportant": "Step {{number}} ⭐",
+      "importantBadge": "Important",
+      "step1": {
+        "title": "Find the Self-Service Kiosk",
+        "description": "After getting off the plane, follow the \"Arrivals\" or \"入境\" signs.\n\nEnter the arrival hall and look for machines with large screens.\n\nUsually there are many machines in a row, similar in size to ATM machines."
+      },
+      "step2": {
+        "title": "Select Chinese",
+        "description": "The screen will display language options.\n\nTap \"中文\" or \"Chinese\" with your finger.\n\n⚠️ If you can't find Chinese, selecting \"English\" is fine. The following steps all have picture prompts."
+      },
+      "step3": {
+        "title": "Scan Passport",
+        "description": "Open your passport to the page with your photo (photo page).\n\nPlace the passport flat with the photo facing down.\n\nPlace it on the scanner below the machine (like a copier).\n\nWhen you hear a \"beep\" or the screen shows \"✓\", the scan is successful."
+      },
+      "step3Tip": "Tip: Keep the passport flat, don't bend it. If scanning fails, just place it again.",
+      "step4": {
+        "title": "Answer Questions",
+        "description": "The screen will display several questions.\n\nEach question has \"Yes/YES\" and \"No/NO\" buttons below.\n\nTap the corresponding button with your finger based on the answers below:"
+      },
+      "answersTitle": "📋 Your Answers (Just tap accordingly)",
+      "answerLabel": "Tap:",
+      "step4Warning": "Important: Answer truthfully! If you answer \"Yes\", you may need additional checks, but there won't be any trouble.",
+      "step5": {
+        "title": "Take Receipt",
+        "description": "After answering all questions, the machine will print a small slip.\n\nThe receipt will come out from below or the side of the machine.\n\n⚠️ Be sure to keep this receipt!\n\nYou'll need to give it to the customs officer later."
+      },
+      "step6": {
+        "title": "Go to Manual Counter",
+        "description": "Take your passport and the receipt you just printed.\n\nFollow the crowd and queue up to the manual counter.\n\nGive the receipt and passport together to the customs officer.\n\nThe officer may ask a few simple questions:\n• What are you doing in Canada? (Tourism)\n• Where are you staying? (Hotel name)\n• How long are you staying? (A few days)\n\n✅ Done! Welcome to Canada"
+      },
+      "helpTitle": "What if I don't know how to operate it?",
+      "helpOption1": {
+        "title": "Ask Staff for Help",
+        "description": "There are usually uniformed staff near the machines.\nSay to them: \"I need help\"\nThey will help you operate it."
+      },
+      "helpOption2": {
+        "title": "Ask Chinese Travelers for Help",
+        "description": "If there are Chinese travelers nearby, you can ask them for help. Everyone is happy to help fellow countrymen."
+      },
+      "helpOption3": {
+        "title": "Go to Manual Counter",
+        "description": "If you really don't know how to use the machine, go directly to the manual counter.\nAlthough it's slower, you can still enter the country.\nJust show the officer your passport and the form on your phone."
+      },
+      "reassuranceTitle": "Don't worry! No need to be nervous",
+      "reassuranceText": "• Canadian border officers are very friendly and won't give you trouble\n\n• Many airports have Chinese service or Chinese interpreters\n\n• Even if you can't use the machine, you can use the manual channel\n\n• Millions of Chinese tourists enter Canada every year, all smoothly\n\nMost importantly: Answer questions honestly and don't carry prohibited items",
+      "phrasesTitle": "Common English Phrases (Show to Staff)",
+      "phrases": {
+        "helpKiosk": {
+          "en": "I need help with the kiosk.",
+          "zh": "我需要帮助使用自助机。"
+        },
+        "canYouHelp": {
+          "en": "Can you help me?",
+          "zh": "你能帮我吗？"
+        },
+        "whereManualCounter": {
+          "en": "Where is the manual counter?",
+          "zh": "人工柜台在哪里？"
+        },
+        "noEnglish": {
+          "en": "I don't speak English.",
+          "zh": "我不会说英语。"
+        },
+        "chineseInterpreter": {
+          "en": "Do you have Chinese interpreter?",
+          "zh": "有中文翻译吗？"
+        }
+      },
+      "buttonViewInfo": "📋 View My Information",
+      "buttonCopyMode": "✍️ Copy Mode",
+      "customsQuestions": {
+        "currencyOverLimit": "Are you bringing currency or monetary instruments totaling CAN$10,000 or more?",
+        "foodAnimals": "Are you bringing food, plants, animals, or related products?",
+        "visitedFarm": "Have you visited a farm or been in contact with farm animals?",
+        "commercialGoods": "Are you bringing commercial goods, samples, or goods for resale?",
+        "firearms": "Are you bringing firearms or weapons?",
+        "dutyFree": "Are you bringing goods that exceed your duty-free allowance?"
+      }
     }
   }
 }

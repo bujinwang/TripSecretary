@@ -377,7 +377,7 @@ const ProgressEncouragement = ({
                 color="$white"
                 letterSpacing={0.3}
               >
-                ✏️ 修改旅行信息
+                ✏️ 编辑旅行信息
               </Text>
             </LinearGradient>
           </PressableCard>

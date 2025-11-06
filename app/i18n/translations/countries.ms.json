@@ -333,5 +333,159 @@
                 "thankYou": "Terima kasih"
             }
         }
+    },
+    "result": {
+        "manualEntry": {
+            "title": "Panduan Mengisi Kad Masuk Jepun",
+            "intro": "Sila isi kad masuk kertas dan borang pengisytiharan kastam mengikut maklumat di bawah. Anda boleh melihat secara luar talian, dan kami mengesyorkan mengambil tangkapan skrin.",
+            "badges": {
+                "handwritten": "✍️ Kad Masuk Kertas Ditulis Tangan",
+                "backedUp": "📦 Maklumat Disandarkan ke Pakej Masuk",
+                "offline": "📵 Tersedia Luar Talian"
+            },
+            "sections": {
+                "passport": "Maklumat Pasport",
+                "personal": "Maklumat Peribadi",
+                "travel": "Butiran Perjalanan",
+                "accommodation": "Penginapan & Hubungan"
+            },
+            "fields": {
+                "fullName": "Nama Penuh",
+                "passportNo": "No. Pasport",
+                "nationality": "Kewarganegaraan",
+                "dateOfBirth": "Tarikh Lahir",
+                "gender": "Jantina",
+                "passportExpiry": "Tamat Tempoh Pasport",
+                "occupation": "Pekerjaan",
+                "cityOfResidence": "Bandar Tempat Tinggal",
+                "countryOfResidence": "Negara Tempat Tinggal",
+                "phone": "Telefon",
+                "email": "E-mel",
+                "purposeOfVisit": "Tujuan Lawatan",
+                "flightNumber": "Nombor Penerbangan",
+                "arrivalDate": "Tarikh Ketibaan",
+                "lengthOfStay": "Tempoh Penginapan",
+                "days": "hari",
+                "address": "Alamat",
+                "accommodationPhone": "Telefon Penginapan"
+            },
+            "funds": "Dana & Aset",
+            "noFunds": "Tiada maklumat dana disediakan",
+            "helpTip": "Sila isi kad masuk kertas dan borang pengisytiharan kastam di dalam kapal terbang atau selepas tiba di lapangan terbang, merujuk kepada maklumat di atas. Kami mengesyorkan mengambil tangkapan skrin untuk rujukan mudah.",
+            "loading": "Memuatkan maklumat masuk Jepun...",
+            "heroTitle": "Adakah perjalanan Jepun saya sudah bersedia? 🌸",
+            "heroSubtitle": "Lihat betapa bersedianya anda dan bersiaplah untuk pengembaraan Jepun anda!",
+            "statusText": {
+                "complete": "Persediaan masuk Jepun selesai! 🌸",
+                "almost": "Hanya beberapa pemeriksaan lagi diperlukan~",
+                "incomplete": "Teruskan melengkapkan maklumat anda!",
+                "loading": "Memuatkan maklumat anda..."
+            },
+            "statusSubtitle": {
+                "complete": "Semua maklumat telah disusun dan siap untuk ditunjukkan di lapangan terbang pada bila-bila masa.",
+                "almost": "Beberapa item lagi memerlukan pengesahan, lengkapkan mereka untuk perjalanan tanpa kebimbangan.",
+                "incomplete": "Lengkapkan semua maklumat untuk menjana pakej masuk Jepun yang lengkap.",
+                "loading": "Sila tunggu sementara kami menyusun maklumat pelancong anda."
+            },
+            "itemsCompleted": "{{completed}}/{{total}} item selesai",
+            "editButton": "Edit Semula",
+            "shareButton": "Minta Keluarga/Rakan Bantu Edit",
+            "progressLabel": "Kemajuan Persediaan",
+            "interactiveGuideTitle": "Lihat Panduan Masuk Interaktif",
+            "interactiveGuideSubtitle": "Panduan langkah demi langkah · Moda teks besar"
+        },
+        "title": "Pakej Masuk Dijana dengan Berjaya!",
+        "subtitle": "Maklumat masuk anda telah disusun",
+        "entryPack": {
+            "title": "Pakej Masuk",
+            "subtitleParts": {
+                "departure": "Berlepas {{date}}",
+                "arrival": "Ketibaan {{date}}",
+                "flight": "Penerbangan {{flight}}",
+                "missing": "Sila lengkapkan maklumat perjalanan"
+            },
+            "fields": {
+                "departureDate": "Tarikh Berlepas",
+                "flightNo": "Nombor Penerbangan",
+                "arrivalDate": "Tarikh Ketibaan",
+                "accommodation": "Penginapan"
+            },
+            "actions": {
+                "startGuide": "Mula Panduan Ketibaan"
+            },
+            "lastUpdated": "Kemaskini terakhir: {{time}}"
+        },
+        "historyBanner": {
+            "primaryCta": {
+                "title": "Mula Panduan Ketibaan",
+                "subtitle": "Langkah demi langkah · Teks besar tersedia"
+            },
+            "secondaryCta": {
+                "editInfo": "Edit Maklumat"
+            }
+        },
+        "digitalInfo": {
+            "title": "Mohon {{systemName}}",
+            "button": "Mohon Sekarang"
+        },
+        "infoBox": "Semua maklumat disimpan secara tempatan pada peranti anda sahaja",
+        "share": {
+            "modalTitle": "Minta Keluarga/Rakan Sahkan Maklumat",
+            "modalSubtitle": "Kongsi pautan dan kata laluan di bawah dengan ahli keluarga/rakan yang dipercayai. Pautan sah selama 24 jam. Mereka boleh menambah atau mengubah suai maklumat masuk, dan kemas kini akan disegerakkan ke pakej masuk ini.",
+            "linkLabel": "Pautan Kongsi",
+            "passwordLabel": "Kata Laluan Akses",
+            "copy": "Salin",
+            "copied": "Disalin",
+            "expiryText": "Sah sehingga: {{time}}",
+            "primaryAction": "Selesai, Pergi Tampal untuk Keluarga/Rakan",
+            "cancelAction": "Batal Kongsi Ini",
+            "securityNote": "Petua Keselamatan: Sila kongsi hanya dengan ahli keluarga atau rakan yang dipercayai. Anda boleh membatalkan perkongsian pada bila-bila masa untuk menamatkan akses dengan segera.",
+            "cancelTitle": "Batal Kongsi",
+            "cancelMessage": "Tindakan ini akan membatalkan pautan kongsi dan kata laluan dengan segera, dan keluarga/rakan tidak lagi dapat mengakses. Adakah anda pasti mahu membatalkan?",
+            "keep": "Simpan",
+            "confirmCancel": "Batal Kongsi",
+            "active": "Kongsi Aktif",
+            "viewShare": "Lihat Maklumat Kongsi",
+            "invite": "Jemput Pengesahan"
+        },
+        "notProvided": "Tidak disediakan",
+        "pending": "Menunggu pengesahan",
+        "changeInfo": "Tukar Maklumat",
+        "kioskGuide": {
+            "title": "Panduan {{kioskName}}",
+            "kioskName": "Kiosk Khidmat Sendiri",
+            "subtitle": "Arahan langkah demi langkah"
+        }
+    },
+    "common": {
+        "ok": "OK",
+        "back": "Kembali",
+        "close": "Tutup",
+        "cancel": "Batal",
+        "reset": "Set Semula",
+        "error": "Ralat",
+        "yes": "Ya",
+        "no": "Tidak",
+        "locale": "ms",
+        "qrCode": "Kod QR",
+        "generatedBy": "Dijana oleh BorderBuddy",
+        "selectNationality": "Sila pilih kewarganegaraan",
+        "searchNationality": "Cari kewarganegaraan...",
+        "selectOccupation": "Sila pilih pekerjaan",
+        "searchOccupation": "Cari pekerjaan...",
+        "enterOccupation": "Sila masukkan pekerjaan anda",
+        "occupationExample": "cth. AKAUNTAN, JURUTERA",
+        "occupationHelp": "Sila masukkan pekerjaan anda dalam bahasa Inggeris",
+        "selectTravelPurpose": "Sila pilih tujuan perjalanan",
+        "searchTravelPurpose": "Cari tujuan perjalanan...",
+        "enterTravelPurposeDetails": "Sila masukkan butiran tujuan perjalanan",
+        "travelPurposeModalTitle": "Pilih Tujuan Perjalanan",
+        "notAvailable": "Tidak Tersedia"
+    },
+    "customs": {
+        "yes": "YA ✓",
+        "no": "TIDAK",
+        "usa": "A.S.",
+        "otherCountry": "Negara Lain"
     }
 }

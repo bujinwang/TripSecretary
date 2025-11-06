@@ -143,18 +143,18 @@ const TravelDetailsSection = ({
       </View>
 
       <NationalitySelector
-        label="最近停留的国家"
+        label={t('hongkong.travelInfo.fields.recentStayCountry', { defaultValue: '最近停留的国家' })}
         value={recentStayCountry}
         onValueChange={(code) => {
           setRecentStayCountry(code);
           handleFieldBlur('recentStayCountry', code);
         }}
-        helpText="请选择您最近停留的国家"
+        helpText={t('hongkong.travelInfo.fieldHelp.recentStayCountry', { defaultValue: '请选择您最近停留的国家' })}
         optional={true}
       />
 
       <NationalitySelector
-        label="登机国家或地区"
+        label={t('hongkong.travelInfo.fields.boardingCountry', { defaultValue: '登机国家或地区' })}
         value={boardingCountry}
         onValueChange={(code) => {
           if (handleUserInteraction) {
@@ -164,7 +164,7 @@ const TravelDetailsSection = ({
             debouncedSaveData();
           }
         }}
-        helpText="请选择您登机的国家或地区"
+        helpText={t('hongkong.travelInfo.fieldHelp.boardingCountry', { defaultValue: '请选择您登机的国家或地区' })}
       />
 
       {/* Flight Info */}

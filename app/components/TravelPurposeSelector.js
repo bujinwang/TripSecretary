@@ -8,24 +8,27 @@ import {
   getTravelPurposeDisplayName,
   normalizeTravelPurpose
 } from '../data/travelPurposes';
+import { useLocale } from '../i18n/LocaleContext';
 
 const TravelPurposeSelector = ({
   label,
   value,
   onValueChange,
-  placeholder = "请选择旅行目的",
+  placeholder,
   error,
   errorMessage,
   helpText,
   style,
   showSearch = true,
-  locale = 'zh',
+  locale,
   purposeType = 'basic', // 'basic', 'japan', 'thailand'
   // Custom input props when OTHER is selected
   otherValue,
   onOtherValueChange,
   ...rest
 }) => {
+  const { t, language } = useLocale();
+  const currentLocale = locale || language;
   const [travelPurposes, setTravelPurposes] = useState([]);
 
   // Normalize locale (e.g., 'zh-CN' -> 'zh', 'en-US' -> 'en')
@@ -89,21 +92,27 @@ const TravelPurposeSelector = ({
     onValueChange(normalizedValue);
   };
 
+  const defaultPlaceholder = placeholder || t('common.selectTravelPurpose', { defaultValue: '请选择旅行目的' });
+  const defaultCustomLabel = t('common.enterTravelPurposeDetails', { defaultValue: '请输入旅行目的详情' });
+  const defaultCustomPlaceholder = t('common.enterTravelPurposeDetails', { defaultValue: '请输入旅行目的详情' });
+  const defaultSearchPlaceholder = t('common.searchTravelPurpose', { defaultValue: '搜索旅行目的...' });
+  const defaultModalTitle = t('common.travelPurposeModalTitle', { defaultValue: '选择旅行目的' });
+
   return (
     <BaseSearchableSelector
       label={label}
       value={value}
       onValueChange={handleValueChange}
       options={options}
-      placeholder={placeholder}
+      placeholder={defaultPlaceholder}
       getDisplayValue={getDisplayValue}
       customValue={otherValue}
       onCustomChange={onOtherValueChange}
-      customLabel={locale === 'zh' ? "请输入旅行目的详情" : "Please enter travel purpose details"}
-      customPlaceholder={locale === 'zh' ? "请输入旅行目的详情" : "Please enter travel purpose details"}
+      customLabel={defaultCustomLabel}
+      customPlaceholder={defaultCustomPlaceholder}
       showSearch={showSearch}
-      searchPlaceholder="搜索旅行目的..."
-      modalTitle="选择旅行目的"
+      searchPlaceholder={defaultSearchPlaceholder}
+      modalTitle={defaultModalTitle}
       error={error}
       errorMessage={errorMessage}
       helpText={helpText}

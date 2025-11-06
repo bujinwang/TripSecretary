@@ -114,9 +114,9 @@ const ResultScreen = ({ navigation, route }) => {
         setPdfUri(data.pdfUrl);
       }
     } catch (error) {
-      console.log('无法加载历史记录，使用传入的数据:', error.message);
-      // 如果 API 调用失败（例如后端未运行），使用传入的参数
-      // 这样即使没有后端，应用也能正常工作
+      console.log('Failed to load history, using passed data:', error.message);
+      // If API call fails (e.g., backend not running), use passed parameters
+      // This allows the app to work even without backend
     }
   };
 
@@ -132,11 +132,17 @@ const ResultScreen = ({ navigation, route }) => {
         setJapanTravelerData(result.payload);
       } else {
         console.log('Failed to load Japan traveler data:', result.errors);
-        Alert.alert('提示', '部分信息加载失败，请检查您的入境信息是否完整');
+        Alert.alert(
+          t('common.error', { defaultValue: 'Error' }),
+          t('japan.result.manualEntry.loading', { defaultValue: 'Failed to load some information, please check if your entry information is complete' })
+        );
       }
     } catch (error) {
       console.error('Error loading Japan traveler data:', error);
-      Alert.alert('错误', '无法加载日本入境信息');
+      Alert.alert(
+        t('common.error', { defaultValue: 'Error' }),
+        t('japan.result.manualEntry.loading', { defaultValue: 'Unable to load Japan entry information' })
+      );
     }
   };
 
@@ -232,7 +238,7 @@ const ResultScreen = ({ navigation, route }) => {
 
   const travelerName = useMemo(() => {
     if (!passport) {
-      return '未填写';
+      return t('result.notProvided', { defaultValue: '未填写' });
     }
     const {
       name,
@@ -246,8 +252,8 @@ const ResultScreen = ({ navigation, route }) => {
       lastName || familyName,
       firstName || givenName,
     ].filter(Boolean).join(' ');
-    return name || fullName || composed || '未填写';
-  }, [passport]);
+    return name || fullName || composed || t('result.notProvided', { defaultValue: '未填写' });
+  }, [passport, t]);
 
   const passportNumber = useMemo(() => {
     if (!passport) {
@@ -261,9 +267,9 @@ const ResultScreen = ({ navigation, route }) => {
     );
   }, [passport]);
 
-  const flightNumberDisplay = travelInfo?.flightNumber || travelInfo?.flightNo || '待确认';
-  const departureDateDisplay = travelInfo?.departureDate || '待确认';
-  const arrivalDateDisplay = travelInfo?.arrivalDate || '待确认';
+  const flightNumberDisplay = travelInfo?.flightNumber || travelInfo?.flightNo || t('result.pending', { defaultValue: '待确认' });
+  const departureDateDisplay = travelInfo?.departureDate || t('result.pending', { defaultValue: '待确认' });
+  const arrivalDateDisplay = travelInfo?.arrivalDate || t('result.pending', { defaultValue: '待确认' });
   const accommodationDisplay = useMemo(() => {
     const parts = [];
     const hotelName = travelInfo?.hotelName || travelInfo?.accommodationName;
@@ -274,8 +280,8 @@ const ResultScreen = ({ navigation, route }) => {
     if (hotelAddress) parts.push(hotelAddress);
     if (contactPhone) parts.push(contactPhone);
     
-    return parts.join(' | ') || '待确认';
-  }, [travelInfo]);
+    return parts.join(' | ') || t('result.pending', { defaultValue: '待确认' });
+  }, [travelInfo, t]);
 
   const entrySubtitle = useMemo(() => {
     const parts = [];
@@ -308,7 +314,7 @@ const ResultScreen = ({ navigation, route }) => {
     }
     return (
       parts.join(' · ') ||
-      t('result.entryPack.subtitleParts.missing', { defaultValue: '请补齐行程信息' })
+      t('result.entryPack.subtitleParts.missing', { defaultValue: 'Please complete travel information' })
     );
   }, [destination?.name, departureDateDisplay, arrivalDateDisplay, flightNumberDisplay, t]);
 
@@ -522,12 +528,12 @@ const ResultScreen = ({ navigation, route }) => {
 
   const handleCancelShare = () => {
     Alert.alert(
-      '取消分享',
-      '该操作会立即失效共享链接和密码，亲友将无法继续访问。确定要取消吗？',
+      t('result.share.cancelTitle', { defaultValue: '取消分享' }),
+      t('result.share.cancelMessage', { defaultValue: '该操作会立即失效共享链接和密码，亲友将无法继续访问。确定要取消吗？' }),
       [
-        { text: '保留', style: 'cancel' },
+        { text: t('result.share.keep', { defaultValue: '保留' }), style: 'cancel' },
         {
-          text: '取消分享',
+          text: t('result.share.confirmCancel', { defaultValue: '取消分享' }),
           style: 'destructive',
           onPress: () => {
             setShareSession(null);
@@ -640,7 +646,9 @@ const ResultScreen = ({ navigation, route }) => {
             <Text style={[styles.japanHeroPercent, { color: theme.color }]}>
               {loaded ? `${percent}%` : '--'}
             </Text>
-            <Text style={styles.japanHeroPercentLabel}>准备进度</Text>
+            <Text style={styles.japanHeroPercentLabel}>
+              {t('japan.result.manualEntry.progressLabel', { defaultValue: '准备进度' })}
+            </Text>
             <View style={styles.japanHeroProgressBar}>
               <View
                 style={[
@@ -650,16 +658,22 @@ const ResultScreen = ({ navigation, route }) => {
               />
             </View>
             <Text style={[styles.japanHeroStatus, { color: theme.color }]}>
-              {t('japan.result.manualEntry.statusText', {
-                status: theme.statusText,
-                defaultValue: theme.statusText,
-              })}
+              {statusVariant === 'complete' 
+                ? t('japan.result.manualEntry.statusText.complete', { defaultValue: theme.statusText })
+                : statusVariant === 'almost'
+                ? t('japan.result.manualEntry.statusText.almost', { defaultValue: theme.statusText })
+                : statusVariant === 'incomplete'
+                ? t('japan.result.manualEntry.statusText.incomplete', { defaultValue: theme.statusText })
+                : t('japan.result.manualEntry.statusText.loading', { defaultValue: theme.statusText })}
             </Text>
             <Text style={styles.japanHeroSubtitle}>
-              {t('japan.result.manualEntry.statusSubtitle', {
-                subtitle: theme.subtitle,
-                defaultValue: theme.subtitle,
-              })}
+              {statusVariant === 'complete'
+                ? t('japan.result.manualEntry.statusSubtitle.complete', { defaultValue: theme.subtitle })
+                : statusVariant === 'almost'
+                ? t('japan.result.manualEntry.statusSubtitle.almost', { defaultValue: theme.subtitle })
+                : statusVariant === 'incomplete'
+                ? t('japan.result.manualEntry.statusSubtitle.incomplete', { defaultValue: theme.subtitle })
+                : t('japan.result.manualEntry.statusSubtitle.loading', { defaultValue: theme.subtitle })}
             </Text>
             {loaded && total > 0 && (
               <Text style={styles.japanHeroMeta}>
@@ -801,60 +815,60 @@ const ResultScreen = ({ navigation, route }) => {
     return (
       <View style={styles.japanManualContainer}>
         <View style={styles.japanManualIntroCard}>
-          <Text style={styles.japanManualIntroTitle}>日本入境卡填写指南</Text>
+          <Text style={styles.japanManualIntroTitle}>{t('japan.result.manualEntry.title', { defaultValue: '日本入境卡填写指南' })}</Text>
           <Text style={styles.japanManualIntroSubtitle}>
             {t('japan.result.manualEntry.intro', {
               defaultValue: '请按照下列信息填写纸质入境卡与海关申报表，可离线查看，建议截图保存。',
             })}
           </Text>
           <View style={styles.japanManualBadgesRow}>
-            <Text style={styles.japanManualBadge}>✍️ 手写纸质入境卡</Text>
-            <Text style={styles.japanManualBadge}>📦 信息已备份到入境包</Text>
-            <Text style={styles.japanManualBadge}>📵 离线可用</Text>
+            <Text style={styles.japanManualBadge}>{t('japan.result.manualEntry.badges.handwritten', { defaultValue: '✍️ 手写纸质入境卡' })}</Text>
+            <Text style={styles.japanManualBadge}>{t('japan.result.manualEntry.badges.backedUp', { defaultValue: '📦 信息已备份到入境包' })}</Text>
+            <Text style={styles.japanManualBadge}>{t('japan.result.manualEntry.badges.offline', { defaultValue: '📵 离线可用' })}</Text>
           </View>
         </View>
 
-        {renderSection('护照信息 Passport', '🛂', [
-          { label: '姓名 Full Name', value: data.fullName },
-          { label: '护照号 Passport No.', value: data.passportNo },
-          { label: '国籍 Nationality', value: data.nationality },
-          { label: '出生日期 Date of Birth', value: data.dateOfBirth },
-          data.gender ? { label: '性别 Gender', value: data.gender } : null,
-          data.expiryDate ? { label: '护照有效期 Passport Expiry', value: data.expiryDate } : null,
+        {renderSection(t('japan.result.manualEntry.sections.passport', { defaultValue: '护照信息 Passport' }), '🛂', [
+          { label: t('japan.result.manualEntry.fields.fullName', { defaultValue: '姓名 Full Name' }), value: data.fullName },
+          { label: t('japan.result.manualEntry.fields.passportNo', { defaultValue: '护照号 Passport No.' }), value: data.passportNo },
+          { label: t('japan.result.manualEntry.fields.nationality', { defaultValue: '国籍 Nationality' }), value: data.nationality },
+          { label: t('japan.result.manualEntry.fields.dateOfBirth', { defaultValue: '出生日期 Date of Birth' }), value: data.dateOfBirth },
+          data.gender ? { label: t('japan.result.manualEntry.fields.gender', { defaultValue: '性别 Gender' }), value: data.gender } : null,
+          data.expiryDate ? { label: t('japan.result.manualEntry.fields.passportExpiry', { defaultValue: '护照有效期 Passport Expiry' }), value: data.expiryDate } : null,
         ].filter(Boolean))}
 
-        {renderSection('个人信息 Personal', '🙋‍♀️', [
-          { label: '职业 Occupation', value: data.occupation },
-          { label: '居住城市 City of Residence', value: data.cityOfResidence },
-          { label: '居住国家 Country of Residence', value: data.residentCountry },
-          { label: '联系电话 Phone', value: phoneDisplay },
-          { label: '电子邮箱 Email', value: data.email },
+        {renderSection(t('japan.result.manualEntry.sections.personal', { defaultValue: '个人信息 Personal' }), '🙋‍♀️', [
+          { label: t('japan.result.manualEntry.fields.occupation', { defaultValue: '职业 Occupation' }), value: data.occupation },
+          { label: t('japan.result.manualEntry.fields.cityOfResidence', { defaultValue: '居住城市 City of Residence' }), value: data.cityOfResidence },
+          { label: t('japan.result.manualEntry.fields.countryOfResidence', { defaultValue: '居住国家 Country of Residence' }), value: data.residentCountry },
+          { label: t('japan.result.manualEntry.fields.phone', { defaultValue: '联系电话 Phone' }), value: phoneDisplay },
+          { label: t('japan.result.manualEntry.fields.email', { defaultValue: '电子邮箱 Email' }), value: data.email },
         ])}
 
-        {renderSection('旅行信息 Travel Details', '🛫', [
-          { label: '旅行目的 Purpose of Visit', value: travelPurposeDisplay },
-          { label: '航班号 Flight Number', value: data.arrivalFlightNumber },
-          { label: '到达日期 Arrival Date', value: data.arrivalDate },
+        {renderSection(t('japan.result.manualEntry.sections.travel', { defaultValue: '旅行信息 Travel Details' }), '🛫', [
+          { label: t('japan.result.manualEntry.fields.purposeOfVisit', { defaultValue: '旅行目的 Purpose of Visit' }), value: travelPurposeDisplay },
+          { label: t('japan.result.manualEntry.fields.flightNumber', { defaultValue: '航班号 Flight Number' }), value: data.arrivalFlightNumber },
+          { label: t('japan.result.manualEntry.fields.arrivalDate', { defaultValue: '到达日期 Arrival Date' }), value: data.arrivalDate },
           {
-            label: '停留天数 Length of Stay',
-            value: data.lengthOfStay ? `${data.lengthOfStay} 天` : '—',
+            label: t('japan.result.manualEntry.fields.lengthOfStay', { defaultValue: '停留天数 Length of Stay' }),
+            value: data.lengthOfStay ? `${data.lengthOfStay} ${t('japan.result.manualEntry.fields.days', { defaultValue: '天' })}` : '—',
           },
         ])}
 
-        {renderSection('住宿与联系 Accommodation', '🏨', [
+        {renderSection(t('japan.result.manualEntry.sections.accommodation', { defaultValue: '住宿与联系 Accommodation' }), '🏨', [
           {
-            label: '住宿地址 Address',
+            label: t('japan.result.manualEntry.fields.address', { defaultValue: '住宿地址 Address' }),
             value: data.accommodationAddress,
             fullWidth: true,
             multiline: true,
           },
-          { label: '住宿电话 Phone', value: data.accommodationPhone },
+          { label: t('japan.result.manualEntry.fields.accommodationPhone', { defaultValue: '住宿电话 Phone' }), value: data.accommodationPhone },
         ])}
 
         <View style={styles.japanManualSectionCard}>
           <View style={styles.japanManualSectionHeader}>
             <Text style={styles.japanManualSectionIcon}>💰</Text>
-            <Text style={styles.japanManualSectionTitle}>资金证明 Funds & Assets</Text>
+            <Text style={styles.japanManualSectionTitle}>{t('japan.result.manualEntry.funds', { defaultValue: '资金证明 Funds & Assets' })}</Text>
           </View>
           <View style={styles.japanManualSectionBody}>
             {Array.isArray(data.fundItems) && data.fundItems.length > 0 ? (
@@ -912,8 +926,12 @@ const ResultScreen = ({ navigation, route }) => {
           <View style={styles.japanInteractiveGuideContent}>
             <Text style={styles.japanInteractiveGuideIcon}>🛬</Text>
             <View style={styles.japanInteractiveGuideTextContainer}>
-              <Text style={styles.japanInteractiveGuideTitle}>查看互动入境指南</Text>
-              <Text style={styles.japanInteractiveGuideSubtitle}>分步骤指导 · 大字体模式</Text>
+              <Text style={styles.japanInteractiveGuideTitle}>
+                {t('japan.result.manualEntry.interactiveGuideTitle', { defaultValue: '查看互动入境指南' })}
+              </Text>
+              <Text style={styles.japanInteractiveGuideSubtitle}>
+                {t('japan.result.manualEntry.interactiveGuideSubtitle', { defaultValue: '分步骤指导 · 大字体模式' })}
+              </Text>
             </View>
             <Text style={styles.japanInteractiveGuideArrow}>›</Text>
           </View>
@@ -1177,12 +1195,17 @@ const ResultScreen = ({ navigation, route }) => {
                   activeOpacity={0.85}
                 >
                   <Text style={styles.entryPackShareText}>
-                    {isShareSessionActive ? '已邀请' : '亲友核实'}
+                    {isShareSessionActive 
+                      ? t('result.share.active', { defaultValue: '已邀请' })
+                      : t('result.share.invite', { defaultValue: '亲友核实' })}
                   </Text>
                 </TouchableOpacity>
-                {isShareSessionActive && shareSession && (
+                  {isShareSessionActive && shareSession && (
                   <Text style={styles.shareStatusText}>
-                    有效至 {new Date(shareSession.expiresAt).toLocaleString()}
+                    {t('result.share.expiryText', { 
+                      time: new Date(shareSession.expiresAt).toLocaleString(),
+                      defaultValue: `有效至 ${new Date(shareSession.expiresAt).toLocaleString()}`
+                    })}
                   </Text>
                 )}
               </View>
@@ -1242,7 +1265,9 @@ const ResultScreen = ({ navigation, route }) => {
                 style={styles.entryPackSecondaryButton}
                 activeOpacity={0.7}
               >
-                <Text style={styles.entryPackSecondaryText}>更改资料</Text>
+                  <Text style={styles.entryPackSecondaryText}>
+                    {t('result.changeInfo', { defaultValue: '更改资料' })}
+                  </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1259,7 +1284,9 @@ const ResultScreen = ({ navigation, route }) => {
             >
               <Text style={styles.actionButtonIcon}>↗</Text>
               <Text style={styles.actionButtonText}>
-                {isShareSessionActive ? '查看分享信息' : '亲友核实'}
+                {isShareSessionActive 
+                  ? t('result.share.viewShare', { defaultValue: '查看分享信息' })
+                  : t('result.share.invite', { defaultValue: '亲友核实' })}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1285,9 +1312,14 @@ const ResultScreen = ({ navigation, route }) => {
               <Text style={styles.actionIcon}>🤖</Text>
               <View style={styles.actionTextContainer}>
                 <Text style={styles.actionTitle}>
-                  {entryInstructions?.kioskName || '自助通关机'}指南
+                  {t('result.kioskGuide.title', { 
+                    kioskName: entryInstructions?.kioskName || t('result.kioskGuide.kioskName', { defaultValue: '自助通关机' }),
+                    defaultValue: `${entryInstructions?.kioskName || '自助通关机'}指南`
+                  })}
                 </Text>
-                <Text style={styles.actionSubtitle}>手把手教您操作</Text>
+                <Text style={styles.actionSubtitle}>
+                  {t('result.kioskGuide.subtitle', { defaultValue: '手把手教您操作' })}
+                </Text>
               </View>
               <Text style={styles.actionArrow}>›</Text>
             </TouchableOpacity>
@@ -1301,7 +1333,7 @@ const ResultScreen = ({ navigation, route }) => {
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
-            所有信息仅保存在您的手机本地
+            {t('result.infoBox', { defaultValue: '所有信息仅保存在您的手机本地' })}
           </Text>
         </View>
 
@@ -1324,13 +1356,17 @@ const ResultScreen = ({ navigation, route }) => {
             <TouchableWithoutFeedback onPress={() => {}}>
               <View style={styles.shareModalSheet}>
                 <View style={styles.shareModalHandle} />
-                <Text style={styles.shareModalTitle}>请亲友协助核对资料</Text>
+                <Text style={styles.shareModalTitle}>
+                  {t('result.share.modalTitle', { defaultValue: '请亲友协助核对资料' })}
+                </Text>
                 <Text style={styles.shareModalSubtitle}>
-                  分享下方链接与密码给信任的亲友，链接有效期24小时。亲友可补充或修改入境所需信息，更新后会同步到本入境包。
+                  {t('result.share.modalSubtitle', { defaultValue: '分享下方链接与密码给信任的亲友，链接有效期24小时。亲友可补充或修改入境所需信息，更新后会同步到本入境包。' })}
                 </Text>
 
                 <View style={styles.shareInfoBlock}>
-                  <Text style={styles.shareInfoLabel}>分享链接</Text>
+                  <Text style={styles.shareInfoLabel}>
+                    {t('result.share.linkLabel', { defaultValue: '分享链接' })}
+                  </Text>
                   <View style={styles.shareInfoRow}>
                     <Text style={styles.shareInfoValue} numberOfLines={1}>
                       {shareSession?.link}
@@ -1340,14 +1376,22 @@ const ResultScreen = ({ navigation, route }) => {
                       onPress={() => handleCopy(shareSession?.link || '', 'link')}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.shareCopyText}>复制</Text>
+                      <Text style={styles.shareCopyText}>
+                        {t('result.share.copy', { defaultValue: '复制' })}
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                  {copiedField === 'link' && <Text style={styles.shareCopiedTag}>已复制</Text>}
+                  {copiedField === 'link' && (
+                    <Text style={styles.shareCopiedTag}>
+                      {t('result.share.copied', { defaultValue: '已复制' })}
+                    </Text>
+                  )}
                 </View>
 
                 <View style={styles.shareInfoBlock}>
-                  <Text style={styles.shareInfoLabel}>访问密码</Text>
+                  <Text style={styles.shareInfoLabel}>
+                    {t('result.share.passwordLabel', { defaultValue: '访问密码' })}
+                  </Text>
                   <View style={styles.shareInfoRow}>
                     <Text style={styles.sharePasswordValue}>{shareSession?.password}</Text>
                     <TouchableOpacity
@@ -1355,14 +1399,23 @@ const ResultScreen = ({ navigation, route }) => {
                       onPress={() => handleCopy(shareSession?.password || '', 'password')}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.shareCopyText}>复制</Text>
+                      <Text style={styles.shareCopyText}>
+                        {t('result.share.copy', { defaultValue: '复制' })}
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                  {copiedField === 'password' && <Text style={styles.shareCopiedTag}>已复制</Text>}
+                  {copiedField === 'password' && (
+                    <Text style={styles.shareCopiedTag}>
+                      {t('result.share.copied', { defaultValue: '已复制' })}
+                    </Text>
+                  )}
                 </View>
 
                 <Text style={styles.shareExpiryText}>
-                  有效期至：{shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--'}
+                  {t('result.share.expiryText', {
+                    time: shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--',
+                    defaultValue: `有效期至：${shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--'}`
+                  })}
                 </Text>
 
                 <View style={styles.shareActionsRow}>
@@ -1371,19 +1424,23 @@ const ResultScreen = ({ navigation, route }) => {
                     onPress={() => setShareModalVisible(false)}
                     activeOpacity={0.9}
                   >
-                    <Text style={styles.sharePrimaryText}>完成，去粘贴给亲友</Text>
+                    <Text style={styles.sharePrimaryText}>
+                      {t('result.share.primaryAction', { defaultValue: '完成，去粘贴给亲友' })}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.shareCancelAction}
                     onPress={handleCancelShare}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.shareCancelText}>取消此次分享</Text>
+                    <Text style={styles.shareCancelText}>
+                      {t('result.share.cancelAction', { defaultValue: '取消此次分享' })}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
                 <Text style={styles.shareSecurityNote}>
-                  安全提示：请仅分享给可信赖的家人或朋友，您可随时取消分享以立即终止访问。
+                  {t('result.share.securityNote', { defaultValue: '安全提示：请仅分享给可信赖的家人或朋友，您可随时取消分享以立即终止访问。' })}
                 </Text>
               </View>
             </TouchableWithoutFeedback>

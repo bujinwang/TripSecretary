@@ -984,6 +984,11 @@ class UserDataService {
     */
    static async updateTravelInfo(userId, destination, updates) {
      try {
+       // Validate userId
+       if (!userId) {
+         throw new Error('userId is required for updateTravelInfo');
+       }
+
        console.log('Updating travel info for user:', userId, 'destination:', destination);
 
        // Get existing travel info
@@ -1019,8 +1024,11 @@ class UserDataService {
          }
        }
 
-       // Merge with existing data
-       const merged = { ...existing, ...nonEmptyUpdates };
+       // Add userId to nonEmptyUpdates (same pattern as saveTravelInfo)
+       nonEmptyUpdates.userId = userId;
+
+       // Merge with existing data (preserve existing id)
+       const merged = { ...existing, ...nonEmptyUpdates, id: existing.id };
        await SecureStorageService.saveTravelInfo(merged);
 
        // Determine if arrival date changed (supporting legacy and new field names)

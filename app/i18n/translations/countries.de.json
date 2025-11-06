@@ -734,8 +734,158 @@
       "continueButton": "Weiter zu Reiseinformationen"
     }
   },
+  "result": {
+    "manualEntry": {
+      "title": "Japan Einreisekarte Ausfüllanleitung",
+      "intro": "Bitte füllen Sie die Papier-Einreisekarte und das Zolldeklarationsformular gemäß den untenstehenden Informationen aus. Sie können offline anzeigen, und wir empfehlen, einen Screenshot zu machen.",
+      "badges": {
+        "handwritten": "✍️ Handgeschriebene Papier-Einreisekarte",
+        "backedUp": "📦 Informationen im Einreise-Paket gesichert",
+        "offline": "📵 Offline verfügbar"
+      },
+      "sections": {
+        "passport": "Reisepass-Informationen",
+        "personal": "Persönliche Informationen",
+        "travel": "Reisedetails",
+        "accommodation": "Unterkunft und Kontakt"
+      },
+      "fields": {
+        "fullName": "Vollständiger Name",
+        "passportNo": "Reisepass-Nr.",
+        "nationality": "Nationalität",
+        "dateOfBirth": "Geburtsdatum",
+        "gender": "Geschlecht",
+        "passportExpiry": "Reisepass-Ablauf",
+        "occupation": "Beruf",
+        "cityOfResidence": "Wohnort",
+        "countryOfResidence": "Wohnland",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "purposeOfVisit": "Besuchszweck",
+        "flightNumber": "Flugnummer",
+        "arrivalDate": "Ankunftsdatum",
+        "lengthOfStay": "Aufenthaltsdauer",
+        "days": "Tage",
+        "address": "Adresse",
+        "accommodationPhone": "Unterkunft Telefon"
+      },
+      "funds": "Geldmittel und Vermögenswerte",
+      "noFunds": "Keine Geldmittelinformationen bereitgestellt",
+      "helpTip": "Bitte füllen Sie die Papier-Einreisekarte und das Zolldeklarationsformular im Flugzeug oder nach Ihrer Ankunft am Flughafen aus, indem Sie sich auf die oben genannten Informationen beziehen. Wir empfehlen, einen Screenshot zur einfachen Referenz zu machen.",
+      "loading": "Lade Japan-Einreiseinformationen...",
+      "heroTitle": "Ist meine Japan-Reise bereit? 🌸",
+      "heroSubtitle": "Sehen Sie, wie gut Sie vorbereitet sind und machen Sie sich bereit für Ihr Japan-Abenteuer!",
+      "statusText": {
+        "complete": "Japan-Einreisevorbereitung abgeschlossen! 🌸",
+        "almost": "Nur noch ein paar Überprüfungen nötig~",
+        "incomplete": "Setzen Sie die Vervollständigung Ihrer Informationen fort!",
+        "loading": "Lade Ihre Informationen..."
+      },
+      "statusSubtitle": {
+        "complete": "Alle Informationen sind organisiert und jederzeit am Flughafen vorzeigbar.",
+        "almost": "Einige weitere Punkte benötigen eine Bestätigung, vervollständigen Sie sie für eine sorgenfreie Reise.",
+        "incomplete": "Vervollständigen Sie alle Informationen, um ein vollständiges Japan-Einreise-Paket zu erstellen.",
+        "loading": "Bitte warten Sie, während wir Ihre Reisendeninformationen organisieren."
+      },
+      "itemsCompleted": "{{completed}}/{{total}} Elemente abgeschlossen",
+      "editButton": "Erneut Bearbeiten",
+      "shareButton": "Familie/Freunde um Hilfe beim Bearbeiten Bitten",
+      "progressLabel": "Vorbereitungsfortschritt",
+      "interactiveGuideTitle": "Interaktiven Einreiseführer Anzeigen",
+      "interactiveGuideSubtitle": "Schritt-für-Schritt-Anleitung · Großschriftmodus"
+    },
+    "title": "Einreise-Paket Erfolgreich Erstellt!",
+    "subtitle": "Ihre Einreiseinformationen wurden organisiert",
+    "entryPack": {
+      "title": "Einreise-Paket",
+      "subtitleParts": {
+        "departure": "Abreise {{date}}",
+        "arrival": "Ankunft {{date}}",
+        "flight": "Flug {{flight}}",
+        "missing": "Bitte vervollständigen Sie die Reiseinformationen"
+      },
+      "fields": {
+        "departureDate": "Abreisedatum",
+        "flightNo": "Flugnummer",
+        "arrivalDate": "Ankunftsdatum",
+        "accommodation": "Unterkunft"
+      },
+      "actions": {
+        "startGuide": "Ankunftsführer Starten"
+      },
+      "lastUpdated": "Zuletzt aktualisiert: {{time}}"
+    },
+    "historyBanner": {
+      "primaryCta": {
+        "title": "Ankunftsführer Starten",
+        "subtitle": "Schritt für Schritt · Großschrift verfügbar"
+      },
+      "secondaryCta": {
+        "editInfo": "Informationen Bearbeiten"
+      }
+    },
+    "digitalInfo": {
+      "title": "{{systemName}} Beantragen",
+      "button": "Jetzt Beantragen"
+    },
+    "infoBox": "Alle Informationen werden nur lokal auf Ihrem Gerät gespeichert",
+    "share": {
+      "modalTitle": "Familie/Freunde um Informationsüberprüfung Bitten",
+      "modalSubtitle": "Teilen Sie den untenstehenden Link und das Passwort mit vertrauenswürdigen Familienmitgliedern/Freunden. Der Link ist 24 Stunden gültig. Sie können Einreiseinformationen hinzufügen oder ändern, und Updates werden mit diesem Einreise-Paket synchronisiert.",
+      "linkLabel": "Teilungslink",
+      "passwordLabel": "Zugriffspasswort",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "expiryText": "Gültig bis: {{time}}",
+      "primaryAction": "Fertig, Gehen Sie Einfügen für Familie/Freunde",
+      "cancelAction": "Diese Teilung Abbrechen",
+      "securityNote": "Sicherheitshinweis: Bitte teilen Sie nur mit vertrauenswürdigen Familienmitgliedern oder Freunden. Sie können die Teilung jederzeit abbrechen, um den Zugriff sofort zu beenden.",
+      "cancelTitle": "Teilung Abbrechen",
+      "cancelMessage": "Diese Aktion wird den Teilungslink und das Passwort sofort ungültig machen, und Familie/Freunde können nicht mehr darauf zugreifen. Sind Sie sicher, dass Sie abbrechen möchten?",
+      "keep": "Behalten",
+      "confirmCancel": "Teilung Abbrechen",
+      "active": "Teilung Aktiv",
+      "viewShare": "Teilungsinformationen Anzeigen",
+      "invite": "Überprüfung Einladen"
+    },
+    "notProvided": "Nicht bereitgestellt",
+    "pending": "Ausstehende Bestätigung",
+    "changeInfo": "Informationen Ändern",
+    "kioskGuide": {
+      "title": "{{kioskName}} Führer",
+      "kioskName": "Selbstbedienungsschalter",
+      "subtitle": "Schritt-für-Schritt-Anweisungen"
+    }
+  },
   "common": {
+    "ok": "OK",
+    "back": "Zurück",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "reset": "Zurücksetzen",
     "error": "Fehler",
-    "locale": "de"
+    "yes": "Ja",
+    "no": "Nein",
+    "locale": "de",
+    "qrCode": "QR-Code",
+    "generatedBy": "Erstellt von BorderBuddy",
+    "selectNationality": "Bitte Nationalität auswählen",
+    "searchNationality": "Nationalität suchen...",
+    "selectOccupation": "Bitte Beruf auswählen",
+    "searchOccupation": "Beruf suchen...",
+    "enterOccupation": "Bitte geben Sie Ihren Beruf ein",
+    "occupationExample": "z.B. BUCHHALTER, INGENIEUR",
+    "occupationHelp": "Bitte geben Sie Ihren Beruf auf Englisch ein",
+    "selectTravelPurpose": "Bitte Reisezweck auswählen",
+    "searchTravelPurpose": "Reisezweck suchen...",
+    "enterTravelPurposeDetails": "Bitte geben Sie Reisezweckdetails ein",
+    "travelPurposeModalTitle": "Reisezweck Auswählen",
+    "notAvailable": "N/A"
+  },
+  "customs": {
+    "yes": "JA ✓",
+    "no": "NEIN",
+    "usa": "USA",
+    "otherCountry": "Anderes Land"
   }
 }

@@ -8,6 +8,7 @@
 import React from 'react';
 import { NationalitySelector, TravelPurposeSelector } from '@app/components';
 import DebouncedSave from '@app/utils/DebouncedSave';
+import { useLocale } from '../../../../i18n/LocaleContext';
 
 const TravelPurposeSubSection = ({
   // Form state
@@ -27,10 +28,12 @@ const TravelPurposeSubSection = ({
   saveDataToSecureStorageWithOverride,
   setLastEditedAt,
 }) => {
+  const { t } = useLocale();
+  
   return (
     <>
       <TravelPurposeSelector
-        label="为什么来泰国？"
+        label={t('thailand.travelInfo.fields.travelPurpose', { defaultValue: '为什么来泰国？' })}
         value={travelPurpose}
         onValueChange={async (code) => {
           setTravelPurpose(code);
@@ -65,7 +68,7 @@ const TravelPurposeSubSection = ({
             debouncedSaveData();
           }
         }}
-        placeholder="请选择旅行目的"
+        placeholder={t('thailand.travelInfo.fields.travelPurpose', { defaultValue: '请选择旅行目的' })}
         purposeType="thailand"
         locale="zh"
         showSearch={true}
@@ -77,23 +80,23 @@ const TravelPurposeSubSection = ({
       />
 
       <NationalitySelector
-        label="最近30天去过哪些国家？"
+        label={t('thailand.travelInfo.fields.recentStayCountry', { defaultValue: '最近30天去过哪些国家？' })}
         value={recentStayCountry}
         onValueChange={(code) => {
           setRecentStayCountry(code);
           handleFieldBlur('recentStayCountry', code);
         }}
-        helpText="选择你最近30天内访问过的国家"
+        helpText={t('thailand.travelInfo.fieldHelp.recentStayCountry', { defaultValue: '选择你最近30天内访问过的国家' })}
       />
 
       <NationalitySelector
-        label="从哪个国家登机来泰国？"
+        label={t('thailand.travelInfo.fields.boardingCountry', { defaultValue: '从哪个国家登机来泰国？' })}
         value={boardingCountry}
         onValueChange={(code) => {
           setBoardingCountry(code);
           handleFieldBlur('boardingCountry', code);
         }}
-        helpText="选择你登机前往泰国的国家"
+        helpText={t('thailand.travelInfo.fieldHelp.boardingCountry', { defaultValue: '选择你登机前往泰国的国家' })}
       />
     </>
   );

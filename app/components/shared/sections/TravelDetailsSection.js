@@ -177,6 +177,8 @@ const TravelDetailsSection = ({
     transitNo: 'No',
     accommodationType: 'Accommodation Type',
     accommodationTypeHelp: 'Select where you will stay',
+    accommodationTypePlaceholder: 'Please select accommodation type',
+    accommodationTypeModalTitle: 'Select accommodation type',
     customAccommodationType: 'Other accommodation type',
     province: 'Province/State',
     provinceHelp: 'Select province',
@@ -416,6 +418,8 @@ const TravelDetailsSection = ({
                   }
                   debouncedSaveData && debouncedSaveData();
                 }}
+                placeholder={l.accommodationTypePlaceholder || l.accommodationTypeHelp || '请选择您的住宿类型'}
+                modalTitle={l.accommodationTypeModalTitle || l.accommodationType || '选择住宿类型'}
                 helpText={l.accommodationTypeHelp}
                 error={!!errors.accommodationType}
                 errorMessage={errors.accommodationType}

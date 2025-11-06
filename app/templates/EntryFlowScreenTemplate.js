@@ -76,6 +76,41 @@ const EntryFlowScreenTemplate = ({
   // Optional custom data loader
   useDataLoaderHook,
 }) => {
+  // Validate required props - provide defaults to prevent context errors
+  if (!config) {
+    console.error('[EntryFlowScreenTemplate] config is required');
+    // Return a minimal context provider to prevent hook errors
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config: {}, t: () => '', navigation: null, route: null }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
+  
+  if (!route) {
+    console.error('[EntryFlowScreenTemplate] route is required');
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config, t: () => '', navigation: null, route: null }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
+  
+  if (!navigation) {
+    console.error('[EntryFlowScreenTemplate] navigation is required');
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config, t: () => '', navigation: null, route }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
+
   const { t } = useLocale();
   const passportParam = route.params?.passport;
   const destination = route.params?.destination;
@@ -197,8 +232,8 @@ const EntryFlowScreenTemplate = ({
     loadData();
   }, [loadData]);
 
-  // Context value
-  const contextValue = {
+  // Context value - memoized to ensure stability
+  const contextValue = useMemo(() => ({
     // Config
     config,
     t,
@@ -222,7 +257,24 @@ const EntryFlowScreenTemplate = ({
     // Actions
     loadData,
     onRefresh,
-  };
+  }), [
+    config,
+    t,
+    navigation,
+    route,
+    passport,
+    destination,
+    userId,
+    isLoading,
+    refreshing,
+    completionPercent,
+    completionStatus,
+    categories,
+    userData,
+    arrivalDate,
+    loadData,
+    onRefresh,
+  ]);
 
   return (
     <EntryFlowTemplateContext.Provider value={contextValue}>
@@ -403,6 +455,13 @@ EntryFlowScreenTemplate.AutoContent = () => {
   const hasSubmitScreen = Boolean(config.screens?.submit);
   const hasEntryGuideScreen = Boolean(config.screens?.entryGuide);
   const useEntryGuideAsPrimary = isReady && !hasSubmitScreen && hasEntryGuideScreen;
+  
+  // Determine if primary action is showing "edit travel info"
+  // PrimaryActionCard shows "edit travel info" when:
+  // - NOT useEntryGuideAsPrimary (not showing "开始入境")
+  // - AND NOT (isReady && hasSubmitScreen) (not showing "提交入境卡")
+  // This matches the exact logic in PrimaryActionCard's title assignment
+  const primaryActionIsEdit = !useEntryGuideAsPrimary && !(isReady && hasSubmitScreen);
 
   return (
     <EntryFlowScreenTemplate.ScrollContainer>
@@ -426,16 +485,10 @@ EntryFlowScreenTemplate.AutoContent = () => {
         completionStatus={completionStatus}
         userData={userData}
         destination={destinationName}
+        primaryActionIsEdit={primaryActionIsEdit}
       />
 
-      {useEntryGuideAsPrimary && (
-        <SecondaryEditActionCard
-          t={t}
-          navigation={navigation}
-          route={route}
-          config={config}
-        />
-      )}
+      {/* SecondaryEditActionCard removed - edit functionality is handled by QuickActionsRow */}
 
       {arrivalDate && config.features?.submissionCountdown !== false && (
         <CountdownCard
@@ -452,6 +505,7 @@ EntryFlowScreenTemplate.AutoContent = () => {
         userData={userData}
         config={config}
         useEntryGuideAsPrimary={useEntryGuideAsPrimary}
+        primaryActionIsEdit={primaryActionIsEdit}
       />
 
       <HelpCard t={t} />
@@ -568,6 +622,7 @@ function PrimaryActionCard({
   isReady,
   useEntryGuideAsPrimary,
   destination,
+  primaryActionIsEdit,
 }) {
   const hasSubmitScreen = Boolean(config.screens?.submit);
   const entryGuideScreen = config.screens?.entryGuide;
@@ -597,7 +652,7 @@ function PrimaryActionCard({
     ? t(`${config.destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: '开始入境' })
     : isReady && hasSubmitScreen
     ? t(`${config.destinationId}.entryFlow.actions.submitThai`, { defaultValue: '提交入境卡' })
-    : t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '修改旅行信息' });
+    : t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' });
   const subtitle = useEntryGuideAsPrimary
     ? t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
@@ -705,7 +760,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
           </YStack>
           <YStack alignItems="center">
             <TamaguiText fontSize="$3" fontWeight="700" color="#1D4ED8">
-              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '修改旅行信息' })}
+              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
             </TamaguiText>
             <TamaguiText
               fontSize="$2"
@@ -806,9 +861,13 @@ function CountdownCard({ arrivalDate, t, config }) {
   );
 }
 
-function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuideAsPrimary }) {
+function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuideAsPrimary, primaryActionIsEdit }) {
   const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
-  const showEditQuickAction = config.features?.disableEditQuickAction !== true;
+  // Hide edit quick action if:
+  // 1. Primary action is already showing "edit travel info" (when incomplete)
+  // This prevents duplicate edit buttons
+  // Note: SecondaryEditActionCard has been removed, so edit button is always available in QuickActionsRow when primary is not editing
+  const showEditQuickAction = config.features?.disableEditQuickAction !== true && !primaryActionIsEdit;
   const showEntryGuideQuickAction =
     config.features?.entryGuideQuickAction === true && !useEntryGuideAsPrimary;
 
@@ -907,10 +966,10 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
           <YStack alignItems="center" gap="$sm">
             <TamaguiText fontSize={26}>✏️</TamaguiText>
             <TamaguiText fontSize="$3" fontWeight="700">
-              {t(`${config.destinationId}.entryFlow.actions.editInfoThai`, { defaultValue: '编辑旅行信息' })}
+              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
             </TamaguiText>
             <TamaguiText fontSize="$2" color="$textSecondary">
-              {t(`${config.destinationId}.entryFlow.actions.editInfoThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
+              {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
             </TamaguiText>
           </YStack>
         </BaseCard>

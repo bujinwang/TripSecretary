@@ -12,13 +12,24 @@ const countriesMs = require('./countries.ms.json');
 let zhTWCache = null;
 let zhHKCache = null;
 
+// Safe conversion wrapper to prevent crashes during initialization
+const safeConvertToTraditional = (source, variant) => {
+  try {
+    return convertToTraditional(source, variant);
+  } catch (error) {
+    console.error(`Error converting to ${variant}:`, error);
+    // Return source as fallback to prevent crash
+    return source;
+  }
+};
+
 const countryTranslations = {
   en: countriesEn,
   'zh-CN': countriesZh,
   // Lazy getter for Traditional Chinese - convert on first access
   get 'zh-TW'() {
     if (!zhTWCache) {
-      zhTWCache = convertToTraditional(countriesZh, 'zh-TW');
+      zhTWCache = safeConvertToTraditional(countriesZh, 'zh-TW');
     }
     return zhTWCache;
   },
@@ -29,7 +40,7 @@ const countryTranslations = {
   // Add fallback for legacy 'zh' - use Traditional
   get 'zh'() {
     if (!zhTWCache) {
-      zhTWCache = convertToTraditional(countriesZh, 'zh-TW');
+      zhTWCache = safeConvertToTraditional(countriesZh, 'zh-TW');
     }
     return zhTWCache;
   },

@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate.v2';
+import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { vietnamComprehensiveTravelInfoConfig } from '../../config/destinations/vietnam/comprehensiveTravelInfoConfig';
 
 const VietnamTravelInfoScreenV2 = ({ navigation, route }) => {

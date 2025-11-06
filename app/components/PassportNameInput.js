@@ -94,15 +94,17 @@ const PassportNameInput = ({
     errorFlag,
     placeholderText,
   }) => (
-    <YStack flex={1}>
-      <TamaguiText
-        fontSize="$1"
-        color="$textSecondary"
-        marginBottom="$xs"
-        fontWeight="600"
-      >
-        {labelText}
-      </TamaguiText>
+    <YStack flex={1} alignItems="flex-start">
+      <YStack minHeight={32} justifyContent="flex-start" marginBottom="$xs">
+        <TamaguiText
+          fontSize="$1"
+          color="$textSecondary"
+          fontWeight="600"
+          numberOfLines={2}
+        >
+          {labelText}
+        </TamaguiText>
+      </YStack>
       <Input
         value={fieldValue}
         onChangeText={(text) => {
@@ -143,7 +145,7 @@ const PassportNameInput = ({
         </TamaguiText>
       )}
 
-      <XStack gap="$sm">
+      <XStack gap="$sm" alignItems="flex-start">
         {renderNameField({
           labelText: surnameLabel,
           value: currentSurname,

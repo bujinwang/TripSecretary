@@ -1,7 +1,7 @@
 /**
- * Enhanced Travel Info Template - V2 (Thailand-Grade Features)
+ * Enhanced Travel Info Template
  *
- * V2 adds all Thailand's sophisticated features:
+ * Production-grade template with Thailand-level features:
  * - Field state tracking (user-modified vs pre-filled)
  * - Validation engine (config-driven)
  * - Smart button (dynamic label)
@@ -9,13 +9,13 @@
  * - Field filtering (only save user-modified)
  * - Immediate save for critical fields
  *
- * V2 Goals:
+ * Features:
  * ✅ User interaction tracker
  * ✅ Validation with warnings/errors
  * ✅ Smart button
  * ✅ Fund modal management
  * ✅ Field state filtering on save
- * ✅ Production-grade like Thailand
+ * ✅ Production-grade implementation
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -49,10 +49,11 @@ import BackButton from '../components/BackButton';
 // Import Fund Modal
 import FundItemDetailModal from '../components/FundItemDetailModal';
 
-// Import V2 Hooks
+// Import Template Hooks
 import { useTemplateUserInteractionTracker } from './hooks/useTemplateUserInteractionTracker';
 import { useTemplateValidation } from './hooks/useTemplateValidation';
 import { useTemplateFundManagement } from './hooks/useTemplateFundManagement';
+import { useTemplatePhotoManagement } from './hooks/useTemplatePhotoManagement';
 import TemplateFieldStateManager from './utils/TemplateFieldStateManager';
 
 // ============================================
@@ -79,7 +80,7 @@ const EnhancedTravelInfoTemplate = ({
 }) => {
   // Early validation - config is required
   if (!config) {
-    console.error('[Template V2] ERROR: config prop is required but not provided');
+    console.error('[Template] ERROR: config prop is required but not provided');
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <TamaguiText fontSize="$5" color="$error" textAlign="center" marginBottom="$md">
@@ -143,6 +144,191 @@ const EnhancedTravelInfoTemplate = ({
       resolvedLabels.subtitle = t(subtitleKey, { defaultValue: labelSource.subtitle });
     }
     
+    // Resolve field labels from config
+    if (sectionConfig?.fields) {
+      Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
+        if (fieldConfig?.labelKey) {
+          // Map field keys to component label keys
+          const labelKeyMap = {
+            // Passport fields
+            surname: ['surname', 'surnameLabel'],
+            middleName: ['middleName', 'middleNameLabel'],
+            givenName: ['givenName', 'givenNameLabel'],
+            passportNo: 'passportNo',
+            nationality: 'nationality',
+            dob: 'dob',
+            expiryDate: 'expiryDate',
+            sex: 'sex',
+            visaNumber: 'visaNumber',
+            // Personal fields
+            occupation: 'occupation',
+            cityOfResidence: 'cityOfResidence',
+            countryOfResidence: 'countryOfResidence',
+            residentCountry: 'countryOfResidence', // Alias
+            phoneCode: 'phoneCode',
+            phoneNumber: 'phoneNumber',
+            email: 'email',
+            // Travel fields
+            travelPurpose: 'travelPurpose',
+            recentStayCountry: 'recentStayCountry',
+            boardingCountry: 'boardingCountry',
+            arrivalFlightNumber: 'arrivalFlightNumber',
+            arrivalDate: 'arrivalDate',
+            departureFlightNumber: 'departureFlightNumber',
+            departureDate: 'departureDate',
+            isTransitPassenger: 'isTransitPassenger',
+            accommodationType: 'accommodationType',
+            province: 'province',
+            district: 'district',
+            subDistrict: 'subDistrict',
+            postalCode: 'postalCode',
+            hotelAddress: 'hotelAddress',
+            accommodationAddress: 'hotelAddress', // Alias
+            accommodationPhone: 'accommodationPhone',
+            ketaNumber: 'ketaNumber',
+            hasKeta: 'hasKeta',
+            stayDuration: 'stayDuration',
+            city: 'city',
+            contactNumber: 'contactNumber',
+          };
+          
+          const componentLabelKeys = labelKeyMap[fieldKey];
+          const translatedLabel = t(fieldConfig.labelKey, {
+            defaultValue: fieldConfig.defaultLabel || ''
+          });
+          
+          // Handle multiple label keys (e.g., surname -> surnameLabel for PassportNameInput)
+          if (Array.isArray(componentLabelKeys)) {
+            componentLabelKeys.forEach(key => {
+              resolvedLabels[key] = translatedLabel;
+            });
+          } else {
+            const componentLabelKey = componentLabelKeys || fieldKey;
+            resolvedLabels[componentLabelKey] = translatedLabel;
+          }
+          
+          // Also resolve help text - try fieldHelp key first, then nested .help, then config helpText
+          const baseKey = Array.isArray(componentLabelKeys) ? componentLabelKeys[0] : (componentLabelKeys || fieldKey);
+          
+          // Try fieldHelp structure first (e.g., kr.travelInfo.fieldHelp.nationality)
+          const fieldHelpKey = `${destId}.travelInfo.fieldHelp.${fieldKey}`;
+          let translatedHelpText = t(fieldHelpKey, { defaultValue: null });
+          
+          // If not found, try nested structure (e.g., kr.travelInfo.fields.nationality.help)
+          if (!translatedHelpText) {
+            const nestedHelpKey = `${destId}.travelInfo.fields.${fieldKey}.help`;
+            translatedHelpText = t(nestedHelpKey, { defaultValue: null });
+          }
+          
+          // Use config helpText as fallback
+          if (!translatedHelpText && fieldConfig.helpText) {
+            translatedHelpText = fieldConfig.helpText;
+          }
+          
+          if (translatedHelpText) {
+            resolvedLabels[`${baseKey}Help`] = translatedHelpText;
+          }
+          
+          // Resolve placeholders
+          if (fieldConfig.placeholder) {
+            const placeholderKey = `${destId}.travelInfo.fields.${fieldKey}.placeholder`;
+            const translatedPlaceholder = t(placeholderKey, { defaultValue: fieldConfig.placeholder });
+            resolvedLabels[`${baseKey}Placeholder`] = translatedPlaceholder;
+          }
+        }
+      });
+    }
+    
+    // Resolve additional travel section labels that aren't in fields config
+    if (sectionKey === 'travel') {
+      const additionalLabels = {
+        isTransitPassenger: 'isTransitPassenger',
+        transitYes: 'transitYes',
+        transitNo: 'transitNo',
+        hotelAddressPlaceholder: 'hotelAddressPlaceholder',
+        provincePlaceholder: 'provincePlaceholder',
+        districtPlaceholder: 'districtPlaceholder',
+        subDistrictPlaceholder: 'subDistrictPlaceholder',
+        accommodationTypePlaceholder: 'accommodationTypePlaceholder',
+        accommodationTypeModalTitle: 'accommodationTypeModalTitle',
+        introText: 'introText',
+        introIcon: 'introIcon',
+      };
+      
+      Object.entries(additionalLabels).forEach(([labelKey, fieldKey]) => {
+        // Try to resolve from i18n
+        const translationKey = `${destId}.travelInfo.sections.travel.${labelKey}`;
+        const translated = t(translationKey, { defaultValue: null });
+        if (translated) {
+          resolvedLabels[labelKey] = translated;
+        } else {
+          // Try field-level resolution for some labels
+          if (['isTransitPassenger', 'transitYes', 'transitNo'].includes(labelKey)) {
+            const fieldTranslationKey = `${destId}.travelInfo.fields.${fieldKey}`;
+            const fieldTranslated = t(fieldTranslationKey, { defaultValue: null });
+            if (fieldTranslated) {
+              resolvedLabels[labelKey] = fieldTranslated;
+            }
+          }
+          // For placeholders, try fieldHelp structure
+          if (labelKey.includes('Placeholder')) {
+            const baseFieldKey = labelKey.replace('Placeholder', '');
+            const placeholderKey = `${destId}.travelInfo.fields.${baseFieldKey}.placeholder`;
+            const placeholderTranslated = t(placeholderKey, { defaultValue: null });
+            if (placeholderTranslated) {
+              resolvedLabels[labelKey] = placeholderTranslated;
+            }
+          }
+          // For modal titles, try sections.travel structure
+          if (labelKey.includes('ModalTitle')) {
+            const modalTitleKey = `${destId}.travelInfo.sections.travel.${labelKey}`;
+            const modalTitleTranslated = t(modalTitleKey, { defaultValue: null });
+            if (modalTitleTranslated) {
+              resolvedLabels[labelKey] = modalTitleTranslated;
+            }
+          }
+        }
+      });
+    }
+    
+    // Special handling for funds section labels
+    if (sectionKey === 'funds') {
+      // Resolve funds-specific labels
+      const fundsLabels = [
+        'introText',
+        'addCash',
+        'addCreditCard',
+        'addBankBalance',
+        'addBankCard',
+        'addDocument',
+        'empty',
+        'notProvided',
+        'photoAttached',
+      ];
+      
+      fundsLabels.forEach(labelKey => {
+        const translationKey = `${destId}.travelInfo.sections.funds.${labelKey}`;
+        const translated = t(translationKey, { defaultValue: null });
+        if (translated) {
+          resolvedLabels[labelKey] = translated;
+        }
+      });
+      
+      // Resolve fund types
+      const fundTypeKeys = ['cash', 'credit_card', 'bank_card', 'bank_balance', 'document', 'other'];
+      if (!resolvedLabels.fundTypes) {
+        resolvedLabels.fundTypes = {};
+      }
+      
+      fundTypeKeys.forEach(typeKey => {
+        const translationKey = `${destId}.travelInfo.sections.funds.fundTypes.${typeKey}`;
+        const translated = t(translationKey, { defaultValue: null });
+        if (translated) {
+          resolvedLabels.fundTypes[typeKey] = translated;
+        }
+      });
+    }
+    
     return resolvedLabels;
   }, [t, config?.destinationId, destinationId]);
 
@@ -153,7 +339,7 @@ const EnhancedTravelInfoTemplate = ({
 
   const userId = useMemo(() => {
     const id = passport?.id || 'user_001';
-    console.log('[Template V2] userId resolved:', id, 'from passport:', passport);
+    console.log('[Template] userId resolved:', id, 'from passport:', passport);
     return id;
   }, [passport?.id]);
 
@@ -220,7 +406,7 @@ const EnhancedTravelInfoTemplate = ({
 
     // Build state object from config sections
     if (!config?.sections) {
-      console.warn('[Template V2] config.sections is undefined, skipping form initialization');
+      console.warn('[Template] config.sections is undefined, skipping form initialization');
       setFormState(initialState);
       return;
     }
@@ -265,7 +451,7 @@ const EnhancedTravelInfoTemplate = ({
 
     // Pre-fill with passport data from route params if available
     if (passport) {
-      console.log('[Template V2] Pre-filling from route.params passport:', passport);
+      console.log('[Template] Pre-filling from route.params passport:', passport);
       if (passport.surname) initialState.surname = passport.surname;
       if (passport.middleName) initialState.middleName = passport.middleName;
       if (passport.givenName) initialState.givenName = passport.givenName;
@@ -304,12 +490,12 @@ const EnhancedTravelInfoTemplate = ({
     // Scroll position state
     initialState.scrollPosition = 0;
 
-    console.log('[Template V2] Initializing formState with fields:', Object.keys(initialState));
+    console.log('[Template] Initializing formState with fields:', Object.keys(initialState));
     setFormState(initialState);
   }, [config, passport]);
 
   // ============================================
-  // V2 HOOK: USER INTERACTION TRACKER
+  // HOOK: USER INTERACTION TRACKER
   // ============================================
   const userInteractionTracker = useTemplateUserInteractionTracker(
     config.destinationId,
@@ -321,7 +507,7 @@ const EnhancedTravelInfoTemplate = ({
   // ============================================
   const ensureEntryInfoRecord = useCallback(async (overrides = {}) => {
     if (!destinationId) {
-      console.warn('[Template V2] Entry info sync skipped: destinationId is missing');
+      console.warn('[Template] Entry info sync skipped: destinationId is missing');
       return null;
     }
 
@@ -356,7 +542,7 @@ const EnhancedTravelInfoTemplate = ({
           try {
             return record.toJSON();
           } catch (jsonError) {
-            console.warn('[Template V2] Failed to normalize record via toJSON:', jsonError);
+            console.warn('[Template] Failed to normalize record via toJSON:', jsonError);
           }
         }
 
@@ -429,7 +615,7 @@ const EnhancedTravelInfoTemplate = ({
 
       return entryInfo;
     } catch (error) {
-      console.error('[Template V2] Failed to ensure entry info record:', error);
+      console.error('[Template] Failed to ensure entry info record:', error);
       updateFormState({ entryInfoInitialized: false });
       return null;
     }
@@ -440,7 +626,7 @@ const EnhancedTravelInfoTemplate = ({
   // ============================================
   const loadDataFromUserDataService = useCallback(async () => {
     try {
-      console.log('[Template V2] Loading data from UserDataService for user:', userId);
+      console.log('[Template] Loading data from UserDataService for user:', userId);
       updateFormState({ isLoading: true });
 
       await UserDataService.initialize(userId);
@@ -457,19 +643,19 @@ const EnhancedTravelInfoTemplate = ({
       if (!resolvedTravelData && destinationId) {
         const legacyTravelData = await UserDataService.getTravelInfo(userId);
         if (legacyTravelData && !legacyTravelData.destination) {
-          console.log('[Template V2] Found legacy travel info without destination; using fallback record');
+          console.log('[Template] Found legacy travel info without destination; using fallback record');
           resolvedTravelData = { ...legacyTravelData };
           try {
             await UserDataService.saveTravelInfo(userId, { destination: destinationId });
             resolvedTravelData.destination = destinationId;
-            console.log('[Template V2] Migrated legacy travel info to destination:', destinationId);
+            console.log('[Template] Migrated legacy travel info to destination:', destinationId);
           } catch (migrationError) {
-            console.warn('[Template V2] Failed to migrate legacy travel info destination:', migrationError);
+            console.warn('[Template] Failed to migrate legacy travel info destination:', migrationError);
           }
         }
       }
 
-      console.log('[Template V2] Loaded data:', { passportData, personalData, fundsData, travelData: resolvedTravelData });
+      console.log('[Template] Loaded data:', { passportData, personalData, fundsData, travelData: resolvedTravelData });
 
       // Parse fullName into individual name parts
       let surname = '', middleName = '', givenName = '';
@@ -548,7 +734,19 @@ const EnhancedTravelInfoTemplate = ({
         province: resolvedTravelData?.province || '',
         district: resolvedTravelData?.district || '',
         districtId: resolvedTravelData?.districtId || null,
-        hotelAddress: resolvedTravelData?.hotelAddress || '',
+        subDistrict: resolvedTravelData?.subDistrict || '',
+        subDistrictId: resolvedTravelData?.subDistrictId || null,
+        postalCode: resolvedTravelData?.postalCode || '',
+        hotelAddress: resolvedTravelData?.hotelAddress || resolvedTravelData?.accommodationAddress || '',
+        // Photo uploads (Thailand-specific)
+        flightTicketPhoto: resolvedTravelData?.flightTicketPhoto || '',
+        departureFlightTicketPhoto: resolvedTravelData?.departureFlightTicketPhoto || '',
+        hotelReservationPhoto: resolvedTravelData?.hotelReservationPhoto || '',
+        // Korea-specific fields
+        accommodationAddress: resolvedTravelData?.accommodationAddress || resolvedTravelData?.hotelAddress || '',
+        accommodationPhone: resolvedTravelData?.accommodationPhone || '',
+        ketaNumber: resolvedTravelData?.ketaNumber || '',
+        hasKeta: !!resolvedTravelData?.ketaNumber,
       };
 
       // Mark all loaded fields as pre-filled (not user-modified)
@@ -568,12 +766,12 @@ const EnhancedTravelInfoTemplate = ({
         travelInfo: resolvedTravelData,
         funds: fundsData,
       });
-      console.log('[Template V2] Data loaded successfully. Fields with data:',
+      console.log('[Template] Data loaded successfully. Fields with data:',
         Object.entries(loadedData).filter(([k, v]) => v && v !== '' && k !== 'funds').map(([k]) => k),
         'Funds count:', loadedData.funds?.length || 0
       );
     } catch (error) {
-      console.error('[Template V2] Error loading data:', error);
+      console.error('[Template] Error loading data:', error);
       updateFormState({ isLoading: false });
     }
   }, [userId, destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState, ensureEntryInfoRecord]);
@@ -581,17 +779,17 @@ const EnhancedTravelInfoTemplate = ({
   // Load data when user ID is available and tracker is initialized
   useEffect(() => {
     if (userId && userInteractionTracker.isInitialized) {
-      console.log('[Template V2] Triggering data load - userId:', userId, 'tracker initialized:', userInteractionTracker.isInitialized);
+      console.log('[Template] Triggering data load - userId:', userId, 'tracker initialized:', userInteractionTracker.isInitialized);
       loadDataFromUserDataService();
     }
   }, [userId, userInteractionTracker.isInitialized]);
 
   // ============================================
-  // DATA SAVING (V2: With Field Filtering)
+  // DATA SAVING (With Field Filtering)
   // ============================================
   const saveDataToUserDataService = useCallback(async () => {
     try {
-      console.log('[Template V2] Saving data to UserDataService');
+      console.log('[Template] Saving data to UserDataService');
       updateFormState({ saveStatus: 'saving' });
 
       await UserDataService.initialize(userId);
@@ -640,7 +838,7 @@ const EnhancedTravelInfoTemplate = ({
         updateFormState({
           passportId: passportResult?.id || formState.passportId || null,
         });
-        console.log('[Template V2] Saved passport fields:', Object.keys(passportUpdates));
+        console.log('[Template] Saved passport fields:', Object.keys(passportUpdates));
       }
 
       // Personal info - filter based on user interaction
@@ -665,7 +863,7 @@ const EnhancedTravelInfoTemplate = ({
         updateFormState({
           personalInfoId: personalInfoResult?.id || formState.personalInfoId || null,
         });
-        console.log('[Template V2] Saved personal info fields:', Object.keys(personalInfoUpdates));
+        console.log('[Template] Saved personal info fields:', Object.keys(personalInfoUpdates));
       }
 
       // Travel info - filter based on user interaction
@@ -686,7 +884,19 @@ const EnhancedTravelInfoTemplate = ({
         province: formState.province,
         district: formState.district,
         districtId: formState.districtId,
+        subDistrict: formState.subDistrict,
+        subDistrictId: formState.subDistrictId,
+        postalCode: formState.postalCode,
         hotelAddress: formState.hotelAddress,
+        // Photo uploads (Thailand-specific)
+        flightTicketPhoto: formState.flightTicketPhoto,
+        departureFlightTicketPhoto: formState.departureFlightTicketPhoto,
+        hotelReservationPhoto: formState.hotelReservationPhoto,
+        // Korea-specific fields
+        accommodationAddress: formState.accommodationAddress || formState.hotelAddress,
+        accommodationPhone: formState.accommodationPhone,
+        ketaNumber: formState.ketaNumber,
+        hasKeta: formState.hasKeta,
       };
 
       const travelInfoUpdates = TemplateFieldStateManager.filterSaveableFields(
@@ -706,7 +916,7 @@ const EnhancedTravelInfoTemplate = ({
         updateFormState({
           travelInfoId: travelInfoResult?.id || formState.travelInfoId || null,
         });
-        console.log('[Template V2] Saved travel info fields:', Object.keys(travelInfoUpdates));
+        console.log('[Template] Saved travel info fields:', Object.keys(travelInfoUpdates));
       }
 
       const ensureOverrides = {};
@@ -732,9 +942,9 @@ const EnhancedTravelInfoTemplate = ({
         updateFormState({ saveStatus: null });
       }, 2000);
 
-      console.log('[Template V2] Data saved successfully');
+      console.log('[Template] Data saved successfully');
     } catch (error) {
-      console.error('[Template V2] Error saving data:', error);
+      console.error('[Template] Error saving data:', error);
       updateFormState({ saveStatus: 'error' });
     }
   }, [userId, formState, config, userInteractionTracker.interactionState, updateFormState, destinationId, ensureEntryInfoRecord]);
@@ -752,7 +962,7 @@ const EnhancedTravelInfoTemplate = ({
   }, [saveDataToUserDataService, config.features, updateFormState]);
 
   // ============================================
-  // V2 HOOK: VALIDATION
+  // HOOK: VALIDATION
   // ============================================
   const validation = useTemplateValidation({
     config,
@@ -765,7 +975,7 @@ const EnhancedTravelInfoTemplate = ({
   });
 
   // ============================================
-  // V2 HOOK: FUND MANAGEMENT
+  // HOOK: FUND MANAGEMENT
   // ============================================
   const fundManagement = useTemplateFundManagement({
     config,
@@ -773,6 +983,17 @@ const EnhancedTravelInfoTemplate = ({
     setFormState: updateFormState,
     debouncedSave,
     userId,
+  });
+
+  // ============================================
+  // HOOK: PHOTO MANAGEMENT
+  // ============================================
+  const photoManagement = useTemplatePhotoManagement({
+    config,
+    formState,
+    updateField,
+    debouncedSave,
+    t,
   });
 
   // ============================================
@@ -810,11 +1031,32 @@ const EnhancedTravelInfoTemplate = ({
     updateFormState({
       district,
       districtId,
+      subDistrict: '',
+      subDistrictId: null,
+      postalCode: '',
     });
 
     if (userInteractionTracker.isInitialized) {
       userInteractionTracker.markFieldAsModified('district', district);
       userInteractionTracker.markFieldAsModified('districtId', districtId);
+    }
+
+    debouncedSave();
+  }, [userInteractionTracker, debouncedSave, updateFormState]);
+
+  const handleSubDistrictSelect = useCallback((subDistrict, subDistrictId, postalCode) => {
+    updateFormState({
+      subDistrict,
+      subDistrictId,
+      postalCode: postalCode || '',
+    });
+
+    if (userInteractionTracker.isInitialized) {
+      userInteractionTracker.markFieldAsModified('subDistrict', subDistrict);
+      userInteractionTracker.markFieldAsModified('subDistrictId', subDistrictId);
+      if (postalCode) {
+        userInteractionTracker.markFieldAsModified('postalCode', postalCode);
+      }
     }
 
     debouncedSave();
@@ -854,7 +1096,7 @@ const EnhancedTravelInfoTemplate = ({
 
       navigation.navigate(nextRouteName, nextParams);
     } else {
-      console.warn('[Template V2] No next navigation route configured');
+      console.warn('[Template] No next navigation route configured');
       navigation.goBack();
     }
   }, [
@@ -898,6 +1140,7 @@ const EnhancedTravelInfoTemplate = ({
     handleGoBack,
     handleProvinceSelect,
     handleDistrictSelect,
+    handleSubDistrictSelect,
     locationData,
     t,
     navigation,
@@ -905,10 +1148,11 @@ const EnhancedTravelInfoTemplate = ({
     passport,
     destination,
     userId,
-    // V2 additions
+    // Template features
     userInteractionTracker,
     validation,
     fundManagement,
+    photoManagement,
     entryInfoId: formState.entryInfoId,
     entryInfoInitialized: formState.entryInfoInitialized,
   };
@@ -987,10 +1231,26 @@ const EnhancedTravelInfoTemplate = ({
               labels={resolveSectionLabels('passport', config?.sections?.passport, config?.i18n?.labelSource?.passport || {})}
               config={{
                 ...config?.sections?.passport,
-                genderOptions: config?.sections?.passport?.fields?.sex?.options || [
-                  { label: 'Male', value: 'M' },
-                  { label: 'Female', value: 'F' },
-                ],
+                genderOptions: (() => {
+                  const sexFieldConfig = config?.sections?.passport?.fields?.sex;
+                  if (sexFieldConfig?.options) {
+                    // Translate gender options if they have labelKey
+                    return sexFieldConfig.options.map(option => {
+                      if (option.labelKey) {
+                        return {
+                          ...option,
+                          label: t(option.labelKey, { defaultValue: option.label || option.value })
+                        };
+                      }
+                      return option;
+                    });
+                  }
+                  // Default fallback
+                  return [
+                    { label: t('common.gender.male', { defaultValue: 'Male' }), value: 'M' },
+                    { label: t('common.gender.female', { defaultValue: 'Female' }), value: 'F' },
+                  ];
+                })(),
               }}
             />
           )}
@@ -1052,41 +1312,100 @@ const EnhancedTravelInfoTemplate = ({
               boardingCountry={formState.boardingCountry}
               arrivalFlightNumber={formState.arrivalFlightNumber}
               arrivalDate={formState.arrivalDate}
+              flightTicketPhoto={formState.flightTicketPhoto}
               departureFlightNumber={formState.departureFlightNumber}
               departureDate={formState.departureDate}
+              departureFlightTicketPhoto={formState.departureFlightTicketPhoto}
               isTransitPassenger={formState.isTransitPassenger}
               accommodationType={formState.accommodationType}
               customAccommodationType={formState.customAccommodationType}
               province={formState.province}
               district={formState.district}
               districtId={formState.districtId}
+              subDistrict={formState.subDistrict}
+              subDistrictId={formState.subDistrictId}
+              postalCode={formState.postalCode}
               hotelAddress={formState.hotelAddress}
+              hotelReservationPhoto={formState.hotelReservationPhoto}
               setTravelPurpose={(v) => updateField('travelPurpose', v)}
               setCustomTravelPurpose={(v) => updateField('customTravelPurpose', v)}
               setRecentStayCountry={(v) => updateField('recentStayCountry', v)}
               setBoardingCountry={(v) => updateField('boardingCountry', v)}
               setArrivalFlightNumber={(v) => updateField('arrivalFlightNumber', v)}
               setArrivalDate={(v) => updateField('arrivalDate', v)}
+              setFlightTicketPhoto={(v) => updateField('flightTicketPhoto', v)}
               setDepartureFlightNumber={(v) => updateField('departureFlightNumber', v)}
               setDepartureDate={(v) => updateField('departureDate', v)}
+              setDepartureFlightTicketPhoto={(v) => updateField('departureFlightTicketPhoto', v)}
               setIsTransitPassenger={(v) => updateField('isTransitPassenger', v)}
               setAccommodationType={(v) => updateField('accommodationType', v)}
               setCustomAccommodationType={(v) => updateField('customAccommodationType', v)}
               setProvince={(v) => updateField('province', v)}
               setDistrict={(v) => updateField('district', v)}
               setDistrictId={(v) => updateField('districtId', v)}
+              setSubDistrict={(v) => updateField('subDistrict', v)}
+              setSubDistrictId={(v) => updateField('subDistrictId', v)}
+              setPostalCode={(v) => updateField('postalCode', v)}
               setHotelAddress={(v) => updateField('hotelAddress', v)}
+              setHotelReservationPhoto={(v) => updateField('hotelReservationPhoto', v)}
               handleProvinceSelect={handleProvinceSelect}
               handleDistrictSelect={handleDistrictSelect}
+              handleSubDistrictSelect={handleSubDistrictSelect}
               getProvinceData={locationData.provinces}
               getDistrictData={locationData.getDistricts}
               getSubDistrictData={locationData.getSubDistricts}
+              handleFlightTicketPhotoUpload={config?.sections?.travel?.photoUploads?.flightTicket?.enabled ? photoManagement.handleFlightTicketPhotoUpload : undefined}
+              handleDepartureFlightTicketPhotoUpload={config?.sections?.travel?.photoUploads?.departureTicket?.enabled ? photoManagement.handleDepartureFlightTicketPhotoUpload : undefined}
+              handleHotelReservationPhotoUpload={config?.sections?.travel?.photoUploads?.hotelReservation?.enabled ? photoManagement.handleHotelReservationPhotoUpload : undefined}
               errors={formState.errors}
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
               labels={resolveSectionLabels('travel', config?.sections?.travel, config?.i18n?.labelSource?.travel || {})}
-              config={travelSectionConfig}
+              config={{
+                ...travelSectionConfig,
+                accommodationOptions: (() => {
+                  // Get accommodation options from multiple possible sources
+                  let options = travelSectionConfig?.accommodationOptions 
+                    || config?.sections?.travel?.accommodationOptions 
+                    || config?.sections?.travel?.fields?.accommodationType?.options
+                    || [];
+                  
+                  // If still no options, use default accommodation types
+                  if (!options || options.length === 0) {
+                    const destId = config?.destinationId || destinationId || 'hongkong';
+                    // Default accommodation types that most destinations use
+                    const defaultTypes = ['HOTEL', 'HOSTEL', 'AIRBNB', 'FRIEND_FAMILY', 'OTHER'];
+                    options = defaultTypes.map(value => ({
+                      value,
+                      label: t(`${destId}.travelInfo.accommodationTypes.${value}`, { 
+                        defaultValue: value.replace(/_/g, ' ')
+                      }),
+                      defaultLabel: value.replace(/_/g, ' ')
+                    }));
+                  }
+                  
+                  // Translate accommodation options
+                  return options.map(option => {
+                    if (option.labelKey) {
+                      // If option has a labelKey, translate it
+                      const translatedLabel = t(option.labelKey, { defaultValue: option.defaultLabel || option.label || option.value });
+                      return { ...option, label: translatedLabel };
+                    } else if (option.label) {
+                      // Try to resolve from accommodationTypes i18n structure
+                      const accommodationTypeKey = `${config?.destinationId || destinationId || 'hongkong'}.travelInfo.accommodationTypes.${option.value}`;
+                      const translatedLabel = t(accommodationTypeKey, { defaultValue: option.label });
+                      return { ...option, label: translatedLabel };
+                    } else if (option.value) {
+                      // If only value is provided, try to translate it
+                      const accommodationTypeKey = `${config?.destinationId || destinationId || 'hongkong'}.travelInfo.accommodationTypes.${option.value}`;
+                      const translatedLabel = t(accommodationTypeKey, { defaultValue: option.defaultLabel || option.value.replace(/_/g, ' ') });
+                      return { ...option, label: translatedLabel };
+                    }
+                    return option;
+                  });
+                })(),
+              }}
             />
           )}
 
@@ -1279,7 +1598,7 @@ const PrivacyNotice = ({ t }) => {
   );
 };
 
-// Smart Submit Button (V2 Feature)
+// Smart Submit Button
 const SmartButton = ({ config, validation, onPress }) => {
   const buttonConfig = validation.getSmartButtonConfig();
   

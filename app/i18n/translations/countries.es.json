@@ -812,6 +812,129 @@
       "photoUpdatedMessage": "La foto se ha actualizado correctamente."
     }
   },
+  "result": {
+    "manualEntry": {
+      "title": "Guía para Completar la Tarjeta de Entrada a Japón",
+      "intro": "Por favor complete la tarjeta de entrada en papel y el formulario de declaración de aduanas según la información a continuación. Puede ver sin conexión y recomendamos tomar una captura de pantalla.",
+      "badges": {
+        "handwritten": "✍️ Tarjeta de Entrada en Papel Escrita a Mano",
+        "backedUp": "📦 Información Respaldada en el Paquete de Entrada",
+        "offline": "📵 Disponible Sin Conexión"
+      },
+      "sections": {
+        "passport": "Información del Pasaporte",
+        "personal": "Información Personal",
+        "travel": "Detalles del Viaje",
+        "accommodation": "Alojamiento y Contacto"
+      },
+      "fields": {
+        "fullName": "Nombre Completo",
+        "passportNo": "N° de Pasaporte",
+        "nationality": "Nacionalidad",
+        "dateOfBirth": "Fecha de Nacimiento",
+        "gender": "Género",
+        "passportExpiry": "Vencimiento del Pasaporte",
+        "occupation": "Ocupación",
+        "cityOfResidence": "Ciudad de Residencia",
+        "countryOfResidence": "País de Residencia",
+        "phone": "Teléfono",
+        "email": "Correo Electrónico",
+        "purposeOfVisit": "Propósito de la Visita",
+        "flightNumber": "Número de Vuelo",
+        "arrivalDate": "Fecha de Llegada",
+        "lengthOfStay": "Duración de la Estancia",
+        "days": "días",
+        "address": "Dirección",
+        "accommodationPhone": "Teléfono del Alojamiento"
+      },
+      "funds": "Fondos y Activos",
+      "noFunds": "No se proporcionó información de fondos",
+      "helpTip": "Por favor complete la tarjeta de entrada en papel y el formulario de declaración de aduanas en el avión o después de llegar al aeropuerto, consultando la información anterior. Recomendamos tomar una captura de pantalla para referencia fácil.",
+      "loading": "Cargando información de entrada a Japón...",
+      "heroTitle": "¿Está listo mi viaje a Japón? 🌸",
+      "heroSubtitle": "¡Vea qué tan preparado está y prepárese para su aventura en Japón!",
+      "statusText": {
+        "complete": "¡Preparación de entrada a Japón completa! 🌸",
+        "almost": "Solo faltan algunas verificaciones más~",
+        "incomplete": "¡Continúe completando su información!",
+        "loading": "Cargando su información..."
+      },
+      "statusSubtitle": {
+        "complete": "Toda la información está organizada y lista para presentar en el aeropuerto en cualquier momento.",
+        "almost": "Algunos elementos más necesitan confirmación, complételos para un viaje sin preocupaciones.",
+        "incomplete": "Complete toda la información para generar un paquete de entrada a Japón completo.",
+        "loading": "Por favor espere mientras organizamos su información de viajero."
+      },
+      "itemsCompleted": "{{completed}}/{{total}} elementos completados",
+      "editButton": "Editar de Nuevo",
+      "shareButton": "Pedir a Familia/Amigos que Ayuden a Editar",
+      "progressLabel": "Progreso de Preparación",
+      "interactiveGuideTitle": "Ver Guía de Entrada Interactiva",
+      "interactiveGuideSubtitle": "Guía paso a paso · Modo de texto grande"
+    },
+    "title": "¡Paquete de Entrada Generado con Éxito!",
+    "subtitle": "Su información de entrada ha sido organizada",
+    "entryPack": {
+      "title": "Paquete de Entrada",
+      "subtitleParts": {
+        "departure": "Salida {{date}}",
+        "arrival": "Llegada {{date}}",
+        "flight": "Vuelo {{flight}}",
+        "missing": "Por favor complete la información de viaje"
+      },
+      "fields": {
+        "departureDate": "Fecha de Salida",
+        "flightNo": "Número de Vuelo",
+        "arrivalDate": "Fecha de Llegada",
+        "accommodation": "Alojamiento"
+      },
+      "actions": {
+        "startGuide": "Iniciar Guía de Llegada"
+      },
+      "lastUpdated": "Última actualización: {{time}}"
+    },
+    "historyBanner": {
+      "primaryCta": {
+        "title": "Iniciar Guía de Llegada",
+        "subtitle": "Paso a paso · Texto grande disponible"
+      },
+      "secondaryCta": {
+        "editInfo": "Editar Información"
+      }
+    },
+    "digitalInfo": {
+      "title": "Solicitar {{systemName}}",
+      "button": "Solicitar Ahora"
+    },
+    "infoBox": "Toda la información se guarda solo localmente en su dispositivo",
+    "share": {
+      "modalTitle": "Pedir a Familia/Amigos que Verifiquen la Información",
+      "modalSubtitle": "Comparta el enlace y la contraseña a continuación con familiares/amigos de confianza. El enlace es válido por 24 horas. Pueden agregar o modificar información de entrada, y las actualizaciones se sincronizarán con este paquete de entrada.",
+      "linkLabel": "Enlace de Compartir",
+      "passwordLabel": "Contraseña de Acceso",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "expiryText": "Válido hasta: {{time}}",
+      "primaryAction": "Listo, Ir a Pegar para Familia/Amigos",
+      "cancelAction": "Cancelar Este Compartir",
+      "securityNote": "Consejo de Seguridad: Por favor comparta solo con familiares o amigos de confianza. Puede cancelar el compartir en cualquier momento para terminar el acceso inmediatamente.",
+      "cancelTitle": "Cancelar Compartir",
+      "cancelMessage": "Esta acción invalidará inmediatamente el enlace de compartir y la contraseña, y la familia/amigos ya no podrán acceder. ¿Está seguro de que desea cancelar?",
+      "keep": "Mantener",
+      "confirmCancel": "Cancelar Compartir",
+      "active": "Compartir Activo",
+      "viewShare": "Ver Información de Compartir",
+      "invite": "Invitar Verificación"
+    },
+    "notProvided": "No proporcionado",
+    "pending": "Pendiente de confirmación",
+    "changeInfo": "Cambiar Información",
+    "kioskGuide": {
+      "title": "Guía {{kioskName}}",
+      "kioskName": "Quiosco de Autoservicio",
+      "subtitle": "Instrucciones paso a paso"
+    }
+  },
   "common": {
     "ok": "OK",
     "back": "Atrás",
@@ -819,7 +942,29 @@
     "cancel": "Cancelar",
     "reset": "Restablecer",
     "error": "Error",
-    "locale": "es"
+    "yes": "Sí",
+    "no": "No",
+    "locale": "es",
+    "qrCode": "Código QR",
+    "generatedBy": "Generado por BorderBuddy",
+    "selectNationality": "Por favor seleccione la nacionalidad",
+    "searchNationality": "Buscar nacionalidad...",
+    "selectOccupation": "Por favor seleccione la ocupación",
+    "searchOccupation": "Buscar ocupación...",
+    "enterOccupation": "Por favor ingrese su ocupación",
+    "occupationExample": "ej. CONTADOR, INGENIERO",
+    "occupationHelp": "Por favor ingrese su ocupación en inglés",
+    "selectTravelPurpose": "Por favor seleccione el propósito del viaje",
+    "searchTravelPurpose": "Buscar propósito del viaje...",
+    "enterTravelPurposeDetails": "Por favor ingrese los detalles del propósito del viaje",
+    "travelPurposeModalTitle": "Seleccionar Propósito del Viaje",
+    "notAvailable": "N/A"
+  },
+  "customs": {
+    "yes": "SÍ ✓",
+    "no": "NO",
+    "usa": "EE.UU.",
+    "otherCountry": "Otro País"
   },
   "notificationSettings": {
     "loading": "Cargando configuración...",

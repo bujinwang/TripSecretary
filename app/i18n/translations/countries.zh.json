@@ -426,18 +426,60 @@
       }
     },
     "travelInfo": {
+      "hero": {
+        "title": "韩国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过韩国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
       "sections": {
         "passport": {
-          "title": "护照信息"
+          "title": "护照信息",
+          "subtitle": "请填写护照相关信息"
         },
         "personal": {
-          "title": "个人信息"
+          "title": "个人信息",
+          "subtitle": "联系方式和职业信息"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "韩国入境建议准备资金证明，如银行卡、现金等",
+          "introText": "资金证明有助于顺利通关",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "旅行信息"
+          "title": "旅行信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "fields": {
@@ -449,28 +491,62 @@
         "dob": "出生日期",
         "expiryDate": "护照有效期",
         "sex": "性别",
-        "visaNumber": "签证号码（如有）",
         "occupation": "职业",
         "cityOfResidence": "居住城市",
-        "countryOfResidence": "居住国家/地区",
-        "phoneCode": "国际区号",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
         "phoneNumber": "电话号码",
-        "email": "电子邮箱（可选）",
-        "travelPurpose": "访问目的",
-        "recentStayCountry": "近30天访问国家",
-        "boardingCountry": "登机国家/地区",
+        "email": "电子邮箱",
+        "travelPurpose": "旅行目的",
+        "boardingCountry": "登机国家",
         "arrivalFlightNumber": "入境航班号",
         "arrivalDate": "入境日期",
-        "departureFlightNumber": "返程航班号（可选）",
-        "departureDate": "返程日期（可选）",
-        "isTransitPassenger": "是否为过境旅客",
-        "accommodationType": "住宿类型",
-        "region": "住宿地区",
-        "district": "住宿区",
-        "hotelAddress": "住宿地址",
-        "hotelReservationPhoto": "酒店预订单照片",
-        "flightTicketPhoto": "机票截屏/照片",
-        "departureFlightTicketPhoto": "返程机票截屏/照片"
+        "departureFlightNumber": "离境航班号",
+        "departureDate": "离境日期",
+        "accommodationAddress": "住宿地址",
+        "accommodationPhone": "住宿电话",
+        "ketaNumber": "K-ETA号码",
+        "hasKeta": "我已获得K-ETA"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择省份",
+        "district": "请选择区/县",
+        "subDistrict": "请选择街道/镇",
+        "hotelAddress": "请输入完整地址",
+        "accommodationAddress": "请输入完整住宿地址",
+        "accommodationPhone": "请输入住宿电话",
+        "ketaNumber": "如您已有K-ETA号码，请输入",
+        "hasKeta": "请勾选如果您已获得K-ETA"
+      },
+      "accommodationTypes": {
+        "HOTEL": "酒店",
+        "HOSTEL": "青年旅舍",
+        "AIRBNB": "爱彼迎",
+        "FRIEND_FAMILY": "朋友/家人",
+        "OTHER": "其他"
       },
       "personal": {
         "occupationOptions": {
@@ -495,16 +571,25 @@
         "region": "地区",
         "district": "区"
       },
-      "continue": "继续"
+      "continue": "继续",
+      "submitButton": "保存并继续"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
+      }
     },
     "entryFlow": {
-      "title": "香港入境准备",
-      "submissionWindow": "香港免签停留通常为7天，请留意离境时间并准备返程行程。",
+      "title": "韩国入境准备",
+      "submissionWindow": "中国护照持有者免签90天，请确保在停留期内离境。",
       "progress": {
         "headline": {
-          "ready": "香港行程准备就绪！🇭🇰",
+          "ready": "韩国行程准备就绪！🇰🇷",
           "almost": "进度很棒，再补充一点点！",
-          "start": "开始整理香港入境资料吧"
+          "start": "开始整理韩国入境资料吧"
         },
         "subtitle": {
           "ready": "护照、资金与住宿资料已齐全，可随时向入境官出示。",
@@ -584,14 +669,6 @@
         "funds": "资金证明",
         "travel": "旅行信息"
       }
-    },
-    "travelInfo": {
-      "buttonLabels": {
-        "incomplete": "完成必填项",
-        "almostDone": "快完成了",
-        "ready": "继续"
-      },
-      "continue": "继续"
     },
     "info": {
       "headerTitle": "日本入境信息",
@@ -678,6 +755,12 @@
       "continueButton": "继续至入境流程"
     },
     "travelInfo": {
+      "buttonLabels": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续"
+      },
+      "continue": "继续",
       "hero": {
         "title": "日本入境准备指南",
         "subtitle": "3分钟完成免签入境，安心出行！",
@@ -722,6 +805,34 @@
         "prefecture": "都道府县",
         "city": "城市",
         "hotelAddress": "酒店地址"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "prefecture": "请选择都道府县",
+        "city": "请选择城市",
+        "hotelAddress": "请输入完整地址"
       },
       "personal": {
         "occupationOptions": {
@@ -828,6 +939,129 @@
         ]
       },
       "startButton": "开始准备入境资料包"
+    },
+    "result": {
+      "manualEntry": {
+        "title": "日本入境卡填写指南",
+        "intro": "请按照下列信息填写纸质入境卡与海关申报表，可离线查看，建议截图保存。",
+        "badges": {
+          "handwritten": "✍️ 手写纸质入境卡",
+          "backedUp": "📦 信息已备份到入境包",
+          "offline": "📵 离线可用"
+        },
+        "sections": {
+          "passport": "护照信息 Passport",
+          "personal": "个人信息 Personal",
+          "travel": "旅行信息 Travel Details",
+          "accommodation": "住宿与联系 Accommodation"
+        },
+        "fields": {
+          "fullName": "姓名 Full Name",
+          "passportNo": "护照号 Passport No.",
+          "nationality": "国籍 Nationality",
+          "dateOfBirth": "出生日期 Date of Birth",
+          "gender": "性别 Gender",
+          "passportExpiry": "护照有效期 Passport Expiry",
+          "occupation": "职业 Occupation",
+          "cityOfResidence": "居住城市 City of Residence",
+          "countryOfResidence": "居住国家 Country of Residence",
+          "phone": "联系电话 Phone",
+          "email": "电子邮箱 Email",
+          "purposeOfVisit": "旅行目的 Purpose of Visit",
+          "flightNumber": "航班号 Flight Number",
+          "arrivalDate": "到达日期 Arrival Date",
+          "lengthOfStay": "停留天数 Length of Stay",
+          "days": "天",
+          "address": "住宿地址 Address",
+          "accommodationPhone": "住宿电话 Phone"
+        },
+        "funds": "资金证明 Funds & Assets",
+        "noFunds": "未提供资金信息",
+        "helpTip": "请在飞机上或到达机场后，参考以上信息填写纸质入境卡。建议截图保存以便随时查看。",
+        "loading": "正在加载日本入境资料…",
+        "heroTitle": "我的日本之旅准备好了吗？🌸",
+        "heroSubtitle": "看看你准备得怎么样，一起迎接日本冒险！",
+        "statusText": {
+          "complete": "日本入境准备就绪！🌸",
+          "almost": "再检查一下信息～",
+          "incomplete": "继续完善资料吧！",
+          "loading": "正在加载您的资料…"
+        },
+        "statusSubtitle": {
+          "complete": "所有资料整理完成，随时可以在机场出示。",
+          "almost": "还有少量信息待确认，完成后更安心出行。",
+          "incomplete": "完成所有资料即可生成完整的日本入境包。",
+          "loading": "请稍候，我们正在整理旅客信息。"
+        },
+        "itemsCompleted": "已完成 {{completed}}/{{total}} 项资料",
+        "editButton": "再改改",
+        "shareButton": "找亲友帮忙修改",
+        "progressLabel": "准备进度",
+        "interactiveGuideTitle": "查看互动入境指南",
+        "interactiveGuideSubtitle": "分步骤指导 · 大字体模式"
+      },
+      "title": "入境包生成成功！",
+      "subtitle": "您的入境信息已整理完成",
+      "entryPack": {
+        "title": "入境包",
+        "subtitleParts": {
+          "departure": "出发 {{date}}",
+          "arrival": "到达 {{date}}",
+          "flight": "航班 {{flight}}",
+          "missing": "请补齐行程信息"
+        },
+        "fields": {
+          "departureDate": "出发日期",
+          "flightNo": "航班号",
+          "arrivalDate": "到达日期",
+          "accommodation": "住宿信息"
+        },
+        "actions": {
+          "startGuide": "开始入境指南"
+        },
+        "lastUpdated": "最后更新：{{time}}"
+      },
+      "historyBanner": {
+        "primaryCta": {
+          "title": "开始入境指南",
+          "subtitle": "分步骤指导 · 大字体模式"
+        },
+        "secondaryCta": {
+          "editInfo": "更改资料"
+        }
+      },
+      "digitalInfo": {
+        "title": "申请{{systemName}}",
+        "button": "立即申请"
+      },
+      "infoBox": "所有信息仅保存在您的手机本地",
+      "share": {
+        "modalTitle": "请亲友协助核对资料",
+        "modalSubtitle": "分享下方链接与密码给信任的亲友，链接有效期24小时。亲友可补充或修改入境所需信息，更新后会同步到本入境包。",
+        "linkLabel": "分享链接",
+        "passwordLabel": "访问密码",
+        "copy": "复制",
+        "copied": "已复制",
+        "expiryText": "有效期至：{{time}}",
+        "primaryAction": "完成，去粘贴给亲友",
+        "cancelAction": "取消此次分享",
+        "securityNote": "安全提示：请仅分享给可信赖的家人或朋友，您可随时取消分享以立即终止访问。",
+        "cancelTitle": "取消分享",
+        "cancelMessage": "该操作会立即失效共享链接和密码，亲友将无法继续访问。确定要取消吗？",
+        "keep": "保留",
+        "confirmCancel": "取消分享",
+        "active": "已邀请",
+        "viewShare": "查看分享信息",
+        "invite": "亲友核实"
+      },
+      "notProvided": "未填写",
+      "pending": "待确认",
+      "changeInfo": "更改资料",
+      "kioskGuide": {
+        "title": "{{kioskName}}指南",
+        "kioskName": "自助通关机",
+        "subtitle": "手把手教您操作"
+      }
     }
   },
   "us": {
@@ -907,18 +1141,60 @@
       "startButton": "开始填写"
     },
     "travelInfo": {
+      "hero": {
+        "title": "美国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过美国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
       "sections": {
         "passport": {
-          "title": "护照与EVUS信息"
+          "title": "护照与EVUS信息",
+          "subtitle": "请准确填写护照和EVUS信息"
         },
         "personal": {
-          "title": "个人与联系方式"
+          "title": "个人与联系方式",
+          "subtitle": "联系方式和职业信息"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "行程与住宿信息"
+          "title": "行程与住宿信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "fields": {
@@ -952,6 +1228,40 @@
         "hotelContactNumber": "住宿联系电话（可选）",
         "flightTicketPhoto": "机票截图",
         "hotelReservationPhoto": "酒店/住宿预订单"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "arrivalCity": "请输入您的入境口岸或抵达城市（例如：LAX、JFK）",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号（可选）",
+        "departureDate": "请选择您的离境日期（可选）",
+        "lengthOfStay": "CBP常会询问预计停留天数，可提前准备答案",
+        "accommodationType": "请选择您的住宿类型",
+        "state": "请选择住宿所在州",
+        "address": "CBP可能要求提供具体地址，建议提前准备",
+        "hotelContactNumber": "请输入住宿联系电话（可选）"
+      },
+      "accommodationTypes": {
+        "HOTEL": "酒店 / 公寓",
+        "FRIEND_FAMILY": "朋友或亲戚家",
+        "RENTAL": "短租 / Airbnb",
+        "OTHER": "其他"
       },
       "continue": "继续"
     },
@@ -1191,11 +1501,39 @@
         },
         "funds": {
           "title": "资金证明",
-          "subtitle": "旅游资金"
+          "subtitle": "旅游资金",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
           "title": "行程与住宿信息",
-          "subtitle": "航班和住宿信息"
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "buttonLabels": {
@@ -1237,6 +1575,34 @@
         "hotelContactNumber": "住宿联系电话（可选）",
         "flightTicketPhoto": "机票截图",
         "hotelReservationPhoto": "酒店/住宿预订单"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择州",
+        "district": "请选择区",
+        "hotelAddress": "请输入完整地址"
       },
       "continue": "继续"
     },
@@ -1439,6 +1805,102 @@
         },
         "beginnerTip": "温馨提醒：抵达前3天内完成线上入境卡，我们会在最佳时间提醒您。"
       },
+      "sections": {
+        "passport": {
+          "title": "护照信息",
+          "subtitle": "请准确填写护照信息"
+        },
+        "personal": {
+          "title": "个人信息",
+          "subtitle": "联系方式和个人信息"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
+        },
+        "travel": {
+          "title": "旅行信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
+        }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱",
+        "travelPurpose": "访问目的",
+        "arrivalFlightNumber": "抵达航班号",
+        "arrivalDate": "抵达日期",
+        "stayDuration": "停留天数",
+        "accommodationType": "住宿类型",
+        "city": "城市",
+        "hotelAddress": "住宿地址",
+        "contactNumber": "联系电话"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "stayDuration": "请输入您计划停留的天数",
+        "accommodationType": "请选择您的住宿类型",
+        "city": "请选择城市",
+        "hotelAddress": "请输入完整地址",
+        "contactNumber": "请输入联系电话"
+      },
       "buttonLabels": {
         "incomplete": "继续补齐必填信息",
         "almostDone": "快完成了，继续！",
@@ -1447,6 +1909,7 @@
       "continue": "继续"
     },
     "entryFlow": {
+      "title": "台湾入境准备",
       "status": {
         "ready": {
           "title": "準備提交臺灣入境卡",
@@ -1591,12 +2054,95 @@
         },
         "funds": {
           "title": "资金证明",
-          "subtitle": "旅游资金和支付方式"
+          "subtitle": "旅游资金和支付方式",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
           "title": "旅行详情",
-          "subtitle": "航班和住宿信息"
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇"
         }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱",
+        "travelPurpose": "旅行目的",
+        "recentStayCountry": "最近30天访问的国家",
+        "boardingCountry": "登机国家",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "离境航班号",
+        "departureDate": "离境日期",
+        "isTransitPassenger": "是否为过境乘客",
+        "accommodationType": "住宿类型",
+        "province": "省份",
+        "district": "区/县",
+        "hotelAddress": "住宿地址"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择省份",
+        "district": "请选择区/县",
+        "hotelAddress": "请输入完整地址"
       }
     },
     "navigation": {
@@ -1693,11 +2239,99 @@
           "title": "个人信息"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "旅行详情"
+          "title": "旅行详情",
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇"
         }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名（可选）",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码（如有）",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家/地区",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱（可选）",
+        "travelPurpose": "访问目的",
+        "recentStayCountry": "最近30天访问的国家",
+        "boardingCountry": "登机国家/地区",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "返程航班号（可选）",
+        "departureDate": "返程日期（可选）",
+        "isTransitPassenger": "是否为过境乘客",
+        "accommodationType": "住宿类型",
+        "region": "地区",
+        "district": "区",
+        "hotelAddress": "住宿地址",
+        "hotelReservationPhoto": "酒店预订截图",
+        "flightTicketPhoto": "机票截图",
+        "departureFlightTicketPhoto": "返程机票截图"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的返程航班号（可选）",
+        "departureDate": "请选择您的返程日期（可选）",
+        "accommodationType": "请选择您的住宿类型",
+        "region": "请选择地区",
+        "district": "请选择区",
+        "hotelAddress": "请输入完整地址"
       }
     },
     "navigation": {
@@ -1816,6 +2450,41 @@
       "photoUpdatedMessage": "照片已成功更新。"
     }
   },
+  "devMode": {
+    "submissionInfo": "🔍 即将提交的信息：",
+    "personalInfo": "👤 个人信息：",
+    "name": "姓名",
+    "passportNo": "护照号",
+    "nationality": "国籍",
+    "gender": "性别",
+    "birthDate": "出生日期",
+    "travelInfo": "✈️ 旅行信息：",
+    "arrivalDate": "到达日期",
+    "flightNo": "航班号",
+    "countryBoarded": "出发国家",
+    "recentStayCountry": "最近停留国家",
+    "purpose": "旅行目的",
+    "accommodationInfo": "🏨 住宿信息：",
+    "accommodationType": "住宿类型",
+    "province": "省份",
+    "district": "区域",
+    "subDistrict": "子区域",
+    "address": "地址",
+    "contactInfo": "📞 联系信息：",
+    "email": "邮箱",
+    "phone": "电话",
+    "importantReminder": "⚠️ 重要提醒：",
+    "reminder1": "信息将直接提交给泰国移民局",
+    "reminder2": "提交后无法修改",
+    "reminder3": "多次提交可能被封禁",
+    "reminder4": "请确保与护照信息一致",
+    "confirmTitle": "🛑 确认提交",
+    "viewLogs": "📝 查看详细日志",
+    "confirmSubmit": "✅ 确认提交",
+    "notProvided": "未填写",
+    "tokenObtained": "已获取 ({{length}} 字符)",
+    "tokenNotObtained": "未获取"
+  },
   "common": {
     "ok": "确定",
     "back": "返回",
@@ -1823,11 +2492,33 @@
     "cancel": "取消",
     "reset": "重置",
     "error": "错误",
+    "yes": "是",
+    "no": "否",
     "locale": "zh",
     "continue": "继续",
+    "qrCode": "二维码",
+    "generatedBy": "由 BorderBuddy 生成",
+    "selectNationality": "请选择国籍",
+    "searchNationality": "搜索国籍...",
+    "selectOccupation": "请选择职业",
+    "searchOccupation": "搜索职业...",
+    "enterOccupation": "请输入您的职业",
+    "occupationExample": "例如：ACCOUNTANT, ENGINEER 等",
+    "occupationHelp": "请用英文填写您的职业",
+    "selectTravelPurpose": "请选择旅行目的",
+    "searchTravelPurpose": "搜索旅行目的...",
+    "enterTravelPurposeDetails": "请输入旅行目的详情",
+    "travelPurposeModalTitle": "选择旅行目的",
+    "notAvailable": "不适用",
     "buttons": {
       "continue": "继续"
     }
+  },
+  "customs": {
+    "yes": "是 ✓",
+    "no": "否",
+    "usa": "美国",
+    "otherCountry": "其他国家"
   },
   "notificationSettings": {
     "loading": "加载设置中...",
@@ -2004,6 +2695,94 @@
     },
     "entryPack": {
       "openButton": "打开通关包 📋"
+    }
+  },
+  "canada": {
+    "pikGuide": {
+      "headerTitle": "自助通关指南",
+      "title": "自助通关机操作指南",
+      "subtitle": "Primary Inspection Kiosk (PIK)",
+      "description": "加拿大边境的自助通关机很简单\n跟着这个指南一步步做就可以了",
+      "fontSizeLabel": "字体大小：",
+      "step": "第 {{number}} 步",
+      "stepImportant": "第 {{number}} 步 ⭐",
+      "importantBadge": "重要",
+      "step1": {
+        "title": "找到自助机器",
+        "description": "下飞机后，跟着 \"Arrivals\" 或 \"入境\" 的指示牌走\n\n进入入境大厅，找这种带大屏幕的机器\n\n通常有很多台排成一排，跟 ATM 取款机差不多大小"
+      },
+      "step2": {
+        "title": "选择中文",
+        "description": "屏幕上会显示语言选择\n\n用手指点击 \"中文\" 或 \"Chinese\"\n\n⚠️ 如果找不到中文，选择 \"English\" 也没关系\n后面的步骤都有图片提示"
+      },
+      "step3": {
+        "title": "扫描护照",
+        "description": "把护照翻到有照片的那一页（照片页）\n\n护照平放，照片朝下\n\n放到机器下方的扫描口（像复印机一样）\n\n听到 \"哔\" 一声，或者屏幕显示 \"✓\"，就扫描成功了"
+      },
+      "step3Tip": "小贴士：护照要放平整，不要弯曲\n如果扫描失败，重新放一次就好",
+      "step4": {
+        "title": "回答问题",
+        "description": "屏幕会显示几个问题\n\n每个问题下面有 \"是/YES\" 和 \"否/NO\" 两个按钮\n\n根据下面的答案，用手指点击对应的按钮："
+      },
+      "answersTitle": "📋 您的答案（照着点就行）",
+      "answerLabel": "点击：",
+      "step4Warning": "重要：一定要如实回答！\n如果回答 \"是\"，可能需要额外检查，但不会有麻烦",
+      "step5": {
+        "title": "取收据",
+        "description": "所有问题回答完后，机器会打印一张小纸条\n\n收据会从机器下方或侧面出来\n\n⚠️ 一定要拿好这张收据！\n\n等会要交给海关官员"
+      },
+      "step6": {
+        "title": "去人工柜台",
+        "description": "拿着护照和刚才打印的收据\n\n跟着人群排队，走到人工柜台\n\n把收据和护照一起交给海关官员\n\n官员可能会问几个简单问题：\n• 来加拿大做什么？（旅游）\n• 住在哪里？（酒店名字）\n• 停留多久？（几天）\n\n✅ 完成！欢迎来到加拿大"
+      },
+      "helpTitle": "如果不会操作怎么办？",
+      "helpOption1": {
+        "title": "找工作人员帮忙",
+        "description": "机器旁边通常有穿制服的工作人员\n对他们说：\"I need help\"\n他们会帮您操作"
+      },
+      "helpOption2": {
+        "title": "找中国旅客帮忙",
+        "description": "周围如果有中国旅客，可以请他们帮忙\n大家都很乐意帮助同胞"
+      },
+      "helpOption3": {
+        "title": "去人工柜台",
+        "description": "实在不会用机器，直接找人工柜台排队\n虽然慢一点，但一样可以入境\n把护照和手机上的表格给官员看就行"
+      },
+      "reassuranceTitle": "放心！不用紧张",
+      "reassuranceText": "• 加拿大边境官员都很友好，不会为难您\n\n• 很多机场有中文服务或中文翻译\n\n• 即使不会用机器，也可以走人工通道\n\n• 每年有几百万中国游客入境加拿大，都很顺利\n\n最重要的是：诚实回答问题，不要携带违禁品",
+      "phrasesTitle": "常用英文短语（给工作人员看）",
+      "phrases": {
+        "helpKiosk": {
+          "en": "I need help with the kiosk.",
+          "zh": "我需要帮助使用自助机。"
+        },
+        "canYouHelp": {
+          "en": "Can you help me?",
+          "zh": "你能帮我吗？"
+        },
+        "whereManualCounter": {
+          "en": "Where is the manual counter?",
+          "zh": "人工柜台在哪里？"
+        },
+        "noEnglish": {
+          "en": "I don't speak English.",
+          "zh": "我不会说英语。"
+        },
+        "chineseInterpreter": {
+          "en": "Do you have Chinese interpreter?",
+          "zh": "有中文翻译吗？"
+        }
+      },
+      "buttonViewInfo": "📋 查看我的信息",
+      "buttonCopyMode": "✍️ 抄写模式",
+      "customsQuestions": {
+        "currencyOverLimit": "携带现金或等值货币超过 $10,000 加元？",
+        "foodAnimals": "携带食品、植物、动物或相关产品？",
+        "visitedFarm": "近期访问过农场或接触过农场动物？",
+        "commercialGoods": "携带商业物品、样品或用于转售的商品？",
+        "firearms": "携带枪支或武器？",
+        "dutyFree": "携带的物品总价值超过免税额度？"
+      }
     }
   }
 }

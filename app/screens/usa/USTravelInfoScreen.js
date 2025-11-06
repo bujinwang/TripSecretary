@@ -1,5 +1,5 @@
 import React from 'react';
-import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate.v2';
+import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { usaComprehensiveTravelInfoConfig } from '../../config/destinations/usa/comprehensiveTravelInfoConfig';
 
 const USTravelInfoScreen = ({ navigation, route }) => (

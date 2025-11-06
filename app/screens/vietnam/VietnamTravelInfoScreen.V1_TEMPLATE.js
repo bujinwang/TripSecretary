@@ -1,6 +1,9 @@
 /**
  * Vietnam Travel Info Screen - V1 Template Implementation
  *
+ * NOTE: This file now uses V2 template (v1 has been retired).
+ * This is kept as a reference/example file showing the template usage.
+ *
  * This is the proof-of-concept showing how Vietnam can be reduced to ~10 lines
  * using the Enhanced Travel Info Template.
  *
@@ -8,7 +11,7 @@
  */
 
 import React from 'react';
-import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate.v1';
+import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { vietnamComprehensiveTravelInfoConfig } from '../../config/destinations/vietnam/comprehensiveTravelInfoConfig';
 
 const VietnamTravelInfoScreenV1 = ({ navigation, route }) => {

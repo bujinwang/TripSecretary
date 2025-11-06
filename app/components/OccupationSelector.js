@@ -11,20 +11,26 @@ const OccupationSelector = ({
   customValue,
   onCustomChange,
   onCustomBlur,
-  placeholder = "请选择职业",
+  placeholder,
   error,
   errorMessage,
   helpText,
   style,
   showSearch = true,
-  customLabel = "请输入您的职业",
-  customPlaceholder = "例如：ACCOUNTANT, ENGINEER 等",
-  customHelpText = "请用英文填写您的职业",
+  customLabel,
+  customPlaceholder,
+  customHelpText,
   ...rest
 }) => {
   // Get i18n-enabled occupation options
   const { t } = useLocale();
   const OCCUPATION_OPTIONS = useMemo(() => getOccupationOptions(t), [t]);
+  
+  // Default i18n values
+  const defaultPlaceholder = placeholder || t('common.selectOccupation', { defaultValue: '请选择职业' });
+  const defaultCustomLabel = customLabel || t('common.enterOccupation', { defaultValue: '请输入您的职业' });
+  const defaultCustomPlaceholder = customPlaceholder || t('common.occupationExample', { defaultValue: '例如：ACCOUNTANT, ENGINEER 等' });
+  const defaultCustomHelpText = customHelpText || t('common.occupationHelp', { defaultValue: '请用英文填写您的职业' });
 
   return (
     <BaseSearchableSelector
@@ -32,16 +38,16 @@ const OccupationSelector = ({
       value={value}
       onValueChange={onValueChange}
       options={OCCUPATION_OPTIONS || []}
-      placeholder={placeholder}
+      placeholder={defaultPlaceholder}
       customValue={customValue}
       onCustomChange={onCustomChange}
       onCustomBlur={onCustomBlur}
-      customLabel={customLabel}
-      customPlaceholder={customPlaceholder}
-      customHelpText={customHelpText}
+      customLabel={defaultCustomLabel}
+      customPlaceholder={defaultCustomPlaceholder}
+      customHelpText={defaultCustomHelpText}
       showSearch={showSearch}
-      searchPlaceholder="搜索职业..."
-      modalTitle="选择职业"
+      searchPlaceholder={t('common.searchOccupation', { defaultValue: '搜索职业...' })}
+      modalTitle={t('common.selectOccupation', { defaultValue: '选择职业' })}
       error={error}
       errorMessage={errorMessage}
       helpText={helpText}

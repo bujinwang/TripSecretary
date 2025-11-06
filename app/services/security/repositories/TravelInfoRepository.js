@@ -23,6 +23,12 @@ class TravelInfoRepository {
    */
   async save(travelData) {
     if (!travelData || !travelData.userId) {
+      console.error('[TravelInfoRepository] Missing userId:', {
+        hasTravelData: !!travelData,
+        userId: travelData?.userId,
+        userIdType: typeof travelData?.userId,
+        allKeys: travelData ? Object.keys(travelData) : [],
+      });
       throw new Error('Travel info data and userId are required');
     }
 
