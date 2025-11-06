@@ -76,7 +76,7 @@ const SGACSelectionScreen = ({ navigation, route }) => {
       // Load all user data
       const allUserData = await UserDataService.getAllUserData(userId);
       const fundItems = await UserDataService.getFundItems(userId);
-      const travelInfo = await UserDataService.getTravelInfo(userId, destination?.id || 'singapore');
+      const travelInfo = await UserDataService.getTravelInfo(userId, destination?.id || 'sg');
 
       const entryInfo = {
         passport: allUserData.passport || {},

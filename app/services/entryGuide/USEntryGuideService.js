@@ -374,26 +374,26 @@ class USEntryGuideService {
 
     if (progress.completed === 0) {
       actions.push({
-        type: 'esta',
-        title: '准备ESTA材料',
-        description: '收集护照、照片等ESTA申请所需材料',
+        type: 'prepare',
+        title: '准备入境材料',
+        description: '确认签证/ESTA状态，准备护照等入境材料',
         priority: 'high'
       });
-    } else if (progress.completed < 3) {
+    } else if (progress.completed < 2) {
       actions.push({
         type: 'continue',
         title: '继续入境准备',
-        description: '完成ESTA申请和生物识别准备',
+        description: '完成落地前准备和生物识别准备',
         priority: 'high'
       });
-    } else if (progress.completed >= 3 && progress.completed < 6) {
+    } else if (progress.completed >= 2 && progress.completed < 5) {
       actions.push({
         type: 'biometric',
         title: '确认生物识别',
         description: '确保生物识别数据已正确准备',
         priority: 'high'
       });
-    } else if (progress.completed >= 6) {
+    } else if (progress.completed >= 5) {
       actions.push({
         type: 'transport',
         title: '准备交通安排',

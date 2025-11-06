@@ -260,7 +260,7 @@
       }
     }
   },
-  "thailand": {
+  "th": {
     "entryFlow": {
       "title": "Thailand Entry Preparation Status",
       "preparationTitle": "Thailand Entry Preparation Status",
@@ -312,7 +312,7 @@
       }
     }
   },
-  "malaysia": {
+  "my": {
     "entryFlow": {
       "submissionWindow": "Submit within 3 days of arrival"
     },
@@ -327,11 +327,29 @@
         ],
         "beginnerTip": "MDAC must be submitted within 3 days before arrival. We remind you at the perfect time."
       },
+      "buttonLabels": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue"
+      },
+      "validation": {
+        "arrivalDateWithinWindow": "Arrival date must be within the next 30 days to comply with MDAC submission window."
+      },
       "sections": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Proof of Funds",
-        "travel": "Travel Information"
+        "passport": {
+          "title": "Passport Information"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation information"
+        }
       },
       "fields": {
         "surname": "Surname",
@@ -523,7 +541,7 @@
       }
     }
   },
-  "singapore": {
+  "sg": {
     "info": {
       "headerTitle": "Singapore Entry Information",
       "title": "Singapore Entry Guide",
@@ -639,7 +657,7 @@
       "title": "Singapore Entry Preparation"
     }
   },
-  "vietnam": {
+  "vn": {
     "entryFlow": {
       "title": "Vietnam Entry Preparation",
       "status": {
@@ -771,7 +789,7 @@
       }
     }
   },
-  "hongkong": {
+  "hk": {
     "info": {
       "headerTitle": "Hong Kong Entry Information",
       "title": "Hong Kong Entry Guide",
@@ -986,7 +1004,7 @@
       }
     }
   },
-  "usa": {
+  "us": {
     "info": {
       "headerTitle": "USA Entry Information",
       "title": "USA Entry Guide",
@@ -1153,7 +1171,7 @@
       }
     }
   },
-  "taiwan": {
+  "tw": {
     "info": {
       "headerTitle": "Taiwan Entry Information",
       "title": "Taiwan Entry Guide",
@@ -1263,7 +1281,7 @@
       "submissionWindow": "Taiwan online arrival card must be submitted within 3 days before arrival."
     }
   },
-  "japan": {
+  "jp": {
     "info": {
       "headerTitle": "Japan Entry Information",
       "title": "Japan Entry Guide",
@@ -1299,6 +1317,14 @@
         }
       },
       "continueButton": "Understood, continue to checklist"
+    },
+    "travelInfo": {
+      "buttonLabels": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue"
+      },
+      "continue": "Continue"
     },
     "requirements": {
       "headerTitle": "Japan Entry Checklist",
@@ -1417,6 +1443,36 @@
           "incomplete": "Complete Required Fields",
           "almostDone": "Almost Done",
           "ready": "Continue to Entry Guide"
+        }
+      }
+    },
+    "entryFlow": {
+      "title": "Japan Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Ready for Japan! 🇯🇵",
+          "almost": "Almost There",
+          "start": "Let's get started! 🌺"
+        },
+        "subtitle": {
+          "ready": "Awesome! Your Japan trip is ready! 🇯🇵",
+          "almost": "Keep it up! Just {{remaining}}% left to complete your Japan trip preparation!",
+          "start": "Continue filling out your information to make the journey smoother."
+        },
+        "label": "Preparation Progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "{{percent}}% complete"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
         }
       }
     },
@@ -1718,22 +1774,40 @@
   "screenTitles": {
     "notificationSettings": "Notification Settings"
   },
-  "vn": {
-    "travelInfo": {
-      "sections": {
-        "passport": {
-          "title": "Passport Information"
-        },
-        "personal": {
-          "title": "Personal Information"
-        },
-        "funds": {
-          "title": "Proof of Funds"
-        },
-        "travel": {
-          "title": "Travel Details"
-        }
-      }
+  "entryGuide": {
+    "stepProgress": {
+      "title": "Entry Steps Progress",
+      "noSteps": "No steps configured",
+      "noStepsDescription": "Please ensure the configuration supplies the expected steps."
+    },
+    "step": {
+      "required": "Required",
+      "optional": "Optional",
+      "requiredLabel": "Mandatory Step",
+      "optionalLabel": "Optional Step"
+    },
+    "category": {
+      "preArrival": "Pre-Arrival",
+      "preFlight": "Pre-Flight",
+      "inFlight": "In-Flight",
+      "postLanding": "Post-Landing",
+      "immigration": "Immigration",
+      "baggage": "Baggage",
+      "customs": "Customs",
+      "default": "Step"
+    },
+    "navigation": {
+      "previous": "← Previous",
+      "next": "Next →",
+      "complete": "Guide Completed ✅"
+    },
+    "sections": {
+      "formFields": "📝 Form Filling Tips",
+      "warnings": "⚠️ Important Warnings",
+      "tips": "💡 Pro Tips"
+    },
+    "entryPack": {
+      "openButton": "Open Entry Pack 📋"
     }
   }
 }

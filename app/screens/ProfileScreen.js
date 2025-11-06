@@ -473,13 +473,13 @@ const ProfileScreen = ({ navigation, route }) => {
         entryPack: {
           id: `export_${Date.now()}`,
           userId: userId,
-          destinationId: 'thailand',
+          destinationId: 'th',
           status: 'in_progress',
           createdAt: new Date().toISOString(),
           exportData: () => ({
             id: `export_${Date.now()}`,
             userId: userId,
-            destinationId: 'thailand',
+            destinationId: 'th',
             status: 'in_progress',
             createdAt: new Date().toISOString()
           }),

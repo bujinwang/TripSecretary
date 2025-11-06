@@ -1,6 +1,6 @@
 /**
  * Taiwan Labels Configuration
- * Bilingual (Traditional Chinese / English) strings for travel info sections.
+ * Chinese (Simplified) labels for travel info sections
  */
 
 export const taiwanLabels = {
@@ -8,8 +8,8 @@ export const taiwanLabels = {
   screenTitleEn: 'Taiwan Entry Information',
 
   passport: {
-    title: '護照資訊 - Passport Information',
-    subtitle: '請填寫與護照完全一致的資訊',
+    title: '护照信息',
+    subtitle: '请填写与护照完全一致的信息',
     icon: '📘',
     introIcon: '🛂',
     introText: '請確保所有資訊與護照完全一致，入境時將逐項核對。',
@@ -24,8 +24,8 @@ export const taiwanLabels = {
   },
 
   personalInfo: {
-    title: '個人資訊 - Personal Information',
-    subtitle: '聯絡方式與居住資訊',
+    title: '个人信息',
+    subtitle: '联系方式和居住信息',
     icon: '👤',
     introIcon: '📋',
     introText: '臺灣移民署可能會聯繫您，請確保聯絡方式正確。',
@@ -45,8 +45,8 @@ export const taiwanLabels = {
   },
 
   funds: {
-    title: '資金證明 - Proof of Funds',
-    subtitle: '臺灣入境通常不查驗，但建議準備',
+    title: '资金证明',
+    subtitle: '台湾入境通常不查验，但建议准备',
     icon: '💰',
     introIcon: '💴',
     introText: '建議準備足夠旅遊資金或信用卡，以備不時之需。',
@@ -56,8 +56,8 @@ export const taiwanLabels = {
   },
 
   travelDetails: {
-    title: '旅行資訊 - Travel Details',
-    subtitle: '航班與住宿資訊',
+    title: '旅行信息',
+    subtitle: '航班和住宿信息',
     icon: '✈️',
     introIcon: '🛬',
     introText: '請準備航班與住宿資訊以便快速通關。',

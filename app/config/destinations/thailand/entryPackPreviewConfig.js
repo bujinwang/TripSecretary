@@ -157,11 +157,11 @@ const ThailandEntryPackDetails = () => {
 
   return (
     <EntryPackDisplay
-      entryPack={{ ...entryPack, country: 'thailand' }}
+      entryPack={{ ...entryPack, country: 'th' }}
       personalInfo={entryPack.personalInfo}
       travelInfo={entryPack.travel}
       funds={entryPack.funds || []}
-      country="thailand"
+      country="th"
     />
   );
 };

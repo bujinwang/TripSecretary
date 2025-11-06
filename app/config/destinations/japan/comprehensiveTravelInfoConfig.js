@@ -14,25 +14,47 @@ export const japanComprehensiveTravelInfoConfig = {
   template: 'enhanced',
 
   // Smart submit button behaviour
-  submitButton: {
-    dynamic: true,
-    thresholds: {
-      incomplete: 0.6,
-      almostDone: 0.85,
-      ready: 0.95,
-    },
-    labels: {
-      incomplete: '完成必填项',
-      almostDone: '快完成了',
-      ready: '继续',
-    },
-    default: '继续',
-  },
-
   navigation: {
     previous: 'JapanRequirements',
     next: 'JapanEntryFlow',
     saveBeforeNavigate: true,
+    submitButton: {
+      dynamic: true,
+      thresholds: {
+        incomplete: 0.6,
+        almostDone: 0.85,
+        ready: 0.95,
+      },
+      // Labels for each state (using i18n keys)
+      labels: {
+        incomplete: {
+          key: 'jp.travelInfo.buttonLabels.incomplete',
+          default: '完成必填项',
+        },
+        almostDone: {
+          key: 'jp.travelInfo.buttonLabels.almostDone',
+          default: '快完成了',
+        },
+        ready: {
+          key: 'jp.travelInfo.buttonLabels.ready',
+          default: '继续',
+        },
+      },
+      // Default fallback if dynamic is disabled
+      default: {
+        key: 'jp.travelInfo.continue',
+        default: '继续',
+      },
+      readyAction: {
+        type: 'navigate',
+        screen: 'JapanEntryFlow',
+      },
+    },
+    // Fallback submit button label
+    submitButtonLabel: {
+      key: 'jp.travelInfo.continue',
+      default: '继续',
+    },
   },
 
   features: {

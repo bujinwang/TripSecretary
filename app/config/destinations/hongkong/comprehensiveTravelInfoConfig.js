@@ -22,11 +22,11 @@ export const hongkongComprehensiveTravelInfoConfig = {
         ready: 0.95,
       },
       labels: {
-        incomplete: 'hongkong.navigation.submitButton.incomplete',
-        almostDone: 'hongkong.navigation.submitButton.almostDone',
-        ready: 'hongkong.navigation.submitButton.ready',
+        incomplete: 'hk.navigation.submitButton.incomplete',
+        almostDone: 'hk.navigation.submitButton.almostDone',
+        ready: 'hk.navigation.submitButton.ready',
       },
-      default: 'hongkong.navigation.submitButton.default',
+      default: 'hk.navigation.submitButton.default',
     },
   },
 

@@ -115,7 +115,7 @@ export const usaEntryFlowConfig = {
   },
 
   features: {
-    entryGuideQuickAction: false,
+    entryGuideQuickAction: true,
     submissionCountdown: false,
     dataChangeAlerts: true,
     disablePreviewQuickAction: false,

@@ -52,7 +52,7 @@ const ResultScreen = ({ navigation, route }) => {
   const isMalaysia = destination?.id === 'my';
   const isSingapore = destination?.id === 'sg';
   const isTaiwan = destination?.id === 'tw';
-  const isJapan = destination?.id === 'jp' || destination?.id === 'japan';
+  const isJapan = destination?.id === 'jp';
   const isJapanManualGuide = isJapan && context === 'manual_entry_guide';
 
   const initialActionHandledRef = useRef(false);

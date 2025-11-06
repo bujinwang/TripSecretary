@@ -534,13 +534,13 @@ export const vietnamComprehensiveTravelInfoConfig = {
 
     // Labels for each state (using translation keys)
     labels: {
-      incomplete: 'vietnam.navigation.submitButton.incomplete',
-      almostDone: 'vietnam.navigation.submitButton.almostDone',
-      ready: 'vietnam.navigation.submitButton.ready',
+      incomplete: 'vn.navigation.submitButton.incomplete',
+      almostDone: 'vn.navigation.submitButton.almostDone',
+      ready: 'vn.navigation.submitButton.ready',
     },
 
     // Default fallback if dynamic is disabled
-    default: 'vietnam.navigation.submitButton.default',
+    default: 'vn.navigation.submitButton.default',
     },
 
     // Deprecated - kept for backward compatibility

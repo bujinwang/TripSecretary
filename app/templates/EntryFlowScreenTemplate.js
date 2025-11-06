@@ -271,37 +271,60 @@ EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent
  */
 EntryFlowScreenTemplate.StatusBanner = () => {
   const { completionStatus, completionPercent, t, config } = useEntryFlowTemplate();
+  
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
 
   const statusConfig = {
     ready: {
       color: '#E6F9E6',
       icon: '✅',
-      title: t(config.status?.ready?.titleKey || 'entryFlow.status.ready.title', {
-        defaultValue: 'Ready to Submit!'
-      }),
-      subtitle: t(config.status?.ready?.subtitleKey || 'entryFlow.status.ready.subtitle', {
-        defaultValue: 'All information complete'
-      }),
+      title: t(
+        config.status?.ready?.titleKey || `${destinationId}.entryFlow.status.ready.title`,
+        {
+          defaultValue: config.status?.ready?.defaultTitle || 'Ready to Submit!'
+        }
+      ),
+      subtitle: t(
+        config.status?.ready?.subtitleKey || `${destinationId}.entryFlow.status.ready.subtitle`,
+        {
+          defaultValue: config.status?.ready?.defaultSubtitle || 'All information complete'
+        }
+      ),
     },
     mostly_complete: {
       color: '#FFF9E6',
       icon: '⏳',
-      title: t(config.status?.mostly_complete?.titleKey || 'entryFlow.status.mostlyComplete.title', {
-        defaultValue: 'Almost There'
-      }),
-      subtitle: t(config.status?.mostly_complete?.subtitleKey || 'entryFlow.status.mostlyComplete.subtitle', {
-        defaultValue: `${completionPercent}% complete`
-      }),
+      title: t(
+        config.status?.mostly_complete?.titleKey || `${destinationId}.entryFlow.status.mostlyComplete.title`,
+        {
+          defaultValue: config.status?.mostly_complete?.defaultTitle || 'Almost There'
+        }
+      ),
+      subtitle: t(
+        config.status?.mostly_complete?.subtitleKey || `${destinationId}.entryFlow.status.mostlyComplete.subtitle`,
+        {
+          defaultValue: config.status?.mostly_complete?.defaultSubtitle || `${completionPercent}% complete`,
+          percent: completionPercent
+        }
+      ),
     },
     needs_improvement: {
       color: '#FFE6E6',
       icon: '📝',
-      title: t(config.status?.needs_improvement?.titleKey || 'entryFlow.status.needsImprovement.title', {
-        defaultValue: 'Please Complete'
-      }),
-      subtitle: t(config.status?.needs_improvement?.subtitleKey || 'entryFlow.status.needsImprovement.subtitle', {
-        defaultValue: 'More information needed'
-      }),
+      title: t(
+        config.status?.needs_improvement?.titleKey || `${destinationId}.entryFlow.status.needsImprovement.title`,
+        {
+          defaultValue: config.status?.needs_improvement?.defaultTitle || 'Please Complete'
+        }
+      ),
+      subtitle: t(
+        config.status?.needs_improvement?.subtitleKey || `${destinationId}.entryFlow.status.needsImprovement.subtitle`,
+        {
+          defaultValue: config.status?.needs_improvement?.defaultSubtitle || 'More information needed'
+        }
+      ),
     },
   };
 
@@ -361,7 +384,14 @@ EntryFlowScreenTemplate.AutoContent = () => {
     userData,
   } = useEntryFlowTemplate();
 
-  const destinationName = config.nameZh || config.name || '';
+  // Get destination name from translation system based on locale
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationNameKey = `${destinationId}.name`;
+  const destinationName = t(destinationNameKey, {
+    defaultValue: config.nameZh || config.name || ''
+  });
 
   if (isLoading) {
     return <EntryFlowScreenTemplate.LoadingIndicator />;
@@ -433,34 +463,57 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
   const accentColor = isReady ? '#0AA35C' : isAlmost ? '#FF8C00' : '#1E88E5';
   const backgroundColor = isReady ? '#E5F8EE' : isAlmost ? '#FFF6E6' : '#E6F1FF';
   const remaining = Math.max(0, 100 - percent);
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+
+  // Build destination-specific translation keys
+  const headlineKey = isReady
+    ? `${destinationId}.entryFlow.progress.headline.ready`
+    : isAlmost
+    ? `${destinationId}.entryFlow.progress.headline.almost`
+    : `${destinationId}.entryFlow.progress.headline.start`;
+
+  const subtitleKey = isReady
+    ? `${destinationId}.entryFlow.progress.subtitle.ready`
+    : isAlmost
+    ? `${destinationId}.entryFlow.progress.subtitle.almost`
+    : `${destinationId}.entryFlow.progress.subtitle.start`;
+
+  // Get translated destination name for use in translations
+  const translatedDestinationName = t(`${destinationId}.name`, {
+    defaultValue: destination || config.name || ''
+  });
 
   const headline = isReady
-    ? t(config.entryFlow?.progress?.headline?.ready || 'entryFlow.progress.headline.ready', {
-        defaultValue: `${destination} Ready! 🌴`,
-        destination
+    ? t(headlineKey, {
+        defaultValue: config.entryFlow?.progress?.headline?.ready || `${translatedDestinationName} Ready! 🌴`,
+        destination: translatedDestinationName
       })
     : isAlmost
-    ? t(config.entryFlow?.progress?.headline?.almost || 'entryFlow.progress.headline.almost', {
-        defaultValue: 'Good progress! 💪'
+    ? t(headlineKey, {
+        defaultValue: config.entryFlow?.progress?.headline?.almost || 'Almost There',
       })
-    : t(config.entryFlow?.progress?.headline?.start || 'entryFlow.progress.headline.start', {
-        defaultValue: "Let's get started! 🌺"
+    : t(headlineKey, {
+        defaultValue: config.entryFlow?.progress?.headline?.start || "Let's get started! 🌺"
       });
 
   const subtitle = isReady
-    ? t(config.entryFlow?.progress?.subtitle?.ready || 'entryFlow.progress.subtitle.ready', {
-        defaultValue: `Awesome! Your ${destination} trip is ready! 🌴`,
-        destination
+    ? t(subtitleKey, {
+        defaultValue: config.entryFlow?.progress?.subtitle?.ready || `Awesome! Your ${translatedDestinationName} trip is ready! 🌴`,
+        destination: translatedDestinationName
       })
     : isAlmost
-    ? t(config.entryFlow?.progress?.subtitle?.almost || 'entryFlow.progress.subtitle.almost', {
-        defaultValue: `Keep it up! Just ${remaining}% left to complete your ${destination} trip preparation!`,
+    ? t(subtitleKey, {
+        defaultValue: config.entryFlow?.progress?.subtitle?.almost || `Keep it up! Just ${remaining}% left to complete your ${translatedDestinationName} trip preparation!`,
         remaining,
-        destination
+        destination: translatedDestinationName
       })
-    : t(config.entryFlow?.progress?.subtitle?.start || 'entryFlow.progress.subtitle.start', {
-        defaultValue: 'Continue filling out your information to make the journey smoother.'
+    : t(subtitleKey, {
+        defaultValue: config.entryFlow?.progress?.subtitle?.start || 'Continue filling out your information to make the journey smoother.'
       });
+
+  const progressLabelKey = `${destinationId}.entryFlow.progress.label`;
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -477,8 +530,8 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
             {percent}%
           </TamaguiText>
           <TamaguiText fontSize="$3" color={accentColor}>
-            {t(config.entryFlow?.progress?.label || `${config.destinationId}.entryFlow.progress.label`, {
-              defaultValue: '准备进度'
+            {t(progressLabelKey, {
+              defaultValue: config.entryFlow?.progress?.label || '准备进度'
             })}
           </TamaguiText>
           <YStack

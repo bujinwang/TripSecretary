@@ -11,33 +11,33 @@ const CompletionSummaryCard = ({
   completionPercent = 0,
   status = 'incomplete',
   showProgressBar = true,
-  country = 'thailand' // 'thailand', 'malaysia', 'hongkong', 'japan', etc.
+  country = 'th' // ISO 3166-1 alpha-2 codes: 'th', 'my', 'hk', 'jp', etc.
 }) => {
   // Get country-specific emojis and texts
   const getCountryConfig = () => {
     const configs = {
-      thailand: {
+      th: {
         readyText: '泰国准备就绪！🌴',
         progressText: (remaining) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
-      malaysia: {
+      my: {
         readyText: '马来西亚准备就绪！🇲🇾',
         progressText: (remaining) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
-      hongkong: {
+      hk: {
         readyText: '香港准备就绪！🇭🇰',
         progressText: (remaining) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
-      japan: {
+      jp: {
         readyText: '日本准备就绪！🌸',
         progressText: (remaining) => `还差 ${remaining}% 即可完成`,
         completeText: null
       }
     };
-    return configs[country] || configs.thailand;
+    return configs[country] || configs.th;
   };
 
   const config = getCountryConfig();

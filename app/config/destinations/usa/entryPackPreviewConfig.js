@@ -5,21 +5,21 @@
 export const usaEntryPackPreviewConfig = {
   countryCode: 'usa',
   header: {
-    title: '美国入境资料包预览',
+    title: 'US Entry Pack Preview',
     closeIcon: '✕',
   },
   previewBanner: {
     icon: '👁️',
-    title: '预览模式',
+    title: 'Preview Mode',
     descriptions: [
-      '这是您美国行的资料总览：护照、EVUS、航班、住宿与资金证明一目了然。',
-      '提示：抵达前可随时更新信息，确保入境时快速出示。',
+      'This is your US entry information overview: passport, EVUS, flight, accommodation, and proof of funds at a glance.',
+      'Tip: You can update information at any time before arrival to ensure quick presentation to CBP officers.',
     ],
   },
   actions: {
     primary: {
       id: 'edit',
-      label: '✏️ 返回编辑',
+      label: '✏️ Edit Information',
       type: 'navigate',
       screen: 'USTravelInfo',
       buildParams: ({ passport, destination }) => ({
@@ -29,7 +29,7 @@ export const usaEntryPackPreviewConfig = {
     },
     secondary: {
       id: 'entryFlow',
-      label: '📋 查看准备进度',
+      label: '📋 View Progress',
       type: 'navigate',
       screen: 'USAEntryFlow',
       buildParams: ({ passport, destination }) => ({
@@ -41,8 +41,8 @@ export const usaEntryPackPreviewConfig = {
   infoSection: {
     icon: 'ℹ️',
     items: [
-      'EVUS 状态与签证有效期务必在出发前再次确认。',
-      'CBP 面谈常见问题：访问目的、停留时间、住宿地址、携带资金数额。',
+      'EVUS status and visa validity must be confirmed before departure.',
+      'CBP interview common questions: purpose of visit, length of stay, accommodation address, amount of funds carried.',
     ],
   },
 };

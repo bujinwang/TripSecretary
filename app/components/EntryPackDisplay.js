@@ -15,7 +15,7 @@ const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
 // Country-specific configurations
 const countryConfigs = {
-  thailand: {
+  th: {
     entryCardName: 'TDAC',
     entryCardTab: 'tdac',
     entryCardTitle: 'บัตรเข้าเมือง TDAC / TDAC Entry Card',
@@ -46,7 +46,7 @@ const countryConfigs = {
     },
     dateLocales: ['th-TH', 'en-US']
   },
-  malaysia: {
+  my: {
     entryCardName: 'MDAC',
     entryCardTab: 'mdac',
     entryCardTitle: 'MDAC Entry Card / Kad Ketibaan Digital Malaysia',
@@ -77,7 +77,7 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'ms-MY']
   },
-  hongkong: {
+  hk: {
     entryCardName: 'HDAC',
     entryCardTab: 'hdac',
     entryCardTitle: '香港入境資料 / Hong Kong Entry Information',
@@ -108,7 +108,7 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'zh-CN']
   },
-  usa: {
+  us: {
     entryCardName: 'I-94',
     entryCardTab: 'i94',
     entryCardTitle: 'I-94 Entry Record / 美国入境记录',
@@ -139,7 +139,7 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'zh-CN']
   },
-  taiwan: {
+  tw: {
     entryCardName: 'TWAC',
     entryCardTab: 'twac',
     entryCardTitle: '臺灣入境資料 / Taiwan Entry Information',
@@ -170,7 +170,7 @@ const countryConfigs = {
     },
     dateLocales: ['zh-TW', 'en-US']
   },
-  singapore: {
+  sg: {
     entryCardName: 'SGAC',
     entryCardTab: 'sgac',
     entryCardTitle: 'Singapore Entry Card (SGAC) / 新加坡入境卡',
@@ -201,48 +201,61 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'zh-CN']
   },
-  vietnam: {
+  vn: {
     entryCardName: 'Vietnam Entry Pack',
     entryCardTab: 'personal',
-    entryCardTitle: 'Vietnam Entry Information / 越南入境资料',
-    personalInfoTitle: 'Thông tin cá nhân / 个人信息',
-    travelInfoTitle: 'Thông tin hành trình / 旅行信息',
-    fundsTitle: 'Chứng minh tài chính / 资金证明',
+    entryCardTitle: 'Thông tin nhập cảnh Việt Nam',
+    personalInfoTitle: 'Thông tin cá nhân',
+    travelInfoTitle: 'Thông tin hành trình',
+    fundsTitle: 'Chứng minh tài chính',
     currency: 'VND',
     currencyName: '₫',
-    notProvided: 'Chưa cung cấp / 未提供',
-    fallbackHotelText: 'Vui lòng cung cấp địa chỉ lưu trú / 请提供住宿地址',
+    notProvided: 'Chưa cung cấp',
+    fallbackHotelText: 'Vui lòng cung cấp địa chỉ lưu trú',
     labels: {
-      fullName: 'Họ và tên / 姓名',
-      passportNumber: 'Số hộ chiếu / 护照号码',
-      passportExpiryDate: 'Ngày hết hạn hộ chiếu / 护照有效期',
-      nationality: 'Quốc tịch / 国籍',
-      dateOfBirth: 'Ngày sinh / 出生日期',
-      arrivalDate: 'Ngày nhập cảnh / 入境日期',
-      arrivalFlightNumber: 'Chuyến bay nhập cảnh / 入境航班',
-      departureDate: 'Ngày rời Việt Nam / 离境日期',
-      departureFlightNumber: 'Chuyến bay rời đi / 离境航班',
-      flightNumber: 'Chuyến bay / 航班',
-      stayLocation: 'Địa chỉ lưu trú / 住宿地址',
-      lengthOfStay: 'Thời gian lưu trú / 停留时长',
-      purpose: 'Mục đích chuyến đi / 入境目的',
-      totalFunds: 'Tổng số tiền mang theo / 资金总额',
-      fundType: 'Loại / 类型',
-      amount: 'Số tiền / 金额'
+      fullName: 'Họ và tên',
+      passportNumber: 'Số hộ chiếu',
+      passportExpiryDate: 'Ngày hết hạn hộ chiếu',
+      nationality: 'Quốc tịch',
+      dateOfBirth: 'Ngày sinh',
+      arrivalDate: 'Ngày nhập cảnh',
+      arrivalFlightNumber: 'Chuyến bay nhập cảnh',
+      departureDate: 'Ngày rời Việt Nam',
+      departureFlightNumber: 'Chuyến bay rời đi',
+      flightNumber: 'Chuyến bay',
+      stayLocation: 'Địa chỉ lưu trú',
+      lengthOfStay: 'Thời gian lưu trú',
+      purpose: 'Mục đích chuyến đi',
+      totalFunds: 'Tổng số tiền mang theo',
+      fundType: 'Loại',
+      amount: 'Số tiền'
     },
-    dateLocales: ['vi-VN', 'zh-CN'],
+    dateLocales: ['vi-VN'],
   }
 };
 
+// Country aliases: maps ISO alpha-2 codes to translation keys
+// Since translation keys are now standardized to ISO alpha-2, this is mainly for backward compatibility
 const COUNTRY_ALIASES = {
-  my: 'malaysia',
-  sg: 'singapore',
-  th: 'thailand',
-  hk: 'hongkong',
-  tw: 'taiwan',
-  us: 'usa',
-  jp: 'japan',
-  vn: 'vietnam',
+  my: 'my',
+  sg: 'sg',
+  th: 'th',
+  hk: 'hk',
+  tw: 'tw',
+  us: 'us',
+  jp: 'jp',
+  vn: 'vn',
+  kr: 'kr',
+  // Legacy mappings for backward compatibility
+  malaysia: 'my',
+  singapore: 'sg',
+  thailand: 'th',
+  hongkong: 'hk',
+  taiwan: 'tw',
+  usa: 'us',
+  japan: 'jp',
+  vietnam: 'vn',
+  korea: 'kr',
 };
 
 const EntryPackDisplay = ({
@@ -252,9 +265,9 @@ const EntryPackDisplay = ({
   funds,
   onClose,
   isModal = false,
-  country: rawCountry = 'thailand'
+  country: rawCountry = 'th'
 }) => {
-  const country = COUNTRY_ALIASES[rawCountry] || rawCountry || 'thailand';
+  const country = COUNTRY_ALIASES[rawCountry] || rawCountry || 'th';
   const entryPack = useMemo(
     () =>
       rawEntryPack && rawEntryPack.country !== country
@@ -262,7 +275,7 @@ const EntryPackDisplay = ({
         : rawEntryPack,
     [rawEntryPack, country]
   );
-  const config = countryConfigs[country] || countryConfigs.thailand;
+  const config = countryConfigs[country] || countryConfigs.th;
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoUri, setSelectedPhotoUri] = useState(null);
@@ -330,9 +343,9 @@ const EntryPackDisplay = ({
 
   // Country-aware location formatter
   const formatLocationBilingual = (value) => {
-    if (country === 'hongkong') {
+    if (country === 'hk') {
       return formatDistrictHongKongBilingual(value);
-    } else if (country === 'thailand') {
+    } else if (country === 'th') {
       return formatProvinceThaiEnglish(value);
     }
     return value || '';
@@ -356,6 +369,12 @@ const EntryPackDisplay = ({
         month: 'long',
         day: 'numeric',
       });
+      
+      // If only one locale is provided (e.g., Vietnamese only), return single format
+      if (!locale2) {
+        return date1;
+      }
+
       const date2 = date.toLocaleDateString(locale2, {
         year: 'numeric',
         month: 'long',
@@ -435,7 +454,7 @@ const EntryPackDisplay = ({
 
   const getFundTypeLabel = (type) => {
     const fundLabels = {
-      thailand: {
+      th: {
         cash: 'เงินสด / Cash',
         credit_card: 'บัตรเครดิต / Credit Card',
         bank_balance: 'ยอดเงินฝากธนาคาร / Bank Balance',
@@ -444,7 +463,7 @@ const EntryPackDisplay = ({
         debit_card: 'บัตรเดบิต / Debit Card',
         other: 'อื่น ๆ / Other'
       },
-      malaysia: {
+      my: {
         cash: 'Cash / Tunai',
         credit_card: 'Credit Card / Kad Kredit',
         bank_balance: 'Bank Balance / Baki Bank',
@@ -453,7 +472,7 @@ const EntryPackDisplay = ({
         debit_card: 'Debit Card / Kad Debit',
         other: 'Other / Lain-lain'
       },
-      hongkong: {
+      hk: {
         cash: '現金 / Cash',
         credit_card: '信用卡 / Credit Card',
         bank_balance: '銀行存款 / Bank Balance',
@@ -462,7 +481,7 @@ const EntryPackDisplay = ({
         debit_card: '扣賬卡 / Debit Card',
         other: '其他 / Other'
       },
-      singapore: {
+      sg: {
         cash: 'Cash / 现金',
         credit_card: 'Credit Card / 信用卡',
         bank_balance: 'Bank Balance / 银行存款',
@@ -471,7 +490,7 @@ const EntryPackDisplay = ({
         debit_card: 'Debit Card / 借记卡',
         other: 'Other / 其他'
       },
-      taiwan: {
+      tw: {
         cash: '現金 / Cash',
         credit_card: '信用卡 / Credit Card',
         bank_balance: '銀行存款 / Bank Balance',
@@ -479,7 +498,7 @@ const EntryPackDisplay = ({
         card: '銀行卡 / Bank Card',
         debit_card: '扣帳卡 / Debit Card',
         other: '其他 / Other'},
-      usa: {
+      us: {
         cash: 'Cash / 现金',
         credit_card: 'Credit Card / 信用卡',
         bank_balance: 'Bank Balance / 银行存款',
@@ -488,7 +507,7 @@ const EntryPackDisplay = ({
         debit_card: 'Debit Card / 借记卡',
         other: 'Other / 其他'
       },
-      japan: {
+      jp: {
         cash: '現金 / Cash',
         credit_card: 'クレジットカード / Credit Card',
         bank_balance: '銀行残高 / Bank Balance',
@@ -499,7 +518,7 @@ const EntryPackDisplay = ({
       }
     };
 
-    const labels = fundLabels[country] || fundLabels.thailand;
+    const labels = fundLabels[country] || fundLabels.th;
     return labels[type] || labels.other;
   };
 
@@ -614,7 +633,7 @@ const EntryPackDisplay = ({
             <Text style={styles.infoValue}>{departureFlightValue}</Text>
           </View>
 
-          {country === 'thailand' && hotelProvinceDisplay && (
+          {country === 'th' && hotelProvinceDisplay && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>จังหวัด / Province:</Text>
               <Text style={styles.infoValue}>
@@ -646,28 +665,28 @@ const EntryPackDisplay = ({
 
   const renderFundsInfo = () => {
     const proofPhotoTexts = {
-      thailand: '📸 มีหลักฐานรูปภาพแล้ว',
-      malaysia: '📸 Proof photo uploaded',
-      singapore: '📸 Proof photo uploaded',
-    usa: '📸 Proof photo uploaded',
-    hongkong: '📸 已上載證明照片',
-    taiwan: '📸 已上傳證明照片',
-    japan: '📸 証明写真アップロード済み',
-    vietnam: '📸 Ảnh chứng minh tài chính'
-  };
-  const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.thailand;
+      th: '📸 มีหลักฐานรูปภาพแล้ว',
+      my: '📸 Proof photo uploaded',
+      sg: '📸 Proof photo uploaded',
+      us: '📸 Proof photo uploaded',
+      hk: '📸 已上載證明照片',
+      tw: '📸 已上傳證明照片',
+      jp: '📸 証明写真アップロード済み',
+      vn: '📸 Ảnh chứng minh tài chính'
+    };
+    const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.th;
 
-  const noDataTexts = {
-    thailand: 'ยังไม่มีข้อมูลเงินทุน',
-    malaysia: 'No funds information',
-    singapore: 'No funds information',
-    usa: 'No funds information',
-    japan: '資金情報なし',
-    hongkong: '未提供資金證明',
-    taiwan: '未提供資金證明',
-    vietnam: 'Chưa có thông tin tài chính / 尚未提供资金信息'
-  };
-    const noDataText = noDataTexts[country] || noDataTexts.thailand;
+    const noDataTexts = {
+      th: 'ยังไม่มีข้อมูลเงินทุน',
+      my: 'No funds information',
+      sg: 'No funds information',
+      us: 'No funds information',
+      jp: '資金情報なし',
+      hk: '未提供資金證明',
+      tw: '未提供資金證明',
+      vn: 'Chưa có thông tin tài chính'
+    };
+    const noDataText = noDataTexts[country] || noDataTexts.th;
 
     return (
       <View style={styles.section}>
@@ -700,11 +719,11 @@ const EntryPackDisplay = ({
                     {proofPhotoText}
                   </Text>
                   <Text style={styles.fundProofHint}>
-                    {country === 'thailand' ? 'แตะเพื่อดูรูป' :
-                     country === 'malaysia' ? 'Tap to view' :
-                     country === 'singapore' || country === 'usa' ? 'Tap to view' :
-                     country === 'hongkong' || country === 'taiwan' ? '點擊查看' :
-                     country === 'japan' ? 'タップして表示' :
+                    {country === 'th' ? 'แตะเพื่อดูรูป' :
+                     country === 'my' ? 'Tap to view' :
+                     country === 'sg' || country === 'us' ? 'Tap to view' :
+                     country === 'hk' || country === 'tw' ? '點擊查看' :
+                     country === 'jp' ? 'タップして表示' :
                      'แตะเพื่อดูรูป'}
                   </Text>
                 </TouchableOpacity>
@@ -727,48 +746,48 @@ const EntryPackDisplay = ({
 
   const renderTDACInfo = () => {
     const placeholderTitles = {
-      thailand: 'ยังไม่ได้ส่ง TDAC',
-      malaysia: 'MDAC Not Submitted',
-      singapore: 'SGAC Not Submitted',
-      usa: 'I-94 Not Required Online',
-      japan: '入国カード未提出',
-      hongkong: '尚未提交入境資料'
+      th: 'ยังไม่ได้ส่ง TDAC',
+      my: 'MDAC Not Submitted',
+      sg: 'SGAC Not Submitted',
+      us: 'I-94 Not Required Online',
+      jp: '入国カード未提出',
+      hk: '尚未提交入境資料'
     };
 
     const placeholderDescriptions = {
-      thailand: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง',
-      malaysia: 'Please submit MDAC within 3 days before arrival',
-      singapore: 'Please submit SGAC within 3 days before arrival',
-      usa: 'I-94 is completed at the airport upon arrival',
-      japan: '到着前にVisit Japan Webで入国カードを提出してください',
-      hongkong: '香港入境無需預先提交電子表格，到達時填寫即可'
+      th: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง',
+      my: 'Please submit MDAC within 3 days before arrival',
+      sg: 'Please submit SGAC within 3 days before arrival',
+      us: 'I-94 is completed at the airport upon arrival',
+      jp: '到着前にVisit Japan Webで入国カードを提出してください',
+      hk: '香港入境無需預先提交電子表格，到達時填寫即可'
     };
 
     const qrPlaceholderTexts = {
-      thailand: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย',
-      malaysia: 'QR Code will appear after submission',
-      singapore: 'DE Number will appear after submission',
-      usa: 'I-94 number will be provided at entry',
-      japan: 'QRコードは提出後に表示されます',
-      hongkong: '入境時會獲得入境蓋章'
+      th: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย',
+      my: 'QR Code will appear after submission',
+      sg: 'DE Number will appear after submission',
+      us: 'I-94 number will be provided at entry',
+      jp: 'QRコードは提出後に表示されます',
+      hk: '入境時會獲得入境蓋章'
     };
 
     const placeholderNotes = {
-      thailand: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้',
-      malaysia: 'You can still show other information to immigration officer',
-      singapore: 'You can still show other information to immigration officer',
-      usa: 'Prepare this information for CBP officer at the airport',
-      japan: '入国カードがなくても、他の情報を入国審査官に提示できます',
-      hongkong: '可以向入境處人員出示此資料包'
+      th: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้',
+      my: 'You can still show other information to immigration officer',
+      sg: 'You can still show other information to immigration officer',
+      us: 'Prepare this information for CBP officer at the airport',
+      jp: '入国カードがなくても、他の情報を入国審査官に提示できます',
+      hk: '可以向入境處人員出示此資料包'
     };
 
     const pdfDocumentTitle = {
-      thailand: '📄 เอกสาร TDAC',
-      malaysia: '📄 MDAC Document',
-      singapore: '📄 SGAC Document',
-      usa: '📄 I-94 Document',
-      japan: '📄 入国カード',
-      hongkong: '📄 入境文件'
+      th: '📄 เอกสาร TDAC',
+      my: '📄 MDAC Document',
+      sg: '📄 SGAC Document',
+      us: '📄 I-94 Document',
+      jp: '📄 入国カード',
+      hk: '📄 入境文件'
     };
 
     return (
@@ -793,13 +812,13 @@ const EntryPackDisplay = ({
           </>
         ) : (
           <>
-            {country !== 'thailand' && (
+            {country !== 'th' && (
               <View style={styles.tdacPlaceholder}>
                 <View style={styles.placeholderIcon}>
                   <Text style={styles.placeholderIconText}>📱</Text>
                 </View>
                 <Text style={styles.placeholderTitle}>
-                  {config.placeholderTitle || placeholderTitles[country] || placeholderTitles.thailand}
+                  {config.placeholderTitle || placeholderTitles[country] || placeholderTitles.th}
                 </Text>
                 {(config.placeholderDescription || placeholderDescriptions[country]) && (
                   <Text style={styles.placeholderDescription}>
@@ -815,7 +834,7 @@ const EntryPackDisplay = ({
             )}
 
             {/* Show sample PDF preview for Thailand */}
-            {country === 'thailand' && (
+            {country === 'th' && (
               <View style={styles.samplePdfContainer}>
                 <View style={styles.samplePdfHeader}>
                   <Text style={styles.samplePdfTitle}>
@@ -986,29 +1005,39 @@ const EntryPackDisplay = ({
     ]
       },
       vietnam: {
-        title: '💡 Câu hỏi thường gặp / 常见问题',
+        title: '💡 Câu hỏi thường gặp',
         questions: [
           {
-            q: 'Q: Bạn đến Việt Nam với mục đích gì? / 你来越南的目的是什么？',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Du lịch / 旅游'
+            q: 'Q: Bạn đến Việt Nam với mục đích gì?',
+            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Du lịch'
           },
           {
-            q: 'Q: Bạn sẽ ở lại Việt Nam bao lâu? / 你会在越南停留多久？',
-            a: travelInfo?.lengthOfStay || '7 ngày / 7天'
+            q: 'Q: Bạn sẽ ở lại Việt Nam bao lâu?',
+            a: travelInfo?.lengthOfStay || '7 ngày'
           },
           {
-            q: 'Q: Bạn sẽ lưu trú ở đâu? / 你会住在哪里？',
+            q: 'Q: Bạn sẽ lưu trú ở đâu?',
             a: stayLocationAnswer
           },
           {
-            q: 'Q: Bạn mang theo bao nhiêu tiền? / 你带了多少资金？',
-            a: `${formatBilingualCurrency(totalFunds)} (Tiền mặt & thẻ ngân hàng / 现金和银行卡)`
+            q: 'Q: Bạn mang theo bao nhiêu tiền?',
+            a: `${formatBilingualCurrency(totalFunds)} (Tiền mặt & thẻ ngân hàng)`
           }
         ]
       }
     };
 
-    return tipsConfig[country] || tipsConfig.thailand;
+    // Map normalized country codes to tipsConfig keys (same mapping as tabsConfig)
+    const tipsConfigKey = country === 'us' ? 'usa' : 
+                          country === 'my' ? 'malaysia' :
+                          country === 'sg' ? 'singapore' :
+                          country === 'hk' ? 'hongkong' :
+                          country === 'tw' ? 'taiwan' :
+                          country === 'jp' ? 'japan' :
+                          country === 'vn' ? 'vietnam' :
+                          country === 'th' ? 'thailand' :
+                          country;
+    return tipsConfig[tipsConfigKey] || tipsConfig.thailand;
   };
 
   const renderImmigrationTips = () => {
@@ -1083,10 +1112,10 @@ const EntryPackDisplay = ({
       { key: 'funds', label: '資金證明', labelEn: 'Funds' },
     ],
     usa: [
-      { key: 'i94', label: 'I-94', labelEn: '入境记录' },
-      { key: 'personal', label: 'Personal', labelEn: '个人' },
-      { key: 'travel', label: 'Travel', labelEn: '旅行' },
-      { key: 'funds', label: 'Funds', labelEn: '资金' },
+      { key: 'i94', label: 'I-94', labelEn: '' },
+      { key: 'personal', label: 'Personal', labelEn: '' },
+      { key: 'travel', label: 'Travel', labelEn: '' },
+      { key: 'funds', label: 'Funds', labelEn: '' },
     ],
     japan: [
       { key: 'jdac', label: '入国カード', labelEn: 'Entry Card' },
@@ -1095,13 +1124,23 @@ const EntryPackDisplay = ({
       { key: 'funds', label: '資金情報', labelEn: 'Funds' },
     ],
     vietnam: [
-      { key: 'personal', label: '个人信息', labelEn: 'Personal' },
-      { key: 'travel', label: '旅行信息', labelEn: 'Travel' },
-      { key: 'funds', label: '资金', labelEn: 'Funds' },
+      { key: 'personal', label: 'Thông tin cá nhân', labelEn: '' },
+      { key: 'travel', label: 'Thông tin hành trình', labelEn: '' },
+      { key: 'funds', label: 'Chứng minh tài chính', labelEn: '' },
     ]
   };
 
-  const tabs = tabsConfig[country] || tabsConfig.thailand;
+  // Map normalized country codes to tabsConfig keys
+  const tabsConfigKey = country === 'us' ? 'usa' : 
+                        country === 'my' ? 'malaysia' :
+                        country === 'sg' ? 'singapore' :
+                        country === 'hk' ? 'hongkong' :
+                        country === 'tw' ? 'taiwan' :
+                        country === 'jp' ? 'japan' :
+                        country === 'vn' ? 'vietnam' :
+                        country === 'th' ? 'thailand' :
+                        country;
+  const tabs = tabsConfig[tabsConfigKey] || tabsConfig.thailand;
 
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง',
@@ -1111,7 +1150,7 @@ const EntryPackDisplay = ({
   usa: '🇺🇸 Entry Pack',
   hongkong: '🇭🇰 入境資料包',
   japan: '🇯🇵 入国情報パック',
-  vietnam: '🇻🇳 越南入境资料包'
+  vietnam: '🇻🇳 Gói thông tin nhập cảnh Việt Nam'
 };
 
   const headerSubtitles = {
@@ -1129,8 +1168,8 @@ const EntryPackDisplay = ({
     <View style={[styles.container, isModal && styles.modalContainer]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{headerTitles[country] || headerTitles.thailand}</Text>
-        <Text style={styles.subtitle}>{headerSubtitles[country] || headerSubtitles.thailand}</Text>
+        <Text style={styles.title}>{headerTitles[tabsConfigKey] || headerTitles.thailand}</Text>
+        <Text style={styles.subtitle}>{headerSubtitles[tabsConfigKey] || headerSubtitles.thailand}</Text>
 
         {onClose && (
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -1159,9 +1198,11 @@ const EntryPackDisplay = ({
             <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
               {tab.label}
             </Text>
-            <Text style={[styles.tabTextEn, activeTab === tab.key && styles.activeTabText]}>
-              {tab.labelEn}
-            </Text>
+            {tab.labelEn && (
+              <Text style={[styles.tabTextEn, activeTab === tab.key && styles.activeTabText]}>
+                {tab.labelEn}
+              </Text>
+            )}
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -1202,11 +1243,11 @@ const EntryPackDisplay = ({
             </TouchableOpacity>
             <View style={styles.photoViewerHintContainer}>
               <Text style={styles.photoViewerHint}>
-                {country === 'thailand' ? 'รูปหลักฐานเงินทุน' :
-                 country === 'malaysia' ? 'Fund Proof Photo' :
-                 country === 'singapore' || country === 'usa' ? 'Fund Proof Photo' :
-                 country === 'hongkong' || country === 'taiwan' ? '資金證明照片' :
-                 country === 'japan' ? '資金証明写真' :
+                {country === 'th' ? 'รูปหลักฐานเงินทุน' :
+                 country === 'my' ? 'Fund Proof Photo' :
+                 country === 'sg' || country === 'us' ? 'Fund Proof Photo' :
+                 country === 'hk' || country === 'tw' ? '資金證明照片' :
+                 country === 'jp' ? '資金証明写真' :
                  'รูปหลักฐานเงินทุน'}
               </Text>
             </View>

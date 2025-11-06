@@ -26,8 +26,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../components/BackButton';
+import Button from '../components/Button';
 import { useLocale } from '../i18n/LocaleContext';
 import { colors, typography, spacing } from '../theme';
+import { Alert } from 'react-native';
 
 const EntryGuideTemplateContext = createContext(null);
 
@@ -369,10 +371,12 @@ const EntryGuideTemplateStepIndicator = () => {
     return null;
   }
 
+  const { t } = useEntryGuideTemplate();
+  
   return (
     <View style={styles.stepIndicatorContainer}>
       <Text style={styles.stepIndicatorTitle}>
-        {isChinese ? '入境步骤进度' : 'Entry Steps Progress'}
+        {t('entryGuide.stepProgress.title', { defaultValue: isChinese ? '入境步骤进度' : 'Entry Steps Progress' })}
       </Text>
       <ScrollView
         horizontal
@@ -442,19 +446,21 @@ const EntryGuideTemplateStepIndicator = () => {
 };
 
 const EntryGuideTemplateCurrentStep = () => {
-  const { currentStep, currentStepIndex, steps, isChinese } =
+  const { currentStep, currentStepIndex, steps, isChinese, navigation, route, config, t } =
     useEntryGuideTemplate();
 
   if (!currentStep) {
     return (
       <View style={styles.currentStepContainer}>
         <Text style={styles.stepTitle}>
-          {isChinese ? '暂无步骤' : 'No steps configured'}
+          {t('entryGuide.stepProgress.noSteps', { defaultValue: isChinese ? '暂无步骤' : 'No steps configured' })}
         </Text>
         <Text style={styles.stepDescription}>
-          {isChinese
-            ? '请检查配置文件是否正确提供步骤数据。'
-            : 'Please ensure the configuration supplies the expected steps.'}
+          {t('entryGuide.stepProgress.noStepsDescription', { 
+            defaultValue: isChinese
+              ? '请检查配置文件是否正确提供步骤数据。'
+              : 'Please ensure the configuration supplies the expected steps.' 
+          })}
         </Text>
       </View>
     );
@@ -474,12 +480,38 @@ const EntryGuideTemplateCurrentStep = () => {
     currentStep.description || currentStep.descriptionZh
   );
 
-  const category = resolveLabel(
+  // Resolve category with i18n support
+  const categoryKey = currentStep.category || '';
+  // Map common category values to translation keys
+  const categoryKeyMap = {
+    'pre-arrival': 'preArrival',
+    'pre_arrival': 'preArrival',
+    'prearrival': 'preArrival',
+    'pre-flight': 'preFlight',
+    'pre_flight': 'preFlight',
+    'preflight': 'preFlight',
+    'in-flight': 'inFlight',
+    'in_flight': 'inFlight',
+    'inflight': 'inFlight',
+    'post-landing': 'postLanding',
+    'post_landing': 'postLanding',
+    'postlanding': 'postLanding',
+    'immigration': 'immigration',
+    'baggage': 'baggage',
+    'customs': 'customs',
+  };
+  const mappedCategoryKey = categoryKeyMap[categoryKey.toLowerCase()] || categoryKey.toLowerCase().replace(/[-\s]/g, '');
+  const categoryTranslationKey = `entryGuide.category.${mappedCategoryKey}`;
+  const categoryFallback = resolveLabel(
     { zh: currentStep.categoryZh, en: currentStep.category },
     isChinese,
     currentStep.categoryZh || currentStep.category,
-    currentStep.category || currentStep.categoryZh || (isChinese ? '步骤' : 'Step')
+    currentStep.category || currentStep.categoryZh || ''
   );
+  
+  const category = categoryFallback 
+    ? t(categoryTranslationKey, { defaultValue: categoryFallback })
+    : t('entryGuide.category.default', { defaultValue: isChinese ? '步骤' : 'Step' });
 
   const renderMedia = () => {
     if (!currentStep.media || currentStep.media.type !== 'image') {
@@ -511,11 +543,11 @@ const EntryGuideTemplateCurrentStep = () => {
     if (!Array.isArray(currentStep.formFields) || !currentStep.formFields.length) {
       return null;
     }
-
+    
     return (
       <View style={styles.formFieldsContainer}>
         <Text style={styles.formFieldsTitle}>
-          {isChinese ? '📝 表格填写要点' : '📝 Form Filling Tips'}
+          {t('entryGuide.sections.formFields', { defaultValue: isChinese ? '📝 表格填写要点' : '📝 Form Filling Tips' })}
         </Text>
         {currentStep.formFields.map((field, index) => {
           const label = resolveLabel(
@@ -551,11 +583,11 @@ const EntryGuideTemplateCurrentStep = () => {
     if (!Array.isArray(currentStep.warnings) || !currentStep.warnings.length) {
       return null;
     }
-
+    
     return (
       <View style={styles.warningsContainer}>
         <Text style={styles.warningsTitle}>
-          {isChinese ? '⚠️ 重要提醒' : '⚠️ Important Warnings'}
+          {t('entryGuide.sections.warnings', { defaultValue: isChinese ? '⚠️ 重要提醒' : '⚠️ Important Warnings' })}
         </Text>
         {currentStep.warnings.map((warning, index) => (
           <Text key={`warning-${index}`} style={styles.warningText}>
@@ -570,17 +602,67 @@ const EntryGuideTemplateCurrentStep = () => {
     if (!Array.isArray(currentStep.tips) || !currentStep.tips.length) {
       return null;
     }
-
+    
     return (
       <View style={styles.tipsContainer}>
         <Text style={styles.tipsTitle}>
-          {isChinese ? '💡 实用技巧' : '💡 Pro Tips'}
+          {t('entryGuide.sections.tips', { defaultValue: isChinese ? '💡 实用技巧' : '💡 Pro Tips' })}
         </Text>
         {currentStep.tips.map((tip, index) => (
           <Text key={`tip-${index}`} style={styles.tipText}>
             • {tip}
           </Text>
         ))}
+      </View>
+    );
+  };
+
+  const renderEntryPackButton = () => {
+    if (!currentStep.showEntryPack) {
+      return null;
+    }
+
+    const handleOpenEntryPack = () => {
+      const userData = route?.params?.userData;
+      const passport = route?.params?.passport;
+      const destination = route?.params?.destination;
+
+      // Get entry pack preview screen name from config or route params
+      const entryPackPreviewScreen =
+        config?.screens?.entryPackPreview ||
+        route?.params?.entryPackPreviewScreen ||
+        'USAEntryPackPreview';
+
+      navigation?.navigate(entryPackPreviewScreen, {
+        userData: userData || {},
+        passport,
+        destination,
+        entryPackData: {
+          personalInfo: userData?.personalInfo || {},
+          travelInfo: userData?.travel || {},
+          funds: userData?.funds || [],
+        },
+      });
+    };
+
+    const buttonTitle = t('entryGuide.entryPack.openButton', { 
+      defaultValue: isChinese ? '打开通关包 📋' : 'Open Entry Pack 📋' 
+    });
+
+    return (
+      <View style={styles.entryPackButtonContainer}>
+        <Button
+          title={buttonTitle}
+          onPress={handleOpenEntryPack}
+          size="medium"
+          variant="primary"
+          style={styles.entryPackButton}
+        />
+        {currentStep.entryPackHint ? (
+          <Text style={styles.entryPackButtonHint}>
+            {currentStep.entryPackHint}
+          </Text>
+        ) : null}
       </View>
     );
   };
@@ -612,12 +694,8 @@ const EntryGuideTemplateCurrentStep = () => {
           ]}
         >
           {currentStep.required
-            ? isChinese
-              ? '必做步骤'
-              : 'Required'
-            : isChinese
-            ? '可选步骤'
-            : 'Optional'}
+            ? t('entryGuide.step.requiredLabel', { defaultValue: isChinese ? '必做步骤' : 'Mandatory Step' })
+            : t('entryGuide.step.optionalLabel', { defaultValue: isChinese ? '可选步骤' : 'Optional Step' })}
         </Text>
       </View>
 
@@ -628,6 +706,8 @@ const EntryGuideTemplateCurrentStep = () => {
           </Text>
         </View>
       ) : null}
+
+      {renderEntryPackButton()}
 
       {renderMedia()}
       {renderWarnings()}
@@ -646,6 +726,7 @@ const EntryGuideTemplateNavigation = () => {
     handleCompleteGuide,
     isChinese,
     config,
+    t,
   } = useEntryGuideTemplate();
 
   if (!steps.length) {
@@ -665,8 +746,8 @@ const EntryGuideTemplateNavigation = () => {
       default: navigationLabels.previous,
     },
     isChinese,
-    '← 上一步',
-    '← Previous'
+    t('entryGuide.navigation.previous', { defaultValue: '← 上一步' }),
+    t('entryGuide.navigation.previous', { defaultValue: '← Previous' })
   );
 
   const nextLabel = resolveLabel(
@@ -676,8 +757,8 @@ const EntryGuideTemplateNavigation = () => {
       default: navigationLabels.next,
     },
     isChinese,
-    '下一步 →',
-    'Next →'
+    t('entryGuide.navigation.next', { defaultValue: '下一步 →' }),
+    t('entryGuide.navigation.next', { defaultValue: 'Next →' })
   );
 
   const completeLabel = resolveLabel(
@@ -687,8 +768,8 @@ const EntryGuideTemplateNavigation = () => {
       default: navigationLabels.complete,
     },
     isChinese,
-    '完成指引 ✅',
-    'Guide Completed ✅'
+    t('entryGuide.navigation.complete', { defaultValue: '完成指引 ✅' }),
+    t('entryGuide.navigation.complete', { defaultValue: 'Guide Completed ✅' })
   );
 
   return (
@@ -1027,6 +1108,20 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: '#512DA8',
     lineHeight: 18,
+  },
+  entryPackButtonContainer: {
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  entryPackButton: {
+    marginBottom: spacing.sm,
+  },
+  entryPackButtonHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+    lineHeight: 16,
   },
   navigationContainer: {
     flexDirection: 'row',

@@ -24,8 +24,10 @@ export const malaysiaComprehensiveTravelInfoConfig = {
   // ============================================
   hero: {
     type: 'rich', // 'rich' uses LinearGradient, 'basic' uses simple layout
-    title: '马来西亚入境准备指南',
-    subtitle: '3分钟完成MDAC，轻松入境！',
+    titleKey: 'my.travelInfo.hero.title',
+    defaultTitle: '马来西亚入境准备指南',
+    subtitleKey: 'my.travelInfo.hero.subtitle',
+    defaultSubtitle: '3分钟完成MDAC，轻松入境！',
 
     gradient: {
       colors: ['#1D4ED8', '#1E3A8A'], // Malaysia blue gradient
@@ -34,13 +36,30 @@ export const malaysiaComprehensiveTravelInfoConfig = {
     },
 
     valuePropositions: [
-      { icon: '⏱️', text: '3分钟完成' },
-      { icon: '🛂', text: '智能MDAC提醒' },
-      { icon: '🔒', text: '离线友好，安全存储' },
+      { 
+        icon: '⏱️', 
+        textKey: 'my.travelInfo.hero.valuePropositions.0',
+        defaultText: '3分钟完成',
+        text: '3分钟完成' 
+      },
+      { 
+        icon: '🛂', 
+        textKey: 'my.travelInfo.hero.valuePropositions.1',
+        defaultText: '智能MDAC提醒',
+        text: '智能MDAC提醒' 
+      },
+      { 
+        icon: '🔒', 
+        textKey: 'my.travelInfo.hero.valuePropositions.2',
+        defaultText: '离线友好，安全存储',
+        text: '离线友好，安全存储' 
+      },
     ],
 
     beginnerTip: {
       icon: '💡',
+      textKey: 'my.travelInfo.hero.beginnerTip',
+      defaultText: 'MDAC必须在入境前3天内提交。我们在最佳时间提醒您。',
       text: 'MDAC必须在入境前3天内提交。我们在最佳时间提醒您。',
     },
   },
@@ -150,8 +169,10 @@ export const malaysiaComprehensiveTravelInfoConfig = {
       enabled: true,
       icon: '👤',
       sectionKey: 'personal',
-      titleKey: 'malaysia.travelInfo.sections.personal.title',
+      titleKey: 'my.travelInfo.sections.personal.title',
       defaultTitle: malaysiaLabels.personalInfo.title,
+      subtitleKey: 'my.travelInfo.sections.personal.subtitle',
+      defaultSubtitle: '联系方式和职业',
       fields: {
         occupation: {
           fieldName: 'occupation',
@@ -250,8 +271,10 @@ export const malaysiaComprehensiveTravelInfoConfig = {
       enabled: true,
       icon: '✈️',
       sectionKey: 'travel',
-      titleKey: 'malaysia.travelInfo.sections.travel.title',
+      titleKey: 'my.travelInfo.sections.travel.title',
       defaultTitle: malaysiaLabels.travelDetails.title,
+      subtitleKey: 'my.travelInfo.sections.travel.subtitle',
+      defaultSubtitle: '航班和住宿信息',
       fields: {
         travelPurpose: {
           fieldName: 'travelPurpose',
@@ -434,7 +457,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
           const diffHours = (arrival - now) / 36e5;
           return diffHours >= 0 && diffHours <= 720; // 30 days window sanity check
         },
-        messageKey: 'malaysia.travelInfo.validation.arrivalDateWithinWindow',
+        messageKey: 'my.travelInfo.validation.arrivalDateWithinWindow',
         defaultMessage: '抵达日期必须在未来30天内才能符合MDAC提交时间窗口。',
       },
     },
@@ -486,15 +509,27 @@ export const malaysiaComprehensiveTravelInfoConfig = {
         ready: 0.9,        // 90%+ shows "ready" label
       },
 
-      // Labels for each state
+      // Labels for each state (using i18n keys)
       labels: {
-        incomplete: '完成必填项',
-        almostDone: '快完成了',
-        ready: '继续',
+        incomplete: {
+          key: 'my.travelInfo.buttonLabels.incomplete',
+          default: '完成必填项',
+        },
+        almostDone: {
+          key: 'my.travelInfo.buttonLabels.almostDone',
+          default: '快完成了',
+        },
+        ready: {
+          key: 'my.travelInfo.buttonLabels.ready',
+          default: '继续',
+        },
       },
 
       // Default fallback if dynamic is disabled
-      default: '继续',
+      default: {
+        key: 'my.travelInfo.continue',
+        default: '继续',
+      },
 
       readyAction: {
         type: 'navigate',
@@ -504,7 +539,7 @@ export const malaysiaComprehensiveTravelInfoConfig = {
 
     // Fallback submit button label
     submitButtonLabel: {
-      key: 'malaysia.travelInfo.continue',
+      key: 'my.travelInfo.continue',
       default: '继续',
     },
   },

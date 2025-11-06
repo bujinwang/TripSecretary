@@ -278,7 +278,8 @@ export const vietnamEntryFlowConfig = {
     dataChangeAlerts: false, // No resubmission needed
     shareFeature: false, // Optional: share entry pack with friend
     disableEditQuickAction: true,
-    entryGuideQuickAction: true,
+    disablePreviewQuickAction: false, // Show preview button
+    entryGuideQuickAction: true, // Show entry guide button (hidden when it's primary)
   },
 };
 

@@ -45,9 +45,27 @@ const LocaleContext = createContext({
   t: (key, options) => options?.defaultValue ?? key,
 });
 
+// Country code mapping for backward compatibility
+const COUNTRY_CODE_MAP = {
+  thailand: 'th',
+  malaysia: 'my',
+  singapore: 'sg',
+  vietnam: 'vn',
+  hongkong: 'hk',
+  usa: 'us',
+  taiwan: 'tw',
+  japan: 'jp',
+  korea: 'kr',
+};
+
 const getTranslationByPath = (language, key) => {
   if (!key) return undefined;
   const segments = key.split('.');
+
+  // Check if first segment is an old country code and map it
+  if (segments.length > 0 && COUNTRY_CODE_MAP[segments[0]]) {
+    segments[0] = COUNTRY_CODE_MAP[segments[0]];
+  }
 
   const resolve = (lang) => {
     let current = translations[lang];

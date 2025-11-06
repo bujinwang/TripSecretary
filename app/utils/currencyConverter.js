@@ -187,12 +187,15 @@ export const convertCurrency = (amount, fromCurrency, toCurrency) => {
 export const convertToCountryCurrency = (amount, fromCurrency, country) => {
   // Map country to its currency
   const countryCurrencyMap = {
-    thailand: 'THB',
-    malaysia: 'MYR',
-    hongkong: 'HKD',
-    singapore: 'SGD',
-    taiwan: 'TWD',
-    usa: 'USD',
+    th: 'THB',
+    my: 'MYR',
+    hk: 'HKD',
+    sg: 'SGD',
+    tw: 'TWD',
+    us: 'USD',
+    jp: 'JPY',
+    vn: 'VND',
+    kr: 'KRW',
   };
 
   const toCurrency = countryCurrencyMap[country] || 'THB';
@@ -227,15 +230,18 @@ export const calculateTotalFundsInCurrency = (funds, targetCurrency) => {
  * @param {string} country - The country code (e.g., 'thailand', 'malaysia')
  * @returns {number} The total amount in the country's currency
  */
-export const calculateTotalFundsForCountry = (funds, country = 'thailand') => {
+export const calculateTotalFundsForCountry = (funds, country = 'th') => {
   // Map country to its currency
   const countryCurrencyMap = {
-    thailand: 'THB',
-    malaysia: 'MYR',
-    hongkong: 'HKD',
-    singapore: 'SGD',
-    taiwan: 'TWD',
-    usa: 'USD',
+    th: 'THB',
+    my: 'MYR',
+    hk: 'HKD',
+    sg: 'SGD',
+    tw: 'TWD',
+    us: 'USD',
+    jp: 'JPY',
+    vn: 'VND',
+    kr: 'KRW',
   };
 
   const targetCurrency = countryCurrencyMap[country] || 'THB';
@@ -250,12 +256,15 @@ export const calculateTotalFundsForCountry = (funds, country = 'thailand') => {
  */
 export const getCountryCurrency = (country) => {
   const countryCurrencyMap = {
-    thailand: 'THB',
-    malaysia: 'MYR',
-    hongkong: 'HKD',
-    singapore: 'SGD',
-    taiwan: 'TWD',
-    usa: 'USD',
+    th: 'THB',
+    my: 'MYR',
+    hk: 'HKD',
+    sg: 'SGD',
+    tw: 'TWD',
+    us: 'USD',
+    jp: 'JPY',
+    vn: 'VND',
+    kr: 'KRW',
   };
 
   return countryCurrencyMap[country] || 'THB';

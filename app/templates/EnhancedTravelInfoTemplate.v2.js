@@ -137,6 +137,10 @@ const EnhancedTravelInfoTemplate = ({
       resolvedLabels.subtitle = t(sectionConfig.subtitleKey, {
         defaultValue: sectionConfig.defaultSubtitle || labelSource.subtitle || ''
       });
+    } else if (labelSource.subtitle) {
+      // If labelSource has a subtitle, try to resolve it as a translation key
+      const subtitleKey = `${destId}.travelInfo.sections.${sectionKey}.subtitle`;
+      resolvedLabels.subtitle = t(subtitleKey, { defaultValue: labelSource.subtitle });
     }
     
     return resolvedLabels;
@@ -756,6 +760,8 @@ const EnhancedTravelInfoTemplate = ({
     userInteractionTracker,
     saveDataToUserDataService,
     debouncedSave,
+    t,
+    destinationId,
   });
 
   // ============================================
@@ -1117,15 +1123,20 @@ const EnhancedTravelInfoTemplate = ({
 
 // Rich Hero Section (Thailand-style)
 const RichHeroSection = ({ config }) => {
-  const { t, locale } = useLocale();
-  if (!config?.hero || config.hero.type !== 'rich') return null;
-
-  // Use English text if locale is English and English text is available
-  const isEnglish = locale === 'en' || locale?.startsWith('en');
-  const title = isEnglish && config.hero.titleEn ? config.hero.titleEn : config.hero.title;
-  const subtitle = isEnglish && config.hero.subtitleEn ? config.hero.subtitleEn : config.hero.subtitle;
-  const beginnerTipText = isEnglish && config.hero.beginnerTip?.textEn 
-    ? config.hero.beginnerTip.textEn 
+  const { t } = useLocale();
+  if (!config?.hero || config.hero.type !== 'rich') {
+    return null;
+  }
+  
+  // Use i18n keys if available, fallback to direct text
+  const title = config.hero.titleKey 
+    ? t(config.hero.titleKey, { defaultValue: config.hero.defaultTitle || config.hero.title })
+    : config.hero.title;
+  const subtitle = config.hero.subtitleKey
+    ? t(config.hero.subtitleKey, { defaultValue: config.hero.defaultSubtitle || config.hero.subtitle })
+    : config.hero.subtitle;
+  const beginnerTipText = config.hero.beginnerTip?.textKey
+    ? t(config.hero.beginnerTip.textKey, { defaultValue: config.hero.beginnerTip.defaultText || config.hero.beginnerTip.text })
     : config.hero.beginnerTip?.text;
 
   return (
@@ -1156,7 +1167,9 @@ const RichHeroSection = ({ config }) => {
           {/* Value Propositions */}
           <XStack justifyContent="space-around" width="100%" marginVertical="$sm" paddingVertical="$xs">
             {config.hero.valuePropositions.map((vp, idx) => {
-              const text = isEnglish && vp.textEn ? vp.textEn : vp.text;
+              const text = vp.textKey
+                ? t(vp.textKey, { defaultValue: vp.defaultText || vp.text })
+                : vp.text;
               return (
                 <YStack key={idx} alignItems="center" flex={1}>
                   <TamaguiText fontSize={24} marginBottom={4}>{vp.icon}</TamaguiText>
@@ -1190,14 +1203,32 @@ const RichHeroSection = ({ config }) => {
 // Save Status Indicator
 const SaveStatusIndicator = ({ status, t }) => {
   const statusConfig = {
-    pending: { icon: '⏳', color: '#FFF9E6', text: '等待保存...' },
-    saving: { icon: '💾', color: '#E6F2FF', text: '正在保存...' },
-    saved: { icon: '✅', color: '#E6F9E6', text: '已保存' },
-    error: { icon: '❌', color: '#FFE6E6', text: '保存失败' },
+    pending: { 
+      icon: '⏳', 
+      color: '#FFF9E6', 
+      text: t('common.saving.pending', { defaultValue: '等待保存...' })
+    },
+    saving: { 
+      icon: '💾', 
+      color: '#E6F2FF', 
+      text: t('common.saving.saving', { defaultValue: '正在保存...' })
+    },
+    saved: { 
+      icon: '✅', 
+      color: '#E6F9E6', 
+      text: t('common.saving.saved', { defaultValue: '已保存' })
+    },
+    error: { 
+      icon: '❌', 
+      color: '#FFE6E6', 
+      text: t('common.saving.error', { defaultValue: '保存失败' })
+    },
   };
 
   const config = statusConfig[status];
-  if (!config) return null;
+  if (!config) {
+    return null;
+  }
 
   return (
     <XStack
@@ -1219,8 +1250,10 @@ const SaveStatusIndicator = ({ status, t }) => {
 };
 
 // Last Edited Timestamp
-const LastEditedTimestamp = ({ time, t }) => {
-  if (!time) return null;
+const LastEditedTimestamp = ({ time }) => {
+  if (!time) {
+    return null;
+  }
 
   return (
     <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginBottom="$sm">
@@ -1237,7 +1270,7 @@ const PrivacyNotice = ({ t }) => {
         <XStack gap="$sm" alignItems="center">
           <TamaguiText fontSize={20}>💾</TamaguiText>
           <TamaguiText fontSize="$2" color="$textSecondary" flex={1}>
-            所有信息仅保存在您的手机本地
+            {t('common.privacy.localStorage', { defaultValue: '所有信息仅保存在您的手机本地' })}
           </TamaguiText>
         </XStack>
       </BaseCard>
@@ -1247,13 +1280,10 @@ const PrivacyNotice = ({ t }) => {
 
 // Smart Submit Button (V2 Feature)
 const SmartButton = ({ config, validation, onPress }) => {
-  const { t } = useLocale();
   const buttonConfig = validation.getSmartButtonConfig();
   
-  // Resolve translation key if label looks like a translation key (contains dots)
-  const label = buttonConfig.label && buttonConfig.label.includes('.') 
-    ? t(buttonConfig.label, { defaultValue: buttonConfig.label })
-    : buttonConfig.label;
+  // Label is already translated by the validation hook
+  const label = buttonConfig.label;
 
   return (
     <BaseButton

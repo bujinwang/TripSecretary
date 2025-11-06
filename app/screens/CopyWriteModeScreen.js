@@ -48,8 +48,8 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
 
         // Load travel info based on destination
         if (destination?.id) {
-          const destId = destination.id === 'jp' ? 'japan' :
-                        destination.id === 'th' ? 'thailand' :
+          const destId = destination.id === 'jp' ? 'jp' :
+                        destination.id === 'th' ? 'th' :
                         destination.id === 'ca' ? 'canada' : destination.id;
           const travelData = await UserDataService.getTravelInfo(userId, destId).catch(() => null);
           if (travelData) {

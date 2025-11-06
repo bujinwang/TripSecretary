@@ -984,7 +984,6 @@ class ThailandTravelerContextBuilder {
     // Try the most likely destination IDs first
     const destinationIds = [
       'th',        // Confirmed from database - this should work
-      'thailand',  // Fallback from ThailandTravelInfoScreen
       null         // Try without destination parameter as final fallback
     ];
     

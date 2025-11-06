@@ -5,7 +5,7 @@
  * Supports bilingual error messages (English/Thai for Thailand, other languages for other countries)
  *
  * Usage:
- *   const validation = EntryPackValidationService.validateEntryPack(entryPackData, 'thailand');
+ *   const validation = EntryPackValidationService.validateEntryPack(entryPackData, 'th');
  *   console.log(validation.isComplete); // true/false
  *   console.log(validation.sections); // { tdac: { isComplete, missingFields }, ... }
  */
@@ -14,10 +14,10 @@ class EntryPackValidationService {
   /**
    * Validate complete entry pack
    * @param {Object} entryPack - Entry pack data object
-   * @param {string} country - Country code (thailand, malaysia, hongkong, etc.)
+   * @param {string} country - Country code (ISO 3166-1 alpha-2, e.g., 'th', 'my', 'hk')
    * @returns {Object} Validation result
    */
-  static validateEntryPack(entryPack, country = 'thailand') {
+  static validateEntryPack(entryPack, country = 'th') {
     if (!entryPack) {
       return {
         isComplete: false,
@@ -278,9 +278,9 @@ class EntryPackValidationService {
   /**
    * Get validation summary message
    */
-  static getValidationSummary(validation, country = 'thailand') {
+  static getValidationSummary(validation, country = 'th') {
     if (validation.isComplete) {
-      return country === 'thailand'
+      return country === 'th'
         ? 'ข้อมูลครบถ้วน พร้อมส่ง / All information complete. Ready to submit!'
         : 'All information complete. Ready to submit!';
     }
@@ -300,21 +300,21 @@ class EntryPackValidationService {
   /**
    * Get section display name
    */
-  static getSectionDisplayName(sectionKey, country = 'thailand') {
+  static getSectionDisplayName(sectionKey, country = 'th') {
     const names = {
-      thailand: {
+      th: {
         tdac: 'ปัตร TDAC / TDAC Card',
         personal: 'ข้อมูลส่วนตัว / Personal Information',
         travel: 'ข้อมูลการเดินทาง / Travel Details',
         funds: 'เงินทุน / Proof of Funds'
       },
-      malaysia: {
+      my: {
         tdac: 'MDAC Card',
         personal: 'Personal Information',
         travel: 'Travel Details',
         funds: 'Proof of Funds'
       },
-      hongkong: {
+      hk: {
         tdac: '入境資料 / Entry Information',
         personal: '個人資料 / Personal Information',
         travel: '旅行資料 / Travel Details',
@@ -322,7 +322,7 @@ class EntryPackValidationService {
       }
     };
 
-    return names[country]?.[sectionKey] || sectionKey;
+    return names[country]?.[sectionKey] || names.th?.[sectionKey] || sectionKey;
   }
 }
 

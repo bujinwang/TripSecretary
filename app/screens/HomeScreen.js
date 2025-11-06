@@ -760,7 +760,7 @@ const HomeScreen = ({ navigation }) => {
               'kr': 'KoreaTravelInfo',
               'sg': 'SingaporeTravelInfo',
               'my': 'MalaysiaTravelInfo',
-              'us': 'USATravelInfo',
+              'us': 'USTravelInfo',
             };
 
             const screenName = screenMap[destination.destinationId];

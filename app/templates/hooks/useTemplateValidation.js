@@ -65,6 +65,8 @@ const hasMinMonthsValidity = (dateString, minMonths) => {
  * @param {Object} params.userInteractionTracker - User interaction tracker instance
  * @param {Function} params.saveDataToUserDataService - Save function
  * @param {Function} params.debouncedSave - Debounced save function
+ * @param {Function} params.t - Translation function (optional)
+ * @param {string} params.destinationId - Destination ID for translation keys (optional)
  * @returns {Object} Validation functions and state
  */
 export const useTemplateValidation = ({
@@ -73,6 +75,8 @@ export const useTemplateValidation = ({
   userInteractionTracker,
   saveDataToUserDataService,
   debouncedSave,
+  t,
+  destinationId,
 }) => {
   /**
    * Validate a single field based on config rules
@@ -322,9 +326,32 @@ export const useTemplateValidation = ({
     const buttonConfig = config.navigation?.submitButton;
 
     if (!buttonConfig?.dynamic) {
-      // Static button
+      // Static button - use translation key if available
+      const defaultConfig = buttonConfig?.default;
+      let defaultLabel = 'Continue';
+      let defaultLabelKey = null;
+      
+      // Handle both object format (with key/default) and string format
+      if (defaultConfig && typeof defaultConfig === 'object' && defaultConfig.key) {
+        defaultLabel = defaultConfig.default || 'Continue';
+        defaultLabelKey = defaultConfig.key;
+      } else if (typeof defaultConfig === 'string') {
+        defaultLabel = defaultConfig;
+      } else {
+        defaultLabel = config.navigation?.submitButtonLabel?.default || 'Continue';
+        defaultLabelKey = config.navigation?.submitButtonLabel?.key;
+      }
+      
+      if (t && defaultLabelKey) {
+        return {
+          label: t(defaultLabelKey, { defaultValue: defaultLabel }),
+          variant: 'primary',
+          icon: '→',
+        };
+      }
+      
       return {
-        label: buttonConfig?.default || config.navigation?.submitButtonLabel?.default || 'Continue',
+        label: defaultLabel,
         variant: 'primary',
         icon: '→',
       };
@@ -337,34 +364,78 @@ export const useTemplateValidation = ({
       ready: 0.9,
     };
 
-    const labels = buttonConfig.labels || {
-      incomplete: 'Complete Required Fields',
-      almostDone: 'Almost Done',
-      ready: 'Continue',
+    // Use translation keys if available, otherwise fall back to config labels or defaults
+    const getLabel = (key) => {
+      const labelConfig = buttonConfig.labels?.[key];
+      
+      // If label config is an object with key and default, use translation
+      if (labelConfig && typeof labelConfig === 'object' && labelConfig.key && t) {
+        return t(labelConfig.key, { defaultValue: labelConfig.default || 'Continue' });
+      }
+      
+      // If label config is a string, check if it's a translation key and translate it
+      if (labelConfig && typeof labelConfig === 'string') {
+        // Check if it looks like a translation key (contains dots)
+        if (t && labelConfig.includes('.')) {
+          const translated = t(labelConfig);
+          // If translation exists (not the same as the key), use it
+          if (translated !== labelConfig) {
+            return translated;
+          }
+        }
+        // If not a translation key or translation failed, use it as-is
+        return labelConfig;
+      }
+      
+      // Try translation key if destinationId and t are available
+      if (t && destinationId) {
+        // Try the navigation.submitButton path first (matches translation file structure)
+        const translationKey = `${destinationId}.navigation.submitButton.${key}`;
+        const translated = t(translationKey);
+        // If translation exists (not the same as the key), use it
+        if (translated !== translationKey) {
+          return translated;
+        }
+        
+        // Fallback to travelInfo.buttonLabels path
+        const fallbackKey = `${destinationId}.travelInfo.buttonLabels.${key}`;
+        const fallbackTranslated = t(fallbackKey);
+        if (fallbackTranslated !== fallbackKey) {
+          return fallbackTranslated;
+        }
+      }
+      
+      // Final fallback to English defaults
+      const defaults = {
+        incomplete: 'Complete Required Fields',
+        almostDone: 'Almost Done',
+        ready: 'Continue',
+      };
+      return defaults[key] || 'Continue';
     };
 
     const percent = completionPercent / 100;
 
     if (percent < thresholds.incomplete) {
       return {
-        label: labels.incomplete,
+        label: getLabel('incomplete'),
         variant: 'secondary',
         icon: '✎',
       };
     } else if (percent < thresholds.ready) {
       return {
-        label: labels.almostDone,
+        label: getLabel('almostDone'),
         variant: 'primary',
         icon: '⏳',
       };
     } else {
       return {
-        label: labels.ready,
+        label: getLabel('ready'),
         variant: 'primary',
         icon: '✓',
       };
     }
-  }, [calculateCompletionPercent, config.navigation]);
+  }, [calculateCompletionPercent, config.navigation, t, destinationId]);
 
   return {
     // Methods

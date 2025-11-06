@@ -16,15 +16,15 @@ describe('USEntryGuideService', () => {
 
   test('应该返回正确的步骤总数', () => {
     const progress = service.getProgress();
-    expect(progress.total).toBe(6); // 美国6步骤流程
+    expect(progress.total).toBe(5); // 美国5步骤流程
     expect(progress.completed).toBe(0);
     expect(progress.percentage).toBe(0);
   });
 
   test('应该正确完成步骤', () => {
-    const result = service.completeStep('esta_application');
+    const result = service.completeStep('landing_setup');
     expect(result.completed).toBe(1);
-    expect(result.percentage).toBe(17); // 1/6 ≈ 16.67，四舍五入为17
+    expect(result.percentage).toBe(20); // 1/5 = 20%
   });
 
   test('应该正确设置和获取当前步骤', () => {
@@ -146,8 +146,8 @@ describe('USEntryGuideService', () => {
   });
 
   test('应该正确获取步骤状态', () => {
-    service.completeStep('esta_application');
-    expect(service.getStepStatus('esta_application')).toBe('completed');
+    service.completeStep('landing_setup');
+    expect(service.getStepStatus('landing_setup')).toBe('completed');
     expect(service.getStepStatus('immigration_biometric')).toBe('pending');
 
     service.setCurrentStep('immigration_biometric');
@@ -161,14 +161,13 @@ describe('USEntryGuideService', () => {
 
   test('应该正确检查是否可以进入下一步', () => {
     // 第一步总是可以进入
-    expect(service.canProceedToStep('esta_application')).toBe(true);
+    expect(service.canProceedToStep('emergency_contacts')).toBe(true);
 
     // 没有完成前面的步骤时不能进入
     expect(service.canProceedToStep('immigration_biometric')).toBe(false);
 
     // 完成前面步骤后可以进入
-    service.completeStep('esta_application');
-    service.completeStep('biometric_prep');
+    service.completeStep('emergency_contacts');
     service.completeStep('landing_setup');
     expect(service.canProceedToStep('immigration_biometric')).toBe(true);
   });

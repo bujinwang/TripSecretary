@@ -213,7 +213,7 @@ class TravelInfoOperations {
   static async handleArrivalDateChange(userId, destination, oldArrivalDate, newArrivalDate, getEntryInfoByDestination) {
     try {
       // Only handle Thailand for now (as per requirements)
-      if (destination !== 'thailand') {
+      if (destination !== 'th') {
         return;
       }
 

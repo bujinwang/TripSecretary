@@ -437,7 +437,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       const allUserData = await UserDataService.getAllUserData(userId);
 
       // Load travel info for migration
-      const destinationId = route.params?.destination?.id || 'korea';
+      const destinationId = route.params?.destination?.id || 'kr';
       const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
       if (travelInfo) {
         allUserData.travelInfo = travelInfo;
@@ -542,7 +542,7 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       await UserDataService.savePersonalInfo(personalInfoModel);
 
       // Save travel info for Korea
-      const destinationId = route.params?.destination?.id || 'korea';
+      const destinationId = route.params?.destination?.id || 'kr';
       await UserDataService.updateTravelInfo(userId, destinationId, {
         travelPurpose,
         boardingCountry,
