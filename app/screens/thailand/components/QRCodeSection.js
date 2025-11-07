@@ -50,7 +50,9 @@ const QRCodeSection = ({
   longPressRef,
 }) => {
   const formatEntryCardNumber = (cardNumber) => {
-    if (!cardNumber) return 'XXXX-XXXX-XXXX';
+    if (!cardNumber) {
+return 'XXXX-XXXX-XXXX';
+}
 
     const cleanNumber = cardNumber.replace(/[^0-9A-Z]/g, '');
 
@@ -66,7 +68,9 @@ const QRCodeSection = ({
   };
 
   const formatDateForDisplay = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) {
+return 'N/A';
+}
 
     try {
       const date = new Date(dateString);

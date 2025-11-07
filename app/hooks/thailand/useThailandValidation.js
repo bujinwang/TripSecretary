@@ -366,7 +366,9 @@ export const useThailandValidation = ({
 
   // Re-validate residence field whenever the selected country changes
   useEffect(() => {
-    if (!formState.residentCountry) return;
+    if (!formState.residentCountry) {
+return;
+}
     handleFieldBlur('cityOfResidence', formState.cityOfResidence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.residentCountry, formState.cityOfResidence]);

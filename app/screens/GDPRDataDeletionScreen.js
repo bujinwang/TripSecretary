@@ -56,7 +56,9 @@ const GDPRDataDeletionScreen = ({ navigation, route }) => {
       try {
         const passport = await SecureStorageService.getPassport(userId);
         summary.passport = !!passport;
-        if (passport) summary.totalItems++;
+        if (passport) {
+summary.totalItems++;
+}
       } catch (error) {
         console.log('No passport data found');
       }
@@ -65,7 +67,9 @@ const GDPRDataDeletionScreen = ({ navigation, route }) => {
       try {
         const personalInfo = await SecureStorageService.getPersonalInfo(userId);
         summary.personalInfo = !!personalInfo;
-        if (personalInfo) summary.totalItems++;
+        if (personalInfo) {
+summary.totalItems++;
+}
       } catch (error) {
         console.log('No personal info found');
       }
@@ -74,7 +78,9 @@ const GDPRDataDeletionScreen = ({ navigation, route }) => {
       try {
         const fundingProof = await SecureStorageService.getFundingProof(userId);
         summary.entryData = !!fundingProof;
-        if (fundingProof) summary.totalItems++;
+        if (fundingProof) {
+summary.totalItems++;
+}
       } catch (error) {
         console.log('No entry data found');
       }
@@ -211,7 +217,9 @@ const GDPRDataDeletionScreen = ({ navigation, route }) => {
           </Text>
 
           {Object.entries(dataSummary).map(([type, exists]) => {
-            if (type === 'totalItems') return null;
+            if (type === 'totalItems') {
+return null;
+}
             return (
               <View key={type} style={styles.dataItem}>
                 <View style={styles.dataItemHeader}>

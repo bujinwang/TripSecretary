@@ -112,7 +112,9 @@ class FormValidationHelper {
           pattern: /^\d{4}[-\/]\d{2}[-\/]\d{2}$/,
           message: 'Departure date must be in YYYY-MM-DD or YYYY/MM/DD format',
           customValidation: (value, formData) => {
-            if (!value) return null;
+            if (!value) {
+return null;
+}
             
             const departureDate = new Date(value);
             const arrivalDate = new Date(formData.arrivalDate);

@@ -54,10 +54,14 @@ export const useViewportVisibility = (options = {}) => {
    * Check if the element is visible in the viewport
    */
   const checkVisibility = useCallback(() => {
-    if (!viewRef.current) return;
+    if (!viewRef.current) {
+return;
+}
 
     // Skip check if already visible and once=true
-    if (once && hasBeenVisible) return;
+    if (once && hasBeenVisible) {
+return;
+}
 
     viewRef.current.measureInWindow((x, y, width, height) => {
       // Get viewport dimensions

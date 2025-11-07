@@ -377,8 +377,12 @@ export const useMalaysiaValidation = ({
    * @returns {string} Progress text
    */
   const getProgressText = useCallback((percent) => {
-    if (percent >= 100) return '✅ 完成!';
-    if (percent >= 50) return '进展不错 💪';
+    if (percent >= 100) {
+return '✅ 完成!';
+}
+    if (percent >= 50) {
+return '进展不错 💪';
+}
     return '继续加油 🌺';
   }, []);
 
@@ -388,8 +392,12 @@ export const useMalaysiaValidation = ({
    * @returns {string} Progress color
    */
   const getProgressColor = useCallback((percent) => {
-    if (percent >= 100) return '#34C759';
-    if (percent >= 50) return '#FF9500';
+    if (percent >= 100) {
+return '#34C759';
+}
+    if (percent >= 50) {
+return '#FF9500';
+}
     return '#007AFF';
   }, []);
 

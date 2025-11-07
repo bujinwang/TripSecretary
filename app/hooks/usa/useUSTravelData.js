@@ -81,12 +81,24 @@ export const useUSTravelData = (userId, navigation, t) => {
       const existingPassport = await UserDataService.getPassport(userId);
 
       const passportUpdates = {};
-      if (passportNo && passportNo.trim()) passportUpdates.passportNumber = passportNo;
-      if (fullName && fullName.trim()) passportUpdates.fullName = fullName;
-      if (nationality && nationality.trim()) passportUpdates.nationality = nationality;
-      if (dob && dob.trim()) passportUpdates.dateOfBirth = dob;
-      if (expiryDate && expiryDate.trim()) passportUpdates.expiryDate = expiryDate;
-      if (gender && gender.trim()) passportUpdates.gender = gender;
+      if (passportNo && passportNo.trim()) {
+passportUpdates.passportNumber = passportNo;
+}
+      if (fullName && fullName.trim()) {
+passportUpdates.fullName = fullName;
+}
+      if (nationality && nationality.trim()) {
+passportUpdates.nationality = nationality;
+}
+      if (dob && dob.trim()) {
+passportUpdates.dateOfBirth = dob;
+}
+      if (expiryDate && expiryDate.trim()) {
+passportUpdates.expiryDate = expiryDate;
+}
+      if (gender && gender.trim()) {
+passportUpdates.gender = gender;
+}
 
       if (Object.keys(passportUpdates).length > 0) {
         if (existingPassport && existingPassport.id) {
@@ -97,11 +109,21 @@ export const useUSTravelData = (userId, navigation, t) => {
       }
 
       const personalInfoUpdates = {};
-      if (phoneNumber && phoneNumber.trim()) personalInfoUpdates.phoneNumber = phoneNumber;
-      if (email && email.trim()) personalInfoUpdates.email = email;
-      if (occupation && occupation.trim()) personalInfoUpdates.occupation = occupation;
-      if (cityOfResidence && cityOfResidence.trim()) personalInfoUpdates.provinceCity = cityOfResidence;
-      if (residentCountry && residentCountry.trim()) personalInfoUpdates.countryRegion = residentCountry;
+      if (phoneNumber && phoneNumber.trim()) {
+personalInfoUpdates.phoneNumber = phoneNumber;
+}
+      if (email && email.trim()) {
+personalInfoUpdates.email = email;
+}
+      if (occupation && occupation.trim()) {
+personalInfoUpdates.occupation = occupation;
+}
+      if (cityOfResidence && cityOfResidence.trim()) {
+personalInfoUpdates.provinceCity = cityOfResidence;
+}
+      if (residentCountry && residentCountry.trim()) {
+personalInfoUpdates.countryRegion = residentCountry;
+}
 
       if (Object.keys(personalInfoUpdates).length > 0) {
         await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
@@ -118,12 +140,22 @@ export const useUSTravelData = (userId, navigation, t) => {
         travelInfoUpdates.travelPurpose = travelPurpose;
         travelInfoUpdates.customTravelPurpose = '';
       }
-      if (arrivalFlightNumber && arrivalFlightNumber.trim()) travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
-      if (arrivalDate && arrivalDate.trim()) travelInfoUpdates.arrivalArrivalDate = arrivalDate;
+      if (arrivalFlightNumber && arrivalFlightNumber.trim()) {
+travelInfoUpdates.arrivalFlightNumber = arrivalFlightNumber;
+}
+      if (arrivalDate && arrivalDate.trim()) {
+travelInfoUpdates.arrivalArrivalDate = arrivalDate;
+}
       travelInfoUpdates.isTransitPassenger = isTransitPassenger;
-      if (!isTransitPassenger && accommodationAddress && accommodationAddress.trim()) travelInfoUpdates.hotelAddress = accommodationAddress;
-      if (!isTransitPassenger && accommodationPhone && accommodationPhone.trim()) travelInfoUpdates.accommodationPhone = accommodationPhone;
-      if (lengthOfStay && lengthOfStay.trim()) travelInfoUpdates.lengthOfStay = lengthOfStay;
+      if (!isTransitPassenger && accommodationAddress && accommodationAddress.trim()) {
+travelInfoUpdates.hotelAddress = accommodationAddress;
+}
+      if (!isTransitPassenger && accommodationPhone && accommodationPhone.trim()) {
+travelInfoUpdates.accommodationPhone = accommodationPhone;
+}
+      if (lengthOfStay && lengthOfStay.trim()) {
+travelInfoUpdates.lengthOfStay = lengthOfStay;
+}
 
       if (Object.keys(travelInfoUpdates).length > 0) {
         await UserDataService.updateTravelInfo(userId, 'us', travelInfoUpdates);

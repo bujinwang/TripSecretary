@@ -24,7 +24,7 @@ class AutoSaveExample {
     
     this.savePersonalInfo = DebouncedSave.debouncedSave(
       'personalInfo_' + userId,
-      (personalData) => UserDataService.savePersonalInfo(personalData, userId),
+      (personalData) => UserDataService.upsertPersonalInfo(userId, personalData),
       300
     );
     

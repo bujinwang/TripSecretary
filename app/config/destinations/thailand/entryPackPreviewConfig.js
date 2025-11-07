@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import EntryPackPreviewTemplate, {
+import {
   EntryPackPreviewTemplateHeader as HeaderBase,
 } from '../../../templates/EntryPackPreviewTemplate';
 import { InfoAlert, ActionButtonGroup } from '../../../components/preview';
@@ -18,7 +18,7 @@ import { initializeAnimations } from '../../../utils/animations/previewAnimation
 import { PreviewHaptics } from '../../../utils/haptics';
 import { useTranslation } from '../../../i18n/LocaleContext';
 
-const useTemplate = EntryPackPreviewTemplate.useTemplate;
+const getTemplateContext = (props = {}) => props.templateContext || props || {};
 
 const formatDate = (dateString) => {
   if (!dateString) {
@@ -38,8 +38,8 @@ const formatDate = (dateString) => {
   }
 };
 
-const ThailandHeader = () => {
-  const { isOfficialPack, config } = useTemplate();
+const ThailandHeader = (props = {}) => {
+  const { isOfficialPack, config } = getTemplateContext(props);
   const title = isOfficialPack
     ? 'ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack'
     : config?.header?.title;
@@ -50,8 +50,8 @@ const ThailandHeader = () => {
   return <HeaderBase title={title} subtitle={subtitle} />;
 };
 
-const ThailandDeadlineAlert = () => {
-  const { entryPack } = useTemplate();
+const ThailandDeadlineAlert = (props = {}) => {
+  const { entryPack } = getTemplateContext(props);
   const { t } = useTranslation();
 
   const arrivalDate = entryPack?.travel?.arrivalDate;
@@ -100,8 +100,8 @@ const ThailandDeadlineAlert = () => {
 };
 
 
-const ThailandFooterActions = () => {
-  const { navigation, passport, destination, entryPack } = useTemplate();
+const ThailandFooterActions = (props = {}) => {
+  const { navigation, passport, destination, entryPack } = getTemplateContext(props);
   const { t } = useTranslation();
   const isSubmitted = Boolean(entryPack?.tdacSubmission?.arrCardNo);
 
@@ -150,10 +150,8 @@ const ThailandFooterActions = () => {
   );
 };
 
-const ThailandBeforeContent = () => <ThailandDeadlineAlert />;
-
-const ThailandEntryPackDetails = () => {
-  const { entryPack } = useTemplate();
+const ThailandEntryPackDetails = (props = {}) => {
+  const { entryPack } = getTemplateContext(props);
 
   return (
     <EntryPackDisplay
@@ -187,8 +185,16 @@ export const thailandEntryPackPreviewConfig = {
     Actions: () => null, // Use custom footer instead of default actions
   },
   slots: {
-    beforeContent: () => <ThailandBeforeContent />,
-    footer: () => <ThailandFooterActions />,
+    beforeContent: (context) => (
+      <React.Fragment>
+        <ThailandDeadlineAlert {...(context || {})} />
+      </React.Fragment>
+    ),
+    footer: (context) => (
+      <React.Fragment>
+        <ThailandFooterActions {...(context || {})} />
+      </React.Fragment>
+    ),
   },
   hooks: {
     onScreenMount: () => {

@@ -131,7 +131,9 @@ class EntryCompletionCalculator {
    * @returns {boolean} - Is valid date
    */
   validateDate(date) {
-    if (!date) return false;
+    if (!date) {
+return false;
+}
     const parsedDate = new Date(date);
     return parsedDate instanceof Date && !isNaN(parsedDate);
   }

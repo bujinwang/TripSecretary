@@ -54,7 +54,9 @@ const ProvinceSelector = ({
 
   // Custom display value function
   const getDisplayValue = (val) => {
-    if (!val) return '';
+    if (!val) {
+return '';
+}
 
     // Use custom display function if provided
     if (getDisplayNameFunc) {
@@ -72,7 +74,9 @@ const ProvinceSelector = ({
 
   // Custom filter function for bilingual search
   const filterOptions = (opts, search) => {
-    if (!search) return opts;
+    if (!search) {
+return opts;
+}
     const lowerSearch = search.toLowerCase();
     return opts.filter(opt => {
       // Search in the bilingual label

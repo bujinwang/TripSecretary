@@ -352,26 +352,11 @@ const EntryGuideTemplateStepIndicator = () => {
     [steps, currentStepIndex, completedSteps]
   );
 
-  const getStepLabel = useCallback(
-    (step) => {
-      if (!step) {
-        return '';
-      }
-      return resolveLabel(
-        { zh: step.titleZh, en: step.title },
-        isChinese,
-        step.titleZh || step.title,
-        step.title || step.titleZh
-      );
-    },
-    [isChinese]
-  );
-
+  const { t } = useEntryGuideTemplate();
+  
   if (!steps.length) {
     return null;
   }
-
-  const { t } = useEntryGuideTemplate();
   
   return (
     <View style={styles.stepIndicatorContainer}>
@@ -396,7 +381,14 @@ const EntryGuideTemplateStepIndicator = () => {
           const isCompleted = status === 'completed';
           const isCurrent = status === 'current';
           const isPending = status === 'pending';
-          const label = getStepLabel(step);
+          
+          // Get the step label (title) with proper i18n support
+          const label = resolveLabel(
+            { zh: step.titleZh, en: step.title },
+            isChinese,
+            step.titleZh || step.title,
+            step.title || step.titleZh
+          );
 
           return (
             <TouchableOpacity
@@ -433,9 +425,10 @@ const EntryGuideTemplateStepIndicator = () => {
                   isCurrent && styles.stepIndicatorTextCurrent,
                   isPending && styles.stepIndicatorTextPending,
                 ]}
-                numberOfLines={1}
+                numberOfLines={2}
+                ellipsizeMode="tail"
               >
-                {label}
+                {label || step.title || step.titleZh || `Step ${index + 1}`}
               </Text>
             </TouchableOpacity>
           );
@@ -920,24 +913,29 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   stepIndicatorItem: {
-    width: 120,
+    minWidth: 100,
+    maxWidth: 140,
+    minHeight: 80, // Ensure enough height for icon + text
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
+    justifyContent: 'center',
+    flexShrink: 1,
+    flexDirection: 'column',
   },
   stepIndicatorCompleted: {
     backgroundColor: '#E6F7EA',
     borderColor: '#0BD67B',
   },
   stepIndicatorCurrent: {
-    backgroundColor: '#E3F2FD',
-    borderColor: '#2196F3',
+    backgroundColor: '#E3F2FD', // Light blue background for active step
+    borderColor: '#2196F3', // Blue border for active step
   },
   stepIndicatorPending: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
+    backgroundColor: colors.white, // White background for pending steps
+    borderColor: colors.border, // Grey border for pending steps
   },
   stepIndicatorIcon: {
     fontSize: 20,
@@ -954,17 +952,23 @@ const styles = StyleSheet.create({
   },
   stepIndicatorText: {
     ...typography.caption,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: '600',
     textAlign: 'center',
+    marginTop: 6,
+    minHeight: 18,
+    color: colors.text, // Default color to ensure text is always visible
+    includeFontPadding: false, // Remove extra padding that might hide text
   },
   stepIndicatorTextCompleted: {
     color: '#0B7A4B',
   },
   stepIndicatorTextCurrent: {
-    color: '#1976D2',
+    color: '#1976D2', // Blue text for active step
   },
   stepIndicatorTextPending: {
-    color: colors.textSecondary,
+    color: colors.text, // Dark grey/black text for pending steps (not textSecondary)
   },
   currentStepContainer: {
     marginHorizontal: spacing.md,

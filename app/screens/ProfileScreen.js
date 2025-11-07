@@ -588,7 +588,9 @@ const ProfileScreen = ({ navigation, route }) => {
   };
 
   const handleNavigateField = (direction) => {
-    if (!editingContext) return;
+    if (!editingContext) {
+return;
+}
 
     // Validate date of birth before navigating away
     if (editingContext.key === 'dateOfBirth' && editValue.length === 10) {
@@ -603,7 +605,7 @@ const ProfileScreen = ({ navigation, route }) => {
     handleSaveEdit();
 
     let fields;
-    let currentIndex = editingContext.fieldIndex;
+    const currentIndex = editingContext.fieldIndex;
 
     if (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') {
       fields = personalFields;
@@ -782,11 +784,17 @@ const ProfileScreen = ({ navigation, route }) => {
           
           // Save to UserDataService using upsert (create or update)
            const updates = {};
-           if (editingContext.key === 'phone') updates.phoneNumber = value;
-           else if (editingContext.key === 'email') updates.email = value;
-           else if (editingContext.key === 'occupation') updates.occupation = value;
-           else if (editingContext.key === 'provinceCity') updates.provinceCity = value;
-           else if (editingContext.key === 'countryRegion') updates.countryRegion = value;
+           if (editingContext.key === 'phone') {
+updates.phoneNumber = value;
+} else if (editingContext.key === 'email') {
+updates.email = value;
+} else if (editingContext.key === 'occupation') {
+updates.occupation = value;
+} else if (editingContext.key === 'provinceCity') {
+updates.provinceCity = value;
+} else if (editingContext.key === 'countryRegion') {
+updates.countryRegion = value;
+}
 
            await UserDataService.upsertPersonalInfo(userId, updates);
           
@@ -795,8 +803,12 @@ const ProfileScreen = ({ navigation, route }) => {
             const passportData = await UserDataService.getPassport(userId);
             if (passportData && passportData.id) {
               const updates = {};
-              if (editingContext.key === 'gender') updates.gender = value;
-              if (editingContext.key === 'dateOfBirth') updates.dateOfBirth = value;
+              if (editingContext.key === 'gender') {
+updates.gender = value;
+}
+              if (editingContext.key === 'dateOfBirth') {
+updates.dateOfBirth = value;
+}
               await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
             }
           }
@@ -911,11 +923,17 @@ const ProfileScreen = ({ navigation, route }) => {
         
         // Save to UserDataService using upsert
         const updates = {};
-        if (editingContext.key === 'phone') updates.phoneNumber = editValue;
-        else if (editingContext.key === 'email') updates.email = editValue;
-        else if (editingContext.key === 'occupation') updates.occupation = editValue;
-        else if (editingContext.key === 'provinceCity') updates.provinceCity = editValue;
-        else if (editingContext.key === 'countryRegion') updates.countryRegion = editValue;
+        if (editingContext.key === 'phone') {
+updates.phoneNumber = editValue;
+} else if (editingContext.key === 'email') {
+updates.email = editValue;
+} else if (editingContext.key === 'occupation') {
+updates.occupation = editValue;
+} else if (editingContext.key === 'provinceCity') {
+updates.provinceCity = editValue;
+} else if (editingContext.key === 'countryRegion') {
+updates.countryRegion = editValue;
+}
         
         await UserDataService.upsertPersonalInfo(userId, updates);
         
@@ -924,8 +942,12 @@ const ProfileScreen = ({ navigation, route }) => {
           const passportData = await UserDataService.getPassport(userId);
           if (passportData && passportData.id) {
             const updates = {};
-            if (editingContext.key === 'gender') updates.gender = editValue;
-            if (editingContext.key === 'dateOfBirth') updates.dateOfBirth = editValue;
+            if (editingContext.key === 'gender') {
+updates.gender = editValue;
+}
+            if (editingContext.key === 'dateOfBirth') {
+updates.dateOfBirth = editValue;
+}
             await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
           }
         }
@@ -1313,13 +1335,17 @@ const ProfileScreen = ({ navigation, route }) => {
                       const currencyValue = item.currency ? item.currency.toUpperCase() : '';
 
                       const normalizeAmount = (value) => {
-                        if (value === null || value === undefined || value === '') return '';
+                        if (value === null || value === undefined || value === '') {
+return '';
+}
                         if (typeof value === 'number' && Number.isFinite(value)) {
                           return value.toLocaleString();
                         }
                         if (typeof value === 'string') {
                           const trimmed = value.trim();
-                          if (!trimmed) return '';
+                          if (!trimmed) {
+return '';
+}
                           const parsed = Number(trimmed.replace(/,/g, ''));
                           return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
                         }
@@ -1691,14 +1717,18 @@ const ProfileScreen = ({ navigation, route }) => {
                   keyboardType={editingContext?.keyboardType || 'default'}
                   autoFocus
                   returnKeyType={(() => {
-                    if (!editingContext || editingContext?.multiline) return 'default';
+                    if (!editingContext || editingContext?.multiline) {
+return 'default';
+}
                     const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
                       ? personalFields 
                       : fundingFields;
                     return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
                   })()}
                   onSubmitEditing={() => {
-                    if (!editingContext || editingContext?.multiline) return;
+                    if (!editingContext || editingContext?.multiline) {
+return;
+}
                     const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
                       ? personalFields 
                       : fundingFields;

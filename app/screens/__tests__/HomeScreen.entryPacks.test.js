@@ -139,7 +139,9 @@ describe('HomeScreen Entry Pack Cards Logic', () => {
 
   it('should calculate arrival countdown correctly', () => {
     const getArrivalCountdown = (arrivalDate) => {
-      if (!arrivalDate) return '';
+      if (!arrivalDate) {
+return '';
+}
       
       try {
         const arrival = new Date(arrivalDate);

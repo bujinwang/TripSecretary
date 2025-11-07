@@ -25,7 +25,9 @@ jest.mock('expo-sqlite', () => {
     transaction: jest.fn((callback) => {
       callback({
         executeSql: jest.fn((sql, params, success) => {
-          if (success) success({ rows: { _array: [], length: 0 } });
+          if (success) {
+success({ rows: { _array: [], length: 0 } });
+}
         }),
       });
     }),

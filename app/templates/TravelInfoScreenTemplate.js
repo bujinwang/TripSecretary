@@ -31,6 +31,7 @@
  */
 
 import React, { createContext, useContext, useState, useRef, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../components/BackButton';
@@ -186,7 +187,9 @@ TravelInfoScreenTemplate.HeroSection = ({ flag, title, subtitle }) => {
 TravelInfoScreenTemplate.StatusIndicator = () => {
   const { t, saveStatus, setSaveStatus } = useTravelInfoTemplate();
 
-  if (!saveStatus) return null;
+  if (!saveStatus) {
+return null;
+}
 
   const statusConfig = {
     pending: { icon: '⏳', color: '#FFF9E6', textKey: 'saveStatus.pending', defaultText: 'Waiting to save...' },
@@ -387,7 +390,9 @@ TravelInfoScreenTemplate.SubmitButton = ({
 TravelInfoScreenTemplate.LoadingIndicator = ({ message }) => {
   const { t, isLoading } = useTravelInfoTemplate();
 
-  if (!isLoading) return null;
+  if (!isLoading) {
+return null;
+}
 
   return (
     <YStack padding="$md" alignItems="center">
@@ -400,5 +405,30 @@ TravelInfoScreenTemplate.LoadingIndicator = ({ message }) => {
 
 // Export hook for advanced usage
 TravelInfoScreenTemplate.useTemplate = useTravelInfoTemplate;
+
+TravelInfoScreenTemplate.propTypes = {
+  children: PropTypes.node,
+  config: PropTypes.shape({
+    country: PropTypes.string.isRequired,
+    fields: PropTypes.object,
+    colors: PropTypes.shape({
+      background: PropTypes.string,
+      primary: PropTypes.string,
+    }),
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      passport: PropTypes.object,
+      destination: PropTypes.string,
+    }),
+  }).isRequired,
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func,
+    goBack: PropTypes.func,
+  }).isRequired,
+  useFormStateHook: PropTypes.func,
+  useValidationHook: PropTypes.func,
+  usePersistenceHook: PropTypes.func,
+};
 
 export default TravelInfoScreenTemplate;

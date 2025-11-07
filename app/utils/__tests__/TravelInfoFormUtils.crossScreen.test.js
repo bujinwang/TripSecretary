@@ -119,17 +119,27 @@ describe('TravelInfoFormUtils - Cross-Screen Consistency Tests', () => {
       const extractedData = {};
       
       if (testData.passport) {
-        if (testData.passport.fullName) extractedData.fullName = testData.passport.fullName;
-        if (testData.passport.nationality) extractedData.nationality = testData.passport.nationality;
+        if (testData.passport.fullName) {
+extractedData.fullName = testData.passport.fullName;
+}
+        if (testData.passport.nationality) {
+extractedData.nationality = testData.passport.nationality;
+}
       }
       
       if (testData.personalInfo) {
-        if (testData.personalInfo.email) extractedData.email = testData.personalInfo.email;
+        if (testData.personalInfo.email) {
+extractedData.email = testData.personalInfo.email;
+}
       }
       
       if (testData.travelInfo) {
-        if (testData.travelInfo.travelPurpose) extractedData.travelPurpose = testData.travelInfo.travelPurpose;
-        if (testData.travelInfo.boardingCountry) extractedData.boardingCountry = testData.travelInfo.boardingCountry;
+        if (testData.travelInfo.travelPurpose) {
+extractedData.travelPurpose = testData.travelInfo.travelPurpose;
+}
+        if (testData.travelInfo.boardingCountry) {
+extractedData.boardingCountry = testData.travelInfo.boardingCountry;
+}
       }
 
       expect(extractedData.fullName).toBe('John Doe');

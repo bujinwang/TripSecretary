@@ -44,33 +44,67 @@ export const useMalaysiaDataPersistence = ({
     // Migrate passport data
     if (userData.passport) {
       const passportData = userData.passport;
-      if (passportData.passportNumber) existingDataToMigrate.passportNo = passportData.passportNumber;
-      if (passportData.fullName) existingDataToMigrate.fullName = passportData.fullName;
-      if (passportData.nationality) existingDataToMigrate.nationality = passportData.nationality;
-      if (passportData.dateOfBirth) existingDataToMigrate.dob = passportData.dateOfBirth;
-      if (passportData.expiryDate) existingDataToMigrate.expiryDate = passportData.expiryDate;
-      if (passportData.gender) existingDataToMigrate.sex = passportData.gender;
+      if (passportData.passportNumber) {
+existingDataToMigrate.passportNo = passportData.passportNumber;
+}
+      if (passportData.fullName) {
+existingDataToMigrate.fullName = passportData.fullName;
+}
+      if (passportData.nationality) {
+existingDataToMigrate.nationality = passportData.nationality;
+}
+      if (passportData.dateOfBirth) {
+existingDataToMigrate.dob = passportData.dateOfBirth;
+}
+      if (passportData.expiryDate) {
+existingDataToMigrate.expiryDate = passportData.expiryDate;
+}
+      if (passportData.gender) {
+existingDataToMigrate.sex = passportData.gender;
+}
     }
 
     // Migrate personal info data
     if (userData.personalInfo) {
       const personalInfo = userData.personalInfo;
-      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
-      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
-      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
-      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
-      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+      if (personalInfo.phoneCode) {
+existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+}
+      if (personalInfo.phoneNumber) {
+existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+}
+      if (personalInfo.email) {
+existingDataToMigrate.email = personalInfo.email;
+}
+      if (personalInfo.occupation) {
+existingDataToMigrate.occupation = personalInfo.occupation;
+}
+      if (personalInfo.countryRegion) {
+existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+}
     }
 
     // Migrate travel info data
     if (userData.travelInfo) {
       const travelInfo = userData.travelInfo;
-      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
-      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
-      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalDate) existingDataToMigrate.arrivalDate = travelInfo.arrivalDate;
-      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
-      if (travelInfo.lengthOfStay) existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
+      if (travelInfo.travelPurpose) {
+existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+}
+      if (travelInfo.accommodationType) {
+existingDataToMigrate.accommodationType = travelInfo.accommodationType;
+}
+      if (travelInfo.arrivalFlightNumber) {
+existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+}
+      if (travelInfo.arrivalDate) {
+existingDataToMigrate.arrivalDate = travelInfo.arrivalDate;
+}
+      if (travelInfo.hotelAddress) {
+existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
+}
+      if (travelInfo.lengthOfStay) {
+existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
+}
     }
 
     console.log('Data to migrate:', existingDataToMigrate);

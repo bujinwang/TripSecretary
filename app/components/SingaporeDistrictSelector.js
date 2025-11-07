@@ -37,7 +37,9 @@ const SingaporeDistrictSelector = ({
 
   const filteredRegions = useMemo(() => {
     const search = normalize(searchText);
-    if (!search) return singaporeRegions;
+    if (!search) {
+return singaporeRegions;
+}
 
     return singaporeRegions.filter((region) => {
       const nameEn = normalize(region?.name);
@@ -47,7 +49,9 @@ const SingaporeDistrictSelector = ({
   }, [searchText]);
 
   const getDisplayLabel = (region) => {
-    if (!region) return '';
+    if (!region) {
+return '';
+}
     // English primary with Chinese secondary
     if (region.nameZh) {
       return `${region.name} / ${region.nameZh}`;
@@ -57,17 +61,23 @@ const SingaporeDistrictSelector = ({
 
   const currentDisplayValue = useMemo(() => {
     const normalizedValue = normalize(value);
-    if (!normalizedValue) return '';
+    if (!normalizedValue) {
+return '';
+}
 
     const matched = singaporeRegions.find((region) => {
-      if (!region) return false;
+      if (!region) {
+return false;
+}
       const nameEn = normalize(region.name);
       const nameZh = normalize(region.nameZh);
       const code = normalize(region.code);
       return nameEn === normalizedValue || nameZh === normalizedValue || code === normalizedValue;
     });
 
-    if (!matched) return value || '';
+    if (!matched) {
+return value || '';
+}
     return getDisplayLabel(matched);
   }, [value]);
 
@@ -100,7 +110,9 @@ const SingaporeDistrictSelector = ({
         keyboardShouldPersistTaps="handled"
       >
         {filteredRegions.map((region) => {
-          if (!region) return null;
+          if (!region) {
+return null;
+}
           const isSelected =
             normalize(value) === normalize(region.name) ||
             normalize(value) === normalize(region.nameZh) ||

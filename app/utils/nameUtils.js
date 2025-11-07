@@ -191,25 +191,47 @@ export const formatForDisplay = (familyName, firstName, middleName = '', options
 
   if (format === 'western') {
     // Western: Family Middle First
-    if (familyName) parts.push(familyName);
-    if (includeMiddle && middleName) parts.push(middleName);
-    if (firstName) parts.push(firstName);
+    if (familyName) {
+parts.push(familyName);
+}
+    if (includeMiddle && middleName) {
+parts.push(middleName);
+}
+    if (firstName) {
+parts.push(firstName);
+}
   } else if (format === 'eastern') {
     // Eastern: Family Middle First (same as western for now)
-    if (familyName) parts.push(familyName);
-    if (includeMiddle && middleName) parts.push(middleName);
-    if (firstName) parts.push(firstName);
+    if (familyName) {
+parts.push(familyName);
+}
+    if (includeMiddle && middleName) {
+parts.push(middleName);
+}
+    if (firstName) {
+parts.push(firstName);
+}
   } else if (format === 'full') {
     // Full: Include all parts in order
-    if (familyName) parts.push(familyName);
-    if (middleName) parts.push(middleName);
-    if (firstName) parts.push(firstName);
+    if (familyName) {
+parts.push(familyName);
+}
+    if (middleName) {
+parts.push(middleName);
+}
+    if (firstName) {
+parts.push(firstName);
+}
   } else if (format === 'comma') {
     // Comma format: "Family, First Middle"
     if (familyName) {
       const givenNames = [];
-      if (firstName) givenNames.push(firstName);
-      if (middleName) givenNames.unshift(middleName);
+      if (firstName) {
+givenNames.push(firstName);
+}
+      if (middleName) {
+givenNames.unshift(middleName);
+}
       return `${familyName}, ${givenNames.join(' ')}`;
     }
   }

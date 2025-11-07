@@ -258,6 +258,10 @@ export const thailandComprehensiveTravelInfoConfig = {
       minRequired: 0,
       maxAllowed: 10,
 
+      // Fund types for the shared FundsSection component (array of strings)
+      fundTypes: ['cash', 'credit_card', 'bank_balance'],
+
+      // Detailed types for the modal (array of objects)
       types: [
         { value: 'CASH_THB', label: '泰铢现金', defaultAmount: 20000 },
         { value: 'CASH_USD', label: '美元现金', defaultAmount: 500 },

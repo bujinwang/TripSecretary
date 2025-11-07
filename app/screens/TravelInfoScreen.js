@@ -37,9 +37,13 @@ const PURPOSE_OPTIONS = [
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 const parseDateOnly = (value) => {
-  if (!value || typeof value !== 'string') return null;
+  if (!value || typeof value !== 'string') {
+return null;
+}
   const parts = value.split('-').map((part) => Number(part));
-  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) return null;
+  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) {
+return null;
+}
   const [year, month, day] = parts;
   return new Date(year, month - 1, day);
 };
@@ -60,9 +64,15 @@ const TravelInfoScreen = ({ navigation, route }) => {
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
   const normalizeYesNo = (value, fallback = NO_VALUE) => {
-    if (value === YES_VALUE || value === NO_VALUE) return value;
-    if (value === true) return YES_VALUE;
-    if (value === false) return NO_VALUE;
+    if (value === YES_VALUE || value === NO_VALUE) {
+return value;
+}
+    if (value === true) {
+return YES_VALUE;
+}
+    if (value === false) {
+return NO_VALUE;
+}
     return fallback;
   };
 
@@ -84,12 +94,16 @@ const TravelInfoScreen = ({ navigation, route }) => {
       WORK: '工作',
       work: '工作',
     };
-    if (!value) return '旅游';
+    if (!value) {
+return '旅游';
+}
     return map[value] || value;
   };
 
   const normalizeArrivingFrom = (value) => {
-    if (!value) return ARRIVING_FROM_OTHER;
+    if (!value) {
+return ARRIVING_FROM_OTHER;
+}
     if (['美国', 'USA', 'U.S.A.', 'us', 'United States'].includes(value)) {
       return ARRIVING_FROM_US;
     }
@@ -199,8 +213,12 @@ const TravelInfoScreen = ({ navigation, route }) => {
       if (!result.canceled) {
         try {
           const ocrResult = await api.recognizeTicket(result.assets[0].uri);
-          if (ocrResult.flightNumber) setFlightNumber(ocrResult.flightNumber);
-          if (ocrResult.arrivalDate) setArrivalDate(ocrResult.arrivalDate);
+          if (ocrResult.flightNumber) {
+setFlightNumber(ocrResult.flightNumber);
+}
+          if (ocrResult.arrivalDate) {
+setArrivalDate(ocrResult.arrivalDate);
+}
           Alert.alert(
             t('travelInfo.alerts.ocrSuccessFlight'),
             '',
@@ -255,9 +273,15 @@ const TravelInfoScreen = ({ navigation, route }) => {
       if (!result.canceled) {
         try {
           const ocrResult = await api.recognizeHotel(result.assets[0].uri);
-          if (ocrResult.hotelName) setHotelName(ocrResult.hotelName);
-          if (ocrResult.address) setHotelAddress(ocrResult.address);
-          if (ocrResult.phone) setContactPhone(ocrResult.phone);
+          if (ocrResult.hotelName) {
+setHotelName(ocrResult.hotelName);
+}
+          if (ocrResult.address) {
+setHotelAddress(ocrResult.address);
+}
+          if (ocrResult.phone) {
+setContactPhone(ocrResult.phone);
+}
           Alert.alert(
             t('travelInfo.alerts.ocrSuccessHotel'),
             '',

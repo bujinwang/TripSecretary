@@ -13,13 +13,14 @@ import { Alert } from 'react-native';
 import { useLocale } from '../../i18n/LocaleContext';
 
 export const useTemplatePhotoManagement = ({
-  config,
-  formState,
+  config: _config, // Prefixed with _ to indicate intentionally unused
+  formState: _formState, // Prefixed with _ to indicate intentionally unused
   updateField,
   debouncedSave,
   t,
 }) => {
-  const { t: localeT } = useLocale();
+  const localeContext = useLocale();
+  const localeT = localeContext?.t;
   const translationFn = t || localeT;
 
   const savePhoto = useCallback(async (photoType, photoUri) => {

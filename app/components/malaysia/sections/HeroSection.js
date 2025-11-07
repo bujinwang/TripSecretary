@@ -21,7 +21,9 @@ const HeroSection = ({
   getProgressColor,
   styles: customStyles,
 }) => {
-  if (!completionMetrics) return null;
+  if (!completionMetrics) {
+return null;
+}
 
   const { percent } = completionMetrics;
   const progressColor = getProgressColor(percent);

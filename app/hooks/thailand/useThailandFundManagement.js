@@ -7,7 +7,9 @@ import DebouncedSave from '../../utils/DebouncedSave';
  * Normalizes a fund item to ensure consistent data structure
  */
 const normalizeFundItem = (item) => {
-  if (!item) return null;
+  if (!item) {
+return null;
+}
   return {
     ...item,
     // Ensure all required fields exist

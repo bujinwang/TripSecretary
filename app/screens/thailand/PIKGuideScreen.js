@@ -23,11 +23,15 @@ const PIKGuideScreen = ({ navigation, route }) => {
   const [fontSize, setFontSize] = useState(16);
 
   const increaseFontSize = () => {
-    if (fontSize < 24) setFontSize(fontSize + 2);
+    if (fontSize < 24) {
+setFontSize(fontSize + 2);
+}
   };
 
   const decreaseFontSize = () => {
-    if (fontSize > 12) setFontSize(fontSize - 2);
+    if (fontSize > 12) {
+setFontSize(fontSize - 2);
+}
   };
 
   // 根据用户填写的信息生成预设答案

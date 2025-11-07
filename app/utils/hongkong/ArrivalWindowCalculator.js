@@ -72,7 +72,9 @@ class ArrivalWindowCalculator {
    * @returns {boolean} - True if date is in the past
    */
   static isArrivalPast(arrivalDate) {
-    if (!arrivalDate) return false;
+    if (!arrivalDate) {
+return false;
+}
     const arrival = new Date(arrivalDate);
     const now = new Date();
     return arrival.getTime() < now.getTime();

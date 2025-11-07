@@ -583,7 +583,9 @@ export const EntryFieldsConfig = {
  */
 export function getFieldConfig(category, fieldName) {
   const categoryConfig = EntryFieldsConfig[category];
-  if (!categoryConfig) return null;
+  if (!categoryConfig) {
+return null;
+}
 
   return categoryConfig.fields.find(field => field.name === fieldName) || null;
 }
@@ -595,7 +597,9 @@ export function getFieldConfig(category, fieldName) {
  */
 export function getRequiredFields(category) {
   const categoryConfig = EntryFieldsConfig[category];
-  if (!categoryConfig) return [];
+  if (!categoryConfig) {
+return [];
+}
 
   return categoryConfig.fields.filter(field => field.type === 'required');
 }
@@ -624,7 +628,9 @@ export function validateFieldValue(category, fieldName, value, allData = {}) {
  */
 export function getCategorySummary(category) {
   const categoryConfig = EntryFieldsConfig[category];
-  if (!categoryConfig) return null;
+  if (!categoryConfig) {
+return null;
+}
 
   return {
     name: categoryConfig.name,

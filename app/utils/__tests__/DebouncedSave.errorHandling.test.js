@@ -71,7 +71,7 @@ describe('DebouncedSave Error Handling', () => {
     });
 
     test('should use exponential backoff for retries', async () => {
-      let callTimes = [];
+      const callTimes = [];
       const mockCallback = jest.fn().mockImplementation(() => {
         callTimes.push(Date.now());
         throw new Error('Always fails');

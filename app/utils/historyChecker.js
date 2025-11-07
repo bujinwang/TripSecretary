@@ -126,7 +126,9 @@ export function findRecentValidGeneration(destinationId, passportNo, historyList
  * @returns {string} 格式化后的日期
  */
 export function formatDate(dateString) {
-  if (!dateString) return '';
+  if (!dateString) {
+return '';
+}
   
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -144,17 +146,31 @@ export function formatDate(dateString) {
 export function formatRelativeTime(days) {
   const absDays = Math.abs(days);
   
-  if (days === 0) return '今天';
-  if (days === 1) return '明天';
-  if (days === -1) return '昨天';
+  if (days === 0) {
+return '今天';
+}
+  if (days === 1) {
+return '明天';
+}
+  if (days === -1) {
+return '昨天';
+}
   
   if (days > 0) {
-    if (absDays <= 7) return `${absDays}天后`;
-    if (absDays <= 30) return `${Math.ceil(absDays / 7)}周后`;
+    if (absDays <= 7) {
+return `${absDays}天后`;
+}
+    if (absDays <= 30) {
+return `${Math.ceil(absDays / 7)}周后`;
+}
     return `${Math.ceil(absDays / 30)}个月后`;
   } else {
-    if (absDays <= 7) return `${absDays}天前`;
-    if (absDays <= 30) return `${Math.ceil(absDays / 7)}周前`;
+    if (absDays <= 7) {
+return `${absDays}天前`;
+}
+    if (absDays <= 30) {
+return `${Math.ceil(absDays / 7)}周前`;
+}
     return `${Math.ceil(absDays / 30)}个月前`;
   }
 }

@@ -46,7 +46,9 @@ const normalize = (value) => (value || '').toLowerCase().trim();
 const DISPLAY_FORMATS = {
   // Shows: "Bangkok - 曼谷"
   bilingual: (location, isChinese) => {
-    if (!location) return '';
+    if (!location) {
+return '';
+}
     const fallback = location.nameTh || location.nameLocal || location.nameZh || '';
     const secondary = isChinese
       ? location.nameZh || fallback
@@ -60,7 +62,9 @@ const DISPLAY_FORMATS = {
 
   // Shows: "曼谷" (native language only)
   native: (location, isChinese) => {
-    if (!location) return '';
+    if (!location) {
+return '';
+}
     return isChinese
       ? location.nameZh || location.nameTh || location.nameLocal || location.name
       : location.nameTh || location.nameLocal || location.nameZh || location.name || '';
@@ -68,7 +72,9 @@ const DISPLAY_FORMATS = {
 
   // Shows: "Bangkok" (English only)
   english: (location) => {
-    if (!location) return '';
+    if (!location) {
+return '';
+}
     return location.nameEn || location.name || '';
   },
 
@@ -175,20 +181,30 @@ const LocationHierarchySelector = ({
 
   // Custom display value function for selected value
   const getDisplayValue = (val) => {
-    if (!val) return value || '';
-    if (!Array.isArray(locations) || locations.length === 0) return value || '';
+    if (!val) {
+return value || '';
+}
+    if (!Array.isArray(locations) || locations.length === 0) {
+return value || '';
+}
 
     const normalizedValue = normalize(value);
 
     // Find matching location
     const matched = locations.find((location) => {
-      if (!location) return false;
+      if (!location) {
+return false;
+}
 
       // Match by selectedId
-      if (selectedId && location.id === selectedId) return true;
+      if (selectedId && location.id === selectedId) {
+return true;
+}
 
       // Match by value
-      if (val && (location.id === val || location.code === val)) return true;
+      if (val && (location.id === val || location.code === val)) {
+return true;
+}
 
       // Match by name (any variant)
       const nameEn = normalize(location.nameEn || location.name);
@@ -203,13 +219,17 @@ const LocationHierarchySelector = ({
       );
     });
 
-    if (!matched) return value || '';
+    if (!matched) {
+return value || '';
+}
     return getLabelForLocation(matched);
   };
 
   // Handle selection
   const handleValueChange = (selectedValue) => {
-    if (!selectedValue) return;
+    if (!selectedValue) {
+return;
+}
 
     // Find the full location data
     const option = options.find(opt => opt.value === selectedValue);
@@ -231,7 +251,9 @@ const LocationHierarchySelector = ({
 
   // Custom filter for multilingual search
   const filterOptions = (opts, search) => {
-    if (!search) return opts;
+    if (!search) {
+return opts;
+}
     const lowerSearch = search.toLowerCase();
     return opts.filter(opt => {
       const label = opt.label || '';
@@ -241,7 +263,9 @@ const LocationHierarchySelector = ({
 
   // Determine current value for BaseSearchableSelector
   const selectorValue = useMemo(() => {
-    if (selectedId) return selectedId;
+    if (selectedId) {
+return selectedId;
+}
 
     // Try to match value to a location ID/code
     const normalizedValue = normalize(value);

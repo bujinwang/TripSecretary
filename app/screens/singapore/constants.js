@@ -68,9 +68,9 @@ export const ACCOMMODATION_TYPE_OPTIONS = [
  * Labels are English-primary with Chinese secondary
  */
 export const GENDER_OPTIONS = [
-  { value: 'Female', translationKey: 'singapore.travelInfo.fields.sex.options.female', defaultLabel: 'Female / 女性' },
-  { value: 'Male', translationKey: 'singapore.travelInfo.fields.sex.options.male', defaultLabel: 'Male / 男性' },
-  { value: 'Undefined', translationKey: 'singapore.travelInfo.fields.sex.options.undefined', defaultLabel: 'Undefined / 未定义' },
+  { value: 'Female', translationKey: 'sg.travelInfo.fields.sex.options.female', defaultLabel: 'Female / 女性' },
+  { value: 'Male', translationKey: 'sg.travelInfo.fields.sex.options.male', defaultLabel: 'Male / 男性' },
+  { value: 'Undefined', translationKey: 'sg.travelInfo.fields.sex.options.undefined', defaultLabel: 'Undefined / 未定义' },
 ];
 
 /**

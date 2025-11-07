@@ -126,15 +126,21 @@ const COUNTRY_EXCHANGE_RATES = {
  * @returns {number} The converted amount
  */
 export const convertCurrency = (amount, fromCurrency, toCurrency) => {
-  if (!amount || amount === 0) return 0;
-  if (!fromCurrency || !toCurrency) return amount;
+  if (!amount || amount === 0) {
+return 0;
+}
+  if (!fromCurrency || !toCurrency) {
+return amount;
+}
 
   // Normalize currency codes to uppercase
   const from = fromCurrency.toUpperCase();
   const to = toCurrency.toUpperCase();
 
   // If same currency, no conversion needed
-  if (from === to) return amount;
+  if (from === to) {
+return amount;
+}
 
   // Get the appropriate exchange rate table based on target currency
   let ratesTable;
@@ -210,11 +216,15 @@ export const convertToCountryCurrency = (amount, fromCurrency, country) => {
  * @returns {number} The total amount in the target currency
  */
 export const calculateTotalFundsInCurrency = (funds, targetCurrency) => {
-  if (!Array.isArray(funds)) return 0;
+  if (!Array.isArray(funds)) {
+return 0;
+}
 
   return funds.reduce((total, fund) => {
     const amount = Number(fund?.amount);
-    if (Number.isNaN(amount) || amount === 0) return total;
+    if (Number.isNaN(amount) || amount === 0) {
+return total;
+}
 
     const currency = fund?.currency || targetCurrency;
     const convertedAmount = convertCurrency(amount, currency, targetCurrency);

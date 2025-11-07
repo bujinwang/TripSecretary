@@ -33,10 +33,10 @@ const TravelPurposeSelector = ({
 
   // Normalize locale (e.g., 'zh-CN' -> 'zh', 'en-US' -> 'en')
   const normalizedLocale = React.useMemo(() => {
-    if (!locale) return 'en';
-    const parts = locale.split('-');
+    const localeToUse = currentLocale || 'en';
+    const parts = localeToUse.split('-');
     return parts[0]; // Return just the language code without country
-  }, [locale]);
+  }, [currentLocale]);
 
   // Load travel purposes on mount
   React.useEffect(() => {
@@ -76,7 +76,9 @@ const TravelPurposeSelector = ({
 
   // Custom display value function
   const getDisplayValue = (val, customVal) => {
-    if (!val) return '';
+    if (!val) {
+return '';
+}
 
     // If OTHER is selected and there's custom text, show the custom text
     if (val === 'OTHER' && customVal && onOtherValueChange) {

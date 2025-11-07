@@ -30,6 +30,7 @@ export const usaEntryGuide = {
       description: '保存美国紧急联系电话，以备不时之需',
       descriptionZh: '保存美国紧急联系电话，以备不时之需',
       category: 'pre-arrival',
+      categoryZh: '实用信息',
       priority: 1,
       estimatedTime: '2分钟',
       icon: '🆘',
@@ -268,7 +269,7 @@ export const usaEntryGuide = {
   },
 
   // 货币和ATM信息
-  currency: {
+  currencyInfo: {
     code: 'USD',
     name: '美元',
     denominations: [

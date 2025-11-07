@@ -94,8 +94,8 @@ class CountdownFormatter {
     const { days, hours, minutes, seconds } = components;
 
     // Determine which components to show based on maxUnit and values
-    let showDays = maxUnit === 'days' && days > 0;
-    let showHours = (maxUnit === 'days' || maxUnit === 'hours') && (hours > 0 || days > 0);
+    const showDays = maxUnit === 'days' && days > 0;
+    const showHours = (maxUnit === 'days' || maxUnit === 'hours') && (hours > 0 || days > 0);
     let showMinutes = minutes > 0 || hours > 0 || days > 0;
 
     // Special case: if everything is 0 except seconds, show minutes as 0
@@ -316,7 +316,9 @@ class CountdownFormatter {
    * @returns {string} - Normalized locale code
    */
   static normalizeLocale(locale) {
-    if (!locale) return 'en';
+    if (!locale) {
+return 'en';
+}
     
     // Handle common variations
     const localeMap = {
@@ -336,8 +338,12 @@ class CountdownFormatter {
    * @returns {string} - Joined time string
    */
   static joinTimeParts(parts, locale) {
-    if (parts.length === 0) return '';
-    if (parts.length === 1) return parts[0];
+    if (parts.length === 0) {
+return '';
+}
+    if (parts.length === 1) {
+return parts[0];
+}
 
     const joiners = {
       zh: ' ',

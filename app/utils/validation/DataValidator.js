@@ -553,7 +553,9 @@ class DataValidator {
    * @returns {string} - Sanitized string
    */
   sanitizeString(str) {
-    if (!str) return str;
+    if (!str) {
+return str;
+}
 
     return str
       // Remove null bytes

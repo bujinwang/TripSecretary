@@ -48,15 +48,21 @@ const HongKongDistrictSelector = ({
 
   // Get districts for selected region
   const districts = useMemo(() => {
-    if (!selectedRegion) return [];
+    if (!selectedRegion) {
+return [];
+}
     return getDistrictsByProvince(selectedRegion);
   }, [selectedRegion]);
 
   // Filter districts based on search text
   const filteredDistricts = useMemo(() => {
-    if (!Array.isArray(districts)) return [];
+    if (!Array.isArray(districts)) {
+return [];
+}
     const search = normalize(searchText);
-    if (!search) return districts;
+    if (!search) {
+return districts;
+}
 
     return districts.filter((district) => {
       const nameEn = normalize(district?.nameEn);
@@ -67,29 +73,39 @@ const HongKongDistrictSelector = ({
 
   // Get display label for a district (Traditional Chinese - English)
   const getDisplayLabel = (district) => {
-    if (!district) return '';
+    if (!district) {
+return '';
+}
     return `${district.nameZh} / ${district.nameEn}`;
   };
 
   // Get display label for a region
   const getRegionDisplayLabel = (region) => {
-    if (!region) return '';
+    if (!region) {
+return '';
+}
     return `${region.nameZh} / ${region.nameEn}`;
   };
 
   // Find and display current selected district
   const currentDisplayValue = useMemo(() => {
-    if (!value) return '';
+    if (!value) {
+return '';
+}
 
     const normalizedValue = normalize(value);
     const matched = allDistricts.find((district) => {
-      if (!district) return false;
+      if (!district) {
+return false;
+}
       const nameEn = normalize(district.nameEn);
       const nameZh = normalize(district.nameZh);
       return nameEn === normalizedValue || nameZh === normalizedValue;
     });
 
-    if (!matched) return value;
+    if (!matched) {
+return value;
+}
     return getDisplayLabel(matched);
   }, [allDistricts, value]);
 
@@ -160,7 +176,9 @@ const HongKongDistrictSelector = ({
         keyboardShouldPersistTaps="handled"
       >
         {filteredDistricts.map((district) => {
-          if (!district) return null;
+          if (!district) {
+return null;
+}
           const isSelected =
             normalize(value) === normalize(district.nameEn) ||
             normalize(value) === normalize(district.nameZh);

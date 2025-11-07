@@ -87,16 +87,22 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
   }, [userId, isJapan]);
 
   const increaseFontSize = () => {
-    if (fontSize < 32) setFontSize(fontSize + 2);
+    if (fontSize < 32) {
+setFontSize(fontSize + 2);
+}
   };
 
   const decreaseFontSize = () => {
-    if (fontSize > 16) setFontSize(fontSize - 2);
+    if (fontSize > 16) {
+setFontSize(fontSize - 2);
+}
   };
 
   // 格式化日期
   const formatDate = (dateStr) => {
-    if (!dateStr) return '';
+    if (!dateStr) {
+return '';
+}
     // 确保格式为 YYYY-MM-DD
     return dateStr;
   };

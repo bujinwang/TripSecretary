@@ -82,7 +82,9 @@ export const useTemplateValidation = ({
    * Validate a single field based on config rules
    */
   const validateField = useCallback((fieldName, fieldValue, fieldConfig) => {
-    if (!fieldConfig) return { isValid: true, isWarning: false, errorMessage: '' };
+    if (!fieldConfig) {
+return { isValid: true, isWarning: false, errorMessage: '' };
+}
 
     // Required validation
     if (fieldConfig.required && (!fieldValue || fieldValue === '')) {
@@ -162,11 +164,15 @@ export const useTemplateValidation = ({
    * Get field config from template config
    */
   const getFieldConfig = useCallback((fieldName) => {
-    if (!config?.sections) return null;
+    if (!config?.sections) {
+return null;
+}
 
     for (const sectionKey of Object.keys(config.sections)) {
       const section = config.sections[sectionKey];
-      if (!section) continue;
+      if (!section) {
+continue;
+}
 
       if (section.fields && section.fields[fieldName]) {
         return section.fields[fieldName];
@@ -244,7 +250,9 @@ export const useTemplateValidation = ({
    */
   const getFieldCount = useCallback((sectionKey) => {
     const sectionConfig = config.sections?.[sectionKey];
-    if (!sectionConfig) return { filled: 0, total: 0 };
+    if (!sectionConfig) {
+return { filled: 0, total: 0 };
+}
 
     // Special handling for funds section
     if (sectionKey === 'funds') {
@@ -252,25 +260,31 @@ export const useTemplateValidation = ({
       return { filled: funds.length, total: Math.max(funds.length, sectionConfig.minRequired || 1) };
     }
 
+    // Get all fields (not just required ones) for counting
+    const allFields = Object.values(sectionConfig.fields || {})
+      .map(f => f.fieldName);
+    
+    // Also get required fields for tracking-based calculation
     const requiredFields = Object.values(sectionConfig.fields || {})
       .filter(f => f.required)
       .map(f => f.fieldName);
 
     if (userInteractionTracker && config.tracking?.trackFieldModifications) {
+      // Use all fields for counting, but still use tracking logic
       return TemplateFieldStateManager.calculateFieldCompletion(
         formState,
         userInteractionTracker.interactionState,
-        requiredFields
+        allFields
       );
     }
 
-    // Fallback without tracking
-    const filled = requiredFields.filter(fieldName => {
+    // Fallback without tracking - count all fields
+    const filled = allFields.filter(fieldName => {
       const value = formState[fieldName];
       return value !== null && value !== undefined && value !== '';
     }).length;
 
-    return { filled, total: requiredFields.length };
+    return { filled, total: allFields.length };
   }, [config.sections, config.tracking, formState, userInteractionTracker]);
 
   /**
@@ -280,7 +294,9 @@ export const useTemplateValidation = ({
     let totalFields = 0;
     let filledFields = 0;
 
-    if (!config?.sections) return 0;
+    if (!config?.sections) {
+return 0;
+}
 
     Object.keys(config.sections).forEach(sectionKey => {
       const section = config.sections[sectionKey];

@@ -86,7 +86,9 @@ export const isRecordValid = (record) => {
  * @returns {string} - 人性化的时间描述
  */
 export const getTimeUntilArrival = (arrivalDate, t) => {
-  if (!arrivalDate) return '';
+  if (!arrivalDate) {
+return '';
+}
 
   const translator = typeof t === 'function' ? t : (key, options) => options?.defaultValue ?? key;
 

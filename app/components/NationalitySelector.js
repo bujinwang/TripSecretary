@@ -47,7 +47,9 @@ const NationalitySelector = ({
 
   // Custom display value function
   const getDisplayValue = (val) => {
-    if (!val) return '';
+    if (!val) {
+return '';
+}
     return getNationalityDisplayName(val);
   };
 

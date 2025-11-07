@@ -16,12 +16,14 @@
       "jsx": true
     },
     "ecmaVersion": "latest",
-    "sourceType": "module"
+    "sourceType": "module",
+    "project": "./tsconfig.json"
   },
   "plugins": [
     "react",
     "react-native",
-    "react-hooks"
+    "react-hooks",
+    "@typescript-eslint"
   ],
   "rules": {
     "camelcase": [
@@ -38,13 +40,21 @@
     ],
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "warn",
+    "react/display-name": "warn",
+    "react/no-unescaped-entities": "warn",
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-undef": "error",
+    "react/jsx-uses-react": "off",
+    "react/jsx-uses-vars": "error",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "no-unused-vars": [
       "warn",
       {
         "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
       }
     ],
     "no-console": [
@@ -53,11 +63,31 @@
         "allow": ["warn", "error"]
       }
     ],
+    "no-debugger": "error",
+    "no-alert": "warn",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
     "prefer-const": "error",
     "no-var": "error",
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"],
-    "brace-style": ["error", "1tbs"]
+    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+    "no-throw-literal": "error",
+    "prefer-promise-reject-errors": "error",
+    "no-return-await": "error",
+    "require-await": "off",
+    "no-async-promise-executor": "error",
+    "no-await-in-loop": "off",
+    "no-promise-executor-return": "error",
+    "prefer-template": "warn",
+    "prefer-arrow-callback": "warn",
+    "arrow-body-style": ["warn", "as-needed"],
+    "object-shorthand": ["warn", "always"],
+    "prefer-destructuring": ["warn", {
+      "array": false,
+      "object": true
+    }]
   },
   "settings": {
     "react": {
@@ -66,15 +96,49 @@
   },
   "overrides": [
     {
+      "files": ["*.ts", "*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_"
+          }
+        ],
+        "no-unused-vars": "off"
+      }
+    },
+    {
       "files": [
         "**/__tests__/**/*",
         "**/*.test.js",
         "**/*.test.jsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
         "**/*.spec.js",
-        "**/*.spec.jsx"
+        "**/*.spec.jsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
       ],
       "env": {
         "jest": true
+      },
+      "rules": {
+        "require-await": "off",
+        "no-await-in-loop": "off",
+        "prefer-arrow-callback": "off",
+        "arrow-body-style": "off",
+        "@typescript-eslint/no-explicit-any": "off"
       }
     },
     {

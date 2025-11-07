@@ -93,8 +93,9 @@ const PassportNameInput = ({
     setError,
     errorFlag,
     placeholderText,
+    flexBasis,
   }) => (
-    <YStack flex={1} alignItems="flex-start">
+    <YStack flex={1} flexBasis={flexBasis} minWidth={0} alignItems="flex-start">
       <YStack minHeight={32} justifyContent="flex-start" marginBottom="$xs">
         <TamaguiText
           fontSize="$1"
@@ -132,6 +133,7 @@ const PassportNameInput = ({
         backgroundColor="$background"
         fontSize="$2"
         color="$text"
+        width="100%"
         {...rest}
       />
     </YStack>
@@ -145,7 +147,7 @@ const PassportNameInput = ({
         </TamaguiText>
       )}
 
-      <XStack gap="$sm" alignItems="flex-start">
+      <XStack gap="$sm" alignItems="flex-start" width="100%">
         {renderNameField({
           labelText: surnameLabel,
           value: currentSurname,

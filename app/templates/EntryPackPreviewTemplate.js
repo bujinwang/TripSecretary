@@ -376,6 +376,17 @@ const EntryPackPreviewTemplate = ({
 
   const contextRef = useRef(null);
 
+  const buildTemplateProps = useCallback(() => {
+    const ctx = contextRef.current || baseContext;
+    if (!ctx) {
+      return {};
+    }
+    return {
+      templateContext: ctx,
+      ...ctx,
+    };
+  }, [baseContext]);
+
   const baseContext = useMemo(
     () => ({
       config,
@@ -416,23 +427,27 @@ const EntryPackPreviewTemplate = ({
   const renderComponent = useCallback(
     (slot, defaultRenderer) => {
       const OverrideComponent = config?.components?.[slot];
+      const templateProps = buildTemplateProps();
+
+      if (OverrideComponent === null) {
+        return null;
+      }
+
       if (OverrideComponent) {
-        let element = null;
         try {
-          element = <OverrideComponent />;
+          return <OverrideComponent {...templateProps} />;
         } catch (error) {
           console.error(
             `EntryPackPreviewTemplate ${slot} component renderer failed:`,
             error
           );
         }
-        if (element) {
-          return element;
-        }
       }
-      return typeof defaultRenderer === 'function' ? defaultRenderer() : null;
+      return typeof defaultRenderer === 'function'
+        ? defaultRenderer(templateProps)
+        : null;
     },
-    [config]
+    [buildTemplateProps, config]
   );
 
   const renderSlot = useCallback(
@@ -440,7 +455,7 @@ const EntryPackPreviewTemplate = ({
       const renderer = config?.slots?.[slot];
       if (typeof renderer === 'function') {
         try {
-          return renderer();
+          return renderer(buildTemplateProps());
         } catch (error) {
           console.error(
             `EntryPackPreviewTemplate ${slot} slot renderer failed:`,
@@ -451,7 +466,7 @@ const EntryPackPreviewTemplate = ({
       }
       return null;
     },
-    [config]
+    [buildTemplateProps, config]
   );
 
   const runHook = useCallback((hookName, extraPayload = {}) => {
@@ -714,15 +729,15 @@ const EntryPackPreviewTemplateAutoContent = () => {
 
   if (isLoading) {
     return (
-      <>
+      <React.Fragment>
         {renderComponent('Header', () => <EntryPackPreviewTemplateHeader />)}
         {renderComponent('LoadingState', () => <EntryPackPreviewTemplateLoadingState />)}
-      </>
+      </React.Fragment>
     );
   }
 
   return (
-    <>
+    <React.Fragment>
       {renderComponent('Header', () => <EntryPackPreviewTemplateHeader />)}
       {renderSlot('afterHeader')}
       <ScrollView
@@ -741,7 +756,7 @@ const EntryPackPreviewTemplateAutoContent = () => {
         <View style={styles.bottomSpacing} />
       </ScrollView>
       {renderSlot('footer')}
-    </>
+    </React.Fragment>
   );
 };
 

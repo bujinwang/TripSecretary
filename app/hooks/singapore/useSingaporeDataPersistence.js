@@ -210,12 +210,24 @@ export const useSingaporeDataPersistence = ({
 
       // Save passport data - only user-modified fields
       const passportUpdates = {};
-      if (fieldsToSave.passportNo?.trim()) passportUpdates.passportNumber = fieldsToSave.passportNo;
-      if (fieldsToSave.fullName?.trim()) passportUpdates.fullName = fieldsToSave.fullName;
-      if (fieldsToSave.nationality?.trim()) passportUpdates.nationality = fieldsToSave.nationality;
-      if (fieldsToSave.dob?.trim()) passportUpdates.dateOfBirth = fieldsToSave.dob;
-      if (fieldsToSave.expiryDate?.trim()) passportUpdates.expiryDate = fieldsToSave.expiryDate;
-      if (fieldsToSave.sex?.trim()) passportUpdates.gender = fieldsToSave.sex;
+      if (fieldsToSave.passportNo?.trim()) {
+passportUpdates.passportNumber = fieldsToSave.passportNo;
+}
+      if (fieldsToSave.fullName?.trim()) {
+passportUpdates.fullName = fieldsToSave.fullName;
+}
+      if (fieldsToSave.nationality?.trim()) {
+passportUpdates.nationality = fieldsToSave.nationality;
+}
+      if (fieldsToSave.dob?.trim()) {
+passportUpdates.dateOfBirth = fieldsToSave.dob;
+}
+      if (fieldsToSave.expiryDate?.trim()) {
+passportUpdates.expiryDate = fieldsToSave.expiryDate;
+}
+      if (fieldsToSave.sex?.trim()) {
+passportUpdates.gender = fieldsToSave.sex;
+}
 
       if (Object.keys(passportUpdates).length > 0) {
         console.log('Saving passport updates:', Object.keys(passportUpdates));
@@ -230,13 +242,27 @@ export const useSingaporeDataPersistence = ({
 
       // Save personal info data - only user-modified fields
       const personalInfoUpdates = {};
-      if (fieldsToSave.phoneCode?.trim()) personalInfoUpdates.phoneCode = fieldsToSave.phoneCode;
-      if (fieldsToSave.phoneNumber?.trim()) personalInfoUpdates.phoneNumber = fieldsToSave.phoneNumber;
-      if (fieldsToSave.email?.trim()) personalInfoUpdates.email = fieldsToSave.email;
-      if (fieldsToSave.occupation?.trim()) personalInfoUpdates.occupation = fieldsToSave.occupation;
-      if (fieldsToSave.cityOfResidence?.trim()) personalInfoUpdates.provinceCity = fieldsToSave.cityOfResidence;
-      if (fieldsToSave.residentCountry?.trim()) personalInfoUpdates.countryRegion = fieldsToSave.residentCountry;
-      if (fieldsToSave.sex?.trim()) personalInfoUpdates.gender = fieldsToSave.sex;
+      if (fieldsToSave.phoneCode?.trim()) {
+personalInfoUpdates.phoneCode = fieldsToSave.phoneCode;
+}
+      if (fieldsToSave.phoneNumber?.trim()) {
+personalInfoUpdates.phoneNumber = fieldsToSave.phoneNumber;
+}
+      if (fieldsToSave.email?.trim()) {
+personalInfoUpdates.email = fieldsToSave.email;
+}
+      if (fieldsToSave.occupation?.trim()) {
+personalInfoUpdates.occupation = fieldsToSave.occupation;
+}
+      if (fieldsToSave.cityOfResidence?.trim()) {
+personalInfoUpdates.provinceCity = fieldsToSave.cityOfResidence;
+}
+      if (fieldsToSave.residentCountry?.trim()) {
+personalInfoUpdates.countryRegion = fieldsToSave.residentCountry;
+}
+      if (fieldsToSave.sex?.trim()) {
+personalInfoUpdates.gender = fieldsToSave.sex;
+}
 
       if (Object.keys(personalInfoUpdates).length > 0) {
         console.log('Saving personal info updates:', Object.keys(personalInfoUpdates));
@@ -251,28 +277,56 @@ export const useSingaporeDataPersistence = ({
       const finalTravelPurpose = fieldsToSave.travelPurpose === 'OTHER' && fieldsToSave.customTravelPurpose?.trim()
         ? fieldsToSave.customTravelPurpose.trim()
         : fieldsToSave.travelPurpose;
-      if (finalTravelPurpose?.trim()) travelInfoUpdates.travelPurpose = finalTravelPurpose;
+      if (finalTravelPurpose?.trim()) {
+travelInfoUpdates.travelPurpose = finalTravelPurpose;
+}
 
-      if (fieldsToSave.boardingCountry?.trim()) travelInfoUpdates.boardingCountry = fieldsToSave.boardingCountry;
-      if (fieldsToSave.visaNumber?.trim()) travelInfoUpdates.visaNumber = fieldsToSave.visaNumber.trim();
-      if (fieldsToSave.arrivalFlightNumber?.trim()) travelInfoUpdates.arrivalFlightNumber = fieldsToSave.arrivalFlightNumber;
-      if (fieldsToSave.arrivalArrivalDate?.trim()) travelInfoUpdates.arrivalArrivalDate = fieldsToSave.arrivalArrivalDate;
-      if (fieldsToSave.departureFlightNumber?.trim()) travelInfoUpdates.departureFlightNumber = fieldsToSave.departureFlightNumber;
-      if (fieldsToSave.departureDepartureDate?.trim()) travelInfoUpdates.departureDepartureDate = fieldsToSave.departureDepartureDate;
-      if (fieldsToSave.isTransitPassenger !== undefined) travelInfoUpdates.isTransitPassenger = fieldsToSave.isTransitPassenger;
+      if (fieldsToSave.boardingCountry?.trim()) {
+travelInfoUpdates.boardingCountry = fieldsToSave.boardingCountry;
+}
+      if (fieldsToSave.visaNumber?.trim()) {
+travelInfoUpdates.visaNumber = fieldsToSave.visaNumber.trim();
+}
+      if (fieldsToSave.arrivalFlightNumber?.trim()) {
+travelInfoUpdates.arrivalFlightNumber = fieldsToSave.arrivalFlightNumber;
+}
+      if (fieldsToSave.arrivalArrivalDate?.trim()) {
+travelInfoUpdates.arrivalArrivalDate = fieldsToSave.arrivalArrivalDate;
+}
+      if (fieldsToSave.departureFlightNumber?.trim()) {
+travelInfoUpdates.departureFlightNumber = fieldsToSave.departureFlightNumber;
+}
+      if (fieldsToSave.departureDepartureDate?.trim()) {
+travelInfoUpdates.departureDepartureDate = fieldsToSave.departureDepartureDate;
+}
+      if (fieldsToSave.isTransitPassenger !== undefined) {
+travelInfoUpdates.isTransitPassenger = fieldsToSave.isTransitPassenger;
+}
 
       // Handle accommodation type (with custom option) - only if not transit
       if (!fieldsToSave.isTransitPassenger) {
         const finalAccommodationType = fieldsToSave.accommodationType === 'OTHER' && fieldsToSave.customAccommodationType?.trim()
           ? fieldsToSave.customAccommodationType.trim()
           : fieldsToSave.accommodationType;
-        if (finalAccommodationType?.trim()) travelInfoUpdates.accommodationType = finalAccommodationType;
+        if (finalAccommodationType?.trim()) {
+travelInfoUpdates.accommodationType = finalAccommodationType;
+}
 
-        if (fieldsToSave.province?.trim()) travelInfoUpdates.province = fieldsToSave.province;
-        if (fieldsToSave.district?.trim()) travelInfoUpdates.district = fieldsToSave.district;
-        if (fieldsToSave.subDistrict?.trim()) travelInfoUpdates.subDistrict = fieldsToSave.subDistrict;
-        if (fieldsToSave.postalCode?.trim()) travelInfoUpdates.postalCode = fieldsToSave.postalCode;
-        if (fieldsToSave.hotelAddress?.trim()) travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
+        if (fieldsToSave.province?.trim()) {
+travelInfoUpdates.province = fieldsToSave.province;
+}
+        if (fieldsToSave.district?.trim()) {
+travelInfoUpdates.district = fieldsToSave.district;
+}
+        if (fieldsToSave.subDistrict?.trim()) {
+travelInfoUpdates.subDistrict = fieldsToSave.subDistrict;
+}
+        if (fieldsToSave.postalCode?.trim()) {
+travelInfoUpdates.postalCode = fieldsToSave.postalCode;
+}
+        if (fieldsToSave.hotelAddress?.trim()) {
+travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
+}
       }
 
       if (Object.keys(travelInfoUpdates).length > 0) {

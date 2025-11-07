@@ -65,7 +65,9 @@ describe('InputWithUserTracking', () => {
     }
 
     filterSuggestions() {
-      if (!this.props.suggestions) return [];
+      if (!this.props.suggestions) {
+return [];
+}
       
       return this.props.suggestions.filter(suggestion =>
         suggestion.toLowerCase().includes((this.props.value || '').toLowerCase())

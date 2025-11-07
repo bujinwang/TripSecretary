@@ -43,7 +43,9 @@ const malaysiaDistricts = [
 ];
 
 export function getDistrictsByState(stateCode) {
-  if (!stateCode) return [];
+  if (!stateCode) {
+return [];
+}
   return malaysiaDistricts.filter(d => d.stateCode === stateCode).map(d => ({
     ...d,
     name: d.nameEn,

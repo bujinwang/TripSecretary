@@ -158,7 +158,13 @@ const FundsSection = ({
             key={btn.type}
             variant="secondary"
             size="md"
-            onPress={() => addFund(btn.type)}
+            onPress={() => {
+              if (addFund && typeof addFund === 'function') {
+                addFund(btn.type);
+              } else {
+                console.error('[FundsSection] addFund is not a function:', addFund);
+              }
+            }}
             flex={1}
             minWidth="45%"
           >

@@ -1,0 +1,61 @@
+const fs = require('fs');
+const path = require('path');
+
+// Read the HomeScreen.js file
+const homeScreenPath = path.join(__dirname, 'app/screens/HomeScreen.js');
+const homeScreenContent = fs.readFileSync(homeScreenPath, 'utf8');
+
+// Check current import statements for countriesService
+console.log('=== CURRENT IMPORTS ===');
+const importMatch = homeScreenContent.match(/import.*from.*countriesService/);
+if (importMatch) {
+  console.log('Found countriesService import:', importMatch[0]);
+} else {
+  console.log('No countriesService import found');
+}
+
+// Check getCountryName usage
+console.log('\n=== GETCOUNTRYNAME USAGE ===');
+const getCountryNameMatches = homeScreenContent.match(/getCountryName\([^)]+\)/g);
+if (getCountryNameMatches) {
+  console.log('Found getCountryName usage:', getCountryNameMatches);
+} else {
+  console.log('No getCountryName usage found');
+}
+
+// Check for localizedHotCountries definition
+console.log('\n=== LOCALIZED HOT COUNTRIES ===');
+const localizedMatch = homeScreenContent.match(/localizedHotCountries[\s\S]*?\[.*?localizedHotCountries\]/);
+if (localizedMatch) {
+  console.log('Found localizedHotCountries definition');
+} else {
+  console.log('No localizedHotCountries found');
+}
+
+// Check for CountryCard rendering
+console.log('\n=== COUNTRYCARD RENDERING ===');
+const countryCardMatch = homeScreenContent.match(/CountryCard[\s\S]*?name=\{[^}]+\}/);
+if (countryCardMatch) {
+  console.log('Found CountryCard name prop');
+  const namePropMatch = countryCardMatch[0].match(/name=\{([^}]+)\}/);
+  if (namePropMatch) {
+    console.log('Current name prop:', namePropMatch[1]);
+  }
+} else {
+  console.log('No CountryCard found');
+}
+
+// Check for handleCountrySelect function
+console.log('\n=== HANDLECOUNTRYSELECT FUNCTION ===');
+const handleCountrySelectMatch = homeScreenContent.match(/const handleCountrySelect[\s\S]*?const countryName[^;]+;/);
+if (handleCountrySelectMatch) {
+  console.log('Found handleCountrySelect function');
+  const countryNameMatch = handleCountrySelectMatch[0].match(/const countryName[^;]+;/);
+  if (countryNameMatch) {
+    console.log('Current countryName logic:', countryNameMatch[0]);
+  }
+} else {
+  console.log('No handleCountrySelect found');
+}
+
+console.log('\n=== ANALYSIS COMPLETE ===');

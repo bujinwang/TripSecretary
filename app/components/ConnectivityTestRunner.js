@@ -105,9 +105,8 @@ const ConnectivityTestRunner = () => {
       console.log(`📡 Testing axios → ${endpoint.name}`);
       for (const timeout of TEST_TIMEOUTS) {
         console.log(`⏱️  Axios ${endpoint.name} with ${timeout}ms timeout...`);
+        const start = Date.now();
         try {
-          const start = Date.now();
-
           const config = {
             method: endpoint.method,
             url: endpoint.url,
@@ -289,8 +288,12 @@ const ConnectivityTestRunner = () => {
   };
 
   const getStatusColor = (result) => {
-    if (result.success) return '#4CAF50'; // Green
-    if (result.error?.includes('Timeout') || result.error?.includes('AbortError')) return '#FF9800'; // Orange
+    if (result.success) {
+return '#4CAF50';
+} // Green
+    if (result.error?.includes('Timeout') || result.error?.includes('AbortError')) {
+return '#FF9800';
+} // Orange
     return '#F44336'; // Red
   };
 

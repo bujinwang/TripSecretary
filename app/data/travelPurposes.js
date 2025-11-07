@@ -110,7 +110,9 @@ export const TRAVEL_PURPOSES = {
 // Helper functions
 export const getTravelPurposeDisplayName = (code, locale = 'en') => {
   const purpose = TRAVEL_PURPOSES[code];
-  if (!purpose) return code;
+  if (!purpose) {
+return code;
+}
 
   return purpose[locale] || purpose.en || code;
 };
@@ -165,7 +167,9 @@ export const getThailandTravelPurposes = (locale = 'en') => {
 
 // Map legacy purpose values to new standardized codes
 export const normalizeTravelPurpose = (legacyPurpose) => {
-  if (!legacyPurpose) return 'TOURISM';
+  if (!legacyPurpose) {
+return 'TOURISM';
+}
 
   const normalized = legacyPurpose.toUpperCase().replace(/[\s\-_]/g, '');
 

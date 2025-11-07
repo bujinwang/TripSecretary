@@ -9,6 +9,7 @@ import { SAMPLE_THAILAND_ARRIVAL_CARD_PDF_BASE64 } from '../assets/samplePdfBase
 import { thailandProvinces } from '../data/thailandProvinces';
 import { hongkongDistricts, getAllDistricts } from '../data/hongkongLocations';
 import { calculateTotalFundsForCountry } from '../utils/currencyConverter';
+import PDFManagementService from '../services/PDFManagementService';
 
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
@@ -279,6 +280,40 @@ const EntryPackDisplay = ({
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoUri, setSelectedPhotoUri] = useState(null);
+  const tdacSubmission = entryPack?.tdacSubmission || null;
+  const tdacPdfCandidate = tdacSubmission?.pdfUrl || tdacSubmission?.pdfPath || null;
+  const [resolvedTdacPdfUri, setResolvedTdacPdfUri] = useState(tdacPdfCandidate || null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const resolvePdfPath = async () => {
+      if (!tdacPdfCandidate) {
+        if (isMounted) {
+          setResolvedTdacPdfUri(null);
+        }
+        return;
+      }
+
+      try {
+        const result = await PDFManagementService.resolvePDFUri(tdacPdfCandidate);
+        if (isMounted) {
+          setResolvedTdacPdfUri(result.uri || tdacPdfCandidate);
+        }
+      } catch (error) {
+        console.warn('EntryPackDisplay', 'Failed to resolve TDAC PDF path', error);
+        if (isMounted) {
+          setResolvedTdacPdfUri(tdacPdfCandidate);
+        }
+      }
+    };
+
+    resolvePdfPath();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tdacPdfCandidate]);
 
   const fallbackHotelText = config.fallbackHotelText;
 
@@ -294,9 +329,13 @@ const EntryPackDisplay = ({
   };
 
   const formatProvinceThaiEnglish = (value) => {
-    if (!value || typeof value !== 'string') return '';
+    if (!value || typeof value !== 'string') {
+return '';
+}
     const raw = value.trim();
-    if (!raw) return '';
+    if (!raw) {
+return '';
+}
 
     const normalizedCode = raw.toUpperCase();
     let province = thailandProvinces.find(p => p.code === normalizedCode);
@@ -308,16 +347,22 @@ const EntryPackDisplay = ({
       );
     }
 
-    if (!province) return '';
+    if (!province) {
+return '';
+}
     const thaiName = province.nameTh || province.name || raw;
     const englishName = province.name || raw;
     return `${thaiName} / ${englishName}`;
   };
 
   const formatDistrictHongKongBilingual = (value) => {
-    if (!value || typeof value !== 'string') return '';
+    if (!value || typeof value !== 'string') {
+return '';
+}
     const raw = value.trim();
-    if (!raw) return '';
+    if (!raw) {
+return '';
+}
 
     // Get all Hong Kong districts
     const allDistricts = getAllDistricts();
@@ -335,7 +380,9 @@ const EntryPackDisplay = ({
       );
     }
 
-    if (!district) return raw; // Return original if not found
+    if (!district) {
+return raw;
+} // Return original if not found
 
     // Format as: 繁體中文 / English
     return `${district.nameZh} / ${district.nameEn}`;
@@ -356,10 +403,14 @@ const EntryPackDisplay = ({
   }
 
   const formatBilingualDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) {
+return '';
+}
     try {
       const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return '';
+      if (Number.isNaN(date.getTime())) {
+return '';
+}
 
       const locale1 = config.dateLocales[0];
       const locale2 = config.dateLocales[1];
@@ -388,7 +439,9 @@ const EntryPackDisplay = ({
   };
 
   const formatBilingualCurrency = (amount, currencyOverride = null) => {
-    if (amount === null || amount === undefined) return '';
+    if (amount === null || amount === undefined) {
+return '';
+}
 
     const currency = currencyOverride || config.currency;
     const numericAmount = Number(amount);
@@ -402,7 +455,9 @@ const EntryPackDisplay = ({
   };
 
   const totalFunds = useMemo(() => {
-    if (!Array.isArray(funds)) return 0;
+    if (!Array.isArray(funds)) {
+return 0;
+}
     // Convert all fund amounts to the country's local currency before summing
     return calculateTotalFundsForCountry(funds, country);
   }, [funds, country]);
@@ -420,7 +475,9 @@ const EntryPackDisplay = ({
 
     for (const candidate of candidates) {
       const display = formatLocationBilingual(candidate);
-      if (display) return display;
+      if (display) {
+return display;
+}
     }
 
     return '';
@@ -575,7 +632,9 @@ const EntryPackDisplay = ({
     };
 
     const formatTextWithFallback = (value) => {
-      if (value === null || value === undefined) return config.notProvided;
+      if (value === null || value === undefined) {
+return config.notProvided;
+}
       if (typeof value === 'string') {
         const trimmed = value.trim();
         return trimmed.length > 0 ? trimmed : config.notProvided;
@@ -792,15 +851,13 @@ const EntryPackDisplay = ({
 
     return (
       <View style={styles.section}>
-        {entryPack.tdacSubmission && entryPack.tdacSubmission.arrCardNo ? (
+        {tdacSubmission && tdacSubmission.arrCardNo ? (
           <>
             {/* PDF Viewer Section */}
-            {(entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath) && (
+            {resolvedTdacPdfUri && (
               <View style={styles.pdfContainer}>
                 <PDFViewer
-                  source={{
-                    uri: entryPack.tdacSubmission.pdfUrl || entryPack.tdacSubmission.pdfPath
-                  }}
+                  source={{ uri: resolvedTdacPdfUri }}
                   style={styles.pdfViewer}
                   showPageIndicator={true}
                   onError={(error) => {

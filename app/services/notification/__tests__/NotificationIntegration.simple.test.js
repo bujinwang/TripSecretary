@@ -336,7 +336,9 @@ describe('NotificationIntegration - Core Logic', () => {
       ];
 
       const isValidPreferences = (prefs) => {
-        if (!prefs || typeof prefs !== 'object') return false;
+        if (!prefs || typeof prefs !== 'object') {
+return false;
+}
         
         try {
           return !!(
@@ -482,9 +484,15 @@ describe('NotificationIntegration - Core Logic', () => {
         step3_checkArrivalDate: () => !!entryInfo.arrivalDate,
         step4_scheduleNotifications: () => {
           const notifications = [];
-          if (preferences.types.submissionWindow) notifications.push('window');
-          if (preferences.types.urgentReminder) notifications.push('urgent');
-          if (preferences.types.deadline) notifications.push('deadline');
+          if (preferences.types.submissionWindow) {
+notifications.push('window');
+}
+          if (preferences.types.urgentReminder) {
+notifications.push('urgent');
+}
+          if (preferences.types.deadline) {
+notifications.push('deadline');
+}
           return notifications;
         }
       };

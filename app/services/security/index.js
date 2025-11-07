@@ -99,7 +99,9 @@ export const SecurityUtils = {
    * @returns {Object} - Sanitized data
    */
   sanitizeForLogging: (data) => {
-    if (!data) return data;
+    if (!data) {
+return data;
+}
 
     const sensitiveFields = [
       'passportNumber', 'fullName', 'dateOfBirth', 'phoneNumber',

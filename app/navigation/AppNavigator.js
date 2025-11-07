@@ -107,6 +107,7 @@ import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.j
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 import HongKongEntryGuideScreen from '../screens/entryGuide/HongKongEntryGuideScreen';
 import VietnamEntryGuideScreen from '../screens/entryGuide/VietnamEntryGuideScreen';
+import JapanEntryGuideScreen from '../screens/entryGuide/JapanEntryGuideScreen';
 import KoreaEntryPackPreviewScreen from '../screens/korea/KoreaEntryPackPreviewScreen';
 
 import { colors } from '../theme';
@@ -609,6 +610,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="JapanEntryFlow"
           component={JapanEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanEntryGuide"
+          component={JapanEntryGuideScreen}
           options={{
             headerShown: false,
           }}

@@ -106,7 +106,9 @@ describe('ImmigrationOfficerViewScreen Bilingual Display', () => {
 
     testCases.forEach(({ input, expected }) => {
       const formatEntryCardNumber = (cardNumber) => {
-        if (!cardNumber) return 'XXXX-XXXX-XXXX';
+        if (!cardNumber) {
+return 'XXXX-XXXX-XXXX';
+}
         
         const cleanNumber = cardNumber.replace(/[^0-9A-Z]/g, '');
         
@@ -127,7 +129,9 @@ describe('ImmigrationOfficerViewScreen Bilingual Display', () => {
 
   it('should format dates correctly for Thai Buddhist calendar', () => {
     const formatDateForDisplay = (dateString, language = 'thai') => {
-      if (!dateString) return 'N/A';
+      if (!dateString) {
+return 'N/A';
+}
       
       try {
         const date = new Date(dateString);

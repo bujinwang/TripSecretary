@@ -26,21 +26,42 @@ export const japanTravelInfoConfig = {
 
   hero: {
     type: 'rich',
-    title: '日本入境信息中心',
-    subtitle: '填写一次，随时查看与更新',
+    titleKey: 'jp.travelInfo.hero.title',
+    defaultTitle: '日本入境信息中心',
+    title: 'Japan Entry Information Center',
+    subtitleKey: 'jp.travelInfo.hero.subtitle',
+    defaultSubtitle: '填写一次，随时查看与更新',
+    subtitle: 'Fill out once, view and update anytime',
     gradient: {
       colors: ['#DC2626', '#7C2D12'],
       start: { x: 0, y: 0 },
       end: { x: 1, y: 1 },
     },
     valuePropositions: [
-      { icon: '🛂', text: '护照信息一次备份' },
-      { icon: '✈️', text: '航班住宿集中管理' },
-      { icon: '🔒', text: '离线可用，自动保存' },
+      { 
+        icon: '🛂', 
+        textKey: 'jp.travelInfo.hero.valuePropositions.0',
+        defaultText: '护照信息一次备份',
+        text: 'Passport information one-time backup'
+      },
+      { 
+        icon: '✈️', 
+        textKey: 'jp.travelInfo.hero.valuePropositions.1',
+        defaultText: '航班住宿集中管理',
+        text: 'Flight and accommodation centralized management'
+      },
+      { 
+        icon: '🔒', 
+        textKey: 'jp.travelInfo.hero.valuePropositions.2',
+        defaultText: '离线可用，自动保存',
+        text: 'Available offline, auto-save'
+      },
     ],
     beginnerTip: {
       icon: '💡',
-      text: '小贴士：提前准备好住宿和航班信息，入境时最快速。',
+      textKey: 'jp.travelInfo.hero.beginnerTip',
+      defaultText: '小贴士：提前准备好住宿和航班信息，入境时最快速。',
+      text: 'Tip: Prepare accommodation and flight information in advance for the fastest entry.',
     },
   },
 
@@ -49,7 +70,7 @@ export const japanTravelInfoConfig = {
       enabled: true,
       icon: '📘',
       sectionKey: 'passport',
-      titleKey: 'jp.travelInfo.sections.passport',
+      titleKey: 'jp.travelInfo.sections.passport.title',
       defaultTitle: '护照信息',
       fields: {
         surname: {
@@ -141,7 +162,7 @@ export const japanTravelInfoConfig = {
       enabled: true,
       icon: '👤',
       sectionKey: 'personal',
-      titleKey: 'jp.travelInfo.sections.personal',
+      titleKey: 'jp.travelInfo.sections.personal.title',
       defaultTitle: '个人资料',
       fields: {
         occupation: {
@@ -210,7 +231,7 @@ export const japanTravelInfoConfig = {
       enabled: true,
       icon: '💰',
       sectionKey: 'funds',
-      titleKey: 'jp.travelInfo.sections.funds',
+      titleKey: 'jp.travelInfo.sections.funds.title',
       defaultTitle: '资金证明',
       minRequired: 1,
       maxAllowed: 6,
@@ -226,7 +247,7 @@ export const japanTravelInfoConfig = {
       enabled: true,
       icon: '✈️',
       sectionKey: 'travel',
-      titleKey: 'jp.travelInfo.sections.travel',
+      titleKey: 'jp.travelInfo.sections.travel.title',
       defaultTitle: '旅行信息',
       fields: {
         travelPurpose: {

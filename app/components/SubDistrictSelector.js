@@ -28,7 +28,9 @@ const SubDistrictSelector = ({
   const isChinese = language?.startsWith('zh');
 
   const subDistricts = useMemo(() => {
-    if (!districtId) return [];
+    if (!districtId) {
+return [];
+}
     if (!getSubDistrictsFunc) {
       console.error('❌ SubDistrictSelector: getSubDistrictsFunc prop is required but was not provided');
       return [];
@@ -37,7 +39,9 @@ const SubDistrictSelector = ({
   }, [districtId, getSubDistrictsFunc]);
 
   const getDisplayLabel = (subDistrict) => {
-    if (!subDistrict) return '';
+    if (!subDistrict) {
+return '';
+}
     const fallback = subDistrict.nameTh || subDistrict.nameZh || '';
     const secondary = isChinese
       ? subDistrict.nameZh || fallback
@@ -65,15 +69,25 @@ const SubDistrictSelector = ({
 
   // Custom display value function
   const getDisplayValue = (val) => {
-    if (!val) return value || '';
-    if (!Array.isArray(subDistricts) || subDistricts.length === 0) return value || '';
+    if (!val) {
+return value || '';
+}
+    if (!Array.isArray(subDistricts) || subDistricts.length === 0) {
+return value || '';
+}
 
     const normalizedValue = normalize(value);
 
     const matched = subDistricts.find((subDistrict) => {
-      if (!subDistrict) return false;
-      if (selectedSubDistrictId && subDistrict.id === selectedSubDistrictId) return true;
-      if (val && subDistrict.id === val) return true;
+      if (!subDistrict) {
+return false;
+}
+      if (selectedSubDistrictId && subDistrict.id === selectedSubDistrictId) {
+return true;
+}
+      if (val && subDistrict.id === val) {
+return true;
+}
       const nameEn = normalize(subDistrict.nameEn);
       const nameTh = normalize(subDistrict.nameTh);
       const nameZh = normalize(subDistrict.nameZh);
@@ -83,13 +97,17 @@ const SubDistrictSelector = ({
       );
     });
 
-    if (!matched) return value || '';
+    if (!matched) {
+return value || '';
+}
     return getDisplayLabel(matched);
   };
 
   // Wrap onSelect to handle the callback signature
   const handleValueChange = (subDistrictId) => {
-    if (!onSelect) return;
+    if (!onSelect) {
+return;
+}
 
     // Find the full sub-district data from options
     const option = options.find(opt => opt.value === subDistrictId);
@@ -100,7 +118,9 @@ const SubDistrictSelector = ({
 
   // Custom filter for bilingual search (including postal codes)
   const filterOptions = (opts, search) => {
-    if (!search) return opts;
+    if (!search) {
+return opts;
+}
     const lowerSearch = search.toLowerCase();
     return opts.filter(opt => {
       const label = opt.label || '';
@@ -110,7 +130,9 @@ const SubDistrictSelector = ({
 
   // Determine current value for BaseSearchableSelector
   const selectorValue = useMemo(() => {
-    if (selectedSubDistrictId) return selectedSubDistrictId;
+    if (selectedSubDistrictId) {
+return selectedSubDistrictId;
+}
 
     // Try to match value to a sub-district ID
     const normalizedValue = normalize(value);

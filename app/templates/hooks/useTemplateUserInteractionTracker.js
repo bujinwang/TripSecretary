@@ -101,7 +101,9 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
    * Save interaction state to AsyncStorage
    */
   const saveInteractionState = useCallback(async (state) => {
-    if (!config.tracking?.trackFieldModifications) return;
+    if (!config.tracking?.trackFieldModifications) {
+return;
+}
 
     try {
       const stateToSave = {
@@ -119,7 +121,9 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
    * Mark a field as user-modified
    */
   const markFieldAsModified = useCallback((fieldName, value) => {
-    if (!config.tracking?.trackFieldModifications) return;
+    if (!config.tracking?.trackFieldModifications) {
+return;
+}
 
     setInteractionState(prevState => {
       const existingState = prevState[fieldName] || {};
@@ -143,7 +147,9 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
    * Check if a field has been user-modified
    */
   const isFieldUserModified = useCallback((fieldName) => {
-    if (!config.tracking?.trackFieldModifications) return true; // If tracking disabled, treat all as modified
+    if (!config.tracking?.trackFieldModifications) {
+return true;
+} // If tracking disabled, treat all as modified
     return interactionState[fieldName]?.isUserModified || false;
   }, [interactionState, config.tracking?.trackFieldModifications]);
 
@@ -162,7 +168,9 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
    * Mark a field as pre-filled (not user-modified)
    */
   const markFieldAsPreFilled = useCallback((fieldName, value) => {
-    if (!config.tracking?.trackFieldModifications) return;
+    if (!config.tracking?.trackFieldModifications) {
+return;
+}
 
     setInteractionState(prevState => {
       // Don't overwrite if already user-modified
@@ -188,7 +196,9 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
    * Reset interaction state for a specific field
    */
   const resetFieldInteraction = useCallback((fieldName) => {
-    if (!config.tracking?.trackFieldModifications) return;
+    if (!config.tracking?.trackFieldModifications) {
+return;
+}
 
     setInteractionState(prevState => {
       const newState = { ...prevState };

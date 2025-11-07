@@ -12,7 +12,9 @@ describe('ThailandTravelInfoScreen - Scanning Utilities', () => {
   describe('Date Formatting', () => {
     // Test formatDateForInput function
     const formatDateForInput = (dateString) => {
-      if (!dateString) return null;
+      if (!dateString) {
+return null;
+}
       
       try {
         // Try different date formats that might come from OCR
@@ -89,7 +91,9 @@ describe('ThailandTravelInfoScreen - Scanning Utilities', () => {
   describe('City to Country Mapping', () => {
     // Test mapCityToCountryCode function
     const mapCityToCountryCode = (cityName) => {
-      if (!cityName) return null;
+      if (!cityName) {
+return null;
+}
       
       const cityToCountry = {
         // Major Chinese cities
@@ -160,7 +164,9 @@ describe('ThailandTravelInfoScreen - Scanning Utilities', () => {
   describe('Province Extraction', () => {
     // Test extractProvinceFromAddress function
     const extractProvinceFromAddress = (address) => {
-      if (!address) return null;
+      if (!address) {
+return null;
+}
       
       const thaiProvinces = [
         'Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya', 'Krabi', 'Koh Samui',

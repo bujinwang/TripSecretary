@@ -300,6 +300,82 @@
     }
   },
   "th": {
+    "info": {
+      "headerTitle": "泰国入境信息",
+      "title": "泰国入境指南",
+      "subtitle": "中国护照持有者免签60天",
+      "sections": {
+        "visa": {
+          "title": "✓ 好消息！免签政策延长",
+          "items": [
+            "自2024年3月1日起中泰互免签证，7月15日起延长至60天 - 说走就走！",
+            "• 无需提前申请签证",
+            "• 单次停留最长60天，可在泰国境内申请一次30天延期",
+            "• 适用于旅游、探亲、短期商务等非工作目的",
+            "• 新要求：必须提交TDAC数字入境卡（可在抵达前72小时内提交）"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ 入境须知",
+          "items": [
+            "• TDAC提交时间：可在抵达前72小时内提交，但必须在抵达前完成",
+            "• 需要QR码：入境时必须出示TDAC QR码，找不到PDF会很麻烦",
+            "• 准确性要求高：护照、航班、住宿信息任何错误都可能影响入境",
+            "• 移民检查严格：文件不完整或回答不清楚可能触发二次检查",
+            "• Cloudflare验证：提交过程中可能遇到验证码挑战"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ 入境通帮您轻松搞定",
+          "items": [
+            "• 零焦虑：自动跟踪行程，在最佳时机提醒您",
+            "• 零失误：智能填写TDAC，信息准确无误",
+            "• 零操心：一次输入，我们管理整个流程",
+            "• QR码管理：自动保存TDAC QR码PDF，入境时快速显示"
+          ]
+        }
+      },
+      "continueButton": "我了解，继续确认要求"
+    },
+    "requirements": {
+      "headerTitle": "泰国入境检查清单",
+      "introTitle": "以下是入境所需准备事项",
+      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "items": {
+        "validPassport": {
+          "title": "有效护照",
+          "description": "护照有效期至少6个月",
+          "details": "您的护照必须在入境日期后至少还有6个月的有效期。"
+        },
+        "onwardTicket": {
+          "title": "返程或续程机票",
+          "description": "已确认的离境机票预订",
+          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开泰国。"
+        },
+        "accommodation": {
+          "title": "住宿证明",
+          "description": "酒店预订或本地联系人信息",
+          "details": "提供酒店预订确认或泰国朋友/亲戚的详细联系信息，包括地址和电话号码。"
+        },
+        "funds": {
+          "title": "充足资金",
+          "description": "现金、信用卡或银行流水",
+          "details": "建议携带足够现金或出示信用卡/银行对账单，证明有足够资金支付停留期间的费用。"
+        },
+        "healthCheck": {
+          "title": "健康要求",
+          "description": "检查当前健康规定",
+          "details": "确认入境所需的任何健康要求或文件。在抵达前完成所有必需的健康申报。"
+        }
+      },
+      "status": {
+        "info": {
+          "title": "随时开始填写",
+          "subtitle": "我们支持递进式的完成清单"
+        }
+      },
+      "startButton": "开始填写"
+    },
     "entryFlow": {
       "title": "泰国入境准备状态",
       "preparationTitle": "泰国入境准备状态",
@@ -328,7 +404,147 @@
       },
       "categoriesTitle": "信息类别"
     },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "OTHER": "其他"
+    },
     "travelInfo": {
+      "hero": {
+        "title": "泰国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过泰国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
+      "sections": {
+        "passport": {
+          "title": "护照信息",
+          "subtitle": "请填写护照相关信息"
+        },
+        "personal": {
+          "title": "个人信息",
+          "subtitle": "请填写个人信息"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "请提供资金证明",
+          "introText": "资金证明有助于顺利通关",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明。请至少添加一项资金证明。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
+        },
+        "travel": {
+          "title": "旅行信息",
+          "subtitle": "请填写旅行相关信息"
+        }
+      },
+      "sectionTitles": {
+        "passport": "护照信息",
+        "passportSubtitle": "请输入您的护照详情",
+        "personal": "个人信息",
+        "personalSubtitle": "联系方式和职业详情",
+        "travel": "旅行信息",
+        "travelSubtitle": "航班和住宿详情",
+        "funds": "资金证明",
+        "fundsSubtitle": "停留期间的资金证明"
+      },
+      "sectionIntros": {
+        "passport": "请确保所有详情与您的护照完全一致",
+        "personal": "用于入境目的的联系信息",
+        "travel": "移民局需要了解您的旅行计划",
+        "funds": "移民局希望确保您不会成为负担。只需证明您有足够的资金来支付您的费用。"
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码",
+        "occupation": {
+          "label": "职业",
+          "help": "选择或输入您的职业"
+        },
+        "cityOfResidence": {
+          "label": "居住城市",
+          "label.china": "居住省份",
+          "help": "您当前居住的城市",
+          "help.china": "中国地址请填写所在省份（请使用英文，例如 Anhui）",
+          "placeholder": "例如 Anhui, Shanghai",
+          "placeholder.china": "例如 Anhui, Guangdong"
+        },
+        "countryOfResidence": {
+          "label": "居住国家",
+          "help": "您当前居住的国家"
+        },
+        "residentCountry": {
+          "label": "居住国家",
+          "help": "您当前居住的国家"
+        },
+        "phoneCode": {
+          "label": "电话区号",
+          "help": "电话区号"
+        },
+        "phoneNumber": {
+          "label": "电话号码",
+          "help": "您的联系电话"
+        },
+        "email": {
+          "label": "电子邮箱",
+          "help": "您的电子邮箱地址"
+        },
+        "travelPurpose": "旅行目的",
+        "recentStayCountry": "最近30天访问国家",
+        "boardingCountry": "登机国家",
+        "arrivalFlightNumber": "抵达航班号",
+        "arrivalDate": "抵达日期",
+        "flightTicketPhoto": "抵达航班票照片",
+        "departureFlightNumber": "离境航班号",
+        "departureDate": "离境日期",
+        "departureFlightTicketPhoto": "离境航班票照片",
+        "isTransitPassenger": "是否过境旅客",
+        "accommodationType": "住宿类型",
+        "province": "省份",
+        "district": "区/郡",
+        "subDistrict": "街道/区",
+        "postalCode": "邮政编码",
+        "hotelAddress": "住宿地址",
+        "hotelReservationPhoto": "酒店预订照片"
+      },
+      "submitButton": "保存并继续",
       "scan": {
         "ticketTitle": "扫描机票",
         "ticketMessage": "请选择机票图片来源",
@@ -343,6 +559,36 @@
         "scanFailedMessage": "文档扫描失败，请重试",
         "processing": "正在处理...",
         "processingMessage": "正在识别文档内容，请稍候"
+      },
+      "lastEdited": "最近编辑",
+      "uploadSuccess": "上传成功",
+      "uploadError": "上传失败",
+      "uploadErrorMessage": "保存失败，请重试",
+      "flightTicketUploaded": "航班票照片已上传",
+      "hotelReservationUploaded": "酒店预订照片已上传",
+      "departureFlightTicketUploaded": "离境航班票照片已上传",
+      "fieldHelp": {
+        "recentStayCountry": "选择您最近30天访问过的国家",
+        "boardingCountry": "选择您登机前往泰国的国家"
+      },
+      "funds": {
+        "addCash": "添加现金",
+        "addCreditCard": "添加信用卡照片",
+        "addBankBalance": "添加银行余额",
+        "empty": "尚未添加资金证明。请至少添加一项资金证明。"
+      }
+    },
+    "locations": {
+      "province": "省份",
+      "district": "区/郡",
+      "subDistrict": "街道/区"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "保存并继续"
       }
     }
   },
@@ -684,7 +930,7 @@
             "• 办理需准备护照、行程、财力证明等，建议至少预留1周时间。"
           ]
         },
-        "important": {
+        "onsite": {
           "title": "⚠️ 入境须知",
           "items": [
             "• 表格必须用黑色或蓝色笔填写。",
@@ -762,20 +1008,32 @@
       },
       "continue": "继续",
       "hero": {
-        "title": "日本入境准备指南",
-        "subtitle": "3分钟完成免签入境，安心出行！",
-        "valuePropositions": [
-          "3分钟完成",
-          "90天免签",
-          "离线友好，安全存储"
-        ],
-        "beginnerTip": "日本为中国护照持有者提供90天免签入境。我们帮您准备所有入境材料。"
+        "title": "日本入境信息中心",
+        "subtitle": "填写一次，随时查看与更新",
+        "valuePropositions": {
+          "0": "护照信息一次备份",
+          "1": "航班住宿集中管理",
+          "2": "离线可用，自动保存"
+        },
+        "beginnerTip": "小贴士：提前准备好住宿和航班信息，入境时最快速。"
       },
       "sections": {
-        "passport": "护照信息",
-        "personal": "个人信息",
-        "funds": "资金证明",
-        "travel": "旅行信息"
+        "passport": {
+          "title": "护照信息",
+          "subtitle": "请准确填写护照信息"
+        },
+        "personal": {
+          "title": "个人信息",
+          "subtitle": "联系与个人详情"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "旅行资金证明"
+        },
+        "travel": {
+          "title": "旅行信息",
+          "subtitle": "航班与住宿信息"
+        }
       },
       "fields": {
         "surname": "姓",
@@ -1313,6 +1571,24 @@
         "ready": "继续",
         "default": "继续"
       }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "OTHER": "其他"
     }
   },
   "sg": {
@@ -1442,18 +1718,18 @@
   "my": {
     "name": "马来西亚",
     "entryFlow": {
-      "title": "美国入境准备",
-      "submissionWindow": "美国入境没有固定提交窗口，但建议在出发前再次核对 EVUS、航班与住宿信息。",
+      "title": "马来西亚入境准备",
+      "submissionWindow": "MDAC必须在入境前3天内提交。请在倒计时结束前完成提交。",
       "progress": {
         "headline": {
-          "ready": "美国行程准备就绪！🇺🇸",
-          "almost": "进度很棒，再补充一点！",
-          "start": "开始整理美国入境资料吧"
+          "ready": "马来西亚准备就绪！🌴",
+          "almost": "几乎完成了！",
+          "start": "让我们开始吧！"
         },
         "subtitle": {
-          "ready": "护照、EVUS、资金与住宿资料齐全，可从容面对 CBP 问询。",
-          "almost": "还差 {{remaining}}%，补齐后就能安心入境。",
-          "start": "填写护照、行程与住宿信息，快速生成海关申报资料。"
+          "ready": "所有信息完整",
+          "almost": "继续填写您的信息以使旅程更顺利",
+          "start": "继续填写您的信息以使旅程更顺利"
         }
       },
       "status": {
@@ -1492,7 +1768,7 @@
       },
       "sections": {
         "passport": {
-          "title": "护照与EVUS信息",
+          "title": "护照信息",
           "subtitle": "请准确填写护照信息"
         },
         "personal": {
@@ -2372,6 +2648,25 @@
           "subtitle": "完成关键详情以避免入境延误。"
         }
       }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "FINANCE_PROFESSIONAL": "金融从业者",
+      "OTHER": "其他"
     }
   },
   "profile": {
@@ -2695,6 +2990,102 @@
     },
     "entryPack": {
       "openButton": "打开通关包 📋"
+    }
+  },
+  "thailand": {
+    "info": {
+      "headerTitle": "泰国入境信息",
+      "title": "泰国入境指南",
+      "subtitle": "中国护照持有者免签60天",
+      "sections": {
+        "visa": {
+          "title": "✓ 好消息！免签政策延长",
+          "items": [
+            "自2024年3月1日起中泰互免签证，7月15日起延长至60天 - 说走就走！",
+            "• 无需提前申请签证",
+            "• 单次停留最长60天，可在泰国境内申请一次30天延期",
+            "• 适用于旅游、探亲、短期商务等非工作目的",
+            "• 新要求：必须提交TDAC数字入境卡（可在抵达前72小时内提交）"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ 入境须知",
+          "items": [
+            "• TDAC提交时间：可在抵达前72小时内提交，但必须在抵达前完成",
+            "• 需要QR码：入境时必须出示TDAC QR码，找不到PDF会很麻烦",
+            "• 准确性要求高：护照、航班、住宿信息任何错误都可能影响入境",
+            "• 移民检查严格：文件不完整或回答不清楚可能触发二次检查",
+            "• Cloudflare验证：提交过程中可能遇到验证码挑战"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ 入境通帮您轻松搞定",
+          "items": [
+            "• 零焦虑：自动跟踪行程，在最佳时机提醒您",
+            "• 零失误：智能填写TDAC，信息准确无误",
+            "• 零操心：一次输入，我们管理整个流程",
+            "• QR码管理：自动保存TDAC QR码PDF，入境时快速显示"
+          ]
+        }
+      },
+      "continueButton": "我了解，继续确认要求"
+    },
+    "requirements": {
+      "headerTitle": "泰国入境检查清单",
+      "introTitle": "以下是入境所需准备事项",
+      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "items": {
+        "validPassport": {
+          "title": "有效护照",
+          "description": "护照有效期至少6个月",
+          "details": "您的护照必须在入境日期后至少还有6个月的有效期。"
+        },
+        "onwardTicket": {
+          "title": "返程或续程机票",
+          "description": "已确认的离境机票预订",
+          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开泰国。"
+        },
+        "accommodation": {
+          "title": "住宿证明",
+          "description": "酒店预订或本地联系人信息",
+          "details": "提供酒店预订确认或泰国朋友/亲戚的详细联系信息，包括地址和电话号码。"
+        },
+        "funds": {
+          "title": "充足资金",
+          "description": "现金、信用卡或银行流水",
+          "details": "建议携带足够现金或出示信用卡/银行对账单，证明有足够资金支付停留期间的费用。"
+        },
+        "healthCheck": {
+          "title": "健康要求",
+          "description": "检查当前健康规定",
+          "details": "确认入境所需的任何健康要求或文件。在抵达前完成所有必需的健康申报。"
+        }
+      },
+      "status": {
+        "info": {
+          "title": "随时开始填写",
+          "subtitle": "我们支持递进式的完成清单"
+        }
+      },
+      "startButton": "开始填写"
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "OTHER": "其他"
     }
   },
   "canada": {

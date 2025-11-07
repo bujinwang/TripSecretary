@@ -25,10 +25,18 @@ export function getLanguageFromPassport(nationality) {
  */
 export function getDestinationLanguage(destinationId, userNationality) {
   // For Hong Kong/Taiwan destinations, prefer Traditional Chinese
-  if (destinationId === 'hk') return 'zh-HK';
-  if (destinationId === 'tw') return 'zh-TW';
-  if (destinationId === 'jp') return 'ja';
-  if (destinationId === 'kr') return 'ko';
+  if (destinationId === 'hk') {
+return 'zh-HK';
+}
+  if (destinationId === 'tw') {
+return 'zh-TW';
+}
+  if (destinationId === 'jp') {
+return 'ja';
+}
+  if (destinationId === 'kr') {
+return 'ko';
+}
   
   // For other destinations, use user's nationality-based language
   return getLanguageFromPassport(userNationality);

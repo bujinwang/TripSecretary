@@ -86,7 +86,9 @@ export const hasValueChanged = (value1, value2) => {
 
   // Arrays - shallow comparison
   if (Array.isArray(value1) && Array.isArray(value2)) {
-    if (value1.length !== value2.length) return true;
+    if (value1.length !== value2.length) {
+return true;
+}
     return value1.some((item, index) => item !== value2[index]);
   }
 
@@ -94,7 +96,9 @@ export const hasValueChanged = (value1, value2) => {
   if (typeof value1 === 'object' && value1 !== null && value2 !== null) {
     const keys1 = Object.keys(value1);
     const keys2 = Object.keys(value2);
-    if (keys1.length !== keys2.length) return true;
+    if (keys1.length !== keys2.length) {
+return true;
+}
     return keys1.some(key => value1[key] !== value2[key]);
   }
 

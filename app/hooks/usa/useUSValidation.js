@@ -353,10 +353,18 @@ export const useUSValidation = ({
   const getProgressColor = useCallback(() => {
     const { percentage } = calculateCompletionMetrics();
 
-    if (percentage >= 100) return '#10b981'; // green-500
-    if (percentage >= 75) return '#3b82f6';  // blue-500
-    if (percentage >= 50) return '#f59e0b';  // amber-500
-    if (percentage >= 25) return '#f97316';  // orange-500
+    if (percentage >= 100) {
+return '#10b981';
+} // green-500
+    if (percentage >= 75) {
+return '#3b82f6';
+}  // blue-500
+    if (percentage >= 50) {
+return '#f59e0b';
+}  // amber-500
+    if (percentage >= 25) {
+return '#f97316';
+}  // orange-500
     return '#ef4444';                         // red-500
   }, [calculateCompletionMetrics]);
 

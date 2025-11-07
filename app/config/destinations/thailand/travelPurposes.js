@@ -147,7 +147,9 @@ const ALIAS_MAP = buildAliasMap();
  * // → 'HOLIDAY'
  */
 export const normalizeTravelPurpose = (input) => {
-  if (!input) return DEFAULT_TRAVEL_PURPOSE;
+  if (!input) {
+return DEFAULT_TRAVEL_PURPOSE;
+}
 
   const normalized = input.toString().toUpperCase().trim();
   return ALIAS_MAP.get(normalized) || DEFAULT_TRAVEL_PURPOSE;
@@ -172,12 +174,16 @@ export const normalizeTravelPurpose = (input) => {
 export const getTravelPurposeDisplay = (input, options = {}) => {
   const { format = 'combined' } = options;
 
-  if (!input) return '';
+  if (!input) {
+return '';
+}
 
   const key = normalizeTravelPurpose(input);
   const purposeInfo = TRAVEL_PURPOSES[key];
 
-  if (!purposeInfo) return input;
+  if (!purposeInfo) {
+return input;
+}
 
   switch (format) {
     case 'en':
@@ -275,7 +281,9 @@ export const validateTravelPurpose = (input) => {
  * @returns {string} Normalized purpose key
  */
 export const transformTravelPurpose = (purpose) => {
-  if (!purpose) return '';
+  if (!purpose) {
+return '';
+}
   return normalizeTravelPurpose(purpose);
 };
 

@@ -28,7 +28,9 @@ const DistrictSelector = ({
   const isChinese = language?.startsWith('zh');
 
   const districts = useMemo(() => {
-    if (!provinceCode) return [];
+    if (!provinceCode) {
+return [];
+}
     if (!getDistrictsFunc) {
       console.error('❌ DistrictSelector: getDistrictsFunc prop is required but was not provided');
       return [];
@@ -37,7 +39,9 @@ const DistrictSelector = ({
   }, [provinceCode, getDistrictsFunc]);
 
   const getDisplayLabel = (district) => {
-    if (!district) return '';
+    if (!district) {
+return '';
+}
     const fallback = district.nameTh || district.nameZh || '';
     const secondary = isChinese
       ? district.nameZh || fallback
@@ -65,15 +69,25 @@ const DistrictSelector = ({
 
   // Custom display value function
   const getDisplayValue = (val) => {
-    if (!val) return value || '';
-    if (!Array.isArray(districts) || districts.length === 0) return value || '';
+    if (!val) {
+return value || '';
+}
+    if (!Array.isArray(districts) || districts.length === 0) {
+return value || '';
+}
 
     const normalizedValue = normalize(value);
 
     const matched = districts.find((district) => {
-      if (!district) return false;
-      if (selectedDistrictId && district.id === selectedDistrictId) return true;
-      if (val && district.id === val) return true;
+      if (!district) {
+return false;
+}
+      if (selectedDistrictId && district.id === selectedDistrictId) {
+return true;
+}
+      if (val && district.id === val) {
+return true;
+}
       const nameEn = normalize(district.nameEn);
       const nameTh = normalize(district.nameTh);
       const nameZh = normalize(district.nameZh);
@@ -83,13 +97,17 @@ const DistrictSelector = ({
       );
     });
 
-    if (!matched) return value || '';
+    if (!matched) {
+return value || '';
+}
     return getDisplayLabel(matched);
   };
 
   // Wrap onSelect to handle the callback signature
   const handleValueChange = (districtId) => {
-    if (!onSelect) return;
+    if (!onSelect) {
+return;
+}
 
     // Find the full district data from options
     const option = options.find(opt => opt.value === districtId);
@@ -100,7 +118,9 @@ const DistrictSelector = ({
 
   // Custom filter for bilingual search
   const filterOptions = (opts, search) => {
-    if (!search) return opts;
+    if (!search) {
+return opts;
+}
     const lowerSearch = search.toLowerCase();
     return opts.filter(opt => {
       const label = opt.label || '';
@@ -110,7 +130,9 @@ const DistrictSelector = ({
 
   // Determine current value for BaseSearchableSelector
   const selectorValue = useMemo(() => {
-    if (selectedDistrictId) return selectedDistrictId;
+    if (selectedDistrictId) {
+return selectedDistrictId;
+}
 
     // Try to match value to a district ID
     const normalizedValue = normalize(value);

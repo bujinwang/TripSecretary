@@ -12,7 +12,7 @@ import { NationalitySelector } from '../../../components';
 import { CollapsibleSection, InputWithValidation } from '../../thailand/ThailandTravelComponents';
 import OptionSelector from '../../thailand/OptionSelector';
 import Input from '../../../components/Input';
-import { OCCUPATION_OPTIONS } from '../../../screens/hongkong/constants';
+import { getOccupationOptions } from '../../../screens/hongkong/constants';
 import { getPhoneCode } from '../../../data/phoneCodes';
 
 const PersonalInfoSection = ({
@@ -72,7 +72,7 @@ const PersonalInfoSection = ({
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>职业</Text>
         <OptionSelector
-          options={OCCUPATION_OPTIONS}
+          options={getOccupationOptions(t)}
           value={occupation}
           onSelect={(value) => {
             setOccupation(value);

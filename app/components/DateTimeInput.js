@@ -27,7 +27,9 @@ const DateTimeInput = ({
 
   // Parse date string YYYY-MM-DD
   const parseDate = (dateStr) => {
-    if (!dateStr) return { year: new Date().getFullYear(), month: 1, day: 1 };
+    if (!dateStr) {
+return { year: new Date().getFullYear(), month: 1, day: 1 };
+}
     const parts = dateStr.split('-');
     return {
       year: parseInt(parts[0]) || new Date().getFullYear(),
@@ -38,7 +40,9 @@ const DateTimeInput = ({
 
   // Parse time string HH:MM
   const parseTime = (timeStr) => {
-    if (!timeStr) return { hour: 0, minute: 0 };
+    if (!timeStr) {
+return { hour: 0, minute: 0 };
+}
     const parts = timeStr.split(':');
     return {
       hour: parseInt(parts[0]) || 0,
@@ -111,7 +115,9 @@ const DateTimeInput = ({
     console.log('label:', label);
     console.log('value:', value);
     console.log('mode:', mode);
-    if (!value) return mode === 'date' ? 'YYYY-MM-DD' : 'HH:MM';
+    if (!value) {
+return mode === 'date' ? 'YYYY-MM-DD' : 'HH:MM';
+}
     return value;
   };
 

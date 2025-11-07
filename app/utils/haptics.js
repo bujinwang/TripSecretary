@@ -73,7 +73,9 @@ class HapticsManager {
    * Use for: Button presses, tap interactions
    */
   async light() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -87,7 +89,9 @@ class HapticsManager {
    * Use for: Confirmations, successful actions
    */
   async medium() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -101,7 +105,9 @@ class HapticsManager {
    * Use for: Important actions, alerts
    */
   async heavy() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -115,7 +121,9 @@ class HapticsManager {
    * Use for: Submission success, validation complete
    */
   async success() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -129,7 +137,9 @@ class HapticsManager {
    * Use for: Incomplete forms, missing information
    */
   async warning() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -143,7 +153,9 @@ class HapticsManager {
    * Use for: Validation errors, submission failures
    */
   async error() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -157,7 +169,9 @@ class HapticsManager {
    * Use for: Stepper navigation, picker changes
    */
   async selection() {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     try {
       await Haptics.selectionAsync();
@@ -171,7 +185,9 @@ class HapticsManager {
    * @param {string} type - Haptic type from HapticType enum
    */
   async trigger(type) {
-    if (!this.isHapticsEnabled()) return;
+    if (!this.isHapticsEnabled()) {
+return;
+}
 
     switch (type) {
       case HapticType.LIGHT:

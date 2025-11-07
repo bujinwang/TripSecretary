@@ -306,7 +306,9 @@ const vietnamDistricts = [
  * @returns {Array} Array of district objects
  */
 export function getDistrictsByProvince(provinceCode) {
-  if (!provinceCode) return [];
+  if (!provinceCode) {
+return [];
+}
   return vietnamDistricts.filter((district) => district.provinceCode === provinceCode);
 }
 
@@ -317,7 +319,9 @@ export function getDistrictsByProvince(provinceCode) {
  */
 export function getProvinceDisplayName(provinceCode) {
   const province = vietnamProvinces.find((p) => p.code === provinceCode || p.id === provinceCode);
-  if (!province) return '';
+  if (!province) {
+return '';
+}
   return `${province.nameEn} - ${province.nameZh}`;
 }
 
@@ -328,7 +332,9 @@ export function getProvinceDisplayName(provinceCode) {
  */
 export function getDistrictDisplayName(districtId) {
   const district = vietnamDistricts.find((d) => d.id === districtId);
-  if (!district) return '';
+  if (!district) {
+return '';
+}
   return `${district.nameEn} - ${district.nameZh}`;
 }
 

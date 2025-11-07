@@ -172,7 +172,9 @@ const NotificationLogScreen = ({ navigation }) => {
   );
 
   const renderAnalyticsTab = () => {
-    if (!analytics) return null;
+    if (!analytics) {
+return null;
+}
 
     return (
       <ScrollView style={styles.tabContent}>

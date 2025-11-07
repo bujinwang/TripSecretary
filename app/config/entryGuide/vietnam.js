@@ -24,11 +24,12 @@ export const vietnamEntryGuide = {
   steps: [
     {
       id: 'emergency_contacts',
-      title: '紧急联系方式',
+      title: 'Emergency Contacts',
       titleZh: '紧急联系方式',
       description: '保存越南紧急联系电话，以备不时之需',
       descriptionZh: '保存越南紧急联系电话，以备不时之需',
       category: 'pre-arrival',
+      categoryZh: '实用信息',
       priority: 1,
       estimatedTime: '2分钟',
       icon: '🆘',
@@ -43,12 +44,12 @@ export const vietnamEntryGuide = {
         '移民局：+84-24-3824-7795',
         '机场服务：+84-24-3827-1515',
         '将这些号码保存到手机通讯录',
-        '遇到紧急情况立即拨打'
+        '遇到紧急情况立即拨打113'
       ]
     },
     {
       id: 'visa_application',
-      title: '电子签证申请',
+      title: 'E-Visa Application',
       titleZh: '电子签证申请',
       description: '申请越南电子签证或确认签证类型',
       descriptionZh: '申请越南电子签证或确认签证类型',
@@ -71,7 +72,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'arrival_card',
-      title: '纸质入境/出境卡',
+      title: 'Arrival/Departure Card',
       titleZh: '纸质入境卡填写',
       description: '飞机上或入境柜台领取的纸质入出境联合表格，建议提前准备',
       descriptionZh: '飞机上或入境柜台领取的纸质入出境联合表格，建议提前准备',
@@ -137,7 +138,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'health_declaration',
-      title: '健康申报',
+      title: 'Health Declaration',
       titleZh: '健康申报',
       description: '完成健康申报表，确认疫苗要求',
       descriptionZh: '完成健康申报表，确认疫苗要求',
@@ -159,7 +160,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'landing_setup',
-      title: '落地前准备',
+      title: 'Pre-Landing Preparation',
       titleZh: '落地前准备',
       description: '关闭蜂窝网络，准备越南dong兑换',
       descriptionZh: '关闭蜂窝网络，准备越南dong兑换',
@@ -180,7 +181,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'immigration_check',
-      title: '移民局检查',
+      title: 'Immigration Check',
       titleZh: '移民局检查',
       description: '出示护照和签证，完成入境检查',
       descriptionZh: '出示护照和签证，完成入境检查',
@@ -200,7 +201,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'baggage_claim',
-      title: '行李领取',
+      title: 'Baggage Claim',
       titleZh: '行李领取',
       description: '找到行李转盘，认领行李',
       descriptionZh: '找到行李转盘，认领行李',
@@ -217,7 +218,7 @@ export const vietnamEntryGuide = {
     },
     {
       id: 'customs_inspection',
-      title: '海关检查',
+      title: 'Customs Inspection',
       titleZh: '海关检查',
       description: '申报物品，通过海关检查',
       descriptionZh: '申报物品，通过海关检查',
@@ -385,7 +386,7 @@ export const vietnamEntryGuide = {
   },
 
   // 货币和ATM信息
-  currency: {
+  currencyInfo: {
     code: 'VND',
     name: '越南盾',
     denominations: [

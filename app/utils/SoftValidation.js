@@ -350,10 +350,18 @@ class SoftValidation {
    * @private
    */
   static _isEmpty(value) {
-    if (value === null || value === undefined) return true;
-    if (typeof value === 'string') return value.trim().length === 0;
-    if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === 'object') return Object.keys(value).length === 0;
+    if (value === null || value === undefined) {
+return true;
+}
+    if (typeof value === 'string') {
+return value.trim().length === 0;
+}
+    if (Array.isArray(value)) {
+return value.length === 0;
+}
+    if (typeof value === 'object') {
+return Object.keys(value).length === 0;
+}
     return false;
   }
 
@@ -364,7 +372,9 @@ class SoftValidation {
    */
   static getFieldRules(fieldName) {
     const fieldConfig = SoftValidation._findFieldConfig(fieldName);
-    if (!fieldConfig) return null;
+    if (!fieldConfig) {
+return null;
+}
 
     return {
       required: fieldConfig.type === 'required',
@@ -382,7 +392,9 @@ class SoftValidation {
    * @returns {string} Formatted message
    */
   static formatMessage(validationResult) {
-    if (!validationResult.message) return '';
+    if (!validationResult.message) {
+return '';
+}
 
     const prefix = validationResult.type === ValidationTypes.ERROR ? '❌' : 
                    validationResult.type === ValidationTypes.WARNING ? '⚠️' : '✅';

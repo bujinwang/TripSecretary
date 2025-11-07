@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { koreaComprehensiveTravelInfoConfig } from '../../config/destinations/korea/comprehensiveTravelInfoConfig';
 
@@ -20,6 +21,11 @@ const KoreaTravelInfoScreen = ({ navigation, route }) => {
       navigation={navigation}
     />
   );
+};
+
+KoreaTravelInfoScreen.propTypes = {
+  navigation: PropTypes.object.isRequired,
+  route: PropTypes.object.isRequired,
 };
 
 export default KoreaTravelInfoScreen;

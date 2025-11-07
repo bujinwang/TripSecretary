@@ -25,7 +25,9 @@ const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }
    * Safely get full name from passport data using centralized helper
    */
   const getFullName = () => {
-    if (!passportData) return 'N/A';
+    if (!passportData) {
+return 'N/A';
+}
 
     // If fullName is already provided, use it
     if (passportData.fullName) {

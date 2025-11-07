@@ -211,7 +211,7 @@ class InputSanitizer {
     }
 
     // Remove all non-numeric and non-dash characters
-    let sanitized = dateStr.replace(/[^0-9\-]/g, '');
+    const sanitized = dateStr.replace(/[^0-9\-]/g, '');
 
     // Ensure YYYY-MM-DD format
     const parts = sanitized.split('-');

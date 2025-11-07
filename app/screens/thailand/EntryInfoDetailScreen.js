@@ -112,7 +112,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
   );
 
   const handleResubmit = useCallback(async () => {
-    if (!entryInfo) return;
+    if (!entryInfo) {
+return;
+}
 
     Alert.alert(
       '重新提交入境卡',
@@ -146,7 +148,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
   }, [entryInfo, navigation]);
 
   const handleArchive = useCallback(async () => {
-    if (!entryInfo) return;
+    if (!entryInfo) {
+return;
+}
 
     Alert.alert(
       '归档入境信息',
@@ -349,7 +353,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
   }, []);
 
   const formatDateTime = useCallback((dateString) => {
-    if (!dateString) return '未知时间';
+    if (!dateString) {
+return '未知时间';
+}
     
     try {
       const date = new Date(dateString);
@@ -466,7 +472,9 @@ const EntryInfoDetailScreen = ({ route, navigation }) => {
           onPress: async () => {
             try {
               // Navigate back to DAC submission to regenerate PDF
-              if (!entryInfo) return;
+              if (!entryInfo) {
+return;
+}
               const cardType = entryInfo.digitalArrivalCard?.cardType || 'TDAC';
               navigation.navigate('TDACSelectionScreen', {
                 destinationId: entryInfo.destinationId,

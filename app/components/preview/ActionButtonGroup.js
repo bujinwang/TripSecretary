@@ -109,7 +109,9 @@ const ActionButtonGroup = ({
 
   // Primary button press handler with animation
   const handlePrimaryPress = () => {
-    if (primaryDisabled || primaryLoading) return;
+    if (primaryDisabled || primaryLoading) {
+return;
+}
 
     // Scale animation: 1.0 → 0.97 → 1.0
     primaryScale.value = withSequence(
@@ -131,7 +133,9 @@ const ActionButtonGroup = ({
 
   // Secondary button press handler with animation
   const handleSecondaryPress = () => {
-    if (secondaryDisabled) return;
+    if (secondaryDisabled) {
+return;
+}
 
     secondaryScale.value = withSequence(
       withTiming(0.97, { duration: ANIMATION_DURATION.FAST }),

@@ -30,7 +30,9 @@ const TDACSelectionScreen = ({ navigation, route }) => {
    * Masks passport numbers, emails, and phone numbers for security
    */
   const sanitizeForLogging = (data) => {
-    if (!data) return data;
+    if (!data) {
+return data;
+}
 
     const sanitized = { ...data };
     const sensitiveFields = ['passportNo', 'email', 'phoneNumber'];

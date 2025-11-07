@@ -105,7 +105,7 @@ class USFormHelper {
       : [...baseFields, 'accommodationAddress', 'accommodationPhone'];
 
     let filled = 0;
-    let total = fields.length + 1; // +1 for travel purpose requirement
+    const total = fields.length + 1; // +1 for travel purpose requirement
 
     if (travelInfo) {
       const normalizedPurpose = this.normalizeTravelPurpose(travelInfo.travelPurpose);
@@ -192,7 +192,9 @@ class USFormHelper {
    * @returns {string} - Formatted address
    */
   static formatUSAddress(address) {
-    if (!address) return '';
+    if (!address) {
+return '';
+}
 
     // Clean up the address
     const cleaned = address.trim();
@@ -534,13 +536,17 @@ class USFormHelper {
     const currencyValue = item.currency ? item.currency.toUpperCase() : '';
 
     const normalizeAmount = (value) => {
-      if (value === null || value === undefined || value === '') return '';
+      if (value === null || value === undefined || value === '') {
+return '';
+}
       if (typeof value === 'number' && Number.isFinite(value)) {
         return value.toLocaleString();
       }
       if (typeof value === 'string') {
         const trimmed = value.trim();
-        if (!trimmed) return '';
+        if (!trimmed) {
+return '';
+}
         const parsed = Number(trimmed.replace(/,/g, ''));
         return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
       }

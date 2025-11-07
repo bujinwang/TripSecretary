@@ -38,9 +38,15 @@ class PerformanceMonitor {
   }
 
   static getPerformanceStatus(duration) {
-    if (duration < PERFORMANCE_THRESHOLDS.EXCELLENT) return 'EXCELLENT';
-    if (duration < PERFORMANCE_THRESHOLDS.GOOD) return 'GOOD';
-    if (duration < PERFORMANCE_THRESHOLDS.ACCEPTABLE) return 'ACCEPTABLE';
+    if (duration < PERFORMANCE_THRESHOLDS.EXCELLENT) {
+return 'EXCELLENT';
+}
+    if (duration < PERFORMANCE_THRESHOLDS.GOOD) {
+return 'GOOD';
+}
+    if (duration < PERFORMANCE_THRESHOLDS.ACCEPTABLE) {
+return 'ACCEPTABLE';
+}
     return 'POOR';
   }
 
@@ -94,7 +100,7 @@ class TestDataGenerator {
 
 describe('EntryGuide Performance Tests', () => {
   // 存储所有服务实例用于并发测试
-  let services = {};
+  const services = {};
   let performanceResults = {};
 
   beforeAll(() => {
@@ -415,7 +421,9 @@ describe('EntryGuide Performance Tests', () => {
 
   // 辅助方法
   function analyzePerformanceGroup(results) {
-    if (!results || results.length === 0) return {};
+    if (!results || results.length === 0) {
+return {};
+}
 
     const durations = results.map(r => r.duration);
     const excellent = results.filter(r => r.status === 'EXCELLENT').length;

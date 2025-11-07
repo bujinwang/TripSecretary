@@ -44,8 +44,12 @@ export const InputWithValidation = ({
   const isLastEdited = fieldName && lastEditedField === fieldName;
 
   const getFieldRequirementText = () => {
-    if (required) return <Text style={styles.requiredText}>*</Text>;
-    if (optional) return <Text style={styles.optionalText}>（可选）</Text>;
+    if (required) {
+return <Text style={styles.requiredText}>*</Text>;
+}
+    if (optional) {
+return <Text style={styles.optionalText}>（可选）</Text>;
+}
     return null;
   };
 

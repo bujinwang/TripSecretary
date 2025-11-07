@@ -144,10 +144,18 @@ const EntryInfoHistoryScreen = ({ navigation }) => {
     const itemDate = new Date(date);
     const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return '今天';
-    if (diffDays === 1) return '昨天';
-    if (diffDays <= 7) return '本周';
-    if (diffDays <= 30) return '本月';
+    if (diffDays === 0) {
+return '今天';
+}
+    if (diffDays === 1) {
+return '昨天';
+}
+    if (diffDays <= 7) {
+return '本周';
+}
+    if (diffDays <= 30) {
+return '本月';
+}
     return '更早';
   };
 

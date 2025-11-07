@@ -48,10 +48,14 @@
 export const formatLocationCode = (value, options = {}) => {
   const { titleCase = true, separator = ' ' } = options;
 
-  if (!value) return '';
+  if (!value) {
+return '';
+}
 
   const raw = value.toString().trim();
-  if (!raw) return '';
+  if (!raw) {
+return '';
+}
 
   // Check if it's a location code (all uppercase with underscores)
   if (/^[A-Z_]+$/.test(raw)) {
@@ -99,7 +103,9 @@ export const formatLocationCode = (value, options = {}) => {
 export const formatLocationWithTranslations = (location, options = {}) => {
   const { format = 'full', separator = ' - ' } = options;
 
-  if (!location || !location.name) return '';
+  if (!location || !location.name) {
+return '';
+}
 
   const parts = [location.name];
 
@@ -211,13 +217,19 @@ export const formatAddress = (address, options = {}) => {
     includeCountry = false
   } = options;
 
-  if (!address || typeof address !== 'object') return '';
+  if (!address || typeof address !== 'object') {
+return '';
+}
 
   const parts = [];
 
   // Line 1 and 2
-  if (address.line1) parts.push(address.line1);
-  if (address.line2) parts.push(address.line2);
+  if (address.line1) {
+parts.push(address.line1);
+}
+  if (address.line2) {
+parts.push(address.line2);
+}
 
   // District
   if (address.district) {
@@ -231,15 +243,23 @@ export const formatAddress = (address, options = {}) => {
   if (countryCode === 'TH') {
     // Thailand: City, Province PostalCode
     const cityParts = [];
-    if (address.city) cityParts.push(formatLocationCode(address.city));
-    if (address.province) cityParts.push(formatLocationCode(address.province));
-    if (address.postalCode) cityParts.push(address.postalCode);
+    if (address.city) {
+cityParts.push(formatLocationCode(address.city));
+}
+    if (address.province) {
+cityParts.push(formatLocationCode(address.province));
+}
+    if (address.postalCode) {
+cityParts.push(address.postalCode);
+}
     if (cityParts.length > 0) {
       parts.push(cityParts.join(' '));
     }
   } else if (countryCode === 'US') {
     // USA: City, State ZIP
-    if (address.city) parts.push(address.city);
+    if (address.city) {
+parts.push(address.city);
+}
     if (address.province && address.postalCode) {
       parts.push(`${address.province} ${address.postalCode}`);
     } else if (address.province) {
@@ -249,9 +269,15 @@ export const formatAddress = (address, options = {}) => {
     }
   } else {
     // Generic: City Province PostalCode
-    if (address.city) parts.push(formatLocationCode(address.city));
-    if (address.province) parts.push(formatLocationCode(address.province));
-    if (address.postalCode) parts.push(address.postalCode);
+    if (address.city) {
+parts.push(formatLocationCode(address.city));
+}
+    if (address.province) {
+parts.push(formatLocationCode(address.province));
+}
+    if (address.postalCode) {
+parts.push(address.postalCode);
+}
   }
 
   // Country
@@ -279,7 +305,9 @@ export const formatAddress = (address, options = {}) => {
  * // → "NEW_YORK"
  */
 export const parseLocationCode = (displayName) => {
-  if (!displayName) return '';
+  if (!displayName) {
+return '';
+}
 
   return displayName
     .trim()

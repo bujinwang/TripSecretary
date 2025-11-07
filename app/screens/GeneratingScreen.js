@@ -103,14 +103,22 @@ const GeneratingScreen = ({ navigation, route }) => {
   };
 
   const getStepStatus = (stepId) => {
-    if (stepId < currentStep) return 'completed';
-    if (stepId === currentStep) return 'in_progress';
+    if (stepId < currentStep) {
+return 'completed';
+}
+    if (stepId === currentStep) {
+return 'in_progress';
+}
     return 'pending';
   };
 
   const renderStepIcon = (status) => {
-    if (status === 'completed') return '✅';
-    if (status === 'in_progress') return '🔄';
+    if (status === 'completed') {
+return '✅';
+}
+    if (status === 'in_progress') {
+return '🔄';
+}
     return '⏳';
   };
 

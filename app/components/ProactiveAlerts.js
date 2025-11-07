@@ -110,7 +110,9 @@ const ProactiveAlerts = ({
     // Submitted packs ready for travel
     if (activeEntryPacks.length > 0 && passportData) {
       const todayPacks = activeEntryPacks.filter(pack => {
-        if (!pack.arrivalDate) return false;
+        if (!pack.arrivalDate) {
+return false;
+}
         const arrivalDate = new Date(pack.arrivalDate);
         const today = new Date();
         return arrivalDate.toDateString() === today.toDateString();

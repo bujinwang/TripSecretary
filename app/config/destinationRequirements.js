@@ -255,7 +255,9 @@ export const getAvailableFeatures = (destinationId) => {
  */
 export const getEntryInstructions = (destinationId) => {
   const config = destinationRequirements[destinationId];
-  if (!config) return null;
+  if (!config) {
+return null;
+}
 
   return {
     method: config.entryMethod,

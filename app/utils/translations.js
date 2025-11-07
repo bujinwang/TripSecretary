@@ -353,7 +353,9 @@ export function translateField(fieldKey, destinationId, sourceLanguage = 'zh-CN'
   const langCode = getDestinationLanguage(destinationId);
   const translations = FIELD_TRANSLATIONS[fieldKey];
   
-  if (!translations) return fieldKey;
+  if (!translations) {
+return fieldKey;
+}
   
   return translations[langCode] || translations['en'] || translations['zh-CN'] || fieldKey;
 }

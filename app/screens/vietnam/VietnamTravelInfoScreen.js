@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { vietnamComprehensiveTravelInfoConfig } from '../../config/destinations/vietnam/comprehensiveTravelInfoConfig';
 
@@ -20,6 +21,11 @@ const VietnamTravelInfoScreen = ({ navigation, route }) => {
       navigation={navigation}
     />
   );
+};
+
+VietnamTravelInfoScreen.propTypes = {
+  navigation: PropTypes.object.isRequired,
+  route: PropTypes.object.isRequired,
 };
 
 export default VietnamTravelInfoScreen;

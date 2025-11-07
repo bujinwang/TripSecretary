@@ -197,7 +197,9 @@ export const useMalaysiaFormState = (passport, destination) => {
    * Populate form with existing data
    */
   const populateForm = useCallback((data) => {
-    if (!data) return;
+    if (!data) {
+return;
+}
 
     // Populate passport section
     if (data.passport) {

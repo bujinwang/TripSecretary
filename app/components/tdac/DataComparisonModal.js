@@ -13,7 +13,9 @@ import styles from '../../screens/thailand/TDACWebViewScreen.styles';
 
 const DataComparisonModal = ({ visible, onClose, comparisonData, onRefresh }) => {
   const handleExport = () => {
-    if (!comparisonData) return;
+    if (!comparisonData) {
+return;
+}
 
     const exportData = {
       comparison: comparisonData,

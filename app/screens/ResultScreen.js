@@ -276,9 +276,15 @@ const ResultScreen = ({ navigation, route }) => {
     const hotelAddress = travelInfo?.hotelAddress;
     const contactPhone = travelInfo?.contactPhone;
     
-    if (hotelName) parts.push(hotelName);
-    if (hotelAddress) parts.push(hotelAddress);
-    if (contactPhone) parts.push(contactPhone);
+    if (hotelName) {
+parts.push(hotelName);
+}
+    if (hotelAddress) {
+parts.push(hotelAddress);
+}
+    if (contactPhone) {
+parts.push(contactPhone);
+}
     
     return parts.join(' | ') || t('result.pending', { defaultValue: '待确认' });
   }, [travelInfo, t]);
@@ -344,7 +350,9 @@ const ResultScreen = ({ navigation, route }) => {
   );
 
   const generatePDF = async () => {
-    if (pdfUri) return pdfUri;
+    if (pdfUri) {
+return pdfUri;
+}
 
     try {
       setLoading(true);
@@ -480,7 +488,9 @@ const ResultScreen = ({ navigation, route }) => {
 
   const handleDownload = async () => {
     const uri = await generatePDF();
-    if (!uri) return;
+    if (!uri) {
+return;
+}
 
     try {
       const downloadPath = `${FileSystem.documentDirectory}${destination?.name || 'entry'}_form_${Date.now()}.pdf`;
@@ -553,7 +563,9 @@ const ResultScreen = ({ navigation, route }) => {
 
   const handlePrint = async () => {
     const uri = await generatePDF();
-    if (!uri) return;
+    if (!uri) {
+return;
+}
 
     try {
       await Print.printAsync({ uri });
@@ -776,7 +788,9 @@ const ResultScreen = ({ navigation, route }) => {
         </View>
         <View style={styles.japanManualSectionBody}>
           {rows.map((row, index) => {
-            if (!row) return null;
+            if (!row) {
+return null;
+}
             const isLastRow = index === rows.length - 1;
             const value = row.value ?? '—';
             const isMultiline =

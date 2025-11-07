@@ -159,7 +159,9 @@ export const hongkongSubDistricts = {};
  * @returns {Array} - Array of district objects with proper structure
  */
 export function getDistrictsByProvince(regionCode) {
-  if (!regionCode) return [];
+  if (!regionCode) {
+return [];
+}
   const normalizedRegion = regionCode.toUpperCase().replace(/\s+/g, '_');
   const districts = hongkongDistricts[normalizedRegion] || [];
 
@@ -191,7 +193,9 @@ export function getSubDistrictsByDistrictId(districtId) {
  */
 export function getRegionDisplayName(regionCode) {
   const region = hongkongRegions.find((r) => r.code === regionCode || r.id === regionCode);
-  if (!region) return '';
+  if (!region) {
+return '';
+}
   return `${region.nameEn} - ${region.nameZh}`;
 }
 

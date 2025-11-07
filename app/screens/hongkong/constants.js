@@ -41,27 +41,52 @@ export const GENDER_OPTIONS = [
 ];
 
 /**
- * Predefined occupation options for Hong Kong
- * Chinese labels with English values (submitted in uppercase)
+ * Predefined occupation values (for validation)
+ * Use this array to check if a value is a predefined option
  */
-export const OCCUPATION_OPTIONS = [
-  { value: 'SOFTWARE ENGINEER', label: '软件工程师', icon: '💻' },
-  { value: 'STUDENT', label: '学生', icon: '📚' },
-  { value: 'TEACHER', label: '教师', icon: '👨‍🏫' },
-  { value: 'DOCTOR', label: '医生', icon: '👨‍⚕️' },
-  { value: 'ACCOUNTANT', label: '会计师', icon: '📊' },
-  { value: 'SALES MANAGER', label: '销售经理', icon: '📈' },
-  { value: 'RETIRED', label: '退休人员', icon: '🏖️' },
-  { value: 'ENGINEER', label: '工程师', icon: '⚙️' },
-  { value: 'CIVIL SERVANT', label: '公务员', icon: '🏛️' },
-  { value: 'LAWYER', label: '律师', icon: '⚖️' },
-  { value: 'NURSE', label: '护士', icon: '👩‍⚕️' },
-  { value: 'FREELANCER', label: '自由职业者', icon: '🎨' },
-  { value: 'BUSINESS OWNER', label: '企业主', icon: '💼' },
-  { value: 'HOMEMAKER', label: '家庭主妇', icon: '🏠' },
-  { value: 'DESIGNER', label: '设计师', icon: '✏️' },
-  { value: 'FINANCE PROFESSIONAL', label: '金融从业者', icon: '💰' },
-  { value: 'OTHER', label: '其他', icon: '📝' },
+export const OCCUPATION_VALUES = [
+  'SOFTWARE ENGINEER',
+  'STUDENT',
+  'TEACHER',
+  'DOCTOR',
+  'ACCOUNTANT',
+  'SALES MANAGER',
+  'RETIRED',
+  'ENGINEER',
+  'CIVIL SERVANT',
+  'LAWYER',
+  'NURSE',
+  'FREELANCER',
+  'BUSINESS OWNER',
+  'HOMEMAKER',
+  'DESIGNER',
+  'FINANCE PROFESSIONAL',
+  'OTHER',
+];
+
+/**
+ * Get occupation options with internationalized labels
+ * @param {Function} t - Translation function from i18n
+ * @returns {Array} Occupation options with translated labels
+ */
+export const getOccupationOptions = (t) => [
+  { value: 'SOFTWARE ENGINEER', label: t('hk.occupations.SOFTWARE_ENGINEER'), icon: '💻' },
+  { value: 'STUDENT', label: t('hk.occupations.STUDENT'), icon: '📚' },
+  { value: 'TEACHER', label: t('hk.occupations.TEACHER'), icon: '👨‍🏫' },
+  { value: 'DOCTOR', label: t('hk.occupations.DOCTOR'), icon: '👨‍⚕️' },
+  { value: 'ACCOUNTANT', label: t('hk.occupations.ACCOUNTANT'), icon: '📊' },
+  { value: 'SALES MANAGER', label: t('hk.occupations.SALES_MANAGER'), icon: '📈' },
+  { value: 'RETIRED', label: t('hk.occupations.RETIRED'), icon: '🏖️' },
+  { value: 'ENGINEER', label: t('hk.occupations.ENGINEER'), icon: '⚙️' },
+  { value: 'CIVIL SERVANT', label: t('hk.occupations.CIVIL_SERVANT'), icon: '🏛️' },
+  { value: 'LAWYER', label: t('hk.occupations.LAWYER'), icon: '⚖️' },
+  { value: 'NURSE', label: t('hk.occupations.NURSE'), icon: '👩‍⚕️' },
+  { value: 'FREELANCER', label: t('hk.occupations.FREELANCER'), icon: '🎨' },
+  { value: 'BUSINESS OWNER', label: t('hk.occupations.BUSINESS_OWNER'), icon: '💼' },
+  { value: 'HOMEMAKER', label: t('hk.occupations.HOMEMAKER'), icon: '🏠' },
+  { value: 'DESIGNER', label: t('hk.occupations.DESIGNER'), icon: '✏️' },
+  { value: 'FINANCE PROFESSIONAL', label: t('hk.occupations.FINANCE_PROFESSIONAL'), icon: '💰' },
+  { value: 'OTHER', label: t('hk.occupations.OTHER'), icon: '📝' },
 ];
 
 /**
@@ -156,7 +181,7 @@ export default {
   PREDEFINED_TRAVEL_PURPOSES,
   PREDEFINED_ACCOMMODATION_TYPES,
   GENDER_OPTIONS,
-  OCCUPATION_OPTIONS,
+  getOccupationOptions,
   STORAGE_KEYS,
   SECTIONS,
   FIELD_NAMES,

@@ -29,7 +29,7 @@ const Button = ({
   ];
 
   const textStyles = [
-    styles.text,
+    styles.buttonText,
     styles[`${variant}Text`],
     disabled && styles.disabledText,
     textStyle,
@@ -48,7 +48,7 @@ const Button = ({
         />
       ) : (
         <View style={styles.content}>
-          {icon != null && icon !== false && (
+          {icon !== null && icon !== false && (
             <View style={styles.icon}>
               {React.isValidElement(icon) ? (
                 icon
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     ...shadows.button,
   },
-  text: {
+  textVariant: {
     backgroundColor: 'transparent',
   },
   
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   
   // Text styles
-  text: {
+  buttonText: {
     ...typography.button,
   },
   primaryText: {

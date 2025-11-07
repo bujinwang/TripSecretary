@@ -293,7 +293,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
       // Test that components are properly memoized to prevent unnecessary re-renders
       const renderCount = { count: 0 };
       
-      const TestComponent = React.memo(() => {
+      const TestComponent = React.memo(function TestComponent() {
         renderCount.count++;
         return null;
       });
@@ -352,7 +352,9 @@ describe('Progressive Entry Flow Performance Tests', () => {
       for (const op of operations) {
         const id = PerformanceMonitor.startTiming(op.name);
         // Simulate work
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => {
+          setTimeout(() => resolve(), 10);
+        });
         PerformanceMonitor.endTiming(id);
       }
       

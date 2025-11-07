@@ -14,7 +14,7 @@ import UserDataService from '../../services/data/UserDataService';
 import { parsePassportName } from '../../utils/NameParser';
 import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
-import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_OPTIONS } from '../../screens/hongkong/constants';
+import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_VALUES } from '../../screens/hongkong/constants';
 import FieldStateManager from '../../utils/FieldStateManager';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 
@@ -206,43 +206,97 @@ export const useHongKongDataPersistence = ({
     // Migrate passport data
     if (userData.passport) {
       const passport = userData.passport;
-      if (passport.passportNumber) existingDataToMigrate.passportNo = passport.passportNumber;
-      if (passport.fullName) existingDataToMigrate.fullName = passport.fullName;
-      if (passport.nationality) existingDataToMigrate.nationality = passport.nationality;
-      if (passport.dateOfBirth) existingDataToMigrate.dob = passport.dateOfBirth;
-      if (passport.expiryDate) existingDataToMigrate.expiryDate = passport.expiryDate;
-      if (passport.gender) existingDataToMigrate.sex = passport.gender;
+      if (passport.passportNumber) {
+existingDataToMigrate.passportNo = passport.passportNumber;
+}
+      if (passport.fullName) {
+existingDataToMigrate.fullName = passport.fullName;
+}
+      if (passport.nationality) {
+existingDataToMigrate.nationality = passport.nationality;
+}
+      if (passport.dateOfBirth) {
+existingDataToMigrate.dob = passport.dateOfBirth;
+}
+      if (passport.expiryDate) {
+existingDataToMigrate.expiryDate = passport.expiryDate;
+}
+      if (passport.gender) {
+existingDataToMigrate.sex = passport.gender;
+}
     }
 
     // Migrate personal info data
     if (userData.personalInfo) {
       const personalInfo = userData.personalInfo;
-      if (personalInfo.phoneCode) existingDataToMigrate.phoneCode = personalInfo.phoneCode;
-      if (personalInfo.phoneNumber) existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
-      if (personalInfo.email) existingDataToMigrate.email = personalInfo.email;
-      if (personalInfo.occupation) existingDataToMigrate.occupation = personalInfo.occupation;
-      if (personalInfo.provinceCity) existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
-      if (personalInfo.countryRegion) existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+      if (personalInfo.phoneCode) {
+existingDataToMigrate.phoneCode = personalInfo.phoneCode;
+}
+      if (personalInfo.phoneNumber) {
+existingDataToMigrate.phoneNumber = personalInfo.phoneNumber;
+}
+      if (personalInfo.email) {
+existingDataToMigrate.email = personalInfo.email;
+}
+      if (personalInfo.occupation) {
+existingDataToMigrate.occupation = personalInfo.occupation;
+}
+      if (personalInfo.provinceCity) {
+existingDataToMigrate.cityOfResidence = personalInfo.provinceCity;
+}
+      if (personalInfo.countryRegion) {
+existingDataToMigrate.residentCountry = personalInfo.countryRegion;
+}
     }
 
     // Migrate travel info data
     if (userData.travelInfo) {
       const travelInfo = userData.travelInfo;
-      if (travelInfo.travelPurpose) existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
-      if (travelInfo.boardingCountry) existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
-      if (travelInfo.accommodationType) existingDataToMigrate.accommodationType = travelInfo.accommodationType;
-      if (travelInfo.recentStayCountry) existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
-      if (travelInfo.arrivalFlightNumber) existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
-      if (travelInfo.arrivalArrivalDate) existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
-      if (travelInfo.departureFlightNumber) existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
-      if (travelInfo.departureDepartureDate) existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
-      if (travelInfo.province) existingDataToMigrate.province = travelInfo.province;
-      if (travelInfo.district) existingDataToMigrate.district = travelInfo.district;
-      if (travelInfo.subDistrict) existingDataToMigrate.subDistrict = travelInfo.subDistrict;
-      if (travelInfo.postalCode) existingDataToMigrate.postalCode = travelInfo.postalCode;
-      if (travelInfo.hotelAddress) existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
-      if (travelInfo.visaNumber) existingDataToMigrate.visaNumber = travelInfo.visaNumber;
-      if (travelInfo.isTransitPassenger !== undefined) existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
+      if (travelInfo.travelPurpose) {
+existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
+}
+      if (travelInfo.boardingCountry) {
+existingDataToMigrate.boardingCountry = travelInfo.boardingCountry;
+}
+      if (travelInfo.accommodationType) {
+existingDataToMigrate.accommodationType = travelInfo.accommodationType;
+}
+      if (travelInfo.recentStayCountry) {
+existingDataToMigrate.recentStayCountry = travelInfo.recentStayCountry;
+}
+      if (travelInfo.arrivalFlightNumber) {
+existingDataToMigrate.arrivalFlightNumber = travelInfo.arrivalFlightNumber;
+}
+      if (travelInfo.arrivalArrivalDate) {
+existingDataToMigrate.arrivalArrivalDate = travelInfo.arrivalArrivalDate;
+}
+      if (travelInfo.departureFlightNumber) {
+existingDataToMigrate.departureFlightNumber = travelInfo.departureFlightNumber;
+}
+      if (travelInfo.departureDepartureDate) {
+existingDataToMigrate.departureDepartureDate = travelInfo.departureDepartureDate;
+}
+      if (travelInfo.province) {
+existingDataToMigrate.province = travelInfo.province;
+}
+      if (travelInfo.district) {
+existingDataToMigrate.district = travelInfo.district;
+}
+      if (travelInfo.subDistrict) {
+existingDataToMigrate.subDistrict = travelInfo.subDistrict;
+}
+      if (travelInfo.postalCode) {
+existingDataToMigrate.postalCode = travelInfo.postalCode;
+}
+      if (travelInfo.hotelAddress) {
+existingDataToMigrate.hotelAddress = travelInfo.hotelAddress;
+}
+      if (travelInfo.visaNumber) {
+existingDataToMigrate.visaNumber = travelInfo.visaNumber;
+}
+      if (travelInfo.isTransitPassenger !== undefined) {
+existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
+}
     }
 
     console.log('Data to migrate:', existingDataToMigrate);
@@ -372,7 +426,7 @@ export const useHongKongDataPersistence = ({
       if (personalInfo) {
         // Handle occupation
         const savedOccupation = personalInfo.occupation || '';
-        const isPredefined = OCCUPATION_OPTIONS.some(opt => opt.value === savedOccupation);
+        const isPredefined = OCCUPATION_VALUES.includes(savedOccupation);
         if (isPredefined) {
           state.setOccupation(savedOccupation);
           state.setCustomOccupation('');

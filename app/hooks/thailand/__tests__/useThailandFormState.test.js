@@ -10,8 +10,12 @@ import { useThailandFormState } from '../useThailandFormState';
 // Mock phone code utility
 jest.mock('../../../data/phoneCodes', () => ({
   getPhoneCode: jest.fn((nationality) => {
-    if (nationality === 'CHN') return '+86';
-    if (nationality === 'USA') return '+1';
+    if (nationality === 'CHN') {
+return '+86';
+}
+    if (nationality === 'USA') {
+return '+1';
+}
     return '+00';
   }),
 }));

@@ -101,7 +101,9 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDat
 
   // Handle district selection
   const handleDistrictSelect = useCallback(async (selection) => {
-    if (!selection) return;
+    if (!selection) {
+return;
+}
 
     const newDistrict = selection.nameEn;
     formState.setDistrict(newDistrict);
@@ -126,15 +128,21 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDat
     // Save immediately with explicit values (React state updates are async!)
     if (saveDataToSecureStorage) {
       const overrides = { district: newDistrict };
-      if (shouldClearSubDistrict) overrides.subDistrict = '';
-      if (shouldClearPostalCode) overrides.postalCode = '';
+      if (shouldClearSubDistrict) {
+overrides.subDistrict = '';
+}
+      if (shouldClearPostalCode) {
+overrides.postalCode = '';
+}
       await saveDataToSecureStorage(overrides);
     }
   }, [handleFieldBlur, formState, saveDataToSecureStorage]);
 
   // Handle subdistrict selection
   const handleSubDistrictSelect = useCallback(async (selection) => {
-    if (!selection) return;
+    if (!selection) {
+return;
+}
 
     const newSubDistrict = selection.nameEn;
     const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';

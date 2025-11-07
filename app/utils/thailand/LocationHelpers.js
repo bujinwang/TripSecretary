@@ -57,7 +57,9 @@ export const findDistrictOption = (provinceCode, targetValue) => {
 
   return (
     districts.find((district) => {
-      if (!district) return false;
+      if (!district) {
+return false;
+}
 
       const nameEn = normalizeLocationValue(district.nameEn);
       const nameTh = normalizeLocationValue(district.nameTh);
@@ -98,7 +100,9 @@ export const findSubDistrictOption = (districtId, targetValue) => {
 
   return (
     subDistricts.find((subDistrict) => {
-      if (!subDistrict) return false;
+      if (!subDistrict) {
+return false;
+}
 
       const nameEn = normalizeLocationValue(subDistrict.nameEn);
       const nameTh = normalizeLocationValue(subDistrict.nameTh);
@@ -121,7 +125,9 @@ export const findSubDistrictOption = (districtId, targetValue) => {
  * // Returns: "邦拉"
  */
 export const getLocalizedDistrictName = (district, locale = 'en') => {
-  if (!district) return '';
+  if (!district) {
+return '';
+}
 
   const localeMap = {
     en: district.nameEn,
@@ -144,7 +150,9 @@ export const getLocalizedDistrictName = (district, locale = 'en') => {
  * // Returns: "是隆"
  */
 export const getLocalizedSubDistrictName = (subDistrict, locale = 'en') => {
-  if (!subDistrict) return '';
+  if (!subDistrict) {
+return '';
+}
 
   const localeMap = {
     en: subDistrict.nameEn,

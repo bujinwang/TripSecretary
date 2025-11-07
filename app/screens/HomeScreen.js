@@ -132,9 +132,13 @@ const HomeScreen = ({ navigation }) => {
 
   // Get passport name for greeting (use surname with honorific)
   const getSurnameWithHonorific = () => {
-    if (!passportData?.getSurname) return '';
+    if (!passportData?.getSurname) {
+return '';
+}
     const surname = passportData.getSurname();
-    if (!surname) return '';
+    if (!surname) {
+return '';
+}
     
     // Add honorific based on language
     if (language === 'zh') {
@@ -155,6 +159,19 @@ const HomeScreen = ({ navigation }) => {
   const welcomeMessage = t('home.welcomeText');
   const pendingSectionTitle = t('home.sections.pending');
   const exploreSectionTitle = t('home.sections.whereToGo');
+
+  // Debug: Log when inProgressDestinations changes
+  useEffect(() => {
+    console.log('[HomeScreen] inProgressDestinations state changed:', {
+      length: inProgressDestinations.length,
+      destinations: inProgressDestinations.map(d => ({
+        id: d.entryInfoId,
+        destinationId: d.destinationId,
+        destinationName: d.destinationName,
+        completionPercent: d.completionPercent
+      }))
+    });
+  }, [inProgressDestinations]);
 
   // 加载护照、历史记录和多目的地数据
   useEffect(() => {
@@ -225,27 +242,79 @@ const HomeScreen = ({ navigation }) => {
 
     try {
       const userId = 'user_001'; // TODO: Get from auth context
+      console.log('[HomeScreen] Starting to load multi-destination data for user:', userId);
+      
+      // Invalidate entryInfo cache to ensure fresh data
+      const CacheManager = require('../services/data/cache/CacheManager').default;
+      CacheManager.invalidate('entryInfo', userId);
+      console.log('[HomeScreen] Invalidated entryInfo cache');
+      
       await UserDataService.initialize(userId);
+      console.log('[HomeScreen] UserDataService initialized');
       
       // Load home screen data with multi-destination support
+      console.log('[HomeScreen] Calling EntryInfoService.getHomeScreenData...');
       const homeScreenData = await EntryInfoService.getHomeScreenData(userId);
+      console.log('[HomeScreen] getHomeScreenData completed');
       
-      console.log('Multi-destination data loaded:', {
+      console.log('[HomeScreen] Multi-destination data loaded:', {
         submittedPacks: homeScreenData.submittedEntryPacks.length,
         inProgressDestinations: homeScreenData.inProgressDestinations.length,
-        overallCompletion: homeScreenData.summary.overallCompletionPercent
+        overallCompletion: homeScreenData.summary.overallCompletionPercent,
+        totalRecords: homeScreenData.submittedEntryPacks.length + homeScreenData.inProgressDestinations.length,
+        submittedPackDetails: homeScreenData.submittedEntryPacks.map(pack => ({
+          id: pack.id,
+          destinationId: pack.destinationId,
+          destinationName: pack.destinationName,
+          status: pack.status
+        })),
+        inProgressDetails: homeScreenData.inProgressDestinations.map(dest => ({
+          id: dest.entryInfoId,
+          destinationId: dest.destinationId,
+          destinationName: dest.destinationName,
+          completionPercent: dest.completionPercent
+        }))
       });
+      
+      // Log warning if we expected 9 records but got fewer
+      const totalRecords = homeScreenData.submittedEntryPacks.length + homeScreenData.inProgressDestinations.length;
+      if (totalRecords < 9) {
+        console.warn(`[HomeScreen] ⚠️ Expected 9 entry_info records but only found ${totalRecords}`, {
+          submitted: homeScreenData.submittedEntryPacks.length,
+          inProgress: homeScreenData.inProgressDestinations.length,
+          submittedDestinations: homeScreenData.submittedEntryPacks.map(p => p.destinationId),
+          inProgressDestinations: homeScreenData.inProgressDestinations.map(d => d.destinationId)
+        });
+      }
       
       // Filter out archived entry packs from active display
       const activeSubmittedPacks = homeScreenData.submittedEntryPacks.filter(pack => 
         pack.status !== 'archived' && pack.status !== 'expired'
       );
       
+      console.log('[HomeScreen] Setting state with:', {
+        activeSubmittedPacks: activeSubmittedPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length
+      });
+      
+      // Validate data structure
+      if (!Array.isArray(homeScreenData.inProgressDestinations)) {
+        console.error('[HomeScreen] ERROR: inProgressDestinations is not an array:', typeof homeScreenData.inProgressDestinations);
+        console.error('[HomeScreen] homeScreenData:', homeScreenData);
+      } else {
+        console.log('[HomeScreen] Validated inProgressDestinations array:', {
+          length: homeScreenData.inProgressDestinations.length,
+          firstItem: homeScreenData.inProgressDestinations[0]
+        });
+      }
+      
       // Set active entry packs (submitted ones, excluding archived)
       setActiveEntryPacks(activeSubmittedPacks);
       
       // Set in-progress destinations
+      console.log('[HomeScreen] About to set inProgressDestinations state:', homeScreenData.inProgressDestinations);
       setInProgressDestinations(homeScreenData.inProgressDestinations);
+      console.log('[HomeScreen] State set - inProgressDestinations should now be:', homeScreenData.inProgressDestinations.length, 'items');
       
       // Set overall multi-destination data
       setMultiDestinationData({
@@ -260,7 +329,12 @@ const HomeScreen = ({ navigation }) => {
       });
       
     } catch (error) {
-      console.log('Failed to load multi-destination data:', error.message);
+      console.error('[HomeScreen] Failed to load multi-destination data:', error);
+      console.error('[HomeScreen] Error message:', error.message);
+      console.error('[HomeScreen] Error stack:', error.stack);
+      if (error.cause) {
+        console.error('[HomeScreen] Error cause:', error.cause);
+      }
       PerformanceMonitor.endTiming(operationId, { error: error.message });
       setActiveEntryPacks([]);
       setInProgressDestinations([]);
@@ -404,10 +478,22 @@ const HomeScreen = ({ navigation }) => {
   };
 
 
-  const getDestinationName = (destinationId) => {
-    return getCountryName(destinationId, language) || t(`home.destinationNames.${destinationId}`, {
-      defaultValue: destinationId
-    });
+  const getDestinationName = (destinationId, fallbackName) => {
+    if (!destinationId) {
+      return fallbackName || t('home.common.unknown', { defaultValue: '未知目的地' });
+    }
+
+    const localized = getCountryName(destinationId, language);
+    if (localized && localized !== destinationId) {
+      return localized;
+    }
+
+    return (
+      fallbackName ||
+      t(`home.destinationNames.${destinationId}`, {
+        defaultValue: destinationId,
+      })
+    );
   };
 
   const getDestinationFlag = (destinationId) => {
@@ -429,7 +515,9 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const getArrivalCountdown = (arrivalDate) => {
-    if (!arrivalDate) return '';
+    if (!arrivalDate) {
+return '';
+}
 
     try {
       const arrival = new Date(arrivalDate);
@@ -460,7 +548,9 @@ const HomeScreen = ({ navigation }) => {
 
   // Get submission countdown - recommends submitting 3-7 days before arrival
   const getSubmissionCountdown = (arrivalDate) => {
-    if (!arrivalDate) return null;
+    if (!arrivalDate) {
+return null;
+}
 
     try {
       const arrival = new Date(arrivalDate);
@@ -516,7 +606,7 @@ const HomeScreen = ({ navigation }) => {
 
     return activeEntryPacks.map((pack) => {
       const flag = getDestinationFlag(pack.destinationId);
-      const destinationName = pack.destinationName || getDestinationName(pack.destinationId);
+      const destinationName = getDestinationName(pack.destinationId, pack.destinationName);
 
       // Get arrival date from entry info
       const arrivalCountdown = getArrivalCountdown(pack.arrivalDate);
@@ -610,92 +700,125 @@ const HomeScreen = ({ navigation }) => {
   }, [activeEntryPacks, t, navigation, passportData]);
 
   const renderInProgressDestinationCards = useCallback(() => {
+    console.log('[HomeScreen] renderInProgressDestinationCards called:', {
+      inProgressDestinationsLength: inProgressDestinations.length,
+      destinations: inProgressDestinations
+    });
+    
     if (!inProgressDestinations.length) {
+      console.log('[HomeScreen] No in-progress destinations, returning null');
       return null;
     }
 
-    return inProgressDestinations.map((destination) => {
-      const flag = getDestinationFlag(destination.destinationId);
-      const destinationName = destination.destinationName || getDestinationName(destination.destinationId);
+    console.log('[HomeScreen] Rendering', inProgressDestinations.length, 'in-progress destination cards');
+    const cards = inProgressDestinations.map((destination, index) => {
+      try {
+        const flag = getDestinationFlag(destination.destinationId);
+        const destinationName = getDestinationName(
+          destination.destinationId,
+          destination.destinationName
+        );
+        console.log('[HomeScreen] Rendering card', index, 'for:', { 
+          destinationId: destination.destinationId, 
+          destinationName, 
+          flag,
+          entryInfoId: destination.entryInfoId,
+          completionPercent: destination.completionPercent
+        });
 
-      // Get submission countdown if arrival date is set
-      const submissionCountdown = getSubmissionCountdown(destination.arrivalDate);
+        // Get submission countdown if arrival date is set
+        const submissionCountdown = getSubmissionCountdown(destination.arrivalDate);
 
-      return (
-        <Card
-          key={destination.destinationId}
-          style={[styles.historyCard, styles.inProgressCard]}
-          pressable
-          onPress={() => {
-            // Use centralized navigation helper for travel info screen
-            navigateToCountry(
-              navigation,
-              destination.destinationId,
-              'travelInfo', // Navigate to travel info screen
-              {
-                destination: {
-                  id: destination.destinationId,
-                  name: destinationName,
-                  flag: flag
-                },
-                passport: passportData ? {
-                  type: t('home.passport.type'),
-                  name: passportData.fullName || '',
-                  nameEn: passportData.fullName || '',
-                  passportNo: passportData.passportNumber || '',
-                  expiry: passportData.expiryDate || '',
-                } : null
-              }
-            );
-          }}
-        >
-          <View style={styles.entryPackItem}>
-            <View style={styles.inProgressLeft}>
-              <Text style={styles.entryPackFlag}>{flag}</Text>
-              <View style={styles.progressIndicator}>
-                <Text style={styles.progressPercent}>{destination.completionPercent}%</Text>
-              </View>
-            </View>
-            <View style={styles.entryPackInfo}>
-              <Text style={styles.entryPackTitle}>
-                {t('progressiveEntryFlow.inProgress.title', {
-                  destination: destinationName,
-                  defaultValue: `${destinationName}`
-                })}
-              </Text>
-              <Text style={styles.inProgressStatus}>
-                {destination.isReady
-                  ? t('progressiveEntryFlow.inProgress.ready', { defaultValue: '准备提交' })
-                  : t('progressiveEntryFlow.inProgress.incomplete', { defaultValue: '填写中' })
+        // Use entryInfoId as key to ensure unique rendering for each entry info
+        // If entryInfoId is not available, fall back to a combination of destinationId and index
+        const uniqueKey = destination.entryInfoId || `${destination.destinationId}-${destination.completionPercent}`;
+
+        return (
+          <Card
+            key={uniqueKey}
+            style={[styles.historyCard, styles.inProgressCard]}
+            pressable
+            onPress={() => {
+              // Use centralized navigation helper for travel info screen
+              // Pass entryInfoId if available for loading existing data
+              navigateToCountry(
+                navigation,
+                destination.destinationId,
+                'travelInfo', // Navigate to travel info screen
+                {
+                  destination: {
+                    id: destination.destinationId,
+                    name: destinationName,
+                    flag: flag
+                  },
+                  passport: passportData ? {
+                    type: t('home.passport.type'),
+                    name: passportData.fullName || '',
+                    nameEn: passportData.fullName || '',
+                    passportNo: passportData.passportNumber || '',
+                    expiry: passportData.expiryDate || '',
+                  } : null,
+                  entryInfoId: destination.entryInfoId // Pass entry info ID for loading existing data
                 }
-              </Text>
-              <View style={styles.entryPackDetailsRow}>
-                <Text style={styles.entryPackDetail}>
-                  {t('progressiveEntryFlow.inProgress.completionPercent', {
-                    percent: destination.completionPercent,
-                    defaultValue: `${destination.completionPercent}% 完成`
+              );
+            }}
+          >
+            <View style={styles.entryPackItem}>
+              <View style={styles.inProgressLeft}>
+                <Text style={styles.entryPackFlag}>{flag}</Text>
+                <View style={styles.progressIndicator}>
+                  <Text style={styles.progressPercent}>{destination.completionPercent}%</Text>
+                </View>
+              </View>
+              <View style={styles.entryPackInfo}>
+                <Text style={styles.entryPackTitle}>
+                  {t('progressiveEntryFlow.inProgress.title', {
+                    destination: destinationName,
+                    defaultValue: `${destinationName}`
                   })}
                 </Text>
-                {destination.flightNumber && (
+                <Text style={styles.inProgressStatus}>
+                  {destination.isReady
+                    ? t('progressiveEntryFlow.inProgress.ready', { defaultValue: '准备提交' })
+                    : t('progressiveEntryFlow.inProgress.incomplete', { defaultValue: '填写中' })
+                  }
+                </Text>
+                <View style={styles.entryPackDetailsRow}>
                   <Text style={styles.entryPackDetail}>
-                    🎫 {destination.flightNumber}
+                    {t('progressiveEntryFlow.inProgress.completionPercent', {
+                      percent: destination.completionPercent,
+                      defaultValue: `${destination.completionPercent}% 完成`
+                    })}
+                  </Text>
+                  {destination.flightNumber && (
+                    <Text style={styles.entryPackDetail}>
+                      🎫 {destination.flightNumber}
+                    </Text>
+                  )}
+                </View>
+                {submissionCountdown && (
+                  <Text style={[
+                    styles.submissionCountdown,
+                    submissionCountdown.urgent && styles.submissionCountdownUrgent
+                  ]}>
+                    ⏰ {submissionCountdown.text}
                   </Text>
                 )}
               </View>
-              {submissionCountdown && (
-                <Text style={[
-                  styles.submissionCountdown,
-                  submissionCountdown.urgent && styles.submissionCountdownUrgent
-                ]}>
-                  ⏰ {submissionCountdown.text}
-                </Text>
-              )}
+              <Text style={styles.historyArrow}>›</Text>
             </View>
-            <Text style={styles.historyArrow}>›</Text>
-          </View>
-        </Card>
-      );
-    });
+          </Card>
+        );
+      } catch (error) {
+        console.error('[HomeScreen] Error rendering card for destination:', destination.destinationId, error);
+        return null;
+      }
+    }).filter(Boolean); // Remove any null entries from errors
+    console.log('[HomeScreen] Returning', cards.length, 'cards from renderInProgressDestinationCards');
+    if (cards.length === 0) {
+      console.warn('[HomeScreen] WARNING: No cards were rendered despite having', inProgressDestinations.length, 'destinations');
+    }
+    return cards;
   }, [inProgressDestinations, t, navigation, passportData]);
 
   return (
@@ -759,7 +882,20 @@ const HomeScreen = ({ navigation }) => {
                 {inProgressDestinations.length}
               </Text>
             </View>
-            {renderInProgressDestinationCards()}
+            {(() => {
+              const cards = renderInProgressDestinationCards();
+              console.log('[HomeScreen] Cards returned from renderInProgressDestinationCards:', cards ? cards.length : 'null/undefined', cards);
+              if (!cards || cards.length === 0) {
+                console.warn('[HomeScreen] No cards to render!');
+                return <Text style={{ padding: 20, color: 'red' }}>DEBUG: No cards rendered</Text>;
+              }
+              // Wrap in Fragment to ensure proper rendering
+              return (
+                <>
+                  {cards}
+                </>
+              );
+            })()}
           </View>
         )}
 

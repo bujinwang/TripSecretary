@@ -146,7 +146,9 @@ const SGACSelectionScreen = ({ navigation, route }) => {
   };
 
   const getOptionStatus = (option) => {
-    if (!userData) return 'unknown';
+    if (!userData) {
+return 'unknown';
+}
 
     // Check if user has required data for this option
     const hasRequiredData = SingaporeEntryGuideService.validateEntryRequirements(userData, option.method);

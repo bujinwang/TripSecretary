@@ -168,14 +168,22 @@ const PassportReviewScreen = ({ navigation, route }) => {
   };
 
   const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) return colors.success;
-    if (confidence >= 0.6) return colors.warning;
+    if (confidence >= 0.8) {
+return colors.success;
+}
+    if (confidence >= 0.6) {
+return colors.warning;
+}
     return colors.error;
   };
 
   const getConfidenceText = (confidence) => {
-    if (confidence >= 0.8) return 'High Confidence';
-    if (confidence >= 0.6) return 'Medium Confidence';
+    if (confidence >= 0.8) {
+return 'High Confidence';
+}
+    if (confidence >= 0.6) {
+return 'Medium Confidence';
+}
     return 'Low Confidence - Please Review';
   };
 

@@ -242,7 +242,9 @@ export async function scheduleCompleteNotificationWorkflow(entryPackData) {
         arrivalDate,
         destination
       );
-      if (submissionId) notificationIds.push(submissionId);
+      if (submissionId) {
+notificationIds.push(submissionId);
+}
     }
 
     // Schedule urgent reminder (24 hours before arrival)
@@ -250,14 +252,18 @@ export async function scheduleCompleteNotificationWorkflow(entryPackData) {
       arrivalDate,
       destination
     );
-    if (urgentId) notificationIds.push(urgentId);
+    if (urgentId) {
+notificationIds.push(urgentId);
+}
 
     // Schedule deadline warning (on arrival day)
     const deadlineId = await NotificationTemplateService.scheduleDeadlineWarningNotification(
       arrivalDate,
       destination
     );
-    if (deadlineId) notificationIds.push(deadlineId);
+    if (deadlineId) {
+notificationIds.push(deadlineId);
+}
 
     // Schedule arrival reminder (day before arrival)
     const arrivalReminderId = await NotificationTemplateService.scheduleArrivalReminderNotification(
@@ -265,7 +271,9 @@ export async function scheduleCompleteNotificationWorkflow(entryPackData) {
       destination,
       entryPackId
     );
-    if (arrivalReminderId) notificationIds.push(arrivalReminderId);
+    if (arrivalReminderId) {
+notificationIds.push(arrivalReminderId);
+}
 
     // Schedule arrival day notification
     const arrivalDayId = await NotificationTemplateService.scheduleArrivalDayNotification(
@@ -273,7 +281,9 @@ export async function scheduleCompleteNotificationWorkflow(entryPackData) {
       destination,
       entryPackId
     );
-    if (arrivalDayId) notificationIds.push(arrivalDayId);
+    if (arrivalDayId) {
+notificationIds.push(arrivalDayId);
+}
 
     // Schedule incomplete data reminder if needed
     if (completionPercent < 100) {
@@ -281,7 +291,9 @@ export async function scheduleCompleteNotificationWorkflow(entryPackData) {
         destination,
         completionPercent
       );
-      if (incompleteId) notificationIds.push(incompleteId);
+      if (incompleteId) {
+notificationIds.push(incompleteId);
+}
     }
 
     console.log(`Scheduled ${notificationIds.length} notifications for entry pack ${entryPackId}`);

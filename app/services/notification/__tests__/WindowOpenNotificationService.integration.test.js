@@ -271,9 +271,15 @@ describe('WindowOpenNotificationService Integration', () => {
       };
 
       const isValid = (submission) => {
-        if (!submission) return false;
-        if (!submission.arrCardNo) return false;
-        if (typeof submission.arrCardNo !== 'string') return false;
+        if (!submission) {
+return false;
+}
+        if (!submission.arrCardNo) {
+return false;
+}
+        if (typeof submission.arrCardNo !== 'string') {
+return false;
+}
         return submission.arrCardNo.trim().length > 0;
       };
 

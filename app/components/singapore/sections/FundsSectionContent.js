@@ -40,13 +40,17 @@ const FundsSectionContent = ({
   };
 
   const normalizeAmount = (value) => {
-    if (value === null || value === undefined || value === '') return '';
+    if (value === null || value === undefined || value === '') {
+return '';
+}
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value.toLocaleString();
     }
     if (typeof value === 'string') {
       const trimmed = value.trim();
-      if (!trimmed) return '';
+      if (!trimmed) {
+return '';
+}
       const parsed = Number(trimmed.replace(/,/g, ''));
       return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
     }

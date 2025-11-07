@@ -73,11 +73,15 @@ const EntryInfoStatusBanner = ({
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) {
+return '';
+}
     
     try {
       const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return '';
+      if (Number.isNaN(date.getTime())) {
+return '';
+}
 
       const thaiDate = `${date.toLocaleDateString('th-TH', {
         year: 'numeric',

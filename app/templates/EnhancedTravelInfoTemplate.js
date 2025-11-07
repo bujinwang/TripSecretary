@@ -19,6 +19,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -78,7 +79,11 @@ const EnhancedTravelInfoTemplate = ({
   navigation,
   children, // Custom render mode
 }) => {
-  // Early validation - config is required
+  // ✅ CRITICAL FIX: All hooks must be called BEFORE any conditional returns
+  // This ensures hooks are always called in the same order (Rules of Hooks)
+  const { t } = useLocale();
+  
+  // Early validation - config is required (AFTER hooks)
   if (!config) {
     console.error('[Template] ERROR: config prop is required but not provided');
     return (
@@ -92,8 +97,6 @@ const EnhancedTravelInfoTemplate = ({
       </SafeAreaView>
     );
   }
-
-  const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
 
   const destinationId = useMemo(() => {
@@ -291,6 +294,50 @@ const EnhancedTravelInfoTemplate = ({
       });
     }
     
+    // Special handling for personal section labels - ensure help texts are resolved
+    if (sectionKey === 'personal') {
+      const personalHelpFields = [
+        { fieldKey: 'occupation', labelKey: 'occupationHelp' },
+        { fieldKey: 'cityOfResidence', labelKey: 'cityOfResidenceHelp' },
+        { fieldKey: 'countryOfResidence', labelKey: 'countryOfResidenceHelp' },
+        { fieldKey: 'residentCountry', labelKey: 'residentCountryHelp' },
+        { fieldKey: 'phoneNumber', labelKey: 'phoneNumberHelp' },
+        { fieldKey: 'email', labelKey: 'emailHelp' },
+      ];
+      
+      personalHelpFields.forEach(({ fieldKey, labelKey }) => {
+        // Only set if not already resolved
+        if (!resolvedLabels[labelKey]) {
+          // Try fieldHelp structure first (destination-specific)
+          const fieldHelpKey = `${destId}.travelInfo.fieldHelp.${fieldKey}`;
+          let translatedHelpText = t(fieldHelpKey, { defaultValue: null });
+          
+          // If not found, try nested structure
+          if (!translatedHelpText) {
+            const nestedHelpKey = `${destId}.travelInfo.fields.${fieldKey}.help`;
+            translatedHelpText = t(nestedHelpKey, { defaultValue: null });
+          }
+          
+          // Fallback: try common translations if destination-specific not found
+          if (!translatedHelpText) {
+            // Try common.fieldHelp structure as fallback
+            const commonHelpKey = `common.fieldHelp.${fieldKey}`;
+            translatedHelpText = t(commonHelpKey, { defaultValue: null });
+          }
+          
+          if (translatedHelpText) {
+            resolvedLabels[labelKey] = translatedHelpText;
+            // Handle aliases - countryOfResidence and residentCountry should share the same help text
+            if (fieldKey === 'countryOfResidence' && !resolvedLabels.residentCountryHelp) {
+              resolvedLabels.residentCountryHelp = translatedHelpText;
+            } else if (fieldKey === 'residentCountry' && !resolvedLabels.countryOfResidenceHelp) {
+              resolvedLabels.countryOfResidenceHelp = translatedHelpText;
+            }
+          }
+        }
+      });
+    }
+    
     // Special handling for funds section labels
     if (sectionKey === 'funds') {
       // Resolve funds-specific labels
@@ -452,19 +499,33 @@ const EnhancedTravelInfoTemplate = ({
     // Pre-fill with passport data from route params if available
     if (passport) {
       console.log('[Template] Pre-filling from route.params passport:', passport);
-      if (passport.surname) initialState.surname = passport.surname;
-      if (passport.middleName) initialState.middleName = passport.middleName;
-      if (passport.givenName) initialState.givenName = passport.givenName;
+      if (passport.surname) {
+initialState.surname = passport.surname;
+}
+      if (passport.middleName) {
+initialState.middleName = passport.middleName;
+}
+      if (passport.givenName) {
+initialState.givenName = passport.givenName;
+}
       if (passport.passportNumber || passport.passportNo) {
         initialState.passportNo = passport.passportNumber || passport.passportNo;
       }
-      if (passport.nationality) initialState.nationality = passport.nationality;
+      if (passport.nationality) {
+initialState.nationality = passport.nationality;
+}
       if (passport.dateOfBirth || passport.dob) {
         initialState.dob = passport.dateOfBirth || passport.dob;
       }
-      if (passport.expiryDate) initialState.expiryDate = passport.expiryDate;
-      if (passport.sex) initialState.sex = passport.sex;
-      if (passport.visaNumber) initialState.visaNumber = passport.visaNumber;
+      if (passport.expiryDate) {
+initialState.expiryDate = passport.expiryDate;
+}
+      if (passport.sex) {
+initialState.sex = passport.sex;
+}
+      if (passport.visaNumber) {
+initialState.visaNumber = passport.visaNumber;
+}
     }
 
     // UI state
@@ -560,7 +621,39 @@ const EnhancedTravelInfoTemplate = ({
         ? fundsRaw.map((item) => normalizeRecord(item)).filter(Boolean)
         : [];
 
-      let entryInfo = (entryInfos || []).find((info) => info.destinationId === destinationId);
+      // Filter entries for this destination
+      const destinationEntries = (entryInfos || []).filter((info) => info.destinationId === destinationId);
+      console.log(`[Template] Found ${destinationEntries.length} entry(ies) for destination ${destinationId}:`, 
+        destinationEntries.map(e => ({ id: e.id, created_at: e.createdAt, last_updated_at: e.lastUpdatedAt })));
+
+      let entryInfo = null;
+      
+      // Strategy 1: Use entryInfoId from formState if it exists and matches an entry
+      if (formState.entryInfoId) {
+        entryInfo = destinationEntries.find((info) => info.id === formState.entryInfoId);
+        if (entryInfo) {
+          console.log(`[Template] Using entry from formState.entryInfoId: ${entryInfo.id}`);
+        } else {
+          console.log(`[Template] formState.entryInfoId (${formState.entryInfoId}) not found in destination entries, will use most recent`);
+        }
+      }
+      
+      // Strategy 2: If no match from formState, use the most recent entry (by last_updated_at, then created_at)
+      if (!entryInfo && destinationEntries.length > 0) {
+        entryInfo = destinationEntries.sort((a, b) => {
+          const aTime = new Date(a.lastUpdatedAt || a.createdAt || 0).getTime();
+          const bTime = new Date(b.lastUpdatedAt || b.createdAt || 0).getTime();
+          return bTime - aTime; // Most recent first
+        })[0];
+        console.log(`[Template] Using most recent entry: ${entryInfo.id} (last_updated: ${entryInfo.lastUpdatedAt || entryInfo.createdAt})`);
+      }
+      
+      // Strategy 3: Fallback to first entry (legacy behavior)
+      if (!entryInfo && destinationEntries.length > 0) {
+        entryInfo = destinationEntries[0];
+        console.log(`[Template] Using first entry (fallback): ${entryInfo.id}`);
+      }
+      
       const timestamp = new Date().toISOString();
       const fundIds = fundsData.map((item) => item.id).filter(Boolean);
 
@@ -858,7 +951,8 @@ const EnhancedTravelInfoTemplate = ({
       );
 
       if (Object.keys(personalInfoUpdates).length > 0) {
-        const personalInfoResult = await UserDataService.savePersonalInfo(personalInfoUpdates, userId);
+        // Use upsert to avoid creating duplicate personal_info rows when progressively saving
+        const personalInfoResult = await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
         savedPersonalInfo = personalInfoResult;
         updateFormState({
           personalInfoId: personalInfoResult?.id || formState.personalInfoId || null,
@@ -939,12 +1033,25 @@ const EnhancedTravelInfoTemplate = ({
 
       // Clear save status after 2 seconds
       setTimeout(() => {
-        updateFormState({ saveStatus: null });
+        try {
+          updateFormState({ saveStatus: null });
+        } catch (error) {
+          if (error?.message?.includes('useEntryFlowTemplate')) {
+            console.error('[Template] CRITICAL: useEntryFlowTemplate error in setTimeout callback');
+            console.error('[Template] Stack trace:', error.stack);
+          }
+          throw error; // Re-throw to see original error
+        }
       }, 2000);
 
       console.log('[Template] Data saved successfully');
     } catch (error) {
       console.error('[Template] Error saving data:', error);
+      // Check if this is the useEntryFlowTemplate error
+      if (error?.message?.includes('useEntryFlowTemplate')) {
+        console.error('[Template] CRITICAL: useEntryFlowTemplate called outside EntryFlowScreenTemplate context');
+        console.error('[Template] Stack trace:', error.stack);
+      }
       updateFormState({ saveStatus: 'error' });
     }
   }, [userId, formState, config, userInteractionTracker.interactionState, updateFormState, destinationId, ensureEntryInfoRecord]);
@@ -1256,33 +1363,102 @@ const EnhancedTravelInfoTemplate = ({
           )}
 
           {/* Personal Info Section */}
-          {config?.sections?.personal?.enabled && (
-            <PersonalInfoSection
-              isExpanded={formState.expandedSections.personal}
-              onToggle={() => toggleSection('personal')}
-              fieldCount={validation.getFieldCount('personal')}
-              occupation={formState.occupation}
-              customOccupation={formState.customOccupation}
-              cityOfResidence={formState.cityOfResidence}
-              countryOfResidence={formState.countryOfResidence}
-              phoneCode={formState.phoneCode}
-              phoneNumber={formState.phoneNumber}
-              email={formState.email}
-              setOccupation={(v) => updateField('occupation', v)}
-              setCustomOccupation={(v) => updateField('customOccupation', v)}
-              setCityOfResidence={(v) => updateField('cityOfResidence', v)}
-              setCountryOfResidence={(v) => updateField('countryOfResidence', v)}
-              setPhoneCode={(v) => updateField('phoneCode', v)}
-              setPhoneNumber={(v) => updateField('phoneNumber', v)}
-              setEmail={(v) => updateField('email', v)}
-              errors={formState.errors}
-              warnings={formState.warnings}
-              handleFieldBlur={validation.handleFieldBlur}
-              debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('personal', config?.sections?.personal, config?.i18n?.labelSource?.personal || {})}
-              config={config?.sections?.personal || {}}
-            />
-          )}
+          {config?.sections?.personal?.enabled && (() => {
+            // Compute cityOfResidence labels based on country (China vs others)
+            const isChineseResidence = formState.countryOfResidence === 'CHN' || formState.residentCountry === 'CHN';
+            
+            // Get destId (same logic as in resolveSectionLabels)
+            const destId = config?.destinationId || destinationId || 'hongkong';
+            
+            // Get base labels from resolveSectionLabels
+            const baseLabels = resolveSectionLabels('personal', config?.sections?.personal, config?.i18n?.labelSource?.personal || {});
+            
+            // Resolve cityOfResidence labels with proper destId and ensure strings
+            const cityOfResidenceLabelKey = isChineseResidence
+              ? `${destId}.travelInfo.fields.cityOfResidence.label.china`
+              : `${destId}.travelInfo.fields.cityOfResidence.label`;
+            const cityOfResidenceHelpKey = isChineseResidence
+              ? `${destId}.travelInfo.fields.cityOfResidence.help.china`
+              : `${destId}.travelInfo.fields.cityOfResidence.help`;
+            const cityOfResidencePlaceholderKey = isChineseResidence
+              ? `${destId}.travelInfo.fields.cityOfResidence.placeholder.china`
+              : `${destId}.travelInfo.fields.cityOfResidence.placeholder`;
+            
+            // Get translations and ensure they are strings (not objects)
+            const getTranslationString = (key, defaultValue) => {
+              const translation = t(key, { defaultValue });
+              // If translation is an object, return the defaultValue or key
+              if (typeof translation === 'object' && translation !== null) {
+                return defaultValue || key;
+              }
+              return typeof translation === 'string' ? translation : (defaultValue || key);
+            };
+            
+            const cityOfResidenceLabel = getTranslationString(
+              cityOfResidenceLabelKey,
+              isChineseResidence ? '居住省份' : '居住城市'
+            );
+            const cityOfResidenceHelpText = getTranslationString(
+              cityOfResidenceHelpKey,
+              'City where you currently live'
+            );
+            const cityOfResidencePlaceholder = getTranslationString(
+              cityOfResidencePlaceholderKey,
+              isChineseResidence ? 'e.g., Anhui, Guangdong' : 'e.g., Anhui, Shanghai'
+            );
+            
+            // Merge cityOfResidence labels into base labels
+            const mergedLabels = {
+              ...baseLabels,
+              cityOfResidence: cityOfResidenceLabel,
+              cityOfResidenceHelp: cityOfResidenceHelpText,
+              cityOfResidencePlaceholder,
+            };
+
+            return (
+              <PersonalInfoSection
+                isExpanded={formState.expandedSections.personal}
+                onToggle={() => toggleSection('personal')}
+                fieldCount={validation.getFieldCount('personal')}
+                occupation={formState.occupation}
+                customOccupation={formState.customOccupation}
+                cityOfResidence={formState.cityOfResidence}
+                residentCountry={formState.countryOfResidence || formState.residentCountry}
+                phoneCode={formState.phoneCode}
+                phoneNumber={formState.phoneNumber}
+                email={formState.email}
+                setOccupation={(v) => updateField('occupation', v)}
+                setCustomOccupation={(v) => updateField('customOccupation', v)}
+                setCityOfResidence={(v) => updateField('cityOfResidence', v)}
+                setResidentCountry={(v) => {
+                  updateField('countryOfResidence', v);
+                  updateField('residentCountry', v);
+                }}
+                setPhoneCode={(v) => updateField('phoneCode', v)}
+                setPhoneNumber={(v) => updateField('phoneNumber', v)}
+                setEmail={(v) => updateField('email', v)}
+                errors={formState.errors}
+                warnings={formState.warnings}
+                handleFieldBlur={validation.handleFieldBlur}
+                debouncedSaveData={debouncedSave}
+                saveDataToSecureStorageWithOverride={async (overrideData) => {
+                  // Temporarily update form state with override data, save, then restore
+                  const previousState = { ...formState };
+                  updateFormState(overrideData);
+                  try {
+                    await saveDataToUserDataService();
+                  } finally {
+                    // Restore previous state after save
+                    updateFormState(previousState);
+                  }
+                }}
+                setLastEditedAt={(val) => updateFormState({ lastEditedAt: val })}
+                t={t}
+                labels={mergedLabels}
+                config={config?.sections?.personal || {}}
+              />
+            );
+          })()}
 
           {/* Funds Section */}
           {config?.sections?.funds?.enabled && (
@@ -1293,7 +1469,7 @@ const EnhancedTravelInfoTemplate = ({
               funds={formState.funds || []}
               setFunds={(v) => updateField('funds', v)}
               addFund={fundManagement.addFund}
-              onFundItemPress={fundManagement.handleFundItemPress}
+              handleFundItemPress={fundManagement.handleFundItemPress}
               debouncedSaveData={debouncedSave}
               labels={resolveSectionLabels('funds', config?.sections?.funds, config?.i18n?.labelSource?.funds || {})}
               config={config?.sections?.funds || {}}
@@ -1420,17 +1596,29 @@ const EnhancedTravelInfoTemplate = ({
         </ScrollView>
 
         {/* Fund Item Modal */}
-        {formState.fundItemModalVisible && (
-          <FundItemDetailModal
-            visible={formState.fundItemModalVisible}
-            fundItem={formState.currentFundItem}
-            createItemType={formState.newFundItemType}
-            onClose={fundManagement.handleFundItemModalClose}
-            onUpdate={fundManagement.handleFundItemUpdate}
-            onCreate={fundManagement.handleFundItemCreate}
-            onDelete={fundManagement.handleFundItemDelete}
-          />
-        )}
+        {(() => {
+          const isCreateMode = !formState.currentFundItem && !!formState.newFundItemType;
+          console.log('[Template] Fund Modal Render Check:', {
+            fundItemModalVisible: formState.fundItemModalVisible,
+            hasCurrentFundItem: !!formState.currentFundItem,
+            newFundItemType: formState.newFundItemType,
+            isCreateMode,
+            willRender: formState.fundItemModalVisible,
+          });
+          
+          return formState.fundItemModalVisible ? (
+            <FundItemDetailModal
+              visible={formState.fundItemModalVisible}
+              fundItem={formState.currentFundItem}
+              isCreateMode={isCreateMode}
+              createItemType={formState.newFundItemType}
+              onClose={fundManagement.handleFundItemModalClose}
+              onUpdate={fundManagement.handleFundItemUpdate}
+              onCreate={fundManagement.handleFundItemCreate}
+              onDelete={fundManagement.handleFundItemDelete}
+            />
+          ) : null;
+        })()}
       </SafeAreaView>
     </EnhancedTemplateContext.Provider>
   );
@@ -1615,6 +1803,29 @@ const SmartButton = ({ config, validation, onPress }) => {
       {`${buttonConfig.icon} ${label}`}
     </BaseButton>
   );
+};
+
+EnhancedTravelInfoTemplate.propTypes = {
+  config: PropTypes.shape({
+    country: PropTypes.string.isRequired,
+    fields: PropTypes.object,
+    validation: PropTypes.object,
+    colors: PropTypes.shape({
+      background: PropTypes.string,
+      primary: PropTypes.string,
+    }),
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      passport: PropTypes.object,
+      destination: PropTypes.string,
+    }),
+  }).isRequired,
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func,
+    goBack: PropTypes.func,
+  }).isRequired,
+  children: PropTypes.node,
 };
 
 // Export

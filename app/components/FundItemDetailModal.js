@@ -230,7 +230,9 @@ const FundItemDetailModal = ({
 
   // Handle Android back button
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+return;
+}
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       if (mode === 'photo') {
@@ -274,6 +276,14 @@ const FundItemDetailModal = ({
   }, [visible]);
 
   // Allow null fundItem when in create mode
+  console.log('[FundItemDetailModal] Render check:', {
+    visible,
+    hasFundItem: !!fundItem,
+    isCreateMode,
+    createItemType,
+    willRender: !(!fundItem && !isCreateMode),
+  });
+  
   if (!fundItem && !isCreateMode) {
     if (__DEV__) {
       console.warn('[FundItemDetailModal] No fund item provided, modal will not render');
@@ -282,7 +292,9 @@ const FundItemDetailModal = ({
   }
 
   const isAmountBasedType = (value) => {
-    if (!value) return false;
+    if (!value) {
+return false;
+}
     const normalized = value.toString().toLowerCase();
     return normalized === 'cash' ||
       normalized === 'bank_card' ||
@@ -989,7 +1001,9 @@ const FundItemDetailModal = ({
 
   // Render currency picker
   const renderCurrencyPicker = () => {
-    if (!showCurrencyPicker) return null;
+    if (!showCurrencyPicker) {
+return null;
+}
 
     return (
       <View style={styles.currencyPickerOverlay}>
@@ -1263,7 +1277,9 @@ const FundItemDetailModal = ({
   // Render full-screen photo view
   const renderPhotoView = () => {
     const photoUri = fundItem.photoUri || fundItem.photo;
-    if (!photoUri) return null;
+    if (!photoUri) {
+return null;
+}
 
     return (
       <View style={styles.photoViewContainer}>

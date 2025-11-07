@@ -261,6 +261,81 @@
     }
   },
   "th": {
+    "info": {
+      "headerTitle": "Thailand Entry Information",
+      "title": "Thailand Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: TDAC Digital Arrival Card must be submitted (can submit up to 72 hours before arrival)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• TDAC submission timing: Can submit up to 72 hours before arrival, but must complete before arrival",
+            "• QR code required: Must show TDAC QR code upon entry, can't find PDF is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection",
+            "• Cloudflare verification: May encounter CAPTCHA challenges during submission"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill TDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• QR code management: Auto-save TDAC QR code PDF, quick display upon entry"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue to the checklist"
+    },
+    "requirements": {
+      "headerTitle": "Thailand Entry Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Valid passport",
+          "description": "Passport valid for at least 6 months",
+          "details": "Your passport must be valid for at least 6 months from your entry date into Thailand."
+        },
+        "onwardTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed departure booking",
+          "details": "Provide confirmed flight booking showing you will leave Thailand within the authorized stay period."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or local contact information",
+          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Thailand, including address and phone number."
+        },
+        "funds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
+        },
+        "healthCheck": {
+          "title": "Health requirements",
+          "description": "Check current health regulations",
+          "details": "Verify any health requirements or documents needed for entry. Complete any required health declarations before arrival."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "You can start filling anytime",
+          "subtitle": "We support progressive completion of the checklist"
+        }
+      },
+      "startButton": "Start filling"
+    },
     "entryFlow": {
       "title": "Thailand Entry Preparation Status",
       "preparationTitle": "Thailand Entry Preparation Status",
@@ -294,7 +369,147 @@
       },
       "categoriesTitle": "Information Categories"
     },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "OTHER": "Other"
+    },
     "travelInfo": {
+      "hero": {
+        "title": "Thailand Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Thai customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "sectionTitles": {
+        "passport": "Passport Information",
+        "passportSubtitle": "Enter your passport details",
+        "personal": "Personal Information",
+        "personalSubtitle": "Contact and occupation details",
+        "travel": "Travel Information",
+        "travelSubtitle": "Flight and accommodation details",
+        "funds": "Proof of Funds",
+        "fundsSubtitle": "Financial proof for your stay"
+      },
+      "sectionIntros": {
+        "passport": "Please ensure all details match your passport exactly",
+        "personal": "Contact information for immigration purposes",
+        "travel": "Immigration needs to know your travel plans",
+        "funds": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses."
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": {
+          "label": "Occupation",
+          "help": "Select or enter your occupation"
+        },
+        "cityOfResidence": {
+          "label": "City of Residence",
+          "label.china": "Province",
+          "help": "City where you currently live",
+          "help.china": "For Chinese addresses, enter your province (use English, e.g., Anhui)",
+          "placeholder": "e.g., Anhui, Shanghai",
+          "placeholder.china": "e.g., Anhui, Guangdong"
+        },
+        "countryOfResidence": {
+          "label": "Country where you currently live",
+          "help": "Country where you currently live"
+        },
+        "residentCountry": {
+          "label": "Country where you currently live",
+          "help": "Country where you currently live"
+        },
+        "phoneCode": {
+          "label": "Code",
+          "help": "Phone area code"
+        },
+        "phoneNumber": {
+          "label": "Phone Number",
+          "help": "Your contact number"
+        },
+        "email": {
+          "label": "Email Address",
+          "help": "Your email address"
+        },
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "flightTicketPhoto": "Flight Ticket Photo",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "departureFlightTicketPhoto": "Departure Flight Ticket Photo",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "subDistrict": "Sub-District",
+        "postalCode": "Postal Code",
+        "hotelAddress": "Accommodation Address",
+        "hotelReservationPhoto": "Hotel Reservation Photo"
+      },
+      "submitButton": "Save and Continue",
       "scan": {
         "ticketTitle": "Scan Ticket",
         "ticketMessage": "Please select ticket image source",
@@ -309,6 +524,36 @@
         "scanFailedMessage": "Document scanning failed, please try again",
         "processing": "Processing...",
         "processingMessage": "Recognizing document content, please wait"
+      },
+      "lastEdited": "Recently edited",
+      "uploadSuccess": "Upload successful",
+      "uploadError": "Upload failed",
+      "uploadErrorMessage": "Failed to save, please try again",
+      "flightTicketUploaded": "Flight ticket photo uploaded",
+      "hotelReservationUploaded": "Hotel reservation photo uploaded",
+      "departureFlightTicketUploaded": "Departure flight ticket photo uploaded",
+      "fieldHelp": {
+        "recentStayCountry": "Select countries you visited in the last 30 days",
+        "boardingCountry": "Select the country where you boarded the flight to Thailand"
+      },
+      "funds": {
+        "addCash": "Add Cash",
+        "addCreditCard": "Add Credit Card Photo",
+        "addBankBalance": "Add Bank Balance",
+        "empty": "No funds added yet. Please add at least one proof of funds."
+      }
+    },
+    "locations": {
+      "province": "Province",
+      "district": "District",
+      "subDistrict": "Sub-District"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost There",
+        "ready": "Continue",
+        "default": "Save and Continue"
       }
     }
   },
@@ -847,86 +1092,98 @@
     }
   },
   "thailand": {
-    "travelInfo": {
-      "hero": {
-        "title": "Thailand Entry Preparation Guide",
-        "subtitle": "Don't worry, we're here to help!",
-        "valuePropositions": {
-          "0": "3 minutes to complete",
-          "1": "100% privacy protection",
-          "2": "Avoid customs delays"
-        },
-        "beginnerTip": "First time crossing Thai customs? We'll guide you step by step to prepare all necessary documents!"
-      },
+    "info": {
+      "headerTitle": "Thailand Entry Information",
+      "title": "Thailand Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
       "sections": {
-        "passport": {
-          "title": "Passport Information",
-          "subtitle": "Please fill in your passport details accurately"
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: TDAC Digital Arrival Card must be submitted (can submit up to 72 hours before arrival)"
+          ]
         },
-        "personal": {
-          "title": "Personal Information",
-          "subtitle": "Contact and personal details"
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• TDAC submission timing: Can submit up to 72 hours before arrival, but must complete before arrival",
+            "• QR code required: Must show TDAC QR code upon entry, can't find PDF is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection",
+            "• Cloudflare verification: May encounter CAPTCHA challenges during submission"
+          ]
         },
-        "funds": {
-          "title": "Proof of Funds",
-          "subtitle": "Financial proof for your stay",
-          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
-          "addCash": "Add Cash",
-          "addCreditCard": "Add Credit Card Photo",
-          "addBankBalance": "Add Bank Balance",
-          "addBankCard": "Add Bank Card",
-          "addDocument": "Add Document",
-          "empty": "No funds added yet. Please add at least one proof of funds.",
-          "notProvided": "Not provided",
-          "photoAttached": "Photo attached",
-          "fundTypes": {
-            "cash": "Cash",
-            "credit_card": "Credit Card",
-            "bank_card": "Bank Card",
-            "bank_balance": "Bank Balance",
-            "document": "Document",
-            "other": "Other"
-          }
-        },
-        "travel": {
-          "title": "Travel Information",
-          "subtitle": "Flight and accommodation details"
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill TDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• QR code management: Auto-save TDAC QR code PDF, quick display upon entry"
+          ]
         }
       },
-      "fields": {
-        "surname": "Surname",
-        "middleName": "Middle Name",
-        "givenName": "Given Name",
-        "passportNo": "Passport Number",
-        "nationality": "Nationality",
-        "dob": "Date of Birth",
-        "expiryDate": "Passport Expiry Date",
-        "sex": "Gender",
-        "visaNumber": "Visa Number",
-        "occupation": "Occupation",
-        "cityOfResidence": "City of Residence",
-        "countryOfResidence": "Country of Residence",
-        "phoneCode": "Phone Code",
-        "phoneNumber": "Phone Number",
-        "email": "Email",
-        "travelPurpose": "Travel Purpose",
-        "recentStayCountry": "Countries visited in last 30 days",
-        "boardingCountry": "Boarding Country",
-        "arrivalFlightNumber": "Arrival Flight Number",
-        "arrivalDate": "Arrival Date",
-        "flightTicketPhoto": "Flight Ticket Photo",
-        "departureFlightNumber": "Departure Flight Number",
-        "departureDate": "Departure Date",
-        "departureFlightTicketPhoto": "Departure Flight Ticket Photo",
-        "isTransitPassenger": "Are you a transit passenger?",
-        "accommodationType": "Accommodation Type",
-        "province": "Province",
-        "district": "District",
-        "subDistrict": "Sub-District",
-        "postalCode": "Postal Code",
-        "hotelAddress": "Accommodation Address",
-        "hotelReservationPhoto": "Hotel Reservation Photo"
-      }
+      "continueButton": "Got it, continue to the checklist"
+    },
+    "requirements": {
+      "headerTitle": "Thailand Entry Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Valid passport",
+          "description": "Passport valid for at least 6 months",
+          "details": "Your passport must be valid for at least 6 months from your entry date into Thailand."
+        },
+        "onwardTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed departure booking",
+          "details": "Provide confirmed flight booking showing you will leave Thailand within the authorized stay period."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or local contact information",
+          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Thailand, including address and phone number."
+        },
+        "funds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
+        },
+        "healthCheck": {
+          "title": "Health requirements",
+          "description": "Check current health regulations",
+          "details": "Verify any health requirements or documents needed for entry. Complete any required health declarations before arrival."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "You can start filling anytime",
+          "subtitle": "We support progressive completion of the checklist"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "OTHER": "Other"
     }
   },
   "kr": {
@@ -1680,6 +1937,25 @@
           "message": "It's recommended to prepare sufficient proof of funds. Hong Kong customs may conduct spot checks."
         }
       }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "FINANCE_PROFESSIONAL": "Finance Professional",
+      "OTHER": "Other"
     }
   },
   "us": {
@@ -1922,6 +2198,24 @@
         "ready": "Continue",
         "default": "Continue"
       }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "OTHER": "Other"
     }
   },
   "tw": {
@@ -2266,14 +2560,14 @@
     },
     "travelInfo": {
       "hero": {
-        "title": "Japan Entry Preparation Guide",
-        "subtitle": "Complete visa-free entry in 3 minutes, stress-free travel!",
+        "title": "Japan Entry Information Center",
+        "subtitle": "Fill out once, view and update anytime",
         "valuePropositions": {
-          "0": "3 minutes to complete",
-          "1": "Visa-free for 90 days",
-          "2": "Offline friendly, secure storage"
+          "0": "Passport information one-time backup",
+          "1": "Flight and accommodation centralized management",
+          "2": "Available offline, auto-save"
         },
-        "beginnerTip": "Japan offers visa-free entry for 90 days to Chinese passport holders. We help you prepare all entry materials."
+        "beginnerTip": "Tip: Prepare accommodation and flight information in advance for the fastest entry."
       },
       "sections": {
         "passport": {

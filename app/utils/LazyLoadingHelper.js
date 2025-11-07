@@ -82,7 +82,7 @@ class LazyLoadingHelper {
     let currentPage = initialPage;
     let isLoading = false;
     let hasMoreData = true;
-    let cache = new Map();
+    const cache = new Map();
     let allData = [];
 
     const loader = {
@@ -357,7 +357,7 @@ class LazyLoadingHelper {
     }
 
     let currentChunkIndex = 0;
-    let loadedChunks = new Set();
+    const loadedChunks = new Set();
 
     return {
       /**

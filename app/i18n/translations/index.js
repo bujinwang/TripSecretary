@@ -1,16 +1,16 @@
 // Country-specific translations loader
-const { convertToTraditional } = require('../chineseConverter');
+import { convertToTraditional } from '../chineseConverter.js';
 
-const countriesEn = require('./countries.en.json');
-const countriesFr = require('./countries.fr.json');
-const countriesDe = require('./countries.de.json');
-const countriesEs = require('./countries.es.json');
-const countriesZh = require('./countries.zh.json');
-const countriesMs = require('./countries.ms.json');
+import countriesEn from './countries.en.json';
+import countriesFr from './countries.fr.json';
+import countriesDe from './countries.de.json';
+import countriesEs from './countries.es.json';
+import countriesZh from './countries.zh.json';
+import countriesMs from './countries.ms.json';
 
 // Lazy conversion cache for Traditional Chinese variants
 let zhTWCache = null;
-let zhHKCache = null;
+const zhHKCache = null;
 
 // Safe conversion wrapper to prevent crashes during initialization
 const safeConvertToTraditional = (source, variant) => {
@@ -46,6 +46,5 @@ const countryTranslations = {
   },
 };
 
-module.exports = countryTranslations;
-module.exports.default = countryTranslations;
-module.exports.countryTranslations = countryTranslations;
+export default countryTranslations;
+export { countryTranslations };

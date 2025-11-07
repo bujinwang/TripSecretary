@@ -111,7 +111,9 @@ const ALIAS_MAP = buildAliasMap();
  * // → 'FRIEND_HOUSE'
  */
 export const normalizeAccommodationType = (input) => {
-  if (!input) return DEFAULT_ACCOMMODATION_TYPE;
+  if (!input) {
+return DEFAULT_ACCOMMODATION_TYPE;
+}
 
   const normalized = input.toString().toUpperCase().trim();
   return ALIAS_MAP.get(normalized) || DEFAULT_ACCOMMODATION_TYPE;
@@ -136,12 +138,16 @@ export const normalizeAccommodationType = (input) => {
 export const getAccommodationTypeDisplay = (input, options = {}) => {
   const { format = 'combined' } = options;
 
-  if (!input) return '';
+  if (!input) {
+return '';
+}
 
   const key = normalizeAccommodationType(input);
   const typeInfo = ACCOMMODATION_TYPES[key];
 
-  if (!typeInfo) return input;
+  if (!typeInfo) {
+return input;
+}
 
   switch (format) {
     case 'en':

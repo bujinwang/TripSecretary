@@ -107,22 +107,22 @@ export const GENDER_OPTIONS = [
  * @returns {Array} Occupation options with translated labels
  */
 export const getOccupationOptions = (t) => [
-  { value: 'SOFTWARE ENGINEER', label: t('thailand.occupations.SOFTWARE_ENGINEER'), icon: '💻' },
-  { value: 'STUDENT', label: t('thailand.occupations.STUDENT'), icon: '📚' },
-  { value: 'TEACHER', label: t('thailand.occupations.TEACHER'), icon: '👨‍🏫' },
-  { value: 'DOCTOR', label: t('thailand.occupations.DOCTOR'), icon: '👨‍⚕️' },
-  { value: 'ACCOUNTANT', label: t('thailand.occupations.ACCOUNTANT'), icon: '📊' },
-  { value: 'SALES MANAGER', label: t('thailand.occupations.SALES_MANAGER'), icon: '📈' },
-  { value: 'RETIRED', label: t('thailand.occupations.RETIRED'), icon: '🏖️' },
-  { value: 'ENGINEER', label: t('thailand.occupations.ENGINEER'), icon: '⚙️' },
-  { value: 'CIVIL SERVANT', label: t('thailand.occupations.CIVIL_SERVANT'), icon: '🏛️' },
-  { value: 'LAWYER', label: t('thailand.occupations.LAWYER'), icon: '⚖️' },
-  { value: 'NURSE', label: t('thailand.occupations.NURSE'), icon: '👩‍⚕️' },
-  { value: 'FREELANCER', label: t('thailand.occupations.FREELANCER'), icon: '🎨' },
-  { value: 'BUSINESS OWNER', label: t('thailand.occupations.BUSINESS_OWNER'), icon: '💼' },
-  { value: 'HOMEMAKER', label: t('thailand.occupations.HOMEMAKER'), icon: '🏠' },
-  { value: 'DESIGNER', label: t('thailand.occupations.DESIGNER'), icon: '✏️' },
-  { value: 'OTHER', label: t('thailand.occupations.OTHER'), icon: '📝' },
+  { value: 'SOFTWARE ENGINEER', label: t('th.occupations.SOFTWARE_ENGINEER'), icon: '💻' },
+  { value: 'STUDENT', label: t('th.occupations.STUDENT'), icon: '📚' },
+  { value: 'TEACHER', label: t('th.occupations.TEACHER'), icon: '👨‍🏫' },
+  { value: 'DOCTOR', label: t('th.occupations.DOCTOR'), icon: '👨‍⚕️' },
+  { value: 'ACCOUNTANT', label: t('th.occupations.ACCOUNTANT'), icon: '📊' },
+  { value: 'SALES MANAGER', label: t('th.occupations.SALES_MANAGER'), icon: '📈' },
+  { value: 'RETIRED', label: t('th.occupations.RETIRED'), icon: '🏖️' },
+  { value: 'ENGINEER', label: t('th.occupations.ENGINEER'), icon: '⚙️' },
+  { value: 'CIVIL SERVANT', label: t('th.occupations.CIVIL_SERVANT'), icon: '🏛️' },
+  { value: 'LAWYER', label: t('th.occupations.LAWYER'), icon: '⚖️' },
+  { value: 'NURSE', label: t('th.occupations.NURSE'), icon: '👩‍⚕️' },
+  { value: 'FREELANCER', label: t('th.occupations.FREELANCER'), icon: '🎨' },
+  { value: 'BUSINESS OWNER', label: t('th.occupations.BUSINESS_OWNER'), icon: '💼' },
+  { value: 'HOMEMAKER', label: t('th.occupations.HOMEMAKER'), icon: '🏠' },
+  { value: 'DESIGNER', label: t('th.occupations.DESIGNER'), icon: '✏️' },
+  { value: 'OTHER', label: t('th.occupations.OTHER'), icon: '📝' },
 ];
 
 

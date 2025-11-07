@@ -86,27 +86,37 @@ export const ValidationUtils = {
         case 'email':
           sanitized = InputSanitizer.sanitizeEmail(value);
           result.isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitized);
-          if (!result.isValid) result.errors.push('Invalid email format');
+          if (!result.isValid) {
+result.errors.push('Invalid email format');
+}
           break;
         case 'phone':
           sanitized = InputSanitizer.sanitizePhoneNumber(value);
           result.isValid = sanitized && sanitized.replace(/\D/g, '').length >= 7;
-          if (!result.isValid) result.errors.push('Invalid phone number');
+          if (!result.isValid) {
+result.errors.push('Invalid phone number');
+}
           break;
         case 'passport':
           sanitized = InputSanitizer.sanitizePassportNumber(value);
           result.isValid = sanitized && sanitized.length >= 6;
-          if (!result.isValid) result.errors.push('Invalid passport number');
+          if (!result.isValid) {
+result.errors.push('Invalid passport number');
+}
           break;
         case 'date':
           sanitized = InputSanitizer.sanitizeDate(value);
           result.isValid = sanitized && sanitized.length === 10;
-          if (!result.isValid) result.errors.push('Invalid date format (YYYY-MM-DD)');
+          if (!result.isValid) {
+result.errors.push('Invalid date format (YYYY-MM-DD)');
+}
           break;
         case 'name':
           sanitized = InputSanitizer.sanitizeName(value);
           result.isValid = sanitized && sanitized.length >= 2;
-          if (!result.isValid) result.errors.push('Name must be at least 2 characters');
+          if (!result.isValid) {
+result.errors.push('Name must be at least 2 characters');
+}
           break;
         default:
           sanitized = InputSanitizer.sanitizeText(value);

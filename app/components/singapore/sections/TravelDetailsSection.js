@@ -283,7 +283,9 @@ const TravelDetailsSection = ({
             <SingaporeDistrictSelector
               value={province || district}
               onSelect={(selection) => {
-                if (!selection) return;
+                if (!selection) {
+return;
+}
                 handleFieldChange('province', selection.name, setProvince);
                 handleFieldChange('district', selection.name, setDistrict);
                 handleUserInteraction('district', selection.name);

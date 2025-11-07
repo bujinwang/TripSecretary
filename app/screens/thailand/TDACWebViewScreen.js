@@ -729,7 +729,9 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
   // Compare entry data with TDAC submission data
   const compareEntryDataWithTDAC = React.useCallback(() => {
-    if (!__DEV__) return;
+    if (!__DEV__) {
+return;
+}
 
     try {
       // Get original entry data
@@ -1034,10 +1036,51 @@ const TDACWebViewScreen = ({ navigation, route }) => {
           if (qrCodeImg && hasSuccess) {
             window.qrCodeExtracted = true;
             
+            // Extract PDF download information from the page
+            let pdfDownloadInfo = null;
+            try {
+              // Try to extract hiddenToken from various sources
+              const hiddenTokenInput = document.querySelector('input[name="hiddenToken"], input[id*="hiddenToken"], input[type="hidden"][value*="."]');
+              const hiddenToken = hiddenTokenInput?.value || 
+                                 window.localStorage.getItem('hiddenToken') ||
+                                 window.sessionStorage.getItem('hiddenToken') ||
+                                 document.cookie.match(/hiddenToken=([^;]+)/)?.[1];
+              
+              // Extract submitId from URL or page
+              const urlParams = new URLSearchParams(window.location.search);
+              const submitId = urlParams.get('submitId') || 
+                              window.location.href.match(/submitId=([^&]+)/)?.[1] ||
+                              window.localStorage.getItem('submitId') ||
+                              window.sessionStorage.getItem('submitId');
+              
+              // Extract arrCardNo from page text or elements
+              const pageText = document.body.innerText || document.body.textContent || '';
+              const arrCardNoMatch = pageText.match(/Arrival Card No[.:\s]*([A-Z0-9]+)/i) ||
+                                    pageText.match(/Card No[.:\s]*([A-Z0-9]+)/i) ||
+                                    pageText.match(/(TH[A-Z0-9]{6,})/);
+              const arrCardNo = arrCardNoMatch?.[1] || 
+                               document.querySelector('[class*="cardNo"], [id*="cardNo"]')?.textContent?.trim() ||
+                               null;
+              
+              if (hiddenToken && submitId) {
+                pdfDownloadInfo = {
+                  hiddenToken,
+                  submitId,
+                  arrCardNo: arrCardNo || null
+                };
+                console.log('✅ PDF下载信息提取成功:', { submitId, hasToken: !!hiddenToken, arrCardNo });
+              } else {
+                console.log('⚠️ PDF下载信息不完整:', { hasToken: !!hiddenToken, submitId });
+              }
+            } catch (pdfError) {
+              console.warn('⚠️ PDF信息提取失败:', pdfError);
+            }
+            
             const qrData = {
               src: qrCodeImg.isCanvas ? qrCodeImg.src : qrCodeImg.src,
               timestamp: new Date().toISOString(),
-              pageUrl: window.location.href
+              pageUrl: window.location.href,
+              pdfDownloadInfo: pdfDownloadInfo
             };
             
             console.log('🎉 QR码提取成功！');

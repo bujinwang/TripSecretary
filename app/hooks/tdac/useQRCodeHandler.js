@@ -13,6 +13,7 @@ import { File } from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryInfoService from '../../services/EntryInfoService';
 import SecureStorageService from '../../services/security/SecureStorageService';
+import PDFManagementService from '../../services/PDFManagementService';
 import { useTranslation } from '../../i18n/LocaleContext';
 
 export const useQRCodeHandler = ({ passport, route }) => {
@@ -156,11 +157,69 @@ export const useQRCodeHandler = ({ passport, route }) => {
         console.log('✅ Recent submission flag set for EntryPackService');
       }
 
-      // 2. Save to digital_arrival_cards table (CRITICAL - must happen regardless of other operations)
+      // 2. Try to download and save PDF if download info is available
+      let pdfUrl = null;
+      if (qrData.pdfDownloadInfo && qrData.pdfDownloadInfo.hiddenToken && qrData.pdfDownloadInfo.submitId) {
+        try {
+          if (__DEV__) {
+            console.log('📥 Attempting to download PDF from TDAC...');
+          }
+          
+          // Download PDF directly from TDAC API
+          const BASE_URL = 'https://tdac.immigration.go.th/arrival-card-api/api/v1';
+          const downloadUrl = `${BASE_URL}/arrivalcard/downloadPdf?submitId=${qrData.pdfDownloadInfo.submitId}`;
+          
+          const response = await fetch(downloadUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ hiddenToken: qrData.pdfDownloadInfo.hiddenToken })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`PDF download failed: ${response.status} ${response.statusText}`);
+          }
+          
+          const pdfBlob = await response.blob();
+          
+          if (pdfBlob && pdfBlob.size > 0) {
+            // Use the extracted arrCardNo or fallback to generated cardNo
+            const arrCardNoForPdf = qrData.pdfDownloadInfo.arrCardNo || cardNo;
+            
+            // Save PDF using PDFManagementService
+            const pdfSaveResult = await PDFManagementService.savePDF(
+              arrCardNoForPdf,
+              pdfBlob,
+              { submissionMethod: 'webview' }
+            );
+            
+            pdfUrl = pdfSaveResult.filepath;
+            
+            if (__DEV__) {
+              console.log('✅ PDF downloaded and saved:', pdfUrl);
+            }
+          } else {
+            throw new Error('PDF blob is empty');
+          }
+        } catch (pdfError) {
+          console.warn('⚠️ Failed to download PDF (non-critical):', pdfError);
+          // Don't block the flow if PDF download fails - QR code is more important
+        }
+      } else {
+        if (__DEV__) {
+          console.log('ℹ️ No PDF download info available, skipping PDF download');
+        }
+      }
+
+      // 3. Save to digital_arrival_cards table (CRITICAL - must happen regardless of other operations)
       try {
         // Get userId from passport or use default
         const userId = passport?.id || passport?.passportNo || 'user_001';
         const entryInfoId = route.params?.entryInfoId || 'thailand_entry_info';
+
+        // Use extracted arrCardNo if available, otherwise use generated cardNo
+        const finalArrCardNo = qrData.pdfDownloadInfo?.arrCardNo || cardNo;
 
         // Create digital arrival card record in database
         const dacData = {
@@ -168,9 +227,9 @@ export const useQRCodeHandler = ({ passport, route }) => {
           entryInfoId: entryInfoId,
           cardType: 'TDAC',
           destinationId: 'THA',
-          arrCardNo: cardNo,
+          arrCardNo: finalArrCardNo,
           qrUri: qrData.src,
-          pdfUrl: qrData.src, // Using QR image as PDF placeholder
+          pdfUrl: pdfUrl, // Will be null if PDF download failed or not available
           submittedAt: new Date().toISOString(),
           submissionMethod: 'webview',
           status: 'success',
@@ -186,6 +245,9 @@ export const useQRCodeHandler = ({ passport, route }) => {
 
         if (__DEV__) {
           console.log('✅ Digital arrival card saved to database:', result);
+          if (pdfUrl) {
+            console.log('✅ PDF URL saved to database:', pdfUrl);
+          }
         }
       } catch (dacError) {
         console.error('❌ CRITICAL: Failed to save digital arrival card to database:', dacError);
@@ -199,7 +261,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
         // Don't block user flow - continue with remaining operations
       }
 
-      // 3. Update entry info (secondary operation, not critical)
+      // 4. Update entry info (secondary operation, not critical)
       try {
         const tdacSubmission = {
           arrCardNo: cardNo,
@@ -227,7 +289,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
         // Don't block user flow - continue with QR code saving
       }
 
-      // 4. Save to photo album
+      // 5. Save to photo album
       const saved = await saveToPhotoAlbum(qrData.src);
 
       if (saved && isMountedRef.current) {

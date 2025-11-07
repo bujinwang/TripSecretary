@@ -7,10 +7,14 @@ const FALLBACK_LANGUAGE = 'en';
 const STORAGE_KEY = '@tripassistant.locale';
 
 const normalizeLanguage = (code) => {
-  if (!code) return DEFAULT_LANGUAGE;
+  if (!code) {
+return DEFAULT_LANGUAGE;
+}
   
   // Handle legacy 'zh' mapping - prefer Traditional for generic 'zh'
-  if (code === 'zh') return 'zh-TW';
+  if (code === 'zh') {
+return 'zh-TW';
+}
   
   // Handle regional variants - map all Traditional variants to zh-TW
   const languageMap = {
@@ -59,7 +63,9 @@ const COUNTRY_CODE_MAP = {
 };
 
 const getTranslationByPath = (language, key) => {
-  if (!key) return undefined;
+  if (!key) {
+return undefined;
+}
   const segments = key.split('.');
 
   // Check if first segment is an old country code and map it
@@ -108,7 +114,9 @@ export const LocaleProvider = ({ initialLanguage = DEFAULT_LANGUAGE, children })
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) {
+return;
+}
     AsyncStorage.setItem(STORAGE_KEY, language).catch(() => {});
   }, [language, ready]);
 

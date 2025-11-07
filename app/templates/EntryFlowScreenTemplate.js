@@ -38,6 +38,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -76,12 +77,15 @@ const EntryFlowScreenTemplate = ({
   // Optional custom data loader
   useDataLoaderHook,
 }) => {
+  // Get translation function early - needed for context value
+  const { t } = useLocale();
+  
   // Validate required props - provide defaults to prevent context errors
   if (!config) {
     console.error('[EntryFlowScreenTemplate] config is required');
     // Return a minimal context provider to prevent hook errors
     return (
-      <EntryFlowTemplateContext.Provider value={{ config: {}, t: () => '', navigation: null, route: null }}>
+      <EntryFlowTemplateContext.Provider value={{ config: {}, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
           {children}
         </SafeAreaView>
@@ -92,7 +96,7 @@ const EntryFlowScreenTemplate = ({
   if (!route) {
     console.error('[EntryFlowScreenTemplate] route is required');
     return (
-      <EntryFlowTemplateContext.Provider value={{ config, t: () => '', navigation: null, route: null }}>
+      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
           {children}
         </SafeAreaView>
@@ -103,15 +107,13 @@ const EntryFlowScreenTemplate = ({
   if (!navigation) {
     console.error('[EntryFlowScreenTemplate] navigation is required');
     return (
-      <EntryFlowTemplateContext.Provider value={{ config, t: () => '', navigation: null, route }}>
+      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
           {children}
         </SafeAreaView>
       </EntryFlowTemplateContext.Provider>
     );
   }
-
-  const { t } = useLocale();
   const passportParam = route.params?.passport;
   const destination = route.params?.destination;
   const passport = useMemo(() => UserDataService.toSerializablePassport(passportParam), [passportParam?.id]);
@@ -627,6 +629,10 @@ function PrimaryActionCard({
   const hasSubmitScreen = Boolean(config.screens?.submit);
   const entryGuideScreen = config.screens?.entryGuide;
 
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+
   const handlePress = () => {
     if (isReady) {
       if (hasSubmitScreen) {
@@ -649,19 +655,19 @@ function PrimaryActionCard({
     : ['#F97316', '#F59E0B'];
   const icon = useEntryGuideAsPrimary ? '🛂' : isReady && hasSubmitScreen ? '🛫' : '✏️';
   const title = useEntryGuideAsPrimary
-    ? t(`${config.destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: '开始入境' })
+    ? t(`${destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: '开始入境' })
     : isReady && hasSubmitScreen
-    ? t(`${config.destinationId}.entryFlow.actions.submitThai`, { defaultValue: '提交入境卡' })
-    : t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' });
+    ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: '提交入境卡' })
+    : t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: '编辑旅行信息' });
   const subtitle = useEntryGuideAsPrimary
-    ? t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, {
+    ? t(`${destinationId}.entryFlow.actions.entryGuide.subtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
       })
     : isReady && hasSubmitScreen
-    ? t(`${config.destinationId}.entryFlow.actions.submitThai.subtitle`, {
+    ? t(`${destinationId}.entryFlow.actions.submit.subtitle`, {
         defaultValue: `准备完成！现在可以提交${destination}入境卡了`,
       })
-    : t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' });
+    : t(`${destinationId}.entryFlow.actions.edit.subtitle`, { defaultValue: '如需修改，返回编辑' });
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -730,6 +736,10 @@ function PrimaryActionCard({
 }
 
 function SecondaryEditActionCard({ t, navigation, route, config }) {
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+
   const handlePress = () => {
     const travelInfoScreen =
       config.screens?.travelInfo || route?.params?.travelInfoScreen || 'VietnamTravelInfo';
@@ -760,7 +770,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
           </YStack>
           <YStack alignItems="center">
             <TamaguiText fontSize="$3" fontWeight="700" color="#1D4ED8">
-              {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
+              {t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: '编辑旅行信息' })}
             </TamaguiText>
             <TamaguiText
               fontSize="$2"
@@ -768,7 +778,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
               marginTop="$xs"
               textAlign="center"
             >
-              {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
+              {t(`${destinationId}.entryFlow.actions.edit.subtitle`, { defaultValue: '如需修改，返回编辑' })}
             </TamaguiText>
           </YStack>
         </XStack>
@@ -781,6 +791,10 @@ function CountdownCard({ arrivalDate, t, config }) {
   if (!arrivalDate) {
     return null;
   }
+
+  // Map 'us' to 'usa' for translation keys
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
 
   const arrival = new Date(arrivalDate);
   const now = new Date();
@@ -825,16 +839,16 @@ function CountdownCard({ arrivalDate, t, config }) {
               <TamaguiText fontSize={18}>🛂</TamaguiText>
             </YStack>
             <TamaguiText fontSize="$3" fontWeight="700" color="#D97706">
-              {t(`${config.destinationId}.entryFlow.countdown.titleThai`, { defaultValue: '距离提交入境卡还有' })}
+              {t(`${destinationId}.entryFlow.countdown.title`, { defaultValue: '距离提交入境卡还有' })}
             </TamaguiText>
           </XStack>
 
           <TamaguiText fontSize="$2" color="#D97706" textAlign="center">
-            {t(`${config.destinationId}.entryFlow.countdown.subtitleThai`, { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
+            {t(`${destinationId}.entryFlow.countdown.subtitle`, { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
           </TamaguiText>
 
           <TamaguiText fontSize="$6" fontWeight="800" color="#D97706" textAlign="center">
-            {t(`${config.destinationId}.entryFlow.countdown.timeThai`, {
+            {t(`${destinationId}.entryFlow.countdown.time`, {
               defaultValue: `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`,
               days,
               hours,
@@ -852,7 +866,7 @@ function CountdownCard({ arrivalDate, t, config }) {
             borderColor="rgba(255,152,0,0.25)"
           >
             <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
-              {t(`${config.destinationId}.entryFlow.countdown.arrivalThai`, { defaultValue: `抵达日期 ${formattedArrival}` })}
+              {t(`${destinationId}.entryFlow.countdown.arrival`, { defaultValue: `抵达日期 ${formattedArrival}` })}
             </TamaguiText>
           </BaseCard>
         </YStack>
@@ -1195,7 +1209,9 @@ EntryFlowScreenTemplate.ActionButtons = () => {
 EntryFlowScreenTemplate.LoadingIndicator = ({ message }) => {
   const { t, isLoading } = useEntryFlowTemplate();
 
-  if (!isLoading) return null;
+  if (!isLoading) {
+return null;
+}
 
   return (
     <YStack padding="$md" alignItems="center">
@@ -1208,5 +1224,28 @@ EntryFlowScreenTemplate.LoadingIndicator = ({ message }) => {
 
 // Export hook for advanced usage
 EntryFlowScreenTemplate.useTemplate = useEntryFlowTemplate;
+
+EntryFlowScreenTemplate.propTypes = {
+  children: PropTypes.node,
+  config: PropTypes.shape({
+    country: PropTypes.string.isRequired,
+    colors: PropTypes.shape({
+      background: PropTypes.string,
+      primary: PropTypes.string,
+    }),
+    categories: PropTypes.arrayOf(PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    })),
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.object,
+  }).isRequired,
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func,
+    goBack: PropTypes.func,
+  }).isRequired,
+  useDataLoaderHook: PropTypes.func,
+};
 
 export default EntryFlowScreenTemplate;

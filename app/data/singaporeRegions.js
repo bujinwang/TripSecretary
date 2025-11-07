@@ -82,7 +82,9 @@ export const singaporeRegions = [
  */
 export const getRegionDisplayNameBilingual = (code) => {
   const region = singaporeRegions.find(r => r.code === code);
-  if (!region) return code;
+  if (!region) {
+return code;
+}
   return `${region.name} - ${region.nameZh}`;
 };
 

@@ -63,7 +63,9 @@ const COUNTRY_CODES = {
 export const extractCountryCode = (phoneNumber, options = {}) => {
   const { strict = true } = options;
 
-  if (!phoneNumber) return '';
+  if (!phoneNumber) {
+return '';
+}
 
   // Remove all non-digit characters except +
   const cleaned = phoneNumber.toString().replace(/[^\d+]/g, '');
@@ -124,7 +126,9 @@ export const extractCountryCode = (phoneNumber, options = {}) => {
  * // → "13812345678"
  */
 export const extractNationalNumber = (phoneNumber, countryCode = null) => {
-  if (!phoneNumber) return '';
+  if (!phoneNumber) {
+return '';
+}
 
   const cleaned = phoneNumber.toString().replace(/[^\d+]/g, '');
 
@@ -238,7 +242,9 @@ export const parsePhoneNumber = (phoneNumber, options = {}) => {
 export const formatPhoneNumber = (phoneNumber, options = {}) => {
   const { countryCode, format = 'international' } = options;
 
-  if (!phoneNumber) return '';
+  if (!phoneNumber) {
+return '';
+}
 
   const parsed = typeof phoneNumber === 'string'
     ? parsePhoneNumber(phoneNumber, { defaultCountryCode: countryCode })
@@ -271,7 +277,9 @@ export const formatPhoneNumber = (phoneNumber, options = {}) => {
  * @returns {string} Formatted national number
  */
 const formatNationalNumber = (nationalNumber, countryCode = null) => {
-  if (!nationalNumber) return '';
+  if (!nationalNumber) {
+return '';
+}
 
   const cleaned = nationalNumber.replace(/\D/g, '');
 
@@ -379,7 +387,9 @@ export const validatePhoneNumber = (phoneNumber, options = {}) => {
  * // → '86'
  */
 export const getCountryCodeFromNationality = (nationalityCode) => {
-  if (!nationalityCode) return '';
+  if (!nationalityCode) {
+return '';
+}
 
   const mapping = {
     'CHN': '86',

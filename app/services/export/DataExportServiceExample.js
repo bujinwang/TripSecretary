@@ -330,7 +330,9 @@ export const ExportButtons = ({ entryPackId, onExportComplete }) => {
   const [exportFormat, setExportFormat] = useState(null);
 
   const handleExport = async (format) => {
-    if (isExporting) return;
+    if (isExporting) {
+return;
+}
 
     setIsExporting(true);
     setExportFormat(format);

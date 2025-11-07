@@ -199,7 +199,9 @@ describe('NotificationIntegration', () => {
     test('should not schedule notifications when globally disabled', async () => {
       // Mock disabled notifications
       NotificationPreferencesService.getPreference.mockImplementation((path, defaultValue) => {
-        if (path === 'enabled') return Promise.resolve(false);
+        if (path === 'enabled') {
+return Promise.resolve(false);
+}
         return Promise.resolve(defaultValue);
       });
 

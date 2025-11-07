@@ -9,7 +9,9 @@
  * @returns {string|null} - Formatted date or null
  */
 export const formatDateForInput = (dateString) => {
-  if (!dateString) return null;
+  if (!dateString) {
+return null;
+}
 
   try {
     // Try different date formats that might come from OCR
@@ -66,7 +68,9 @@ export const formatDateForInput = (dateString) => {
  * @returns {string|null} - Country code or null
  */
 export const mapCityToCountryCode = (cityName) => {
-  if (!cityName) return null;
+  if (!cityName) {
+return null;
+}
 
   const cityToCountry = {
     // Major Chinese cities
@@ -112,7 +116,9 @@ export const mapCityToCountryCode = (cityName) => {
  * @returns {string|null} - Province name or null
  */
 export const extractProvinceFromAddress = (address) => {
-  if (!address) return null;
+  if (!address) {
+return null;
+}
 
   const thaiProvinces = [
     'Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya', 'Krabi', 'Koh Samui',

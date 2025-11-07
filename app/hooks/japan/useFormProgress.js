@@ -54,7 +54,9 @@ const getFieldCount = (section, formData) => {
       }
       total = travelFields.length;
       filled = travelFields.filter(field => {
-        if (typeof field === 'boolean') return field;
+        if (typeof field === 'boolean') {
+return field;
+}
         return field && field.toString().trim() !== '';
       }).length;
       break;

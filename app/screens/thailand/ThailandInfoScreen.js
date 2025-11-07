@@ -23,7 +23,9 @@ const ThailandInfoScreen = ({ navigation, route }) => {
   };
 
   const normalizeItems = (value) => {
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) {
+return value;
+}
     if (typeof value === 'string' && value.length > 0) {
       return [value];
     }

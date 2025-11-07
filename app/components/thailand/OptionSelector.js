@@ -48,7 +48,9 @@ const OptionSelector = ({
   disabled = false,
 }) => {
   const handleSelect = (optionValue) => {
-    if (disabled) return;
+    if (disabled) {
+return;
+}
     onSelect(optionValue);
   };
 

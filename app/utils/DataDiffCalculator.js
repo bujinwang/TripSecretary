@@ -453,7 +453,9 @@ class DataDiffCalculator {
    * @returns {string} - Fund summary
    */
   static getFundSummary(fund) {
-    if (!fund) return '(空)';
+    if (!fund) {
+return '(空)';
+}
     
     const type = fund.type || '未知类型';
     const amount = fund.amount || '0';

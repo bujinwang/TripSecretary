@@ -385,7 +385,9 @@ class NumberFormatter {
    * @returns {string} Normalized locale code
    */
   static normalizeLocale(locale) {
-    if (!locale) return 'en';
+    if (!locale) {
+return 'en';
+}
     
     // Handle common variations
     const localeMap = {

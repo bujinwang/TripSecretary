@@ -14,7 +14,9 @@ class DateFormatter {
    * @returns {string} Formatted date string
    */
   static formatDate(date, locale = 'en', format = 'short') {
-    if (!date) return '';
+    if (!date) {
+return '';
+}
     
     const dateObj = date instanceof Date ? date : new Date(date);
     
@@ -270,7 +272,9 @@ class DateFormatter {
    * Parse date string in various formats
    */
   static parseDate(dateString) {
-    if (!dateString) return null;
+    if (!dateString) {
+return null;
+}
     
     // Try ISO format first
     const isoDate = new Date(dateString);
@@ -322,10 +326,14 @@ class DateFormatter {
    * @returns {string} Formatted notification timestamp
    */
   static formatNotificationTime(date, locale = 'en') {
-    if (!date) return '';
+    if (!date) {
+return '';
+}
     
     const dateObj = date instanceof Date ? date : new Date(date);
-    if (isNaN(dateObj.getTime())) return '';
+    if (isNaN(dateObj.getTime())) {
+return '';
+}
 
     const now = new Date();
     const diffMs = now.getTime() - dateObj.getTime();

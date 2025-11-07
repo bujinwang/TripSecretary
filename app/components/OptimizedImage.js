@@ -79,13 +79,17 @@ const OptimizedImage = ({
   }, [lazy, shouldLoad, lazyLoadDelay]);
 
   const handleLoadStart = useCallback(() => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current) {
+return;
+}
     setImageLoading(true);
     setImageError(false);
   }, []);
 
   const handleLoad = useCallback((event) => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current) {
+return;
+}
     setImageLoading(false);
     setImageError(false);
 
@@ -100,7 +104,9 @@ const OptimizedImage = ({
   }, [fadeDuration, fadeAnim, onLoad]);
 
   const handleError = useCallback((error) => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current) {
+return;
+}
     setImageLoading(false);
     setImageError(true);
 

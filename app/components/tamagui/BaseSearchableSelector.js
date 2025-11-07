@@ -60,9 +60,22 @@ const BaseSearchableSelector = ({
   const [searchText, setSearchText] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
 
+  // Normalize label prop - handle both string and object formats
+  // Object format: {label: string, help?: string}
+  const normalizedLabel = typeof label === 'object' && label !== null && 'label' in label
+    ? label.label
+    : typeof label === 'string'
+    ? label
+    : null;
+  
+  // Use help from label object if helpText is not provided
+  const effectiveHelpText = helpText || (typeof label === 'object' && label !== null && 'help' in label ? label.help : null);
+
   // Default filter function
   const defaultFilterOptions = (opts, search) => {
-    if (!search) return opts;
+    if (!search) {
+return opts;
+}
     const lowerSearch = search.toLowerCase();
     return opts.filter(opt => {
       const label = opt.label || '';
@@ -84,7 +97,9 @@ const BaseSearchableSelector = ({
       return getDisplayValue(value, customValue, options);
     }
 
-    if (!value) return '';
+    if (!value) {
+return '';
+}
 
     // Handle "OTHER" case
     if (value === 'OTHER') {
@@ -123,9 +138,9 @@ const BaseSearchableSelector = ({
 
   return (
     <YStack marginBottom="$md" style={style}>
-      {label && (
+      {normalizedLabel && (
         <TamaguiText fontSize="$2" color="$text" marginBottom="$xs">
-          {label}
+          {normalizedLabel}
         </TamaguiText>
       )}
 
@@ -164,9 +179,9 @@ const BaseSearchableSelector = ({
           {errorMessage}
         </TamaguiText>
       )}
-      {helpText && !error && (
+      {effectiveHelpText && !error && (
         <TamaguiText fontSize="$1" color="$textSecondary" marginTop="$xs">
-          {helpText}
+          {effectiveHelpText}
         </TamaguiText>
       )}
 
@@ -284,7 +299,9 @@ const BaseSearchableSelector = ({
                         keyboardShouldPersistTaps="handled"
                       >
                         {filteredOptions.map((item, index) => {
-                          if (!item) return null;
+                          if (!item) {
+return null;
+}
 
                           const isSelected = value === item.value;
 

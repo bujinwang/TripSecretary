@@ -149,7 +149,9 @@ export const getCityById = (id) => {
  * Get city by English name (case-insensitive, partial match)
  */
 export const getCityByName = (nameEn) => {
-  if (!nameEn) return null;
+  if (!nameEn) {
+return null;
+}
   const searchTerm = nameEn.toLowerCase().trim();
   return taiwanCities.find(city =>
     city.nameEn.toLowerCase().includes(searchTerm) ||

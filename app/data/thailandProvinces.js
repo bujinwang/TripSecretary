@@ -91,10 +91,16 @@ export const thailandProvinces = [
  */
 export const getProvinceDisplayName = (code, locale = 'en') => {
   const province = thailandProvinces.find(p => p.code === code);
-  if (!province) return code;
+  if (!province) {
+return code;
+}
   
-  if (locale === 'zh') return `${province.name} - ${province.nameZh}`;
-  if (locale === 'th') return province.nameTh;
+  if (locale === 'zh') {
+return `${province.name} - ${province.nameZh}`;
+}
+  if (locale === 'th') {
+return province.nameTh;
+}
   return province.name;
 };
 

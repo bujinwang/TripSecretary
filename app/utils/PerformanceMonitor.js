@@ -28,7 +28,9 @@ class PerformanceMonitor {
    * @returns {string} - Operation ID for ending the timing
    */
   startTiming(operationName, metadata = {}) {
-    if (!this.isEnabled) return null;
+    if (!this.isEnabled) {
+return null;
+}
 
     const operationId = `${operationName}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const startTime = performance.now();
@@ -51,7 +53,9 @@ class PerformanceMonitor {
    * @returns {Object} - Performance metrics for the operation
    */
   endTiming(operationId, additionalMetadata = {}) {
-    if (!this.isEnabled || !operationId) return null;
+    if (!this.isEnabled || !operationId) {
+return null;
+}
 
     const operation = this.operationTimings.get(operationId);
     if (!operation) {
@@ -117,7 +121,9 @@ class PerformanceMonitor {
    * @param {Object} metadata - Additional metadata
    */
   recordMemoryUsage(context, metadata = {}) {
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+return;
+}
 
     try {
       // Note: React Native doesn't have performance.memory, so we'll use a placeholder
@@ -232,7 +238,9 @@ class PerformanceMonitor {
 
     // Group by operation type
     for (const [type, metrics] of this.metrics.entries()) {
-      if (operationType && type !== operationType) continue;
+      if (operationType && type !== operationType) {
+continue;
+}
       
       summary.operationTypes[type] = {
         count: metrics.length,
