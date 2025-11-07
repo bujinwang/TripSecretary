@@ -17,7 +17,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-native",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "lib": ["esnext"],
     "forceConsistentCasingInFileNames": true
@@ -33,6 +33,8 @@
     "android",
     "ios",
     "babel.config.js",
-    "metro.config.js"
+    "metro.config.js",
+    "app/screens/**/__tests__/**/*",
+    "app/services/**/__tests__/**/*"
   ]
 }

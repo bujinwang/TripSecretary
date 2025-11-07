@@ -1,25 +1,38 @@
 /**
  * DigitalArrivalCard Model Tests - Schema v2.0
- * Tests for the generic Digital Arrival Card model supporting TDAC, MDAC, SDAC, HKDAC
  */
 
 import DigitalArrivalCard from '../DigitalArrivalCard';
+import type SecureStorageServiceType from '../../services/security/SecureStorageService';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
-// Mock SecureStorageService
-jest.mock('../../services/security/SecureStorageService');
+jest.mock('../../services/security/SecureStorageService', () => {
+  const mockService = {
+    initializeDatabase: jest.fn(),
+    deleteUserData: jest.fn(),
+    saveDigitalArrivalCard: jest.fn(),
+    getDigitalArrivalCard: jest.fn(),
+    getDigitalArrivalCardsByEntryInfoId: jest.fn(),
+    getLatestSuccessfulDigitalArrivalCard: jest.fn()
+  };
+
+  return {
+    __esModule: true,
+    default: mockService
+  };
+});
+
+const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
 
 describe('DigitalArrivalCard Model - Schema v2.0', () => {
-  let testUserId;
-  let testEntryInfoId;
-  let testCard;
+  let testUserId: string;
+  let testEntryInfoId: string;
+  let testCard: DigitalArrivalCard;
 
-  beforeAll(async () => {
-    // Mock database initialization
-    SecureStorageService.initializeDatabase = jest.fn().mockResolvedValue(true);
-
-    testUserId = 'test-user-' + Date.now();
-    testEntryInfoId = 'entry_test_' + Date.now();
+  beforeAll(() => {
+    mockedSecureStorage.initializeDatabase.mockResolvedValue(true);
+    testUserId = `test-user-${Date.now()}`;
+    testEntryInfoId = `entry_test_${Date.now()}`;
   });
 
   beforeEach(() => {
@@ -36,16 +49,19 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
       processingTime: 2500,
       retryCount: 0,
       errorDetails: null,
-      isSuperseded: 0,
+      isSuperseded: false,
       version: 1
     });
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   afterAll(async () => {
-    // Clean up test data
+    mockedSecureStorage.deleteUserData.mockResolvedValue(true);
     try {
-      SecureStorageService.deleteUserData = jest.fn().mockResolvedValue(true);
-      await SecureStorageService.deleteUserData(testUserId);
+      await mockedSecureStorage.deleteUserData(testUserId);
     } catch (error) {
       console.warn('Cleanup failed:', error);
     }
@@ -63,7 +79,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
       expect(testCard.status).toBe('success');
       expect(testCard.processingTime).toBe(2500);
       expect(testCard.retryCount).toBe(0);
-      expect(testCard.isSuperseded).toBe(0);
+      expect(testCard.isSuperseded).toBe(false);
       expect(testCard.version).toBe(1);
     });
 
@@ -93,15 +109,14 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
 
   describe('Save and Load Operations', () => {
     test('should save DigitalArrivalCard successfully', async () => {
-      // Mock save operation
-      SecureStorageService.saveDigitalArrivalCard = jest.fn().mockResolvedValue({
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({
         id: testCard.id,
         success: true
       });
 
       const result = await testCard.save();
 
-      expect(SecureStorageService.saveDigitalArrivalCard).toHaveBeenCalledWith({
+      expect(mockedSecureStorage.saveDigitalArrivalCard).toHaveBeenCalledWith({
         id: testCard.id,
         entryInfoId: testEntryInfoId,
         userId: testUserId,
@@ -113,11 +128,11 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         submittedAt: expect.any(String),
         submissionMethod: 'api',
         status: 'success',
-        apiResponse: JSON.stringify({ success: true, cardNumber: 'TH123456789' }),
+        apiResponse: { success: true, cardNumber: 'TH123456789' },
         processingTime: 2500,
         retryCount: 0,
         errorDetails: null,
-        isSuperseded: 0,
+        isSuperseded: false,
         supersededAt: null,
         supersededBy: null,
         supersededReason: null,
@@ -126,7 +141,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         updatedAt: expect.any(String)
       });
 
-      expect(result.success).toBe(true);
+      expect((result as { success: boolean }).success).toBe(true);
     });
 
     test('should load DigitalArrivalCard by ID', async () => {
@@ -142,11 +157,11 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         submittedAt: new Date().toISOString(),
         submissionMethod: 'api',
         status: 'success',
-        apiResponse: JSON.stringify({ success: true, cardNumber: 'TH123456789' }),
+        apiResponse: { success: true, cardNumber: 'TH123456789' },
         processingTime: 2500,
         retryCount: 0,
         errorDetails: null,
-        isSuperseded: 0,
+        isSuperseded: false,
         supersededAt: null,
         supersededBy: null,
         supersededReason: null,
@@ -155,19 +170,19 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         updatedAt: new Date().toISOString()
       };
 
-      SecureStorageService.getDigitalArrivalCard = jest.fn().mockResolvedValue(mockData);
+      mockedSecureStorage.getDigitalArrivalCard.mockResolvedValue(mockData);
 
       const loaded = await DigitalArrivalCard.load('dac_test_123');
 
       expect(loaded).toBeInstanceOf(DigitalArrivalCard);
-      expect(loaded.id).toBe('dac_test_123');
-      expect(loaded.cardType).toBe('TDAC');
-      expect(loaded.arrCardNo).toBe('TH123456789');
-      expect(loaded.apiResponse).toEqual({ success: true, cardNumber: 'TH123456789' });
+      expect(loaded?.id).toBe('dac_test_123');
+      expect(loaded?.cardType).toBe('TDAC');
+      expect(loaded?.arrCardNo).toBe('TH123456789');
+      expect(loaded?.apiResponse).toEqual({ success: true, cardNumber: 'TH123456789' });
     });
 
     test('should return null when loading non-existent card', async () => {
-      SecureStorageService.getDigitalArrivalCard = jest.fn().mockResolvedValue(null);
+      mockedSecureStorage.getDigitalArrivalCard.mockResolvedValue(null);
 
       const loaded = await DigitalArrivalCard.load('non-existent-id');
 
@@ -183,18 +198,18 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
           entryInfoId: testEntryInfoId,
           cardType: 'TDAC',
           status: 'success',
-          apiResponse: JSON.stringify({ success: true })
+          apiResponse: { success: true }
         },
         {
           id: 'dac_2',
           entryInfoId: testEntryInfoId,
           cardType: 'MDAC',
           status: 'success',
-          apiResponse: JSON.stringify({ success: true })
+          apiResponse: { success: true }
         }
       ];
 
-      SecureStorageService.getDigitalArrivalCardsByEntryInfoId = jest.fn().mockResolvedValue(mockCards);
+      mockedSecureStorage.getDigitalArrivalCardsByEntryInfoId.mockResolvedValue(mockCards);
 
       const cards = await DigitalArrivalCard.getByEntryInfoId(testEntryInfoId);
 
@@ -211,21 +226,21 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         cardType: 'TDAC',
         status: 'success',
         submittedAt: new Date().toISOString(),
-        apiResponse: JSON.stringify({ success: true, cardNumber: 'TH123456789' })
+        apiResponse: { success: true, cardNumber: 'TH123456789' }
       };
 
-      SecureStorageService.getLatestSuccessfulDigitalArrivalCard = jest.fn().mockResolvedValue(mockCard);
+      mockedSecureStorage.getLatestSuccessfulDigitalArrivalCard.mockResolvedValue(mockCard);
 
       const card = await DigitalArrivalCard.getLatestSuccessful(testEntryInfoId, 'TDAC');
 
       expect(card).toBeInstanceOf(DigitalArrivalCard);
-      expect(card.id).toBe('dac_latest');
-      expect(card.cardType).toBe('TDAC');
-      expect(card.status).toBe('success');
+      expect(card?.id).toBe('dac_latest');
+      expect(card?.cardType).toBe('TDAC');
+      expect(card?.status).toBe('success');
     });
 
     test('should return null when no successful card exists', async () => {
-      SecureStorageService.getLatestSuccessfulDigitalArrivalCard = jest.fn().mockResolvedValue(null);
+      mockedSecureStorage.getLatestSuccessfulDigitalArrivalCard.mockResolvedValue(null);
 
       const card = await DigitalArrivalCard.getLatestSuccessful(testEntryInfoId, 'TDAC');
 
@@ -235,16 +250,16 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
 
   describe('Superseding Logic', () => {
     test('should mark card as superseded', async () => {
-      SecureStorageService.saveDigitalArrivalCard = jest.fn().mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
 
       const result = await testCard.markAsSuperseded('dac_new_123', 'User submitted updated information');
 
-      expect(testCard.isSuperseded).toBe(1);
+      expect(testCard.isSuperseded).toBe(true);
       expect(testCard.supersededBy).toBe('dac_new_123');
       expect(testCard.supersededReason).toBe('User submitted updated information');
       expect(testCard.supersededAt).toBeDefined();
-
-      expect(SecureStorageService.saveDigitalArrivalCard).toHaveBeenCalled();
+      expect(mockedSecureStorage.saveDigitalArrivalCard).toHaveBeenCalled();
+      expect(result).toEqual({ success: true });
     });
   });
 
@@ -296,7 +311,6 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
 
   describe('Full Workflow Test', () => {
     test('should complete full TDAC submission workflow', async () => {
-      // 1. Create initial card
       const initialCard = new DigitalArrivalCard({
         entryInfoId: testEntryInfoId,
         userId: testUserId,
@@ -305,13 +319,10 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         status: 'pending'
       });
 
-      // 2. Mock successful save
-      SecureStorageService.saveDigitalArrivalCard = jest.fn().mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
 
-      // 3. Save initial card
       await initialCard.save();
 
-      // 4. Update with successful submission data
       initialCard.status = 'success';
       initialCard.arrCardNo = 'TH987654321';
       initialCard.qrUri = 'https://example.com/qr/TH987654321';
@@ -319,15 +330,12 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
       initialCard.apiResponse = { success: true, cardNumber: 'TH987654321' };
       initialCard.processingTime = 1800;
 
-      // 5. Save updated card
       await initialCard.save();
 
-      // 6. Verify final state
       expect(initialCard.status).toBe('success');
       expect(initialCard.arrCardNo).toBe('TH987654321');
       expect(initialCard.processingTime).toBe(1800);
 
-      // 7. Test summary generation
       const summary = initialCard.getSummary();
       expect(summary.status).toBe('success');
       expect(summary.arrCardNo).toBe('TH987654321');
@@ -335,7 +343,6 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
     });
 
     test('should handle card superseding workflow', async () => {
-      // 1. Create first successful card
       const firstCard = new DigitalArrivalCard({
         entryInfoId: testEntryInfoId,
         userId: testUserId,
@@ -345,7 +352,6 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         arrCardNo: 'TH111111111'
       });
 
-      // 2. Create second card that will supersede the first
       const secondCard = new DigitalArrivalCard({
         entryInfoId: testEntryInfoId,
         userId: testUserId,
@@ -355,25 +361,21 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         arrCardNo: 'TH222222222'
       });
 
-      // 3. Mock save operations
-      SecureStorageService.saveDigitalArrivalCard = jest.fn().mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
 
-      // 4. Save both cards
       await firstCard.save();
       await secondCard.save();
 
-      // 5. Mark first card as superseded by second
       await firstCard.markAsSuperseded(secondCard.id, 'User resubmitted with updated information');
 
-      // 6. Verify superseding
-      expect(firstCard.isSuperseded).toBe(1);
+      expect(firstCard.isSuperseded).toBe(true);
       expect(firstCard.supersededBy).toBe(secondCard.id);
       expect(firstCard.supersededReason).toBe('User resubmitted with updated information');
       expect(firstCard.supersededAt).toBeDefined();
 
-      // 7. Verify second card is not superseded
-      expect(secondCard.isSuperseded).toBe(0);
+      expect(secondCard.isSuperseded).toBe(false);
       expect(secondCard.supersededBy).toBeNull();
     });
   });
 });
+

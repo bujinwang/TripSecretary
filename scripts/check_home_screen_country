@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the HomeScreen.js file
-const homeScreenPath = path.join(__dirname, 'app/screens/HomeScreen.js');
+const homeScreenPath = path.join(__dirname, 'app/screens/HomeScreen.tsx');
 const homeScreenContent = fs.readFileSync(homeScreenPath, 'utf8');
 
 // Check current import statements for countriesService

@@ -1,7 +1,7 @@
 // Verification script for Task 3.1 - Passport Data Collection Fields
 const fs = require('fs');
 
-const content = fs.readFileSync('app/screens/japan/JapanTravelInfoScreen.js', 'utf8');
+const content = fs.readFileSync('app/screens/japan/JapanTravelInfoScreen.tsx', 'utf8');
 
 // Check if all required passport fields are implemented
 const requiredFields = [

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Vietnam Travel Info Screen
  *

@@ -1,29 +1,30 @@
-// app/models/__mocks__/EntryPack.js
-const EntryPack = jest.fn().mockImplementation((data) => {
-  return {
-    id: data.id || 'test-pack-id',
+// app/models/__mocks__/EntryPack.ts
+
+const EntryPackMock = jest.fn((data: Record<string, any> = {}) => {
+  const entryPack = {
+    id: data.id ?? 'test-pack-id',
     entryInfoId: data.entryInfoId,
     userId: data.userId,
     destinationId: data.destinationId,
     tripId: data.tripId,
-    tdacSubmission: data.tdacSubmission || {
+    tdacSubmission: data.tdacSubmission ?? {
       arrCardNo: null,
       qrUri: null,
       pdfPath: null,
       submittedAt: null,
       submissionMethod: null
     },
-    submissionHistory: data.submissionHistory || [],
-    documents: data.documents || {
+    submissionHistory: data.submissionHistory ?? [],
+    documents: data.documents ?? {
       qrCodeImage: null,
       pdfDocument: null,
       entryCardImage: null
     },
-    displayStatus: data.displayStatus || {
+    displayStatus: data.displayStatus ?? {
       completionPercent: 0,
       categoryStates: {
         passport: 'missing',
-        personalInfo: 'missing', 
+        personalInfo: 'missing',
         funds: 'missing',
         travel: 'missing'
       },
@@ -32,10 +33,10 @@ const EntryPack = jest.fn().mockImplementation((data) => {
       showQR: false,
       showGuide: false
     },
-    status: data.status || 'in_progress',
-    createdAt: data.createdAt || new Date().toISOString(),
-    updatedAt: data.updatedAt || new Date().toISOString(),
-    archivedAt: data.archivedAt || null,
+    status: data.status ?? 'in_progress',
+    createdAt: data.createdAt ?? new Date().toISOString(),
+    updatedAt: data.updatedAt ?? new Date().toISOString(),
+    archivedAt: data.archivedAt ?? null,
     save: jest.fn().mockResolvedValue(true),
     hasValidTDACSubmission: jest.fn(() => false),
     updateTDACSubmission: jest.fn(),
@@ -52,16 +53,18 @@ const EntryPack = jest.fn().mockImplementation((data) => {
     validate: jest.fn(() => ({ isValid: true, errors: [] })),
     recordFailedSubmission: jest.fn(),
     getSubmissionAttemptCount: jest.fn(() => 0),
-    getFailedSubmissionCount: jest.fn(() => 0),
+    getFailedSubmissionCount: jest.fn(() => 0)
   };
+
+  return entryPack;
 });
 
-EntryPack.load = jest.fn().mockImplementation(async (id) => {
-  return new EntryPack({ id, status: 'submitted' });
+(EntryPackMock as any).load = jest.fn(async (id: string) => new EntryPackMock({ id, status: 'submitted' }));
+
+(EntryPackMock as any).loadByUserId = jest.fn(async (userId: string, filters: Record<string, unknown> = {}) => {
+  void filters;
+  return [new EntryPackMock({ id: 'test-pack-id', userId, status: 'in_progress' })];
 });
 
-EntryPack.loadByUserId = jest.fn().mockImplementation(async (userId, filters = {}) => {
-  return [new EntryPack({ id: 'test-pack-id', userId, status: 'in_progress' })];
-});
+export default EntryPackMock;
 
-export default EntryPack;

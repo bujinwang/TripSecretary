@@ -281,36 +281,11 @@ class Passport {
 
   async save(options: SaveOptions = {}): Promise<SaveResult> {
     try {
-      console.log('=== PASSPORT MODEL SAVE DEBUG ===');
-      console.log('Passport.save called');
-      console.log('Passport instance data:', {
-        id: this.id,
-        userId: this.userId,
-        passportNumber: this.passportNumber,
-        fullName: this.fullName,
-        dateOfBirth: this.dateOfBirth,
-        nationality: this.nationality,
-        gender: this.gender,
-        expiryDate: this.expiryDate
-      });
-      console.log('options received:', options);
-      console.log('options.skipValidation:', options.skipValidation);
-      console.log('options.partial:', options.partial);
-
       if (!options.skipValidation) {
-        console.log('=== VALIDATION IS RUNNING ===');
-        console.log('About to call this.validate()');
         const validation = this.validate({ partial: options.partial ?? false });
-        console.log('Validation result:', validation);
         if (!validation.isValid) {
-          console.log('Validation failed with errors:', validation.errors);
           throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
-        } else {
-          console.log('Validation passed');
         }
-      } else {
-        console.log('=== SKIPPING VALIDATION ===');
-        console.log('skipValidation is true, bypassing validation');
       }
 
       this.updatedAt = new Date().toISOString();
@@ -333,16 +308,10 @@ class Passport {
       Passport.assignIfPresent(dataToSave, 'photoUri', this.photoUri);
       dataToSave.isPrimary = this.isPrimary;
 
-      console.log('About to call SecureStorageService.savePassport with filtered data:', dataToSave);
       const result = await SecureStorageService.savePassport(dataToSave as Record<string, unknown>);
-
-      console.log('SecureStorageService.savePassport completed successfully');
       return result as SaveResult;
     } catch (error) {
-      const err = error as Error;
-      console.error('=== PASSPORT MODEL SAVE ERROR ===');
-      console.error('Error in Passport.save:', err.message);
-      console.error('Error stack:', err.stack);
+      console.error('Failed to save passport:', error);
       throw error;
     }
   }

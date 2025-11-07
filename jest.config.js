@@ -11,14 +11,14 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  moduleFileExtensions: ['js', 'jsx', 'json', 'node'],
+  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'],
   collectCoverageFrom: [
-    'app/**/*.{js,jsx}',
-    '!app/**/*.test.{js,jsx}',
+    'app/**/*.{js,jsx,ts,tsx}',
+    '!app/**/*.test.{js,jsx,ts,tsx}',
     '!app/**/__tests__/**',
   ],
   testMatch: [
-    '**/__tests__/**/*.test.js',
-    '**/?(*.)+(spec|test).js',
+    '**/__tests__/**/*.test.(js|ts|jsx|tsx)',
+    '**/?(*.)+(spec|test).(js|ts|jsx|tsx)',
   ],
 };

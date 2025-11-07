@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the current ThailandTravelInfoScreen
-const screenPath = 'app/screens/thailand/ThailandTravelInfoScreen.js';
+const screenPath = 'app/screens/thailand/ThailandTravelInfoScreen.tsx';
 const screenContent = fs.readFileSync(screenPath, 'utf8');
 
 console.log('🔧 Fixing Personal Info Saving Issue...\n');

@@ -212,25 +212,15 @@ class PersonalInfo {
 
   static async loadDefault(userId: string): Promise<PersonalInfo | null> {
     try {
-      console.log('=== PERSONAL INFO LOAD DEBUG ===');
-      console.log('PersonalInfo.loadDefault called with userId:', userId);
-      console.log('Type of userId:', typeof userId);
-
       const data = await SecureStorageService.getPersonalInfo(userId);
-      console.log('SecureStorageService.getPersonalInfo result:', data);
 
       if (!data) {
-        console.log('No default personal info data found in database for userId:', userId);
         return null;
       }
 
-      console.log('Default personal info data found, creating instance...');
-      const personalInfo = new PersonalInfo(data as PersonalInfoInit);
-      console.log('PersonalInfo instance created with id:', personalInfo.id);
-      return personalInfo;
+      return new PersonalInfo(data as PersonalInfoInit);
     } catch (error) {
       console.error('Failed to load default personal info:', error);
-      console.error('Error details:', (error as Error).message, (error as Error).stack);
       throw error;
     }
   }
@@ -273,20 +263,6 @@ class PersonalInfo {
 
   async mergeUpdates(updates: PersonalInfoUpdates, options: SaveOptions = {}): Promise<SaveResult> {
     try {
-      console.log('=== 🔍 PERSONAL INFO MERGE UPDATES DEBUG ===');
-      console.log('mergeUpdates called with:');
-      console.log('- updates:', JSON.stringify(updates, null, 2));
-      console.log('- options:', options);
-
-      console.log('Current PersonalInfo state before merge:');
-      console.log('- phoneNumber:', this.phoneNumber);
-      console.log('- email:', this.email);
-      console.log('- occupation:', this.occupation);
-      console.log('- provinceCity:', this.provinceCity);
-      console.log('- countryRegion:', this.countryRegion);
-      console.log('- phoneCode:', this.phoneCode);
-      console.log('- gender:', this.gender);
-
       const nonEmptyUpdates: Record<string, unknown> = {};
 
       for (const [key, value] of Object.entries(updates)) {
@@ -294,27 +270,23 @@ class PersonalInfo {
           continue;
         }
 
-        if (value !== null && value !== undefined) {
-          nonEmptyUpdates[key] = value;
-          console.log(`✅ Including field ${key}:`, typeof value === 'string' ? `"${value}"` : value);
-        } else {
-          console.log(`❌ Skipping field ${key}: null/undefined`);
+        if (value === null || value === undefined) {
+          continue;
         }
+
+        if (typeof value === 'string' && value.trim().length === 0) {
+          continue;
+        }
+
+        nonEmptyUpdates[key] = value;
       }
 
-      console.log('Non-empty updates to apply:', JSON.stringify(nonEmptyUpdates, null, 2));
+      if (Object.keys(nonEmptyUpdates).length === 0) {
+        return { id: this.id };
+      }
 
       this.updatedAt = new Date().toISOString();
       Object.assign(this, nonEmptyUpdates);
-
-      console.log('PersonalInfo state after merge:');
-      console.log('- phoneNumber:', this.phoneNumber);
-      console.log('- email:', this.email);
-      console.log('- occupation:', this.occupation);
-      console.log('- provinceCity:', this.provinceCity);
-      console.log('- countryRegion:', this.countryRegion);
-      console.log('- phoneCode:', this.phoneCode);
-      console.log('- gender:', this.gender);
 
       if (!options.skipValidation) {
         const validation = this.validate();
@@ -323,11 +295,7 @@ class PersonalInfo {
         }
       }
 
-      console.log('About to save merged data...');
-      const saveResult = await this.save(options);
-      console.log('✅ Personal info merge and save completed successfully');
-
-      return saveResult;
+      return this.save(options);
     } catch (error) {
       console.error('❌ Failed to merge personal info updates:', error);
       console.error('Error details:', (error as Error).message, (error as Error).stack);

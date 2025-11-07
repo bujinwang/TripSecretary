@@ -105,16 +105,19 @@ describe('EntryInfo Model - Schema v2.0', () => {
 
   describe('Save and Load Operations', () => {
     test('should save EntryInfo with documents and displayStatus', async () => {
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue({
-        id: 'entry_123',
-        ...testEntryInfo
-      });
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: 'entry_123' });
 
       const result = await testEntryInfo.save();
 
-      expect(result.id).toBeDefined();
-      expect(result.documents).toEqual(documentsPayload);
-      expect(result.displayStatus).toEqual(displayStatusPayload);
+      expect(result.id).toBe('entry_123');
+
+      const saveArgs = mockedSecureStorage.saveEntryInfo.mock.calls[mockedSecureStorage.saveEntryInfo.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      expect(saveArgs).toBeDefined();
+      if (!saveArgs) {
+        throw new Error('Expected saveEntryInfo to be called');
+      }
+      expect(saveArgs.documents).toEqual(documentsPayload);
+      expect(saveArgs.displayStatus).toEqual(displayStatusPayload);
     });
 
     test('should load EntryInfo with documents and displayStatus', async () => {
@@ -126,7 +129,7 @@ describe('EntryInfo Model - Schema v2.0', () => {
         displayStatus: displayStatusPayload
       };
 
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue(mockSavedData);
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: mockSavedData.id });
       mockedSecureStorage.getEntryInfo.mockResolvedValue(mockSavedData);
 
       const saveResult = await testEntryInfo.save();
@@ -151,7 +154,7 @@ describe('EntryInfo Model - Schema v2.0', () => {
         displayStatus: displayStatusPayload
       };
 
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue(initialData);
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: initialData.id });
       mockedSecureStorage.getEntryInfo.mockResolvedValue(initialData);
 
       const saveResult = await testEntryInfo.save();
@@ -171,8 +174,14 @@ describe('EntryInfo Model - Schema v2.0', () => {
       mockedSecureStorage.saveEntryInfo.mockResolvedValue(updatedData);
       mockedSecureStorage.getEntryInfo.mockResolvedValue(updatedData);
 
-      const updated = await updatedEntryInfo.save();
-      expect(updated.documents).toEqual(updatedDocuments);
+      await updatedEntryInfo.save();
+
+      const saveArgs = mockedSecureStorage.saveEntryInfo.mock.calls[mockedSecureStorage.saveEntryInfo.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      expect(saveArgs).toBeDefined();
+      if (!saveArgs) {
+        throw new Error('Expected saveEntryInfo to be called');
+      }
+      expect(saveArgs.documents).toEqual(updatedDocuments);
 
       const loaded = await EntryInfo.load(saveResult.id);
       expect(loaded?.documents).toEqual(updatedDocuments);
@@ -190,7 +199,7 @@ describe('EntryInfo Model - Schema v2.0', () => {
         displayStatus: displayStatusPayload
       };
 
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue(initialData);
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: initialData.id });
       mockedSecureStorage.getEntryInfo.mockResolvedValue(initialData);
 
       const saveResult = await testEntryInfo.save();
@@ -211,8 +220,14 @@ describe('EntryInfo Model - Schema v2.0', () => {
       mockedSecureStorage.saveEntryInfo.mockResolvedValue(updatedData);
       mockedSecureStorage.getEntryInfo.mockResolvedValue(updatedData);
 
-      const updated = await updatedEntryInfo.save();
-      expect(updated.displayStatus).toEqual(newDisplayStatus);
+      await updatedEntryInfo.save();
+
+      const saveArgs = mockedSecureStorage.saveEntryInfo.mock.calls[mockedSecureStorage.saveEntryInfo.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      expect(saveArgs).toBeDefined();
+      if (!saveArgs) {
+        throw new Error('Expected saveEntryInfo to be called');
+      }
+      expect(saveArgs.displayStatus).toEqual(newDisplayStatus);
 
       const loaded = await EntryInfo.load(saveResult.id);
       expect(loaded?.displayStatus).toEqual(newDisplayStatus);

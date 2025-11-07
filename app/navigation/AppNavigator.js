@@ -103,7 +103,7 @@ import NotificationLogScreen from '../screens/NotificationLogScreen';
 import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
 import TDACFilesScreen from '../screens/thailand/TDACFilesScreen';
 import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
-import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen.js';
+import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 import HongKongEntryGuideScreen from '../screens/entryGuide/HongKongEntryGuideScreen';
 import VietnamEntryGuideScreen from '../screens/entryGuide/VietnamEntryGuideScreen';

@@ -1,40 +1,51 @@
 /**
- * Test suite for Passport is_primary constraint
- * Verifies that only one passport can be primary per user
+ * Test suite for Passport isPrimary constraint
  */
 
 import Passport from '../Passport';
+import type SecureStorageServiceType from '../../services/security/SecureStorageService';
 import SecureStorageService from '../../services/security/SecureStorageService';
 
-// Mock SecureStorageService
-jest.mock('../../services/security/SecureStorageService');
+jest.mock('../../services/security/SecureStorageService', () => {
+  const mockService = {
+    savePassport: jest.fn(),
+    getPassport: jest.fn(),
+    listUserPassports: jest.fn(),
+    getUserPassport: jest.fn()
+  };
+
+  return {
+    __esModule: true,
+    default: mockService
+  };
+});
+
+const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
 
 describe('Passport isPrimary Constraint', () => {
   const TEST_USER_ID = 'test_user_123';
 
-  beforeEach(async () => {
-    // Reset all mocks
+  beforeEach(() => {
     jest.clearAllMocks();
 
-    // Setup mock implementation
-    const mockPassports = new Map();
+    const mockPassports = new Map<string, Record<string, unknown>>();
 
-    SecureStorageService.savePassport = jest.fn(async (data) => {
-      mockPassports.set(data.id, { ...data });
-      return { id: data.id };
+    mockedSecureStorage.savePassport.mockImplementation(async data => {
+      mockPassports.set(String(data.id), { ...data });
+      return { id: data.id } as unknown as ReturnType<typeof mockedSecureStorage.savePassport>;
     });
 
-    SecureStorageService.getPassport = jest.fn(async (id) => {
-      return mockPassports.get(id) || null;
+    mockedSecureStorage.getPassport.mockImplementation(async id => {
+      return (mockPassports.get(String(id)) as Record<string, unknown> | undefined) ?? null;
     });
 
-    SecureStorageService.listUserPassports = jest.fn(async (userId) => {
+    mockedSecureStorage.listUserPassports.mockImplementation(async userId => {
       return Array.from(mockPassports.values()).filter(p => p.userId === userId);
     });
 
-    SecureStorageService.getUserPassport = jest.fn(async (userId) => {
+    mockedSecureStorage.getUserPassport.mockImplementation(async userId => {
       const passports = Array.from(mockPassports.values()).filter(p => p.userId === userId);
-      return passports.find(p => p.isPrimary) || passports[0] || null;
+      return passports.find(p => p.isPrimary) ?? passports[0] ?? null;
     });
   });
 
@@ -50,14 +61,17 @@ describe('Passport isPrimary Constraint', () => {
       });
 
       await passport.save({ skipValidation: true });
-      expect(passport.isPrimary).toBe(0);
+      expect(passport.isPrimary).toBe(false);
 
       await passport.setAsPrimary();
-      expect(passport.isPrimary).toBe(1);
+      expect(passport.isPrimary).toBe(true);
 
-      // Verify save was called with isPrimary 1
-      const saveCall = SecureStorageService.savePassport.mock.calls[1][0];
-      expect(saveCall.isPrimary).toBe(1);
+      const saveCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      expect(saveCall).toBeDefined();
+      if (!saveCall) {
+        throw new Error('Expected savePassport to be called');
+      }
+      expect(saveCall.isPrimary).toBe(true);
     });
 
     it('should throw error if userId is not set', async () => {
@@ -82,18 +96,16 @@ describe('Passport isPrimary Constraint', () => {
       });
 
       await passport.save({ skipValidation: true });
-      SecureStorageService.savePassport.mockClear();
+      mockedSecureStorage.savePassport.mockClear();
 
       await passport.setAsPrimary();
 
-      // Should only call save once (not N times for N passports)
-      expect(SecureStorageService.savePassport).toHaveBeenCalledTimes(1);
+      expect(mockedSecureStorage.savePassport).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Database trigger simulation', () => {
     it('should simulate trigger unsetting other primary passports', async () => {
-      // Create two passports for the same user
       const passport1 = new Passport({
         userId: TEST_USER_ID,
         passportNumber: 'E11111111',
@@ -115,27 +127,27 @@ describe('Passport isPrimary Constraint', () => {
       await passport1.save({ skipValidation: true });
       await passport2.save({ skipValidation: true });
 
-      // Set passport1 as primary
       await passport1.setAsPrimary();
-      expect(passport1.isPrimary).toBe(1);
+      expect(passport1.isPrimary).toBe(true);
 
-      // In real database, trigger would unset passport1.isPrimary when setting passport2
-      // Here we simulate that behavior by manually updating the mock
-      SecureStorageService.savePassport = jest.fn(async (data) => {
-        // Simulate database trigger: when setting isPrimary=true, unset others
+      mockedSecureStorage.savePassport.mockClear();
+
+      mockedSecureStorage.savePassport.mockImplementation(async data => {
         if (data.isPrimary && data.userId) {
-          // In real DB, this would be done by the trigger
-          // Here we just verify the correct data is being saved
+          // this block simulates a trigger; kept for call verification
         }
-        return { id: data.id };
+        return { id: data.id } as unknown as ReturnType<typeof mockedSecureStorage.savePassport>;
       });
 
       await passport2.setAsPrimary();
-      expect(passport2.isPrimary).toBe(1);
+      expect(passport2.isPrimary).toBe(true);
 
-      // Verify that the save operation received correct data
-      const lastCall = SecureStorageService.savePassport.mock.calls[0][0];
-      expect(lastCall.isPrimary).toBe(1);
+      const lastCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      expect(lastCall).toBeDefined();
+      if (!lastCall) {
+        throw new Error('Expected savePassport to be called');
+      }
+      expect(lastCall.isPrimary).toBe(true);
       expect(lastCall.id).toBe(passport2.id);
     });
   });
@@ -150,7 +162,7 @@ describe('Passport isPrimary Constraint', () => {
         nationality: 'CHN'
       });
 
-      expect(passport.isPrimary).toBe(0);
+      expect(passport.isPrimary).toBe(false);
     });
 
     it('should accept isPrimary in constructor', () => {
@@ -160,10 +172,10 @@ describe('Passport isPrimary Constraint', () => {
         fullName: 'ZHANG, WEI',
         dateOfBirth: '1990-01-01',
         nationality: 'CHN',
-        isPrimary: 1
+        isPrimary: true
       });
 
-      expect(passport.isPrimary).toBe(1);
+      expect(passport.isPrimary).toBe(true);
     });
   });
 
@@ -191,11 +203,12 @@ describe('Passport isPrimary Constraint', () => {
         fullName: 'ZHANG, WEI',
         dateOfBirth: '1990-01-01',
         nationality: 'CHN',
-        isPrimary: 1
+        isPrimary: true
       });
 
       const exported = passport.exportData();
-      expect(exported.isPrimary).toBe(1);
+      expect(exported.isPrimary).toBe(true);
     });
   });
 });
+
