@@ -816,6 +816,53 @@
           "提示：提交 MDAC 前请确认资料正确，到达前 3 天内完成提交。"
         ]
       }
+    },
+    "selection": {
+      "headerTitle": "Choose how you submit MDAC",
+      "headerSubtitle": "Smart Flow is guided, bilingual, and saves your PIN automatically.",
+      "recommendedBadge": "Recommended",
+      "smartFlow": {
+        "title": "Smart Flow (Guided)",
+        "subtitle": "Step-by-step helper with reminders and auto-fill from your entry pack.",
+        "highlights": [
+          {
+            "title": "Average time",
+            "value": "≈3 min"
+          },
+          {
+            "title": "Deadline alerts",
+            "value": "24h coverage"
+          },
+          {
+            "title": "PIN stored",
+            "value": "Auto-save"
+          }
+        ],
+        "features": [
+          "Auto-fill with the info you've already saved in BorderBuddy",
+          "Countdown reminders plus WhatsApp-style nudges before the 3-day window closes",
+          "Offline PIN backup and bilingual (EN/中文) hints at every step"
+        ],
+        "cta": "Use Smart Flow"
+      },
+      "webFlow": {
+        "title": "Official MDAC Web Form",
+        "subtitle": "Manual entry on the immigration website.",
+        "features": [
+          "You type every field yourself on the MDAC portal",
+          "Need to calculate the Malaysia-time submission window manually",
+          "Remember to save the confirmation email and PIN on your own"
+        ],
+        "cta": "Fill on Web"
+      },
+      "notes": {
+        "title": "Before you choose",
+        "items": [
+          "MDAC only accepts submissions within 3 days before arrival (Malaysia time).",
+          "Smart Flow stores your submission proof and PIN for quick inspection.",
+          "Families can create one entry pack and submit every traveler together."
+        ]
+      }
     }
   },
   "sg": {

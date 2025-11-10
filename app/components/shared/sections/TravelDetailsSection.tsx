@@ -279,11 +279,50 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
       { label: 'Friend/Family', value: 'FRIEND_FAMILY' },
       { label: 'Other', value: 'OTHER' },
     ],
+    accommodationSelectorVariant: 'modal',
+    hideDistrictForAccommodationTypes: [],
+    hideSubDistrictForAccommodationTypes: [],
   };
 
   // Merge defaults with provided values
   const l = { ...defaultLabels, ...labels };
   const c = { ...defaultConfig, ...config };
+
+  const shouldHideDistrictForType = (type?: string | null) =>
+    Boolean(type) &&
+    Array.isArray(c.hideDistrictForAccommodationTypes) &&
+    c.hideDistrictForAccommodationTypes.includes(type as string);
+
+  const shouldHideSubDistrictForType = (type?: string | null) =>
+    Boolean(type) &&
+    Array.isArray(c.hideSubDistrictForAccommodationTypes) &&
+    c.hideSubDistrictForAccommodationTypes.includes(type as string);
+
+  const hideDistrict = shouldHideDistrictForType(accommodationType);
+  const hideSubDistrict = shouldHideSubDistrictForType(accommodationType) || hideDistrict;
+
+  const handleAccommodationTypeChange = (selectedValue: string) => {
+    setAccommodationType?.(selectedValue);
+    if (selectedValue !== 'OTHER') {
+      setCustomAccommodationType?.('');
+    }
+
+    const shouldClearDistrict = shouldHideDistrictForType(selectedValue);
+    const shouldClearSubDistrict = shouldHideSubDistrictForType(selectedValue) || shouldClearDistrict;
+
+    if (shouldClearDistrict) {
+      setDistrict?.('');
+      setDistrictId?.('');
+    }
+
+    if (shouldClearSubDistrict) {
+      setSubDistrict?.('');
+      setSubDistrictId?.('');
+      setPostalCode?.('');
+    }
+
+    debouncedSaveData && debouncedSaveData();
+  };
 
   return (
     <CollapsibleSection
@@ -460,18 +499,13 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                 label={l.accommodationType}
                 value={accommodationType}
                 options={c.accommodationOptions}
-                onValueChange={(value) => {
-                  setAccommodationType?.(value);
-                  if (value !== 'OTHER') {
-                    setCustomAccommodationType?.('');
-                  }
-                  debouncedSaveData && debouncedSaveData();
-                }}
+                onValueChange={handleAccommodationTypeChange}
                 placeholder={l.accommodationTypePlaceholder || l.accommodationTypeHelp || '请选择您的住宿类型'}
                 modalTitle={l.accommodationTypeModalTitle || l.accommodationType || '选择住宿类型'}
                 helpText={l.accommodationTypeHelp}
                 error={!!errors.accommodationType}
                 errorMessage={errors.accommodationType}
+                variant={c.accommodationSelectorVariant}
               />
 
               {/* Location Selection */}
@@ -497,7 +531,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                 />
               )}
 
-              {c.locationDepth >= 2 && getDistrictData && province && (
+              {c.locationDepth >= 2 && getDistrictData && province && !hideDistrict && (
                 <LocationHierarchySelector
                   getDataByParent={getDistrictData}
                   parentId={province}
@@ -519,7 +553,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                 />
               )}
 
-              {c.locationDepth >= 3 && getSubDistrictData && districtId && (
+              {c.locationDepth >= 3 && getSubDistrictData && districtId && !hideSubDistrict && (
                 <LocationHierarchySelector
                   getDataByParent={getSubDistrictData}
                   parentId={districtId}

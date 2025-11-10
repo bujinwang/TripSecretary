@@ -1,4 +1,5 @@
 export { default as TravelInfoScreenTemplate } from './TravelInfoScreenTemplate';
+export { default as EnhancedTravelInfoTemplate } from './EnhancedTravelInfoTemplate';
 export { default as EntryFlowScreenTemplate } from './EntryFlowScreenTemplate';
 export { default as EntryGuideTemplate } from './EntryGuideTemplate';
 export { default as EntryPackPreviewTemplate } from './EntryPackPreviewTemplate';

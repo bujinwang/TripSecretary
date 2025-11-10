@@ -229,16 +229,67 @@ export const BaseInput: React.FC<BaseInputProps> = ({
 
   const inputId = React.useId();
 
-  const hasError = !!error;
-  const hasSuccess = !!success && !hasError;
+  const labelIsRenderable =
+    React.isValidElement(label) || typeof label === 'string' || typeof label === 'number';
+
+  const labelObject =
+    label &&
+    typeof label === 'object' &&
+    !Array.isArray(label) &&
+    !React.isValidElement(label)
+      ? label
+      : null;
+
+  const normalizedLabel =
+    labelObject?.label ??
+    labelObject?.text ??
+    labelObject?.title ??
+    (labelIsRenderable ? label : undefined);
+
+  const normalizedHelperText =
+    helperText ??
+    labelObject?.help ??
+    labelObject?.helper ??
+    labelObject?.helperText ??
+    undefined;
+
+  const errorMessageFromProp =
+    typeof error === 'string' || React.isValidElement(error) ? error : undefined;
+
+  const successMessageFromProp =
+    typeof success === 'string' || React.isValidElement(success) ? success : undefined;
+
+  const normalizedErrorMessage =
+    errorMessageFromProp ??
+    labelObject?.error ??
+    labelObject?.errorMessage ??
+    undefined;
+
+  const normalizedSuccessMessage =
+    successMessageFromProp ??
+    labelObject?.success ??
+    labelObject?.successMessage ??
+    undefined;
+
+  const hasError = Boolean(
+    typeof error === 'boolean' ? error : errorMessageFromProp ?? normalizedErrorMessage,
+  );
+
+  const hasSuccess =
+    !hasError &&
+    Boolean(
+      typeof success === 'boolean'
+        ? success
+        : successMessageFromProp ?? normalizedSuccessMessage,
+    );
 
   return (
     <YStack width={fullWidth ? '100%' : 'auto'} gap="$xs">
       {/* Label */}
-      {label && (
+      {normalizedLabel !== undefined && normalizedLabel !== null && (
         <XStack alignItems="center">
           <StyledLabel htmlFor={inputId}>
-            {label}
+            {normalizedLabel}
             {required && <RequiredIndicator>*</RequiredIndicator>}
           </StyledLabel>
         </XStack>
@@ -274,10 +325,19 @@ export const BaseInput: React.FC<BaseInputProps> = ({
       </XStack>
 
       {/* Helper/Error/Success Text */}
-      {hasError && <ErrorText>{error}</ErrorText>}
-      {hasSuccess && <SuccessText>{success}</SuccessText>}
-      {!hasError && !hasSuccess && helperText && (
-        <HelperText>{helperText}</HelperText>
+      {hasError && normalizedErrorMessage !== undefined && normalizedErrorMessage !== null && (
+        <ErrorText>{normalizedErrorMessage}</ErrorText>
+      )}
+      {hasSuccess &&
+        normalizedSuccessMessage !== undefined &&
+        normalizedSuccessMessage !== null && (
+          <SuccessText>{normalizedSuccessMessage}</SuccessText>
+        )}
+      {!hasError &&
+        !hasSuccess &&
+        normalizedHelperText !== undefined &&
+        normalizedHelperText !== null && (
+          <HelperText>{normalizedHelperText}</HelperText>
       )}
 
       {/* Character Count */}

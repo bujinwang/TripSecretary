@@ -1,277 +1,257 @@
-// @ts-nocheck
-
 /**
  * Progressive Entry Flow Type Definitions
- * JSDoc type definitions for progressive entry flow models and interfaces
- * 
+ * TypeScript interfaces for progressive entry flow models and utilities
+ *
  * Requirements: All
  */
 
-/**
- * @typedef {Object} CompletionMetric
- * @property {number} complete - Number of completed fields
- * @property {number} total - Total number of required fields
- * @property {'complete'|'partial'|'missing'} state - Completion state
- */
+// Core completion types
+export interface CompletionMetric {
+  complete: number;
+  total: number;
+  state: 'complete' | 'partial' | 'missing';
+}
 
-/**
- * @typedef {Object} CompletionMetrics
- * @property {CompletionMetric} passport - Passport completion metrics
- * @property {CompletionMetric} personalInfo - Personal info completion metrics
- * @property {CompletionMetric} funds - Funds completion metrics
- * @property {CompletionMetric} travel - Travel completion metrics
- */
+export interface CompletionMetrics {
+  passport: CompletionMetric;
+  personalInfo: CompletionMetric;
+  funds: CompletionMetric;
+  travel: CompletionMetric;
+}
 
-/**
- * @typedef {Object} EntryInfoRecord
- * @property {string} id - Unique entry info ID
- * @property {string} userId - User ID
- * @property {string} destinationId - Destination ID
- * @property {string} tripId - Trip ID
- * @property {CompletionMetrics} completionMetrics - Completion tracking
- * @property {'incomplete'|'ready'|'submitted'|'superseded'|'expired'|'archived'} status - Entry status
- * @property {string} lastUpdatedAt - Last update timestamp
- * @property {Object} tdacSubmission - TDAC submission data
- * @property {string} createdAt - Creation timestamp
- */
+// Entry info and submission types
+export interface EntryInfoRecord {
+  id: string;
+  userId: string;
+  destinationId: string;
+  tripId: string;
+  completionMetrics: CompletionMetrics;
+  status: 'incomplete' | 'ready' | 'submitted' | 'superseded' | 'expired' | 'archived';
+  lastUpdatedAt: string;
+  tdacSubmission: TDACSubmission;
+  createdAt: string;
+}
 
-/**
- * @typedef {Object} TDACSubmission
- * @property {string} arrCardNo - Arrival card number
- * @property {string} qrUri - QR code URI
- * @property {string} pdfPath - PDF document path
- * @property {string} submittedAt - Submission timestamp
- * @property {'api'|'webview'|'hybrid'} submissionMethod - Submission method
- * @property {'success'|'failed'} status - Submission status
- * @property {Object} [error] - Error details if failed
- */
+export interface TDACSubmission {
+  arrCardNo: string;
+  qrUri: string;
+  pdfPath: string;
+  submittedAt: string;
+  submissionMethod: 'api' | 'webview' | 'hybrid';
+  status: 'success' | 'failed';
+  error?: Record<string, unknown>;
+}
 
-/**
- * @typedef {Object} SubmissionHistoryItem
- * @property {string} id - Submission attempt ID
- * @property {number} attemptNumber - Attempt number
- * @property {string} submittedAt - Submission timestamp
- * @property {'api'|'webview'|'hybrid'} submissionMethod - Submission method
- * @property {'success'|'failed'} status - Submission status
- * @property {string} [arrCardNo] - Arrival card number (if successful)
- * @property {string} [qrUri] - QR code URI (if successful)
- * @property {string} [pdfPath] - PDF path (if successful)
- * @property {Object} [error] - Error details (if failed)
- */
+export interface SubmissionHistoryItem {
+  id: string;
+  attemptNumber: number;
+  submittedAt: string;
+  submissionMethod: 'api' | 'webview' | 'hybrid';
+  status: 'success' | 'failed';
+  arrCardNo?: string;
+  qrUri?: string;
+  pdfPath?: string;
+  error?: Record<string, unknown>;
+}
 
-/**
- * @typedef {Object} EntryPackDocuments
- * @property {string} qrCodeImage - QR code image path
- * @property {string} pdfDocument - PDF document path
- * @property {string} entryCardImage - Entry card image path
- */
+// Document and status types
+export interface EntryPackDocuments {
+  qrCodeImage: string;
+  pdfDocument: string;
+  entryCardImage: string;
+}
 
-/**
- * @typedef {Object} CategoryStates
- * @property {'complete'|'partial'|'missing'} passport - Passport state
- * @property {'complete'|'partial'|'missing'} personalInfo - Personal info state
- * @property {'complete'|'partial'|'missing'} funds - Funds state
- * @property {'complete'|'partial'|'missing'} travel - Travel state
- */
+export interface CategoryStates {
+  passport: 'complete' | 'partial' | 'missing';
+  personalInfo: 'complete' | 'partial' | 'missing';
+  funds: 'complete' | 'partial' | 'missing';
+  travel: 'complete' | 'partial' | 'missing';
+}
 
-/**
- * @typedef {Object} DisplayStatus
- * @property {number} completionPercent - Completion percentage (0-100)
- * @property {CategoryStates} categoryStates - Category completion states
- * @property {string} countdownMessage - Countdown message for UI
- * @property {'disabled'|'enabled'|'resubmit'} ctaState - Call-to-action button state
- * @property {boolean} showQR - Whether to show QR code
- * @property {boolean} showGuide - Whether to show immigration guide
- * @property {string} lastUpdated - Last update timestamp
- */
+export interface DisplayStatus {
+  completionPercent: number;
+  categoryStates: CategoryStates;
+  countdownMessage: string;
+  ctaState: 'disabled' | 'enabled' | 'resubmit';
+  showQR: boolean;
+  showGuide: boolean;
+  lastUpdated: string;
+}
 
-/**
- * @typedef {Object} EntryPack
- * @property {string} id - Unique entry pack ID
- * @property {string} entryInfoId - Associated entry info ID
- * @property {string} userId - User ID
- * @property {string} destinationId - Destination ID
- * @property {string} tripId - Trip ID
- * @property {TDACSubmission} tdacSubmission - TDAC submission data
- * @property {SubmissionHistoryItem[]} submissionHistory - All submission attempts
- * @property {EntryPackDocuments} documents - Associated documents
- * @property {DisplayStatus} displayStatus - UI display status
- * @property {'in_progress'|'submitted'|'superseded'|'completed'|'expired'|'archived'} status - Pack status
- * @property {string} createdAt - Creation timestamp
- * @property {string} updatedAt - Last update timestamp
- * @property {string} [archivedAt] - Archive timestamp
- */
+// Entry pack and snapshot types
+export interface EntryPack {
+  id: string;
+  entryInfoId: string;
+  userId: string;
+  destinationId: string;
+  tripId: string;
+  tdacSubmission: TDACSubmission;
+  submissionHistory: SubmissionHistoryItem[];
+  documents: EntryPackDocuments;
+  displayStatus: DisplayStatus;
+  status: 'in_progress' | 'submitted' | 'superseded' | 'completed' | 'expired' | 'archived';
+  createdAt: string;
+  updatedAt: string;
+  archivedAt?: string;
+}
 
-/**
- * @typedef {Object} PhotoManifestItem
- * @property {string} fundItemId - Fund item ID
- * @property {string} originalPath - Original photo path
- * @property {string} snapshotPath - Snapshot photo path
- * @property {string} fileName - Photo file name
- * @property {string} copiedAt - Copy timestamp
- */
+export interface PhotoManifestItem {
+  fundItemId: string;
+  originalPath: string;
+  snapshotPath: string;
+  fileName: string;
+  copiedAt: string;
+}
 
-/**
- * @typedef {Object} CompletenessIndicator
- * @property {boolean} passport - Passport section complete
- * @property {boolean} personalInfo - Personal info section complete
- * @property {boolean} funds - Funds section complete
- * @property {boolean} travel - Travel section complete
- * @property {number} overall - Overall completion percentage
- */
+export interface CompletenessIndicator {
+  passport: boolean;
+  personalInfo: boolean;
+  funds: boolean;
+  travel: boolean;
+  overall: number;
+}
 
-/**
- * @typedef {Object} SnapshotMetadata
- * @property {string} appVersion - App version when created
- * @property {string} deviceInfo - Device information
- * @property {'auto'|'manual'} creationMethod - How snapshot was created
- * @property {string} snapshotReason - Reason for snapshot creation
- */
+export interface SnapshotMetadata {
+  appVersion: string;
+  deviceInfo: string;
+  creationMethod: 'auto' | 'manual';
+  snapshotReason: string;
+}
 
-/**
- * @typedef {Object} EntryPackSnapshot
- * @property {string} snapshotId - Unique snapshot ID
- * @property {string} entryInfoId - Original entry info ID
- * @property {string} userId - User ID
- * @property {string} destinationId - Destination ID
- * @property {'completed'|'cancelled'|'expired'} status - Snapshot status
- * @property {string} createdAt - Creation timestamp
- * @property {string} arrivalDate - Arrival date
- * @property {number} version - Snapshot version
- * @property {SnapshotMetadata} metadata - Snapshot metadata
- * @property {Object} passport - Passport data copy
- * @property {Object} personalInfo - Personal info data copy
- * @property {Object[]} funds - Funds data copy
- * @property {Object} travel - Travel data copy
- * @property {TDACSubmission} tdacSubmission - TDAC submission copy
- * @property {CompletenessIndicator} completenessIndicator - Completeness status
- * @property {PhotoManifestItem[]} photoManifest - Photo references
- */
+export interface EntryPackSnapshot {
+  snapshotId: string;
+  entryInfoId: string;
+  userId: string;
+  destinationId: string;
+  status: 'completed' | 'cancelled' | 'expired';
+  createdAt: string;
+  arrivalDate: string;
+  version: number;
+  metadata: SnapshotMetadata;
+  passport: Record<string, unknown>;
+  personalInfo: Record<string, unknown>;
+  funds: Record<string, unknown>[];
+  travel: Record<string, unknown>;
+  tdacSubmission: TDACSubmission;
+  completenessIndicator: CompletenessIndicator;
+  photoManifest: PhotoManifestItem[];
+}
 
-/**
- * @typedef {Object} ValidationResult
- * @property {boolean} isValid - Whether validation passed
- * @property {string[]} errors - Array of validation errors
- * @property {string[]} [warnings] - Array of validation warnings
- */
+// Validation types
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings?: string[];
+}
 
-/**
- * @typedef {Object} ValidationStatus
- * @property {ValidationResult} passport - Passport validation
- * @property {ValidationResult} personalInfo - Personal info validation
- * @property {ValidationResult} funds - Funds validation
- * @property {ValidationResult} travel - Travel validation
- * @property {ValidationResult} overall - Overall validation
- */
+export interface ValidationStatus {
+  passport: ValidationResult;
+  personalInfo: ValidationResult;
+  funds: ValidationResult;
+  travel: ValidationResult;
+  overall: ValidationResult;
+}
 
-/**
- * @typedef {Object} ArrivalWindow
- * @property {'no-date'|'pre-window'|'within-window'|'urgent'|'past-deadline'} state - Window state
- * @property {string} message - Localized message
- * @property {number} [timeRemaining] - Time remaining in milliseconds
- * @property {string} [submissionOpensAt] - When submission window opens
- * @property {string} [submissionClosesAt] - When submission window closes
- * @property {boolean} canSubmit - Whether submission is allowed
- * @property {'green'|'yellow'|'red'|'gray'} urgencyColor - UI color hint
- */
+// Time and window types
+export interface ArrivalWindow {
+  state: 'no-date' | 'pre-window' | 'within-window' | 'urgent' | 'past-deadline';
+  message: string;
+  timeRemaining?: number;
+  submissionOpensAt?: string;
+  submissionClosesAt?: string;
+  canSubmit: boolean;
+  urgencyColor: 'green' | 'yellow' | 'red' | 'gray';
+}
 
-/**
- * @typedef {Object} CountdownFormat
- * @property {string} display - Formatted display string
- * @property {number} days - Days remaining
- * @property {number} hours - Hours remaining
- * @property {number} minutes - Minutes remaining
- * @property {'green'|'yellow'|'red'|'gray'} color - Color hint for urgency
- * @property {boolean} isUrgent - Whether countdown is urgent
- */
+export interface CountdownFormat {
+  display: string;
+  days: number;
+  hours: number;
+  minutes: number;
+  color: 'green' | 'yellow' | 'red' | 'gray';
+  isUrgent: boolean;
+}
 
-/**
- * @typedef {Object} FieldConfiguration
- * @property {string} name - Field name
- * @property {string} label - Display label
- * @property {'required'|'optional'} type - Field requirement type
- * @property {string} category - Category (passport, personalInfo, funds, travel)
- * @property {Function} validator - Validation function
- * @property {string} helpText - Help text for users
- */
+// Configuration types
+export interface FieldConfiguration {
+  name: string;
+  label: string;
+  type: 'required' | 'optional';
+  category: 'passport' | 'personalInfo' | 'funds' | 'travel';
+  validator: (value: unknown) => ValidationResult;
+  helpText: string;
+}
 
-/**
- * @typedef {Object} CategoryConfiguration
- * @property {string} name - Category name
- * @property {string} label - Display label
- * @property {string} icon - Icon name
- * @property {FieldConfiguration[]} fields - Required fields
- * @property {number} requiredCount - Number of required fields
- * @property {Function} validator - Category validation function
- */
+export interface CategoryConfiguration {
+  name: string;
+  label: string;
+  icon: string;
+  fields: FieldConfiguration[];
+  requiredCount: number;
+  validator: (data: Record<string, unknown>) => ValidationResult;
+}
 
-/**
- * @typedef {Object} EntryFieldsConfig
- * @property {CategoryConfiguration} passport - Passport category config
- * @property {CategoryConfiguration} personalInfo - Personal info category config
- * @property {CategoryConfiguration} funds - Funds category config
- * @property {CategoryConfiguration} travel - Travel category config
- */
+export interface EntryFieldsConfig {
+  passport: CategoryConfiguration;
+  personalInfo: CategoryConfiguration;
+  funds: CategoryConfiguration;
+  travel: CategoryConfiguration;
+}
 
-/**
- * @typedef {Object} NotificationConfig
- * @property {string} type - Notification type
- * @property {string} title - Notification title
- * @property {string} body - Notification body
- * @property {Object} data - Deep link data
- * @property {string} [scheduledFor] - When to send notification
- * @property {boolean} enabled - Whether notification is enabled
- */
+// System types
+export interface NotificationConfig {
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown>;
+  scheduledFor?: string;
+  enabled: boolean;
+}
 
-/**
- * @typedef {Object} StorageQuota
- * @property {number} activeData - Active data size in bytes
- * @property {number} snapshots - Snapshot data size in bytes
- * @property {number} total - Total usage in bytes
- * @property {number} limit - Storage limit in bytes
- * @property {number} percentage - Usage percentage
- * @property {boolean} isLow - Whether storage is low
- */
+export interface StorageQuota {
+  activeData: number;
+  snapshots: number;
+  total: number;
+  limit: number;
+  percentage: number;
+  isLow: boolean;
+}
 
-/**
- * @typedef {Object} AuditEvent
- * @property {string} timestamp - Event timestamp
- * @property {'created'|'viewed'|'status_changed'|'deleted'|'exported'} eventType - Event type
- * @property {Object} metadata - Event metadata
- * @property {string} userId - User who triggered event
- * @property {string} [snapshotId] - Related snapshot ID
- * @property {string} [entryInfoId] - Related entry info ID
- */
+export interface AuditEvent {
+  timestamp: string;
+  eventType: 'created' | 'viewed' | 'status_changed' | 'deleted' | 'exported';
+  metadata: Record<string, unknown>;
+  userId: string;
+  snapshotId?: string;
+  entryInfoId?: string;
+}
 
-/**
- * @typedef {Object} ExportOptions
- * @property {'json'|'pdf'|'zip'} format - Export format
- * @property {boolean} includePhotos - Whether to include photos
- * @property {boolean} encrypt - Whether to encrypt export
- * @property {string} [password] - Encryption password
- * @property {string[]} [sections] - Sections to include
- */
+export interface ExportOptions {
+  format: 'json' | 'pdf' | 'zip';
+  includePhotos: boolean;
+  encrypt: boolean;
+  password?: string;
+  sections?: string[];
+}
 
-/**
- * @typedef {Object} ImportResult
- * @property {boolean} success - Whether import succeeded
- * @property {number} imported - Number of items imported
- * @property {number} skipped - Number of items skipped
- * @property {number} failed - Number of items failed
- * @property {string[]} errors - Import errors
- * @property {string[]} warnings - Import warnings
- */
+export interface ImportResult {
+  success: boolean;
+  imported: number;
+  skipped: number;
+  failed: number;
+  errors: string[];
+  warnings: string[];
+}
 
-/**
- * @typedef {Object} BackupInfo
- * @property {string} id - Backup ID
- * @property {string} createdAt - Creation timestamp
- * @property {number} size - Backup size in bytes
- * @property {number} entryPackCount - Number of entry packs
- * @property {number} snapshotCount - Number of snapshots
- * @property {string} format - Backup format
- * @property {boolean} encrypted - Whether backup is encrypted
- */
+export interface BackupInfo {
+  id: string;
+  createdAt: string;
+  size: number;
+  entryPackCount: number;
+  snapshotCount: number;
+  format: string;
+  encrypted: boolean;
+}
 
 // Export type definitions for use in other modules
 export const ProgressiveEntryFlowTypes = {

@@ -276,7 +276,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
       {/* Phone Number (Code + Number) */}
       <XStack gap="$md" marginBottom="$md">
-        <YStack flex={0.3}>
+        <YStack width={140} maxWidth={180}>
           <BaseInput
             label={l.phoneCode}
             value={phoneCode}
@@ -288,7 +288,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             fullWidth={false}
           />
         </YStack>
-        <YStack flex={0.7}>
+        <YStack flex={1}>
           <BaseInput
             label={l.phoneNumber}
             value={phoneNumber}

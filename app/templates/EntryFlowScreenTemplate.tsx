@@ -116,10 +116,67 @@ const EntryFlowScreenTemplate = ({
       </EntryFlowTemplateContext.Provider>
     );
   }
+  const routeUserId = route.params?.userId;
+  const routeEntryInfo = route.params?.entryInfo;
+  const routeTravelInfo = route.params?.travelInfo;
+  const routePersonalInfo = route.params?.personalInfo;
+  const routeUser = route.params?.user;
+  const routeUserData = route.params?.userData;
   const passportParam = route.params?.passport;
   const destination = route.params?.destination;
   const passport = useMemo(() => UserDataService.toSerializablePassport(passportParam), [passportParam?.id]);
-  const userId = useMemo(() => passport?.id || 'user_001', [passport?.id]);
+  const userId = useMemo(() => {
+    const candidateIds = [
+      typeof routeUserId === 'string' ? routeUserId : null,
+      typeof routeUserData?.userId === 'string' ? routeUserData.userId : null,
+      typeof routeUser?.id === 'string' ? routeUser.id : null,
+      typeof routeUser?.userId === 'string' ? routeUser.userId : null,
+      typeof routeEntryInfo?.userId === 'string' ? routeEntryInfo.userId : null,
+      typeof routeEntryInfo?.user_id === 'string' ? routeEntryInfo.user_id : null,
+      typeof routeTravelInfo?.userId === 'string' ? routeTravelInfo.userId : null,
+      typeof routePersonalInfo?.userId === 'string' ? routePersonalInfo.userId : null,
+      typeof passport?.userId === 'string' ? passport.userId : null,
+      typeof passport?.id === 'string' ? passport.id : null,
+      typeof passportParam?.userId === 'string' ? passportParam.userId : null,
+      typeof passportParam?.id === 'string' ? passportParam.id : null,
+    ];
+
+    const resolvedId =
+      candidateIds.find((value) => value && value.trim().length > 0) || 'user_001';
+
+    if (!resolvedId || resolvedId === 'user_001') {
+      console.log('[EntryFlowScreenTemplate] userId fallback applied:', resolvedId, {
+        routeUserId,
+        routeUserDataUserId: routeUserData?.userId,
+        routeUserIdField: routeUser?.id,
+        routeUserUserId: routeUser?.userId,
+        entryInfoUserId: routeEntryInfo?.userId ?? routeEntryInfo?.user_id,
+        travelInfoUserId: routeTravelInfo?.userId,
+        personalInfoUserId: routePersonalInfo?.userId,
+        passportId: passport?.id,
+        passportUserId: passport?.userId,
+        passportParamId: passportParam?.id,
+        passportParamUserId: passportParam?.userId,
+      });
+    } else {
+      console.log('[EntryFlowScreenTemplate] userId resolved:', resolvedId);
+    }
+
+    return resolvedId;
+  }, [
+    routeUserId,
+    routeUserData?.userId,
+    routeUser?.id,
+    routeUser?.userId,
+    routeEntryInfo?.userId,
+    routeEntryInfo?.user_id,
+    routeTravelInfo?.userId,
+    routePersonalInfo?.userId,
+    passport?.id,
+    passport?.userId,
+    passportParam?.id,
+    passportParam?.userId,
+  ]);
 
   // State
   const [isLoading, setIsLoading] = useState(true);

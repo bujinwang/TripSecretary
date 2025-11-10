@@ -1,10 +1,49 @@
-// @ts-nocheck
-
 /**
  * United States Destination Metadata
  */
 
-export const metadata = {
+// Type definitions for destination metadata
+export interface ArrivalCardConfig {
+  type: 'none' | 'paper' | 'digital' | 'both';
+  name: string;
+  nameZh: string;
+  hasDigitalOption: boolean;
+  requires: boolean;
+  submissionWindowHours: number | null;
+}
+
+export interface VisaRequirement {
+  CHN: string;
+  HKG: string;
+  MAC: string;
+  TWN: string;
+  default: string;
+}
+
+export interface DestinationMetadata {
+  id: string;
+  code: string;
+  code3: string;
+  name: string;
+  nameZh: string;
+  nameZhTW: string;
+  flag: string;
+  enabled: boolean;
+  currency: string;
+  currencySymbol: string;
+  currencyNameEn: string;
+  currencyNameZh: string;
+  dateFormat: string;
+  timezone: string;
+  flightTimeKey: string;
+  typicalFlightTimeHours: number;
+  arrivalCard: ArrivalCardConfig;
+  visaRequirement: VisaRequirement;
+  locales: string[];
+  defaultLocale: string;
+}
+
+export const metadata: DestinationMetadata = {
   id: 'us',
   code: 'US',
   code3: 'USA',

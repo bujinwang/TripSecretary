@@ -1,11 +1,54 @@
-// @ts-nocheck
-
 /**
  * 各国入境要求配置
  * 根据实际情况动态显示相应功能
  */
 
-export const destinationRequirements = {
+// Type definitions for destination configuration
+export interface VisaInfo {
+  type: string;
+  duration: string;
+  requirements: string[];
+  documentOptions: string[];
+}
+
+export interface DestinationRequirements {
+  needsPaperForm: boolean;
+  needsCopyMode: boolean;
+  hasAutoKiosk: boolean;
+  pdfFormat: string | null;
+  entryMethod: 'digital' | 'paper' | 'both' | 'visa-free' | 'none';
+  digitalSystem?: string;
+  digitalUrl?: string;
+  kioskName?: string;
+  kioskSupported: boolean;
+  requiresContactInfo: boolean;
+  visaInfo?: VisaInfo;
+  notes: string[];
+}
+
+export interface AvailableFeatures {
+  showPresentToCustoms: boolean;
+  showCopyMode: boolean;
+  showKioskGuide: boolean;
+  showDownloadPDF: boolean;
+  showShare: boolean;
+  digitalInfo?: {
+    systemName: string;
+    url: string;
+    notes: string[];
+  } | null;
+}
+
+export interface EntryInstructions {
+  method: string;
+  notes: string[];
+  digitalSystem?: string;
+  digitalUrl?: string;
+  kioskName?: string;
+  pdfFormat?: string | null;
+}
+
+export const destinationRequirements: Record<string, DestinationRequirements> = {
   // 泰国
   th: {
     needsPaperForm: false, // 2025年5月起启用电子入境卡TDAC，不需要纸质表格
@@ -20,7 +63,8 @@ export const destinationRequirements = {
       '应用将在航班前72小时内自动提交TDAC电子入境卡，无需手动填写',
       '完成后会生成TDAC二维码，和护照一起出示即可入境',
       '记得保持护照与航班信息最新，如有变化请在应用内更新'
-    ]
+    ],
+    kioskSupported: false,
   },
 
   // 加拿大
@@ -38,7 +82,7 @@ export const destinationRequirements = {
       '所有旅客必须使用PIK自助通关机',
       '可提前用手机申请eDeclaration',
       '支持中国护照'
-    ]
+    ],
   },
 
   // 美国
@@ -55,7 +99,7 @@ export const destinationRequirements = {
       '需要填写I-94入境表和海关申报表',
       '中国护照不能使用APC自助机',
       '需要人工柜台办理'
-    ]
+    ],
   },
 
   // 香港
@@ -83,6 +127,7 @@ export const destinationRequirements = {
         '首次申请：需要到出入境管理部门办理港澳通行证'
       ]
     },
+    requiresContactInfo: false,
     notes: [
       '持回乡证可直接通关',
       '持护照可注册e-道服务',
@@ -92,7 +137,7 @@ export const destinationRequirements = {
       '证件需准备齐全：往返机票、酒店预订、资金证明均需准备',
       '可能需健康申报：视当前健康政策而定',
       'e道限制：首次访港需人工柜台，排队时间较长'
-    ]
+    ],
   },
 
   // 台湾
@@ -104,11 +149,13 @@ export const destinationRequirements = {
     entryMethod: 'digital',
     digitalSystem: 'Taiwan Online Arrival Card',
     digitalUrl: 'https://twac.immigration.gov.tw/submit',
+    requiresContactInfo: true,
+    kioskSupported: false,
     notes: [
       '抵达前先填写台湾电子入境卡（Online Arrival Card），支持事先在线提交',
       '需填写可用邮箱接收验证码并完成OTP验证后才能进入表单',
       '请准备航班、住宿、联络电话以及14日内旅行史等信息'
-    ]
+    ],
   },
 
   // 日本
@@ -118,11 +165,13 @@ export const destinationRequirements = {
     hasAutoKiosk: false,   // 外国人不能用自动通关
     pdfFormat: '入境卡 + 海关申报书',
     entryMethod: 'paper',
+    requiresContactInfo: true,
+    kioskSupported: false,
     notes: [
       '需要填写入境卡（蓝色）',
       '需要填写海关申报书（黄色）',
       '人工柜台办理'
-    ]
+    ],
   },
 
   // 韩国
@@ -134,11 +183,12 @@ export const destinationRequirements = {
     entryMethod: 'paper',
     kioskName: 'SES (Smart Entry Service)',
     kioskSupported: false, // 需要提前注册
+    requiresContactInfo: true,
     notes: [
       '需要填写入境卡',
       '自动通关需提前注册',
       '未注册者使用人工柜台'
-    ]
+    ],
   },
 
   // 新加坡
@@ -150,11 +200,13 @@ export const destinationRequirements = {
     entryMethod: 'digital',
     digitalSystem: 'SG Arrival Card',
     digitalUrl: 'https://eservices.ica.gov.sg/sgarrivalcard',
+    requiresContactInfo: true,
+    kioskSupported: false,
     notes: [
       '抵达前3天内在线提交SG Arrival Card，超过窗口会被拒绝',
       '入境时需要出示提交确认与护照并完成指纹、面像采集',
       '同一旅客30天内重复入境可复用已提交信息或重新更新行程'
-    ]
+    ],
   },
 
   // 马来西亚
@@ -166,11 +218,13 @@ export const destinationRequirements = {
     entryMethod: 'digital',
     digitalSystem: 'MDAC',
     digitalUrl: 'https://imigresen-online.imi.gov.my/mdac/main?registerMain',
+    requiresContactInfo: true,
+    kioskSupported: false,
     notes: [
       '所有外籍旅客需在抵达前3天内提交Malaysia Digital Arrival Card (MDAC)',
       '提交后会收到确认邮件与PIN码，入境时出示护照和PIN即可完成验证',
       '如果在近30天内再次入境，可复用上一次的PIN码或重新提交最新行程',
-    ]
+    ],
   },
 
   // 英国
@@ -182,11 +236,12 @@ export const destinationRequirements = {
     entryMethod: 'none',
     kioskName: 'e-gates',
     kioskSupported: false, // 中国护照不能用
+    requiresContactInfo: false,
     notes: [
       '无需填写入境卡',
       '中国护照不能使用e-gates',
       '人工柜台办理'
-    ]
+    ],
   },
 
   // 澳大利亚
@@ -198,11 +253,12 @@ export const destinationRequirements = {
     entryMethod: 'digital',
     kioskName: 'SmartGate',
     kioskSupported: true,  // 中国护照可用
+    requiresContactInfo: false,
     notes: [
       '可使用SmartGate自助通关',
       '支持中国电子护照',
       '年满16岁即可使用'
-    ]
+    ],
   },
 
   // 新西兰
@@ -214,18 +270,19 @@ export const destinationRequirements = {
     entryMethod: 'digital',
     kioskName: 'eGate',
     kioskSupported: true,  // 中国护照可用
+    requiresContactInfo: false,
     notes: [
       '可使用eGate自助通关',
       '支持中国电子护照',
       '年满12岁即可使用'
-    ]
+    ],
   },
 };
 
 /**
  * 根据目的地获取可用功能
  */
-export const getAvailableFeatures = (destinationId) => {
+export const getAvailableFeatures = (destinationId: string): AvailableFeatures => {
   const config = destinationRequirements[destinationId];
   if (!config) {
     // 默认配置
@@ -245,8 +302,8 @@ export const getAvailableFeatures = (destinationId) => {
     showDownloadPDF: config.pdfFormat !== null,
     showShare: true, // 分享功能总是可用
     digitalInfo: config.entryMethod === 'digital' ? {
-      systemName: config.digitalSystem,
-      url: config.digitalUrl,
+      systemName: config.digitalSystem || '',
+      url: config.digitalUrl || '',
       notes: config.notes,
     } : null,
   };
@@ -255,11 +312,11 @@ export const getAvailableFeatures = (destinationId) => {
 /**
  * 获取目的地的入境说明
  */
-export const getEntryInstructions = (destinationId) => {
+export const getEntryInstructions = (destinationId: string): EntryInstructions | null => {
   const config = destinationRequirements[destinationId];
   if (!config) {
-return null;
-}
+    return null;
+  }
 
   return {
     method: config.entryMethod,

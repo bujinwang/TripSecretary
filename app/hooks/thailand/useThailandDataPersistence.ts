@@ -7,7 +7,7 @@
  * Handles interaction with UserDataService, session state, and debounced saves
  */
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,6 +21,58 @@ import FieldStateManager from '../../utils/FieldStateManager';
 import { hasValidValue } from '../../utils/fieldValueHelpers';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
+
+const DESTINATION_ALIAS_MAP: Record<string, string> = {
+  th: 'th',
+  thailand: 'th',
+  thai: 'th',
+  tha: 'th',
+  'th-visa': 'th',
+  'thailand-entry': 'th'
+};
+
+const toDestinationString = (value: unknown): string | null => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value.toString();
+  }
+  return String(value);
+};
+
+const normalizeDestinationIdForComparison = (value: unknown): string => {
+  const destinationString = toDestinationString(value);
+  if (!destinationString) {
+    return '';
+  }
+  const normalized = destinationString.trim().toLowerCase();
+  return DESTINATION_ALIAS_MAP[normalized] ?? normalized;
+};
+
+const normalizeDestinationIdForStorage = (value: unknown): string => {
+  const normalized = normalizeDestinationIdForComparison(value);
+  return normalized || 'th';
+};
+
+const buildDestinationCandidates = (value: unknown): string[] => {
+  const candidates = new Set<string>();
+  const raw = toDestinationString(value);
+  if (raw) {
+    candidates.add(raw);
+    candidates.add(raw.trim());
+    candidates.add(raw.trim().toLowerCase());
+  }
+  const normalized = normalizeDestinationIdForComparison(value);
+  if (normalized) {
+    candidates.add(normalized);
+  }
+  candidates.add('th');
+  return Array.from(candidates).filter(Boolean);
+};
 
 /**
  * Custom hook to manage Thailand travel form data persistence
@@ -112,6 +164,30 @@ export const useThailandDataPersistence = ({
     getFieldInteractionDetails
   } = userInteractionTracker;
 
+  const canonicalDestinationId = useMemo(
+    () => normalizeDestinationIdForStorage(destination?.id),
+    [destination?.id]
+  );
+
+  const destinationIdCandidates = useMemo(
+    () => buildDestinationCandidates(destination?.id),
+    [destination?.id]
+  );
+
+  const fetchTravelInfoForCandidates = useCallback(async () => {
+    for (const candidate of destinationIdCandidates) {
+      try {
+        const travelInfoRecord = await UserDataService.getTravelInfo(userId, candidate);
+        if (travelInfoRecord) {
+          return { travelInfo: travelInfoRecord, matchedDestinationId: candidate };
+        }
+      } catch (error) {
+        console.warn('Failed to load travel info for candidate:', candidate, error);
+      }
+    }
+    return { travelInfo: null, matchedDestinationId: null };
+  }, [destinationIdCandidates, userId]);
+
   // Normalize fund item
   const normalizeFundItem = useCallback((item) => ({
     id: item.id,
@@ -149,20 +225,71 @@ export const useThailandDataPersistence = ({
       // Ensure UserDataService is initialized before accessing data
       await UserDataService.initialize(userId);
 
-      // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
-      const destinationId = destination?.id || 'th';
-      if (!destination?.id) {
-        console.warn('⚠️ useThailandDataPersistence: No destination.id provided, defaulting to "th"');
-      }
-      console.log('🔍 Initializing entry info for destination:', destinationId);
+      const hasExplicitDestinationId = Boolean(toDestinationString(destination?.id));
 
-      // Try to find existing entry_info
-      const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
-      const existingEntryInfo = existingEntryInfos?.find(
-        entry => entry.destinationId === destinationId
+      if (!hasExplicitDestinationId) {
+        console.warn('⚠️ useThailandDataPersistence: No destination.id provided, defaulting to canonical "th"');
+      }
+
+      console.log('🔍 Initializing entry info for destination candidates:', destinationIdCandidates);
+
+      const normalizedCandidateSet = new Set(
+        destinationIdCandidates.map(value => normalizeDestinationIdForComparison(value)).filter(Boolean)
       );
 
+      const existingEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
+      let existingEntryInfo = null;
+
+      if (existingEntryInfos && existingEntryInfos.length > 0) {
+        const matchingEntries = existingEntryInfos.filter(entry => {
+          const entryDestination = normalizeDestinationIdForComparison(entry.destinationId);
+          if (entryDestination && normalizedCandidateSet.has(entryDestination)) {
+            return true;
+          }
+
+          const travelDestination = normalizeDestinationIdForComparison(
+            (entry as any)?.travel?.destination ?? (entry as any)?.travelInfo?.destination
+          );
+          return Boolean(travelDestination) && normalizedCandidateSet.has(travelDestination);
+        });
+
+        if (matchingEntries.length > 0) {
+          matchingEntries.sort((a, b) => {
+            const aTime = new Date(a.lastUpdatedAt || a.createdAt || 0).getTime();
+            const bTime = new Date(b.lastUpdatedAt || b.createdAt || 0).getTime();
+            return bTime - aTime;
+          });
+
+          existingEntryInfo = matchingEntries[0];
+
+          if (matchingEntries.length > 1) {
+            console.warn('⚠️ useThailandDataPersistence: Multiple entry_info records detected for destination, using most recent', {
+              destinationCandidates: Array.from(normalizedCandidateSet),
+              selected: existingEntryInfo.id,
+              duplicates: matchingEntries.map(entry => entry.id)
+            });
+          }
+        }
+      }
+
       if (existingEntryInfo) {
+        const normalizedEntryDestination = normalizeDestinationIdForComparison(existingEntryInfo.destinationId);
+        const normalizedCanonical = normalizeDestinationIdForComparison(canonicalDestinationId);
+
+        if (normalizedEntryDestination !== normalizedCanonical) {
+          try {
+            existingEntryInfo.destinationId = canonicalDestinationId;
+            await existingEntryInfo.save({ skipValidation: true });
+            console.log('✅ Normalized entry_info destination_id to canonical value', {
+              id: existingEntryInfo.id,
+              previous: normalizedEntryDestination,
+              canonical: canonicalDestinationId
+            });
+          } catch (normalizationError) {
+            console.warn('Failed to normalize entry_info destination_id:', normalizationError);
+          }
+        }
+
         console.log('✅ Found existing entry info:', existingEntryInfo.id);
         setEntryInfoId(existingEntryInfo.id);
         setEntryInfoInitialized(true);
@@ -178,7 +305,7 @@ export const useThailandDataPersistence = ({
       const entryInfoData = {
         userId,
         passportId: passportData?.id || null,
-        destinationId,
+        destinationId: canonicalDestinationId,
         status: 'incomplete',
         completionMetrics: {
           passport: { complete: 0, total: 5, state: 'missing' },
@@ -199,7 +326,15 @@ export const useThailandDataPersistence = ({
       console.error('Failed to initialize entry info:', error);
       throw error;
     }
-  }, [userId, destination?.id, entryInfoInitialized, setEntryInfoId, setEntryInfoInitialized]);
+  }, [
+    userId,
+    destination?.id,
+    canonicalDestinationId,
+    destinationIdCandidates,
+    entryInfoInitialized,
+    setEntryInfoId,
+    setEntryInfoInitialized
+  ]);
 
   // Session state management
   const getSessionStateKey = useCallback(() => {
@@ -624,15 +759,18 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       // Load travel info
       try {
-        // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
-        const destinationId = destination?.id || 'th';
-        console.log('Loading travel info for destination:', destinationId);
-        let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+        console.log('Loading travel info for destination candidates:', destinationIdCandidates);
+        let { travelInfo, matchedDestinationId } = await fetchTravelInfoForCandidates();
+
+        if (travelInfo && matchedDestinationId && matchedDestinationId !== canonicalDestinationId) {
+          console.log('ℹ️ Loaded travel info using alias destination id:', matchedDestinationId);
+        }
 
         // Fallback: try loading with localized name
         if (!travelInfo && destination?.name) {
           console.log('Trying fallback with destination name:', destination.name);
           travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
+          matchedDestinationId = destination.name;
         }
 
         if (travelInfo) {
@@ -731,7 +869,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
     } finally {
       setIsLoading(false);
     }
-  }, [userId, passport, destination, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto]);
+  }, [userId, passport, destination, canonicalDestinationId, destinationIdCandidates, fetchTravelInfoForCandidates, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto]);
 
   // Helper function to perform the actual save operation
   const performSaveOperation = useCallback(async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
@@ -827,8 +965,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       }
 
       // Save travel info data
-      // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
-      const destinationId = destination?.id || 'th';
+      const destinationId = canonicalDestinationId;
       const finalTravelPurpose = getCurrentValue('travelPurpose', travelPurpose) === 'OTHER'
         ? getCurrentValue('customTravelPurpose', customTravelPurpose)
         : getCurrentValue('travelPurpose', travelPurpose);
@@ -893,7 +1030,11 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
           // 1. Load the existing record from database
           // 2. Smart merge: only apply non-empty updates OR explicit overrides
           // 3. Save the merged data
-          const existingTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+          const { travelInfo: existingTravelInfo, matchedDestinationId: existingTravelInfoDestination } = await fetchTravelInfoForCandidates();
+
+          if (existingTravelInfo && existingTravelInfoDestination && existingTravelInfoDestination !== destinationId) {
+            console.log('ℹ️ Loaded existing travel info using alias destination id:', existingTravelInfoDestination);
+          }
 
           // Start with existing data
           const mergedTravelData = { ...(existingTravelInfo || {}) };
@@ -958,7 +1099,12 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
           const savedPassport = await UserDataService.getPassport(userId);
           const savedPersonalInfo = await UserDataService.getPersonalInfo(userId);
           const savedFunds = await UserDataService.getFundItems(userId);
-          const freshTravelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+          const { travelInfo: freshTravelInfo, matchedDestinationId: metricsTravelDestination } =
+            await fetchTravelInfoForCandidates();
+
+          if (freshTravelInfo && metricsTravelDestination && metricsTravelDestination !== destinationId) {
+            console.log('ℹ️ Using travel info alias during metrics update:', metricsTravelDestination);
+          }
 
           // Update completion metrics using the EntryInfo model method
           // which now uses EntryCompletionCalculator internally
@@ -983,7 +1129,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       console.error('Save operation failed:', error);
       return { success: false, error };
     }
-  }, [destination?.id, setPassportData, setPersonalInfoData]);
+  }, [canonicalDestinationId, destinationIdCandidates, fetchTravelInfoForCandidates, setPassportData, setPersonalInfoData]);
 
   // Save data to secure storage with field overrides
   const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
@@ -1117,9 +1263,10 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       // Reload travel info
       try {
-        // Note: This hook is Thailand-specific, so 'th' is the expected destinationId
-        const destinationId = destination?.id || 'th';
-        const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
+        const { travelInfo, matchedDestinationId } = await fetchTravelInfoForCandidates();
+        if (travelInfo && matchedDestinationId && matchedDestinationId !== canonicalDestinationId) {
+          console.log('ℹ️ Reloaded travel info on focus using alias destination id:', matchedDestinationId);
+        }
         if (travelInfo) {
           // Update travel info state...
         }
@@ -1130,7 +1277,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
     onBlur: async () => {
       await saveSessionState();
     },
-    dependencies: [userId, destination?.id, refreshFundItems]
+    dependencies: [userId, canonicalDestinationId, destinationIdCandidates, refreshFundItems, fetchTravelInfoForCandidates]
   });
 
   // Monitor save status with optimized polling

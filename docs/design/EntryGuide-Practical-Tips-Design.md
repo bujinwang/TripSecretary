@@ -7,6 +7,7 @@
 ## 设计目标
 
 ### 用户体验目标
+
 - **情境感知**: 根据当前位置和进度显示相关提示
 - **主动提醒**: 在关键节点主动提供重要信息
 - **文化适配**: 提供目的地文化礼仪指导
@@ -14,6 +15,7 @@
 - **实用性强**: 聚焦真正有用、常用的信息
 
 ### 内容目标
+
 - **信息精炼**: 避免信息过载，只提供最关键内容
 - **实时更新**: 机场和政策信息应易于更新
 - **多语言**: 支持中英双语，必要时提供本地语言
@@ -22,9 +24,11 @@
 ## 提示和警告分类
 
 ### 1. 紧急提醒 (Critical Alerts)
+
 最高优先级，必须醒目显示的警告信息
 
 #### 格式设计
+
 ```
 🚨 紧急提醒：航班落地后立即关闭蜂窝网络
 
@@ -32,21 +36,25 @@
 ```
 
 #### 泰国紧急提醒
+
 - **飞机滑行时**: 必须关闭所有移动数据和WiFi
 - **落地签排队**: 预计等候30-60分钟
 - **现金准备**: 至少准备1000泰铢现金
 - **紧急联系**: 保存泰国紧急电话号码
 
 ### 2. 实用提示 (Practical Tips)
+
 帮助用户更好地完成入境流程的建议
 
 #### 机场实用信息
+
 - **机场布局**: 入境流程路线图
 - **等候时间**: 各环节预计等候时间
 - **设施指引**: 洗手间、吸烟区、祈祷室位置
 - **无障碍服务**: 轮椅、婴儿车等设施
 
 #### 泰国机场实用信息
+
 ```
 🏪 曼谷素万那普机场实用信息
 
@@ -59,9 +67,11 @@
 ```
 
 ### 3. 文化礼仪提醒 (Cultural Notes)
+
 帮助用户避免文化冲突的温馨提示
 
 #### 泰国文化特色
+
 ```
 🇹🇭 泰国文化礼仪提醒
 
@@ -73,9 +83,11 @@
 ```
 
 ### 4. 应急指引 (Emergency Guide)
+
 紧急情况下的快速应对指南
 
 #### 紧急联系方式
+
 ```
 🚨 泰国紧急联系方式
 
@@ -87,6 +99,7 @@
 ```
 
 #### 常见紧急情况处理
+
 - **行李丢失**: 立即联系航空公司柜台
 - **证件丢失**: 联系大使馆补办旅行证
 - **生病就医**: 拨打急救电话或去国际医院
@@ -97,11 +110,13 @@
 ### 1. 提示显示时机
 
 #### 主动推送
+
 - **步骤开始时**: 显示该步骤相关的提醒和警告
 - **位置变化时**: 根据机场位置显示相关信息
 - **时间敏感**: 在关键时间点主动提醒
 
 #### 被动查看
+
 - **折叠面板**: 默认折叠，可展开查看详细信息
 - **分类浏览**: 按紧急程度、实用性分类显示
 - **搜索功能**: 支持关键词搜索实用信息
@@ -109,12 +124,14 @@
 ### 2. 视觉设计
 
 #### 颜色编码
+
 - **🚨 紧急提醒**: 红色背景，白色文字
 - **⚠️ 重要警告**: 橙色背景，深色文字
 - **💡 实用提示**: 蓝色背景，白色文字
 - **ℹ️ 一般信息**: 灰色背景，深色文字
 
 #### 图标系统
+
 - **机场设施**: 🏪 商店、🍽️ 餐饮、🚻 洗手间
 - **交通方式**: 🚆 轨道交通、🚕 出租车、🚌 巴士
 - **紧急服务**: 🚨 紧急、🏥 医疗、👮‍♀️ 警察
@@ -123,6 +140,7 @@
 ### 3. 交互设计
 
 #### 滑动卡片
+
 ```
 ┌─────────────────────────────────┐
 │ 🚨 紧急提醒                    ═══╗
@@ -136,6 +154,7 @@
 ```
 
 #### 折叠详情
+
 ```
 📱 泰国电话卡购买指南
   运营商比较：AIS vs TrueMove vs DTAC
@@ -147,6 +166,7 @@
 ## 泰国特色提示和警告
 
 ### 1. 落地签特别提醒
+
 ```
 🛂 泰国落地签特别提醒
 
@@ -158,6 +178,7 @@
 ```
 
 ### 2. 泰国机场生存指南
+
 ```
 🏪 泰国机场生存指南
 
@@ -169,6 +190,7 @@
 ```
 
 ### 3. 泰国交通选择
+
 ```
 🚗 泰国机场交通指南
 
@@ -180,6 +202,7 @@
 ```
 
 ### 4. 泰国文化适应
+
 ```
 🇹🇭 泰国文化快速适应
 
@@ -193,12 +216,14 @@
 ## 多语言支持
 
 ### 语言适配策略
+
 - **中文优先**: 中国用户以中文显示为主
 - **英文辅助**: 重要信息提供英文对照
 - **本地语言**: 必要时提供泰语等本地语言
 - **图标优先**: 紧急信息使用图标减少语言依赖
 
 ### 翻译质量保证
+
 - **专业术语**: 使用标准旅游术语翻译
 - **文化敏感**: 考虑文化差异的表达方式
 - **简洁明了**: 避免复杂句式和生僻词汇
@@ -207,12 +232,14 @@
 ## 信息更新机制
 
 ### 动态内容管理
+
 - **机场信息**: 定期更新机场设施和服务
 - **政策变化**: 及时更新签证和入境政策
 - **价格更新**: 定期更新交通和通讯费用
 - **联系方式**: 确保紧急联系方式准确有效
 
 ### 用户反馈收集
+
 - **使用统计**: 收集哪些提示最受欢迎
 - **错误报告**: 用户报告过时或错误信息
 - **建议收集**: 收集用户认为有用但缺失的信息
@@ -221,6 +248,135 @@
 ## 技术实现
 
 ### 数据结构设计
+
+```typescript
+// TypeScript interfaces for entry guide tips and warnings
+interface BaseTip {
+  id: string;
+  type: "warning" | "tip" | "cultural" | "emergency";
+  priority: "high" | "medium" | "low";
+  title: string;
+  titleZh: string;
+  content: string;
+  contentZh: string;
+  icon: string;
+  showAtStep?: string; // 在哪个步骤显示
+  showAtLocation?: string; // 在哪个位置显示
+  dismissible: boolean;
+  validUntil?: string; // 有效期至
+  tags?: string[]; // For categorization and filtering
+}
+
+interface EmergencyTip extends BaseTip {
+  type: "emergency";
+  contactNumbers?: {
+    police?: string;
+    ambulance?: string;
+    fire?: string;
+    embassy?: string;
+  };
+  actions: {
+    immediate: string[]; // What to do immediately
+    followUp: string[]; // What to do next
+  };
+}
+
+interface CulturalTip extends BaseTip {
+  type: "cultural";
+  country: string;
+  category: "dress" | "greeting" | "religion" | "general";
+  do: string[];
+  dont: string[];
+}
+
+interface WarningTip extends BaseTip {
+  type: "warning";
+  severity: "critical" | "important" | "minor";
+  legal?: {
+    fine?: string;
+    imprisonment?: string;
+    description: string;
+  };
+}
+
+type EntryGuideTip = EmergencyTip | CulturalTip | WarningTip;
+
+const emergencyTipExample: EmergencyTip = {
+  id: "thailand_emergency_landing",
+  type: "emergency",
+  priority: "high",
+  title: "紧急提醒：航班落地后立即关闭蜂窝网络",
+  titleZh: "紧急提醒：航班落地后立即关闭蜂窝网络",
+  content: "请在飞机滑行时关闭手机蜂窝数据，避免国际漫游费用和违反航空规定。",
+  contentZh: "请在飞机滑行时关闭手机蜂窝数据，避免国际漫游费用和违反航空规定。",
+  icon: "🚨",
+  showAtStep: "pre_landing",
+  dismissible: true,
+  contactNumbers: {
+    police: "191",
+    ambulance: "1669",
+    fire: "199",
+    embassy: "+66-2-245-7033",
+  },
+  actions: {
+    immediate: ["立即关闭蜂窝数据", "关闭WiFi连接", "等待飞机完全停稳"],
+    followUp: ["开启飞行模式", "准备eSIM激活", "跟随人群前往入境大厅"],
+  },
+};
+
+const culturalTipExample: CulturalTip = {
+  id: "thailand_cultural_greeting",
+  type: "cultural",
+  priority: "medium",
+  title: "泰国文化礼仪提醒",
+  titleZh: "泰国文化礼仪提醒",
+  content: "泰国人以微笑示人，保持友好态度",
+  contentZh: "泰国人以微笑示人，保持友好态度",
+  icon: "🇹🇭",
+  country: "thailand",
+  category: "greeting",
+  dismissible: false,
+  do: ["见面时微笑", '双手合十说"sawasdee"', "保持耐心和友好"],
+  dont: ["公开议论国王", "对僧侣不敬", "在寺庙大声喧哗"],
+};
+
+// Service class for managing entry guide tips
+export class EntryGuideTipService {
+  private tips: EntryGuideTip[] = [];
+
+  constructor(tips: EntryGuideTip[]) {
+    this.tips = tips;
+  }
+
+  getTipsByStep(stepId: string): EntryGuideTip[] {
+    return this.tips.filter((tip) => tip.showAtStep === stepId);
+  }
+
+  getTipsByType(type: EntryGuideTip["type"]): EntryGuideTip[] {
+    return this.tips.filter((tip) => tip.type === type);
+  }
+
+  getEmergencyTips(): EmergencyTip[] {
+    return this.getTipsByType("emergency") as EmergencyTip[];
+  }
+
+  getCulturalTips(country: string): CulturalTip[] {
+    return this.tips
+      .filter((tip) => tip.type === "cultural")
+      .filter(
+        (tip) => (tip as CulturalTip).country === country,
+      ) as CulturalTip[];
+  }
+
+  isTipValid(tip: EntryGuideTip): boolean {
+    if (!tip.validUntil) return true;
+    return new Date(tip.validUntil) > new Date();
+  }
+}
+```
+
+### 数据结构设计
+
 ```javascript
 {
   type: 'warning|tip|cultural|emergency',
@@ -238,6 +394,7 @@
 ```
 
 ### 显示逻辑
+
 - **优先级排序**: 高优先级信息优先显示
 - **情境过滤**: 根据当前位置和进度过滤相关信息
 - **防打扰**: 避免过度提醒，控制显示频率
@@ -246,12 +403,14 @@
 ## 质量保证
 
 ### 内容审核标准
+
 - **准确性**: 所有信息必须经过核实
 - **时效性**: 定期更新机场和政策信息
 - **实用性**: 只包含真正有用、常用的信息
 - **文化敏感**: 尊重当地文化，避免冒犯性内容
 
 ### 用户测试重点
+
 - **信息可读性**: 测试在不同光线下文字是否清晰
 - **操作便利性**: 测试在机场环境下是否容易操作
 - **信息相关性**: 测试提示是否在正确时机出现

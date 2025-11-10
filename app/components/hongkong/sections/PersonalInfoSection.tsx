@@ -253,10 +253,12 @@ const localStyles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   phoneCodeInput: {
-    flex: 0.3,
+    width: 140,
+    maxWidth: 180,
+    flexShrink: 0,
   },
   phoneInput: {
-    flex: 0.7,
+    flex: 1,
   },
 });
 

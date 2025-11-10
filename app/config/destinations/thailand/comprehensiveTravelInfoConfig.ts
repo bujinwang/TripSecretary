@@ -27,6 +27,7 @@ const travelPurposeOptions = getAllTravelPurposes().map(purpose => ({
 const accommodationTypeOptions = getAllAccommodationTypes().map(type => ({
   label: type.displayZh || type.displayEn,
   value: type.key,
+  icon: type.icon,
 }));
 
 export const thailandComprehensiveTravelInfoConfig = {
@@ -460,6 +461,10 @@ export const thailandComprehensiveTravelInfoConfig = {
           immediateSave: true,
         },
       },
+
+      accommodationSelectorVariant: 'quickSelect',
+      hideDistrictForAccommodationTypes: ['HOTEL'],
+      hideSubDistrictForAccommodationTypes: ['HOTEL'],
 
       // Location hierarchy configuration (3-level for Thailand)
       locationHierarchy: {

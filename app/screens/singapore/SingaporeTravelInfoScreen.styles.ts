@@ -195,7 +195,8 @@ export const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   phoneCodeContainer: {
-    width: 80,
+    width: 140,
+    maxWidth: 180,
   },
   phoneCodeInput: {
     textAlign: 'center',

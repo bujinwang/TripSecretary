@@ -1,11 +1,7 @@
 import type { ComponentType } from 'react';
 
-declare module '../../templates/EnhancedTravelInfoTemplate' {
-  const EnhancedTravelInfoTemplate: ComponentType<any>;
-  export default EnhancedTravelInfoTemplate;
-}
-
 declare module '../../templates' {
+  export const EnhancedTravelInfoTemplate: ComponentType<any>;
   export const TravelInfoScreenTemplate: ComponentType<any>;
   export const EntryFlowScreenTemplate: ComponentType<any> & {
     Header: ComponentType<any>;

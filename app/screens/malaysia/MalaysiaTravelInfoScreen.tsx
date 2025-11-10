@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate.js';
+import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { malaysiaComprehensiveTravelInfoConfig } from '../../config/destinations/malaysia/comprehensiveTravelInfoConfig';
 
 const MalaysiaTravelInfoScreen = ({ navigation, route }) => (

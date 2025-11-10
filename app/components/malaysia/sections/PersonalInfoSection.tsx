@@ -171,10 +171,12 @@ const baseStyles = StyleSheet.create({
     gap: spacing.sm,
   },
   phoneCodeWrapper: {
-    flex: 0.35,
+    width: 140,
+    maxWidth: 180,
+    flexShrink: 0,
   },
   phoneNumberWrapper: {
-    flex: 0.65,
+    flex: 1,
   },
 });
 

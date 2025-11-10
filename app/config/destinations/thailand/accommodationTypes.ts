@@ -16,6 +16,7 @@
  * @property {string} displayZh - Chinese display name
  * @property {string} display - Combined display name
  * @property {Array<string>} aliases - Alternative names/inputs that map to this type
+ * @property {string} icon - Emoji/icon used in UI quick selectors
  */
 
 /**
@@ -28,42 +29,48 @@ export const ACCOMMODATION_TYPES = {
     displayEn: 'Hotel',
     displayZh: '酒店',
     display: 'Hotel (酒店)',
-    aliases: ['HOTEL', '酒店', 'RESORT']  // TDAC doesn't have resort option, map to HOTEL
+    aliases: ['HOTEL', '酒店', 'RESORT'], // TDAC doesn't have resort option, map to HOTEL
+    icon: '🏨',
   },
   YOUTH_HOSTEL: {
     key: 'YOUTH_HOSTEL',
     displayEn: 'Youth Hostel',
     displayZh: '青年旅舍',
     display: 'Youth Hostel (青年旅舍)',
-    aliases: ['YOUTH HOSTEL', 'HOSTEL', '青年旅舍']
+    aliases: ['YOUTH HOSTEL', 'HOSTEL', '青年旅舍'],
+    icon: '🛏️',
   },
   GUEST_HOUSE: {
     key: 'GUEST_HOUSE',
     displayEn: 'Guest House',
     displayZh: '民宿',
     display: 'Guest House (民宿)',
-    aliases: ['GUEST HOUSE', 'GUESTHOUSE', '民宿']
+    aliases: ['GUEST HOUSE', 'GUESTHOUSE', '民宿'],
+    icon: '🏡',
   },
   FRIEND_HOUSE: {
     key: 'FRIEND_HOUSE',
     displayEn: "Friend's House",
     displayZh: '朋友家',
     display: "Friend's House (朋友家)",
-    aliases: ["FRIEND'S HOUSE", 'FRIENDS HOUSE', 'FRIEND', '朋友家']  // Map UI's FRIEND to TDAC's FRIEND_HOUSE
+    aliases: ["FRIEND'S HOUSE", 'FRIENDS HOUSE', 'FRIEND', '朋友家'], // Map UI's FRIEND to TDAC's FRIEND_HOUSE
+    icon: '👥',
   },
   APARTMENT: {
     key: 'APARTMENT',
     displayEn: 'Apartment',
     displayZh: '公寓',
     display: 'Apartment (公寓)',
-    aliases: ['APARTMENT', '公寓']
+    aliases: ['APARTMENT', '公寓'],
+    icon: '🏢',
   },
   OTHERS: {
     key: 'OTHERS',
     displayEn: 'Other',
     displayZh: '其他',
     display: 'Other (其他)',
-    aliases: ['OTHER', 'OTHERS', '其他']
+    aliases: ['OTHER', 'OTHERS', '其他'],
+    icon: '✨',
   }
 };
 
@@ -185,7 +192,8 @@ export const getAllAccommodationTypes = (options = {}) => {
       key: info.key,
       display: info.display,
       displayEn: info.displayEn,
-      displayZh: info.displayZh
+      displayZh: info.displayZh,
+      icon: info.icon
     };
 
     if (includeAliases) {

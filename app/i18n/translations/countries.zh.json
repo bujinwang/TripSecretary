@@ -1966,6 +1966,53 @@
       "lengthOfStay": {
         "range": "停留天数需在 1-180 天之间。"
       }
+    },
+    "selection": {
+      "headerTitle": "选择你的MDAC提交方式",
+      "headerSubtitle": "推荐使用智能引导模式，双语提示并自动保存PIN。",
+      "recommendedBadge": "精选推荐",
+      "smartFlow": {
+        "title": "智能引导模式",
+        "subtitle": "全程一步步提示，信息可从入境包自动填写。",
+        "highlights": [
+          {
+            "title": "平均用时",
+            "value": "约3分钟"
+          },
+          {
+            "title": "提醒覆盖",
+            "value": "24小时"
+          },
+          {
+            "title": "PIN管理",
+            "value": "自动保存"
+          }
+        ],
+        "features": [
+          "入境包资料一键复用，减少重复输入",
+          "3天提交窗口倒计时提醒 + WhatsApp风格推送",
+          "离线也能查看PIN，提供中英双语操作提示"
+        ],
+        "cta": "使用智能模式"
+      },
+      "webFlow": {
+        "title": "官网MDAC表单",
+        "subtitle": "在移民局网站上手动填写。",
+        "features": [
+          "所有字段需要自己输入并逐一核对",
+          "需自行按马来西亚时间计算3天提交窗口",
+          "提交后邮件PIN需要自行保存，以便入境查验"
+        ],
+        "cta": "前往网页版"
+      },
+      "notes": {
+        "title": "选择前请注意",
+        "items": [
+          "MDAC仅在抵达前3天内开放提交（马来西亚时间）。",
+          "智能模式会备份提交凭证与PIN，入境查验时可快速调出。",
+          "家庭同行可在一个入境包中集中管理所有成员。"
+        ]
+      }
     }
   },
   "entryPackPreview": {

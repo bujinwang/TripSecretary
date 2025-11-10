@@ -208,10 +208,12 @@ const createStyles = () =>
       gap: spacing.sm,
     },
     phoneCodeContainer: {
-      flex: 0.35,
+      width: 140,
+      maxWidth: 180,
+      flexShrink: 0,
     },
     phoneNumberContainer: {
-      flex: 0.65,
+      flex: 1,
     },
   });
 
