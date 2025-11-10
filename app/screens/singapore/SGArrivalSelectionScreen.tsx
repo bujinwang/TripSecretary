@@ -11,11 +11,14 @@ import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
+import type { RootStackScreenProps } from '../../types/navigation';
+import type { SerializablePassport } from '../../types/data';
 
-const SGArrivalSelectionScreen = ({ navigation, route }) => {
-  const params = route.params || {};
-  const { passport: rawPassport, destination, travelInfo } = params;
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+type SGArrivalSelectionProps = RootStackScreenProps<'SGArrivalSelection'>;
+
+const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigation, route }) => {
+  const { passport: rawPassport, destination = null, travelInfo = null } = route.params ?? {};
+  const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
   const { t } = useLocale();
 
   const goToGuide = () => {

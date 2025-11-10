@@ -82,21 +82,6 @@ const EnhancedTravelInfoTemplate = ({
   // ✅ CRITICAL FIX: All hooks must be called BEFORE any conditional returns
   // This ensures hooks are always called in the same order (Rules of Hooks)
   const { t } = useLocale();
-  
-  // Early validation - config is required (AFTER hooks)
-  if (!config) {
-    console.error('[Template] ERROR: config prop is required but not provided');
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <TamaguiText fontSize="$5" color="$error" textAlign="center" marginBottom="$md">
-          Configuration Error
-        </TamaguiText>
-        <TamaguiText fontSize="$3" color="$textSecondary" textAlign="center">
-          Template configuration is missing. Please check the screen implementation.
-        </TamaguiText>
-      </SafeAreaView>
-    );
-  }
   const { passport: rawPassport, destination } = route.params || {};
 
   const destinationId = useMemo(() => {
@@ -387,7 +372,12 @@ const EnhancedTravelInfoTemplate = ({
   const userId = useMemo(() => {
     const id = passport?.id || 'user_001';
     console.log('[Template] userId resolved:', id, 'from passport:', passport);
-    return id;
+    // Ensure we always have a valid userId
+    const finalId = id || 'user_001';
+    if (id !== finalId) {
+      console.log('[Template] Using fallback userId:', finalId, 'instead of empty id:', id);
+    }
+    return finalId;
   }, [passport?.id]);
 
   // ============================================
@@ -684,7 +674,7 @@ initialState.visaNumber = passport.visaNumber;
         entryInfo.destinationId = destinationId;
       }
 
-      entryInfo.fundItemIds = new Set(fundIds);
+      entryInfo.fundItemIds = Array.from(fundIds);
 
       entryInfo.updateCompletionMetrics(
         passportData,
@@ -1265,8 +1255,23 @@ initialState.visaNumber = passport.visaNumber;
   };
 
   // ============================================
-  // RENDER
+  // EARLY VALIDATION & RENDER
   // ============================================
+  // Early validation - config is required (AFTER hooks)
+  if (!config) {
+    console.error('[Template] ERROR: config prop is required but not provided');
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <TamaguiText fontSize="$5" color="$error" textAlign="center" marginBottom="$md">
+          Configuration Error
+        </TamaguiText>
+        <TamaguiText fontSize="$3" color="$textSecondary" textAlign="center">
+          Template configuration is missing. Please check the screen implementation.
+        </TamaguiText>
+      </SafeAreaView>
+    );
+  }
+
   if (formState.isLoading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

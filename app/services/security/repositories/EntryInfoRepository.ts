@@ -6,7 +6,7 @@
  * CRUD operations, queries, and relationships with fund items.
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type EntryInfoRow } from '../utils/DataSerializer';
 
 // Type definitions
 interface SQLiteDatabase {
@@ -37,18 +37,6 @@ interface EntryInfoData {
 interface EntryInfoRecord {
   id: string;
   userId: string;
-  [key: string]: unknown;
-}
-
-interface DatabaseRow {
-  id: string;
-  user_id: string;
-  destination_id?: string | null;
-  status?: string;
-  created_at?: string;
-  travel_info_id?: string | null;
-  passport_id?: string | null;
-  personal_info_id?: string | null;
   [key: string]: unknown;
 }
 
@@ -144,7 +132,7 @@ class EntryInfoRepository {
       return null;
     }
 
-    return this.serializer.deserializeEntryInfo(row) as EntryInfoRecord;
+    return this.serializer.deserializeEntryInfo(this.assertRow(row)) as EntryInfoRecord;
   }
 
   /**
@@ -164,7 +152,7 @@ class EntryInfoRepository {
       ORDER BY created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId]) as DatabaseRow[];
+    const rows = await this.db.getAllAsync(query, [userId]);
 
     if (!rows || rows.length === 0) {
       return [];
@@ -174,7 +162,8 @@ class EntryInfoRepository {
       // Count mismatch warning
     }
 
-    const deserialized = rows.map(row => {
+    const deserialized = rows.map(rawRow => {
+      const row = this.assertRow(rawRow);
       try {
         return this.serializer.deserializeEntryInfo(row) as EntryInfoRecord;
       } catch (error) {
@@ -420,13 +409,13 @@ class EntryInfoRepository {
       ORDER BY created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId, destinationId]) as DatabaseRow[];
+    const rows = await this.db.getAllAsync(query, [userId, destinationId]);
 
     if (!rows || rows.length === 0) {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeEntryInfo(row) as EntryInfoRecord);
+    return rows.map(row => this.serializer.deserializeEntryInfo(this.assertRow(row)) as EntryInfoRecord);
   }
 
   /**
@@ -442,13 +431,13 @@ class EntryInfoRepository {
       ORDER BY created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId, status]) as DatabaseRow[];
+    const rows = await this.db.getAllAsync(query, [userId, status]);
 
     if (!rows || rows.length === 0) {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeEntryInfo(row) as EntryInfoRecord);
+    return rows.map(row => this.serializer.deserializeEntryInfo(this.assertRow(row)) as EntryInfoRecord);
   }
 
   /**
@@ -556,6 +545,13 @@ class EntryInfoRepository {
 
     const rows = await this.db.getAllAsync(query, [entryInfoId]) as Array<{ fund_item_id: string }>;
     return rows ? rows.map(row => row.fund_item_id) : [];
+  }
+
+  private assertRow(row: unknown): EntryInfoRow {
+    if (row && typeof row === 'object') {
+      return row as EntryInfoRow;
+    }
+    throw new Error('Invalid entry info row retrieved from database');
   }
 }
 

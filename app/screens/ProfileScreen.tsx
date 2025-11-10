@@ -12,6 +12,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import type { KeyboardTypeOptions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
@@ -20,17 +21,102 @@ import { NationalitySelector, PassportNameInput } from '../components';
 import FundItemDetailModal from '../components/FundItemDetailModal';
 import { destinationRequirements } from '../config/destinationRequirements';
 import UserDataService from '../services/data/UserDataService';
-import SecureStorageService from '../services/security/SecureStorageService';
 import DataExportService from '../services/export/DataExportService';
 
-const ProfileScreen = ({ navigation, route }) => {
+type ExpandedSection = 'personal' | 'passport' | 'funding' | null;
+
+type PersonalInfoForm = {
+  dateOfBirth: string;
+  gender: string;
+  occupation: string;
+  provinceCity: string;
+  countryRegion: string;
+  phoneNumber: string;
+  email: string;
+};
+
+type PassportForm = {
+  type: string;
+  name: string;
+  nameEn: string;
+  passportNo: string;
+  nationality: string;
+  expiry: string;
+};
+
+type PersonalFieldKey = keyof PersonalInfoForm;
+
+type PersonalFieldConfig = {
+  key: PersonalFieldKey;
+  title: string;
+  subtitle?: string;
+  placeholder?: string;
+  formatHint?: string;
+  type?: 'nationality-selector';
+  multiline?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+};
+
+type MenuItem = {
+  id: string;
+  icon: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+};
+
+type MenuSection = {
+  section: string;
+  items: MenuItem[];
+};
+
+type EditContext = {
+  type: 'personal' | 'nationality-selector' | 'passport-name' | 'passport-nationality';
+  key: string;
+  title?: string;
+  subtitle?: string;
+  placeholder?: string;
+  formatHint?: string;
+  multiline?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+  fieldIndex?: number;
+};
+
+type FundItemDisplay = {
+  id?: string;
+  type?: string;
+  itemType?: string;
+  description?: string;
+  details?: string;
+  amount?: number | string | null;
+  currency?: string | null;
+  photoUri?: string | null;
+  [key: string]: unknown;
+};
+
+type ProfileScreenProps = {
+  navigation: {
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+    replace: (screen: string, params?: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      destination?: string;
+    };
+  };
+};
+
+const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
+  const { navigation, route } = props;
   const { t, language } = useTranslation();
+  const locale = useLocale();
+  const setGlobalLanguage = locale.setLanguage as (code: string) => void;
 
   // Get destination from route params (e.g., 'th', 'us', 'ca')
   const destination = route?.params?.destination;
 
   // Passport data - loaded from database
-  const [passportData, setPassportData] = useState({
+  const [passportData, setPassportData] = useState<PassportForm>({
     type: '中国护照',
     name: '',
     nameEn: '',
@@ -41,32 +127,32 @@ const ProfileScreen = ({ navigation, route }) => {
 
 
   // Personal info state - loaded from database
-  const [personalInfo, setPersonalInfo] = useState({
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoForm>({
     dateOfBirth: '',
     gender: '',
     occupation: '',
     provinceCity: '',
     countryRegion: '',
-    phone: '',
+    phoneNumber: '',
     email: '',
   });
 
   // Fund items state - loaded from database
-  const [fundItems, setFundItems] = useState([]);
+  const [fundItems, setFundItems] = useState<FundItemDisplay[]>([]);
 
   // Fund item detail modal state
-  const [selectedFundItem, setSelectedFundItem] = useState(null);
+  const [selectedFundItem, setSelectedFundItem] = useState<FundItemDisplay | null>(null);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
   
   // Fund item creation state
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
-  const [newFundItemType, setNewFundItemType] = useState(null);
+  const [newFundItemType, setNewFundItemType] = useState<string | null>(null);
 
-  const [expandedSection, setExpandedSection] = useState(null); // 'personal', 'passport', 'funding', or null
-  const [editingContext, setEditingContext] = useState(null);
+  const [expandedSection, setExpandedSection] = useState<ExpandedSection>(null); // 'personal', 'passport', 'funding', or null
+  const [editingContext, setEditingContext] = useState<EditContext | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [draftSavedNotification, setDraftSavedNotification] = useState(null);
-  const [validationError, setValidationError] = useState(null);
+  const [draftSavedNotification, setDraftSavedNotification] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const languageLabel = useMemo(() => {
     const fallback = language ? language.toUpperCase() : 'LANG';
@@ -81,7 +167,7 @@ const ProfileScreen = ({ navigation, route }) => {
         countryRegion: passportData.nationality
       }));
     }
-  }, [passportData.nationality]);
+  }, [passportData.nationality, personalInfo.countryRegion]);
 
 
 
@@ -112,7 +198,7 @@ const ProfileScreen = ({ navigation, route }) => {
         // Check if migration is needed and trigger it
         try {
           await UserDataService.migrateFromAsyncStorage(userId);
-        } catch (migrationError) {
+        } catch {
           // Continue loading even if migration fails
         }
         
@@ -135,13 +221,13 @@ const ProfileScreen = ({ navigation, route }) => {
           setPassportData(mappedPassport);
           
           // Load personal info with gender from passport
-          const mappedPersonalInfo = {
+          const mappedPersonalInfo: PersonalInfoForm = {
             dateOfBirth: userData.passport.dateOfBirth || '1988-01-22',
             gender: userData.passport.gender || 'MALE',
             occupation: userData.personalInfo?.occupation || '',
             provinceCity: userData.personalInfo?.provinceCity || '',
             countryRegion: userData.personalInfo?.countryRegion || userData.passport.nationality || '',
-            phone: userData.personalInfo?.phoneNumber || '',
+            phoneNumber: userData.personalInfo?.phoneNumber || '',
             email: userData.personalInfo?.email || '',
           };
           
@@ -149,13 +235,13 @@ const ProfileScreen = ({ navigation, route }) => {
         } else if (userData.personalInfo) {
           // If no passport but personal info exists, load personal info only
           
-          const mappedPersonalInfo = {
+          const mappedPersonalInfo: PersonalInfoForm = {
             dateOfBirth: '1988-01-22',
             gender: 'MALE',
             occupation: userData.personalInfo.occupation || '',
             provinceCity: userData.personalInfo.provinceCity || '',
             countryRegion: userData.personalInfo.countryRegion || '',
-            phone: userData.personalInfo.phoneNumber || '',
+            phoneNumber: userData.personalInfo.phoneNumber || '',
             email: userData.personalInfo.email || '',
           };
           
@@ -163,14 +249,14 @@ const ProfileScreen = ({ navigation, route }) => {
         }
         
         // Load fund items (force refresh to ensure fresh data)
-         try {
-           const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
-           console.log('Loaded fund items:', items);
-           setFundItems(items || []);
-         } catch (fundItemsError) {
-           console.error('Error loading fund items:', fundItemsError);
-           setFundItems([]);
-         }
+        try {
+          const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
+          const normalizedItems = normalizeFundItems(items);
+          setFundItems(normalizedItems);
+        } catch (fundItemsError) {
+          console.error('Error loading fund items:', fundItemsError);
+          setFundItems([]);
+        }
         
       } catch (error) {
         console.error('Error loading saved data:', error);
@@ -189,8 +275,8 @@ const ProfileScreen = ({ navigation, route }) => {
           // Invalidate cache first to ensure fresh data when screen comes into focus
           UserDataService.invalidateCache('fundItems', userId);
           const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
-          console.log('Reloaded fund items on focus:', items);
-          setFundItems(items || []);
+          const normalizedItems = normalizeFundItems(items);
+          setFundItems(normalizedItems);
         } catch (error) {
           console.error('Error reloading fund items:', error);
         }
@@ -203,11 +289,11 @@ const ProfileScreen = ({ navigation, route }) => {
   // Note: Data saving is now handled through UserDataService in individual update handlers
   // instead of useEffect hooks to avoid unnecessary saves on every render
 
-  const personalFields = useMemo(() => {
+  const personalFields = useMemo<PersonalFieldConfig[]>(() => {
     const destinationConfig = destination ? destinationRequirements[destination] : {};
     const requiresContactInfo = destinationConfig.requiresContactInfo !== false; // Default to true if not specified
 
-    const fields = [
+    const fields: PersonalFieldConfig[] = [
       {
         key: 'dateOfBirth',
         title: t('profile.personal.fields.dateOfBirth.title', { defaultValue: 'Date of Birth' }),
@@ -248,7 +334,7 @@ const ProfileScreen = ({ navigation, route }) => {
     if (requiresContactInfo) {
       fields.push(
         {
-          key: 'phone',
+          key: 'phoneNumber',
           title: t('profile.personal.fields.phone.title', { defaultValue: 'Phone Number' }),
           subtitle: t('profile.personal.fields.phone.subtitle', { defaultValue: 'Phone' }),
           placeholder: t('profile.personal.fields.phone.placeholder', { defaultValue: '+86 1234567890' }),
@@ -265,7 +351,9 @@ const ProfileScreen = ({ navigation, route }) => {
     }
 
     return fields;
-  }, [t, language, destination]);
+  }, [t, destination]);
+
+  const fundingFields: PersonalFieldConfig[] = [];
 
   const personalTitle = t('profile.personal.title', { defaultValue: 'Personal Information' });
   const personalSubtitle = t('profile.personal.subtitle', { defaultValue: 'Update border details' });
@@ -290,7 +378,7 @@ const ProfileScreen = ({ navigation, route }) => {
   });
   const notFilledLabel = t('profile.common.notFilled', { defaultValue: 'Not filled' });
 
-  const menuItems = useMemo(
+  const menuItems = useMemo<MenuSection[]>(
     () => [
       {
         section: t('profile.sections.myServices', { defaultValue: 'My Services' }),
@@ -400,7 +488,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
 
-  const handleMenuPress = (itemId) => {
+  const handleMenuPress = (itemId: MenuItem['id']) => {
     if (itemId === 'language') {
       setLanguageSelectorVisible(true);
     } else if (itemId === 'notifications') {
@@ -472,27 +560,28 @@ const ProfileScreen = ({ navigation, route }) => {
       const mockEntryPackData = {
         entryPack: {
           id: `export_${Date.now()}`,
-          userId: userId,
+          userId,
           destinationId: 'th',
           status: 'in_progress',
           createdAt: new Date().toISOString(),
           exportData: () => ({
             id: `export_${Date.now()}`,
-            userId: userId,
+            userId,
             destinationId: 'th',
             status: 'in_progress',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           }),
           getSubmissionAttemptCount: () => 0,
           getFailedSubmissionCount: () => 0,
           hasValidTDACSubmission: () => false,
-          displayStatus: { completionPercent: 75 }
+          displayStatus: { completionPercent: 75 },
         },
         entryInfo: null,
         passport: userData.passport,
         personalInfo: userData.personalInfo,
         funds: userData.funds || [],
-        travel: null
+        travel: null,
+        digitalArrivalCards: [],
       };
 
       // Export as JSON
@@ -559,9 +648,8 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleLanguageChange = (newLanguage) => {
-    const { setLanguage } = useLocale();
-    setLanguage(newLanguage);
+  const handleLanguageChange = (newLanguage: string): void => {
+    setGlobalLanguage(newLanguage);
     setLanguageSelectorVisible(false);
   };
 
@@ -572,25 +660,57 @@ const ProfileScreen = ({ navigation, route }) => {
 
 
 
-  const handleStartEdit = (type, field, fieldIndex = null) => {
-    let currentValue;
-    if (type === 'personal') {
-      currentValue = personalInfo[field.key];
-    } else if (type === 'passport-nationality') {
-      currentValue = passportData.nationality;
-    } else if (type === 'passport-name') {
-      currentValue = passportData.name;
-    } else if (type === 'nationality-selector') {
-      currentValue = personalInfo[field.key]; // For country/region field
+  const handleStartEdit = (
+    type: EditContext['type'],
+    field: PersonalFieldConfig | { key: string; title?: string; subtitle?: string; placeholder?: string; formatHint?: string; keyboardType?: KeyboardTypeOptions; multiline?: boolean },
+    fieldIndex: number | null = null
+  ): void => {
+    if (type === 'personal' || type === 'nationality-selector') {
+      const { key, title, subtitle, placeholder, formatHint, multiline, keyboardType } = field as PersonalFieldConfig;
+      const currentValue = personalInfo[key] ?? '';
+      setEditingContext({
+        type,
+        key,
+        title,
+        subtitle,
+        placeholder,
+        formatHint,
+        multiline,
+        keyboardType,
+        fieldIndex: fieldIndex ?? 0,
+      });
+      setEditValue(currentValue);
+      return;
     }
-    setEditingContext({ type, ...field, fieldIndex });
-    setEditValue(currentValue || '');
+
+    if (type === 'passport-nationality') {
+      setEditingContext({
+        type,
+        key: 'nationality',
+        title: field.title,
+        subtitle: field.subtitle,
+        placeholder: field.placeholder,
+      });
+      setEditValue(passportData.nationality);
+      return;
+    }
+
+    if (type === 'passport-name') {
+      setEditingContext({
+        type,
+        key: 'name',
+        title: field.title,
+        subtitle: field.subtitle,
+        placeholder: field.placeholder,
+      });
+      setEditValue(passportData.name);
+    }
   };
 
-  const handleNavigateField = (direction) => {
-    if (!editingContext) {
-return;
-}
+  const handleNavigateField = (direction: 'prev' | 'next'): void => {
+    if (!editingContext || editingContext.fieldIndex === undefined) {
+      return;
+    }
 
     // Validate date of birth before navigating away
     if (editingContext.key === 'dateOfBirth' && editValue.length === 10) {
@@ -604,15 +724,12 @@ return;
     // Save current field before navigating
     handleSaveEdit();
 
-    let fields;
-    const currentIndex = editingContext.fieldIndex;
-
-    if (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') {
-      fields = personalFields;
-    } else {
+    if (editingContext.type !== 'personal' && editingContext.type !== 'nationality-selector') {
       return;
     }
 
+    const fields = personalFields;
+    const currentIndex = editingContext.fieldIndex;
     const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
     if (nextIndex >= 0 && nextIndex < fields.length) {
@@ -622,28 +739,31 @@ return;
     }
   };
 
-  const handleGenderSelect = async (value) => {
+  const handleGenderSelect = async (value: string): Promise<void> => {
+    if (!editingContext) {
+      return;
+    }
+
     setEditValue(value);
     setPersonalInfo((prev) => ({
       ...prev,
       gender: value,
     }));
-    
-    // Save to UserDataService
+
     try {
       const userId = 'user_001';
-      const passport = await UserDataService.getPassport(userId);
-      if (passport && passport.id) {
-        await UserDataService.updatePassport(passport.id, {
-          gender: value,
-        }, { skipValidation: true }); // Skip validation for progressive data entry
+      const passportRecord = await UserDataService.getPassport(userId);
+      if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+        const passportId = (passportRecord as { id?: string }).id;
+        if (passportId) {
+          await UserDataService.updatePassport(passportId, { gender: value }, { skipValidation: true });
+        }
       }
     } catch (error) {
       console.error('Error saving gender:', error);
     }
-    
-    showDraftSavedNotification(editingContext?.title || '性别');
-    // Auto-close modal after a short delay to show the selection
+
+    showDraftSavedNotification(editingContext.title ?? '性别');
     setTimeout(() => {
       handleCancelEdit();
     }, 500);
@@ -690,7 +810,7 @@ return;
     setValidationError(null);
   };
 
-  const showDraftSavedNotification = (fieldName) => {
+  const showDraftSavedNotification = (fieldName: string): void => {
     setDraftSavedNotification(fieldName);
     setTimeout(() => {
       setDraftSavedNotification(null);
@@ -698,7 +818,9 @@ return;
   };
 
   // Validate date of birth
-  const validateDateOfBirth = (dateStr) => {
+  const validateDateOfBirth = (
+    dateStr: string
+  ): { valid: boolean; error: string | null } => {
     // Check if date is in correct format (YYYY-MM-DD)
     if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateStr)) {
       return { valid: false, error: '请输入完整日期 (YYYY-MM-DD)' };
@@ -742,7 +864,7 @@ return;
   };
 
   // Date formatting function for automatic YYYY-MM-DD formatting
-  const formatDateInput = (text) => {
+  const formatDateInput = (text: string): string => {
     // Remove all non-digits
     const digitsOnly = text.replace(/\D/g, '');
 
@@ -752,19 +874,19 @@ return;
     // Add hyphens in YYYY-MM-DD format
     let formatted = '';
     if (limitedDigits.length > 0) {
-      formatted += limitedDigits.slice(0, 4); // YYYY
+      formatted = limitedDigits.slice(0, 4); // YYYY
       if (limitedDigits.length >= 5) {
-        formatted += '-' + limitedDigits.slice(4, 6); // -MM
+        formatted = `${formatted}-${limitedDigits.slice(4, 6)}`; // -MM
       }
       if (limitedDigits.length >= 7) {
-        formatted += '-' + limitedDigits.slice(6, 8); // -DD
+        formatted = `${formatted}-${limitedDigits.slice(6, 8)}`; // -DD
       }
     }
 
     return formatted;
   };
 
-  const handleAutoSave = async (value) => {
+  const handleAutoSave = (value: string): void => {
     if (!editingContext) {
       return;
     }
@@ -772,87 +894,81 @@ return;
     setEditValue(value);
 
     const userId = 'user_001';
+    const contextSnapshot = editingContext;
 
     // Auto-save after user stops typing (debounce)
     setTimeout(async () => {
       try {
-        if (editingContext.type === 'personal') {
+        if (contextSnapshot.type === 'personal' || contextSnapshot.type === 'nationality-selector') {
+          const fieldKey = contextSnapshot.key as PersonalFieldKey;
+
           setPersonalInfo((prev) => ({
             ...prev,
-            [editingContext.key]: value,
+            [fieldKey]: value,
           }));
-          
-          // Save to UserDataService using upsert (create or update)
-           const updates = {};
-           if (editingContext.key === 'phone') {
-updates.phoneNumber = value;
-} else if (editingContext.key === 'email') {
-updates.email = value;
-} else if (editingContext.key === 'occupation') {
-updates.occupation = value;
-} else if (editingContext.key === 'provinceCity') {
-updates.provinceCity = value;
-} else if (editingContext.key === 'countryRegion') {
-updates.countryRegion = value;
-}
 
-           await UserDataService.upsertPersonalInfo(userId, updates);
-          
-          // Update passport if gender or dateOfBirth changed
-          if (editingContext.key === 'gender' || editingContext.key === 'dateOfBirth') {
-            const passportData = await UserDataService.getPassport(userId);
-            if (passportData && passportData.id) {
-              const updates = {};
-              if (editingContext.key === 'gender') {
-updates.gender = value;
-}
-              if (editingContext.key === 'dateOfBirth') {
-updates.dateOfBirth = value;
-}
-              await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
+          const updates: Partial<PersonalInfoForm> = {
+            [fieldKey]: value,
+          } as Partial<PersonalInfoForm>;
+
+          await UserDataService.upsertPersonalInfo(userId, updates);
+
+          if (fieldKey === 'gender' || fieldKey === 'dateOfBirth') {
+            const passportRecord = await UserDataService.getPassport(userId);
+            if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+              const passportId = (passportRecord as { id?: string }).id;
+              if (passportId) {
+                const passportUpdates: Record<string, string> = {};
+                if (fieldKey === 'gender') {
+                  passportUpdates.gender = value;
+                }
+                if (fieldKey === 'dateOfBirth') {
+                  passportUpdates.dateOfBirth = value;
+                }
+                await UserDataService.updatePassport(passportId, passportUpdates, { skipValidation: true });
+              }
             }
           }
-        } else if (editingContext.type === 'passport-nationality') {
+        } else if (contextSnapshot.type === 'passport-nationality') {
           setPassportData((prev) => ({
             ...prev,
-            [editingContext.key]: value,
+            nationality: value,
           }));
-          
-          const passport = await UserDataService.getPassport(userId);
-          if (passport && passport.id) {
-            await UserDataService.updatePassport(passport.id, {
-              nationality: value,
-            }, { skipValidation: true });
+
+          const passportRecord = await UserDataService.getPassport(userId);
+          if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+            const passportId = (passportRecord as { id?: string }).id;
+            if (passportId) {
+              await UserDataService.updatePassport(
+                passportId,
+                { nationality: value },
+                { skipValidation: true }
+              );
+            }
           }
-        } else if (editingContext.type === 'passport-name') {
+        } else if (contextSnapshot.type === 'passport-name') {
           setPassportData((prev) => ({
             ...prev,
             name: value,
             nameEn: value,
           }));
 
-          const passport = await UserDataService.getPassport(userId);
-          if (passport && passport.id) {
-            await UserDataService.updatePassport(
-              passport.id,
-              {
-                fullName: value,
-              },
-              { skipValidation: true }
-            );
+          const passportRecord = await UserDataService.getPassport(userId);
+          if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+            const passportId = (passportRecord as { id?: string }).id;
+            if (passportId) {
+              await UserDataService.updatePassport(
+                passportId,
+                { fullName: value },
+                { skipValidation: true }
+              );
+            }
           }
-        } else if (editingContext.type === 'nationality-selector') {
-          setPersonalInfo((prev) => ({
-            ...prev,
-            [editingContext.key]: value,
-          }));
-          
-          await UserDataService.upsertPersonalInfo(userId, {
-            countryRegion: value,
-          });
         }
 
-        showDraftSavedNotification(editingContext.title);
+        showDraftSavedNotification(
+          contextSnapshot.title ?? contextSnapshot.subtitle ?? contextSnapshot.key
+        );
       } catch (error) {
         console.error('Error auto-saving data:', error);
       }
@@ -860,7 +976,7 @@ updates.dateOfBirth = value;
   };
 
   // Handle date input with real-time formatting
-  const handleDateInputChange = (text) => {
+  const handleDateInputChange = (text: string): void => {
     const formatted = formatDateInput(text);
     setEditValue(formatted);
 
@@ -905,8 +1021,7 @@ updates.dateOfBirth = value;
     }, 1000);
   };
 
-  const handleSaveEdit = async () => {
-    // For immediate save when user taps save button (if they want to save immediately)
+  const handleSaveEdit = async (): Promise<void> => {
     if (!editingContext) {
       return;
     }
@@ -914,119 +1029,97 @@ updates.dateOfBirth = value;
     const userId = 'user_001';
 
     try {
-      if (editingContext.type === 'personal') {
-        const updatedPersonalInfo = {
-          ...personalInfo,
-          [editingContext.key]: editValue,
-        };
-        setPersonalInfo(updatedPersonalInfo);
-        
-        // Save to UserDataService using upsert
-        const updates = {};
-        if (editingContext.key === 'phone') {
-updates.phoneNumber = editValue;
-} else if (editingContext.key === 'email') {
-updates.email = editValue;
-} else if (editingContext.key === 'occupation') {
-updates.occupation = editValue;
-} else if (editingContext.key === 'provinceCity') {
-updates.provinceCity = editValue;
-} else if (editingContext.key === 'countryRegion') {
-updates.countryRegion = editValue;
-}
-        
+      if (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') {
+        const fieldKey = editingContext.key as PersonalFieldKey;
+        const updates: Partial<PersonalInfoForm> = {
+          [fieldKey]: editValue,
+        } as Partial<PersonalInfoForm>;
+
+        setPersonalInfo((prev) => ({
+          ...prev,
+          [fieldKey]: editValue,
+        }));
+
         await UserDataService.upsertPersonalInfo(userId, updates);
-        
-        // Update passport if gender or dateOfBirth changed
-        if (editingContext.key === 'gender' || editingContext.key === 'dateOfBirth') {
-          const passportData = await UserDataService.getPassport(userId);
-          if (passportData && passportData.id) {
-            const updates = {};
-            if (editingContext.key === 'gender') {
-updates.gender = editValue;
-}
-            if (editingContext.key === 'dateOfBirth') {
-updates.dateOfBirth = editValue;
-}
-            await UserDataService.updatePassport(passportData.id, updates, { skipValidation: true });
+
+        if (fieldKey === 'gender' || fieldKey === 'dateOfBirth') {
+          const passportRecord = await UserDataService.getPassport(userId);
+          if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+            const passportId = (passportRecord as { id?: string }).id;
+            if (passportId) {
+              const passportUpdates: Record<string, string> = {};
+              if (fieldKey === 'gender') {
+                passportUpdates.gender = editValue;
+              }
+              if (fieldKey === 'dateOfBirth') {
+                passportUpdates.dateOfBirth = editValue;
+              }
+              await UserDataService.updatePassport(passportId, passportUpdates, { skipValidation: true });
+            }
           }
         }
       } else if (editingContext.type === 'passport-nationality') {
-        const updatedPassportData = {
-          ...passportData,
-          [editingContext.key]: editValue,
-        };
-        setPassportData(updatedPassportData);
-        
-        // Save to UserDataService
-        const passport = await UserDataService.getPassport(userId);
-        if (passport && passport.id) {
-          await UserDataService.updatePassport(passport.id, {
-            nationality: editValue,
-          }, { skipValidation: true });
+        setPassportData((prev) => ({
+          ...prev,
+          nationality: editValue,
+        }));
+
+        const passportRecord = await UserDataService.getPassport(userId);
+        if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+          const passportId = (passportRecord as { id?: string }).id;
+          if (passportId) {
+            await UserDataService.updatePassport(
+              passportId,
+              { nationality: editValue },
+              { skipValidation: true }
+            );
+          }
         }
       } else if (editingContext.type === 'passport-name') {
-        const updatedPassportData = {
-          ...passportData,
-          [editingContext.key]: editValue,
-        };
-        setPassportData(updatedPassportData);
-        
-        // Save to UserDataService
-        const passport = await UserDataService.getPassport(userId);
-        if (passport && passport.id) {
-          await UserDataService.updatePassport(passport.id, {
-            fullName: editValue,
-          }, { skipValidation: true });
+        setPassportData((prev) => ({
+          ...prev,
+          name: editValue,
+          nameEn: editValue,
+        }));
+
+        const passportRecord = await UserDataService.getPassport(userId);
+        if (passportRecord && typeof passportRecord === 'object' && passportRecord !== null) {
+          const passportId = (passportRecord as { id?: string }).id;
+          if (passportId) {
+            await UserDataService.updatePassport(
+              passportId,
+              { fullName: editValue },
+              { skipValidation: true }
+            );
+          }
         }
-      } else if (editingContext.type === 'nationality-selector') {
-        const updatedPersonalInfo = {
-          ...personalInfo,
-          [editingContext.key]: editValue,
-        };
-        setPersonalInfo(updatedPersonalInfo);
-        
-        // Save to UserDataService
-        await UserDataService.upsertPersonalInfo(userId, {
-          countryRegion: editValue,
-        });
       }
 
-      showDraftSavedNotification(editingContext.title);
+      showDraftSavedNotification(editingContext.title ?? editingContext.subtitle ?? editingContext.key);
     } catch (error) {
       console.error('Error saving data:', error);
-      Alert.alert('Error', 'Failed to save data. Please try again.');
     }
-    
+
     handleCancelEdit();
   };
 
 
 
   // Fund item detail modal handlers
-  const handleFundItemPress = (fundItem) => {
-    // Convert FundItem instance to plain object to ensure all properties are accessible
-    const fundItemData = fundItem.toJSON ? fundItem.toJSON() : fundItem;
-    console.log('[ProfileScreen] Opening fund item detail:', {
-      id: fundItemData.id,
-      type: fundItemData.type,
-      hasPhotoUri: !!fundItemData.photoUri,
-      photoUri: fundItemData.photoUri?.substring(0, 100),
-    });
-    setSelectedFundItem(fundItemData);
+  const handleFundItemPress = (fundItem: unknown): void => {
+    const [normalized] = normalizeFundItems([fundItem]);
+    setSelectedFundItem(normalized);
     setFundItemModalVisible(true);
   };
 
-  const handleFundItemUpdate = async (updatedItem) => {
+  const handleFundItemUpdate = async (_updatedItem: FundItemDisplay): Promise<void> => {
     try {
-      // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
       UserDataService.invalidateCache('fundItems', userId);
 
-      // Refresh fund items list
       const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
-      console.log('Refreshed fund items after update:', items);
-      setFundItems(items || []);
+      const normalizedItems = normalizeFundItems(items);
+      setFundItems(normalizedItems);
       setFundItemModalVisible(false);
       setSelectedFundItem(null);
     } catch (error) {
@@ -1034,16 +1127,14 @@ updates.dateOfBirth = editValue;
     }
   };
 
-  const handleFundItemDelete = async (fundItemId) => {
+  const handleFundItemDelete = async (_fundItemId: string): Promise<void> => {
     try {
-      // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
       UserDataService.invalidateCache('fundItems', userId);
 
-      // Refresh fund items list
       const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
-      console.log('Refreshed fund items after delete:', items);
-      setFundItems(items || []);
+      const normalizedItems = normalizeFundItems(items);
+      setFundItems(normalizedItems);
       setFundItemModalVisible(false);
       setSelectedFundItem(null);
     } catch (error) {
@@ -1053,67 +1144,65 @@ updates.dateOfBirth = editValue;
 
 
 
-  const handleFundItemModalClose = () => {
+  const handleFundItemModalClose = (): void => {
     setFundItemModalVisible(false);
     setSelectedFundItem(null);
     setIsCreatingFundItem(false);
     setNewFundItemType(null);
   };
 
-  const handleManageFundItems = () => {
+  const handleManageFundItems = (): void => {
     // Navigate to Thailand travel info screen where fund items can be managed
     navigation.navigate('ThailandTravelInfo', { destination: 'th' });
   };
 
   // Handle add fund item button press
-  const handleAddFundItem = () => {
+  const handleAddFundItem = (): void => {
     showFundItemTypeSelector();
   };
 
   // Show fund item type selector alert
-  const showFundItemTypeSelector = () => {
+  const showFundItemTypeSelector = (): void => {
     Alert.alert(
       t('profile.funding.selectType', { defaultValue: 'Select Fund Item Type' }),
       t('profile.funding.selectTypeMessage', { defaultValue: 'Choose the type of fund item to add' }),
       [
-        { 
-          text: t('fundItem.types.CASH', { defaultValue: 'Cash' }), 
-          onPress: () => handleCreateFundItem('CASH') 
+        {
+          text: t('profile.funding.type.cash', { defaultValue: 'Cash' }),
+          onPress: () => handleCreateFundItem('CASH'),
         },
-        { 
-          text: t('fundItem.types.BANK_CARD', { defaultValue: 'Bank Card' }), 
-          onPress: () => handleCreateFundItem('BANK_CARD') 
+        {
+          text: t('profile.funding.type.bankCard', { defaultValue: 'Bank Card' }),
+          onPress: () => handleCreateFundItem('BANK_CARD'),
         },
-        { 
-          text: t('fundItem.types.DOCUMENT', { defaultValue: 'Supporting Document' }), 
-          onPress: () => handleCreateFundItem('DOCUMENT') 
+        {
+          text: t('profile.funding.type.document', { defaultValue: 'Supporting Document' }),
+          onPress: () => handleCreateFundItem('DOCUMENT'),
         },
-        { 
-          text: t('common.cancel', { defaultValue: 'Cancel' }), 
-          style: 'cancel' 
-        }
-      ]
+        {
+          text: t('profile.funding.type.cancel', { defaultValue: 'Cancel' }),
+          style: 'cancel',
+        },
+      ],
     );
   };
 
   // Handle create fund item with selected type
-  const handleCreateFundItem = (type) => {
+  const handleCreateFundItem = (type: string): void => {
     setNewFundItemType(type);
     setIsCreatingFundItem(true);
     setFundItemModalVisible(true);
   };
 
   // Handle fund item created
-  const handleFundItemCreate = async (newItem) => {
+  const handleFundItemCreate = async (_newItem: FundItemDisplay): Promise<void> => {
     try {
-      // Invalidate cache first to ensure fresh data
       const userId = 'user_001';
       UserDataService.invalidateCache('fundItems', userId);
 
-      // Refresh fund items list
       const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
-      console.log('Refreshed fund items after create:', items);
-      setFundItems(items || []);
+      const normalizedItems = normalizeFundItems(items);
+      setFundItems(normalizedItems);
       setFundItemModalVisible(false);
       setIsCreatingFundItem(false);
       setNewFundItemType(null);
@@ -1122,6 +1211,25 @@ updates.dateOfBirth = editValue;
     }
   };
 
+  const normalizeFundItems = (rawItems: unknown): FundItemDisplay[] => {
+    if (!Array.isArray(rawItems)) {
+      return [];
+    }
+
+    return rawItems.map((item) => {
+      if (item && typeof item === 'object') {
+        const record = item as Record<string, unknown>;
+        if ('toJSON' in record && typeof (record as { toJSON?: () => unknown }).toJSON === 'function') {
+          const plain = (record as { toJSON: () => unknown }).toJSON();
+          if (plain && typeof plain === 'object') {
+            return { ...(plain as Record<string, unknown>) } as FundItemDisplay;
+          }
+        }
+        return { ...record } as FundItemDisplay;
+      }
+      return {};
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1160,7 +1268,9 @@ updates.dateOfBirth = editValue;
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{passportData.name || '张伟'}</Text>
             <Text style={styles.userPhone}>
-              {personalInfo.phone ? t('profile.user.phone', { phone: personalInfo.phone }) : t('profile.user.phone', { phone: '138****1234' })}
+              {personalInfo.phoneNumber
+                ? t('profile.user.phone', { phone: personalInfo.phoneNumber })
+                : t('profile.user.phone', { phone: '138****1234' })}
             </Text>
           </View>
         </View>
@@ -2488,7 +2598,19 @@ const styles = StyleSheet.create({
     ...typography.body1, 
     color: colors.primary,
     fontWeight: 'bold'
-  }
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  infoHeader: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
 });
 
 export default ProfileScreen;

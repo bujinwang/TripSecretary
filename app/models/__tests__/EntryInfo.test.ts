@@ -4,15 +4,14 @@
  */
 
 import EntryInfo from '../EntryInfo';
-import type SecureStorageServiceType from '../../services/security/SecureStorageService';
-import SecureStorageService from '../../services/security/SecureStorageService';
+import secureStorageService from '../../services/security/SecureStorageService';
 
 jest.mock('../../services/security/SecureStorageService', () => {
   const mockService = {
-    initializeDatabase: jest.fn(),
+    initialize: jest.fn(),
     getDigitalArrivalCardsByEntryInfoId: jest.fn(),
     getLatestSuccessfulDigitalArrivalCard: jest.fn(),
-    deleteUserData: jest.fn(),
+    deleteAllUserData: jest.fn(),
     saveEntryInfo: jest.fn(),
     getEntryInfo: jest.fn(),
     getPassport: jest.fn(),
@@ -27,7 +26,8 @@ jest.mock('../../services/security/SecureStorageService', () => {
   };
 });
 
-const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
+type SecureStorageServiceMock = jest.Mocked<typeof secureStorageService>;
+const mockedSecureStorage = secureStorageService as SecureStorageServiceMock;
 
 describe('EntryInfo Model - Schema v2.0', () => {
   let testUserId: string;
@@ -46,8 +46,8 @@ describe('EntryInfo Model - Schema v2.0', () => {
     travel: { status: 'complete', color: 'green' }
   };
 
-  beforeAll(() => {
-    mockedSecureStorage.initializeDatabase.mockResolvedValue(true);
+beforeAll(() => {
+  mockedSecureStorage.initialize.mockResolvedValue();
     mockedSecureStorage.getDigitalArrivalCardsByEntryInfoId.mockResolvedValue([]);
     mockedSecureStorage.getLatestSuccessfulDigitalArrivalCard.mockResolvedValue(null);
     testUserId = `test-user-${Date.now()}`;
@@ -67,10 +67,10 @@ describe('EntryInfo Model - Schema v2.0', () => {
     jest.clearAllMocks();
   });
 
-  afterAll(async () => {
-    mockedSecureStorage.deleteUserData.mockResolvedValue(true);
+afterAll(async () => {
+  mockedSecureStorage.deleteAllUserData.mockResolvedValue();
     try {
-      await mockedSecureStorage.deleteUserData(testUserId);
+    await mockedSecureStorage.deleteAllUserData(testUserId);
     } catch (error) {
       console.warn('Cleanup failed:', error);
     }

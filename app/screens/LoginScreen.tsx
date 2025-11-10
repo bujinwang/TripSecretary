@@ -1,19 +1,40 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  ForwardRefRenderFunction,
+  HTMLAttributes,
+  PropsWithChildren,
+} from 'react';
 import { Platform, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
 import { useLocale } from '../i18n/LocaleContext';
+import type { RootStackScreenProps } from '../types/navigation';
+import type { Transition } from 'framer-motion';
 
 const isWeb = Platform.OS === 'web';
-const motionModule = isWeb ? require('framer-motion') : null;
-const lucideModule = isWeb ? require('lucide-react') : null;
+const motionModule: { motion?: typeof import('framer-motion').motion } | null = isWeb
+  ? // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, global-require
+    require('framer-motion')
+  : null;
+const lucideModule:
+  | {
+      FileText?: React.ComponentType<ComponentPropsWithoutRef<'svg'>>;
+      Package?: React.ComponentType<ComponentPropsWithoutRef<'svg'>>;
+      Mic?: React.ComponentType<ComponentPropsWithoutRef<'svg'>>;
+      Navigation?: React.ComponentType<ComponentPropsWithoutRef<'svg'>>;
+    }
+  | null = isWeb
+  ? // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, global-require
+    require('lucide-react')
+  : null;
 const motion = motionModule?.motion;
 const { FileText, Package, Mic, Navigation: NavigationIcon } = lucideModule || {};
 
-const cn = (...classes) => classes.filter(Boolean).join(' ');
+const cn = (...classes: Array<string | false | null | undefined>): string =>
+  classes.filter(Boolean).join(' ');
 
 // Minimal shadcn/ui-inspired primitives to keep the web screen self-contained.
 const buttonVariants = {
@@ -27,20 +48,32 @@ const buttonSizes = {
   sm: 'h-9 px-4 py-2 text-sm',
 };
 
-const Button = React.forwardRef(
-  ({ className = '', variant = 'default', size = 'default', ...props }, ref) => (
-    <button
-      ref={ref}
-      className={cn(
-        'inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
-        buttonVariants[variant] || buttonVariants.default,
-        buttonSizes[size] || buttonSizes.default,
-        className
-      )}
-      {...props}
-    />
-  )
+type WebButtonVariant = keyof typeof buttonVariants;
+type WebButtonSize = keyof typeof buttonSizes;
+
+interface WebButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'size'> {
+  className?: string;
+  variant?: WebButtonVariant;
+  size?: WebButtonSize;
+}
+
+const ButtonRender: ForwardRefRenderFunction<HTMLButtonElement, WebButtonProps> = (
+  { className = '', variant = 'default', size = 'default', ...props },
+  ref
+) => (
+  <button
+    ref={ref}
+    className={cn(
+      'inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+      buttonVariants[variant] || buttonVariants.default,
+      buttonSizes[size] || buttonSizes.default,
+      className
+    )}
+    {...props}
+  />
 );
+
+const Button = React.forwardRef<HTMLButtonElement, WebButtonProps>(ButtonRender);
 
 Button.displayName = 'Button';
 
@@ -49,7 +82,17 @@ const badgeVariants = {
   secondary: 'bg-emerald-100 text-emerald-700',
 };
 
-const Badge = ({ className = '', variant = 'default', children, ...props }) => (
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  className?: string;
+  variant?: keyof typeof badgeVariants;
+}
+
+const Badge: React.FC<PropsWithChildren<BadgeProps>> = ({
+  className = '',
+  variant = 'default',
+  children,
+  ...props
+}) => (
   <span
     className={cn(
       'inline-flex items-center rounded-md border border-transparent px-3 py-1 text-xs font-semibold',
@@ -62,7 +105,11 @@ const Badge = ({ className = '', variant = 'default', children, ...props }) => (
   </span>
 );
 
-const Card = ({ className = '', children, ...props }) => (
+type CardProps = HTMLAttributes<HTMLDivElement> & {
+  className?: string;
+};
+
+const Card: React.FC<PropsWithChildren<CardProps>> = ({ className = '', children, ...props }) => (
   <div
     className={cn(
       'rounded-2xl border bg-white text-emerald-900 shadow-sm',
@@ -74,13 +121,26 @@ const Card = ({ className = '', children, ...props }) => (
   </div>
 );
 
-const CardContent = ({ className = '', children, ...props }) => (
+type CardContentProps = HTMLAttributes<HTMLDivElement> & {
+  className?: string;
+};
+
+const CardContent: React.FC<PropsWithChildren<CardContentProps>> = ({
+  className = '',
+  children,
+  ...props
+}) => (
   <div className={cn('p-6', className)} {...props}>
     {children}
   </div>
 );
 
-const LANGUAGES = [
+type LanguageOption = {
+  code: string;
+  label: string;
+};
+
+const LANGUAGES: LanguageOption[] = [
   { code: 'en', label: 'English' },
   { code: 'zh-CN', label: '简体中文' },
   { code: 'zh-TW', label: '繁體中文' },
@@ -89,13 +149,24 @@ const LANGUAGES = [
   { code: 'es', label: 'Español' },
 ];
 
-const softSpring = {
+const softSpring: Transition = {
   type: 'spring',
   stiffness: 140,
   damping: 18,
 };
 
-const WebLoginScreen = ({
+type TranslationFn = (key: string, options?: Record<string, unknown>) => string;
+
+interface SharedLoginScreenProps {
+  languages: LanguageOption[];
+  activeLanguage: string;
+  setActiveLanguage: (code: string) => void;
+  whisperVisible: boolean;
+  onExperience: () => void;
+  t: TranslationFn;
+}
+
+const WebLoginScreen: React.FC<SharedLoginScreenProps> = ({
   languages,
   activeLanguage,
   setActiveLanguage,
@@ -287,7 +358,7 @@ const WebLoginScreen = ({
   );
 };
 
-const NativeLoginScreen = ({
+const NativeLoginScreen: React.FC<SharedLoginScreenProps> = ({
   languages,
   activeLanguage,
   setActiveLanguage,
@@ -382,13 +453,14 @@ const NativeLoginScreen = ({
   </SafeAreaView>
 );
 
-const LoginScreen = () => {
-  const navigation = useNavigation();
+type LoginScreenProps = RootStackScreenProps<'Login'>;
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { language: activeLanguage, setLanguage: setActiveLanguage, t } = useLocale();
   const [whisperVisible, setWhisperVisible] = useState(false);
 
   const handleExperience = useCallback(() => {
-    navigation?.replace?.('MainTabs');
+    navigation.replace('MainTabs');
   }, [navigation]);
 
   useEffect(() => {

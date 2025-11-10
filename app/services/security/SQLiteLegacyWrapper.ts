@@ -227,7 +227,7 @@ export default class SQLiteLegacyWrapper {
     return new LegacyDatabaseImpl(database);
   }
 
-  private static async executeSql(
+  static async executeSql(
     db: SQLiteDatabase,
     sqlStatement: string,
     params: unknown[],

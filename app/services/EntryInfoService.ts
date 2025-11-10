@@ -5,6 +5,7 @@
 
 import SecureStorageService from './security/SecureStorageService';
 import EntryInfo from '../models/EntryInfo';
+import type { EntryInfoInit } from '../models/EntryInfo';
 import DigitalArrivalCard from '../models/DigitalArrivalCard';
 import logger from './LoggingService';
 import type { UserId } from '../types/data';
@@ -164,7 +165,7 @@ class EntryInfoService {
    */
   static async createEntryInfo(entryInfoData: Partial<EntryInfoData>): Promise<EntryInfoModel> {
     try {
-      const entryInfo = new EntryInfo(entryInfoData);
+      const entryInfo = new EntryInfo(entryInfoData as EntryInfoInit);
       await entryInfo.save();
       return entryInfo;
     } catch (error: any) {
@@ -201,10 +202,10 @@ class EntryInfoService {
    * @param {string} entryInfoId - The ID of the EntryInfo record to delete.
    * @returns {Promise<boolean>} - True if deleted successfully, false otherwise.
    */
-  static async deleteEntryInfo(entryInfoId: string): Promise<boolean> {
+  static async deleteEntryInfo(entryInfoId: string): Promise<void> {
     try {
       // Delete entry info using SecureStorageService
-      return await SecureStorageService.deleteEntryInfo(entryInfoId);
+      await SecureStorageService.deleteEntryInfo(entryInfoId);
     } catch (error: any) {
       logger.error('EntryInfoService', 'Failed to delete EntryInfo', { error });
       throw error;

@@ -3,13 +3,12 @@
  */
 
 import DigitalArrivalCard from '../DigitalArrivalCard';
-import type SecureStorageServiceType from '../../services/security/SecureStorageService';
-import SecureStorageService from '../../services/security/SecureStorageService';
+import secureStorageService from '../../services/security/SecureStorageService';
 
 jest.mock('../../services/security/SecureStorageService', () => {
   const mockService = {
-    initializeDatabase: jest.fn(),
-    deleteUserData: jest.fn(),
+    initialize: jest.fn(),
+    deleteAllUserData: jest.fn(),
     saveDigitalArrivalCard: jest.fn(),
     getDigitalArrivalCard: jest.fn(),
     getDigitalArrivalCardsByEntryInfoId: jest.fn(),
@@ -22,15 +21,16 @@ jest.mock('../../services/security/SecureStorageService', () => {
   };
 });
 
-const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
+type SecureStorageServiceMock = jest.Mocked<typeof secureStorageService>;
+const mockedSecureStorage = secureStorageService as SecureStorageServiceMock;
 
 describe('DigitalArrivalCard Model - Schema v2.0', () => {
   let testUserId: string;
   let testEntryInfoId: string;
   let testCard: DigitalArrivalCard;
 
-  beforeAll(() => {
-    mockedSecureStorage.initializeDatabase.mockResolvedValue(true);
+beforeAll(() => {
+  mockedSecureStorage.initialize.mockResolvedValue();
     testUserId = `test-user-${Date.now()}`;
     testEntryInfoId = `entry_test_${Date.now()}`;
   });
@@ -58,10 +58,10 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
     jest.clearAllMocks();
   });
 
-  afterAll(async () => {
-    mockedSecureStorage.deleteUserData.mockResolvedValue(true);
+afterAll(async () => {
+  mockedSecureStorage.deleteAllUserData.mockResolvedValue();
     try {
-      await mockedSecureStorage.deleteUserData(testUserId);
+    await mockedSecureStorage.deleteAllUserData(testUserId);
     } catch (error) {
       console.warn('Cleanup failed:', error);
     }
@@ -111,7 +111,6 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
     test('should save DigitalArrivalCard successfully', async () => {
       mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({
         id: testCard.id,
-        success: true
       });
 
       const result = await testCard.save();
@@ -141,7 +140,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         updatedAt: expect.any(String)
       });
 
-      expect((result as { success: boolean }).success).toBe(true);
+      expect(result).toEqual({ id: testCard.id });
     });
 
     test('should load DigitalArrivalCard by ID', async () => {
@@ -250,7 +249,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
 
   describe('Superseding Logic', () => {
     test('should mark card as superseded', async () => {
-      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ id: testCard.id });
 
       const result = await testCard.markAsSuperseded('dac_new_123', 'User submitted updated information');
 
@@ -259,7 +258,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
       expect(testCard.supersededReason).toBe('User submitted updated information');
       expect(testCard.supersededAt).toBeDefined();
       expect(mockedSecureStorage.saveDigitalArrivalCard).toHaveBeenCalled();
-      expect(result).toEqual({ success: true });
+      expect(result).toEqual({ id: testCard.id });
     });
   });
 
@@ -319,7 +318,7 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         status: 'pending'
       });
 
-      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ id: initialCard.id });
 
       await initialCard.save();
 
@@ -361,7 +360,9 @@ describe('DigitalArrivalCard Model - Schema v2.0', () => {
         arrCardNo: 'TH222222222'
       });
 
-      mockedSecureStorage.saveDigitalArrivalCard.mockResolvedValue({ success: true });
+      mockedSecureStorage.saveDigitalArrivalCard
+        .mockResolvedValueOnce({ id: firstCard.id })
+        .mockResolvedValueOnce({ id: secondCard.id });
 
       await firstCard.save();
       await secondCard.save();

@@ -7,23 +7,13 @@
 
 import EntryPackSnapshot from '../../models/EntryPackSnapshot';
 import * as FileSystem from 'expo-file-system';
-import * as LegacyFileSystem from 'expo-file-system/legacy';
-import DataEncryptionService from '../security/DataEncryptionService';
+import DataEncryptionService, { type PhotoFile } from '../security/DataEncryptionService';
 import logger from '../LoggingService';
 import type { UserId } from '../../types';
+import EntryInfo from '../../models/EntryInfo';
+import UserDataService from '../data/UserDataService';
 
-// Type assertions for expo-file-system API (not fully typed)
-type FileSystemDirectory = {
-  exists(): Promise<boolean>;
-  list(): Promise<string[]>;
-  delete(): Promise<void>;
-};
-
-type FileSystemFile = {
-  exists(): Promise<boolean>;
-  copy(dest: string): Promise<void>;
-  size: number;
-};
+type FileEncoding = (typeof FileSystem.EncodingType)[keyof typeof FileSystem.EncodingType];
 
 // Type definitions
 interface SnapshotMetadata {
@@ -45,6 +35,10 @@ interface PhotoManifestEntry {
   status: 'success' | 'missing' | 'failed' | 'no_photo';
   error?: string | null;
   encrypted?: boolean;
+  encryptedPath?: string | null;
+  encryptionMethod?: string | null;
+  encryptionError?: string | null;
+  encryptedSize?: number | null;
 }
 
 interface SnapshotFilters {
@@ -185,12 +179,7 @@ class SnapshotService {
     }
 
     try {
-      const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir) as unknown as FileSystemDirectory;
-      const dirExists = await snapshotDir.exists();
-      if (!dirExists) {
-        await LegacyFileSystem.makeDirectoryAsync(this.snapshotStorageDir, { intermediates: true });
-        logger.info('SnapshotService', 'Snapshot storage directory created', { path: this.snapshotStorageDir });
-      }
+      await this.ensureDirectory(this.snapshotStorageDir);
       this.initialized = true;
     } catch (error: any) {
       logger.error('SnapshotService', error, { operation: 'initializeStorage' });
@@ -264,7 +253,47 @@ class SnapshotService {
       let encryptedPhotos = photoManifest;
       if (this.encryptionEnabled) {
         try {
-          encryptedPhotos = await this.encryptionService.encryptSnapshotPhotos(photoManifest, snapshot.snapshotId);
+          const photoFilesForEncryption: PhotoFile[] = photoManifest
+            .filter(
+              (photo): photo is PhotoManifestEntry & {
+                snapshotPath: string;
+                fundItemId: string;
+              } =>
+                photo.status === 'success' &&
+                typeof photo.snapshotPath === 'string' &&
+                typeof photo.fundItemId === 'string'
+            )
+            .map(photo => ({
+              filePath: photo.snapshotPath,
+              fundItemId: photo.fundItemId,
+              originalSize: photo.fileSize ?? 0
+            }));
+
+          const encryptedResults = await this.encryptionService.encryptSnapshotPhotos(
+            photoFilesForEncryption,
+            snapshot.snapshotId
+          );
+
+          const encryptedByFundId = new Map(
+            encryptedResults.map(result => [result.fundItemId, result])
+          );
+
+          encryptedPhotos = photoManifest.map(entry => {
+            const encryptedResult = encryptedByFundId.get(entry.fundItemId);
+            if (!encryptedResult) {
+              return entry;
+            }
+
+            return {
+              ...entry,
+              encrypted: encryptedResult.encrypted ?? entry.encrypted ?? false,
+              encryptedPath: encryptedResult.encryptedPath ?? null,
+              encryptionMethod: encryptedResult.encryptionMethod ?? null,
+              encryptionError: encryptedResult.encryptionError ?? null,
+              encryptedSize: encryptedResult.encryptedSize ?? null
+            };
+          });
+
           logger.info('SnapshotService', 'Snapshot photos encrypted', {
             snapshotId: snapshot.snapshotId,
             photoCount: encryptedPhotos.length,
@@ -283,10 +312,17 @@ class SnapshotService {
       if (this.encryptionEnabled) {
         try {
           const snapshotData = snapshot.exportData();
-          const encryptionResult = await this.encryptionService.encryptSnapshotData(snapshotData, snapshot.snapshotId);
+          const encryptionResult = await this.encryptionService.encryptSnapshotData(
+            snapshotData,
+            snapshot.snapshotId
+          );
 
           // Update snapshot with encryption info
-          snapshot.setEncryptionInfo(encryptionResult);
+          snapshot.setEncryptionInfo({
+            encrypted: encryptionResult.encrypted,
+            encryptionMethod: encryptionResult.encryptionMethod ?? null,
+            encryptedFilePath: encryptionResult.filePath ?? null
+          });
 
           logger.info('SnapshotService', 'Snapshot data encrypted', {
             snapshotId: snapshot.snapshotId,
@@ -331,7 +367,6 @@ class SnapshotService {
   async loadCompleteEntryInfoData(entryInfoId: string): Promise<CompleteEntryInfoData | null> {
     try {
       // Load entry info
-      const EntryInfo = require('../../models/EntryInfo').default;
       const entryInfo = await EntryInfo.load(entryInfoId);
       if (!entryInfo) {
         return null;
@@ -344,7 +379,6 @@ class SnapshotService {
       let funds: any[] = [];
       if (entryInfo.userId) {
         try {
-          const UserDataService = require('../data/UserDataService').default;
           funds = await UserDataService.getFundItems(entryInfo.userId) || [];
           logger.debug('SnapshotService', 'Loaded funds for snapshot', {
             userId: entryInfo.userId,
@@ -359,7 +393,6 @@ class SnapshotService {
       let travel = completeData.travel || {};
       if (entryInfo.userId && entryInfo.destinationId && (!travel || Object.keys(travel).length === 0)) {
         try {
-          const UserDataService = require('../data/UserDataService').default;
           const travelInfo = await UserDataService.getTravelInfo(entryInfo.userId, entryInfo.destinationId);
           if (travelInfo) {
             travel = travelInfo;
@@ -373,14 +406,17 @@ class SnapshotService {
         }
       }
 
-      // Combine all data
-      return {
-        ...entryInfo.exportData(),
+      const baseData = (await entryInfo.exportData()) as Record<string, unknown>;
+
+      const combined = {
+        ...baseData,
         passport: completeData.passport,
         personalInfo: completeData.personalInfo,
-        funds: funds,
-        travel: travel
-      };
+        funds,
+        travel
+      } as CompleteEntryInfoData;
+
+      return combined;
     } catch (error: any) {
       logger.error('SnapshotService', error, { operation: 'loadCompleteEntryInfoData', entryInfoId });
       return null;
@@ -400,7 +436,7 @@ class SnapshotService {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
       // Create snapshot photo directory
-      await LegacyFileSystem.makeDirectoryAsync(snapshotPhotoDir, { intermediates: true });
+      await this.ensureDirectory(snapshotPhotoDir);
 
       logger.info('SnapshotService', `Copying ${funds.length} fund photos to snapshot storage`, { snapshotPhotoDir });
 
@@ -412,41 +448,42 @@ class SnapshotService {
             const fileName = `snapshot_${snapshotId}_${fund.id}_${timestamp}.jpg`;
             const snapshotPhotoPath = `${snapshotPhotoDir}${fileName}`;
 
-            // Check if original photo exists
-            const originalPhoto = new FileSystem.File(fund.photoUri) as unknown as FileSystemFile;
-            if (await originalPhoto.exists()) {
-              // Validate photo file size (prevent copying corrupted files)
-              if (originalPhoto.size > 0) {
-                // Copy photo to snapshot storage
-                await originalPhoto.copy(snapshotPhotoPath);
-
-                // Verify copy was successful
-                const copiedPhoto = new FileSystem.File(snapshotPhotoPath) as unknown as FileSystemFile;
-                if (await copiedPhoto.exists() && copiedPhoto.size === originalPhoto.size) {
-                  copiedPhotos.push({
-                    fundItemId: fund.id,
-                    fundType: fund.type || 'unknown',
-                    originalPath: fund.photoUri,
-                    snapshotPath: snapshotPhotoPath,
-                    fileName: fileName,
-                    fileSize: originalPhoto.size, // Fixed: was originalInfo.size
-                    copiedAt: new Date().toISOString(),
-                    status: 'success'
-                  });
-
-                  logger.debug('SnapshotService', 'Photo copied successfully', {
-                    fundItemId: fund.id,
-                    fileName: fileName,
-                    size: originalPhoto.size
-                  });
-                } else {
-                  throw new Error('Copy verification failed - file sizes do not match');
-                }
-              } else {
+            const originalInfo = await this.getFileInfo(fund.photoUri);
+            if (originalInfo) {
+              const originalSize = originalInfo.size ?? 0;
+              if (originalSize <= 0) {
                 throw new Error('Original photo file is empty or corrupted');
               }
+
+              await this.copyFile(fund.photoUri, snapshotPhotoPath);
+
+              const copiedInfo = await this.getFileInfo(snapshotPhotoPath);
+              if (!copiedInfo) {
+                throw new Error('Copy verification failed - destination file not found');
+              }
+
+              const copiedSize = copiedInfo.size ?? 0;
+              if (copiedSize !== originalSize) {
+                throw new Error('Copy verification failed - file sizes do not match');
+              }
+
+              copiedPhotos.push({
+                fundItemId: fund.id,
+                fundType: fund.type || 'unknown',
+                originalPath: fund.photoUri,
+                snapshotPath: snapshotPhotoPath,
+                fileName,
+                fileSize: originalSize,
+                copiedAt: new Date().toISOString(),
+                status: 'success'
+              });
+
+              logger.debug('SnapshotService', 'Photo copied successfully', {
+                fundItemId: fund.id,
+                fileName,
+                size: originalSize
+              });
             } else {
-              // Handle missing photo - create placeholder entry
               const placeholderEntry: PhotoManifestEntry = {
                 fundItemId: fund.id,
                 fundType: fund.type || 'unknown',
@@ -460,7 +497,7 @@ class SnapshotService {
               };
 
               failedPhotos.push(placeholderEntry);
-              copiedPhotos.push(placeholderEntry); // Include in manifest for completeness
+              copiedPhotos.push(placeholderEntry);
 
               logger.warn('SnapshotService', 'Original photo not found, added placeholder', {
                 fundItemId: fund.id,
@@ -507,7 +544,7 @@ class SnapshotService {
       const failedCount = failedPhotos.length;
       const totalSize = copiedPhotos
         .filter(p => p.status === 'success')
-        .reduce((sum, p) => sum + p.fileSize, 0);
+        .reduce((sum, p) => sum + (p.fileSize ?? 0), 0);
 
       logger.info('SnapshotService', 'Photo copying completed', {
         snapshotId,
@@ -625,11 +662,9 @@ class SnapshotService {
     try {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
-      // Check if directory exists
-      const photoDir = new FileSystem.Directory(snapshotPhotoDir) as unknown as FileSystemDirectory;
-      if (await photoDir.exists()) {
-        // Delete entire snapshot photo directory
-        await photoDir.delete();
+      const dirInfo = await FileSystem.getInfoAsync(snapshotPhotoDir);
+      if (dirInfo.exists && dirInfo.isDirectory) {
+        await FileSystem.deleteAsync(snapshotPhotoDir, { idempotent: true });
         logger.info('SnapshotService', 'Snapshot photos deleted', { snapshotPhotoDir });
       }
     } catch (error: any) {
@@ -664,9 +699,9 @@ class SnapshotService {
         for (const photo of snapshot.photoManifest) {
           try {
             if (photo.snapshotPath) {
-              const photoFile = new FileSystem.File(photo.snapshotPath) as unknown as FileSystemFile;
-              if (await photoFile.exists()) {
-                totalSize += photoFile.size || 0;
+              const photoSize = await this.getFileSize(photo.snapshotPath);
+              if (photoSize > 0) {
+                totalSize += photoSize;
                 photoCount++;
               }
             }
@@ -705,12 +740,10 @@ class SnapshotService {
       // This is a temporary implementation until proper storage layer is implemented
       const snapshots: EntryPackSnapshot[] = [];
 
-      const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir) as unknown as FileSystemDirectory;
-      if (!await snapshotDir.exists()) {
+      const snapshotDirs = await this.listDirectory(this.snapshotStorageDir);
+      if (snapshotDirs.length === 0) {
         return [];
       }
-
-      const snapshotDirs = await snapshotDir.list();
 
       for (const dirName of snapshotDirs) {
         // dirName is a string from list()
@@ -833,6 +866,65 @@ class SnapshotService {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  private async ensureDirectory(path: string): Promise<void> {
+    const info = await FileSystem.getInfoAsync(path);
+    if (info.exists) {
+      if (!info.isDirectory) {
+        throw new Error(`Expected directory at path: ${path}`);
+      }
+      return;
+    }
+
+    await FileSystem.makeDirectoryAsync(path, { intermediates: true });
+  }
+
+  private async listDirectory(path: string): Promise<string[]> {
+    const info = await FileSystem.getInfoAsync(path);
+    if (!info.exists || !info.isDirectory) {
+      return [];
+    }
+
+    return FileSystem.readDirectoryAsync(path);
+  }
+
+  private async getFileInfo(path: string): Promise<FileSystem.FileInfo | null> {
+    try {
+      const info = await FileSystem.getInfoAsync(path);
+      if (!info.exists || info.isDirectory) {
+        return null;
+      }
+      return info;
+    } catch {
+      return null;
+    }
+  }
+
+  private async fileExists(path: string): Promise<boolean> {
+    const info = await this.getFileInfo(path);
+    return info !== null;
+  }
+
+  private async getFileSize(path: string): Promise<number> {
+    const info = await this.getFileInfo(path);
+    return info?.size ?? 0;
+  }
+
+  private async readFile(path: string, encoding?: FileEncoding): Promise<string> {
+    return FileSystem.readAsStringAsync(path, encoding ? { encoding } : undefined);
+  }
+
+  private async writeFile(path: string, data: string, encoding?: FileEncoding): Promise<void> {
+    await FileSystem.writeAsStringAsync(path, data, encoding ? { encoding } : undefined);
+  }
+
+  private async copyFile(from: string, to: string): Promise<void> {
+    await FileSystem.copyAsync({ from, to });
+  }
+
+  private async deleteFile(path: string): Promise<void> {
+    await FileSystem.deleteAsync(path, { idempotent: true });
+  }
+
   /**
    * Export snapshot data for backup
    * @param snapshotId - Snapshot ID
@@ -854,11 +946,9 @@ class SnapshotService {
         for (const photo of snapshot.photoManifest) {
           try {
             if (photo.snapshotPath) {
-              const photoInfo = await FileSystem.getInfoAsync(photo.snapshotPath);
-              if (photoInfo.exists) {
-                const base64 = await LegacyFileSystem.readAsStringAsync(photo.snapshotPath, {
-                  encoding: LegacyFileSystem.EncodingType.Base64
-                });
+              const photoInfo = await this.getFileInfo(photo.snapshotPath);
+              if (photoInfo) {
+                const base64 = await this.readFile(photo.snapshotPath, FileSystem.EncodingType.Base64);
                 photoData[photo.fundItemId] = base64;
               }
             }
@@ -919,31 +1009,29 @@ class SnapshotService {
         return { isValid: false, error: 'Photo URI is required' };
       }
 
-      const photoFile = new FileSystem.File(photoUri) as unknown as FileSystemFile;
+      const photoInfo = await this.getFileInfo(photoUri);
 
-      if (!await photoFile.exists()) {
+      if (!photoInfo) {
         return { isValid: false, error: 'Photo file does not exist' };
       }
 
-      if (photoFile.size === 0) {
+      const photoSize = photoInfo.size ?? 0;
+      if (photoSize === 0) {
         return { isValid: false, error: 'Photo file is empty' };
       }
 
       // Check file size limits (max 10MB)
       const maxSize = 10 * 1024 * 1024; // 10MB
-      if (photoFile.size > maxSize) {
+      if (photoSize > maxSize) {
         return {
           isValid: false,
-          error: `Photo file too large: ${(photoFile.size / (1024 * 1024)).toFixed(2)}MB (max 10MB)`
+          error: `Photo file too large: ${(photoSize / (1024 * 1024)).toFixed(2)}MB (max 10MB)`
         };
       }
 
       // Check if file is readable
       try {
-      const base64 = await LegacyFileSystem.readAsStringAsync(photoUri, {
-        encoding: LegacyFileSystem.EncodingType.Base64,
-        length: 100 // Just read first 100 bytes to test
-      });
+        const base64 = await this.readFile(photoUri, FileSystem.EncodingType.Base64);
 
         if (!base64) {
           return { isValid: false, error: 'Photo file is not readable' };
@@ -954,8 +1042,8 @@ class SnapshotService {
 
       return {
         isValid: true,
-        size: photoFile.size || 0,
-        sizeMB: ((photoFile.size || 0) / (1024 * 1024)).toFixed(2)
+        size: photoSize,
+        sizeMB: ((photoSize || 0) / (1024 * 1024)).toFixed(2)
       };
     } catch (error: any) {
       return { isValid: false, error: `Photo validation failed: ${error.message}` };
@@ -983,7 +1071,7 @@ class SnapshotService {
         createdAt: new Date().toISOString()
       }, null, 2);
 
-      await LegacyFileSystem.writeAsStringAsync(placeholderPath, placeholderContent);
+      await FileSystem.writeAsStringAsync(placeholderPath, placeholderContent);
 
       logger.debug('SnapshotService', 'Missing photo placeholder created', {
         snapshotId,
@@ -1063,12 +1151,11 @@ class SnapshotService {
       };
 
       // Get all snapshot directories
-      const snapshotDir = new FileSystem.Directory(this.snapshotStorageDir) as unknown as FileSystemDirectory;
-      if (!await snapshotDir.exists()) {
+      const snapshotDirs = await this.listDirectory(this.snapshotStorageDir);
+      if (snapshotDirs.length === 0) {
         return cleanupResult;
       }
 
-      const snapshotDirs = await snapshotDir.list();
       cleanupResult.scannedDirectories = snapshotDirs.length;
 
       for (const dirName of snapshotDirs) {
@@ -1083,8 +1170,7 @@ class SnapshotService {
             const dirPath = `${this.snapshotStorageDir}${dirNameStr}`;
             const dirSize = await this.calculateDirectorySize(dirPath);
 
-            const orphanedDir = new FileSystem.Directory(dirPath) as unknown as FileSystemDirectory;
-            await orphanedDir.delete();
+            await FileSystem.deleteAsync(dirPath, { idempotent: true });
 
             cleanupResult.orphanedDirectories++;
             cleanupResult.deletedDirectories.push(dirNameStr);
@@ -1125,25 +1211,26 @@ class SnapshotService {
     try {
       let totalSize = 0;
 
-      const dir = new FileSystem.Directory(dirPath) as unknown as FileSystemDirectory;
-      if (!await dir.exists()) {
+      const dirInfo = await FileSystem.getInfoAsync(dirPath);
+      if (!dirInfo.exists || !dirInfo.isDirectory) {
         return 0;
       }
 
-      const items = await dir.list();
+      const items = await FileSystem.readDirectoryAsync(dirPath);
 
       for (const item of items) {
         const itemPath = `${dirPath}/${item}`;
         // Check if item is a directory or file
         try {
-          const itemDir = new FileSystem.Directory(itemPath) as unknown as FileSystemDirectory;
-          if (await itemDir.exists()) {
+          const itemInfo = await FileSystem.getInfoAsync(itemPath);
+          if (!itemInfo.exists) {
+            continue;
+          }
+
+          if (itemInfo.isDirectory) {
             totalSize += await this.calculateDirectorySize(itemPath);
           } else {
-            const itemFile = new FileSystem.File(itemPath) as unknown as FileSystemFile;
-            if (await itemFile.exists()) {
-              totalSize += itemFile.size || 0;
-            }
+            totalSize += itemInfo.size ?? 0;
           }
         } catch {
           // Skip if can't determine type
@@ -1183,22 +1270,22 @@ class SnapshotService {
       for (const photoEntry of snapshot.photoManifest) {
         if (photoEntry.status === 'success' && photoEntry.snapshotPath) {
           try {
-            const photoFile = new FileSystem.File(photoEntry.snapshotPath) as unknown as FileSystemFile;
+            const photoInfo = await this.getFileInfo(photoEntry.snapshotPath);
 
-            if (!await photoFile.exists()) {
+            if (!photoInfo) {
               verificationResult.missingPhotos++;
               verificationResult.issues.push({
                 fundItemId: photoEntry.fundItemId,
                 issue: 'Photo file missing',
                 path: photoEntry.snapshotPath
               });
-            } else if (photoFile.size !== photoEntry.fileSize) {
+            } else if ((photoInfo.size ?? 0) !== photoEntry.fileSize) {
               verificationResult.corruptedPhotos++;
               verificationResult.issues.push({
                 fundItemId: photoEntry.fundItemId,
                 issue: 'File size mismatch',
                 expected: photoEntry.fileSize,
-                actual: photoFile.size,
+                actual: photoInfo.size ?? 0,
                 path: photoEntry.snapshotPath
               });
             } else {

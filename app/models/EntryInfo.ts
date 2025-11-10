@@ -5,6 +5,7 @@
 
 import EntryData from './EntryData';
 import SecureStorageService from '../services/security/SecureStorageService';
+import entryCompletionCalculator from '../utils/EntryCompletionCalculator';
 
 type CompletionState = 'missing' | 'partial' | 'complete';
 
@@ -51,9 +52,11 @@ interface EntryInfoSaveOptions {
 
 interface EntryInfoSaveResult {
   id: string;
-  completionPercent: number;
-  status: EntryInfoStatus;
-  isReady: boolean;
+  saved: boolean;
+  timestamp: string;
+  completionPercent?: number;
+  status?: EntryInfoStatus;
+  isReady?: boolean;
 }
 
 interface EntryInfoSummary extends Record<string, unknown> {
@@ -122,22 +125,39 @@ const DEFAULT_COMPLETION_METRICS: CompletionMetrics = {
 const VALID_STATUSES: EntryInfoStatus[] = ['incomplete', 'ready', 'submitted', 'superseded', 'expired', 'archived'];
 
 class EntryInfo extends EntryData {
-  completionMetrics: CompletionMetrics;
-  status: EntryInfoStatus;
-  createdAt: string;
-  lastUpdatedAt: string;
-  documents: unknown;
-  displayStatus: unknown;
-  travelInfoId: string | null;
-  destinationId: string | null;
-  fundItemIds: Set<string>;
+  // Base class properties (from EntryData)
+  id: string = '';
+  userId: string = '';
+  passportId?: string;
+  personalInfoId?: string;
+  fundingProof: Record<string, unknown> = {};
+  immigrationNotes?: string;
+  specialRequirements?: string;
+  submissionDate?: string;
+  generatedAt: string = new Date().toISOString();
+  lastModified: string = new Date().toISOString();
+  
+  // Override base class status with more specific type
+  status: EntryInfoStatus = 'incomplete';
+  
+  // EntryInfo specific properties
+  travelInfoId: string | null = null;
+  fundItemIds: string[] = [];
+  completionMetrics: CompletionMetrics = { ...DEFAULT_COMPLETION_METRICS };
+  createdAt: string = new Date().toISOString();
+  lastUpdatedAt: string = new Date().toISOString();
+  documents: unknown = null;
+  displayStatus: unknown = null;
+  destinationId: string | null = null;
+  
   // Optional data references populated elsewhere in the lifecycle
   passport?: Record<string, unknown>;
   personalInfo?: Record<string, unknown>;
   funds?: unknown[];
   travel?: Record<string, unknown>;
 
-  private static completionCalculator: EntryCompletionCalculator | null = null;
+  private static readonly completionCalculator: EntryCompletionCalculator =
+    entryCompletionCalculator as EntryCompletionCalculator;
 
   constructor(data: EntryInfoInit = {}) {
     super(data);
@@ -156,7 +176,7 @@ class EntryInfo extends EntryData {
     this.travelInfoId = travelId ? String(travelId) : null;
     const destinationId = data.destinationId ?? data.destination_id ?? null;
     this.destinationId = destinationId ? String(destinationId) : null;
-    this.fundItemIds = new Set(EntryInfo.normalizeFundItemIds(data.fundItemIds ?? data.fund_item_ids));
+    this.fundItemIds = EntryInfo.normalizeFundItemIds(data.fundItemIds ?? data.fund_item_ids);
   }
 
   updateCompletionMetrics(
@@ -165,7 +185,7 @@ class EntryInfo extends EntryData {
     funds: unknown[] = [],
     travel: Record<string, unknown> = {}
   ): CompletionMetrics {
-    const calculator = EntryInfo.getEntryCompletionCalculator();
+    const calculator = EntryInfo.completionCalculator;
     const entryInfoForCalculation: EntryCompletionInput = {
       passport,
       personalInfo,
@@ -200,7 +220,7 @@ class EntryInfo extends EntryData {
   }
 
   getMissingFields(): Record<string, string[]> {
-    const calculator = EntryInfo.getEntryCompletionCalculator();
+    const calculator = EntryInfo.completionCalculator;
     const metrics = calculator.calculateCompletionMetrics({
       passport: this.passport ?? {},
       personalInfo: this.personalInfo ?? {},
@@ -282,42 +302,49 @@ class EntryInfo extends EntryData {
     return statusMap[this.status] ?? statusMap.incomplete;
   }
 
-  async save(options: EntryInfoSaveOptions = {}): Promise<EntryInfoSaveResult> {
-    try {
-      const saveOptions = { skipValidation: true, ...options };
-      if (!saveOptions.skipValidation) {
-        // TODO: Hook up validation pipeline when progressive validation is reinstated
-      }
-
-      this.lastUpdatedAt = new Date().toISOString();
-
-      const result = await SecureStorageService.saveEntryInfo({
-        id: this.id,
-        userId: this.userId,
-        passportId: this.passportId,
-        personalInfoId: this.personalInfoId,
-        travelInfoId: this.travelInfoId,
-        destinationId: this.destinationId,
-        status: this.status,
-        completionMetrics: JSON.stringify(this.completionMetrics),
-        documents: this.documents,
-        displayStatus: this.displayStatus,
-        lastUpdatedAt: this.lastUpdatedAt,
-        createdAt: this.createdAt ?? new Date().toISOString(),
-        fundItemIds: Array.from(this.fundItemIds)
-      });
-
-      return {
-        id: result.id,
-        completionPercent: this.getTotalCompletionPercent(),
-        status: this.status,
-        isReady: this.isReadyForSubmission()
-      };
-    } catch (error) {
-      console.error('Failed to save EntryInfo:', error);
-      throw error;
+async save(options: EntryInfoSaveOptions = {}): Promise<EntryInfoSaveResult> {
+  try {
+    const saveOptions = { skipValidation: true, ...options };
+    if (!saveOptions.skipValidation) {
+      // TODO: Hook up validation pipeline when progressive validation is reinstated
     }
+
+    // Validate that userId is provided
+    if (!this.userId || this.userId.trim() === '') {
+      throw new Error('EntryInfo cannot be saved: userId is required but not provided');
+    }
+
+    this.lastUpdatedAt = new Date().toISOString();
+
+    const result = await SecureStorageService.saveEntryInfo({
+      id: this.id,
+      userId: this.userId,
+      passportId: this.passportId,
+      personalInfoId: this.personalInfoId,
+      travelInfoId: this.travelInfoId,
+      destinationId: this.destinationId,
+      status: this.status,
+      completionMetrics: JSON.stringify(this.completionMetrics),
+      documents: this.documents,
+      displayStatus: this.displayStatus,
+      lastUpdatedAt: this.lastUpdatedAt,
+      createdAt: this.createdAt ?? new Date().toISOString(),
+      fundItemIds: this.fundItemIds.slice()
+    });
+
+    return {
+      id: result.id,
+      saved: true,
+      timestamp: new Date().toISOString(),
+      completionPercent: this.getTotalCompletionPercent(),
+      status: this.status,
+      isReady: this.isReadyForSubmission()
+    };
+  } catch (error) {
+    console.error('Failed to save EntryInfo:', error);
+    throw error;
   }
+}
 
   static async load(id: string): Promise<EntryInfo | null> {
     try {
@@ -352,25 +379,28 @@ class EntryInfo extends EntryData {
     });
   }
 
-  getSummary(): EntryInfoSummary {
-    const baseSummary = super.getSummary() as Record<string, unknown>;
+getSummary(): EntryInfoSummary & { id: string; generatedAt: string; lastModified: string } {
+  const baseSummary = super.getSummary() as Record<string, unknown>;
 
-    return {
-      ...baseSummary,
-      completionPercent: this.getTotalCompletionPercent(),
-      completionMetrics: this.completionMetrics,
-      status: this.status,
-      displayStatus: this.displayStatus,
-      documents: this.documents,
-      travelInfoId: this.travelInfoId,
-      isReady: this.isReadyForSubmission(),
-      canBeEdited: this.canBeEdited(),
-      requiresResubmission: this.requiresResubmission(),
-      missingFields: this.getMissingFields(),
-      lastUpdatedAt: this.lastUpdatedAt,
-      destinationId: this.destinationId
-    };
-  }
+  return {
+    ...baseSummary,
+    id: this.id,
+    generatedAt: this.generatedAt || this.createdAt,
+    lastModified: this.lastUpdatedAt,
+    completionPercent: this.getTotalCompletionPercent(),
+    completionMetrics: this.completionMetrics,
+    status: this.status,
+    displayStatus: this.displayStatus,
+    documents: this.documents,
+    travelInfoId: this.travelInfoId,
+    isReady: this.isReadyForSubmission(),
+    canBeEdited: this.canBeEdited(),
+    requiresResubmission: this.requiresResubmission(),
+    missingFields: this.getMissingFields(),
+    lastUpdatedAt: this.lastUpdatedAt,
+    destinationId: this.destinationId
+  };
+}
 
   async getLatestDigitalArrivalCard(cardType: string): Promise<unknown> {
     try {
@@ -403,12 +433,19 @@ class EntryInfo extends EntryData {
     }
   }
 
-  async exportData(): Promise<EntryInfoExportData> {
-    try {
+async exportData(): Promise<EntryInfoExportData & { id: string; exportDate: string; entryData: any; travelInfo: any; passport: any; personalInfo: any; fundingProof: any; metadata: any }> {
+try {
       const baseExport = (await super.exportData()) as Record<string, unknown>;
 
       return {
-        ...baseExport,
+        id: this.id,
+        exportDate: new Date().toISOString(),
+        entryData: baseExport.entryData,
+        travelInfo: baseExport.travelInfo,
+        passport: baseExport.passport,
+        personalInfo: baseExport.personalInfo,
+        fundingProof: baseExport.fundingProof,
+        metadata: baseExport.metadata,
         progressiveEntryFlow: {
           completionMetrics: this.completionMetrics,
           status: this.status,
@@ -417,7 +454,7 @@ class EntryInfo extends EntryData {
           passportId: this.passportId,
           personalInfoId: this.personalInfoId,
           travelInfoId: this.travelInfoId,
-          fundItemIds: Array.from(this.fundItemIds),
+          fundItemIds: this.fundItemIds.slice(),
           documents: this.documents,
           displayStatus: this.displayStatus
         }
@@ -472,17 +509,6 @@ class EntryInfo extends EntryData {
     return Array.from(source as Iterable<string>, id => String(id));
   }
 
-  private static getEntryCompletionCalculator(): EntryCompletionCalculator {
-    if (!this.completionCalculator) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const module = require('../utils/EntryCompletionCalculator') as {
-        default: EntryCompletionCalculator;
-      };
-      this.completionCalculator = module.default;
-    }
-    return this.completionCalculator;
-  }
-
   private static cloneMetric(metric: CompletionMetric): CompletionMetric {
     return {
       complete: metric.complete,
@@ -492,13 +518,6 @@ class EntryInfo extends EntryData {
       fields: metric.fields ? metric.fields.map(field => ({ ...field })) : undefined
     };
   }
-}
-
-interface EntryInfo extends EntryData {
-  id: string;
-  userId?: string;
-  passportId?: string;
-  personalInfoId?: string;
 }
 
 export default EntryInfo;

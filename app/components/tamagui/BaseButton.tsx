@@ -13,9 +13,10 @@
  */
 
 import React from 'react';
-import { Button, ButtonProps, Text, Spinner } from 'tamagui';
+import { Button, type ButtonProps, Text, Spinner } from 'tamagui';
 
-export interface BaseButtonProps extends Omit<ButtonProps, 'size'> {
+export interface BaseButtonProps
+  extends Omit<ButtonProps, 'size' | 'icon' | 'iconAfter' | 'variant'> {
   /**
    * Visual style variant
    * - primary: Green WeChat-style button (default)

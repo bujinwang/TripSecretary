@@ -3,7 +3,7 @@
  * Review and edit OCR-extracted passport data before saving
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
+import type { KeyboardTypeOptions, TextInputProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import BackButton from '../components/BackButton';
@@ -20,51 +21,120 @@ import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import { DataValidator } from '../utils/validation';
 import UserDataService from '../services/data/UserDataService';
+import type { PassportData, SerializablePassport } from '../types/data';
+import {
+  type PassportValidationResult,
+  type RootStackScreenProps,
+} from '../types/navigation';
 
-const PassportReviewScreen = ({ navigation, route }) => {
+const USER_ID_FALLBACK = 'user_001';
+
+type PassportReviewScreenProps = RootStackScreenProps<'PassportReview'>;
+
+type PassportFieldKey =
+  | 'passportNumber'
+  | 'fullName'
+  | 'dateOfBirth'
+  | 'expiryDate'
+  | 'nationality'
+  | 'issuingCountry'
+  | 'gender';
+
+type PassportFormState = Record<PassportFieldKey, string>;
+
+type FieldValidationState = Partial<Record<PassportFieldKey, string>>;
+
+type DataValidatorFieldResult = {
+  isValid?: boolean;
+  errors?: string[];
+};
+
+type DataValidatorPassportResult = {
+  isValid: boolean;
+  fields?: Record<string, DataValidatorFieldResult>;
+};
+
+const createInitialFormState = (passportData?: Partial<PassportData> | null): PassportFormState => ({
+  passportNumber:
+    (passportData?.passportNumber as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.passportNo?.toString() ??
+    '',
+  fullName:
+    (passportData?.fullName as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.name?.toString() ??
+    '',
+  dateOfBirth:
+    (passportData?.dateOfBirth as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.dob?.toString() ??
+    '',
+  expiryDate:
+    (passportData?.expiryDate as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.expirationDate?.toString() ??
+    '',
+  nationality:
+    (passportData?.nationality as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.nationalityCode?.toString() ??
+    '',
+  issuingCountry:
+    (passportData?.issuingCountry as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.issuingCountry?.toString() ??
+    '',
+  gender:
+    (passportData?.gender as string | undefined) ??
+    (passportData as Record<string, unknown> | null | undefined)?.sex?.toString() ??
+    '',
+});
+
+const PassportReviewScreen: React.FC<PassportReviewScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passportData, confidence, method, validation } = route.params;
+  const { passportData, confidence, method, validation } = route.params ?? {};
 
-  const [editedData, setEditedData] = useState({
-    passportNumber: passportData?.passportNumber || '',
-    fullName: passportData?.fullName || '',
-    dateOfBirth: passportData?.dateOfBirth || '',
-    expirationDate: passportData?.expirationDate || '',
-    nationality: passportData?.nationality || '',
-    issuingCountry: passportData?.issuingCountry || '',
-    gender: passportData?.gender || ''
-  });
-
+  const [editedData, setEditedData] = useState<PassportFormState>(createInitialFormState(passportData));
   const [isSaving, setIsSaving] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [validationErrors, setValidationErrors] = useState<FieldValidationState>({});
 
-  // Validate data on change
+  const confidenceScore = confidence?.overall ?? 0;
+  const validationSummary: PassportValidationResult | null = validation ?? null;
+
   useEffect(() => {
     validateCurrentData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedData]);
 
-  const validateCurrentData = () => {
-    // Filter out empty fields for progressive validation
-    const dataToValidate = {};
-    Object.entries(editedData).forEach(([key, value]) => {
+  const handleFieldChange = (field: PassportFieldKey, value: string): void => {
+    setEditedData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const validateCurrentData = (): boolean => {
+    const dataToValidate: Partial<PassportFormState> = {};
+    (Object.keys(editedData) as PassportFieldKey[]).forEach((key) => {
+      const value = editedData[key];
       if (value !== null && value !== undefined && value !== '') {
         dataToValidate[key] = value;
       }
     });
 
-    // Only validate if there's data to validate
     if (Object.keys(dataToValidate).length === 0) {
       setValidationErrors({});
-      return true; // Allow saving empty data for progressive filling
+      return true;
     }
 
-    const result = DataValidator.validatePassport(dataToValidate);
-    const errors = {};
+    const result = DataValidator.validatePassport(
+      dataToValidate
+    ) as DataValidatorPassportResult;
 
-    if (!result.isValid && result.fields) {
-      Object.entries(result.fields).forEach(([fieldName, field]) => {
-        if (!field.isValid && field.errors) {
-          errors[fieldName] = field.errors[0]; // Show first error
+    const errors: FieldValidationState = {};
+    if (result.fields) {
+      (Object.entries(result.fields) as Array<[
+        string,
+        DataValidatorFieldResult,
+      ]>).forEach(([fieldName, fieldResult]) => {
+        if (!fieldResult?.isValid && fieldResult?.errors?.length) {
+          const key = fieldName as PassportFieldKey;
+          errors[key] = fieldResult.errors[0];
         }
       });
     }
@@ -73,131 +143,23 @@ const PassportReviewScreen = ({ navigation, route }) => {
     return result.isValid;
   };
 
-  const handleFieldChange = (field, value) => {
-    setEditedData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSave = async () => {
-    console.log('=== PASSPORT SAVE DEBUG ===');
-    console.log('editedData state:', editedData);
-    console.log('dateOfBirth value:', editedData.dateOfBirth);
-    console.log('nationality value:', editedData.nationality);
-
-    if (!validateCurrentData()) {
-      console.log('Frontend validation failed');
-      Alert.alert(
-        'Validation Error',
-        'Please correct the errors before saving.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      // Get current user ID (in real app, from auth context)
-      const userId = 'current_user';
-
-      // Filter out empty fields for progressive filling
-      const filteredData = {};
-      Object.entries(editedData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-          filteredData[key] = value;
-        }
-      });
-
-      // Save passport data securely
-      const passportToSave = {
-        ...filteredData,
-        id: `passport_${Date.now()}`,
-        userId,
-        createdAt: new Date().toISOString(),
-        ocrMethod: method,
-        ocrConfidence: confidence?.overall || 0
-      };
-
-      console.log('passportToSave object:', passportToSave);
-      console.log('About to call UserDataService.savePassport with options: { partial: true }');
-
-      // Use partial validation for progressive filling
-      await UserDataService.savePassport(passportToSave, userId, { partial: true });
-
-      console.log('UserDataService.savePassport completed successfully');
-
-      Alert.alert(
-        'Success',
-        'Passport information saved successfully!',
-        [
-          {
-            text: 'Continue',
-            onPress: () => navigation.navigate('SelectDestination', {
-              passport: passportToSave
-            })
-          }
-        ]
-      );
-
-    } catch (error) {
-      console.error('=== PASSPORT SAVE ERROR ===');
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      console.error('Full error object:', error);
-      Alert.alert('Error', 'Failed to save passport information. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSkip = () => {
-    Alert.alert(
-      'Skip Passport',
-      'Are you sure you want to skip adding passport information? You can add it later in your profile.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Skip',
-          onPress: () => navigation.navigate('SelectDestination', {
-            passport: null // No passport data
-          })
-        }
-      ]
-    );
-  };
-
-  const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) {
-return colors.success;
-}
-    if (confidence >= 0.6) {
-return colors.warning;
-}
-    return colors.error;
-  };
-
-  const getConfidenceText = (confidence) => {
-    if (confidence >= 0.8) {
-return 'High Confidence';
-}
-    if (confidence >= 0.6) {
-return 'Medium Confidence';
-}
-    return 'Low Confidence - Please Review';
-  };
-
-  const renderField = (fieldName, label, placeholder, keyboardType = 'default', autoCapitalize = 'none') => {
-    const hasError = validationErrors[fieldName];
-    const value = editedData[fieldName] || '';
+  const renderField = (
+    fieldName: PassportFieldKey,
+    label: string,
+    placeholder: string,
+    keyboardType: KeyboardTypeOptions = 'default',
+    autoCapitalize: TextInputProps['autoCapitalize'] = 'none'
+  ) => {
+    const errorMessage = validationErrors[fieldName];
+    const value = editedData[fieldName];
 
     return (
       <View style={styles.fieldContainer}>
-        <Text style={[styles.fieldLabel, hasError && styles.fieldLabelError]}>
-          {label} {hasError && '*'}
+        <Text style={[styles.fieldLabel, errorMessage && styles.fieldLabelError]}>
+          {label} {errorMessage ? '*' : ''}
         </Text>
         <TextInput
-          style={[styles.fieldInput, hasError && styles.fieldInputError]}
+          style={[styles.fieldInput, errorMessage && styles.fieldInputError]}
           value={value}
           onChangeText={(text) => handleFieldChange(fieldName, text)}
           placeholder={placeholder}
@@ -206,146 +168,202 @@ return 'Medium Confidence';
           autoCapitalize={autoCapitalize}
           autoCorrect={false}
         />
-        {hasError && (
-          <Text style={styles.errorText}>{hasError}</Text>
-        )}
+        {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
       </View>
+    );
+  };
+
+  const getConfidenceColor = useMemo(() => {
+    const score = confidenceScore;
+    if (score >= 0.8) {
+      return colors.success;
+    }
+    if (score >= 0.6) {
+      return colors.warning;
+    }
+    return colors.error;
+  }, [confidenceScore]);
+
+  const getConfidenceText = useMemo(() => {
+    const score = confidenceScore;
+    if (score >= 0.8) {
+      return t('passportReview.confidence.high', 'High Confidence');
+    }
+    if (score >= 0.6) {
+      return t('passportReview.confidence.medium', 'Medium Confidence');
+    }
+    return t('passportReview.confidence.low', 'Low Confidence - Please Review');
+  }, [confidenceScore, t]);
+
+  const handleSave = async (): Promise<void> => {
+    if (!validateCurrentData()) {
+      Alert.alert(
+        t('passportReview.validation.title', 'Validation Error'),
+        t('passportReview.validation.message', 'Please correct the errors before saving.'),
+        [{ text: t('common.confirm', 'OK') }]
+      );
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const userId = passportData?.userId ?? USER_ID_FALLBACK;
+      const filteredDataEntries = (Object.entries(editedData) as Array<[
+        PassportFieldKey,
+        string,
+      ]>).filter(([, value]) => value !== null && value !== undefined && value !== '');
+
+      const filteredData = Object.fromEntries(filteredDataEntries) as Partial<PassportFormState>;
+
+      const timestamp = new Date().toISOString();
+
+      const passportPayload: Partial<PassportData> = {
+        ...filteredData,
+        id:
+          (passportData as Record<string, unknown> | null | undefined)?.id?.toString() ??
+          `passport_${Date.now()}`,
+        userId,
+        createdAt: passportData?.createdAt ?? timestamp,
+        updatedAt: timestamp,
+        ocrMethod: method,
+        ocrConfidence: confidenceScore,
+      };
+
+      const savedPassport = await UserDataService.savePassport(passportPayload, userId, {
+        skipValidation: true,
+      });
+
+      const serializedPassport =
+        UserDataService.toSerializablePassport(savedPassport) ??
+        (passportPayload as SerializablePassport | null);
+
+      Alert.alert(
+        t('passportReview.success.title', 'Success'),
+        t('passportReview.success.message', 'Passport information saved successfully!'),
+        [
+          {
+            text: t('passportReview.success.continue', 'Continue'),
+            onPress: () =>
+              navigation.navigate('SelectDestination', {
+                passport: serializedPassport,
+              }),
+          },
+        ]
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Passport save error:', message);
+      Alert.alert(
+        t('passportReview.error.title', 'Error'),
+        t('passportReview.error.message', 'Failed to save passport information. Please try again.')
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSkip = (): void => {
+    Alert.alert(
+      t('passportReview.skip.title', 'Skip Passport'),
+      t(
+        'passportReview.skip.message',
+        'Are you sure you want to skip adding passport information? You can add it later in your profile.'
+      ),
+      [
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+        {
+          text: t('passportReview.skip.confirm', 'Skip'),
+          onPress: () => navigation.navigate('SelectDestination', { passport: null }),
+        },
+      ]
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton
-          onPress={() => navigation.goBack()}
-          label="Back"
-        />
-        <Text style={styles.headerTitle}>Review Passport Data</Text>
+        <BackButton onPress={() => navigation.goBack()} label={t('common.back', 'Back')} />
+        <Text style={styles.headerTitle}>{t('passportReview.title', 'Review Passport Data')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* OCR Confidence Indicator */}
         <View style={styles.confidenceContainer}>
           <View style={styles.confidenceHeader}>
-            <Text style={styles.confidenceLabel}>OCR Confidence</Text>
-            <Text style={[styles.confidenceValue, { color: getConfidenceColor(confidence?.overall || 0) }]}>
-              {Math.round((confidence?.overall || 0) * 100)}%
+            <Text style={styles.confidenceLabel}>{t('passportReview.confidence.label', 'OCR Confidence')}</Text>
+            <Text style={[styles.confidenceValue, { color: getConfidenceColor }]}>
+              {Math.round(confidenceScore * 100)}%
             </Text>
           </View>
-          <Text style={[styles.confidenceText, { color: getConfidenceColor(confidence?.overall || 0) }]}>
-            {getConfidenceText(confidence?.overall || 0)}
+          <Text style={[styles.confidenceText, { color: getConfidenceColor }]}>{getConfidenceText}</Text>
+          <Text style={styles.methodText}>
+            {t('passportReview.method', 'Method')}: {method ?? 'local_ocr'}
           </Text>
-          <Text style={styles.methodText}>Method: {method}</Text>
         </View>
 
-        {/* Validation Summary */}
-        {validation && (!validation.isValid || validation.warnings.length > 0) && (
+        {validationSummary && (!validationSummary.isValid || validationSummary.warnings.length > 0) && (
           <View style={styles.validationContainer}>
-            {validation.errors.length > 0 && (
+            {validationSummary.errors.length > 0 && (
               <View style={styles.errorSummary}>
-                <Text style={styles.errorSummaryTitle}>Errors to fix:</Text>
-                {validation.errors.map((error, index) => (
-                  <Text key={index} style={styles.errorSummaryItem}>• {error}</Text>
+                <Text style={styles.errorSummaryTitle}>
+                  {t('passportReview.validation.errors', 'Errors to fix:')}
+                </Text>
+                {validationSummary.errors.map((errorMessage, index) => (
+                  <Text key={index} style={styles.errorSummaryItem}>
+                    • {errorMessage}
+                  </Text>
                 ))}
               </View>
             )}
 
-            {validation.warnings.length > 0 && (
+            {validationSummary.warnings.length > 0 && (
               <View style={styles.warningSummary}>
-                <Text style={styles.warningSummaryTitle}>Warnings:</Text>
-                {validation.warnings.map((warning, index) => (
-                  <Text key={index} style={styles.warningSummaryItem}>• {warning}</Text>
+                <Text style={styles.warningSummaryTitle}>
+                  {t('passportReview.validation.warnings', 'Warnings:')}
+                </Text>
+                {validationSummary.warnings.map((warningMessage, index) => (
+                  <Text key={index} style={styles.warningSummaryItem}>
+                    • {warningMessage}
+                  </Text>
                 ))}
               </View>
             )}
           </View>
         )}
 
-        {/* Passport Fields */}
         <View style={styles.fieldsContainer}>
-          {renderField(
-            'passportNumber',
-            'Passport Number',
-            'e.g., E123456789',
-            'default',
-            'characters'
-          )}
-
-          {renderField(
-            'fullName',
-            'Full Name',
-            'As shown on passport',
-            'default',
-            'words'
-          )}
-
-          {renderField(
-            'dateOfBirth',
-            'Date of Birth',
-            'YYYY-MM-DD',
-            'numeric'
-          )}
-
-          {renderField(
-            'expirationDate',
-            'Expiration Date',
-            'YYYY-MM-DD',
-            'numeric'
-          )}
-
-          {renderField(
-            'nationality',
-            'Nationality',
-            '3-letter country code (e.g., CHN)',
-            'default',
-            'characters'
-          )}
-
-          {renderField(
-            'issuingCountry',
-            'Issuing Country',
-            '3-letter country code',
-            'default',
-            'characters'
-          )}
-
-          {renderField(
-            'gender',
-            'Gender',
-            'M or F',
-            'default',
-            'characters'
-          )}
+          {renderField('passportNumber', t('passportReview.fields.passportNumber', 'Passport Number'), t('passportReview.fields.passportNumber.placeholder', 'e.g., E123456789'), 'default', 'characters')}
+          {renderField('fullName', t('passportReview.fields.fullName', 'Full Name'), t('passportReview.fields.fullName.placeholder', 'As shown on passport'), 'default', 'words')}
+          {renderField('dateOfBirth', t('passportReview.fields.dateOfBirth', 'Date of Birth'), 'YYYY-MM-DD', 'numeric')}
+          {renderField('expiryDate', t('passportReview.fields.expiryDate', 'Expiration Date'), 'YYYY-MM-DD', 'numeric')}
+          {renderField('nationality', t('passportReview.fields.nationality', 'Nationality'), t('passportReview.fields.nationality.placeholder', '3-letter country code (e.g., CHN)'), 'default', 'characters')}
+          {renderField('issuingCountry', t('passportReview.fields.issuingCountry', 'Issuing Country'), t('passportReview.fields.issuingCountry.placeholder', '3-letter country code'), 'default', 'characters')}
+          {renderField('gender', t('passportReview.fields.gender', 'Gender'), t('passportReview.fields.gender.placeholder', 'M or F'), 'default', 'characters')}
         </View>
 
-        {/* Tips */}
         <View style={styles.tipsContainer}>
-          <Text style={styles.tipsTitle}>💡 Tips:</Text>
+          <Text style={styles.tipsTitle}>💡 {t('passportReview.tips.title', 'Tips:')}</Text>
           <Text style={styles.tipsText}>
-            • Double-check dates and passport number{'\n'}
-            • Ensure country codes are correct (3 letters){'\n'}
-            • All fields are required for immigration
+            {t(
+              'passportReview.tips.body',
+              '• Double-check dates and passport number\n• Ensure country codes are correct (3 letters)\n• All fields are required for immigration'
+            )}
           </Text>
         </View>
       </ScrollView>
 
-      {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <Button
-          title="Save & Continue"
+          title={t('passportReview.actions.save', 'Save & Continue')}
           onPress={handleSave}
           loading={isSaving}
           disabled={Object.keys(validationErrors).length > 0}
           style={styles.saveButton}
         />
 
-        <TouchableOpacity
-          style={styles.skipButton}
-          onPress={handleSkip}
-          disabled={isSaving}
-        >
-          <Text style={styles.skipButtonText}>Skip for Now</Text>
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkip} disabled={isSaving}>
+          <Text style={styles.skipButtonText}>{t('passportReview.actions.skip', 'Skip for Now')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -373,91 +391,89 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   headerRight: {
-    width: 50,
+    width: spacing.lg,
   },
   scrollView: {
     flex: 1,
+    padding: spacing.md,
   },
   confidenceContainer: {
     backgroundColor: colors.white,
-    margin: spacing.md,
-    padding: spacing.md,
     borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
   confidenceHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    justifyContent: 'space-between',
   },
   confidenceLabel: {
-    ...typography.body1,
-    fontWeight: '600',
+    ...typography.body2,
     color: colors.text,
+    fontWeight: '600',
   },
   confidenceValue: {
-    ...typography.h3,
-    fontWeight: 'bold',
+    ...typography.h2,
+    fontWeight: '700',
   },
   confidenceText: {
-    ...typography.caption,
-    marginBottom: spacing.xs,
+    ...typography.body2,
+    marginTop: spacing.xs,
   },
   methodText: {
     ...typography.caption,
+    marginTop: spacing.xs,
     color: colors.textSecondary,
   },
   validationContainer: {
-    marginHorizontal: spacing.md,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   errorSummary: {
-    backgroundColor: colors.errorLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.medium,
     marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.error,
   },
   errorSummaryTitle: {
-    ...typography.body1,
+    ...typography.body2,
     fontWeight: '600',
     color: colors.error,
-    marginBottom: spacing.xs,
   },
   errorSummaryItem: {
-    ...typography.caption,
+    ...typography.body2,
     color: colors.error,
-    marginBottom: 2,
+    marginTop: spacing.xs,
   },
   warningSummary: {
-    backgroundColor: colors.warningLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.medium,
-    borderWidth: 1,
-    borderColor: colors.warning,
+    marginTop: spacing.sm,
   },
   warningSummaryTitle: {
-    ...typography.body1,
+    ...typography.body2,
     fontWeight: '600',
     color: colors.warning,
-    marginBottom: spacing.xs,
   },
   warningSummaryItem: {
-    ...typography.caption,
+    ...typography.body2,
     color: colors.warning,
-    marginBottom: 2,
+    marginTop: spacing.xs,
   },
   fieldsContainer: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.medium,
     padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   fieldContainer: {
     marginBottom: spacing.md,
   },
   fieldLabel: {
-    ...typography.body1,
+    ...typography.body2,
     fontWeight: '600',
     color: colors.text,
     marginBottom: spacing.xs,
@@ -466,13 +482,12 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
   fieldInput: {
-    ...typography.body1,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: borderRadius.small,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
+    paddingVertical: spacing.xs,
+    ...typography.body1,
     color: colors.text,
   },
   fieldInputError: {
@@ -484,23 +499,23 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   tipsContainer: {
-    backgroundColor: colors.primaryLight,
-    margin: spacing.md,
-    padding: spacing.md,
+    marginTop: spacing.md,
+    backgroundColor: colors.white,
     borderRadius: borderRadius.medium,
+    padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.border,
   },
   tipsTitle: {
-    ...typography.body1,
+    ...typography.body2,
     fontWeight: '600',
-    color: colors.primary,
     marginBottom: spacing.xs,
+    color: colors.text,
   },
   tipsText: {
-    ...typography.caption,
+    ...typography.body2,
     color: colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   actionsContainer: {
     padding: spacing.md,
@@ -509,16 +524,16 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   saveButton: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   skipButton: {
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
   skipButtonText: {
-    ...typography.body1,
-    color: colors.primary,
-    fontWeight: '600',
+    ...typography.body2,
+    color: colors.textSecondary,
+    textDecorationLine: 'underline',
   },
 });
 

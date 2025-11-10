@@ -1,7 +1,7 @@
 // 加拿大入境指引服务 - 多伦多机场YYZ/温哥华机场YVR完整流程管理
 // 整合eTA电子旅行许可、旅行计划验证、资金证明
 
-import { canadaEntryGuide } from '../../config/entryGuide/canada.js';
+import { canadaEntryGuide } from '../../config/entryGuide/canada';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions

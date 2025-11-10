@@ -58,15 +58,18 @@ const ScanPassportScreen = ({ navigation, route }) => {
     }
   };
 
-  const processPassportImage = async (imageUri) => {
+  const processPassportImage = async (imageUri: string) => {
     try {
       const ocrService = new LocalOCRService();
-      const result = await ocrService.processPassport(imageUri);
+      const result = await ocrService.extractPassportData(imageUri);
 
       if (!result.success) {
+        const validationErrors = result.validation?.errors ?? [];
         Alert.alert(
           t('scanPassport.error.title', '扫描错误'),
-          result.message || t('scanPassport.error.processing', '处理护照信息时出错，请重试')
+          validationErrors.length > 0
+            ? validationErrors.join('\n')
+            : t('scanPassport.error.processing', '处理护照信息时出错，请重试')
         );
         return;
       }

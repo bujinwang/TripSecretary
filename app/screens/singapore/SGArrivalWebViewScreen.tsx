@@ -11,20 +11,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
+import type { RootStackScreenProps } from '../../types/navigation';
+
+type SGArrivalWebViewProps = RootStackScreenProps<'SGArrivalWebView'>;
 
 const SG_ARRIVAL_URL = 'https://eservices.ica.gov.sg/sgarrivalcard/fvipa';
 
-const SGArrivalWebViewScreen = ({ navigation }) => {
+const SGArrivalWebViewScreen: React.FC<SGArrivalWebViewProps> = ({ navigation }) => {
   const { t } = useLocale();
-  const webViewRef = useRef(null);
+  const webViewRef = useRef<WebView | null>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const handleNavigationStateChange = (state) => {
+  const handleNavigationStateChange = (state: WebViewNavigation) => {
     setCanGoBack(state.canGoBack);
     setCanGoForward(state.canGoForward);
   };
@@ -39,8 +43,18 @@ const SGArrivalWebViewScreen = ({ navigation }) => {
   };
 
   const handleReload = () => webViewRef.current?.reload();
-  const handleGoBack = () => canGoBack && webViewRef.current?.goBack();
-  const handleGoForward = () => canGoForward && webViewRef.current?.goForward();
+  const handleGoBack = () => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+    } else {
+      navigation.goBack();
+    }
+  };
+  const handleGoForward = () => {
+    if (canGoForward) {
+      webViewRef.current?.goForward();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>

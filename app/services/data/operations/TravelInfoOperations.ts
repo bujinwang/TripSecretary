@@ -13,17 +13,12 @@
 import SecureStorageService from '../../security/SecureStorageService';
 import CacheManager from '../cache/CacheManager';
 import { parseLocalDate } from '../../../utils/dateUtils';
-import type { UserId } from '../../../types/data';
+import type { TravelInfoData, UserId } from '../../../types/data';
 
 // Type definitions
-interface TravelInfo {
-  id?: string;
-  userId: UserId;
-  destination?: string;
-  arrivalDate?: string;
+type TravelInfo = TravelInfoData & {
   arrivalArrivalDate?: string;
-  [key: string]: any;
-}
+};
 
 interface DataChangeEvent {
   updatedFields: string[];
@@ -49,7 +44,7 @@ class TravelInfoOperations {
       // Load from database (no caching for travel info as it's draft data)
       const travelInfo = await SecureStorageService.getTravelInfo(userId, destination);
 
-      return travelInfo;
+      return (travelInfo ?? null) as TravelInfo | null;
     } catch (error) {
       console.error('Failed to get travel info:', error);
       throw error;
@@ -66,7 +61,7 @@ class TravelInfoOperations {
    */
   static async saveTravelInfo(
     userId: UserId,
-    travelData: Record<string, any>,
+    travelData: Partial<TravelInfoData>,
     triggerDataChangeEvent?: TriggerDataChangeEvent
   ): Promise<TravelInfo> {
     try {
@@ -80,19 +75,15 @@ class TravelInfoOperations {
 
       // Filter out only null/undefined fields to avoid overwriting existing data
       // BUT preserve empty strings as they indicate intentional clearing of a field
-      const nonEmptyUpdates: Record<string, any> = {};
-      for (const [key, value] of Object.entries(travelData)) {
-        if (value !== null && value !== undefined) {
-          // Keep all values including empty strings (empty string = intentional clear)
-          nonEmptyUpdates[key] = value;
-        }
-      }
-
-      // Always add userId to the data (ensure it's set correctly)
-      nonEmptyUpdates.userId = userId;
+      const filteredEntries = Object.entries(travelData ?? {}).filter(([, value]) => value !== null && value !== undefined);
+      const filtered = Object.fromEntries(filteredEntries) as Partial<TravelInfoData>;
+      const payload: TravelInfo = {
+        userId,
+        ...filtered,
+      };
 
       // Check if travel info already exists
-      let existing = await TravelInfoOperations.getTravelInfo(userId, travelData.destination);
+      let existing = await TravelInfoOperations.getTravelInfo(userId, travelData.destination ?? null);
 
       if (!existing && travelData.destination) {
         const legacyTravelInfo = await TravelInfoOperations.getTravelInfo(userId);
@@ -105,10 +96,10 @@ class TravelInfoOperations {
       let savedTravelInfo: TravelInfo;
       if (existing) {
         // Merge with existing data - ensure userId is always from parameter, not existing
-        const merged = { ...existing, ...nonEmptyUpdates, id: existing.id, userId };
+        const merged: TravelInfo = { ...existing, ...payload, id: existing.id, userId };
         console.log('[TravelInfoOperations] Merging with existing data:', {
           existingUserId: existing.userId,
-          nonEmptyUpdatesUserId: nonEmptyUpdates.userId,
+          payloadUserId: payload.userId,
           paramUserId: userId,
           mergedUserId: merged.userId,
           mergedKeys: Object.keys(merged),
@@ -119,16 +110,16 @@ class TravelInfoOperations {
       } else {
         // Create new travel info
         console.log('[TravelInfoOperations] Creating new travel info:', {
-          nonEmptyUpdatesUserId: nonEmptyUpdates.userId,
+          payloadUserId: payload.userId,
           paramUserId: userId,
-          nonEmptyUpdatesKeys: Object.keys(nonEmptyUpdates),
+          payloadKeys: Object.keys(payload),
         });
-        const result = await SecureStorageService.saveTravelInfo(nonEmptyUpdates);
+        const result = await SecureStorageService.saveTravelInfo(payload);
         console.log('Travel info created:', result.id);
-        savedTravelInfo = { ...nonEmptyUpdates, id: result.id };
+        savedTravelInfo = { ...payload, id: result.id };
       }
 
-      const updatedFields = Object.keys(nonEmptyUpdates).filter(field => field !== 'userId');
+      const updatedFields = Object.keys(payload).filter(field => field !== 'userId');
       if (updatedFields.length > 0 && triggerDataChangeEvent) {
         triggerDataChangeEvent('travel', userId, {
           updatedFields,
@@ -152,22 +143,26 @@ class TravelInfoOperations {
     * @param {Object} updates - Fields to update
     * @returns {Promise<Object>} - Updated travel info
     */
-   static async updateTravelInfo(
-     userId: UserId,
-     destination: string,
-     updates: Record<string, any>,
-     triggerDataChangeEvent?: TriggerDataChangeEvent,
-     getEntryInfoByDestination?: GetEntryInfoByDestination
-   ): Promise<TravelInfo> {
+  static async updateTravelInfo(
+    userId: UserId,
+    destination: string,
+    updates: Partial<TravelInfoData>,
+    triggerDataChangeEvent?: TriggerDataChangeEvent,
+    getEntryInfoByDestination?: GetEntryInfoByDestination
+  ): Promise<TravelInfo> {
      try {
        console.log('Updating travel info for user:', userId, 'destination:', destination);
 
        // Get existing travel info
-       const existing = await TravelInfoOperations.getTravelInfo(userId, destination);
+      const existing = await TravelInfoOperations.getTravelInfo(userId, destination);
 
        if (!existing) {
          // No existing data, create new
-         const newTravelInfo = await TravelInfoOperations.saveTravelInfo(userId, { ...updates, destination }, triggerDataChangeEvent);
+        const newTravelInfo = await TravelInfoOperations.saveTravelInfo(
+          userId,
+          { ...updates, destination },
+          triggerDataChangeEvent
+        );
 
          // Handle arrival date change for new travel info (support legacy and new field names)
          const createdArrivalDate = (updates.arrivalArrivalDate ?? updates.arrivalDate) || null;
@@ -183,22 +178,17 @@ class TravelInfoOperations {
 
        // Filter out only null/undefined values from updates
        // BUT preserve empty strings as they indicate intentional clearing of a field
-       const nonEmptyUpdates: Record<string, any> = {};
-       for (const [key, value] of Object.entries(updates)) {
-         if (value !== null && value !== undefined) {
-           // Keep all values including empty strings (empty string = intentional clear)
-           nonEmptyUpdates[key] = value;
-         }
-       }
+      const filteredEntries = Object.entries(updates ?? {}).filter(([, value]) => value !== null && value !== undefined);
+      const filtered = Object.fromEntries(filteredEntries) as Partial<TravelInfoData>;
 
-       // Merge with existing data
-       const merged = { ...existing, ...nonEmptyUpdates };
-       await SecureStorageService.saveTravelInfo(merged);
+      // Merge with existing data
+      const merged: TravelInfo = { ...existing, ...filtered, userId };
+      await SecureStorageService.saveTravelInfo(merged);
 
        // Determine if arrival date changed (supporting legacy and new field names)
        const updatedArrivalDate =
-         nonEmptyUpdates.arrivalArrivalDate ??
-         nonEmptyUpdates.arrivalDate ??
+        filtered.arrivalArrivalDate ??
+        filtered.arrivalDate ??
          undefined;
        const arrivalDateChanged =
          updatedArrivalDate !== undefined && updatedArrivalDate !== oldArrivalDate;
@@ -208,7 +198,7 @@ class TravelInfoOperations {
          await TravelInfoOperations.handleArrivalDateChange(userId, destination, oldArrivalDate, updatedArrivalDate, getEntryInfoByDestination);
        }
 
-       const updatedFields = Object.keys(nonEmptyUpdates);
+      const updatedFields = Object.keys(filtered);
        if (updatedFields.length > 0 && triggerDataChangeEvent) {
          triggerDataChangeEvent('travel', userId, {
            updatedFields,
@@ -236,11 +226,8 @@ class TravelInfoOperations {
      try {
        console.log('Clearing travel info for user:', userId, 'destination:', destination);
 
-       // Delete travel info from database
-       await SecureStorageService.modernDb.runAsync(
-         'DELETE FROM travel_info WHERE user_id = ? AND destination = ?',
-         [userId, destination]
-       );
+      // Delete travel info from database
+      await SecureStorageService.deleteTravelInfoForDestination(userId, destination);
 
        // Invalidate cache
        CacheManager.invalidate('travel', `${userId}_${destination}`);

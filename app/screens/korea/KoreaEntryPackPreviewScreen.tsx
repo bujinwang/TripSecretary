@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
@@ -57,6 +58,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds}
           isModal={false}
+          onClose={handleClose}
         />
 
         <View style={styles.actionSection}>
@@ -82,7 +84,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
               navigation.goBack();
               // Navigate to K-ETA application
               // TODO: Implement K-ETA application screen
-              alert('K-ETA申请功能即将推出 / K-ETA application screen coming soon');
+              Alert.alert('提示', 'K-ETA申请功能即将推出 / K-ETA application screen coming soon');
             }}
           >
             <Text style={styles.submitButtonText}>

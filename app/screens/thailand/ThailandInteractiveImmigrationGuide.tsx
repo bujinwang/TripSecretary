@@ -1,5 +1,5 @@
 // 入境通 - Thailand Interactive Immigration Guide (泰国互动入境指南)
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,14 +15,28 @@ import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
 import EntryInfoService from '../../services/EntryInfoService';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
+import type { RootStackScreenProps } from '../../types/navigation';
 
-const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
+interface GuideStep {
+  id: number;
+  title: string;
+  description: string;
+  instruction: string;
+  action: string;
+  voiceText?: string;
+  showToOfficer?: boolean;
+  isFinal?: boolean;
+}
+
+type ThailandInteractiveImmigrationGuideProps = RootStackScreenProps<'ThailandInteractiveImmigrationGuide'>;
+
+const ThailandInteractiveImmigrationGuide: React.FC<ThailandInteractiveImmigrationGuideProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { entryPackId, destinationId, currentStep: initialStep = 0 } = route.params || {};
-  const [currentStep, setCurrentStep] = useState(initialStep);
+  const { entryInfoId, destinationId, currentStep: initialStep = 0 } = route.params ?? {};
+  const [currentStep, setCurrentStep] = useState<number>(initialStep);
 
   // Thailand-specific immigration steps
-  const thailandSteps = [
+  const thailandSteps = useMemo<GuideStep[]>(() => [
     {
       id: 0,
       title: '📱 第一步：准备电子入境卡',
@@ -73,7 +87,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
       voiceText: '恭喜！您已成功完成泰国入境手续',
       isFinal: true,
     },
-  ];
+  ], []);
 
   const handleNextStep = useCallback(async () => {
     const stepData = thailandSteps[currentStep];
@@ -83,7 +97,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
       try {
         // Navigate to ImmigrationOfficerViewScreen
         navigation.navigate('ImmigrationOfficerView', {
-          entryPackId,
+          entryPackId: entryInfoId ?? undefined,
           fromImmigrationGuide: true,
         });
         return;
@@ -93,7 +107,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
           customTitle: '错误',
           customMessage: '无法打开展示页面，请稍后重试',
           onRetry: () => handleNextStep(),
-        });
+        } as any);
         return;
       }
     }
@@ -104,8 +118,8 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
         Vibration.vibrate(120);
         
         // Mark entry info as completed in immigration guide
-        if (entryPackId) {
-          await EntryInfoService.updateEntryInfo(entryPackId, {
+        if (entryInfoId) {
+          await EntryInfoService.updateEntryInfo(entryInfoId, {
             display_status: JSON.stringify({
               immigration_completed: true,
               completed_at: new Date().toISOString(),
@@ -137,7 +151,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
           context: 'ThailandInteractiveImmigrationGuide.handleNextStep.markCompleted',
           type: ErrorType.DATA_SAVE,
           severity: ErrorSeverity.SILENT, // Silent - don't interrupt user's success experience
-        });
+        } as any);
         // Still show success message even if marking fails
         Alert.alert(
           '🎉 入境完成！',
@@ -158,7 +172,7 @@ const ThailandInteractiveImmigrationGuide = ({ navigation, route }) => {
       Vibration.vibrate(100);
       setCurrentStep(currentStep + 1);
     }
-  }, [currentStep, entryPackId, navigation]);
+  }, [currentStep, entryInfoId, navigation, thailandSteps]);
 
   const handlePreviousStep = useCallback(() => {
     if (currentStep > 0) {

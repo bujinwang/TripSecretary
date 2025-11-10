@@ -33,6 +33,19 @@ interface SaveResult {
   id: string;
 }
 
+interface FundItemSavePayload {
+  id?: string;
+  userId: string;
+  type?: FundItemType | string | null;
+  amount?: number | string | null;
+  currency?: string | null;
+  details?: string | null;
+  photoUri?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
 const VALID_TYPES: FundItemType[] = ['credit_card', 'cash', 'bank_balance', 'investment', 'other'];
 
 class FundItem {
@@ -102,7 +115,8 @@ class FundItem {
 
       this.updatedAt = new Date().toISOString();
 
-      const result = await SecureStorageService.saveFundItem(this.toSavingPayload());
+      const payload = this.toSavingPayload();
+      const result = await SecureStorageService.saveFundItem(payload);
       console.log('FundItem.save completed successfully');
       return result as SaveResult;
     } catch (error) {
@@ -172,7 +186,11 @@ class FundItem {
     };
   }
 
-  private toSavingPayload(): Record<string, unknown> {
+  private toSavingPayload(): FundItemSavePayload {
+    if (!this.userId) {
+      throw new Error('Cannot save fund item without userId');
+    }
+
     return {
       id: this.id,
       userId: this.userId,

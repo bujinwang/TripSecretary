@@ -5,6 +5,11 @@
  * with proper JSON parsing and validation
  */
 
+import type {
+  PassportDecryptedFields,
+  PersonalInfoDecryptedFields,
+} from './DecryptionHelper';
+
 type Nullable<T> = T | null | undefined;
 
 type EntryInfoInput = {
@@ -37,7 +42,7 @@ type SerializedEntryInfoRow = {
   created_at: string;
 };
 
-type EntryInfoRow = Record<string, any> & {
+interface EntryInfoRow {
   id: string;
   user_id: string;
   passport_id?: string | null;
@@ -50,9 +55,10 @@ type EntryInfoRow = Record<string, any> & {
   display_status?: string;
   last_updated_at?: string;
   created_at?: string;
-};
+  [key: string]: unknown;
+}
 
-type DigitalArrivalCardRow = Record<string, any> & {
+interface DigitalArrivalCardRow {
   id: string;
   entry_info_id: string;
   user_id: string;
@@ -75,9 +81,10 @@ type DigitalArrivalCardRow = Record<string, any> & {
   version?: number | null;
   created_at: string;
   updated_at: string;
-};
+  [key: string]: unknown;
+}
 
-type PassportRow = Record<string, any> & {
+interface PassportRow {
   id: string;
   user_id: string;
   gender?: string;
@@ -88,9 +95,10 @@ type PassportRow = Record<string, any> & {
   is_primary?: number;
   created_at?: string;
   updated_at?: string;
-};
+  [key: string]: unknown;
+}
 
-type PersonalInfoRow = Record<string, any> & {
+interface PersonalInfoRow {
   id: string;
   user_id: string;
   passport_id?: string | null;
@@ -103,9 +111,10 @@ type PersonalInfoRow = Record<string, any> & {
   label?: string;
   created_at?: string;
   updated_at?: string;
-};
+  [key: string]: unknown;
+}
 
-type TravelInfoRow = Record<string, any> & {
+interface TravelInfoRow {
   id: string;
   user_id?: string;
   destination?: string;
@@ -139,9 +148,10 @@ type TravelInfoRow = Record<string, any> & {
   status?: string;
   created_at?: string;
   updated_at?: string;
-};
+  [key: string]: unknown;
+}
 
-type FundItemRow = Record<string, any> & {
+interface FundItemRow {
   id: string;
   user_id: string;
   type: string;
@@ -151,18 +161,18 @@ type FundItemRow = Record<string, any> & {
   photo_uri?: string;
   created_at?: string;
   updated_at?: string;
-};
+  [key: string]: unknown;
+}
 
-type PassportCountryRow = Record<string, any> & {
+interface PassportCountryRow {
   passport_id: string;
   country_code: string;
   visa_required?: number;
   max_stay_days?: number;
   notes?: string;
   created_at?: string;
-};
-
-type DecryptedFields = Record<string, any>;
+  [key: string]: unknown;
+}
 
 class DataSerializer {
   generateId(): string {
@@ -190,7 +200,7 @@ class DataSerializer {
     }
   }
 
-  extractFundItemIds(entryInfoData: Record<string, any> = {}): string[] {
+  extractFundItemIds(entryInfoData: Record<string, unknown> = {}): string[] {
     const identifiers: Array<string | null | undefined> = [];
 
     if (!entryInfoData) {
@@ -298,7 +308,10 @@ class DataSerializer {
     };
   }
 
-  deserializePassport(row: PassportRow, decryptedFields: DecryptedFields): Record<string, unknown> {
+  deserializePassport(
+    row: PassportRow,
+    decryptedFields: PassportDecryptedFields
+  ): Record<string, unknown> {
     return {
       id: row.id,
       userId: row.user_id,
@@ -317,7 +330,10 @@ class DataSerializer {
     };
   }
 
-  deserializePersonalInfo(row: PersonalInfoRow, decryptedFields: DecryptedFields): Record<string, unknown> {
+  deserializePersonalInfo(
+    row: PersonalInfoRow,
+    decryptedFields: PersonalInfoDecryptedFields
+  ): Record<string, unknown> {
     return {
       id: row.id,
       userId: row.user_id,
@@ -404,3 +420,12 @@ class DataSerializer {
 const dataSerializer = new DataSerializer();
 
 export default dataSerializer;
+export type {
+  DigitalArrivalCardRow,
+  EntryInfoRow,
+  FundItemRow,
+  PersonalInfoRow,
+  PassportCountryRow,
+  PassportRow,
+  TravelInfoRow,
+};

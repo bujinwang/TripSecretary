@@ -662,13 +662,15 @@ class NotificationTemplateService {
       const scheduledNotifications = await this.notificationService.getScheduledNotifications();
       
       return scheduledNotifications.map(notification => {
-        const data = notification.content?.data;
+        const data = notification.content?.data ?? {};
+        const templateType =
+          typeof data?.templateType === 'string' ? data.templateType : undefined;
         return {
           ...notification,
-          templateType: data?.templateType,
-          isTemplated: !!data?.templateType,
+          templateType,
+          isTemplated: Boolean(templateType),
           variables: data?.variables,
-          deepLink: data?.deepLink
+          deepLink: typeof data?.deepLink === 'string' ? data.deepLink : undefined
         };
       });
 

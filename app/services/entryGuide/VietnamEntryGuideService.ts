@@ -1,7 +1,7 @@
 // 越南入境指引服务 - 内排机场HAN/新山一机场SGN/岘港机场DAD完整流程管理
 // 整合电子签证、健康申报、资金证明
 
-import { vietnamEntryGuide } from '../../config/entryGuide/vietnam.js';
+import { vietnamEntryGuide } from '../../config/entryGuide/vietnam';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions

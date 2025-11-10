@@ -12,20 +12,23 @@
  */
 
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationPreferencesService from './NotificationPreferencesService';
 import NotificationLogService from './NotificationLogService';
+import UserDataService from '../data/UserDataService';
+import type { NotificationTypes } from './NotificationPreferencesService';
 import type { UserId } from '../../types/data';
 
 // Type definitions
-interface PermissionStatus {
+export interface PermissionStatus {
   granted: boolean;
   status?: string;
   error?: string;
 }
 
-interface NotificationData {
+export interface NotificationData {
   type?: string;
   entryPackId?: string;
   entryInfoId?: string;
@@ -39,7 +42,7 @@ interface NotificationData {
   [key: string]: any;
 }
 
-interface NotificationAction {
+export interface NotificationAction {
   id: string;
   title: string;
   titleKey?: string;
@@ -49,7 +52,7 @@ interface NotificationAction {
   icon?: string;
 }
 
-interface NotificationOptions {
+export interface NotificationOptions {
   priority?: Notifications.AndroidImportance;
   sound?: boolean;
   ignoreQuietHours?: boolean;
@@ -103,6 +106,22 @@ interface PendingDeepLink {
 type NotificationListener = Notifications.Subscription;
 type NavigationRef = React.RefObject<any> | { current: any } | null;
 
+const SUPPORTED_NOTIFICATION_TYPES: readonly (keyof NotificationTypes)[] = [
+  'submissionWindow',
+  'urgentReminder',
+  'deadline',
+  'arrivalReminder',
+  'arrivalDay',
+  'dataChange',
+  'expiry',
+  'superseded',
+  'autoArchival',
+];
+
+const isSupportedNotificationType = (
+  value: string
+): value is keyof NotificationTypes => SUPPORTED_NOTIFICATION_TYPES.includes(value as keyof NotificationTypes);
+
 class NotificationService {
   private isInitialized: boolean = false;
   private permissionStatus: PermissionStatus | null = null;
@@ -113,10 +132,12 @@ class NotificationService {
   constructor() {
     // Configure notification behavior
     Notifications.setNotificationHandler({
-      handleNotification: async () => ({
+      handleNotification: async (): Promise<Notifications.NotificationBehavior> => ({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
       }),
     });
   }
@@ -288,8 +309,9 @@ class NotificationService {
     // Handle action button clicks
     if (actionIdentifier && actionIdentifier !== 'default') {
       // Record the action with NotificationActionService
-      const { NotificationActionService } = await import('./NotificationActionService');
-      await NotificationActionService.recordActionClick(actionIdentifier, data.type, {
+      const actionServiceModule = await import('./NotificationActionService');
+      const actionService = actionServiceModule.default;
+      await actionService.recordActionClick(actionIdentifier, data.type ?? 'unknown', {
         notificationId: response.notification.request.identifier,
         entryPackId: data.entryPackId,
         deepLink: data.deepLink
@@ -476,18 +498,18 @@ class NotificationService {
         }
       } else {
         // Fallback to direct EntryInfoService if no userId provided
-        const EntryInfoService = await import('../EntryInfoService');
+        if (data.entryInfoId || data.entryPackId) {
+          await UserDataService.updateEntryInfoStatus(data.entryInfoId || data.entryPackId, 'archived', {
+            reason: 'user_action_from_notification',
+            archivedAt: new Date().toISOString()
+          });
+          console.log('Entry info archived from notification action:', data.entryInfoId || data.entryPackId);
 
-        // For schema v2.0, we need to update the entry info status instead of archiving
-        // Since EntryPackService is removed, we'll use EntryInfoService
-        await EntryInfoService.default.updateEntryInfoStatus(data.entryInfoId || data.entryPackId, 'archived', {
-          reason: 'user_action_from_notification',
-          archivedAt: new Date().toISOString()
-        });
-        console.log('Entry info archived from notification action:', data.entryInfoId || data.entryPackId);
-
-        // Navigate to history to show the archived entry info
-        this.handleDeepLink('history', data);
+          // Navigate to history to show the archived entry info
+          this.handleDeepLink('history', data);
+        } else {
+          throw new Error('Missing entry info identifier for archive action');
+        }
       }
     } catch (error) {
       console.error('Error archiving entry pack from notification:', error);
@@ -940,8 +962,11 @@ class NotificationService {
       }
 
       // Check user preferences before scheduling
-      const notificationType = data.type || 'general';
-      const isTypeEnabled = await NotificationPreferencesService.isNotificationTypeEnabled(notificationType);
+      const notificationType = typeof data.type === 'string' ? data.type : 'general';
+      let isTypeEnabled = true;
+      if (isSupportedNotificationType(notificationType)) {
+        isTypeEnabled = await NotificationPreferencesService.isNotificationTypeEnabled(notificationType);
+      }
       
       if (!isTypeEnabled) {
         console.log(`Notification type '${notificationType}' is disabled by user preferences`);
@@ -991,9 +1016,15 @@ class NotificationService {
       // Prepare the trigger
       let trigger: Notifications.NotificationTriggerInput;
       if (date instanceof Date) {
-        trigger = { date };
+        trigger = {
+          type: SchedulableTriggerInputTypes.DATE,
+          date,
+        };
       } else if (typeof date === 'number') {
-        trigger = { seconds: date };
+        trigger = {
+          type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: date,
+        };
       } else {
         throw new Error('Invalid date parameter. Must be Date object or number of seconds.');
       }
@@ -1282,7 +1313,10 @@ class NotificationService {
    * @returns Promise resolving to whether notifications are enabled for this type
    */
   async isNotificationTypeEnabled(type: string): Promise<boolean> {
-    return await NotificationPreferencesService.isNotificationTypeEnabled(type);
+    if (isSupportedNotificationType(type)) {
+      return await NotificationPreferencesService.isNotificationTypeEnabled(type);
+    }
+    return true;
   }
 
   /**
@@ -1297,12 +1331,8 @@ class NotificationService {
    * Clean up listeners when service is destroyed
    */
   cleanup(): void {
-    if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
-    }
-    if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
-    }
+    this.notificationListener?.remove?.();
+    this.responseListener?.remove?.();
     this.isInitialized = false;
   }
 }

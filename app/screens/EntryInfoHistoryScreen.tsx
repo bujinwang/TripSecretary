@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Alert,
   RefreshControl,
   ActivityIndicator,
+  type AlertButton,
+  type ListRenderItemInfo,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,28 +19,185 @@ import EntryInfoService from '../services/EntryInfoService';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import LazyLoadingHelper from '../utils/LazyLoadingHelper';
+import type { RootStackScreenProps } from '../types/navigation';
+import EntryInfo from '../models/EntryInfo';
 
-const EntryInfoHistoryScreen = ({ navigation }) => {
-  const [historyItems, setHistoryItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
+type EntryInfoInstance = InstanceType<typeof EntryInfo>;
 
+type FilterKey = 'all' | 'completed' | 'cancelled' | 'expired';
 
-  const filterOptions = [
+type HistoryItem = {
+  id: string;
+  destination?: string | null;
+  destinationId?: string | null;
+  status?: string | null;
+  arrivalDate?: string | null;
+  submittedAt?: string | null;
+  createdAt?: string | null;
+  lastUpdatedAt?: string | null;
+  travel?: { arrivalDate?: string | null } | null;
+  [key: string]: unknown;
+};
+
+type FlattenedHistoryItem =
+  | { type: 'header'; id: string; title: string }
+  | ({ type: 'item' } & HistoryItem);
+
+type EntryInfoHistoryScreenProps = RootStackScreenProps<'EntryInfoHistory'>;
+
+const DESTINATION_NAME_MAP = {
+  thailand: '泰国',
+  japan: '日本',
+  singapore: '新加坡',
+  malaysia: '马来西亚',
+  taiwan: '台湾',
+  hongkong: '香港',
+  korea: '韩国',
+  usa: '美国',
+} as const;
+
+const DESTINATION_FLAG_MAP = {
+  thailand: '🇹🇭',
+  japan: '🇯🇵',
+  singapore: '🇸🇬',
+  malaysia: '🇲🇾',
+  taiwan: '🇹🇼',
+  hongkong: '🇭🇰',
+  korea: '🇰🇷',
+  usa: '🇺🇸',
+} as const;
+
+const getDestinationName = (destinationId?: string | null): string => {
+  if (!destinationId) {
+    return '未知目的地';
+  }
+  return DESTINATION_NAME_MAP[destinationId as keyof typeof DESTINATION_NAME_MAP] ?? destinationId;
+};
+
+const getDestinationFlag = (destinationId?: string | null): string => {
+  if (!destinationId) {
+    return '🌍';
+  }
+  return DESTINATION_FLAG_MAP[destinationId as keyof typeof DESTINATION_FLAG_MAP] ?? '🌍';
+};
+
+const getStatusColor = (status?: string | null): string => {
+  switch (status) {
+    case 'completed':
+      return colors.success;
+    case 'cancelled':
+      return colors.textSecondary;
+    case 'expired':
+      return colors.warning;
+    default:
+      return colors.textSecondary;
+  }
+};
+
+const getStatusLabel = (status?: string | null): string => {
+  switch (status) {
+    case 'completed':
+      return '已完成';
+    case 'cancelled':
+      return '已取消';
+    case 'expired':
+      return '已过期';
+    default:
+      return status ?? '未知状态';
+  }
+};
+
+const formatDateDisplay = (date?: string | null): string => {
+  if (!date) {
+    return '未填写';
+  }
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+  return DateFormatter.formatDate(parsed, 'zh-CN');
+};
+
+const getTimeGroup = (date: string | Date | null | undefined): string => {
+  if (!date) {
+    return '更早';
+  }
+  const now = new Date();
+  const itemDate = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(itemDate.getTime())) {
+    return '更早';
+  }
+  const diffDays = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return '今天';
+  }
+  if (diffDays === 1) {
+    return '昨天';
+  }
+  if (diffDays <= 7) {
+    return '本周';
+  }
+  if (diffDays <= 30) {
+    return '本月';
+  }
+  return '更早';
+};
+
+const groupItemsByTime = (items: HistoryItem[]): Record<string, HistoryItem[]> => {
+  const groups: Record<string, HistoryItem[]> = {};
+  items.forEach((item) => {
+    const group = getTimeGroup(item.createdAt ?? item.arrivalDate ?? item.lastUpdatedAt);
+    if (!groups[group]) {
+      groups[group] = [];
+    }
+    groups[group].push(item);
+  });
+  return groups;
+};
+
+const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigation }) => {
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedFilter, setSelectedFilter] = useState<FilterKey>('all');
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+
+  const applyFiltersAndSearch = useCallback(
+    (items: HistoryItem[], filter: FilterKey, query: string) => {
+      let filtered = items;
+
+      if (filter !== 'all') {
+        filtered = filtered.filter((item) => item.status === filter);
+      }
+
+      if (query.trim()) {
+        const lowerQuery = query.toLowerCase();
+        filtered = filtered.filter((item) => {
+          const destinationText = `${item.destination ?? item.destinationId ?? ''}`.toLowerCase();
+          const arrivalText = formatDateDisplay(item.arrivalDate).toLowerCase();
+          return destinationText.includes(lowerQuery) || arrivalText.includes(lowerQuery);
+        });
+      }
+
+      setFilteredItems(filtered);
+    },
+    [],
+  );
+
+  const filterOptions: ReadonlyArray<{ key: FilterKey; label: string; count: number }> = [
     { key: 'all', label: '全部', count: 0 },
     { key: 'completed', label: '已完成', count: 0 },
     { key: 'cancelled', label: '已取消', count: 0 },
     { key: 'expired', label: '已过期', count: 0 },
   ];
 
-  const loadHistoryData = useCallback(async () => {
+  const loadHistoryData = useCallback(async (): Promise<void> => {
     const operationId = PerformanceMonitor.startTiming('loadHistoryData', {
       selectedFilter,
-      searchQuery: searchQuery.length
+      searchQuery: searchQuery.length,
     });
 
     try {
@@ -50,202 +209,131 @@ const EntryInfoHistoryScreen = ({ navigation }) => {
       // Load EntryInfo records
       const entryInfos = await EntryInfoService.getAllEntryInfos(userId);
 
-      setHistoryItems(entryInfos);
-      applyFiltersAndSearch(entryInfos, selectedFilter, searchQuery);
+      const normalizedItems: HistoryItem[] = entryInfos.map((entryInfo: EntryInfoInstance) => {
+        const destinationId = entryInfo.destinationId ?? null;
+        const travelData =
+          entryInfo.travel && typeof entryInfo.travel === 'object'
+            ? (entryInfo.travel as { arrivalDate?: string | null })
+            : null;
+        const documents =
+          entryInfo.documents && typeof entryInfo.documents === 'object'
+            ? (entryInfo.documents as { submittedAt?: string | null })
+            : null;
+
+        return {
+          id: entryInfo.id,
+          destinationId,
+          destination: destinationId ? getDestinationName(destinationId) : null,
+          status: entryInfo.status ?? null,
+          arrivalDate: travelData?.arrivalDate ?? null,
+          submittedAt: documents?.submittedAt ?? null,
+          createdAt: entryInfo.createdAt ?? entryInfo.lastUpdatedAt ?? null,
+          lastUpdatedAt: entryInfo.lastUpdatedAt ?? null,
+          travel: travelData,
+        };
+      });
+
+      setHistoryItems(normalizedItems);
+      applyFiltersAndSearch(normalizedItems, selectedFilter, searchQuery);
 
       PerformanceMonitor.endTiming(operationId, {
-        itemsLoaded: entryInfos.length,
+        itemsLoaded: normalizedItems.length,
       });
     } catch (error) {
       console.error('Failed to load history data:', error);
-      PerformanceMonitor.endTiming(operationId, { error: error.message });
+      PerformanceMonitor.endTiming(operationId, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       Alert.alert('错误', '加载历史记录失败，请重试');
     } finally {
       setLoading(false);
     }
-  }, [selectedFilter, searchQuery]);
+  }, [selectedFilter, searchQuery, applyFiltersAndSearch]);
 
-  const applyFiltersAndSearch = useCallback((items, filter, query) => {
-    let filtered = items;
-
-    // Apply status filter
-    if (filter !== 'all') {
-      filtered = filtered.filter(item => item.status === filter);
-    }
-
-    // Apply search query
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(item => 
-        item.destination.toLowerCase().includes(lowerQuery) ||
-        DateFormatter.formatDate(new Date(item.arrivalDate), 'zh-CN').includes(lowerQuery)
-      );
-    }
-
-    setFilteredItems(filtered);
-  }, []);
-
-  const getDestinationName = (destinationId) => {
-    const destinations = {
-      thailand: '泰国',
-      japan: '日本',
-      singapore: '新加坡',
-      malaysia: '马来西亚',
-      taiwan: '台湾',
-      hongkong: '香港',
-      korea: '韩国',
-      usa: '美国',
-    };
-    return destinations[destinationId] || destinationId;
-  };
-
-  const getDestinationFlag = (destinationId) => {
-    const flags = {
-      thailand: '🇹🇭',
-      japan: '🇯🇵',
-      singapore: '🇸🇬',
-      malaysia: '🇲🇾',
-      taiwan: '🇹🇼',
-      hongkong: '🇭🇰',
-      korea: '🇰🇷',
-      usa: '🇺🇸',
-    };
-    return flags[destinationId] || '🌍';
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return colors.success;
-      case 'cancelled':
-        return colors.textSecondary;
-      case 'expired':
-        return colors.warning;
-      default:
-        return colors.textSecondary;
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'completed':
-        return '已完成';
-      case 'cancelled':
-        return '已取消';
-      case 'expired':
-        return '已过期';
-      default:
-        return status;
-    }
-  };
-
-  const getTimeGroup = (date) => {
-    const now = new Date();
-    const itemDate = new Date(date);
-    const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-return '今天';
-}
-    if (diffDays === 1) {
-return '昨天';
-}
-    if (diffDays <= 7) {
-return '本周';
-}
-    if (diffDays <= 30) {
-return '本月';
-}
-    return '更早';
-  };
-
-  const groupItemsByTime = (items) => {
-    const groups = {};
-    items.forEach(item => {
-      const group = getTimeGroup(item.createdAt);
-      if (!groups[group]) {
-        groups[group] = [];
-      }
-      groups[group].push(item);
-    });
-    return groups;
-  };
-
-  const handleItemPress = (item) => {
+  const handleItemPress = useCallback(
+    (item: HistoryItem) => {
     // Navigate to EntryInfoDetailScreen with EntryInfo ID
     navigation.navigate('EntryInfoDetail', {
       entryInfoId: item.id,
       isHistorical: true,
     });
-  };
+  },
+    [navigation],
+  );
 
-  const handleItemLongPress = (item) => {
-    const actions = [
+  const handleDeleteItem = useCallback(
+    (item: HistoryItem) => {
+    const buttons: AlertButton[] = [
       {
-        text: '查看详情',
-        onPress: () => handleItemPress(item),
+        text: '取消',
+        style: 'cancel',
       },
       {
         text: '删除',
         style: 'destructive',
-        onPress: () => handleDeleteItem(item),
+        onPress: async () => {
+          try {
+            await EntryInfoService.deleteEntryInfo(item.id);
+
+            // Refresh the list
+            await loadHistoryData();
+            Alert.alert('成功', '历史记录已删除');
+          } catch (error) {
+            console.error('Failed to delete history item:', error);
+            Alert.alert('错误', '删除失败，请重试');
+          }
+        },
       },
-      {
-        text: '取消',
-        style: 'cancel',
-      }
     ];
 
     Alert.alert(
-      '操作选项',
-      `选择对 ${item.destination} 历史记录的操作`,
-      actions
-    );
-  };
-
-  const handleDeleteItem = (item) => {
-    Alert.alert(
       '确认删除',
       `确定要删除 ${item.destination} 的历史记录吗？此操作无法撤销。`,
-      [
+      buttons
+    );
+  },
+    [loadHistoryData],
+  );
+
+  const handleItemLongPress = useCallback(
+    (item: HistoryItem) => {
+      const actions: AlertButton[] = [
         {
-          text: '取消',
-          style: 'cancel',
+          text: '查看详情',
+          onPress: () => handleItemPress(item),
         },
         {
           text: '删除',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await EntryInfoService.deleteEntryInfo(item.id);
-              
-              // Refresh the list
-              await loadHistoryData();
-              Alert.alert('成功', '历史记录已删除');
-            } catch (error) {
-              console.error('Failed to delete history item:', error);
-              Alert.alert('错误', '删除失败，请重试');
-            }
-          },
+          onPress: () => handleDeleteItem(item),
         },
-      ]
-    );
-  };
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+      ];
 
+      Alert.alert(
+        '操作选项',
+        `选择对 ${item.destination} 历史记录的操作`,
+        actions,
+      );
+    },
+    [handleDeleteItem, handleItemPress],
+  );
 
-
-  const handleFilterPress = (filterKey) => {
+  const handleFilterPress = (filterKey: FilterKey): void => {
     setSelectedFilter(filterKey);
     setShowFilters(false);
     applyFiltersAndSearch(historyItems, filterKey, searchQuery);
   };
 
-  const handleSearchChange = (query) => {
+  const handleSearchChange = (query: string): void => {
     setSearchQuery(query);
     applyFiltersAndSearch(historyItems, selectedFilter, query);
   };
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     await loadHistoryData();
     setRefreshing(false);
@@ -257,98 +345,105 @@ return '本月';
     }, [loadHistoryData])
   );
 
-  const renderHistoryItem = useCallback(({ item, index }) => (
-    <TouchableOpacity
-      style={styles.historyItem}
-      onPress={() => handleItemPress(item)}
-      onLongPress={() => handleItemLongPress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.itemHeader}>
-        <View style={styles.destinationInfo}>
-          <Text style={styles.flagEmoji}>{getDestinationFlag(item.destinationId)}</Text>
-          <Text style={styles.destinationName}>{item.destination}</Text>
-        </View>
-        <View style={styles.statusContainer}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <Text style={styles.statusText}>{getStatusLabel(item.status)}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.itemDetails}>
-        <View style={styles.dateRow}>
-          <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.dateText}>
-            抵达日期: {DateFormatter.formatDate(new Date(item.arrivalDate), 'zh-CN')}
-          </Text>
-        </View>
-        
-        {item.submittedAt && (
-          <View style={styles.dateRow}>
-            <Ionicons name="checkmark-circle-outline" size={16} color={colors.textSecondary} />
-            <Text style={styles.dateText}>
-              提交日期: {DateFormatter.formatDate(new Date(item.submittedAt), 'zh-CN')}
+  const renderHistoryItem = useCallback(
+    (item: HistoryItem): React.ReactElement => (
+      <TouchableOpacity
+        style={styles.historyItem}
+        onPress={() => handleItemPress(item)}
+        onLongPress={() => handleItemLongPress(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemHeader}>
+          <View style={styles.destinationInfo}>
+            <Text style={styles.flagEmoji}>{getDestinationFlag(item.destinationId)}</Text>
+            <Text style={styles.destinationName}>
+              {item.destination ?? getDestinationName(item.destinationId)}
             </Text>
           </View>
-        )}
-
-        <View style={styles.dateRow}>
-          <Ionicons name="archive-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.dateText}>
-            创建日期: {DateFormatter.formatDate(new Date(item.createdAt), 'zh-CN')}
-          </Text>
+          <View style={styles.statusContainer}>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+              <Text style={styles.statusText}>{getStatusLabel(item.status)}</Text>
+            </View>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.itemFooter}>
-        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-      </View>
-    </TouchableOpacity>
-  ), []);
+        <View style={styles.itemDetails}>
+          <View style={styles.dateRow}>
+            <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+            <Text style={styles.dateText}>
+              抵达日期: {formatDateDisplay(item.arrivalDate)}
+            </Text>
+          </View>
 
-  const renderSectionHeader = (title) => (
+          {item.submittedAt && (
+            <View style={styles.dateRow}>
+              <Ionicons name="checkmark-circle-outline" size={16} color={colors.textSecondary} />
+              <Text style={styles.dateText}>
+                提交日期: {formatDateDisplay(item.submittedAt)}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.dateRow}>
+            <Ionicons name="archive-outline" size={16} color={colors.textSecondary} />
+            <Text style={styles.dateText}>
+              创建日期: {formatDateDisplay(item.createdAt)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.itemFooter}>
+          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+        </View>
+      </TouchableOpacity>
+    ),
+    [handleItemLongPress, handleItemPress],
+  );
+
+  const renderSectionHeader = (title: string): React.ReactElement => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
   );
 
   // Memoize optimized FlatList props
-  const optimizedListProps = useMemo(() => {
-    return LazyLoadingHelper.getOptimizedFlatListProps({
-      itemHeight: 120, // Estimated height of history item
-      windowSize: 10,
-      initialNumToRender: 8,
-      maxToRenderPerBatch: 5,
-      updateCellsBatchingPeriod: 50,
-      removeClippedSubviews: true
-    });
-  }, []);
+  const optimizedListProps = useMemo(
+    () =>
+      LazyLoadingHelper.getOptimizedFlatListProps({
+        itemHeight: 120, // Estimated height of history item
+        windowSize: 10,
+        initialNumToRender: 8,
+        maxToRenderPerBatch: 5,
+        updateCellsBatchingPeriod: 50,
+        removeClippedSubviews: true,
+      }),
+    [],
+  );
 
   // Flatten grouped data for virtualized list
-  const flattenedData = useMemo(() => {
+  const flattenedData = useMemo<FlattenedHistoryItem[]>(() => {
     const operationId = PerformanceMonitor.startTiming('flattenGroupedData', {
-      filteredItemsCount: filteredItems.length
+      filteredItemsCount: filteredItems.length,
     });
 
     const groups = groupItemsByTime(filteredItems);
     const groupOrder = ['今天', '昨天', '本周', '本月', '更早'];
-    const flattened = [];
+    const flattened: FlattenedHistoryItem[] = [];
 
-    groupOrder.forEach(groupTitle => {
+    groupOrder.forEach((groupTitle) => {
       if (groups[groupTitle]?.length > 0) {
         // Add section header
         flattened.push({
           type: 'header',
           id: `header_${groupTitle}`,
-          title: groupTitle
+          title: groupTitle,
         });
         
         // Add items
-        groups[groupTitle].forEach(item => {
+        groups[groupTitle].forEach((item) => {
           flattened.push({
             type: 'item',
-            ...item
+            ...item,
           });
         });
       }
@@ -356,55 +451,61 @@ return '本月';
 
     PerformanceMonitor.endTiming(operationId, {
       flattenedCount: flattened.length,
-      groupCount: groupOrder.filter(g => groups[g]?.length > 0).length
+      groupCount: groupOrder.filter((g) => groups[g]?.length > 0).length,
     });
 
     return flattened;
   }, [filteredItems]);
 
-  const renderFlattenedItem = useCallback(({ item, index }) => {
-    if (item.type === 'header') {
-      return renderSectionHeader(item.title);
-    }
-    return renderHistoryItem({ item, index });
-  }, []);
+  const renderFlattenedItem = useCallback(
+    ({ item }: ListRenderItemInfo<FlattenedHistoryItem>): React.ReactElement | null =>
+      item.type === 'header' ? renderSectionHeader(item.title) : renderHistoryItem(item),
+    [renderHistoryItem],
+  );
 
-  const getItemLayout = useCallback((data, index) => {
-    const item = data[index];
-    const height = item?.type === 'header' ? 40 : 120;
-    return {
-      length: height,
-      offset: data.slice(0, index).reduce((sum, item) => 
-        sum + (item.type === 'header' ? 40 : 120), 0),
-      index
-    };
-  }, []);
+  const getItemLayout = useCallback(
+    (data: FlattenedHistoryItem[] | null | undefined, index: number) => {
+      if (!data) {
+        return { length: 0, offset: 0, index };
+      }
+      const height = data[index]?.type === 'header' ? 40 : 120;
+      const offset = data
+        .slice(0, index)
+        .reduce(
+          (sum, current) => sum + (current.type === 'header' ? 40 : 120),
+          0,
+        );
+      return {
+        length: height,
+        offset,
+        index,
+      };
+    },
+    [],
+  );
 
-  const renderGroupedList = () => {
-    return (
-      <FlatList
-        data={flattenedData}
-        renderItem={renderFlattenedItem}
-        getItemLayout={getItemLayout}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  const renderGroupedList = (): React.ReactElement => (
+    <FlatList<FlattenedHistoryItem>
+      data={flattenedData}
+      renderItem={renderFlattenedItem}
+      getItemLayout={getItemLayout}
+      keyExtractor={(item) => item.id}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={styles.listContainer}
+      showsVerticalScrollIndicator={false}
+      {...optimizedListProps}
+      onViewableItemsChanged={({ viewableItems }) => {
+        if (viewableItems.length > 0) {
+          PerformanceMonitor.recordMemoryUsage('historyListScroll', {
+            visibleItems: viewableItems.length,
+            totalItems: flattenedData.length,
+          });
         }
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        {...optimizedListProps}
-        onViewableItemsChanged={({ viewableItems }) => {
-          // Record memory usage periodically
-          if (viewableItems.length > 0) {
-            PerformanceMonitor.recordMemoryUsage('historyListScroll', {
-              visibleItems: viewableItems.length,
-              totalItems: flattenedData.length
-            });
-          }
-        }}
-      />
-    );
-  };
+      }}
+    />
+  );
 
   if (loading) {
     return (
@@ -477,33 +578,17 @@ return '本月';
         </View>
       )}
 
-
-
-      {/* Results Count */}
-      {(searchQuery.length > 0 || selectedFilter !== 'all') && (
-        <View style={styles.resultsContainer}>
-          <Text style={styles.resultsText}>
-            显示 {filteredItems.length} 个结果
-
-          </Text>
-        </View>
-      )}
-
-      {/* History List */}
-      {filteredItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="archive-outline" size={64} color={colors.textSecondary} />
-          <Text style={styles.emptyTitle}>暂无历史记录</Text>
-          <Text style={styles.emptySubtitle}>
-            {searchQuery.length > 0 || selectedFilter !== 'all'
-              ? '没有找到匹配的记录'
-              : '完成的旅程将显示在这里'
-            }
-          </Text>
-        </View>
-      ) : (
-        renderGroupedList()
-      )}
+      <View style={styles.listWrapper}>
+        {filteredItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="folder-open" size={48} color={colors.textSecondary} />
+            <Text style={styles.emptyTitle}>暂无历史记录</Text>
+            <Text style={styles.emptySubtitle}>完成行程后可以在此查看历史记录</Text>
+          </View>
+        ) : (
+          renderGroupedList()
+        )}
+      </View>
     </View>
   );
 };
@@ -582,16 +667,12 @@ const styles = StyleSheet.create({
     color: colors.surface,
     fontWeight: '500',
   },
-  resultsContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  resultsText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
   listContainer: {
     paddingBottom: 20,
+  },
+  listWrapper: {
+    flex: 1,
+    paddingBottom: 24,
   },
   sectionHeader: {
     paddingHorizontal: 16,
@@ -630,6 +711,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
+  },
+  statusContainer: {
+    alignItems: 'flex-end',
   },
   statusBadge: {
     paddingHorizontal: 8,

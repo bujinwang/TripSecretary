@@ -13,6 +13,7 @@ import {
   Clipboard,
   Animated,
 } from 'react-native';
+import type { DimensionValue } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
@@ -633,7 +634,7 @@ return;
     };
 
     const theme = themeMap[statusVariant];
-    const progressWidth = loaded ? `${percent}%` : '0%';
+    const progressWidth: DimensionValue = loaded ? `${percent}%` : '0%';
 
     return (
       <View style={styles.japanHeroContainer}>

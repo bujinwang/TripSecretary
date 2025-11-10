@@ -19,9 +19,11 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, typography, spacing } from '../theme';
 import NotificationService from '../services/notification/NotificationService';
 import NotificationCoordinator from '../services/notification/NotificationCoordinator';
@@ -29,11 +31,16 @@ import WindowOpenNotificationService from '../services/notification/WindowOpenNo
 import UrgentReminderNotificationService from '../services/notification/UrgentReminderNotificationService';
 import DeadlineNotificationService from '../services/notification/DeadlineNotificationService';
 import ExpiryWarningNotificationService from '../services/notification/ExpiryWarningNotificationService';
+import type { NotificationStats } from '../services/notification/NotificationCoordinator';
+import type { RootStackParamList } from '../types/navigation';
 
-const NotificationTestScreen = ({ navigation }) => {
-  const [scheduledNotifications, setScheduledNotifications] = useState([]);
+type NotificationTestNavigation = NativeStackNavigationProp<RootStackParamList>;
+type TestNotificationType = 'windowOpen' | 'urgentReminder' | 'deadline' | 'expiry' | 'simple';
+
+const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation }> = ({ navigation }) => {
+  const [scheduledNotifications, setScheduledNotifications] = useState<Notifications.NotificationRequest[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [notificationStats, setNotificationStats] = useState({});
+  const [notificationStats, setNotificationStats] = useState<NotificationStats | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -41,17 +48,18 @@ const NotificationTestScreen = ({ navigation }) => {
     loadScheduledNotifications();
   }, []);
 
-  const initializeServices = async () => {
+  const initializeServices = async (): Promise<void> => {
     try {
       await NotificationCoordinator.initialize();
       setIsInitialized(true);
     } catch (error) {
-      console.error('Failed to initialize notification services:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to initialize notification services:', err);
       Alert.alert('Error', 'Failed to initialize notification services');
     }
   };
 
-  const loadScheduledNotifications = async () => {
+  const loadScheduledNotifications = async (): Promise<void> => {
     try {
       const notifications = await NotificationService.getScheduledNotifications();
       setScheduledNotifications(notifications);
@@ -59,17 +67,18 @@ const NotificationTestScreen = ({ navigation }) => {
       const stats = await NotificationCoordinator.getStats();
       setNotificationStats(stats);
     } catch (error) {
-      console.error('Error loading scheduled notifications:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Error loading scheduled notifications:', err);
     }
   };
 
-  const onRefresh = async () => {
+  const onRefresh = async (): Promise<void> => {
     setRefreshing(true);
     await loadScheduledNotifications();
     setRefreshing(false);
   };
 
-  const triggerTestNotification = async (type) => {
+  const triggerTestNotification = async (type: TestNotificationType): Promise<void> => {
     try {
       const testData = {
         userId: 'test_user',
@@ -100,25 +109,27 @@ const NotificationTestScreen = ({ navigation }) => {
           );
           break;
 
-        case 'deadline':
+        case 'deadline': {
           const deadlineIds = await DeadlineNotificationService.scheduleDeadlineNotification(
             testData.userId,
             testData.entryPackId,
             testTime,
             testData.destination
           );
-          notificationId = deadlineIds?.[0];
+          notificationId = deadlineIds?.[0] ?? null;
           break;
+        }
 
-        case 'expiry':
+        case 'expiry': {
           const expiryIds = await ExpiryWarningNotificationService.scheduleExpiryWarningNotifications(
             testData.userId,
             testData.entryPackId,
             testTime,
             testData.destination
           );
-          notificationId = expiryIds?.[0];
+          notificationId = expiryIds?.[0] ?? null;
           break;
+        }
 
         case 'simple':
           notificationId = await NotificationService.scheduleNotification(
@@ -149,12 +160,13 @@ const NotificationTestScreen = ({ navigation }) => {
         Alert.alert('Info', 'Notification was not scheduled (may be disabled in preferences)');
       }
     } catch (error) {
-      console.error(`Error triggering ${type} notification:`, error);
-      Alert.alert('Error', `Failed to schedule ${type} notification: ${error.message}`);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error(`Error triggering ${type} notification:`, err);
+      Alert.alert('Error', `Failed to schedule ${type} notification: ${err.message}`);
     }
   };
 
-  const cancelAllNotifications = async () => {
+  const cancelAllNotifications = async (): Promise<void> => {
     Alert.alert(
       'Cancel All Notifications',
       'Are you sure you want to cancel all scheduled notifications?',
@@ -169,7 +181,8 @@ const NotificationTestScreen = ({ navigation }) => {
               Alert.alert('Success', 'All notifications cancelled');
               await loadScheduledNotifications();
             } catch (error) {
-              console.error('Error cancelling notifications:', error);
+              const err = error instanceof Error ? error : new Error(String(error));
+              console.error('Error cancelling notifications:', err);
               Alert.alert('Error', 'Failed to cancel notifications');
             }
           }
@@ -178,22 +191,27 @@ const NotificationTestScreen = ({ navigation }) => {
     );
   };
 
-  const cancelNotification = async (notificationId) => {
+  const cancelNotification = async (notificationId: string): Promise<void> => {
     try {
       await NotificationService.cancelNotification(notificationId);
       Alert.alert('Success', 'Notification cancelled');
       await loadScheduledNotifications();
     } catch (error) {
-      console.error('Error cancelling notification:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Error cancelling notification:', err);
       Alert.alert('Error', 'Failed to cancel notification');
     }
   };
 
-  const viewNotificationLogs = () => {
+  const viewNotificationLogs = (): void => {
     navigation.navigate('NotificationLog');
   };
 
-  const renderNotificationButton = (title, type, description) => (
+  const renderNotificationButton = (
+    title: string,
+    type: TestNotificationType,
+    description: string
+  ) => (
     <TouchableOpacity
       key={type}
       style={styles.testButton}
@@ -204,46 +222,99 @@ const NotificationTestScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const renderScheduledNotification = (notification, index) => (
-    <View key={index} style={styles.notificationItem}>
-      <View style={styles.notificationHeader}>
-        <Text style={styles.notificationTitle}>
-          {notification.content?.title || 'No Title'}
+  const getStatTotal = (stat: unknown, fallbackKey: string = 'total'): number => {
+    if (!stat || typeof stat !== 'object') {
+      return 0;
+    }
+
+    const record = stat as Record<string, unknown>;
+    const primary = record[fallbackKey];
+    if (typeof primary === 'number') {
+      return primary;
+    }
+
+    const scheduled = record.totalScheduled;
+    if (typeof scheduled === 'number') {
+      return scheduled;
+    }
+
+    return 0;
+  };
+
+  const formatTrigger = (trigger: Notifications.NotificationTrigger | null): string => {
+    if (!trigger) {
+      return 'Immediate';
+    }
+
+    if ('type' in trigger) {
+      switch (trigger.type) {
+        case SchedulableTriggerInputTypes.DATE:
+          if ('date' in trigger && trigger.date) {
+            return new Date(trigger.date).toLocaleString();
+          }
+          return 'Date trigger';
+        case SchedulableTriggerInputTypes.TIME_INTERVAL:
+          if ('seconds' in trigger && typeof trigger.seconds === 'number') {
+            return `${trigger.seconds}s`;
+          }
+          return 'Interval trigger';
+        case SchedulableTriggerInputTypes.DAILY:
+          return 'Daily trigger';
+        case SchedulableTriggerInputTypes.WEEKLY:
+          return 'Weekly trigger';
+        default:
+          break;
+      }
+    }
+
+    return 'Unknown';
+  };
+
+  const renderScheduledNotification = (notification: Notifications.NotificationRequest, index: number) => {
+    const contentData = notification.content?.data as Record<string, unknown> | undefined;
+    const notificationType = typeof contentData?.type === 'string' ? contentData.type : undefined;
+
+    return (
+      <View key={notification.identifier ?? index.toString()} style={styles.notificationItem}>
+        <View style={styles.notificationHeader}>
+          <Text style={styles.notificationTitle}>
+            {notification.content?.title || 'No Title'}
+          </Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => cancelNotification(notification.identifier)}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.notificationBody}>
+          {notification.content?.body || 'No Body'}
         </Text>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => cancelNotification(notification.identifier)}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
+        <Text style={styles.notificationId}>ID: {notification.identifier}</Text>
+        <Text style={styles.notificationTrigger}>
+          Trigger: {formatTrigger(notification.trigger)}
+        </Text>
+        {notificationType && (
+          <Text style={styles.notificationType}>
+            Type: {notificationType}
+          </Text>
+        )}
       </View>
-      <Text style={styles.notificationBody}>
-        {notification.content?.body || 'No Body'}
-      </Text>
-      <Text style={styles.notificationId}>ID: {notification.identifier}</Text>
-      <Text style={styles.notificationTrigger}>
-        Trigger: {new Date(notification.trigger?.date || Date.now()).toLocaleString()}
-      </Text>
-      {notification.content?.data?.type && (
-        <Text style={styles.notificationType}>
-          Type: {notification.content.data.type}
-        </Text>
-      )}
-    </View>
-  );
+    );
+  };
 
   const renderStatsSection = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Notification Statistics</Text>
       <View style={styles.statsContainer}>
         <Text style={styles.statItem}>
-          Window Open: {notificationStats.windowOpen?.total || 0} scheduled
+          Window Open: {getStatTotal(notificationStats?.windowOpen)} scheduled
         </Text>
         <Text style={styles.statItem}>
-          Urgent Reminder: {notificationStats.urgentReminder?.total || 0} scheduled
+          Urgent Reminder: {getStatTotal(notificationStats?.urgentReminder)} scheduled
         </Text>
         <Text style={styles.statItem}>
-          Deadline: {notificationStats.deadline?.total || 0} scheduled
+          Deadline: {getStatTotal(notificationStats?.deadline)} scheduled
         </Text>
         <Text style={styles.statItem}>
           Initialized: {isInitialized ? 'Yes' : 'No'}

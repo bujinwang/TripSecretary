@@ -17,26 +17,85 @@ import { useTranslation } from '../../i18n/LocaleContext';
 import BackButton from '../../components/BackButton';
 import ThailandEntryGuideService from '../../services/entryGuide/ThailandEntryGuideService';
 import EntryInfoService from '../../services/EntryInfoService';
-import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
+import ErrorHandler, { ErrorSeverity } from '../../utils/ErrorHandler';
+import type { RootStackScreenProps } from '../../types/navigation';
 
-const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
+type LanguageCode = 'zh' | 'en' | 'th';
+
+interface TravelerProfile {
+  travelInfo: {
+    travelPurpose?: string | null;
+    arrivalArrivalDate?: string | null;
+    departureDepartureDate?: string | null;
+    arrivalFlightNumber?: string | null;
+    departureFlightNumber?: string | null;
+    hotelName?: string | null;
+    hotelAddress?: string | null;
+    accommodationType?: string | null;
+    province?: string | null;
+    recentStayCountry?: string | null;
+    visaNumber?: string | null;
+  };
+  passport: {
+    fullName?: string | null;
+    nationality?: string | null;
+  };
+  personalInfo: {
+    occupation?: string | null;
+    email?: string | null;
+  };
+}
+
+interface EntryQuestion {
+  id?: string;
+  category?: string | null;
+  question: string;
+  answer: string;
+  required?: boolean;
+  tips?: string[];
+  suggestedAnswers?: string[];
+}
+
+const LANGUAGE_OPTIONS: LanguageCode[] = ['zh', 'en', 'th'];
+const toStringOrNull = (value: unknown): string | null => (typeof value === 'string' ? value : null);
+const toPlainRecord = (value: unknown): Record<string, unknown> | null => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const record = value as Record<string, unknown> & { toJSON?: () => unknown };
+    if (typeof record.toJSON === 'function') {
+      const jsonValue = record.toJSON();
+      if (jsonValue && typeof jsonValue === 'object' && !Array.isArray(jsonValue)) {
+        return { ...(jsonValue as Record<string, unknown>) };
+      }
+      return null;
+    }
+    return { ...record };
+  }
+  return null;
+};
+
+type ThailandEntryQuestionsScreenProps = RootStackScreenProps<'ThailandEntryQuestions'>;
+
+const ThailandEntryQuestionsScreen: React.FC<ThailandEntryQuestionsScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { entryPackId } = route.params || {};
+  const entryPackId = route.params?.entryPackId ?? null;
 
-  const [loading, setLoading] = useState(true);
-  const [travelerProfile, setTravelerProfile] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [selectedLanguage, setSelectedLanguage] = useState('zh');
-  const [showOnlyRequired, setShowOnlyRequired] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
+  const [questions, setQuestions] = useState<EntryQuestion[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(() => {
+    const preferred = route.params?.preferredLanguage;
+    return LANGUAGE_OPTIONS.includes(preferred as LanguageCode) ? (preferred as LanguageCode) : 'zh';
+  });
+  const [showOnlyRequired, setShowOnlyRequired] = useState<boolean>(false);
 
-  const guideService = useMemo(() => new ThailandEntryGuideService(), []);
+  const guideService = useMemo<ThailandEntryGuideService>(() => new ThailandEntryGuideService(), []);
 
   // 加载旅客档案和生成问题
   useEffect(() => {
     loadTravelerProfileAndQuestions();
   }, [entryPackId, selectedLanguage, showOnlyRequired]);
 
-  const loadTravelerProfileAndQuestions = async () => {
+  const loadTravelerProfileAndQuestions = async (): Promise<void> => {
     try {
       setLoading(true);
 
@@ -49,14 +108,15 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
             customTitle: t('common.error'),
             customMessage: t('thailand.entryQuestions.errors.missingEntryPack'),
             onRetry: () => navigation.goBack(),
-          }
+          } as any
         );
         navigation.goBack();
         return;
       }
 
       // 加载入境包数据
-      const entryPack = await EntryInfoService.getEntryInfo(entryPackId);
+      const entryPackData = await EntryInfoService.getEntryInfoById(entryPackId);
+      const entryPack = toPlainRecord(entryPackData);
 
       if (!entryPack) {
         ErrorHandler.handleDataLoadError(
@@ -67,34 +127,58 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
             customTitle: t('common.error'),
             customMessage: t('thailand.entryQuestions.errors.loadFailed'),
             onRetry: () => navigation.goBack(),
-          }
+          } as any
         );
         navigation.goBack();
         return;
       }
 
       // 构建旅客档案对象
-      const profile = {
+      const profile: TravelerProfile = {
         travelInfo: {
-          travelPurpose: entryPack.travel_purpose || 'HOLIDAY',
-          arrivalArrivalDate: entryPack.arrival_date,
-          departureDepartureDate: entryPack.departure_date,
-          arrivalFlightNumber: entryPack.arrival_flight,
-          departureFlightNumber: entryPack.departure_flight,
-          hotelName: entryPack.hotel_name,
-          hotelAddress: entryPack.hotel_address,
-          accommodationType: entryPack.accommodation_type || 'HOTEL',
-          province: entryPack.province,
-          recentStayCountry: entryPack.recent_stay_country,
-          visaNumber: entryPack.visa_number,
+          travelPurpose:
+            toStringOrNull(entryPack.travel_purpose) ??
+            toStringOrNull(entryPack.travelPurpose) ??
+            'HOLIDAY',
+          arrivalArrivalDate:
+            toStringOrNull(entryPack.arrival_date) ??
+            toStringOrNull(entryPack.arrivalArrivalDate),
+          departureDepartureDate:
+            toStringOrNull(entryPack.departure_date) ??
+            toStringOrNull(entryPack.departureDepartureDate),
+          arrivalFlightNumber:
+            toStringOrNull(entryPack.arrival_flight) ??
+            toStringOrNull(entryPack.arrivalFlightNumber),
+          departureFlightNumber:
+            toStringOrNull(entryPack.departure_flight) ??
+            toStringOrNull(entryPack.departureFlightNumber),
+          hotelName: toStringOrNull(entryPack.hotel_name),
+          hotelAddress:
+            toStringOrNull(entryPack.hotel_address) ??
+            toStringOrNull(entryPack.accommodationAddress),
+          accommodationType:
+            toStringOrNull(entryPack.accommodation_type) ??
+            toStringOrNull(entryPack.accommodationType) ??
+            'HOTEL',
+          province:
+            toStringOrNull(entryPack.province) ??
+            toStringOrNull(entryPack.provinceCode),
+          recentStayCountry: toStringOrNull(entryPack.recent_stay_country),
+          visaNumber:
+            toStringOrNull(entryPack.visa_number) ??
+            toStringOrNull(entryPack.visaNumber),
         },
         passport: {
-          fullName: entryPack.full_name,
-          nationality: entryPack.nationality,
+          fullName:
+            toStringOrNull(entryPack.full_name) ??
+            toStringOrNull(entryPack.passportFullName),
+          nationality:
+            toStringOrNull(entryPack.nationality) ??
+            toStringOrNull(entryPack.passportNationality),
         },
         personalInfo: {
-          occupation: entryPack.occupation,
-          email: entryPack.email,
+          occupation: toStringOrNull(entryPack.occupation),
+          email: toStringOrNull(entryPack.email),
         },
       };
 
@@ -107,34 +191,50 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
           language: selectedLanguage,
           includeOptional: !showOnlyRequired,
         }
+      ) as EntryQuestion[] | undefined;
+
+      const normalizedQuestions = (Array.isArray(generatedQuestions) ? generatedQuestions : []).map(
+        (item, index): EntryQuestion => ({
+          id: typeof item.id === 'string' ? item.id : `question_${index}`,
+          category: typeof item.category === 'string' ? item.category : null,
+          question: typeof item.question === 'string' ? item.question : '',
+          answer: typeof item.answer === 'string' ? item.answer : '',
+          required: Boolean(item.required),
+          tips: Array.isArray(item.tips)
+            ? item.tips.filter((tip): tip is string => typeof tip === 'string')
+            : [],
+          suggestedAnswers: Array.isArray(item.suggestedAnswers)
+            ? item.suggestedAnswers.filter((tip): tip is string => typeof tip === 'string')
+            : [],
+        })
       );
 
-      setQuestions(generatedQuestions);
+      setQuestions(normalizedQuestions);
     } catch (error) {
       ErrorHandler.handleDataLoadError(error, 'ThailandEntryQuestionsScreen.loadTravelerProfileAndQuestions', {
         severity: ErrorSeverity.WARNING,
         customTitle: t('common.error'),
         customMessage: t('thailand.entryQuestions.errors.loadFailed'),
         onRetry: () => loadTravelerProfileAndQuestions(),
-      });
+      } as any);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLanguageChange = (lang) => {
+  const handleLanguageChange = (lang: LanguageCode) => {
     setSelectedLanguage(lang);
   };
 
   const handleToggleRequired = () => {
-    setShowOnlyRequired(!showOnlyRequired);
+    setShowOnlyRequired(prev => !prev);
   };
 
   const renderLanguageSelector = () => (
     <View style={styles.languageSelector}>
       <Text style={styles.selectorLabel}>{t('thailand.entryQuestions.languageSelector.label')}</Text>
       <View style={styles.languageButtons}>
-        {['zh', 'en', 'th'].map((lang) => (
+        {LANGUAGE_OPTIONS.map((lang) => (
           <TouchableOpacity
             key={lang}
             style={[
@@ -173,7 +273,7 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-  const renderQuestionCard = (item, index) => {
+  const renderQuestionCard = (item: EntryQuestion, index: number) => {
     const categoryColors = {
       basic: colors.primary,
       holiday: colors.success,
@@ -181,18 +281,18 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
       health: colors.warning,
       finance: colors.accent,
       visa: colors.secondary,
-    };
+    } as Record<string, string>;
 
-    const categoryColor = categoryColors[item.category] || colors.gray;
+    const categoryColor = item.category ? categoryColors[item.category] ?? colors.gray : colors.gray;
 
     return (
-      <View key={item.id} style={styles.questionCard}>
+      <View key={item.id ?? `question_${index}`} style={styles.questionCard}>
         <View style={styles.questionHeader}>
           <View style={styles.questionNumberBadge}>
             <Text style={styles.questionNumber}>{index + 1}</Text>
           </View>
           <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
-            <Text style={styles.categoryText}>{item.category}</Text>
+            <Text style={styles.categoryText}>{item.category ?? 'general'}</Text>
           </View>
           {item.required && (
             <View style={styles.requiredBadge}>
@@ -202,12 +302,12 @@ const ThailandEntryQuestionsScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.questionContent}>
-          <Text style={styles.questionText}>{item.question}</Text>
+          <Text style={styles.questionText}>{item.question || '--'}</Text>
 
           <View style={styles.answerSection}>
             <Text style={styles.answerLabel}>{t('thailand.entryQuestions.question.answerLabel')}</Text>
             <View style={styles.answerBox}>
-              <Text style={styles.answerText}>{item.answer}</Text>
+              <Text style={styles.answerText}>{item.answer || '--'}</Text>
             </View>
           </View>
 

@@ -52,7 +52,7 @@ import FundItemOperations from './operations/FundItemOperations';
 import TravelInfoOperations from './operations/TravelInfoOperations';
 import EntryInfoOperations from './operations/EntryInfoOperations';
 import DataValidationService from './validation/DataValidationService';
-import DataEventService from './events/DataEventService';
+import DataEventService, { DataChangeListener as EventDataChangeListener } from './events/DataEventService';
 import logger from '../LoggingService';
 
 import type {
@@ -78,6 +78,7 @@ type FundItemModel = any; // FundItem class instance
 type EntryInfoModel = any; // EntryInfo class instance
 
 interface DigitalArrivalCardData {
+  userId: UserId;
   entryInfoId: string;
   cardType: string;
   arrCardNo?: string;
@@ -100,7 +101,6 @@ interface EntryInfoStateChangeEvent {
   timestamp: string;
 }
 
-type DataChangeListener = (dataType: string, userId: UserId, changeDetails: Record<string, any>) => void;
 type UnsubscribeFunction = () => void;
 
 /**
@@ -209,7 +209,7 @@ class UserDataService {
    * @property {number} lastReset - Timestamp of last statistics reset
    */
   static get cacheStats(): CacheStats {
-    return CacheStore.stats; 
+    return CacheManager.getStats();
   }
 
   /**
@@ -273,6 +273,15 @@ class UserDataService {
        throw error;
      }
    }
+
+  /**
+   * Legacy migration shim retained for backward compatibility.
+   * Modern flows run migrations during initialize(), so this method is a no-op.
+   */
+  static async migrateFromAsyncStorage(userId: UserId): Promise<{ migrated: boolean }> {
+    logger.debug('UserDataService', 'migrateFromAsyncStorage invoked (noop)', { userId });
+    return { migrated: false };
+  }
 
   /**
    * Clear all cached data
@@ -593,6 +602,22 @@ class UserDataService {
   }
 
   /**
+   * Get fund items as plain data objects for export and reporting flows
+   * @param userId - User ID
+   * @param options - Optional load options
+   * @returns Array of fund item data
+   */
+  static async getFunds(userId: UserId, options: ServiceOptions = {}): Promise<FundItemData[]> {
+    const fundItems = await FundItemOperations.getFundItems(userId, options);
+    return fundItems.map(item => {
+      if (item && typeof item.toJSON === 'function') {
+        return item.toJSON();
+      }
+      return { ...item } as FundItemData;
+    });
+  }
+
+  /**
     * Delete fund item
     * @param {string} fundItemId - Fund item ID
     * @param {string} userId - User ID
@@ -773,12 +798,15 @@ class UserDataService {
       }
 
       // Trigger data change event for listeners
-      this.triggerDataChangeEvent('digitalArrivalCard', dacData.entryInfoId || '', {
+    this.triggerDataChangeEvent('digitalArrivalCard', dacData.entryInfoId || '', {
         type: 'DIGITAL_ARRIVAL_CARD_SAVED',
         cardType: dacData.cardType,
         arrCardNo: dacData.arrCardNo,
         entryInfoId: dacData.entryInfoId,
-        timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      qrUri: dacData.qrUri,
+      pdfUrl: dacData.pdfUrl,
+      submissionMethod: dacData.submissionMethod ?? 'unknown',
       });
 
       logger.debug('UserDataService', 'Digital arrival card saved successfully', { id: result.id });
@@ -817,6 +845,10 @@ class UserDataService {
       logger.error('UserDataService', 'Failed to get digital arrival cards', { error });
       return [];
     }
+  }
+
+  static async getDigitalArrivalCardsByEntryInfoId(entryInfoId: string): Promise<Record<string, any>[]> {
+    return this.getDigitalArrivalCardsByEntryInfo(entryInfoId);
   }
 
   /**
@@ -1250,7 +1282,7 @@ class UserDataService {
    * @param {Function} listener - Listener function
    * @returns {Function} - Unsubscribe function
    */
-  static addDataChangeListener(listener: DataChangeListener): UnsubscribeFunction {
+  static addDataChangeListener(listener: EventDataChangeListener): UnsubscribeFunction {
     return DataEventService.addDataChangeListener(listener);
   }
 

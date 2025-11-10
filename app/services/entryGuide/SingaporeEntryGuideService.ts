@@ -1,7 +1,7 @@
 // 新加坡入境指引服务 - 樟宜机场SIN完整流程管理
 // 整合SGAC、资金证明、严格海关检查
 
-import { singaporeEntryGuide } from '../../config/entryGuide/singapore.js';
+import { singaporeEntryGuide } from '../../config/entryGuide/singapore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions (reusing common types)
@@ -67,51 +67,41 @@ interface RecommendedAction {
   showEntryPack?: boolean;
 }
 
+export interface EntryRequirementsValidationResult {
+  isPassportReady: boolean;
+  hasPassportExpiryWarning: boolean;
+  hasPassportIssues: boolean;
+  hasCapturedPassportPhoto: boolean;
+  hasTravelInfo: boolean;
+  hasLodging: boolean;
+  hasFunds: boolean;
+  hasSGAC: boolean;
+  hasSGACSubmissionWarning: boolean;
+  hasRecentVisa: boolean;
+  sgacWindowStatus: SGACSubmissionTimeCheck['windowStatus'];
+  warnings: string[];
+  nextActions: RecommendedAction[];
+}
+
 interface GuideConfig {
   steps: Step[];
   sgac?: {
-    systemName?: string;
-    submissionWindow?: string;
-    requiredDocuments?: any;
-    processingTime?: string;
-    validity?: string;
-    cost?: any;
-    languages?: string[];
-  };
+    submissionWindow?: string | { before: string; after: string };
+  } & Record<string, unknown>;
   fundingRequirements?: {
     minimumAmount?: {
       perPerson?: number;
       family?: number;
     };
-    acceptedProofs?: any;
-    validityPeriod?: string;
-    notes?: string[];
-  };
-  addressRequirements?: {
-    required?: boolean;
-    formats?: any;
-    validation?: any;
-  };
-  customs?: {
-    declarationRequired?: boolean;
-    prohibitedItems?: any;
-    restrictedItems?: any;
-    dutyFree?: any;
-  };
-  transport?: {
-    options?: any;
-    recommendations?: any;
-  };
-  currency?: {
-    code?: string;
-    name?: string;
-    denominations?: any;
-    atm?: any;
-  };
-  emergency?: any;
-  cultureTips?: any;
+  } & Record<string, unknown>;
+  addressRequirements?: Record<string, unknown>;
+  customs?: Record<string, unknown>;
+  transport?: Record<string, unknown>;
+  currency?: Record<string, unknown>;
+  emergency?: Record<string, unknown>;
+  cultureTips?: unknown;
   importantNotes?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ProgressData {
@@ -136,7 +126,7 @@ class SingaporeEntryGuideService {
       offlineMode: false
     };
     // 初始化时加载进度
-    this.loadProgress();
+    void this.loadProgress();
   }
 
   /**
@@ -624,7 +614,174 @@ class SingaporeEntryGuideService {
 
     return actions;
   }
+
+  validateEntryRequirements(entryInfo: {
+    passport?: Record<string, unknown> | null;
+    travel?: {
+      arrivalDate?: string | Date | null;
+      accommodationAddress?: string | null;
+      accommodationType?: string | null;
+      accommodationPhone?: string | null;
+      contactNumber?: string | null;
+    } | null;
+    funds?: Array<{ amount?: number | string; currency?: string; type?: string }> | null;
+    sgac?: {
+      submissionStatus?: string;
+      submissionTime?: string;
+      qrCodeUri?: string;
+    } | null;
+  } = {}): EntryRequirementsValidationResult {
+    const now = new Date();
+    const passport = entryInfo.passport ?? {};
+    const expiryRaw = typeof passport === 'object' ? (passport as any)?.expiryDate || (passport as any)?.expiry || null : null;
+    const expiryDate = expiryRaw ? new Date(expiryRaw) : null;
+    const hasPassportExpiryWarning = Boolean(expiryDate && (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) < 180);
+    const hasPassportIssues = !passport || !('passportNo' in passport) || !passport.passportNo;
+    const hasCapturedPassportPhoto = Boolean((passport as any)?.photoUri || (passport as any)?.photo);
+
+    const travel = entryInfo.travel ?? {};
+    const arrivalDate = travel.arrivalDate ? new Date(travel.arrivalDate) : null;
+    const hasTravelInfo = Boolean(arrivalDate && !Number.isNaN(arrivalDate.getTime()));
+    const hasLodging = Boolean(travel.accommodationAddress || travel.accommodationType);
+
+    const funds = Array.isArray(entryInfo.funds) ? entryInfo.funds : [];
+    const totalFunds = funds.reduce<number>((sum, fund) => {
+      const amount = typeof fund.amount === 'string' ? parseFloat(fund.amount) : fund.amount;
+      return sum + (Number.isFinite(amount) ? (amount as number) : 0);
+    }, 0);
+    const fundingCheck = this.guide?.fundingRequirements?.minimumAmount
+      ? this.checkFundingAdequacy(totalFunds, 1)
+      : { isAdequate: totalFunds > 0, shortfall: 0 };
+    const hasFunds = fundingCheck.isAdequate;
+
+    const sgac = entryInfo.sgac ?? {};
+    const hasSGAC = Boolean(sgac.submissionStatus === 'submitted' && sgac.qrCodeUri);
+    const sgacWindow = hasTravelInfo && arrivalDate ? this.checkSGACSubmissionTime(arrivalDate) : {
+      canSubmit: false,
+      daysUntilArrival: 0,
+      windowStatus: 'too_early' as const,
+      message: '尚未提供抵达日期'
+    };
+
+    const warnings: string[] = [];
+    if (hasPassportIssues) {
+      warnings.push('passport_missing');
+    }
+    if (hasPassportExpiryWarning) {
+      warnings.push('passport_expiring');
+    }
+    if (!hasTravelInfo) {
+      warnings.push('travel_missing');
+    }
+    if (!hasLodging) {
+      warnings.push('lodging_missing');
+    }
+    if (!hasFunds) {
+      warnings.push('funds_insufficient');
+    }
+    if (!hasSGAC) {
+      warnings.push('sgac_missing');
+    }
+    if (sgacWindow.windowStatus !== 'within_window') {
+      warnings.push(`sgac_${sgacWindow.windowStatus}`);
+    }
+
+    const nextActions: RecommendedAction[] = [];
+    if (hasPassportIssues) {
+      nextActions.push({
+        type: 'passport',
+        title: '上传护照信息',
+        description: '完善护照号码及基本信息以便生成入境资料。',
+        priority: 'high'
+      });
+    }
+    if (!hasTravelInfo) {
+      nextActions.push({
+        type: 'travel',
+        title: '填写抵达航班信息',
+        description: '提供抵达日期与航班号以安排入境流程。',
+        priority: 'high'
+      });
+    }
+    if (!hasLodging) {
+      nextActions.push({
+        type: 'lodging',
+        title: '添加住宿信息',
+        description: '新加坡要求提供落地住宿地址或联系电话。',
+        priority: 'medium'
+      });
+    }
+    if (!hasFunds) {
+      nextActions.push({
+        type: 'funds',
+        title: '更新资金证明',
+        description: `当前资金不足，缺口约 ${fundingCheck.shortfall} 新元。`,
+        priority: 'medium'
+      });
+    }
+    if (!hasSGAC || sgacWindow.windowStatus !== 'within_window') {
+      nextActions.push({
+        type: 'sgac',
+        title: '提交电子入境卡（SGAC）',
+        description: sgacWindow.message,
+        priority: 'high',
+        showEntryPack: true,
+      });
+    }
+
+    return {
+      isPassportReady: !hasPassportIssues,
+      hasPassportExpiryWarning,
+      hasPassportIssues,
+      hasCapturedPassportPhoto,
+      hasTravelInfo,
+      hasLodging,
+      hasFunds,
+      hasSGAC,
+      hasSGACSubmissionWarning: sgacWindow.windowStatus !== 'within_window',
+      hasRecentVisa: Boolean((passport as any)?.visaNumber || (passport as any)?.lastVisaIssueDate),
+      sgacWindowStatus: sgacWindow.windowStatus,
+      warnings,
+      nextActions,
+    };
+  }
+
+  async setUserPreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
+    this.userPreferences = {
+      ...this.userPreferences,
+      ...preferences,
+    };
+    await this._savePreferences();
+    return this.userPreferences;
+  }
+
+  getUserPreferences(): UserPreferences {
+    return this.userPreferences;
+  }
+
+  private async _savePreferences(): Promise<void> {
+    try {
+      await AsyncStorage.setItem('sg_entry_preferences', JSON.stringify(this.userPreferences));
+    } catch (error) {
+      console.error('Failed to save preferences:', error);
+    }
+  }
+
+  async loadPreferences(): Promise<UserPreferences> {
+    try {
+      const data = await AsyncStorage.getItem('sg_entry_preferences');
+      if (data) {
+        this.userPreferences = {
+          ...this.userPreferences,
+          ...(JSON.parse(data) as Partial<UserPreferences>),
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load preferences:', error);
+    }
+    return this.userPreferences;
+  }
 }
 
-export default SingaporeEntryGuideService;
+export default new SingaporeEntryGuideService();
 

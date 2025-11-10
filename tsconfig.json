@@ -2,7 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["tamagui"],
+    "module": "ESNext",
     "paths": {
       "@app/*": ["app/*"],
       "@tamagui/*": ["app/tamagui/*"],
@@ -18,9 +18,10 @@
     "isolatedModules": true,
     "jsx": "react-native",
     "moduleResolution": "bundler",
-    "target": "esnext",
-    "lib": ["esnext"],
-    "forceConsistentCasingInFileNames": true
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest", "node"]
   },
   "include": [
     "app/**/*",
@@ -35,6 +36,7 @@
     "babel.config.js",
     "metro.config.js",
     "app/screens/**/__tests__/**/*",
-    "app/services/**/__tests__/**/*"
+    "app/services/**/__tests__/**/*",
+    "app/templates/**/*.js"
   ]
 }

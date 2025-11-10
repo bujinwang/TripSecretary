@@ -1,6 +1,6 @@
 // 入境通 - Immigration Officer View Screen (Presentation Mode)
 // Full-screen presentation mode optimized for showing to immigration officers
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,81 +8,407 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
-  Image,
-  Dimensions,
   Alert,
   PanResponder,
   Platform,
   ActivityIndicator,
+  type PanResponderInstance,
+  type GestureResponderEvent,
+  type PanResponderGestureState,
 } from 'react-native';
-import { 
-  PinchGestureHandler, 
-  TapGestureHandler, 
-  LongPressGestureHandler,
-  State 
-} from 'react-native-gesture-handler';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  useAnimatedGestureHandler,
-  withSpring,
-  runOnJS
-} from 'react-native-reanimated';
+import { TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Brightness from 'expo-brightness';
-import { colors, typography, spacing } from '../../theme';
+import { colors, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
-import { QR_CODE, GESTURES, IMAGE_SIZES, TYPOGRAPHY as IOV_TYPOGRAPHY, LAYOUT, OPACITY, BORDER_COLORS } from './immigrationOfficerViewConstants';
+import { QR_CODE, IMAGE_SIZES, TYPOGRAPHY as IOV_TYPOGRAPHY } from './immigrationOfficerViewConstants';
 import BiometricAuthService from '../../services/security/BiometricAuthService';
-import { safeGet, safeArray } from './helpers';
-import { calculateTotalFundsInCurrency, convertCurrency } from '../../utils/currencyConverter';
+import EntryInfoService from '../../services/EntryInfoService';
+import UserDataService from '../../services/data/UserDataService';
 import QRCodeSection from './components/QRCodeSection';
 import PassportInfoSection from './components/PassportInfoSection';
 import FundsInfoSection from './components/FundsInfoSection';
 import TravelInfoSection from './components/TravelInfoSection';
 import ContactInfoSection from './components/ContactInfoSection';
+import type { RootStackScreenProps } from '../../types/navigation';
+import type {
+  EntryPackPresentation,
+  EntryPackPresentationStatus,
+  EntryInfoPresentation,
+  FundPresentation,
+  ImmigrationOfficerViewParams,
+  PassportPresentation,
+  PresentationLanguage,
+  SubmissionMethod,
+  TravelPresentation,
+} from '../../types/thailand';
+import type { SerializablePassport } from '../../types/data';
+import type { EntryInfoStatus } from '../../models/EntryInfo';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+type ImmigrationOfficerViewScreenProps = RootStackScreenProps<'ImmigrationOfficerView'>;
 
-const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
+type CleanupState = {
+  orientation?: ScreenOrientation.Orientation | ScreenOrientation.OrientationLock;
+  brightness?: number | null;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const toPlainRecord = (value: unknown): Record<string, unknown> | null => {
+  if (isRecord(value)) {
+    return value;
+  }
+
+  if (value && typeof value === 'object' && typeof (value as { toJSON?: unknown }).toJSON === 'function') {
+    const jsonValue = (value as { toJSON: () => unknown }).toJSON();
+    if (isRecord(jsonValue)) {
+      return jsonValue;
+    }
+  }
+
+  return null;
+};
+
+const pickString = (record: Record<string, unknown> | null | undefined, keys: string[]): string | undefined => {
+  if (!record) {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const normalizeSubmissionMethod = (value: unknown): SubmissionMethod => {
+  if (typeof value !== 'string') {
+    return 'unknown';
+  }
+
+  const normalized = value.toLowerCase();
+  if (normalized === 'api' || normalized === 'webview' || normalized === 'hybrid') {
+    return normalized;
+  }
+
+  return 'unknown';
+};
+
+const deriveEntryPackStatus = (
+  status: EntryInfoStatus | EntryPackPresentationStatus | string | null | undefined,
+  defaultStatus: EntryPackPresentationStatus = 'unknown'
+): EntryPackPresentationStatus => {
+  if (!status) {
+    return defaultStatus;
+  }
+
+  const normalized = String(status).toLowerCase();
+  switch (normalized) {
+    case 'submitted':
+      return 'submitted';
+    case 'in_progress':
+    case 'ready':
+    case 'incomplete':
+      return 'in_progress';
+    case 'superseded':
+      return 'superseded';
+    case 'expired':
+      return 'expired';
+    case 'archived':
+      return 'archived';
+    default:
+      return defaultStatus;
+  }
+};
+
+const buildEntryPackFromDocuments = (
+  documents: unknown,
+  cardType: string | null | undefined
+): EntryPackPresentation | null => {
+  const records: Record<string, unknown>[] = [];
+
+  if (Array.isArray(documents)) {
+    documents.forEach((doc) => {
+      const record = toPlainRecord(doc);
+      if (record) {
+        records.push(record);
+      }
+    });
+  } else {
+    const record = toPlainRecord(documents);
+    if (record) {
+      records.push(record);
+    }
+  }
+
+  if (records.length === 0) {
+    return null;
+  }
+
+  const desiredCardType = cardType ?? pickString(records[0], ['cardType', 'card_type']) ?? 'TDAC';
+  const selectedDoc =
+    records.find((record) => pickString(record, ['cardType', 'card_type']) === desiredCardType) ?? records[0];
+
+  const submissionMethod = normalizeSubmissionMethod(
+    selectedDoc.submissionMethod ?? selectedDoc.submission_method
+  );
+
+  return {
+    id: pickString(selectedDoc, ['id']),
+    cardType: pickString(selectedDoc, ['cardType', 'card_type']) ?? desiredCardType,
+    qrCodeUri: pickString(selectedDoc, ['qrCodeUri', 'qrUri', 'qr_code_uri']),
+    arrCardNo: pickString(selectedDoc, ['arrCardNo', 'arr_card_no']),
+    submittedAt: pickString(selectedDoc, ['submittedAt', 'submitted_at']),
+    submissionMethod,
+    status: deriveEntryPackStatus(pickString(selectedDoc, ['status']), 'unknown'),
+  };
+};
+
+const buildEntryPackFromEntryInfo = (
+  entryInfo: EntryInfoPresentation | Record<string, unknown> | null | undefined,
+  cardType: string | null | undefined
+): EntryPackPresentation | null => {
+  if (!entryInfo) {
+    return null;
+  }
+
+  const record = isRecord(entryInfo) ? entryInfo : toPlainRecord(entryInfo);
+  const documentsSource =
+    (entryInfo as EntryInfoPresentation | null | undefined)?.documents ??
+    record?.documents;
+
+  const entryPackFromDocuments = buildEntryPackFromDocuments(documentsSource, cardType);
+
+  if (!entryPackFromDocuments) {
+    return null;
+  }
+
+  const entryStatus =
+    (entryInfo as EntryInfoPresentation | null | undefined)?.status ??
+    (record?.status as EntryInfoStatus | string | undefined);
+
+  return {
+    ...entryPackFromDocuments,
+    id: entryPackFromDocuments.id ?? pickString(record, ['id']),
+    status: deriveEntryPackStatus(entryStatus, entryPackFromDocuments.status ?? 'unknown'),
+  };
+};
+
+const mergeEntryPack = (
+  primary: EntryPackPresentation | null | undefined,
+  secondary: EntryPackPresentation | null | undefined
+): EntryPackPresentation | null => {
+  if (!primary && !secondary) {
+    return null;
+  }
+
+  const result: EntryPackPresentation = {};
+
+  const pickField = <K extends keyof EntryPackPresentation>(field: K): EntryPackPresentation[K] | undefined =>
+    primary?.[field] ?? secondary?.[field];
+
+  result.id = pickField('id');
+  result.cardType = pickField('cardType') ?? null;
+  result.qrCodeUri = pickField('qrCodeUri') ?? null;
+  result.arrCardNo = pickField('arrCardNo') ?? null;
+  result.submittedAt = pickField('submittedAt') ?? null;
+  result.submissionMethod = pickField('submissionMethod') ?? 'unknown';
+  result.status = pickField('status') ?? 'unknown';
+
+  return result;
+};
+
+const buildPassportPresentation = (value: unknown): PassportPresentation | null => {
+  const record = toPlainRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  return {
+    ...record,
+    fullName: pickString(record, ['fullName', 'name']),
+    passportNumber: pickString(record, ['passportNumber', 'passport_no', 'number']),
+    nationality: pickString(record, ['nationality', 'nationalityCode']),
+    dateOfBirth: pickString(record, ['dateOfBirth', 'dob', 'birthDate']),
+    expiryDate: pickString(record, ['expiryDate', 'expirationDate']),
+    gender: pickString(record, ['gender', 'sex']),
+    photoUri: pickString(record, ['photoUri', 'photo_uri']),
+    email: pickString(record, ['email']),
+    phoneNumber: pickString(record, ['phoneNumber', 'phone', 'mobile']),
+  } as PassportPresentation;
+};
+
+const buildTravelPresentation = (value: unknown): TravelPresentation => {
+  const record = toPlainRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  return {
+    ...record,
+    arrivalDate: pickString(record, ['arrivalDate', 'arrival_date']),
+    arrivalFlightNumber: pickString(record, ['arrivalFlightNumber', 'arrival_flight_number', 'flightNumber']),
+    travelPurpose: pickString(record, ['travelPurpose', 'purpose']),
+    accommodation: pickString(record, ['accommodation']),
+    accommodationAddress: pickString(record, ['accommodationAddress', 'address']),
+    phoneNumber: pickString(record, ['phoneNumber', 'phone']),
+  };
+};
+
+const buildFundPresentation = (value: unknown): FundPresentation => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => toPlainRecord(item))
+    .filter((record): record is Record<string, unknown> => !!record)
+    .map((record) => {
+      const amountValue =
+        typeof record.amount === 'number'
+          ? record.amount
+          : pickString(record, ['amount']);
+
+      return {
+        ...record,
+        id: pickString(record, ['id']),
+        type: pickString(record, ['type', 'fundType']),
+        currency: pickString(record, ['currency']),
+        amount: amountValue ?? null,
+        photoUri: pickString(record, ['photoUri', 'photo_uri']),
+      };
+    }) as FundPresentation;
+};
+
+const normalizeEntryInfoStatus = (value: unknown): EntryInfoStatus | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  switch (value) {
+    case 'incomplete':
+    case 'ready':
+    case 'submitted':
+    case 'superseded':
+    case 'expired':
+    case 'archived':
+      return value;
+    default:
+      return null;
+  }
+};
+
+const buildEntryInfoPresentationFromRecord = (record: Record<string, unknown>): EntryInfoPresentation => ({
+  id: pickString(record, ['id']) ?? '',
+  status: normalizeEntryInfoStatus(record.status),
+  destinationId: pickString(record, ['destinationId', 'destination_id']) ?? null,
+  destinationName: pickString(record, ['destinationName', 'destination_name']) ?? null,
+  userId: pickString(record, ['userId', 'user_id']) ?? null,
+  documents: record.documents,
+});
+
+const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> = ({ navigation, route }) => {
   const { t } = useLocale();
-  const [showMoreInfo, setShowMoreInfo] = useState(false);
-  const [qrZoom, setQrZoom] = useState(1);
-  const [brightness, setBrightness] = useState(null);
-  
-  // Animated values for pinch-to-zoom
-  const scale = useSharedValue(1);
-  const focalX = useSharedValue(0);
-  const focalY = useSharedValue(0);
-  const [originalBrightness, setOriginalBrightness] = useState(null);
-  const [originalOrientation, setOriginalOrientation] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authenticationRequired, setAuthenticationRequired] = useState(false);
-  const [authError, setAuthError] = useState(null);
-  const [language, setLanguage] = useState('bilingual'); // 'bilingual', 'thai', 'english'
-  const [brightnessBoost, setBrightnessBoost] = useState(true);
-  const [showHelpHints, setShowHelpHints] = useState(false);
-  const scrollViewRef = useRef(null);
 
-  // Gesture handler refs
-  const doubleTapRef = useRef(null);
-  const longPressRef = useRef(null);
-  const threeFingerTapRef = useRef(null);
+  const {
+    entryPack: initialEntryPack,
+    passportData: initialPassportData,
+    travelData: initialTravelData,
+    fundData: initialFundData,
+    entryPackId,
+    fromImmigrationGuide,
+    cardType,
+    entryInfo: initialEntryInfo,
+  } = (route.params as ImmigrationOfficerViewParams | undefined) ?? {};
 
-  // Cleanup refs to prevent async issues on unmount
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
+  const [qrZoom, setQrZoom] = useState<number>(1);
+  const [originalBrightness, setOriginalBrightness] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authenticationRequired, setAuthenticationRequired] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<PresentationLanguage>('bilingual');
+  const [brightnessBoost, setBrightnessBoost] = useState<boolean>(true);
+  const [showHelpHints, setShowHelpHints] = useState<boolean>(false);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
+  const doubleTapRef = useRef<TapGestureHandler>(null);
+  const longPressRef = useRef<LongPressGestureHandler>(null);
+
   const isMountedRef = useRef(true);
-  const cleanupRef = useRef(null);
+  const cleanupRef = useRef<CleanupState>({});
 
-  // Entry pack data from route params
-  const entryPackId = route.params?.entryPackId;
-  const fromImmigrationGuide = route.params?.fromImmigrationGuide;
-  const [entryPack, setEntryPack] = useState(route.params?.entryPack);
-  const [passportData, setPassportData] = useState(route.params?.passportData);
-  const [travelData, setTravelData] = useState(route.params?.travelData);
-  const [fundData, setFundData] = useState(route.params?.fundData);
-  const [dataLoading, setDataLoading] = useState(false);
+  const [entryPack, setEntryPack] = useState<EntryPackPresentation | null>(
+    mergeEntryPack(initialEntryPack ?? null, buildEntryPackFromEntryInfo(initialEntryInfo ?? null, cardType ?? null))
+  );
+  const [passportData, setPassportData] = useState<PassportPresentation | null>(
+    buildPassportPresentation(initialPassportData ?? null)
+  );
+  const [travelData, setTravelData] = useState<TravelPresentation>(
+    buildTravelPresentation(initialTravelData ?? null)
+  );
+  const [fundData, setFundData] = useState<FundPresentation>(
+    buildFundPresentation(initialFundData ?? null)
+  );
+  const [dataLoading, setDataLoading] = useState<boolean>(false);
+
+  const fetchEntryPackData = useCallback(async () => {
+    if (!fromImmigrationGuide || !entryPackId || entryPack) {
+      return;
+    }
+
+    setDataLoading(true);
+
+    try {
+      const loadedEntryInfo = await EntryInfoService.getEntryInfoById(entryPackId);
+      const entryInfoRecord = toPlainRecord(loadedEntryInfo);
+
+      if (!entryInfoRecord) {
+        throw new Error('Entry pack data not found');
+      }
+
+      const entryInfoPresentation = buildEntryInfoPresentationFromRecord(entryInfoRecord);
+      const builtEntryPack = buildEntryPackFromEntryInfo(entryInfoPresentation, cardType ?? null);
+      if (builtEntryPack) {
+        setEntryPack((previous) => mergeEntryPack(builtEntryPack, previous));
+      }
+
+      const { userId } = entryInfoPresentation;
+
+      if (userId) {
+        await UserDataService.initialize(userId);
+
+        const passportModel = await UserDataService.getPassport(userId).catch(() => null);
+        const serializedPassport =
+          UserDataService.toSerializablePassport(passportModel) ??
+          (toPlainRecord(passportModel) as SerializablePassport | null);
+        setPassportData(buildPassportPresentation(serializedPassport));
+
+        const travelInfo = await UserDataService.getTravelInfo(
+          userId,
+          entryInfoPresentation.destinationId ?? null
+        ).catch(() => null);
+        setTravelData(buildTravelPresentation(travelInfo));
+
+        const funds = await UserDataService.getFundItems(userId).catch(() => []);
+        setFundData(buildFundPresentation(funds));
+      }
+    } catch (error) {
+      console.error('Error loading data for immigration officer view:', error);
+      setAuthError('Failed to load entry pack data');
+    } finally {
+      setDataLoading(false);
+    }
+  }, [cardType, entryPack, entryPackId, fromImmigrationGuide]);
 
   useEffect(() => {
     const setupPresentationMode = async () => {
@@ -101,50 +427,10 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
 
         // Load data if called from immigration guide with just entryPackId
         if (fromImmigrationGuide && entryPackId && !entryPack) {
-          setDataLoading(true);
-          try {
-            const EntryInfoService = require('../../services/EntryInfoService').default;
-            const UserDataService = require('../../services/data/UserDataService').default;
-
-            const loadedEntryInfo = await EntryInfoService.getEntryInfoById(entryPackId);
-            const loadedPassportData = await UserDataService.getPassportInfo();
-            const loadedTravelData = await UserDataService.getTravelInfo();
-            const loadedFundData = await UserDataService.getFundItems();
-
-            // Convert entry info to entry pack format for compatibility
-            const loadedEntryPack = loadedEntryInfo ? {
-              id: loadedEntryInfo.id,
-              qrCodeUri: safeGet(
-                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
-                'qrUri'
-              ),
-              arrCardNo: safeGet(
-                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
-                'arrCardNo'
-              ),
-              submittedAt: safeGet(
-                safeArray(safeGet(loadedEntryInfo, 'documents', [])).find(d => d.cardType === 'TDAC'),
-                'submittedAt'
-              ),
-              status: safeGet(loadedEntryInfo, 'displayStatus.tdacSubmitted', false) ? 'submitted' : 'in_progress'
-            } : null;
-            
-            setEntryPack(loadedEntryPack);
-            setPassportData(loadedPassportData);
-            setTravelData(loadedTravelData);
-            setFundData(loadedFundData);
-          } catch (error) {
-            console.error('Error loading data for immigration officer view:', error);
-            setAuthError('Failed to load entry pack data');
-            return;
-          } finally {
-            setDataLoading(false);
-          }
+          await fetchEntryPackData();
         }
         
-        // Store original orientation
         const currentOrientation = await ScreenOrientation.getOrientationAsync();
-        setOriginalOrientation(currentOrientation);
 
         // Lock to landscape orientation for presentation mode
         await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -200,48 +486,14 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         console.warn('Failed to cleanup presentation mode:', error);
       }
     };
-  }, []);
+  }, [fetchEntryPackData, entryPack, entryPackId, fromImmigrationGuide]);
 
   // Pinch gesture handler for QR code zoom
-  const pinchGestureHandler = useAnimatedGestureHandler({
-    onStart: (_, context) => {
-      context.startScale = scale.value;
-    },
-    onActive: (event, context) => {
-      const newScale = Math.max(GESTURES.MIN_PINCH_SCALE, Math.min(GESTURES.MAX_PINCH_SCALE, context.startScale * event.scale));
-      scale.value = newScale;
-      focalX.value = event.focalX;
-      focalY.value = event.focalY;
-    },
-    onEnd: () => {
-      // Snap back to bounds if needed
-      if (scale.value < 0.8) {
-        scale.value = withSpring(1);
-      } else if (scale.value > 1.8) {
-        scale.value = withSpring(2);
-      }
-      
-      // Update the zoom state for other components
-      runOnJS(setQrZoom)(scale.value);
-    },
-  });
-
-  // Animated style for QR code
-  const animatedQRStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-      ],
-    };
-  });
-
   // Pan responder for swipe-down to exit
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      // Handle swipe down from top for exit
-      return gestureState.dy > 10 && evt.nativeEvent.pageY < 100;
-    },
-    onPanResponderRelease: (evt, gestureState) => {
+  const panResponder: PanResponderInstance = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) =>
+      gestureState.dy > 10 && evt.nativeEvent.pageY < 100,
+    onPanResponderRelease: (evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       // Handle swipe down from top to exit
       if (gestureState.dy > 50 && evt.nativeEvent.pageY < 100) {
         handleExitPresentation();
@@ -249,7 +501,7 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     },
   });
 
-  const handleExitPresentation = async () => {
+  const handleExitPresentation = useCallback((): void => {
     Alert.alert(
       t('progressiveEntryFlow.immigrationOfficer.presentation.exitTitle'),
       t('progressiveEntryFlow.immigrationOfficer.presentation.exitMessage'),
@@ -258,8 +510,8 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
           text: t('progressiveEntryFlow.immigrationOfficer.presentation.cancel'), 
           style: 'cancel' 
         },
-        { 
-          text: t('progressiveEntryFlow.immigrationOfficer.presentation.exit'), 
+        {
+          text: t('progressiveEntryFlow.immigrationOfficer.presentation.exit'),
           onPress: async () => {
             try {
               // Restore orientation before navigating back
@@ -283,10 +535,10 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
         }
       ]
     );
-  };
+  }, [navigation, originalBrightness, t]);
 
-  const toggleLanguage = () => {
-    const languages = ['bilingual', 'thai', 'english'];
+  const toggleLanguage = useCallback((): void => {
+    const languages: PresentationLanguage[] = ['bilingual', 'thai', 'english'];
     const currentIndex = languages.indexOf(language);
     const nextIndex = (currentIndex + 1) % languages.length;
     setLanguage(languages[nextIndex]);
@@ -295,9 +547,9 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     if (Platform.OS === 'ios') {
       // Could add haptic feedback here if react-native-haptic-feedback is available
     }
-  };
+  }, [language]);
 
-  const toggleBrightness = async () => {
+  const toggleBrightness = useCallback(async () => {
     try {
       if (brightnessBoost) {
         // Restore original brightness
@@ -312,9 +564,9 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     } catch (error) {
       console.warn('Failed to toggle brightness:', error);
     }
-  };
+  }, [brightnessBoost, originalBrightness]);
 
-  const handleLongPressQR = async () => {
+  const handleLongPressQR = useCallback((): void => {
     try {
       // Save QR code to album (requires expo-media-library)
       Alert.alert(
@@ -340,70 +592,58 @@ const ImmigrationOfficerViewScreen = ({ navigation, route }) => {
     } catch (error) {
       console.warn('Failed to save QR code:', error);
     }
-  };
+  }, [t]);
 
-  const handleDoubleTap = () => {
-    toggleInfoDisplay();
-  };
-
-  const handleThreeFingerTap = () => {
+  const handleShowHelp = useCallback((): void => {
     setShowHelpHints(true);
-  };
+  }, []);
 
-  const hideHelpHints = () => {
+  const toggleInfoDisplay = useCallback((): void => {
+    setShowMoreInfo((previous) => !previous);
+  }, []);
+
+  const handleDoubleTap = useCallback((): void => {
+    toggleInfoDisplay();
+  }, [toggleInfoDisplay]);
+
+  const hideHelpHints = useCallback((): void => {
     setShowHelpHints(false);
-  };
+  }, []);
 
-  const toggleInfoDisplay = () => {
-    setShowMoreInfo(!showMoreInfo);
-  };
-
-  const formatEntryCardNumber = (cardNumber) => {
-    if (!cardNumber) {
-return 'XXXX-XXXX-XXXX';
-}
-    
-    // Remove any existing separators and format with dashes
-    const cleanNumber = cardNumber.replace(/[^0-9A-Z]/g, '');
-    
-    // Format as XXXX-XXXX-XXXX pattern
-    if (cleanNumber.length >= 12) {
-      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4, 8)}-${cleanNumber.slice(8, 12)}`;
-    } else if (cleanNumber.length >= 8) {
-      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4, 8)}-${cleanNumber.slice(8)}`;
-    } else if (cleanNumber.length >= 4) {
-      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4)}`;
-    } else {
-      return cleanNumber || 'XXXX-XXXX-XXXX';
-    }
-  };
-
-  const formatDateForDisplay = (dateString) => {
+  const formatDateForDisplay = (dateString: string | null | undefined): string => {
     if (!dateString) {
-return 'N/A';
-}
-    
+      return 'N/A';
+    }
+
     try {
       const date = new Date(dateString);
-      
+
       if (language === 'thai') {
-        // Thai Buddhist calendar (add 543 years)
         const buddhistYear = date.getFullYear() + 543;
         const thaiMonths = [
-          'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-          'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+          'มกราคม',
+          'กุมภาพันธ์',
+          'มีนาคม',
+          'เมษายน',
+          'พฤษภาคม',
+          'มิถุนายน',
+          'กรกฎาคม',
+          'สิงหาคม',
+          'กันยายน',
+          'ตุลาคม',
+          'พฤศจิกายน',
+          'ธันวาคม',
         ];
         return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${buddhistYear}`;
-      } else {
-        // Western calendar
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
       }
-    } catch (error) {
-      return dateString;
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString ?? 'N/A';
     }
   };
 
@@ -412,9 +652,7 @@ return 'N/A';
       entryPack={entryPack}
       language={language}
       qrZoom={qrZoom}
-      scale={scale}
-      pinchGestureHandler={pinchGestureHandler}
-      animatedQRStyle={animatedQRStyle}
+      onZoomChange={setQrZoom}
       handleDoubleTap={handleDoubleTap}
       handleLongPressQR={handleLongPressQR}
       t={t}
@@ -515,35 +753,23 @@ return 'N/A';
   }
 
   return (
-    <TapGestureHandler
-      ref={threeFingerTapRef}
-      onHandlerStateChange={({ nativeEvent }) => {
-        if (nativeEvent.state === State.ACTIVE) {
-          handleThreeFingerTap();
-        }
-      }}
-      numberOfTaps={1}
-      numberOfPointers={3}
-    >
-      <View style={styles.container} {...panResponder.panHandlers}>
-        {/* Header with controls */}
+    <View style={styles.container} {...panResponder.panHandlers}>
       <View style={styles.header}>
         <View style={styles.leftControls}>
-          <TouchableOpacity 
-            style={styles.languageToggle}
-            onPress={toggleLanguage}
-          >
+          <TouchableOpacity style={styles.languageToggle} onPress={toggleLanguage}>
             <Text style={styles.languageToggleText}>
-              {language === 'bilingual' ? 'ไทย/EN' : 
-               language === 'thai' ? 'ไทย' : 'EN'}
+              {language === 'bilingual' ? 'ไทย/EN' : language === 'thai' ? 'ไทย' : 'EN'}
             </Text>
             <Text style={styles.languageSubtext}>
-              {language === 'bilingual' ? 'Bilingual' : 
-               language === 'thai' ? 'Thai Only' : 'English Only'}
+              {language === 'bilingual'
+                ? 'Bilingual'
+                : language === 'thai'
+                ? 'Thai Only'
+                : 'English Only'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.brightnessToggle, { opacity: brightnessBoost ? 1 : 0.6 }]}
             onPress={toggleBrightness}
           >
@@ -551,24 +777,24 @@ return 'N/A';
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.exitButton}
-          onPress={handleExitPresentation}
-        >
-          <Text style={styles.exitButtonText}>✕</Text>
-        </TouchableOpacity>
+        <View style={styles.rightControls}>
+          <TouchableOpacity style={styles.helpButton} onPress={handleShowHelp}>
+            <Text style={styles.helpButtonText}>?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.exitButton} onPress={handleExitPresentation}>
+            <Text style={styles.exitButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* QR Code Section - Always visible */}
         {renderQRSection()}
 
-        {/* Additional Information - Toggleable */}
         {showMoreInfo && (
           <>
             {renderPassportSection()}
@@ -579,98 +805,108 @@ return 'N/A';
         )}
       </ScrollView>
 
-      {/* Bottom Controls */}
       <View style={styles.bottomControls}>
-        <TouchableOpacity 
-          style={styles.toggleButton}
-          onPress={toggleInfoDisplay}
-        >
+        <TouchableOpacity style={styles.toggleButton} onPress={toggleInfoDisplay}>
           <Text style={styles.toggleButtonText}>
-            {showMoreInfo ? 
-              (language === 'english' ? 'Show Less Info' : 
-               language === 'thai' ? 'แสดงน้อยลง' : 
-               'แสดงน้อยลง / Show Less Info') :
-              (language === 'english' ? 'Show More Info' : 
-               language === 'thai' ? 'แสดงเพิ่มเติม' : 
-               'แสดงเพิ่มเติม / Show More Info')
-            }
+            {showMoreInfo
+              ? language === 'english'
+                ? 'Show Less Info'
+                : language === 'thai'
+                ? 'แสดงน้อยลง'
+                : 'แสดงน้อยลง / Show Less Info'
+              : language === 'english'
+              ? 'Show More Info'
+              : language === 'thai'
+              ? 'แสดงเพิ่มเติม'
+              : 'แสดงเพิ่มเติม / Show More Info'}
           </Text>
         </TouchableOpacity>
 
         <Text style={styles.exitHint}>
-          {language === 'english' ? 'Swipe down to exit' : 
-           language === 'thai' ? 'เลื่อนลงเพื่อออก' : 
-           'เลื่อนลงเพื่อออก / Swipe down to exit'}
+          {language === 'english'
+            ? 'Swipe down to exit'
+            : language === 'thai'
+            ? 'เลื่อนลงเพื่อออก'
+            : 'เลื่อนลงเพื่อออก / Swipe down to exit'}
         </Text>
-        
+
         <Text style={styles.disclaimer}>
-          {language === 'english' ? 'This is a traveler-prepared document. Please verify with official systems.' : 
-           language === 'thai' ? 'นี่คือเอกสารที่นักเดินทางเตรียมไว้ กรุณาตรวจสอบกับระบบทางการ' : 
-           'นี่คือเอกสารที่นักเดินทางเตรียมไว้ / This is a traveler-prepared document'}
+          {language === 'english'
+            ? 'This is a traveler-prepared document. Please verify with official systems.'
+            : language === 'thai'
+            ? 'นี่คือเอกสารที่นักเดินทางเตรียมไว้ กรุณาตรวจสอบกับระบบทางการ'
+            : 'นี่คือเอกสารที่นักเดินทางเตรียมไว้ / This is a traveler-prepared document'}
         </Text>
       </View>
 
-      {/* Help Hints Modal */}
       {showHelpHints && (
         <View style={styles.helpModal}>
           <View style={styles.helpContent}>
             <Text style={styles.helpTitle}>
-              {language === 'english' ? 'Gesture Help' : 
-               language === 'thai' ? 'คำแนะนำการใช้งาน' : 
-               'คำแนะนำการใช้งาน / Gesture Help'}
+              {language === 'english'
+                ? 'Gesture Help'
+                : language === 'thai'
+                ? 'คำแนะนำการใช้งาน'
+                : 'คำแนะนำการใช้งาน / Gesture Help'}
             </Text>
-            
+
             <View style={styles.helpItem}>
               <Text style={styles.helpGesture}>🤏</Text>
               <Text style={styles.helpText}>
-                {language === 'english' ? 'Pinch to zoom QR code (50% - 200%)' : 
-                 language === 'thai' ? 'หยิกเพื่อซูมรหัส QR (50% - 200%)' : 
-                 'หยิกเพื่อซูมรหัส QR / Pinch to zoom QR code'}
+                {language === 'english'
+                  ? 'Pinch to zoom QR code (50% - 200%)'
+                  : language === 'thai'
+                  ? 'หยิกเพื่อซูมรหัส QR (50% - 200%)'
+                  : 'หยิกเพื่อซูมรหัส QR / Pinch to zoom QR code'}
               </Text>
             </View>
 
             <View style={styles.helpItem}>
               <Text style={styles.helpGesture}>👆👆</Text>
               <Text style={styles.helpText}>
-                {language === 'english' ? 'Double tap to toggle information display' : 
-                 language === 'thai' ? 'แตะสองครั้งเพื่อแสดง/ซ่อนข้อมูล' : 
-                 'แตะสองครั้งเพื่อแสดง/ซ่อนข้อมูล'}
+                {language === 'english'
+                  ? 'Double tap to toggle information display'
+                  : language === 'thai'
+                  ? 'แตะสองครั้งเพื่อแสดง/ซ่อนข้อมูล'
+                  : 'แตะสองครั้งเพื่อแสดง/ซ่อนข้อมูล'}
               </Text>
             </View>
 
             <View style={styles.helpItem}>
               <Text style={styles.helpGesture}>👆⏰</Text>
               <Text style={styles.helpText}>
-                {language === 'english' ? 'Long press QR code to save to album' : 
-                 language === 'thai' ? 'กดค้างรหัส QR เพื่อบันทึกลงอัลบั้ม' : 
-                 'กดค้างรหัส QR เพื่อบันทึกลงอัลบั้ม'}
+                {language === 'english'
+                  ? 'Long press QR code to save to album'
+                  : language === 'thai'
+                  ? 'กดค้างรหัส QR เพื่อบันทึกลงอัลบั้ม'
+                  : 'กดค้างรหัส QR เพื่อบันทึกลงอัลบั้ม'}
               </Text>
             </View>
 
             <View style={styles.helpItem}>
               <Text style={styles.helpGesture}>⬇️</Text>
               <Text style={styles.helpText}>
-                {language === 'english' ? 'Swipe down from top to exit' : 
-                 language === 'thai' ? 'เลื่อนลงจากด้านบนเพื่อออก' : 
-                 'เลื่อนลงจากด้านบนเพื่อออก'}
+                {language === 'english'
+                  ? 'Swipe down from top to exit'
+                  : language === 'thai'
+                  ? 'เลื่อนลงจากด้านบนเพื่อออก'
+                  : 'เลื่อนลงจากด้านบนเพื่อออก'}
               </Text>
             </View>
 
-            <TouchableOpacity 
-              style={styles.helpCloseButton}
-              onPress={hideHelpHints}
-            >
+            <TouchableOpacity style={styles.helpCloseButton} onPress={hideHelpHints}>
               <Text style={styles.helpCloseText}>
-                {language === 'english' ? 'Got it' : 
-                 language === 'thai' ? 'เข้าใจแล้ว' : 
-                 'เข้าใจแล้ว / Got it'}
+                {language === 'english'
+                  ? 'Got it'
+                  : language === 'thai'
+                  ? 'เข้าใจแล้ว'
+                  : 'เข้าใจแล้ว / Got it'}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
     </View>
-  </TapGestureHandler>
   );
 };
 
@@ -688,6 +924,11 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   leftControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  rightControls: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
@@ -737,6 +978,19 @@ const styles = StyleSheet.create({
   exitButtonText: {
     color: colors.white,
     fontSize: 20,
+    fontWeight: 'bold',
+  },
+  helpButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  helpButtonText: {
+    color: colors.white,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   scrollView: {

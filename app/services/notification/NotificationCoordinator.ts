@@ -20,11 +20,7 @@ import NotificationLogService from './NotificationLogService';
 import type { UserId } from '../../types/data';
 
 // Type definitions
-interface ArrivalDateChangeResult {
-  success: boolean;
-  notificationId?: string | null;
-  error?: string;
-}
+export type ArrivalDateChangeResult = string | string[] | null;
 
 interface ScheduledNotifications {
   windowOpen: any[];
@@ -41,16 +37,18 @@ interface CleanupResults {
   totalCleaned: number;
 }
 
-interface NotificationStats {
-  windowOpen: any;
-  urgentReminder: any;
-  deadline: any;
+export interface NotificationStats {
+  windowOpen: unknown;
+  urgentReminder: unknown;
+  deadline: unknown;
   templated: {
     total: number;
     byType: Record<string, number>;
+    [key: string]: unknown;
   };
   isInitialized: boolean;
   lastUpdated: string;
+  [key: string]: unknown;
 }
 
 interface ValidationResult {
@@ -820,10 +818,12 @@ class NotificationCoordinator {
     try {
       await this.ensureInitialized();
       
-      return await this.templateService.cancelNotificationsByType(
+      const cancelledCount = await this.templateService.cancelNotificationsByType(
         'entryPackSuperseded',
         entryPackId
       );
+
+      return cancelledCount > 0;
     } catch (error) {
       console.error('Failed to cancel superseded notifications:', error);
       return false;
@@ -891,18 +891,9 @@ class NotificationCoordinator {
     try {
       await this.ensureInitialized();
       
-      // Get user's preferred language for notification
-      const locale = 'zh'; // TODO: Get from user preferences
-      
-      // Create notification content
-      const title = this.templateService.getLocalizedText('progressiveEntryFlow.notifications.autoArchived.title', locale, {
-        destination: destination
-      }) || `${destination} Entry Pack Archived`;
-      
-      const body = this.templateService.getLocalizedText('progressiveEntryFlow.notifications.autoArchived.body', locale, {
-        destination: destination,
-        reason: archivalInfo.reason || 'automatic archival'
-      }) || `Your ${destination} entry pack has been automatically archived`;
+      const title = `${destination} Entry Pack Archived`;
+      const reason = archivalInfo.reason || 'automatic archival';
+      const body = `Your ${destination} entry pack has been archived (${reason}).`;
       
       // Schedule immediate notification
       const notificationId = await this.notificationService.scheduleNotification(

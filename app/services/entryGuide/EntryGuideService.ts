@@ -1,10 +1,10 @@
 // 通用入境指引服务 - 支持多国家入境流程管理
 // 提供统一的接口管理泰国、日本等国家的入境指引
 
-import { thailandEntryGuide } from '../../config/entryGuide/thailand.js';
-import { japanEntryGuide } from '../../config/entryGuide/japan.js';
-import JapanEntryGuideService from './JapanEntryGuideService.js';
-import ThailandEntryGuideService from './ThailandEntryGuideService.js';
+import { thailandEntryGuide } from '../../config/entryGuide/thailand';
+import { japanEntryGuide } from '../../config/entryGuide/japan';
+import JapanEntryGuideService from './JapanEntryGuideService';
+import ThailandEntryGuideService from './ThailandEntryGuideService';
 
 // Type definitions
 interface CountryGuide {

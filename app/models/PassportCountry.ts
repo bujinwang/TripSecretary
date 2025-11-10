@@ -14,9 +14,21 @@ interface PassportCountryInit {
 }
 
 interface SaveResult {
-  passportId?: string;
-  countryCode?: string;
-  [key: string]: unknown;
+  passportId: string;
+  countryCode: string;
+  visaRequired: boolean;
+  maxStayDays: number | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+interface PassportCountryRecord {
+  passportId: string;
+  countryCode: string;
+  visaRequired: boolean;
+  maxStayDays: number | null;
+  notes: string | null;
+  createdAt: string;
 }
 
 class PassportCountry {
@@ -38,6 +50,10 @@ class PassportCountry {
 
   async save(): Promise<SaveResult> {
     try {
+      if (!this.passportId || !this.countryCode) {
+        throw new Error('passportId and countryCode are required to save PassportCountry');
+      }
+
       const result = await SecureStorageService.savePassportCountry({
         passportId: this.passportId,
         countryCode: this.countryCode,
@@ -46,7 +62,15 @@ class PassportCountry {
         notes: this.notes,
         createdAt: this.createdAt
       });
-      return result as SaveResult;
+
+      return {
+        passportId: result.passportId,
+        countryCode: result.countryCode,
+        visaRequired: this.visaRequired,
+        maxStayDays: this.maxStayDays,
+        notes: this.notes,
+        createdAt: this.createdAt
+      };
     } catch (error) {
       console.error('Failed to save PassportCountry:', error);
       throw error;
@@ -69,7 +93,7 @@ class PassportCountry {
   static async getByPassportId(passportId: string): Promise<PassportCountry[]> {
     try {
       const data = await SecureStorageService.getPassportCountriesByPassportId(passportId);
-      return data.map(item => new PassportCountry(item as PassportCountryInit));
+      return data.map((item: PassportCountryRecord) => new PassportCountry(item));
     } catch (error) {
       console.error('Failed to get PassportCountries by passportId:', error);
       throw error;

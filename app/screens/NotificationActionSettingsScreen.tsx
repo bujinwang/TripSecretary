@@ -24,19 +24,29 @@ import {
 } from 'react-native';
 import NotificationActionService from '../services/notification/NotificationActionService';
 import NotificationPreferencesService from '../services/notification/NotificationPreferencesService';
-import { getTranslation } from '../i18n/locales';
+import { colors, spacing, typography } from '../theme';
+import { useLocale } from '../i18n/LocaleContext';
+import type {
+  ActionPreferences,
+  ActionAnalytics,
+} from '../services/notification/NotificationActionService';
 
-const NotificationActionSettingsScreen = ({ navigation }) => {
+type ActionPreferenceKey = Extract<keyof ActionPreferences, string>;
+
+const NotificationActionSettingsScreen: React.FC = () => {
+  const { t } = useLocale();
   const [loading, setLoading] = useState(true);
-  const [preferences, setPreferences] = useState({});
-  const [analytics, setAnalytics] = useState(null);
+  const [preferences, setPreferences] = useState<ActionPreferences>(
+    NotificationActionService.getDefaultPreferences()
+  );
+  const [analytics, setAnalytics] = useState<ActionAnalytics | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     loadSettings();
   }, []);
 
-  const loadSettings = async () => {
+  const loadSettings = async (): Promise<void> => {
     try {
       setLoading(true);
       
@@ -49,14 +59,18 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
       setAnalytics(analytics);
       
     } catch (error) {
-      console.error('Error loading notification action settings:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Error loading notification action settings:', err);
       Alert.alert('Error', 'Failed to load settings. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const updatePreference = async (key, value) => {
+  const updatePreference = async <K extends ActionPreferenceKey>(
+    key: K,
+    value: ActionPreferences[K]
+  ): Promise<void> => {
     try {
       await NotificationActionService.updateActionPreference(key, value);
       setPreferences(prev => ({ ...prev, [key]: value }));
@@ -71,7 +85,8 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
       }
       
     } catch (error) {
-      console.error('Error updating preference:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Error updating preference:', err);
       Alert.alert('Error', 'Failed to update setting. Please try again.');
     }
   };
@@ -91,7 +106,8 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
               await loadSettings();
               Alert.alert('Success', 'Action data has been reset to defaults.');
             } catch (error) {
-              console.error('Error resetting action data:', error);
+              const err = error instanceof Error ? error : new Error(String(error));
+              console.error('Error resetting action data:', err);
               Alert.alert('Error', 'Failed to reset action data.');
             }
           }
@@ -100,7 +116,7 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
     );
   };
 
-  const exportActionData = async () => {
+  const exportActionData = async (): Promise<void> => {
     try {
       const exportData = await NotificationActionService.exportActionData();
       
@@ -108,17 +124,18 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
         // In a real app, you would save this to a file or share it
         Alert.alert(
           'Export Complete',
-          `Action data exported successfully. ${analytics.summary.totalActions} total actions recorded.`
+          `Action data exported successfully. ${exportData.summary.totalActions} total actions recorded.`
         );
       }
     } catch (error) {
-      console.error('Error exporting action data:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('Error exporting action data:', err);
       Alert.alert('Error', 'Failed to export action data.');
     }
   };
 
   const renderRemindLaterDurationPicker = () => {
-    const durations = [15, 30, 60, 120, 240]; // minutes
+    const durations: readonly number[] = [15, 30, 60, 120, 240]; // minutes
     
     return (
       <View style={styles.section}>
@@ -193,7 +210,7 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
       return null;
     }
 
-    const { summary, stats } = analytics;
+    const { summary } = analytics;
     
     return (
       <View style={styles.section}>
@@ -234,8 +251,8 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading settings...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>{t('notificationActions.loading', { defaultValue: 'Loading settings...' })}</Text>
       </View>
     );
   }
@@ -329,148 +346,146 @@ const NotificationActionSettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
-    color: '#666',
+    ...typography.body,
+    color: colors.textSecondary,
   },
   section: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.sm,
+    padding: spacing.md,
+    borderRadius: spacing.sm,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    ...typography.h3,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
   sectionDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.xs,
   },
   settingLabel: {
-    fontSize: 16,
-    color: '#333',
+    ...typography.body,
+    color: colors.text,
     flex: 1,
   },
   durationContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
   durationButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.backgroundLight,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
+    marginRight: spacing.xs,
+    marginBottom: spacing.xs,
   },
   durationButtonSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   durationButtonText: {
-    fontSize: 14,
-    color: '#333',
+    ...typography.body,
+    color: colors.text,
   },
   durationButtonTextSelected: {
-    color: '#fff',
+    color: colors.white,
   },
   actionContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
   actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.backgroundLight,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
+    marginRight: spacing.xs,
+    marginBottom: spacing.xs,
   },
   actionButtonSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   actionButtonText: {
-    fontSize: 14,
-    color: '#333',
+    ...typography.body,
+    color: colors.text,
   },
   actionButtonTextSelected: {
-    color: '#fff',
+    color: colors.white,
   },
   button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginVertical: 4,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: spacing.sm,
+    marginVertical: spacing.xs,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.bodyBold,
+    color: colors.white,
     textAlign: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.backgroundLight,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
   },
   secondaryButtonText: {
-    color: '#333',
+    color: colors.text,
   },
   dangerButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: colors.error,
   },
   dangerButtonText: {
-    color: '#fff',
+    color: colors.white,
   },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   statLabel: {
-    fontSize: 14,
-    color: '#666',
+    ...typography.body,
+    color: colors.textSecondary,
   },
   statValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    ...typography.body,
+    color: colors.text,
   },
   mostUsedContainer: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: spacing.sm,
+    paddingTop: spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: colors.border,
   },
   mostUsedTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 8,
+    ...typography.bodyBold,
+    color: colors.text,
+    marginBottom: 4,
   },
   mostUsedRow: {
     flexDirection: 'row',
@@ -478,14 +493,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   mostUsedType: {
-    fontSize: 12,
-    color: '#666',
-    flex: 1,
+    ...typography.body,
+    color: colors.textSecondary,
   },
   mostUsedAction: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '500',
+    ...typography.body,
+    color: colors.text,
   },
 });
 

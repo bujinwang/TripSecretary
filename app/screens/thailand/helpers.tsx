@@ -5,6 +5,29 @@
  * Prevents runtime errors from undefined/null values
  */
 
+export type SafeUnknown = Record<string, unknown> | unknown[] | null | undefined;
+
+type CurrencyFormatOptions = {
+  locale?: string;
+  decimals?: number;
+  showSymbol?: boolean;
+  defaultValue?: string;
+};
+
+type DateFormatPreset = 'short' | 'medium' | 'long' | 'full';
+
+type DateFormatOptions = {
+  locale?: string;
+  format?: DateFormatPreset;
+  defaultValue?: string;
+};
+
+type PassportNameParts = {
+  surname?: string | null;
+  middleName?: string | null;
+  givenName?: string | null;
+};
+
 /**
  * Safely get a nested property from an object
  * @param {Object} obj - The object to get the property from
@@ -16,7 +39,7 @@
  * safeGet(user, 'profile.name', 'Unknown')
  * safeGet(data, 'items.0.value', null)
  */
-export const safeGet = (obj, path, defaultValue = null) => {
+export const safeGet = <T,>(obj: SafeUnknown, path: string, defaultValue: T | null = null): T | null => {
   if (!obj || typeof obj !== 'object') {
     return defaultValue;
   }
@@ -26,81 +49,54 @@ export const safeGet = (obj, path, defaultValue = null) => {
   }
 
   const keys = path.split('.');
-  let result = obj;
+  let result: unknown = obj;
 
   for (const key of keys) {
-    // Handle array indices
     if (Array.isArray(result)) {
-      const index = parseInt(key, 10);
-      if (isNaN(index) || index < 0 || index >= result.length) {
+      const index = Number.parseInt(key, 10);
+      if (Number.isNaN(index) || index < 0 || index >= result.length) {
         return defaultValue;
       }
       result = result[index];
-    } else if (result && typeof result === 'object' && key in result) {
-      result = result[key];
+    } else if (result && typeof result === 'object' && key in (result as Record<string, unknown>)) {
+      result = (result as Record<string, unknown>)[key];
     } else {
       return defaultValue;
     }
 
-    // If we hit null/undefined before reaching the end, return default
     if (result === null || result === undefined) {
       return defaultValue;
     }
   }
 
-  return result;
+  return result as T;
 };
 
 /**
  * Get full name from passport data with proper null checking
- * Combines surname, middle name, and given name
- *
- * @param {Object} passportData - Passport data object
- * @param {string} passportData.surname - Last name
- * @param {string} passportData.middleName - Middle name (optional)
- * @param {string} passportData.givenName - First name
- * @param {string} defaultValue - Default value if no name parts exist
- * @returns {string} Full name or default value
- *
- * @example
- * getFullName({ surname: 'Smith', givenName: 'John' }) // "Smith John"
- * getFullName({ surname: 'Wang', middleName: 'Wei', givenName: 'Li' }) // "Wang Wei Li"
- * getFullName({}) // "N/A"
  */
-export const getFullName = (passportData, defaultValue = 'N/A') => {
+export const getFullName = (passportData: PassportNameParts | null | undefined, defaultValue = 'N/A'): string => {
   if (!passportData || typeof passportData !== 'object') {
     return defaultValue;
   }
 
   const { surname, middleName, givenName } = passportData;
 
-  // Collect non-empty name parts
   const nameParts = [surname, middleName, givenName]
-    .filter(part => part && typeof part === 'string' && part.trim().length > 0)
-    .map(part => part.trim());
+    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
+    .map((part) => part.trim());
 
-  // Return joined name or default value
   return nameParts.length > 0 ? nameParts.join(' ') : defaultValue;
 };
 
 /**
  * Format currency amount with proper null checking and currency symbol
- *
- * @param {number|string} amount - Amount to format
- * @param {string} currency - Currency code (e.g., 'CNY', 'USD', 'THB')
- * @param {Object} options - Formatting options
- * @param {string} options.locale - Locale for number formatting (default: 'en-US')
- * @param {number} options.decimals - Number of decimal places (default: 2)
- * @param {boolean} options.showSymbol - Whether to show currency symbol (default: true)
- * @param {string} options.defaultValue - Value to return if amount is invalid
- * @returns {string} Formatted currency string
- *
- * @example
- * formatCurrency(10000, 'CNY') // "¥10,000.00"
- * formatCurrency(50.5, 'USD') // "$50.50"
- * formatCurrency('invalid', 'THB', { defaultValue: '฿0.00' }) // "฿0.00"
  */
-export const formatCurrency = (amount, currency, options = {}) => {
+export const formatCurrency = (
+  amount: number | string | null | undefined,
+  currency: string | null | undefined,
+  options: CurrencyFormatOptions = {}
+): string => {
   const {
     locale = 'en-US',
     decimals = 2,
@@ -108,20 +104,17 @@ export const formatCurrency = (amount, currency, options = {}) => {
     defaultValue = '0.00',
   } = options;
 
-  // Validate and parse amount
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  const numAmount = typeof amount === 'string' ? Number.parseFloat(amount) : amount;
 
-  if (typeof numAmount !== 'number' || isNaN(numAmount) || !isFinite(numAmount)) {
+  if (typeof numAmount !== 'number' || Number.isNaN(numAmount) || !Number.isFinite(numAmount)) {
     return defaultValue;
   }
 
-  // Validate currency
   if (!currency || typeof currency !== 'string') {
     return numAmount.toFixed(decimals);
   }
 
   try {
-    // Use Intl.NumberFormat for proper currency formatting
     const formatter = new Intl.NumberFormat(locale, {
       style: showSymbol ? 'currency' : 'decimal',
       currency: showSymbol ? currency.toUpperCase() : undefined,
@@ -131,33 +124,20 @@ export const formatCurrency = (amount, currency, options = {}) => {
 
     return formatter.format(numAmount);
   } catch (error) {
-    // Fallback if Intl.NumberFormat fails (invalid currency code, etc.)
-    console.warn(`Failed to format currency: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to format currency: ${message}`);
     return `${currency} ${numAmount.toFixed(decimals)}`;
   }
 };
 
 /**
  * Format date string with proper null checking
- *
- * @param {string|Date} date - Date to format
- * @param {Object} options - Formatting options
- * @param {string} options.locale - Locale for date formatting (default: 'en-US')
- * @param {string} options.format - Format style: 'short', 'medium', 'long', 'full' (default: 'medium')
- * @param {string} options.defaultValue - Value to return if date is invalid
- * @returns {string} Formatted date string
- *
- * @example
- * formatDate('2024-01-15') // "Jan 15, 2024"
- * formatDate(new Date(), { format: 'long' }) // "January 15, 2024"
- * formatDate('invalid', { defaultValue: 'N/A' }) // "N/A"
  */
-export const formatDate = (date, options = {}) => {
-  const {
-    locale = 'en-US',
-    format = 'medium',
-    defaultValue = 'N/A',
-  } = options;
+export const formatDate = (
+  date: string | Date | null | undefined,
+  options: DateFormatOptions = {}
+): string => {
+  const { locale = 'en-US', format = 'medium', defaultValue = 'N/A' } = options;
 
   if (!date) {
     return defaultValue;
@@ -166,39 +146,30 @@ export const formatDate = (date, options = {}) => {
   try {
     const dateObj = date instanceof Date ? date : new Date(date);
 
-    if (isNaN(dateObj.getTime())) {
+    if (Number.isNaN(dateObj.getTime())) {
       return defaultValue;
     }
 
-    // Map format to Intl.DateTimeFormat options
-    const formatOptions = {
+    const formatOptions: Record<DateFormatPreset, Intl.DateTimeFormatOptions> = {
       short: { year: 'numeric', month: 'numeric', day: 'numeric' },
       medium: { year: 'numeric', month: 'short', day: 'numeric' },
       long: { year: 'numeric', month: 'long', day: 'numeric' },
       full: { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
     };
 
-    const formatter = new Intl.DateTimeFormat(locale, formatOptions[format] || formatOptions.medium);
+    const formatter = new Intl.DateTimeFormat(locale, formatOptions[format] ?? formatOptions.medium);
     return formatter.format(dateObj);
   } catch (error) {
-    console.warn(`Failed to format date: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Failed to format date: ${message}`);
     return defaultValue;
   }
 };
 
 /**
  * Safely convert a value to a string
- *
- * @param {*} value - Value to convert
- * @param {string} defaultValue - Default value if conversion fails
- * @returns {string} String representation or default value
- *
- * @example
- * safeString(null, 'N/A') // "N/A"
- * safeString(123, '') // "123"
- * safeString(undefined, 'Unknown') // "Unknown"
  */
-export const safeString = (value, defaultValue = '') => {
+export const safeString = (value: unknown, defaultValue = ''): string => {
   if (value === null || value === undefined) {
     return defaultValue;
   }
@@ -211,50 +182,26 @@ export const safeString = (value, defaultValue = '') => {
     return String(value);
   }
 
-  if (typeof value === 'object') {
-    // For objects/arrays, return default value to avoid [object Object]
-    return defaultValue;
-  }
-
   return defaultValue;
 };
 
 /**
  * Safely get an array from a value, ensuring it's always an array
- *
- * @param {*} value - Value that might be an array
- * @param {Array} defaultValue - Default array if value is not an array
- * @returns {Array} The array or default array
- *
- * @example
- * safeArray([1, 2, 3]) // [1, 2, 3]
- * safeArray(null, []) // []
- * safeArray('not an array', []) // []
  */
-export const safeArray = (value, defaultValue = []) => {
-  return Array.isArray(value) ? value : defaultValue;
-};
+export const safeArray = <T,>(value: T[] | null | undefined, defaultValue: T[] = []): T[] =>
+  Array.isArray(value) ? value : defaultValue;
 
 /**
  * Safely parse a number from a value
- *
- * @param {*} value - Value to parse as number
- * @param {number} defaultValue - Default value if parsing fails
- * @returns {number} Parsed number or default value
- *
- * @example
- * safeNumber('123', 0) // 123
- * safeNumber('invalid', 0) // 0
- * safeNumber(null, 0) // 0
  */
-export const safeNumber = (value, defaultValue = 0) => {
-  if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+export const safeNumber = (value: unknown, defaultValue = 0): number => {
+  if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
     return value;
   }
 
   if (typeof value === 'string') {
-    const parsed = parseFloat(value);
-    if (!isNaN(parsed) && isFinite(parsed)) {
+    const parsed = Number.parseFloat(value);
+    if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
       return parsed;
     }
   }
@@ -264,19 +211,8 @@ export const safeNumber = (value, defaultValue = 0) => {
 
 /**
  * Check if a value is empty (null, undefined, empty string, empty array, empty object)
- *
- * @param {*} value - Value to check
- * @returns {boolean} True if value is empty
- *
- * @example
- * isEmpty(null) // true
- * isEmpty('') // true
- * isEmpty([]) // true
- * isEmpty({}) // true
- * isEmpty('hello') // false
- * isEmpty([1, 2]) // false
  */
-export const isEmpty = (value) => {
+export const isEmpty = (value: unknown): boolean => {
   if (value === null || value === undefined) {
     return true;
   }
@@ -290,7 +226,7 @@ export const isEmpty = (value) => {
   }
 
   if (typeof value === 'object') {
-    return Object.keys(value).length === 0;
+    return Object.keys(value as Record<string, unknown>).length === 0;
   }
 
   return false;

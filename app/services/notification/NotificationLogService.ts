@@ -41,7 +41,7 @@ interface NotificationData {
   [key: string]: any;
 }
 
-interface LogEntry {
+export interface LogEntry {
   id: string;
   eventType: string;
   timestamp: string;
@@ -65,7 +65,7 @@ interface LogEntry {
   };
 }
 
-interface Interaction {
+export interface Interaction {
   id: string;
   eventType: string;
   timestamp: string;
@@ -90,7 +90,7 @@ interface DeviceInfo {
   [key: string]: any;
 }
 
-interface TypeAnalytics {
+export interface TypeAnalytics {
   scheduled: number;
   sent: number;
   received: number;
@@ -109,14 +109,14 @@ interface TimingAnalytics {
   bestDay: number | null;
 }
 
-interface Analytics {
+export interface Analytics {
   total: TypeAnalytics;
   byType: Record<string, TypeAnalytics>;
   timing: TimingAnalytics;
   lastUpdated: string;
 }
 
-interface LogFilters {
+export interface LogFilters {
   eventType?: string;
   notificationType?: string;
   userId?: string;
@@ -132,7 +132,7 @@ interface Recommendation {
   priority: 'low' | 'medium' | 'high';
 }
 
-interface ExportData {
+export interface ExportData {
   logs: LogEntry[];
   analytics: Analytics;
   interactions: Interaction[];

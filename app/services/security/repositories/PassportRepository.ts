@@ -53,6 +53,20 @@ interface PassportRecord {
   [key: string]: unknown;
 }
 
+type PassportRow = {
+  id: string;
+  user_id: string;
+  gender?: string | null;
+  expiry_date?: string | null;
+  issue_date?: string | null;
+  issue_place?: string | null;
+  photo_uri?: string | null;
+  is_primary?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+};
+
 class PassportRepository {
   private db: SQLiteDatabase;
   private serializer: typeof DataSerializer;
@@ -116,7 +130,7 @@ class PassportRepository {
    */
   async getById(id: string): Promise<PassportRecord | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE id = ?`;
-    const row = await this.db.getFirstAsync(query, [id]) as PassportRecord | null;
+    const row = await this.db.getFirstAsync(query, [id]) as PassportRow | null;
 
     if (!row) {
       return null;
@@ -138,7 +152,7 @@ class PassportRepository {
       ORDER BY is_primary DESC, created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId]) as PassportRecord[];
+    const rows = await this.db.getAllAsync(query, [userId]) as PassportRow[];
 
     if (!rows || rows.length === 0) {
       return [];
@@ -165,7 +179,7 @@ class PassportRepository {
       LIMIT 1
     `;
 
-    const row = await this.db.getFirstAsync(query, [userId]) as PassportRecord | null;
+    const row = await this.db.getFirstAsync(query, [userId]) as PassportRow | null;
 
     if (!row) {
       return null;
@@ -254,6 +268,26 @@ class PassportRepository {
 
     const rows = await this.db.getAllAsync(query, [passportId]);
     return rows || [];
+  }
+
+  /**
+   * Get a specific country record for a passport
+   * @param {string} passportId - Passport ID
+   * @param {string} countryCode - Country code
+   * @returns {Promise<Object|null>} - Country record or null
+   */
+  async getCountry(passportId: string, countryCode: string): Promise<unknown | null> {
+    const query = `
+      SELECT * FROM passport_countries
+      WHERE passport_id = ? AND country_code = ?
+      LIMIT 1
+    `;
+
+    const row = await this.db.getFirstAsync(query, [passportId, countryCode]);
+    if (!row) {
+      return null;
+    }
+    return row;
   }
 
   /**

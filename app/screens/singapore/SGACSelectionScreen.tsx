@@ -9,11 +9,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
@@ -21,52 +18,96 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 import SingaporeEntryGuideService from '../../services/entryGuide/SingaporeEntryGuideService';
+import type { RootStackScreenProps } from '../../types/navigation';
+import type {
+  SerializablePassport,
+  PersonalInfoData,
+  FundItemData,
+  TravelInfoData,
+  AllUserData,
+} from '../../types/data';
 
-const SGACSelectionScreen = ({ navigation, route }) => {
-  const { t } = useLocale();
-  const { passport: rawPassport, destination } = route.params || {};
-  const passport = UserDataService.toSerializablePassport(rawPassport);
-  const userId = passport?.id || 'user_001';
+type SGACMethod = 'online' | 'airport';
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [submissionStatus, setSubmissionStatus] = useState(null);
+interface SGACOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  method: SGACMethod;
+  requirements: string[];
+}
 
-  // SGAC submission options
-  const sgacOptions = [
-    {
-      id: 'online',
-      title: '在线申请 SGAC',
-      description: '通过新加坡移民局官方网站在线提交',
-      icon: '🌐',
-      method: 'online',
-      requirements: [
-        '有效的护照',
-        '旅行信息',
-        '联系方式',
-        '资金证明'
-      ]
-    },
-    {
-      id: 'airport',
-      title: '机场现场申请',
-      description: '抵达新加坡樟宜机场后现场申请',
-      icon: '✈️',
-      method: 'airport',
-      requirements: [
-        '护照原件',
-        '旅行文件',
-        '资金证明'
-      ]
+interface SGACEntryInfo {
+  passport: SerializablePassport | null;
+  personalInfo: PersonalInfoData | null;
+  funds: FundItemData[];
+  travel: TravelInfoData | null;
+}
+
+type OptionStatus = 'ready' | 'incomplete' | 'unknown';
+
+type SGACSelectionProps = RootStackScreenProps<'SGACSelection'>;
+
+const OPTIONAL_WARNINGS: Record<SGACMethod, Set<string>> = {
+  online: new Set(['sgac_missing']),
+  airport: new Set(['sgac_missing', 'sgac_too_early', 'sgac_too_late']),
+};
+
+const mapUserDataToPayload = (data: SGACEntryInfo | null): Partial<AllUserData> | undefined => {
+  if (!data) {
+    return undefined;
+  }
+
+  return {
+    passport: data.passport ?? undefined,
+    personalInfo: data.personalInfo ?? undefined,
+    funds: data.funds,
+    travel: data.travel ?? undefined,
+  };
+};
+
+const getDestinationId = (destination?: Record<string, unknown> | null): string => {
+  if (destination && typeof destination === 'object' && 'id' in destination) {
+    const idValue = (destination as { id?: unknown }).id;
+    if (typeof idValue === 'string' && idValue.trim().length > 0) {
+      return idValue;
     }
-  ];
+  }
+  return 'sg';
+};
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
+const sgacOptions: SGACOption[] = [
+  {
+    id: 'online',
+    title: '在线申请 SGAC',
+    description: '通过新加坡移民局官方网站在线提交',
+    icon: '🌐',
+    method: 'online',
+    requirements: ['有效的护照', '旅行信息', '联系方式', '资金证明'],
+  },
+  {
+    id: 'airport',
+    title: '机场现场申请',
+    description: '抵达新加坡樟宜机场后现场申请',
+    icon: '✈️',
+    method: 'airport',
+    requirements: ['护照原件', '旅行文件', '资金证明'],
+  },
+];
 
-  const loadUserData = async () => {
+const SGACSelectionScreen: React.FC<SGACSelectionProps> = ({ navigation, route }) => {
+  const { t } = useLocale();
+  const { passport: rawPassport, destination } = route.params ?? {};
+  const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
+  const userId = passport?.id ?? 'user_001';
+  const destinationId = getDestinationId(destination as Record<string, unknown> | null);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userData, setUserData] = useState<SGACEntryInfo | null>(null);
+  const [selectedOption, setSelectedOption] = useState<SGACOption | null>(null);
+
+  const loadUserData = async (): Promise<void> => {
     try {
       setIsLoading(true);
 
@@ -76,13 +117,13 @@ const SGACSelectionScreen = ({ navigation, route }) => {
       // Load all user data
       const allUserData = await UserDataService.getAllUserData(userId);
       const fundItems = await UserDataService.getFundItems(userId);
-      const travelInfo = await UserDataService.getTravelInfo(userId, destination?.id || 'sg');
+      const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
-      const entryInfo = {
-        passport: allUserData.passport || {},
-        personalInfo: allUserData.personalInfo || {},
-        funds: fundItems || [],
-        travel: travelInfo || {},
+      const entryInfo: SGACEntryInfo = {
+        passport: (allUserData?.passport as SerializablePassport | null) ?? null,
+        personalInfo: (allUserData?.personalInfo as PersonalInfoData | null) ?? null,
+        funds: Array.isArray(fundItems) ? (fundItems as FundItemData[]) : [],
+        travel: (travelInfo as TravelInfoData | null) ?? null,
       };
 
       setUserData(entryInfo);
@@ -97,11 +138,15 @@ const SGACSelectionScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleOptionSelect = (option) => {
+  useEffect(() => {
+    void loadUserData();
+  }, [userId, destinationId]);
+
+  const handleOptionSelect = (option: SGACOption): void => {
     setSelectedOption(option);
   };
 
-  const handleContinue = async () => {
+  const handleContinue = async (): Promise<void> => {
     if (!selectedOption) {
       Alert.alert(
         t('common.warning', { defaultValue: '提示' }),
@@ -113,12 +158,14 @@ const SGACSelectionScreen = ({ navigation, route }) => {
     try {
       setIsLoading(true);
 
+      const userDataPayload = mapUserDataToPayload(userData);
+
       if (selectedOption.method === 'online') {
         // Navigate to SGAC web view for online submission
         navigation.navigate('SGACWebView', {
           passport,
           destination,
-          userData,
+          userData: userDataPayload,
           submissionMethod: 'online'
         });
       } else if (selectedOption.method === 'airport') {
@@ -126,7 +173,7 @@ const SGACSelectionScreen = ({ navigation, route }) => {
         navigation.navigate('SGACAirportGuide', {
           passport,
           destination,
-          userData,
+          userData: userDataPayload,
           submissionMethod: 'airport'
         });
       }
@@ -145,19 +192,21 @@ const SGACSelectionScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
-  const getOptionStatus = (option) => {
+  const getOptionStatus = (option: SGACOption): OptionStatus => {
     if (!userData) {
-return 'unknown';
-}
-
-    // Check if user has required data for this option
-    const hasRequiredData = SingaporeEntryGuideService.validateEntryRequirements(userData, option.method);
-
-    if (hasRequiredData) {
-      return 'ready';
-    } else {
-      return 'incomplete';
+      return 'unknown';
     }
+
+    const validation = SingaporeEntryGuideService.validateEntryRequirements({
+      passport: userData.passport,
+      travel: userData.travel,
+      funds: userData.funds,
+    });
+
+    const optionalWarnings = OPTIONAL_WARNINGS[option.method];
+    const blockingWarnings = validation.warnings.filter((warning) => !optionalWarnings.has(warning));
+
+    return blockingWarnings.length === 0 ? 'ready' : 'incomplete';
   };
 
   return (

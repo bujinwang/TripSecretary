@@ -12,10 +12,18 @@ import BackButton from '../../components/BackButton';
 import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
+import type { RootStackScreenProps } from '../../types/navigation';
+import type { SerializablePassport } from '../../types/data';
 
-const SGArrivalGuideScreen = ({ navigation, route }) => {
-  const { passport: rawPassport, destination, travelInfo } = route.params || {};
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+type SGArrivalGuideProps = RootStackScreenProps<'SGArrivalGuide'>;
+
+const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route }) => {
+  const {
+    passport: rawPassport,
+    destination = null,
+    travelInfo = null,
+  } = route.params ?? {};
+  const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
   const { t } = useLocale();
 
   const steps = useMemo(

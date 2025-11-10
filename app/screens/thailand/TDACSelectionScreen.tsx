@@ -3,14 +3,13 @@
   * 让用户选择最适合的入境卡提交方式，聚焦于用户体验而非技术细节
   */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,110 +19,89 @@ import { useLocale } from '../../i18n/LocaleContext';
 // Removed mockTDACData dependency - using pure user data
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 import UserDataService from '../../services/data/UserDataService';
+import type { DataChangeEvent } from '../../services/data/events/DataEventService';
+import type { RootStackScreenProps } from '../../types/navigation';
+import type { TDACTravelerInfo } from '../../types/thailand';
 
-const TDACSelectionScreen = ({ navigation, route }) => {
+type TDACSelectionScreenProps = RootStackScreenProps<'TDACSelection'>;
+type TDACSubmissionData = Parameters<typeof TDACSubmissionService.handleTDACSubmissionSuccess>[0];
+
+const TDACSelectionScreen: React.FC<TDACSelectionScreenProps> = ({ navigation, route }) => {
   const { t } = useLocale();
-  const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
-  
-  /**
-   * Sanitize sensitive data before logging
-   * Masks passport numbers, emails, and phone numbers for security
-   */
-  const sanitizeForLogging = (data) => {
-    if (!data) {
-return data;
-}
+  const travelerInfoParam = route.params?.travelerInfo ?? null;
 
-    const sanitized = { ...data };
-    const sensitiveFields = ['passportNo', 'email', 'phoneNumber'];
+  const travelerInfo = useMemo<TDACTravelerInfo>(
+    () => (travelerInfoParam ? { ...travelerInfoParam } : {}),
+    [travelerInfoParam]
+  );
 
-    sensitiveFields.forEach(field => {
-      if (sanitized[field]) {
-        const value = String(sanitized[field]);
-        if (value.length > 4) {
-          sanitized[field] = value.substring(0, 2) + '****' + value.substring(value.length - 2);
-        } else {
-          sanitized[field] = '****';
-        }
+  const handleTDACSubmissionSuccess = useCallback(
+    async (submissionData: TDACSubmissionData) => {
+      const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
+
+      if (!result.success) {
+        TDACSubmissionService.showErrorDialog(result.errorResult);
       }
-    });
+    },
+    [travelerInfo]
+  );
 
-    return sanitized;
-  };
-
-  // Log incoming data for debugging (sanitized)
-  console.log('🔍 TDACSelectionScreen received travelerInfo:', {
-    hasData: Object.keys(incomingTravelerInfo).length > 0,
-    keys: Object.keys(incomingTravelerInfo),
-    ...sanitizeForLogging({
-      passportNo: incomingTravelerInfo.passportNo,
-      familyName: incomingTravelerInfo.familyName,
-      firstName: incomingTravelerInfo.firstName,
-      arrivalDate: incomingTravelerInfo.arrivalDate,
-      email: incomingTravelerInfo.email
-    })
-  });
-
-  // Use pure user data directly - no mock data fallbacks
-  const travelerInfo = incomingTravelerInfo;
-
-  // Log user data for debugging (sanitized)
-  console.log('🔍 Using pure user data:', sanitizeForLogging({
-    passportNo: travelerInfo.passportNo,
-    familyName: travelerInfo.familyName,
-    firstName: travelerInfo.firstName,
-    arrivalDate: travelerInfo.arrivalDate,
-    email: travelerInfo.email,
-    flightNo: travelerInfo.flightNo
-  }));
-
-  /**
-   * Handle successful TDAC submission by creating/updating entry pack
-   * This is called when user returns from successful TDAC submission
-   * Wrapped with useCallback to prevent stale closures in event listener
-   */
-  const handleTDACSubmissionSuccess = useCallback(async (submissionData) => {
-    const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
-
-    if (!result.success) {
-      // Show error dialog if submission failed
-      TDACSubmissionService.showErrorDialog(
-        result.errorResult,
-        () => {
-          // Retry later
-          console.log('User chose to retry later');
-        },
-        () => {
-          // Continue anyway
-          console.log('User chose to continue despite error');
-        },
-        async () => {
-          // Contact support
-          console.log('User chose to contact support');
-        }
-      );
-    }
-  }, [travelerInfo]);
-
-  // Event-driven TDAC submission listener instead of polling AsyncStorage
   React.useEffect(() => {
-    // Subscribe to TDAC submission events from UserDataService
-    const unsubscribe = UserDataService.addDataChangeListener((event) => {
-      console.log('📡 TDAC submission event received:', event.type);
+    const unsubscribe = UserDataService.addDataChangeListener(
+      async (event: DataChangeEvent) => {
+        if (event.type !== 'DATA_CHANGED' || event.dataType !== 'digitalArrivalCard') {
+          return;
+        }
 
-      if (event.type === 'TDAC_SUBMISSION_SUCCESS') {
-        // Handle TDAC submission success event
-        console.log('🎉 TDAC submission event received:', event.data);
-        handleTDACSubmissionSuccess(event.data);
+        const entryInfoId =
+          typeof event.entryInfoId === 'string' ? event.entryInfoId : undefined;
+
+        if (!entryInfoId) {
+          return;
+        }
+
+        try {
+          const cards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
+          if (!Array.isArray(cards) || cards.length === 0) {
+            return;
+          }
+
+          const latestCard = cards[0] as Record<string, unknown>;
+          const submissionData: TDACSubmissionData = {
+            arrCardNo: typeof latestCard.arrCardNo === 'string' ? latestCard.arrCardNo : undefined,
+            qrUri: typeof latestCard.qrUri === 'string' ? latestCard.qrUri : undefined,
+            pdfPath: typeof latestCard.pdfUrl === 'string' ? latestCard.pdfUrl : undefined,
+            submittedAt: typeof latestCard.submittedAt === 'string' ? latestCard.submittedAt : undefined,
+            submissionMethod:
+              typeof latestCard.submissionMethod === 'string'
+                ? (latestCard.submissionMethod as TDACSubmissionData['submissionMethod'])
+                : 'unknown',
+            travelerName:
+              [travelerInfo.firstName, travelerInfo.familyName].filter(Boolean).join(' ').trim() || undefined,
+            passportNo: travelerInfo.passportNo,
+            arrivalDate: travelerInfo.arrivalDate,
+          };
+
+          if (
+            submissionData.arrCardNo &&
+            submissionData.qrUri &&
+            submissionData.pdfPath &&
+            submissionData.submittedAt
+          ) {
+            await handleTDACSubmissionSuccess(submissionData);
+          }
+        } catch {
+          // Swallow errors from background event handling to avoid disrupting user flow.
+        }
       }
-    });
+    );
 
     return () => {
       if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
     };
-  }, [handleTDACSubmissionSuccess]);
+  }, [handleTDACSubmissionSuccess, travelerInfo]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -361,6 +339,12 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#4CAF50',
     backgroundColor: '#fafcfa',
+  },
+
+  stableCard: {
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#f8fafc',
   },
 
   // 推荐徽章

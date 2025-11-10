@@ -1,7 +1,7 @@
 // 泰国入境指引服务 - 廊曼机场DMK完整流程管理
 // 整合TDAC、通关包、ATM取款和官方出租车指引
 
-import { thailandEntryGuide } from '../../config/entryGuide/thailand.js';
+import { thailandEntryGuide } from '../../config/entryGuide/thailand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions
@@ -123,22 +123,10 @@ interface QuestionsCompleteness {
 
 interface GuideConfig {
   steps: Step[];
-  atm?: {
-    location?: string;
-    recommendedBanks?: any;
-    withdrawalSteps?: any;
-    fees?: any;
-    safetyTips?: any;
-    currency?: string;
-  };
-  taxi?: {
-    officialCounter?: any;
-    cost?: any;
-    payment?: any;
-    safety?: any;
-  };
-  languageHelp?: any;
-  emergency?: any;
+  atm?: Record<string, unknown>;
+  taxi?: Record<string, unknown>;
+  languageHelp?: Record<string, unknown>;
+  emergency?: Record<string, unknown>;
   importantNotes?: string[];
   immigrationQuestions?: {
     basic?: QuestionConfig[];
@@ -146,8 +134,9 @@ interface GuideConfig {
     business?: QuestionConfig[];
     health_finance?: QuestionConfig[];
     visa?: QuestionConfig[];
+    [key: string]: QuestionConfig[] | undefined;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface QuestionConfig {

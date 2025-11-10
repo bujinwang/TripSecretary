@@ -215,7 +215,7 @@ class GDPRComplianceService {
         filePath,
         fileSize: JSON.stringify(gdprExport).length,
         exportedAt: timestamp,
-        dataTypes: exportData.dataTypes || []
+        dataTypes: Array.isArray(exportData.dataTypes) ? exportData.dataTypes as string[] : []
       };
     } catch (error) {
       console.error('GDPR data export failed:', error);

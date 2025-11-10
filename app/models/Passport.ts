@@ -20,7 +20,7 @@ interface PassportInit {
   issueDate?: string | null;
   issuePlace?: string | null;
   photoUri?: string | null;
-  isPrimary?: boolean | number | null;
+  isPrimary?: boolean | number | string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,6 +40,24 @@ interface SaveOptions extends ValidationOptions {
 
 interface SaveResult {
   id: string;
+}
+
+interface PassportSavePayload {
+  id?: string;
+  userId: string;
+  passportNumber?: string | null;
+  fullName?: string | null;
+  dateOfBirth?: string | null;
+  nationality?: string | null;
+  gender?: Gender;
+  expiryDate?: string | null;
+  issueDate?: string | null;
+  issuePlace?: string | null;
+  photoUri?: string | null;
+  isPrimary?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
 }
 
 interface LoadOptions {
@@ -290,7 +308,11 @@ class Passport {
 
       this.updatedAt = new Date().toISOString();
 
-      const dataToSave: Record<string, unknown> = {
+      if (!this.userId) {
+        throw new Error('User ID is required to save passport');
+      }
+
+      const dataToSave: PassportSavePayload = {
         id: this.id,
         userId: this.userId,
         createdAt: this.createdAt,
@@ -308,7 +330,7 @@ class Passport {
       Passport.assignIfPresent(dataToSave, 'photoUri', this.photoUri);
       dataToSave.isPrimary = this.isPrimary;
 
-      const result = await SecureStorageService.savePassport(dataToSave as Record<string, unknown>);
+      const result = await SecureStorageService.savePassport(dataToSave);
       return result as SaveResult;
     } catch (error) {
       console.error('Failed to save passport:', error);

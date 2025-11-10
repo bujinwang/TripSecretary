@@ -335,7 +335,7 @@ interface GotoSubmittedResponse extends APIResponse {
 interface SubmissionResult {
   success: boolean;
   arrCardNo?: string;
-  pdfBlob?: Blob;
+  pdfBlob?: string | Blob | ArrayBuffer;
   duration?: string;
   submittedAt?: string;
   travelerInfo?: {

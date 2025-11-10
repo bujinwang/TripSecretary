@@ -1,7 +1,7 @@
 // 马来西亚入境指引服务 - 吉隆坡机场KUL/亚庇机场BKI完整流程管理
 // 整合MDAC、地区差异（东马西马）、资金证明
 
-import { malaysiaEntryGuide } from '../../config/entryGuide/malaysia.js';
+import { malaysiaEntryGuide } from '../../config/entryGuide/malaysia';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions (reusing common types)

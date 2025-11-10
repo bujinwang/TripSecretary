@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  */
 
 // Type definitions
-interface NotificationTypes {
+export interface NotificationTypes {
   submissionWindow: boolean;
   urgentReminder: boolean;
   deadline: boolean;
@@ -25,32 +25,32 @@ interface NotificationTypes {
   autoArchival: boolean;
 }
 
-interface QuietHours {
+export interface QuietHours {
   enabled: boolean;
   start: string;
   end: string;
 }
 
-interface TimingPreferences {
+export interface TimingPreferences {
   reminderTime: string;
   urgentInterval: number;
   maxUrgentCount: number;
   quietHours: QuietHours;
 }
 
-interface FrequencyPreferences {
+export interface FrequencyPreferences {
   minInterval: number;
   dailySummary: boolean;
   summaryTime: string;
 }
 
-interface ActionPreferences {
+export interface ActionPreferences {
   showQuickActions: boolean;
   defaultAction: string;
   remindLaterDuration: number;
 }
 
-interface NotificationPreferences {
+export interface NotificationPreferences {
   enabled: boolean;
   types: NotificationTypes;
   timing: TimingPreferences;
@@ -427,47 +427,33 @@ class NotificationPreferencesService {
     return result;
   }
 
-  /**
-   * Set nested value using dot notation
-   * @param obj - Object to modify
-   * @param path - Dot notation path
-   * @param value - Value to set
-   */
-  private setNestedValue(obj: Record<string, any>, path: string, value: any): void {
+  setNestedValue(obj: object, path: string, value: unknown): void {
     const keys = path.split('.');
-    let current: any = obj;
-    
+    let current = obj as Record<string, unknown>;
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
-      if (!current[key] || typeof current[key] !== 'object') {
+      const next = current[key];
+      if (!next || typeof next !== 'object') {
         current[key] = {};
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
-    
-    current[keys[keys.length - 1]] = value;
+    current[keys[keys.length - 1]] = value as unknown;
   }
 
-  /**
-   * Get nested value using dot notation
-   * @param obj - Object to read from
-   * @param path - Dot notation path
-   * @param defaultValue - Default value if not found
-   * @returns Value at path
-   */
-  private getNestedValue(obj: Record<string, any>, path: string, defaultValue: any = null): any {
+  getNestedValue<T = unknown>(obj: object | null, path: string, defaultValue: T | null = null): T | null {
+    if (!obj) {
+      return defaultValue;
+    }
     const keys = path.split('.');
-    let current: any = obj;
-    
+    let current: unknown = obj;
     for (const key of keys) {
-      if (current && typeof current === 'object' && key in current) {
-        current = current[key];
-      } else {
+      if (!current || typeof current !== 'object' || !(key in (current as Record<string, unknown>))) {
         return defaultValue;
       }
+      current = (current as Record<string, unknown>)[key];
     }
-    
-    return current;
+    return current as T;
   }
 
   /**

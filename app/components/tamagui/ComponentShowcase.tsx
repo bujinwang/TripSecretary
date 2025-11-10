@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react';
+import { Alert } from 'react-native';
 import { ScrollView, YStack, Heading, Text } from 'tamagui';
 import { BaseCard } from './BaseCard';
 import { BaseButton } from './BaseButton';
@@ -73,7 +74,7 @@ export const ComponentShowcase: React.FC = () => {
             variant="elevated"
             padding="md"
             pressable
-            onPress={() => alert('Card pressed!')}
+            onPress={() => Alert.alert('Card pressed!')}
           >
             <Text fontSize="$2" fontWeight="600">
               Pressable Card

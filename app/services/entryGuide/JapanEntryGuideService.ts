@@ -1,7 +1,7 @@
 // 日本入境指引服务 - 成田/羽田/关西机场完整流程管理
 // 整合护照、居留卡、交通和官方指引
 
-import { japanEntryGuide } from '../../config/entryGuide/japan.js';
+import { japanEntryGuide } from '../../config/entryGuide/japan';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions (reusing from ThailandEntryGuideService where applicable)
@@ -88,28 +88,13 @@ interface EntryPackQuickAccess {
 
 interface GuideConfig {
   steps: Step[];
-  transport?: {
-    airportRail?: any;
-    icCard?: any;
-    taxi?: any;
-    bus?: any;
-  };
-  currency?: {
-    name?: string;
-    code?: string;
-    denominations?: any;
-    atm?: any;
-  };
-  customs?: {
-    declarationRequired?: boolean;
-    prohibitedItems?: any;
-    dutyFree?: any;
-    declarationChannels?: any;
-  };
-  emergency?: any;
+  transport?: Record<string, unknown>;
+  currency?: unknown;
+  customs?: Record<string, unknown>;
+  emergency?: Record<string, unknown>;
   importantNotes?: string[];
-  cultureTips?: any;
-  [key: string]: any;
+  cultureTips?: unknown;
+  [key: string]: unknown;
 }
 
 interface ProgressData {
@@ -268,14 +253,31 @@ class JapanEntryGuideService {
    * @returns Currency and ATM information
    */
   getCurrencyInfo(): any {
-    if (!this.guide.currency) {
+    const { currency } = this.guide;
+    if (!currency) {
       return null;
     }
+
+    if (typeof currency === 'string') {
+      return {
+        name: currency,
+        code: currency
+      };
+    }
+
+    const currencyDetails = currency as {
+      name?: string;
+      code?: string;
+      denominations?: unknown;
+      atm?: unknown;
+      [key: string]: unknown;
+    };
+
     return {
-      name: this.guide.currency.name,
-      code: this.guide.currency.code,
-      denominations: this.guide.currency.denominations,
-      atm: this.guide.currency.atm
+      name: currencyDetails.name ?? null,
+      code: currencyDetails.code ?? null,
+      denominations: currencyDetails.denominations ?? null,
+      atm: currencyDetails.atm ?? null
     };
   }
 

@@ -4,14 +4,14 @@ import DataDiffCalculator from '../../../utils/DataDiffCalculator';
 
 type DataChangeDetails = Record<string, unknown>;
 
-type DataChangeEvent = {
+export type DataChangeEvent = {
   type: 'DATA_CHANGED';
   dataType: string;
   userId: string;
   timestamp: string;
 } & DataChangeDetails;
 
-type ResubmissionWarningEvent = {
+export type ResubmissionWarningEvent = {
   type: 'RESUBMISSION_WARNING';
   entryInfoId: string;
   userId: string;
@@ -22,9 +22,9 @@ type ResubmissionWarningEvent = {
   timestamp: string;
 };
 
-type DataEvent = DataChangeEvent | ResubmissionWarningEvent;
+export type DataEvent = DataChangeEvent | ResubmissionWarningEvent;
 
-type DataChangeListener = (event: DataEvent) => void;
+export type DataChangeListener = (event: DataEvent) => void;
 
 type EntryInfoRecord = {
   id?: string;
@@ -144,13 +144,12 @@ class DataEventService {
         console.log('No snapshots found for entry info, cannot compare data changes');
         return;
       }
-
-      const latestSnapshot = snapshots[0] as Record<string, unknown>;
+      const latestSnapshot = snapshots[0];
       const snapshotData = {
-        passport: latestSnapshot.passport,
-        personalInfo: latestSnapshot.personalInfo,
-        funds: latestSnapshot.funds,
-        travel: latestSnapshot.travel
+        passport: latestSnapshot.passport ?? null,
+        personalInfo: latestSnapshot.personalInfo ?? null,
+        funds: latestSnapshot.funds ?? [],
+        travel: latestSnapshot.travel ?? null
       };
 
       const currentData = await getAllUserData(entryInfo.userId);

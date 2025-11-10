@@ -123,7 +123,9 @@ class EncryptionService {
   async deriveKey(masterKey: string, salt: string = this.SALT, iterations: number = 100000): Promise<CryptoKey> {
     try {
       const enc = new TextEncoder();
-      const masterKeyBuffer = enc.encode(masterKey).buffer;
+      const masterKeyBytes = enc.encode(masterKey);
+      const masterKeyBuffer = new ArrayBuffer(masterKeyBytes.byteLength);
+      new Uint8Array(masterKeyBuffer).set(masterKeyBytes);
       const keyMaterial = await crypto.subtle.importKey(
         'raw',
         masterKeyBuffer,
@@ -132,7 +134,9 @@ class EncryptionService {
         ['deriveBits', 'deriveKey']
       );
 
-      const saltBuffer = enc.encode(salt).buffer;
+      const saltBytes = enc.encode(salt);
+      const saltBuffer = new ArrayBuffer(saltBytes.byteLength);
+      new Uint8Array(saltBuffer).set(saltBytes);
       return await crypto.subtle.deriveKey(
         {
           name: 'PBKDF2',
@@ -235,6 +239,8 @@ class EncryptionService {
       const key = await this.getFieldKey(fieldType);
       const enc = new TextEncoder();
       const encoded = enc.encode(plaintext);
+      const encodedBuffer = new ArrayBuffer(encoded.byteLength);
+      new Uint8Array(encodedBuffer).set(encoded);
 
       // Generate unique IV for each encryption
       const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -243,7 +249,7 @@ class EncryptionService {
       const ciphertext = await crypto.subtle.encrypt(
         { name: 'AES-GCM', iv: iv },
         key,
-        encoded.buffer
+        encodedBuffer
       );
 
       // Combine IV and ciphertext
@@ -282,12 +288,14 @@ class EncryptionService {
       // Extract IV and ciphertext
       const iv = data.slice(0, 12);
       const ciphertext = data.slice(12);
+      const ciphertextBuffer = new ArrayBuffer(ciphertext.byteLength);
+      new Uint8Array(ciphertextBuffer).set(ciphertext);
 
       // Decrypt using AES-GCM
       const decrypted = await crypto.subtle.decrypt(
         { name: 'AES-GCM', iv: iv },
         key,
-        ciphertext.buffer
+        ciphertextBuffer
       );
 
       const dec = new TextDecoder();

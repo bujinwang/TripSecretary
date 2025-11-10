@@ -23,17 +23,31 @@ import UserDataService from '../../services/data/UserDataService';
 // 从统一配置中获取步骤，确保屏幕与服务保持一致
 const KOREA_ENTRY_STEPS = koreaGuideConfig.steps;
 
-const KoreaEntryGuideScreen = ({ navigation, route }) => {
+interface KoreaEntryGuideScreenProps {
+  navigation: {
+    goBack: () => void;
+    navigate: (route: string, params?: any) => void;
+  };
+  route: {
+    params?: {
+      passport?: any;
+      destination?: string;
+      completionData?: any;
+    };
+  };
+}
+
+const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigation, route }) => {
   const { t, language } = useLocale();
   const { passport: rawPassport, destination, completionData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [completedSteps, setCompletedSteps] = useState(new Set<string>());
 
   const currentStep = KOREA_ENTRY_STEPS[currentStepIndex];
   const progress = ((currentStepIndex + 1) / KOREA_ENTRY_STEPS.length) * 100;
 
-  const handleStepComplete = (stepId) => {
+  const handleStepComplete = (stepId: string) => {
     setCompletedSteps(prev => new Set([...prev, stepId]));
   };
 
@@ -52,14 +66,14 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleStepPress = (stepIndex) => {
+  const handleStepPress = (stepIndex: number) => {
     // 允许跳转到已完成的步骤或当前步骤的前一个步骤
     if (stepIndex <= currentStepIndex || completedSteps.has(KOREA_ENTRY_STEPS[stepIndex].id)) {
       setCurrentStepIndex(stepIndex);
     }
   };
 
-  const getStepStatus = (stepIndex) => {
+  const getStepStatus = (stepIndex: number) => {
     const step = KOREA_ENTRY_STEPS[stepIndex];
     if (stepIndex < currentStepIndex) {
       return 'completed';
@@ -84,7 +98,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
           style={styles.stepIndicatorScroll}
           contentContainerStyle={styles.stepIndicatorContent}
         >
-          {KOREA_ENTRY_STEPS.map((step, index) => {
+          {KOREA_ENTRY_STEPS.map((step: any, index: number) => {
             const status = getStepStatus(index);
             return (
               <TouchableOpacity
@@ -147,7 +161,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
   const renderCurrentStep = () => {
     const title = language?.startsWith('zh') ? currentStep.titleZh : currentStep.title;
     const description = language?.startsWith('zh') ? currentStep.descriptionZh : currentStep.description;
-    const category = language?.startsWith('zh') ? currentStep.categoryZh : currentStep.category;
+    const category = language?.startsWith('zh') ? (currentStep as any).categoryZh : currentStep.category;
 
     return (
       <View style={styles.currentStepContainer}>
@@ -173,7 +187,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
           </Text>
         </View>
 
-        {currentStep.showEntryPack && (
+        {(currentStep as any).showEntryPack && (
           <View style={styles.entryPackCompactContainer}>
             <Button
               title={`${t('immigrationGuide.openEntryPack', { defaultValue: '打开通关包' })} 📋`}
@@ -192,7 +206,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
         {currentStep.warnings && currentStep.warnings.length > 0 && (
           <View style={styles.warningsContainer}>
             <Text style={styles.warningsTitle}>⚠️ 重要提醒</Text>
-            {currentStep.warnings.map((warning, index) => (
+            {currentStep.warnings.map((warning: string, index: number) => (
               <Text key={index} style={styles.warningText}>• {warning}</Text>
             ))}
           </View>
@@ -201,7 +215,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
         {currentStep.tips && currentStep.tips.length > 0 && (
           <View style={styles.tipsContainer}>
             <Text style={styles.tipsTitle}>💡 温馨提示</Text>
-            {currentStep.tips.map((tip, index) => (
+            {currentStep.tips.map((tip: string, index: number) => (
               <Text key={index} style={styles.tipText}>• {tip}</Text>
             ))}
           </View>
@@ -268,7 +282,7 @@ const KoreaEntryGuideScreen = ({ navigation, route }) => {
             <Text style={styles.importantNotesTitle}>
               🌟 韩国入境重要提醒
             </Text>
-            {koreaGuideConfig.importantNotes.map((note, index) => (
+            {koreaGuideConfig.importantNotes.map((note: string, index: number) => (
               <Text key={index} style={styles.importantNoteText}>
                 • {note}
               </Text>

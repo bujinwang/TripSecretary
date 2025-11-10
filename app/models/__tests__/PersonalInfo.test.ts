@@ -4,8 +4,7 @@
  */
 
 import PersonalInfo from '../PersonalInfo';
-import type SecureStorageServiceType from '../../services/security/SecureStorageService';
-import SecureStorageService from '../../services/security/SecureStorageService';
+import secureStorageService from '../../services/security/SecureStorageService';
 
 jest.mock('../../services/security/SecureStorageService', () => {
   const mockService = {
@@ -20,7 +19,8 @@ jest.mock('../../services/security/SecureStorageService', () => {
   };
 });
 
-const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
+type SecureStorageServiceType = typeof secureStorageService;
+const mockedSecureStorage = secureStorageService as jest.Mocked<SecureStorageServiceType>;
 
 describe('PersonalInfo Model', () => {
   beforeEach(() => {
@@ -180,7 +180,9 @@ describe('PersonalInfo Model', () => {
       mockedSecureStorage.savePersonalInfo.mockResolvedValue({ id: personalInfo.id });
 
       const beforeUpdate = personalInfo.updatedAt;
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise<void>(resolve => {
+        setTimeout(() => resolve(), 10);
+      });
 
       await personalInfo.mergeUpdates({ occupation: 'Engineer' }, { skipValidation: true });
 

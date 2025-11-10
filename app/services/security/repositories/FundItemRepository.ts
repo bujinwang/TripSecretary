@@ -6,7 +6,7 @@
  * CRUD operations, queries, and relationships.
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type FundItemRow } from '../utils/DataSerializer';
 
 // Type definitions
 interface SQLiteDatabase {
@@ -96,7 +96,7 @@ class FundItemRepository {
       return null;
     }
 
-    return this.serializer.deserializeFundItem(row) as FundItemRecord;
+    return this.serializer.deserializeFundItem(this.assertRow(row)) as FundItemRecord;
   }
 
   /**
@@ -117,7 +117,7 @@ class FundItemRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeFundItem(row) as FundItemRecord);
+    return rows.map(row => this.serializer.deserializeFundItem(this.assertRow(row)) as FundItemRecord);
   }
 
   /**
@@ -139,7 +139,7 @@ class FundItemRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeFundItem(row) as FundItemRecord);
+    return rows.map(row => this.serializer.deserializeFundItem(this.assertRow(row)) as FundItemRecord);
   }
 
   /**
@@ -160,7 +160,7 @@ class FundItemRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeFundItem(row) as FundItemRecord);
+    return rows.map(row => this.serializer.deserializeFundItem(this.assertRow(row)) as FundItemRecord);
   }
 
   /**
@@ -193,6 +193,13 @@ class FundItemRepository {
     const query = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE user_id = ?`;
     const result = await this.db.getFirstAsync(query, [userId]) as { count: number } | null;
     return result?.count || 0;
+  }
+
+  private assertRow(row: unknown): FundItemRow {
+    if (row && typeof row === 'object') {
+      return row as FundItemRow;
+    }
+    throw new Error('Invalid fund item row retrieved from database');
   }
 
   /**

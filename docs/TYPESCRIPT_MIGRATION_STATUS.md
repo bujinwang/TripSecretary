@@ -29,8 +29,12 @@
 
 ### 📊 Migration Progress
 
-- **Total JS files**: ~672
-- **Migrated to TS**: 80 services
+- **app/**/*.js remaining**: 0 (340 files auto-converted on 2025-02-14 using `scripts/migrate_app_js_to_ts.py`)
+- **Conversion details**: Files renamed to `.ts`/`.tsx` with `// @ts-nocheck` banner for incremental typing
+- **Next focus**: Run validation suites, remove `@ts-nocheck`, tighten compiler options (`allowJs`, `strict`)
+
+#### Key conversions (historical log)
+- Migrated to TS: 80 services
   - LoggingService.ts ✅
   - BackgroundJobService.ts ✅
   - NotificationService.ts ✅
@@ -340,4 +344,3 @@ npm start
 - [TypeScript Migration Plan](./TYPESCRIPT_MIGRATION_PLAN.md)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [React Native TypeScript](https://reactnative.dev/docs/typescript)
-

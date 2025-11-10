@@ -1,76 +1,129 @@
 /**
  * QRCodeSection Component
  *
- * Displays the TDAC QR code with pinch-to-zoom, double-tap, and long-press gestures
- * Extracted from ImmigrationOfficerViewScreen for better maintainability
+ * Displays the TDAC QR code with pinch-to-zoom, double-tap, and long-press gestures.
+ * Extracted from ImmigrationOfficerViewScreen for better maintainability.
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, Platform, Dimensions, Image, Animated } from 'react-native';
 import {
   PinchGestureHandler,
   TapGestureHandler,
   LongPressGestureHandler,
   State,
+  type PinchGestureHandlerProps,
+  type HandlerStateChangeEvent,
+  type PinchGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { colors, spacing } from '../../../theme';
-import OptimizedImage from '../../../components/OptimizedImage';
 import { GESTURES } from '../immigrationOfficerViewConstants';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-/**
- * QR Code Section Component
- *
- * @param {Object} props - Component props
- * @param {Object} props.entryPack - Entry pack data containing QR code URI
- * @param {string} props.language - Display language ('english', 'thai', 'bilingual')
- * @param {number} props.qrZoom - Current zoom level
- * @param {Object} props.scale - Animated scale value
- * @param {Function} props.pinchGestureHandler - Pinch gesture handler
- * @param {Object} props.animatedQRStyle - Animated style for QR code
- * @param {Function} props.handleDoubleTap - Double tap handler
- * @param {Function} props.handleLongPressQR - Long press handler
- * @param {Function} props.t - Translation function
- * @param {Object} props.doubleTapRef - Ref for double tap gesture
- * @param {Object} props.longPressRef - Ref for long press gesture
- */
-const QRCodeSection = ({
+const QR_CODE_SIZE = Math.min(screenHeight * 0.5, screenWidth * 0.4, 400);
+
+type EntryPackPreview = {
+  qrCodeUri?: string | null;
+  arrCardNo?: string | null;
+  submittedAt?: string | null;
+};
+
+type TranslationFn = (key: string, defaultValue?: string) => string;
+
+type QRCodeSectionProps = {
+  entryPack?: EntryPackPreview | null;
+  language: 'english' | 'thai' | 'bilingual';
+  qrZoom: number;
+  onZoomChange?: (value: number) => void;
+  handleDoubleTap: () => void;
+  handleLongPressQR: () => void;
+  t: TranslationFn;
+  doubleTapRef: React.RefObject<TapGestureHandler>;
+  longPressRef: React.RefObject<LongPressGestureHandler>;
+};
+
+const QRCodeSection: React.FC<QRCodeSectionProps> = ({
   entryPack,
   language,
   qrZoom,
-  scale,
-  pinchGestureHandler,
-  animatedQRStyle,
+  onZoomChange,
   handleDoubleTap,
   handleLongPressQR,
   t,
   doubleTapRef,
   longPressRef,
 }) => {
-  const formatEntryCardNumber = (cardNumber) => {
+  const baseScale = useRef(new Animated.Value(qrZoom || 1)).current;
+  const pinchScale = useRef(new Animated.Value(1)).current;
+  const lastScale = useRef(qrZoom || 1);
+
+  useEffect(() => {
+    const clamped = Math.min(Math.max(qrZoom, GESTURES.MIN_PINCH_SCALE), GESTURES.MAX_PINCH_SCALE);
+    lastScale.current = clamped;
+    baseScale.setValue(clamped);
+    pinchScale.setValue(1);
+  }, [baseScale, pinchScale, qrZoom]);
+
+  const handlePinchEvent = useMemo(
+    () =>
+      Animated.event([{ nativeEvent: { scale: pinchScale } }], {
+        useNativeDriver: true,
+      }),
+    [pinchScale]
+  );
+
+  const handlePinchStateChange = useCallback(
+    ({ nativeEvent }: HandlerStateChangeEvent<PinchGestureHandlerEventPayload>) => {
+      if (
+        nativeEvent.state === State.END ||
+        nativeEvent.state === State.CANCELLED ||
+        nativeEvent.state === State.FAILED
+      ) {
+        let nextScale = lastScale.current * nativeEvent.scale;
+        nextScale = Math.min(Math.max(nextScale, GESTURES.MIN_PINCH_SCALE), GESTURES.MAX_PINCH_SCALE);
+        lastScale.current = nextScale;
+        baseScale.setValue(nextScale);
+        pinchScale.setValue(1);
+        onZoomChange?.(nextScale);
+      }
+    },
+    [baseScale, onZoomChange, pinchScale]
+  );
+
+  const animatedQRStyle = useMemo(
+    () => ({
+      transform: [{ scale: Animated.multiply(baseScale, pinchScale) }],
+    }),
+    [baseScale, pinchScale]
+  );
+
+  const formatEntryCardNumber = (cardNumber: string | null | undefined): string => {
     if (!cardNumber) {
-return 'XXXX-XXXX-XXXX';
-}
+      return 'XXXX-XXXX-XXXX';
+    }
 
     const cleanNumber = cardNumber.replace(/[^0-9A-Z]/g, '');
 
     if (cleanNumber.length >= 12) {
       return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4, 8)}-${cleanNumber.slice(8, 12)}`;
-    } else if (cleanNumber.length >= 8) {
-      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4, 8)}-${cleanNumber.slice(8)}`;
-    } else if (cleanNumber.length >= 4) {
-      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4)}`;
-    } else {
-      return cleanNumber || 'XXXX-XXXX-XXXX';
     }
+
+    if (cleanNumber.length >= 8) {
+      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4, 8)}-${cleanNumber.slice(8)}`;
+    }
+
+    if (cleanNumber.length >= 4) {
+      return `${cleanNumber.slice(0, 4)}-${cleanNumber.slice(4)}`;
+    }
+
+    return cleanNumber || 'XXXX-XXXX-XXXX';
   };
 
-  const formatDateForDisplay = (dateString) => {
+  const formatDateForDisplay = (dateString: string | null | undefined): string => {
     if (!dateString) {
-return 'N/A';
-}
+      return 'N/A';
+    }
 
     try {
       const date = new Date(dateString);
@@ -78,40 +131,54 @@ return 'N/A';
       if (language === 'thai') {
         const buddhistYear = date.getFullYear() + 543;
         const thaiMonths = [
-          'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-          'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+          'มกราคม',
+          'กุมภาพันธ์',
+          'มีนาคม',
+          'เมษายน',
+          'พฤษภาคม',
+          'มิถุนายน',
+          'กรกฎาคม',
+          'สิงหาคม',
+          'กันยายน',
+          'ตุลาคม',
+          'พฤศจิกายน',
+          'ธันวาคม',
         ];
         return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${buddhistYear}`;
-      } else {
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
       }
-    } catch (error) {
-      return dateString;
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString ?? 'N/A';
     }
   };
 
-  const getSectionTitle = () => {
+  const getSectionTitle = (): string => {
     if (language === 'english') {
       return t('progressiveEntryFlow.immigrationOfficer.presentation.tdacQRCode');
-    } else if (language === 'thai') {
-      return 'รหัส QR TDAC';
-    } else {
-      return `รหัส QR TDAC / ${t('progressiveEntryFlow.immigrationOfficer.presentation.tdacQRCode')}`;
     }
+
+    if (language === 'thai') {
+      return 'รหัส QR TDAC';
+    }
+
+    return `รหัส QR TDAC / ${t('progressiveEntryFlow.immigrationOfficer.presentation.tdacQRCode')}`;
   };
 
-  const getSubmittedText = () => {
+  const getSubmittedText = (): string => {
     if (language === 'english') {
       return t('progressiveEntryFlow.immigrationOfficer.presentation.submitted');
-    } else if (language === 'thai') {
-      return 'ส่งเมื่อ';
-    } else {
-      return `ส่งเมื่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.submitted')}`;
     }
+
+    if (language === 'thai') {
+      return 'ส่งเมื่อ';
+    }
+
+    return `ส่งเมื่อ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.submitted')}`;
   };
 
   return (
@@ -139,7 +206,10 @@ return 'N/A';
               numberOfTaps={2}
               waitFor={longPressRef}
             >
-              <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
+              <PinchGestureHandler
+                onGestureEvent={handlePinchEvent as PinchGestureHandlerProps['onGestureEvent']}
+                onHandlerStateChange={handlePinchStateChange}
+              >
                 <Animated.View style={[styles.qrCodeContainer, animatedQRStyle]}>
                   <Image
                     source={{ uri: entryPack.qrCodeUri }}
@@ -172,7 +242,6 @@ return 'N/A';
           </View>
         )}
 
-        {/* Zoom indicator */}
         {qrZoom !== 1 && (
           <View style={styles.zoomIndicator}>
             <Text style={styles.zoomText}>{Math.round(qrZoom * 100)}%</Text>
@@ -191,8 +260,6 @@ return 'N/A';
   );
 };
 
-const QR_CODE_SIZE = Math.min(screenHeight * 0.5, screenWidth * 0.4, 400);
-
 const styles = StyleSheet.create({
   qrSection: {
     alignItems: 'center',
@@ -210,21 +277,31 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     borderRadius: 20,
     marginBottom: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
     borderWidth: 4,
     borderColor: colors.white,
   },
   qrCodeContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  qrCode: {
     width: QR_CODE_SIZE,
     height: QR_CODE_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrCode: {
+    width: '100%',
+    height: '100%',
   },
   qrPlaceholder: {
     width: QR_CODE_SIZE,
@@ -240,7 +317,7 @@ const styles = StyleSheet.create({
   qrPlaceholderText: {
     color: colors.textSecondary,
     fontSize: 18,
-    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: spacing.xs,
   },
   qrPlaceholderSubtext: {
@@ -248,37 +325,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  entryCardNumber: {
-    color: colors.white,
-    fontSize: 40,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-    letterSpacing: 3,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-  },
-  submissionDate: {
-    color: colors.white,
-    fontSize: 16,
-    opacity: 0.8,
-  },
   zoomIndicator: {
     position: 'absolute',
-    top: spacing.sm,
+    bottom: spacing.sm,
     right: spacing.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 5,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
   },
   zoomText: {
     color: colors.white,
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+  },
+  entryCardNumber: {
+    color: colors.white,
+    fontSize: 32,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    marginTop: spacing.md,
+  },
+  submissionDate: {
+    color: colors.white,
+    fontSize: 18,
+    marginTop: spacing.xs,
+    opacity: 0.9,
   },
 });
 
 export default QRCodeSection;
+

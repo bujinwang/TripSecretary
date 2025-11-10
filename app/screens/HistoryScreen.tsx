@@ -8,11 +8,35 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Card from '../components/Card';
 import { colors, typography, spacing } from '../theme';
 import { useLocale } from '../i18n/LocaleContext';
+import type { SerializablePassport, TravelInfoData } from '../types/data';
+import type { DestinationParam } from '../types/navigation';
 
-const HISTORY_SECTIONS = [
+type HistoryScreenProps = {
+  navigation: {
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
+};
+
+type HistoryItemSeed = {
+  id: string;
+  flag: string;
+  destinationKey: string;
+  timeKey: string;
+  passportKey: string;
+  destinationData: DestinationParam & { id?: string; flag?: string; name?: string };
+  travelInfoData: TravelInfoData;
+  passportData: SerializablePassport;
+};
+
+type HistorySectionSeed = {
+  id: string;
+  titleKey: string;
+  items: HistoryItemSeed[];
+};
+
+const HISTORY_SECTIONS: HistorySectionSeed[] = [
   {
     id: 'today',
     titleKey: 'history.sections.today',
@@ -25,6 +49,7 @@ const HISTORY_SECTIONS = [
         passportKey: 'history.items.hk.passport',
         destinationData: { id: 'hk', flag: '🇭🇰' },
         travelInfoData: {
+          userId: 'demo_user',
           flightNumber: 'CX888',
           arrivalDate: new Date().toISOString().split('T')[0],
           hotelName: 'Mandarin Oriental Hong Kong',
@@ -32,6 +57,13 @@ const HISTORY_SECTIONS = [
           contactPhone: '+852 2522 0111',
           stayDuration: '3',
           travelPurpose: 'tourism',
+        },
+        passportData: {
+          id: 'passport_hk_preview',
+          userId: 'demo_user',
+          passportNumber: 'P1234567',
+          fullName: 'LEE, MING',
+          nationality: 'HKG',
         },
       },
     ],
@@ -48,6 +80,7 @@ const HISTORY_SECTIONS = [
         passportKey: 'history.items.th.passport',
         destinationData: { id: 'th', flag: '🇹🇭' },
         travelInfoData: {
+          userId: 'demo_user',
           flightNumber: 'CA981',
           arrivalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
             .toISOString()
@@ -58,12 +91,19 @@ const HISTORY_SECTIONS = [
           stayDuration: '7',
           travelPurpose: 'tourism',
         },
+        passportData: {
+          id: 'passport_th_preview',
+          userId: 'demo_user',
+          passportNumber: 'T7654321',
+          fullName: 'ZHANG, WEI',
+          nationality: 'CHN',
+        },
       },
     ],
   },
 ];
 
-const HistoryScreen = ({ navigation }) => {
+const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
   const { t } = useLocale();
 
   const historyData = useMemo(() => {
@@ -87,8 +127,7 @@ const HistoryScreen = ({ navigation }) => {
     }));
   }, [t]);
 
-
-  const handleViewItem = (item) => {
+  const handleViewItem = (item: HistoryItemSeed) => {
     // Navigate to Result screen with the history item's data
     navigation.navigate('Result', {
       passport: item.passportData,

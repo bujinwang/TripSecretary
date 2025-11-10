@@ -6,7 +6,7 @@
  * CRUD operations, queries, and relationships.
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type PersonalInfoRow } from '../utils/DataSerializer';
 import DecryptionHelper from '../utils/DecryptionHelper';
 
 // Type definitions
@@ -109,14 +109,15 @@ class PersonalInfoRepository {
    */
   async getById(id: string): Promise<PersonalInfoRecord | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE id = ?`;
-    const row = await this.db.getFirstAsync(query, [id]) as PersonalInfoRecord | null;
+    const row = await this.db.getFirstAsync(query, [id]);
 
     if (!row) {
       return null;
     }
 
-    const decryptedFields = await this.decryption.decryptPersonalInfoFields(row);
-    return this.serializer.deserializePersonalInfo(row, decryptedFields) as PersonalInfoRecord;
+    const dbRow = this.assertRow(row);
+    const decryptedFields = await this.decryption.decryptPersonalInfoFields(dbRow);
+    return this.serializer.deserializePersonalInfo(dbRow, decryptedFields) as PersonalInfoRecord;
   }
 
   /**
@@ -131,7 +132,7 @@ class PersonalInfoRepository {
       ORDER BY is_default DESC, created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId]) as PersonalInfoRecord[];
+    const rows = await this.db.getAllAsync(query, [userId]);
 
     if (!rows || rows.length === 0) {
       return [];
@@ -139,8 +140,9 @@ class PersonalInfoRepository {
 
     const personalInfos: PersonalInfoRecord[] = [];
     for (const row of rows) {
-      const decryptedFields = await this.decryption.decryptPersonalInfoFields(row);
-      personalInfos.push(this.serializer.deserializePersonalInfo(row, decryptedFields) as PersonalInfoRecord);
+      const dbRow = this.assertRow(row);
+      const decryptedFields = await this.decryption.decryptPersonalInfoFields(dbRow);
+      personalInfos.push(this.serializer.deserializePersonalInfo(dbRow, decryptedFields) as PersonalInfoRecord);
     }
 
     return personalInfos;
@@ -158,14 +160,15 @@ class PersonalInfoRepository {
       LIMIT 1
     `;
 
-    const row = await this.db.getFirstAsync(query, [userId]) as PersonalInfoRecord | null;
+    const row = await this.db.getFirstAsync(query, [userId]);
 
     if (!row) {
       return null;
     }
 
-    const decryptedFields = await this.decryption.decryptPersonalInfoFields(row);
-    return this.serializer.deserializePersonalInfo(row, decryptedFields) as PersonalInfoRecord;
+    const dbRow = this.assertRow(row);
+    const decryptedFields = await this.decryption.decryptPersonalInfoFields(dbRow);
+    return this.serializer.deserializePersonalInfo(dbRow, decryptedFields) as PersonalInfoRecord;
   }
 
   /**
@@ -202,14 +205,15 @@ class PersonalInfoRepository {
       ORDER BY created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [passportId]) as PersonalInfoRecord[];
+    const rows = await this.db.getAllAsync(query, [passportId]);
 
     if (!rows || rows.length === 0) {
       return [];
     }
 
     const personalInfos: PersonalInfoRecord[] = [];
-    for (const row of rows) {
+    for (const rawRow of rows) {
+      const row = this.assertRow(rawRow);
       const decryptedFields = await this.decryption.decryptPersonalInfoFields(row);
       personalInfos.push(this.serializer.deserializePersonalInfo(row, decryptedFields) as PersonalInfoRecord);
     }
@@ -247,6 +251,13 @@ class PersonalInfoRepository {
     const query = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE user_id = ?`;
     const result = await this.db.getFirstAsync(query, [userId]) as { count: number } | null;
     return result?.count || 0;
+  }
+
+  private assertRow(row: unknown): PersonalInfoRow {
+    if (row && typeof row === 'object') {
+      return row as PersonalInfoRow;
+    }
+    throw new Error('Invalid personal info row retrieved from database');
   }
 
   /**
@@ -289,14 +300,15 @@ class PersonalInfoRepository {
       ORDER BY created_at DESC
     `;
 
-    const rows = await this.db.getAllAsync(query, [userId, countryRegion]) as PersonalInfoRecord[];
+    const rows = await this.db.getAllAsync(query, [userId, countryRegion]);
 
     if (!rows || rows.length === 0) {
       return [];
     }
 
     const personalInfos: PersonalInfoRecord[] = [];
-    for (const row of rows) {
+    for (const rawRow of rows) {
+      const row = this.assertRow(rawRow);
       const decryptedFields = await this.decryption.decryptPersonalInfoFields(row);
       personalInfos.push(this.serializer.deserializePersonalInfo(row, decryptedFields) as PersonalInfoRecord);
     }

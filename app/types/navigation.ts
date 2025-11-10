@@ -1,6 +1,31 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { SerializablePassport, AllUserData, TravelInfoData } from './data';
+import type { ImmigrationOfficerViewParams, TDACTravelerInfo } from './thailand';
+
+export interface OCRConfidence {
+  overall?: number;
+  [key: string]: number | undefined;
+}
+
+export interface PassportValidationFieldResult {
+  isValid?: boolean;
+  errors?: string[];
+}
+
+export interface PassportValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  fields?: Record<string, PassportValidationFieldResult>;
+}
+
+export type DestinationParam = {
+  id?: string;
+  name?: string;
+  [key: string]: unknown;
+} | null;
 
 export type MainTabParamList = {
   Home: undefined;
@@ -12,17 +37,57 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
   ScanPassport: undefined;
-  SelectDestination: undefined;
+  PassportReview:
+    | {
+        passportData?: SerializablePassport | null;
+        confidence?: OCRConfidence;
+        method?: string;
+        validation?: PassportValidationResult | null;
+      }
+    | undefined;
+  SelectDestination:
+    | {
+        passport?: SerializablePassport | null;
+      }
+    | undefined;
   TravelInfo: undefined;
   Generating: undefined;
   Result: undefined;
   PresentToCustoms: undefined;
   PIKGuide: undefined;
-  CopyWrite: undefined;
-  TDACSelection: undefined;
-  TDACWebView: undefined;
-  TDACAPI: undefined;
-  TDACHybrid: undefined;
+  CopyWrite:
+    | {
+        passport?: SerializablePassport | null;
+        destination?: DestinationParam;
+        travelInfo?: TravelInfoData | null;
+        userId?: string;
+      }
+    | undefined;
+  TDACSelection:
+    | {
+        destinationId?: string | null;
+        entryInfoId?: string;
+        regeneratePDF?: boolean;
+        cardType?: string;
+        travelerInfo?: TDACTravelerInfo | null;
+      }
+    | undefined;
+  TDACWebView:
+    | {
+        travelerInfo?: TDACTravelerInfo | null;
+      }
+    | undefined;
+  TDACAPI:
+    | {
+        travelerInfo?: TDACTravelerInfo | null;
+        autoSubmit?: boolean;
+      }
+    | undefined;
+  TDACHybrid:
+    | {
+        travelerInfo?: TDACTravelerInfo | null;
+      }
+    | undefined;
   TDACFiles: undefined;
   SingaporeInfo: undefined;
   SingaporeRequirements: undefined;
@@ -64,18 +129,81 @@ export type RootStackParamList = {
   USAEntryFlow: undefined;
   USAEntryPackPreview: undefined;
   USAEntryGuide: undefined;
-  SGArrivalSelection: undefined;
-  SGArrivalGuide: undefined;
-  SGArrivalWebView: undefined;
+  SGArrivalSelection: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+    travelInfo?: TravelInfoData | null;
+  } | undefined;
+  SGArrivalGuide: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+    travelInfo?: TravelInfoData | null;
+  } | undefined;
+  SGArrivalWebView: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+    travelInfo?: TravelInfoData | null;
+  } | undefined;
+  SGACSelection: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+  } | undefined;
+  SGACWebView: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+    userData?: Partial<AllUserData> | null;
+    submissionMethod: 'online' | 'airport';
+  } | undefined;
+  SGACAirportGuide: {
+    passport?: SerializablePassport | null;
+    destination?: DestinationParam;
+    userData?: Partial<AllUserData> | null;
+    submissionMethod: 'online' | 'airport';
+  } | undefined;
   AirportArrival: undefined;
   ImmigrationGuide: undefined;
-  ThailandInteractiveImmigrationGuide: undefined;
-  ImmigrationOfficerView: undefined;
-  ThailandEntryQuestions: undefined;
+  ThailandInteractiveImmigrationGuide:
+    | {
+        destinationId?: string | null;
+        entryInfoId?: string;
+        cardType?: string;
+        currentStep?: number;
+      }
+    | undefined;
+  ImmigrationOfficerView: ImmigrationOfficerViewParams | undefined;
+  ThailandEntryQuestions:
+    | {
+        entryPackId?: string;
+        preferredLanguage?: 'zh' | 'en' | 'th';
+      }
+    | undefined;
   ThailandInfo: undefined;
   ThailandRequirements: undefined;
-  ThailandEntryFlow: undefined;
-  ThailandTravelInfo: undefined;
+  ThailandEntryFlow:
+    | {
+        passport?: SerializablePassport | null;
+        destination?: DestinationParam;
+        entryPackId?: string;
+        fromNotification?: boolean;
+        notificationData?: Record<string, unknown>;
+        expandSection?: string;
+        resubmissionMode?: boolean;
+        showResubmissionHint?: boolean;
+        highlightMissingFields?: boolean;
+      }
+    | undefined;
+  ThailandTravelInfo:
+    | {
+        entryInfoId?: string;
+        destinationId?: string | null;
+        destination?: DestinationParam;
+        passport?: SerializablePassport | null;
+        expandSection?: string;
+        resubmissionMode?: boolean;
+        showResubmissionHint?: boolean;
+        highlightMissingFields?: boolean;
+      }
+    | undefined;
   ThailandEntryGuide: undefined;
   ThailandEntryPackPreview: undefined;
   VietnamInfo: undefined;
@@ -91,8 +219,21 @@ export type RootStackParamList = {
   JapanEntryFlow: undefined;
   JapanEntryGuide: undefined;
   JapanInteractiveImmigrationGuide: undefined;
-  EntryInfoDetail: undefined;
-  EntryPackPreview: undefined;
+  EntryInfoDetail:
+    | {
+        entryInfoId: string;
+        isHistorical?: boolean;
+      }
+    | undefined;
+  EntryPackPreview:
+    | {
+        userData?: Record<string, unknown> | null;
+        passport?: SerializablePassport | null;
+        destination?: DestinationParam;
+        entryPackData?: Record<string, unknown>;
+        entryPackId?: string;
+      }
+    | undefined;
   EntryInfoHistory: undefined;
   NotificationSettings: undefined;
   NotificationLog: undefined;

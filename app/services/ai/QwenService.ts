@@ -150,11 +150,14 @@ class QwenService {
       throw new Error('缺少用户输入');
     }
 
-    const messages: QwenMessage[] = [
-      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-      ...this.buildContextMessages(context),
-      { role: 'user', content: userMessage }
-    ];
+    const messages: QwenMessage[] = [];
+
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+
+    messages.push(...this.buildContextMessages(context));
+    messages.push({ role: 'user', content: userMessage });
 
     try {
       const response = await fetch(this.baseURL, {

@@ -6,10 +6,11 @@
  */
 
 import * as FileSystem from 'expo-file-system';
-import { File, Directory, Paths } from 'expo-file-system';
+import { Paths } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import EncryptionService from './EncryptionService';
 import SecureStorageService from './SecureStorageService';
+import logger from '../LoggingService';
 
 // Type definitions
 export interface EncryptedSnapshotInfo {
@@ -89,7 +90,7 @@ class DataEncryptionService {
    */
   async initialize(userId: string | null = null): Promise<void> {
     try {
-      console.log('Initializing DataEncryptionService for user:', userId);
+      logger.info('DataEncryptionService', 'Initializing DataEncryptionService', { userId });
 
       // Ensure encrypted storage directory exists
       await this.ensureDirectoryExists(this.encryptedStorageDir);
@@ -105,9 +106,9 @@ class DataEncryptionService {
       // Generate or load device-specific encryption key
       await this.setupDeviceKey();
 
-      console.log('DataEncryptionService initialized successfully');
+      logger.info('DataEncryptionService', 'DataEncryptionService initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize DataEncryptionService:', error);
+      logger.error('DataEncryptionService', error, { operation: 'initialize', userId });
       throw error;
     }
   }
@@ -124,13 +125,13 @@ class DataEncryptionService {
         // Generate new device key
         deviceKey = this.encryption.generateRandomKey();
         await SecureStore.setItemAsync(deviceKeyName, deviceKey);
-        console.log('Generated new device encryption key');
+        logger.info('DataEncryptionService', 'Generated new device encryption key');
       }
 
       // Store device key for use
       this.deviceKey = deviceKey;
     } catch (error) {
-      console.error('Failed to setup device key:', error);
+      logger.error('DataEncryptionService', error, { operation: 'setupDeviceKey' });
       throw error;
     }
   }
@@ -141,7 +142,7 @@ class DataEncryptionService {
   async encryptSnapshotData(snapshotData: SnapshotData, snapshotId: string): Promise<EncryptedSnapshotInfo> {
     try {
       if (!this.encryptionEnabled) {
-        console.log('Encryption disabled, storing snapshot data in plain text');
+        logger.info('DataEncryptionService', 'Encryption disabled, storing snapshot data in plain text');
         return {
           encrypted: false,
           filePath: await this.saveSnapshotDataPlain(snapshotData, snapshotId),
@@ -149,7 +150,7 @@ class DataEncryptionService {
         };
       }
 
-      console.log('Encrypting snapshot data:', snapshotId);
+      logger.info('DataEncryptionService', 'Encrypting snapshot data', { snapshotId });
 
       // Serialize snapshot data
       const serializedData = JSON.stringify(snapshotData, null, 2);
@@ -160,17 +161,16 @@ class DataEncryptionService {
 
       // Save encrypted data to file
       const encryptedFilePath = `${this.encryptedStorageDir}snapshot_${snapshotId}.enc`;
-      const encryptedFile = new File(encryptedFilePath);
-      await encryptedFile.write(encryptedData);
+      await FileSystem.writeAsStringAsync(encryptedFilePath, encryptedData);
 
-      // Verify file was created
-      if (!encryptedFile.exists) {
+      const encryptedInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
         throw new Error('Failed to save encrypted snapshot data');
       }
 
-      const encryptedSize = encryptedFile.size || 0;
+      const encryptedSize = encryptedInfo.size ?? 0;
 
-      console.log('Snapshot data encrypted successfully:', {
+      logger.info('DataEncryptionService', 'Snapshot data encrypted successfully', {
         snapshotId,
         originalSize: serializedData.length,
         encryptedSize: encryptedSize
@@ -182,11 +182,11 @@ class DataEncryptionService {
         encryptionMethod: 'AES-256-GCM',
         fieldType: fieldType,
         originalSize: serializedData.length,
-        encryptedSize: encryptedSize || 0
+        encryptedSize
       };
 
     } catch (error) {
-      console.error('Failed to encrypt snapshot data:', error);
+      logger.error('DataEncryptionService', error, { operation: 'encryptSnapshotData', snapshotId });
       throw error;
     }
   }
@@ -196,18 +196,17 @@ class DataEncryptionService {
    */
   async decryptSnapshotData(encryptedFilePath: string, snapshotId: string): Promise<SnapshotData> {
     try {
-      console.log('Decrypting snapshot data:', snapshotId);
+      logger.info('DataEncryptionService', 'Decrypting snapshot data', { snapshotId });
 
       // Check if file exists
-      const encryptedFile = new File(encryptedFilePath);
-      if (!encryptedFile.exists) {
+      const encryptedInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
         throw new Error(`Encrypted snapshot file not found: ${encryptedFilePath}`);
       }
 
       // Read encrypted data
-      const encryptedData = await encryptedFile.text();
-
-      const encryptedSize = encryptedFile.size || 0;
+      const encryptedData = await FileSystem.readAsStringAsync(encryptedFilePath);
+      const encryptedSize = encryptedInfo.size ?? 0;
 
       // Decrypt using snapshot-specific field type
       const fieldType = `snapshot_${snapshotId}`;
@@ -216,7 +215,7 @@ class DataEncryptionService {
       // Parse JSON data
       const snapshotData = JSON.parse(decryptedData);
 
-      console.log('Snapshot data decrypted successfully:', {
+      logger.info('DataEncryptionService', 'Snapshot data decrypted successfully', {
         snapshotId,
         encryptedSize: encryptedSize,
         decryptedSize: decryptedData.length
@@ -225,7 +224,7 @@ class DataEncryptionService {
       return snapshotData;
 
     } catch (error) {
-      console.error('Failed to decrypt snapshot data:', error);
+      logger.error('DataEncryptionService', error, { operation: 'decryptSnapshotData', snapshotId });
       throw error;
     }
   }
@@ -236,7 +235,7 @@ class DataEncryptionService {
   async encryptSnapshotPhotos(photoFiles: PhotoFile[], snapshotId: string): Promise<PhotoFile[]> {
     try {
       if (!this.encryptionEnabled) {
-        console.log('Encryption disabled, photos stored in plain text');
+        logger.info('DataEncryptionService', 'Encryption disabled, photos stored in plain text');
         return photoFiles.map(photo => ({
           ...photo,
           encrypted: false,
@@ -244,7 +243,7 @@ class DataEncryptionService {
         }));
       }
 
-      console.log('Encrypting snapshot photos:', {
+      logger.info('DataEncryptionService', 'Encrypting snapshot photos', {
         snapshotId,
         photoCount: photoFiles.length
       });
@@ -257,9 +256,15 @@ class DataEncryptionService {
 
       for (const photo of photoFiles) {
         try {
+          const originalInfo = await FileSystem.getInfoAsync(photo.filePath);
+          if (!originalInfo.exists || originalInfo.isDirectory) {
+            throw new Error(`Photo file not found: ${photo.filePath}`);
+          }
+
           // Read photo file as base64
-          const photoFile = new File(photo.filePath);
-          const photoData = await photoFile.base64();
+          const photoData = await FileSystem.readAsStringAsync(photo.filePath, {
+            encoding: FileSystem.EncodingType.Base64
+          });
 
           // Encrypt photo data
           const fieldType = `photo_${snapshotId}_${photo.fundItemId}`;
@@ -267,15 +272,14 @@ class DataEncryptionService {
 
           // Save encrypted photo
           const encryptedPhotoPath = `${encryptedPhotoDir}${photo.fundItemId}_encrypted.enc`;
-          const encryptedPhotoFile = new File(encryptedPhotoPath);
-          await encryptedPhotoFile.write(encryptedPhotoData);
+          await FileSystem.writeAsStringAsync(encryptedPhotoPath, encryptedPhotoData);
 
-          // Verify encrypted file
-          if (!encryptedPhotoFile.exists) {
+          const encryptedInfo = await FileSystem.getInfoAsync(encryptedPhotoPath);
+          if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
             throw new Error(`Failed to save encrypted photo: ${photo.fundItemId}`);
           }
 
-          const encryptedPhotoSize = encryptedPhotoFile.size || 0;
+          const encryptedPhotoSize = encryptedInfo.size ?? 0;
 
           encryptedPhotos.push({
             ...photo,
@@ -284,17 +288,20 @@ class DataEncryptionService {
             encryptionMethod: 'AES-256-GCM',
             fieldType: fieldType,
             originalSize: photoData.length,
-            encryptedSize: encryptedPhotoSize || 0
+            encryptedSize: encryptedPhotoSize
           });
 
-          console.log('Photo encrypted successfully:', {
+          logger.debug('DataEncryptionService', 'Photo encrypted successfully', {
             fundItemId: photo.fundItemId,
             originalPath: photo.filePath,
             encryptedPath: encryptedPhotoPath
           });
 
         } catch (photoError) {
-          console.error(`Failed to encrypt photo ${photo.fundItemId}:`, photoError);
+          logger.error('DataEncryptionService', photoError, { 
+            operation: 'encryptPhoto', 
+            fundItemId: photo.fundItemId 
+          });
           const errorMessage = photoError instanceof Error ? photoError.message : 'Unknown error';
           // Keep original photo info but mark as failed
           encryptedPhotos.push({
@@ -308,7 +315,7 @@ class DataEncryptionService {
       return encryptedPhotos;
 
     } catch (error) {
-      console.error('Failed to encrypt snapshot photos:', error);
+      logger.error('DataEncryptionService', error, { operation: 'encryptSnapshotPhotos', snapshotId });
       throw error;
     }
   }
@@ -318,7 +325,7 @@ class DataEncryptionService {
    */
   async decryptSnapshotPhotos(encryptedPhotos: PhotoFile[], snapshotId: string, outputDir: string): Promise<PhotoFile[]> {
     try {
-      console.log('Decrypting snapshot photos:', {
+      logger.info('DataEncryptionService', 'Decrypting snapshot photos', {
         snapshotId,
         photoCount: encryptedPhotos.length
       });
@@ -333,10 +340,10 @@ class DataEncryptionService {
           if (!photo.encrypted || !photo.encryptedPath) {
             // Photo was not encrypted, copy original if it exists
             if (photo.filePath) {
-              const originalFile = new File(photo.filePath) as any;
-              if (originalFile.exists) {
+              const originalInfo = await FileSystem.getInfoAsync(photo.filePath);
+              if (originalInfo.exists && !originalInfo.isDirectory) {
                 const outputPath = `${outputDir}${photo.fundItemId}_original.jpg`;
-                await originalFile.copy(outputPath);
+                await FileSystem.copyAsync({ from: photo.filePath, to: outputPath });
                 decryptedPhotos.push({
                   ...photo,
                   decryptedPath: outputPath
@@ -347,8 +354,12 @@ class DataEncryptionService {
           }
 
           // Read encrypted photo data
-          const encryptedPhotoFile = new File(photo.encryptedPath);
-          const encryptedPhotoData = await encryptedPhotoFile.text();
+          const encryptedInfo = await FileSystem.getInfoAsync(photo.encryptedPath);
+          if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
+            throw new Error(`Encrypted photo not found: ${photo.encryptedPath}`);
+          }
+
+          const encryptedPhotoData = await FileSystem.readAsStringAsync(photo.encryptedPath);
 
           // Decrypt photo data
           const fieldType = photo.fieldType || `photo_${snapshotId}_${photo.fundItemId}`;
@@ -356,32 +367,34 @@ class DataEncryptionService {
 
           // Save decrypted photo
           const decryptedPhotoPath = `${outputDir}${photo.fundItemId}_decrypted.jpg`;
-          // Convert base64 string to bytes and write
-          const bytes = Uint8Array.from(atob(decryptedPhotoData), c => c.charCodeAt(0));
-          const decryptedPhotoFile = new File(decryptedPhotoPath);
-          await decryptedPhotoFile.write(bytes);
+          await FileSystem.writeAsStringAsync(decryptedPhotoPath, decryptedPhotoData, {
+            encoding: FileSystem.EncodingType.Base64
+          });
 
-          // Verify decrypted file
-          if (!decryptedPhotoFile.exists) {
+          const decryptedInfo = await FileSystem.getInfoAsync(decryptedPhotoPath);
+          if (!decryptedInfo.exists || decryptedInfo.isDirectory) {
             throw new Error(`Failed to save decrypted photo: ${photo.fundItemId}`);
           }
 
-          const decryptedPhotoSize = decryptedPhotoFile.size || 0;
+          const decryptedPhotoSize = decryptedInfo.size ?? 0;
 
           decryptedPhotos.push({
             ...photo,
             decryptedPath: decryptedPhotoPath,
-            decryptedSize: decryptedPhotoSize || 0
+            decryptedSize: decryptedPhotoSize
           });
 
-          console.log('Photo decrypted successfully:', {
+          logger.debug('DataEncryptionService', 'Photo decrypted successfully', {
             fundItemId: photo.fundItemId,
             encryptedPath: photo.encryptedPath,
             decryptedPath: decryptedPhotoPath
           });
 
         } catch (photoError) {
-          console.error(`Failed to decrypt photo ${photo.fundItemId}:`, photoError);
+          logger.error('DataEncryptionService', photoError, { 
+            operation: 'decryptPhoto', 
+            fundItemId: photo.fundItemId 
+          });
           const errorMessage = photoError instanceof Error ? photoError.message : 'Unknown error';
           decryptedPhotos.push({
             ...photo,
@@ -393,7 +406,7 @@ class DataEncryptionService {
       return decryptedPhotos;
 
     } catch (error) {
-      console.error('Failed to decrypt snapshot photos:', error);
+      logger.error('DataEncryptionService', error, { operation: 'decryptSnapshotPhotos', snapshotId });
       throw error;
     }
   }
@@ -403,11 +416,15 @@ class DataEncryptionService {
    */
   async encryptExportFile(filePath: string, password: string | null = null): Promise<EncryptedExportInfo> {
     try {
-      console.log('Encrypting export file:', filePath);
+      logger.info('DataEncryptionService', 'Encrypting export file', { filePath });
 
       // Read export file
-      const exportFile = new File(filePath);
-      const exportData = await exportFile.text();
+      const exportInfo = await FileSystem.getInfoAsync(filePath);
+      if (!exportInfo.exists || exportInfo.isDirectory) {
+        throw new Error(`Export file not found: ${filePath}`);
+      }
+
+      const exportData = await FileSystem.readAsStringAsync(filePath);
 
       // Determine encryption field type
       let fieldType = 'export_data';
@@ -421,17 +438,16 @@ class DataEncryptionService {
 
       // Create encrypted file path
       const encryptedFilePath = filePath.replace(/\.(json|zip)$/, '.enc');
-      const encryptedFile = new File(encryptedFilePath);
-      await encryptedFile.write(encryptedData);
+      await FileSystem.writeAsStringAsync(encryptedFilePath, encryptedData);
 
-      // Verify encrypted file
-      if (!encryptedFile.exists) {
+      const encryptedInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
         throw new Error('Failed to save encrypted export file');
       }
 
-      const encryptedSize = encryptedFile.size || 0;
+      const encryptedSize = encryptedInfo.size ?? 0;
 
-      console.log('Export file encrypted successfully:', {
+      logger.info('DataEncryptionService', 'Export file encrypted successfully', {
         originalPath: filePath,
         encryptedPath: encryptedFilePath,
         originalSize: exportData.length,
@@ -445,12 +461,12 @@ class DataEncryptionService {
         encryptionMethod: 'AES-256-GCM',
         fieldType: fieldType,
         originalSize: exportData.length,
-        encryptedSize: encryptedSize || 0,
+        encryptedSize,
         passwordProtected: !!password
       };
 
     } catch (error) {
-      console.error('Failed to encrypt export file:', error);
+      logger.error('DataEncryptionService', error, { operation: 'encryptExportFile', filePath });
       throw error;
     }
   }
@@ -460,11 +476,15 @@ class DataEncryptionService {
    */
   async decryptExportFile(encryptedFilePath: string, password: string | null = null): Promise<DecryptedExportInfo> {
     try {
-      console.log('Decrypting export file:', encryptedFilePath);
+      logger.info('DataEncryptionService', 'Decrypting export file', { encryptedFilePath });
 
       // Read encrypted file
-      const encryptedFile = new File(encryptedFilePath);
-      const encryptedData = await encryptedFile.text();
+      const encryptedInfo = await FileSystem.getInfoAsync(encryptedFilePath);
+      if (!encryptedInfo.exists || encryptedInfo.isDirectory) {
+        throw new Error(`Encrypted export file not found: ${encryptedFilePath}`);
+      }
+
+      const encryptedData = await FileSystem.readAsStringAsync(encryptedFilePath);
 
       // Determine decryption field type
       let fieldType = 'export_data';
@@ -477,17 +497,16 @@ class DataEncryptionService {
 
       // Create decrypted file path
       const decryptedFilePath = encryptedFilePath.replace('.enc', '_decrypted.json');
-      const decryptedFile = new File(decryptedFilePath);
-      await decryptedFile.write(decryptedData);
+      await FileSystem.writeAsStringAsync(decryptedFilePath, decryptedData);
 
-      // Verify decrypted file
-      if (!decryptedFile.exists) {
+      const decryptedInfo = await FileSystem.getInfoAsync(decryptedFilePath);
+      if (!decryptedInfo.exists || decryptedInfo.isDirectory) {
         throw new Error('Failed to save decrypted export file');
       }
 
-      const decryptedSize = decryptedFile.size || 0;
+      const decryptedSize = decryptedInfo.size ?? 0;
 
-      console.log('Export file decrypted successfully:', {
+      logger.info('DataEncryptionService', 'Export file decrypted successfully', {
         encryptedPath: encryptedFilePath,
         decryptedPath: decryptedFilePath,
         decryptedSize: decryptedSize
@@ -497,11 +516,11 @@ class DataEncryptionService {
         decrypted: true,
         encryptedPath: encryptedFilePath,
         decryptedPath: decryptedFilePath,
-        decryptedSize: decryptedSize || 0
+        decryptedSize
       };
 
     } catch (error) {
-      console.error('Failed to decrypt export file:', error);
+      logger.error('DataEncryptionService', error, { operation: 'decryptExportFile', encryptedFilePath });
       throw error;
     }
   }
@@ -533,9 +552,9 @@ class DataEncryptionService {
         if (userData[fieldName] && typeof userData[fieldName] === 'string') {
           try {
             encryptedData[fieldName] = await this.encryption.encrypt(userData[fieldName], fieldName as any);
-            console.log(`Encrypted field: ${fieldName}`);
+            logger.debug('DataEncryptionService', `Encrypted field: ${fieldName}`);
           } catch (fieldError) {
-            console.error(`Failed to encrypt field ${fieldName}:`, fieldError);
+            logger.error('DataEncryptionService', fieldError, { operation: 'encryptField', fieldName });
             // Keep original value if encryption fails
             encryptedData[fieldName] = userData[fieldName];
           }
@@ -545,7 +564,7 @@ class DataEncryptionService {
       return encryptedData;
 
     } catch (error) {
-      console.error('Failed to encrypt sensitive fields:', error);
+      logger.error('DataEncryptionService', error, { operation: 'encryptSensitiveFields' });
       return userData;
     }
   }
@@ -579,10 +598,10 @@ class DataEncryptionService {
             // Only attempt decryption if the field looks encrypted (heuristic: length > 50)
             if (encryptedData[fieldName].length > 50) {
               decryptedData[fieldName] = await this.encryption.decrypt(encryptedData[fieldName], fieldName as any);
-              console.log(`Decrypted field: ${fieldName}`);
+              logger.debug('DataEncryptionService', `Decrypted field: ${fieldName}`);
             }
           } catch (fieldError) {
-            console.error(`Failed to decrypt field ${fieldName}:`, fieldError);
+            logger.error('DataEncryptionService', fieldError, { operation: 'decryptField', fieldName });
             // Keep original value if decryption fails (might not be encrypted)
             decryptedData[fieldName] = encryptedData[fieldName];
           }
@@ -592,7 +611,7 @@ class DataEncryptionService {
       return decryptedData;
 
     } catch (error) {
-      console.error('Failed to decrypt sensitive fields:', error);
+      logger.error('DataEncryptionService', error, { operation: 'decryptSensitiveFields' });
       return encryptedData;
     }
   }
@@ -627,9 +646,9 @@ class DataEncryptionService {
       // Store encryption preference
       await SecureStore.setItemAsync('encryption_enabled', enabled.toString());
       
-      console.log('Encryption', enabled ? 'enabled' : 'disabled');
+      logger.info('DataEncryptionService', 'Encryption', { enabled: enabled ? 'enabled' : 'disabled' });
     } catch (error) {
-      console.error('Failed to set encryption enabled status:', error);
+      logger.error('DataEncryptionService', error, { operation: 'setEncryptionEnabled' });
     }
   }
 
@@ -644,9 +663,9 @@ class DataEncryptionService {
       // Clear device key from memory
       this.deviceKey = null;
       
-      console.log('DataEncryptionService cleanup completed');
+      logger.info('DataEncryptionService', 'DataEncryptionService cleanup completed');
     } catch (error) {
-      console.error('Failed to cleanup DataEncryptionService:', error);
+      logger.error('DataEncryptionService', error, { operation: 'cleanup' });
     }
   }
 
@@ -659,8 +678,7 @@ class DataEncryptionService {
     const plainFilePath = `${this.encryptedStorageDir}snapshot_${snapshotId}.json`;
     const serializedData = JSON.stringify(snapshotData, null, 2);
 
-    const plainFile = new File(plainFilePath);
-    await plainFile.write(serializedData);
+    await FileSystem.writeAsStringAsync(plainFilePath, serializedData);
 
     return plainFilePath;
   }
@@ -683,18 +701,15 @@ class DataEncryptionService {
    * Ensure directory exists
    */
   async ensureDirectoryExists(dirPath: string): Promise<void> {
-    try {
-      // Use LegacyFileSystem for directory creation (more reliable)
-      const { makeDirectoryAsync } = await import('expo-file-system/legacy');
-      await makeDirectoryAsync(dirPath, { intermediates: true });
-    } catch (error) {
-      // Directory might already exist, check if it's a different error
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists) {
-        console.error('Failed to create directory:', dirPath, error);
-        throw error;
+    const dirInfo = await FileSystem.getInfoAsync(dirPath);
+    if (dirInfo.exists) {
+      if (!dirInfo.isDirectory) {
+        throw new Error(`Expected directory at path: ${dirPath}`);
       }
+      return;
     }
+
+    await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
   }
 }
 
@@ -702,4 +717,3 @@ class DataEncryptionService {
 const dataEncryptionService = new DataEncryptionService();
 
 export default dataEncryptionService;
-

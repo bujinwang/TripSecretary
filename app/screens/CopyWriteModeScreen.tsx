@@ -8,29 +8,55 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { activateKeepAwakeAsync, deactivateKeepAwakeAsync } from 'expo-keep-awake';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import Card from '../components/Card';
 import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
+import type { PersonalInfoData, SerializablePassport, TravelInfoData } from '../types/data';
+import type { DestinationParam, RootStackScreenProps } from '../types/navigation';
 
-const CopyWriteModeScreen = ({ navigation, route }) => {
+type CopyWriteModeParams = {
+  passport?: SerializablePassport | null;
+  destination?: DestinationParam;
+  travelInfo?: TravelInfoData | null;
+  userId?: string;
+};
+
+type CopyWriteModeScreenProps = RootStackScreenProps<'CopyWrite'> & {
+  route: RootStackScreenProps<'CopyWrite'>['route'] & {
+    params?: CopyWriteModeParams;
+  };
+};
+
+const DEFAULT_FONT_SIZE = 24;
+const MIN_FONT_SIZE = 16;
+const MAX_FONT_SIZE = 32;
+
+const CopyWriteModeScreen: React.FC<CopyWriteModeScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { passport: rawPassport, destination, travelInfo, userId: routeUserId } = route.params || {};
-  const passport = UserDataService.toSerializablePassport(rawPassport);
-  const userId = routeUserId || passport?.id || rawPassport?.id || 'user_001';
-  const [fontSize, setFontSize] = useState(24);
-  const [personalInfo, setPersonalInfo] = useState(null);
-  const [fullPassport, setFullPassport] = useState(passport);
-  const [loadedTravelInfo, setLoadedTravelInfo] = useState(travelInfo);
+  const {
+    passport: rawPassport,
+    destination,
+    travelInfo,
+    userId: routeUserId,
+  } = route.params ?? {};
+  const passport = UserDataService.toSerializablePassport(rawPassport ?? null);
+  const userId = routeUserId ?? passport?.userId ?? passport?.id ?? rawPassport?.id ?? 'user_001';
+  const [fontSize, setFontSize] = useState<number>(DEFAULT_FONT_SIZE);
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoData | null>(null);
+  const [fullPassport, setFullPassport] = useState<SerializablePassport | null>(passport);
+  const [loadedTravelInfo, setLoadedTravelInfo] = useState<TravelInfoData | null>(
+    travelInfo ?? null,
+  );
 
   // Check destination for conditional content
   const isJapan = destination?.id === 'jp' || destination?.name === '日本';
 
   useEffect(() => {
     // Load user data from database
-    const loadUserData = async () => {
+    const loadUserData = async (): Promise<void> => {
       try {
         await UserDataService.initialize(userId);
 
@@ -48,9 +74,14 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
 
         // Load travel info based on destination
         if (destination?.id) {
-          const destId = destination.id === 'jp' ? 'jp' :
-                        destination.id === 'th' ? 'th' :
-                        destination.id === 'ca' ? 'canada' : destination.id;
+          const destId =
+            destination.id === 'jp'
+              ? 'jp'
+              : destination.id === 'th'
+                ? 'th'
+                : destination.id === 'ca'
+                  ? 'canada'
+                  : destination.id;
           const travelData = await UserDataService.getTravelInfo(userId, destId).catch(() => null);
           if (travelData) {
             setLoadedTravelInfo(travelData);
@@ -64,10 +95,10 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
     loadUserData();
 
     // 保持屏幕常亮，防止抄写时黑屏
-    const keepAwake = async () => {
+    const keepAwake = async (): Promise<void> => {
       try {
         await activateKeepAwakeAsync();
-      } catch (error) {
+      } catch {
         // Failed to activate keep awake
       }
     };
@@ -75,43 +106,44 @@ const CopyWriteModeScreen = ({ navigation, route }) => {
     keepAwake();
 
     return () => {
-      const deactivate = async () => {
-        try {
-          await deactivateKeepAwakeAsync();
-        } catch (error) {
-          // Failed to deactivate keep awake
-        }
-      };
-      deactivate();
+      try {
+        deactivateKeepAwake();
+      } catch {
+        // Failed to deactivate keep awake
+      }
     };
-  }, [userId, isJapan]);
+  }, [destination?.id, isJapan, userId]);
 
-  const increaseFontSize = () => {
-    if (fontSize < 32) {
-setFontSize(fontSize + 2);
-}
+  const increaseFontSize = (): void => {
+    setFontSize((current) => (current < MAX_FONT_SIZE ? current + 2 : current));
   };
 
-  const decreaseFontSize = () => {
-    if (fontSize > 16) {
-setFontSize(fontSize - 2);
-}
+  const decreaseFontSize = (): void => {
+    setFontSize((current) => (current > MIN_FONT_SIZE ? current - 2 : current));
   };
 
   // 格式化日期
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) {
-return '';
-}
+      return '';
+    }
     // 确保格式为 YYYY-MM-DD
     return dateStr;
   };
 
   // Parse passport full name (format: "SURNAME, GIVEN NAME MIDDLE NAME")
-  const getPassportNames = () => {
-    const fullName = fullPassport?.fullName || fullPassport?.nameEn || '';
+  const getPassportNames = (): {
+    surname: string;
+    givenName: string;
+    fullGivenNames: string;
+  } => {
+    const fallbackName =
+      fullPassport && 'nameEn' in fullPassport
+        ? (fullPassport as { nameEn?: string }).nameEn
+        : undefined;
+    const fullName = fullPassport?.fullName ?? fallbackName ?? '';
     if (fullName.includes(',')) {
-      const [surname, givenNames] = fullName.split(',').map(s => s.trim());
+      const [surname, givenNames] = fullName.split(',').map((s) => s.trim());
       // Extract first given name only (exclude middle name)
       const givenName = givenNames.split(' ')[0];
       return { surname, givenName, fullGivenNames: givenNames };
@@ -121,7 +153,7 @@ return '';
       return {
         surname: parts[parts.length - 1],
         givenName: parts[0],
-        fullGivenNames: parts.slice(0, -1).join(' ')
+        fullGivenNames: parts.slice(0, -1).join(' '),
       };
     }
     return { surname: fullName, givenName: '', fullGivenNames: '' };
@@ -478,7 +510,7 @@ return '';
         {/* Tips */}
         <Card style={styles.tipsCard}>
           <Text style={styles.tipsIcon}>⚠️</Text>
-          <Text style={[styles.tipsTitle, { fontSize: fontSize }]}>
+          <Text style={[styles.tipsTitle, { fontSize }]}>
             {t('copyWriteMode.tipsTitle')}
           </Text>
           <Text style={[styles.tipsText, { fontSize: fontSize - 2 }]}>
@@ -513,7 +545,7 @@ return '';
         {/* Sample Card */}
         <Card style={styles.sampleCard}>
           <Text style={styles.sampleIcon}>📄</Text>
-          <Text style={[styles.sampleTitle, { fontSize: fontSize }]}>
+          <Text style={[styles.sampleTitle, { fontSize }]}>
             {isJapan ? t('copyWriteMode.sampleTitleJapan') : t('copyWriteMode.sampleTitleCanada')}
           </Text>
           <View style={styles.sampleImagePlaceholder}>

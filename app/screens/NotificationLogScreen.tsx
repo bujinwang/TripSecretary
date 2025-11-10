@@ -15,6 +15,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NotificationLogService from '../services/notification/NotificationLogService';
 import { colors, typography, spacing } from '../theme';
+import type {
+  LogEntry,
+  Analytics,
+  LogFilters,
+} from '../services/notification/NotificationLogService';
+import type { RootStackScreenProps } from '../types/navigation';
+
+type NotificationLogScreenProps = RootStackScreenProps<'NotificationLog'>;
+type NotificationLogTab = 'logs' | 'analytics' | 'performance';
 
 /**
  * NotificationLogScreen - Display and manage notification logs
@@ -27,20 +36,20 @@ import { colors, typography, spacing } from '../theme';
  * 
  * Requirements: 16.5
  */
-const NotificationLogScreen = ({ navigation }) => {
-  const [logs, setLogs] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
+const NotificationLogScreen = ({ navigation }: NotificationLogScreenProps) => {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('logs'); // logs, analytics, performance
+  const [selectedTab, setSelectedTab] = useState<NotificationLogTab>('logs'); // logs, analytics, performance
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<LogFilters>({});
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
       setLoading(true);
       const [logsData, analyticsData] = await Promise.all([
@@ -57,13 +66,13 @@ const NotificationLogScreen = ({ navigation }) => {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (): Promise<void> => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
   };
 
-  const handleExportLogs = async () => {
+  const handleExportLogs = async (): Promise<void> => {
     try {
       const exportData = await NotificationLogService.exportLogs(filters);
       const exportString = JSON.stringify(exportData, null, 2);
@@ -78,7 +87,7 @@ const NotificationLogScreen = ({ navigation }) => {
     }
   };
 
-  const handleClearOldLogs = () => {
+  const handleClearOldLogs = (): void => {
     Alert.alert(
       'Clear Old Logs',
       'This will remove logs older than 30 days. Continue?',
@@ -104,7 +113,7 @@ const NotificationLogScreen = ({ navigation }) => {
     );
   };
 
-  const handleClearAllLogs = () => {
+  const handleClearAllLogs = (): void => {
     Alert.alert(
       'Clear All Logs',
       'This will permanently delete all notification logs and analytics. This action cannot be undone.',
@@ -127,7 +136,7 @@ const NotificationLogScreen = ({ navigation }) => {
     );
   };
 
-  const applyFilters = async (newFilters) => {
+  const applyFilters = async (newFilters: LogFilters): Promise<void> => {
     setFilters(newFilters);
     setFilterModalVisible(false);
     setLoading(true);
@@ -142,7 +151,7 @@ const NotificationLogScreen = ({ navigation }) => {
     }
   };
 
-  const renderLogItem = ({ item }) => (
+  const renderLogItem = ({ item }: { item: LogEntry }) => (
     <View style={styles.logItem}>
       <View style={styles.logHeader}>
         <Text style={styles.logEventType}>{item.eventType}</Text>

@@ -16,6 +16,10 @@ import NotificationService from '../services/notification/NotificationService';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import type { NotificationPreferences } from '../services/notification/NotificationPreferencesService';
+import type { RootStackScreenProps } from '../types/navigation';
+
+type NotificationSettingsProps = RootStackScreenProps<'NotificationSettings'>;
 
 /**
  * NotificationSettingsScreen - Manage user notification preferences
@@ -29,9 +33,9 @@ import { typography } from '../theme/typography';
  * 
  * Requirements: 16.1, 16.5
  */
-export default function NotificationSettingsScreen({ navigation }) {
+export default function NotificationSettingsScreen({ navigation }: NotificationSettingsProps) {
   const { t } = useLocale();
-  const [preferences, setPreferences] = useState(null);
+  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -40,7 +44,7 @@ export default function NotificationSettingsScreen({ navigation }) {
     loadPreferences();
   }, []);
 
-  const loadPreferences = async () => {
+  const loadPreferences = async (): Promise<void> => {
     try {
       setLoading(true);
       const prefs = await NotificationPreferencesService.loadPreferences();
@@ -56,12 +60,15 @@ export default function NotificationSettingsScreen({ navigation }) {
     }
   };
 
-  const updatePreference = async (path, value) => {
+  const updatePreference = async (path: string, value: unknown): Promise<void> => {
+    if (!preferences) {
+      return;
+    }
     try {
       setSaving(true);
       
       // Update local state immediately for better UX
-      const updatedPreferences = { ...preferences };
+      const updatedPreferences = JSON.parse(JSON.stringify(preferences)) as NotificationPreferences;
       NotificationPreferencesService.setNestedValue(updatedPreferences, path, value);
       setPreferences(updatedPreferences);
       
@@ -150,14 +157,14 @@ export default function NotificationSettingsScreen({ navigation }) {
     }
   };
 
-  const renderSectionHeader = (title) => (
+  const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
   );
 
-  const renderToggleItem = (title, description, path, disabled = false) => {
-    const value = NotificationPreferencesService.getNestedValue(preferences, path, false);
+  const renderToggleItem = (title: string, description: string | undefined, path: string, disabled = false) => {
+    const value = NotificationPreferencesService.getNestedValue<boolean>(preferences, path, false) ?? false;
     
     return (
       <View style={[styles.settingItem, disabled && styles.settingItemDisabled]}>
@@ -182,8 +189,8 @@ export default function NotificationSettingsScreen({ navigation }) {
     );
   };
 
-  const renderTimeItem = (title, description, path) => {
-    const value = NotificationPreferencesService.getNestedValue(preferences, path, '09:00');
+  const renderTimeItem = (title: string, description: string | undefined, path: string) => {
+    const value = NotificationPreferencesService.getNestedValue<string>(preferences, path, '09:00') ?? '09:00';
     
     return (
       <TouchableOpacity

@@ -220,7 +220,10 @@ class BackgroundJobService {
         activeEntryInfos = await EntryInfoService.getAllEntryInfos(userId) as EntryInfo[];
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
-        logger.warn('Failed to get entry infos for archival check (non-critical)', err, { userId });
+        logger.warn('Failed to get entry infos for archival check (non-critical)', {
+          error: err,
+          userId,
+        });
         return 0;
       }
 
@@ -333,7 +336,7 @@ class BackgroundJobService {
   async sendArchivalNotification(userId: UserId, entryInfo: EntryInfo, archivalInfo: ArchivalDecision): Promise<void> {
     try {
       // Check if archival notifications are enabled
-      const notificationsEnabled = await NotificationPreferencesService.isNotificationTypeEnabled('archival');
+      const notificationsEnabled = await NotificationPreferencesService.isNotificationTypeEnabled('autoArchival');
 
       if (!notificationsEnabled) {
         logger.debug('Archival notifications disabled, skipping notification', { userId, entryInfoId: entryInfo.id });

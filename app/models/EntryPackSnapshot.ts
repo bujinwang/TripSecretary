@@ -3,6 +3,7 @@
  */
 
 import SecureStorageService from '../services/security/SecureStorageService';
+import logger from '../services/LoggingService';
 
 type SnapshotStatus = 'completed' | 'cancelled' | 'expired' | string;
 
@@ -25,13 +26,19 @@ interface SnapshotMetadata {
 
 interface PhotoManifestItem {
   fundItemId?: string | null;
-  originalPath: string;
+  fundType?: string | null;
+  originalPath: string | null;
   snapshotPath: string | null;
-  fileName: string;
+  fileName: string | null;
   copiedAt: string;
+  fileSize?: number | null;
+  status?: 'success' | 'missing' | 'failed' | 'no_photo';
+  error?: string | null;
   encrypted?: boolean;
-  encryptionMethod?: string | null;
   encryptedPath?: string | null;
+  encryptedSize?: number | null;
+  encryptionMethod?: string | null;
+  encryptionError?: string | null;
 }
 
 interface EncryptionInfo {
@@ -93,8 +100,12 @@ interface ValidationResult {
 }
 
 interface SnapshotSaveResult {
-  snapshotId?: string;
-  [key: string]: unknown;
+  snapshotId: string;
+}
+
+interface SnapshotDeleteResult {
+  success: boolean;
+  error?: string;
 }
 
 class EntryPackSnapshot {
@@ -238,7 +249,7 @@ class EntryPackSnapshot {
       }
     });
 
-    console.log('Snapshot created from entry info:', {
+    logger.info('EntryPackSnapshot', 'Snapshot created from entry info', {
       snapshotId: snapshot.snapshotId,
       entryInfoId: entryPackData.id,
       reason,
@@ -344,16 +355,16 @@ class EntryPackSnapshot {
 
       const result = await SecureStorageService.saveSnapshot(this);
 
-      console.log('Snapshot saved successfully:', {
+      logger.info('EntryPackSnapshot', 'Snapshot saved successfully', {
         snapshotId: this.snapshotId,
         entryInfoId: this.entryInfoId,
         status: this.status,
         size: this.getEstimatedSize()
       });
 
-      return result as SnapshotSaveResult;
+      return { snapshotId: result.id ?? this.snapshotId };
     } catch (error) {
-      console.error('Failed to save snapshot:', error);
+      logger.error('EntryPackSnapshot', error, { operation: 'save', snapshotId: this.snapshotId });
       throw error;
     }
   }
@@ -363,7 +374,7 @@ class EntryPackSnapshot {
       const data = await SecureStorageService.getSnapshot(snapshotId);
       return data ? new EntryPackSnapshot(data as EntryPackSnapshotInit) : null;
     } catch (error) {
-      console.error('Failed to load snapshot:', error);
+      logger.error('EntryPackSnapshot', error, { operation: 'load', snapshotId });
       throw error;
     }
   }
@@ -396,23 +407,23 @@ class EntryPackSnapshot {
 
       return filteredSnapshots;
     } catch (error) {
-      console.error('Failed to load snapshots by user ID:', error);
+      logger.error('EntryPackSnapshot', error, { operation: 'loadByUserId', userId });
       throw error;
     }
   }
 
-  async delete(): Promise<Record<string, unknown>> {
+  async delete(): Promise<SnapshotDeleteResult> {
     try {
       const result = await SecureStorageService.deleteSnapshot(this.snapshotId);
 
-      console.log('Snapshot deleted:', {
+      logger.info('EntryPackSnapshot', 'Snapshot deleted', {
         snapshotId: this.snapshotId,
         photoCount: this.getPhotoCount()
       });
 
-      return result as Record<string, unknown>;
+      return result;
     } catch (error) {
-      console.error('Failed to delete snapshot:', error);
+      logger.error('EntryPackSnapshot', error, { operation: 'delete', snapshotId: this.snapshotId });
       throw error;
     }
   }
@@ -445,7 +456,16 @@ class EntryPackSnapshot {
       ...photo,
       encrypted: photo.encrypted ?? false,
       encryptionMethod: photo.encryptionMethod ?? null,
-      encryptedPath: photo.encryptedPath ?? null
+      encryptedPath: photo.encryptedPath ?? null,
+      encryptedSize: photo.encryptedSize ?? null,
+      encryptionError: photo.encryptionError ?? null,
+      fundType: photo.fundType ?? null,
+      fileName: photo.fileName ?? null,
+      fileSize: photo.fileSize ?? 0,
+      snapshotPath: photo.snapshotPath ?? null,
+      originalPath: photo.originalPath ?? null,
+      status: photo.status ?? 'no_photo',
+      error: photo.error ?? null
     }));
 
     Object.defineProperty(this, 'photoManifest', {

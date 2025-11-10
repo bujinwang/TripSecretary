@@ -1,8 +1,11 @@
 /**
  * Global Type Definitions
- * 
+ *
  * Central export point for all type definitions
  */
+
+import './expo-shims';
+import './blur';
 
 export * from './navigation';
 export * from './services';

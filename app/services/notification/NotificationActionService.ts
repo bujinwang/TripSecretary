@@ -17,33 +17,27 @@ import NotificationPreferencesService from './NotificationPreferencesService';
 import NotificationService from './NotificationService';
 
 // Type definitions
-interface ActionPreferences {
-  version?: number;
-  showQuickActions?: boolean;
-  defaultAction?: string;
-  remindLaterDuration?: number;
-  maxIgnoreBeforeSuggestion?: number;
-  learnFromUsage?: boolean;
-  actionFeedback?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+export interface ActionPreferences {
+  version: number;
+  showQuickActions: boolean;
+  defaultAction: string;
+  remindLaterDuration: number;
+  maxIgnoreBeforeSuggestion: number;
+  learnFromUsage: boolean;
+  actionFeedback: boolean;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
 }
 
-interface ActionStats {
-  [notificationType: string]: {
-    [actionId: string]: {
-      count: number;
-      firstUsed: string;
-      lastUsed: string | null;
-      contexts: Array<{
-        timestamp: string;
-        [key: string]: any;
-      }>;
-    };
-  };
-}
+export type ActionStats = Record<string, Record<string, {
+  count: number;
+  firstUsed: string;
+  lastUsed: string | null;
+  contexts: Array<Record<string, unknown>>;
+}>>;
 
-interface RemindLaterAction {
+export interface RemindLaterAction {
   originalNotificationId?: string;
   newNotificationId: string;
   reminderTime: string;
@@ -61,18 +55,16 @@ interface IgnoreAction {
   context?: Record<string, any>;
 }
 
-interface IgnoreActions {
-  [notificationType: string]: IgnoreAction[];
-}
+export type IgnoreActions = Record<string, IgnoreAction[]>;
 
-interface ActionContext {
+export interface ActionContext {
   notificationId?: string;
   entryPackId?: string;
   deepLink?: string;
   [key: string]: any;
 }
 
-interface ActionAnalytics {
+export interface ActionAnalytics {
   stats: ActionStats;
   remindLater: RemindLaterAction[];
   ignore: IgnoreActions;
@@ -85,7 +77,7 @@ interface ActionAnalytics {
   };
 }
 
-interface ExportedActionData extends ActionAnalytics {
+export interface ExportedActionData extends ActionAnalytics {
   exportedAt: string;
   version: number;
 }
@@ -111,6 +103,21 @@ class NotificationActionService {
     };
   }
 
+  getDefaultPreferences(): ActionPreferences {
+    const now = new Date().toISOString();
+    return {
+      version: 1,
+      showQuickActions: true,
+      defaultAction: 'view',
+      remindLaterDuration: 60,
+      maxIgnoreBeforeSuggestion: 3,
+      learnFromUsage: true,
+      actionFeedback: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
   /**
    * Initialize the service
    */
@@ -132,19 +139,7 @@ class NotificationActionService {
       const preferences = await this.getActionPreferences();
       
       if (!preferences.version) {
-        // Set default preferences
-        const defaultPreferences: ActionPreferences = {
-          version: 1,
-          showQuickActions: true,
-          defaultAction: 'view',
-          remindLaterDuration: 60, // minutes
-          maxIgnoreBeforeSuggestion: 3,
-          learnFromUsage: true,
-          actionFeedback: true,
-          createdAt: new Date().toISOString()
-        };
-        
-        await this.saveActionPreferences(defaultPreferences);
+        await this.saveActionPreferences(this.getDefaultPreferences());
       }
     } catch (error) {
       console.error('Error ensuring default action preferences:', error);
@@ -158,10 +153,22 @@ class NotificationActionService {
   async getActionPreferences(): Promise<ActionPreferences> {
     try {
       const preferencesData = await AsyncStorage.getItem(this.storageKeys.userPreferences);
-      return preferencesData ? JSON.parse(preferencesData) : {};
+      if (!preferencesData) {
+        return this.getDefaultPreferences();
+      }
+
+      const parsed = JSON.parse(preferencesData) as Partial<ActionPreferences>;
+      const defaults = this.getDefaultPreferences();
+      return {
+        ...defaults,
+        ...parsed,
+        version: parsed.version ?? defaults.version,
+        createdAt: parsed.createdAt ?? defaults.createdAt,
+        updatedAt: parsed.updatedAt ?? defaults.updatedAt,
+      };
     } catch (error) {
       console.error('Error getting action preferences:', error);
-      return {};
+      return this.getDefaultPreferences();
     }
   }
 
@@ -171,8 +178,11 @@ class NotificationActionService {
    */
   async saveActionPreferences(preferences: ActionPreferences): Promise<void> {
     try {
-      preferences.updatedAt = new Date().toISOString();
-      await AsyncStorage.setItem(this.storageKeys.userPreferences, JSON.stringify(preferences));
+      const nextPreferences: ActionPreferences = {
+        ...preferences,
+        updatedAt: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem(this.storageKeys.userPreferences, JSON.stringify(nextPreferences));
     } catch (error) {
       console.error('Error saving action preferences:', error);
     }
@@ -186,8 +196,11 @@ class NotificationActionService {
   async updateActionPreference(key: string, value: unknown): Promise<void> {
     try {
       const preferences = await this.getActionPreferences();
-      (preferences as Record<string, unknown>)[key] = value;
-      await this.saveActionPreferences(preferences);
+      const updated: ActionPreferences = {
+        ...preferences,
+        [key]: value,
+      };
+      await this.saveActionPreferences(updated);
     } catch (error) {
       console.error('Error updating action preference:', error);
     }
@@ -566,13 +579,13 @@ class NotificationActionService {
         stats: {},
         remindLater: [],
         ignore: {},
-        preferences: {},
+        preferences: this.getDefaultPreferences(),
         summary: {
           totalActions: 0,
           mostUsedActions: {},
           totalRemindLater: 0,
-          totalIgnoreTypes: 0
-        }
+          totalIgnoreTypes: 0,
+        },
       };
     }
   }
@@ -590,7 +603,7 @@ class NotificationActionService {
       ]);
       
       // Reset preferences to defaults
-      await this.ensureDefaultActionPreferences();
+      await this.saveActionPreferences(this.getDefaultPreferences());
       
       console.log('All action data reset to defaults');
       
@@ -610,7 +623,7 @@ class NotificationActionService {
       return {
         ...analytics,
         exportedAt: new Date().toISOString(),
-        version: 1
+        version: 1,
       };
       
     } catch (error) {

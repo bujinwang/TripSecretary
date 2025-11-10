@@ -51,6 +51,34 @@ interface CountryData {
   [countryCode: string]: [number, number, string]; // [visaRequired, maxStayDays, notes]
 }
 
+interface PassportCountryData {
+  passportId: string;
+  countryCode: string;
+  visaRequired?: boolean;
+  maxStayDays?: number | null;
+  notes?: string | null;
+  createdAt?: string;
+}
+
+interface PassportCountryRecord {
+  passportId: string;
+  countryCode: string;
+  visaRequired: boolean;
+  maxStayDays: number | null;
+  notes: string | null;
+  createdAt?: string;
+}
+
+type PassportCountryRow = {
+  passport_id: string;
+  country_code: string;
+  visa_required?: number;
+  max_stay_days?: number | null;
+  notes?: string | null;
+  created_at?: string;
+  [key: string]: unknown;
+};
+
 interface PassportData {
   id?: string;
   userId: string;
@@ -106,6 +134,7 @@ interface EntryInfoData {
 interface DigitalArrivalCardData {
   id?: string;
   entryInfoId: string;
+  userId: string;
   cardType?: string;
   [key: string]: any;
 }
@@ -135,6 +164,14 @@ class SecureStorageService {
   private entryInfoRepository: EntryInfoRepository | null = null;
   private digitalArrivalCardRepository: DigitalArrivalCardRepository | null = null;
   private snapshotRepository: SnapshotRepository | null = null;
+  private activeUserId: string | null = null;
+
+  private requireActiveUserId(): string {
+    if (!this.activeUserId) {
+      throw new Error('Active user context not set. Call initialize(userId) before accessing user-scoped data.');
+    }
+    return this.activeUserId;
+  }
 
   /**
    * Initialize secure storage service
@@ -184,6 +221,7 @@ class SecureStorageService {
 
       await this.ensureBackupDirectory();
       await this.ensureUser(userId);
+      this.activeUserId = userId;
 
       console.log('✅ Secure storage initialized with schema v' + this.DB_VERSION);
     } catch (error) {
@@ -369,6 +407,115 @@ class SecureStorageService {
     }
   }
 
+  async savePassportCountry(passportCountry: PassportCountryData): Promise<PassportCountryRecord> {
+    try {
+      await this.ensureInitialized();
+      if (!this.passportRepository) {
+        throw new Error('Passport repository not initialized');
+      }
+      if (!passportCountry.passportId || !passportCountry.countryCode) {
+        throw new Error('passportId and countryCode are required');
+      }
+
+      await this.passportRepository.addCountry(passportCountry.passportId, {
+        countryCode: passportCountry.countryCode,
+        visaRequired: passportCountry.visaRequired ?? false,
+        maxStayDays: passportCountry.maxStayDays ?? null,
+        notes: passportCountry.notes ?? null,
+      });
+
+      const saved = await this.passportRepository.getCountry(
+        passportCountry.passportId,
+        passportCountry.countryCode,
+      );
+
+      if (saved) {
+        const normalized = this.serializer.deserializePassportCountry(saved as PassportCountryRow);
+        return {
+          passportId: String(normalized.passportId ?? passportCountry.passportId),
+          countryCode: String(normalized.countryCode ?? passportCountry.countryCode),
+          visaRequired: Boolean(normalized.visaRequired),
+          maxStayDays:
+            normalized.maxStayDays !== undefined && normalized.maxStayDays !== null
+              ? Number(normalized.maxStayDays)
+              : null,
+          notes: (normalized.notes as string | null) ?? null,
+          createdAt: (normalized.createdAt as string) ?? new Date().toISOString(),
+        };
+      }
+
+      return {
+        passportId: passportCountry.passportId,
+        countryCode: passportCountry.countryCode,
+        visaRequired: passportCountry.visaRequired ?? false,
+        maxStayDays: passportCountry.maxStayDays ?? null,
+        notes: passportCountry.notes ?? null,
+        createdAt: passportCountry.createdAt ?? new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Failed to save passport country:', error);
+      throw error;
+    }
+  }
+
+  async getPassportCountry(passportId: string, countryCode: string): Promise<PassportCountryRecord | null> {
+    try {
+      await this.ensureInitialized();
+      if (!this.passportRepository) {
+        throw new Error('Passport repository not initialized');
+      }
+      const record = await this.passportRepository.getCountry(passportId, countryCode);
+      if (!record) {
+        return null;
+      }
+      const normalized = this.serializer.deserializePassportCountry(record as PassportCountryRow);
+      return {
+        passportId: String(normalized.passportId ?? passportId),
+        countryCode: String(normalized.countryCode ?? countryCode),
+        visaRequired: Boolean(normalized.visaRequired),
+        maxStayDays:
+          normalized.maxStayDays !== undefined && normalized.maxStayDays !== null
+            ? Number(normalized.maxStayDays)
+            : null,
+        notes: (normalized.notes as string | null) ?? null,
+        createdAt: (normalized.createdAt as string) ?? new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Failed to get passport country:', error);
+      throw error;
+    }
+  }
+
+  async getPassportCountriesByPassportId(passportId: string): Promise<PassportCountryRecord[]> {
+    try {
+      await this.ensureInitialized();
+      if (!this.passportRepository) {
+        throw new Error('Passport repository not initialized');
+      }
+      const records = await this.passportRepository.getCountries(passportId);
+      if (!records || records.length === 0) {
+        return [];
+      }
+      return records.map(record => {
+        const normalized = this.serializer.deserializePassportCountry(record as PassportCountryRow);
+        return {
+          passportId: String(normalized.passportId ?? passportId),
+          countryCode: String(normalized.countryCode ?? ''),
+          visaRequired: Boolean(normalized.visaRequired),
+          maxStayDays:
+            normalized.maxStayDays !== undefined && normalized.maxStayDays !== null
+              ? Number(normalized.maxStayDays)
+              : null,
+          notes: (normalized.notes as string | null) ?? null,
+          createdAt: (normalized.createdAt as string) ?? new Date().toISOString(),
+        };
+      });
+    } catch (error) {
+      console.error('Failed to get passport countries by passport ID:', error);
+      throw error;
+    }
+  }
+
   // ========================================
   // Personal Info Methods (delegate to repository)
   // ========================================
@@ -445,7 +592,7 @@ class SecureStorageService {
       if (!this.travelInfoRepository) {
         throw new Error('Travel info repository not initialized');
       }
-      const result = await this.travelInfoRepository.save(travelData);
+      const result = await this.travelInfoRepository.save(travelData) as { id: string };
       await this.logAudit('INSERT', 'travel_info', result.id);
       return { id: result.id };
     } catch (error) {
@@ -586,6 +733,23 @@ class SecureStorageService {
     }
   }
 
+  /**
+   * Legacy compatibility: getFundingProof
+   * Historically returned the funding proof record (or null). The modern data layer stores
+   * funding proof items in the fund_items table. We surface the same data here and
+   * return null when no items are stored so legacy callers can continue to treat the
+   * result as a nullable value.
+   */
+  async getFundingProof(userId: string): Promise<any[] | null> {
+    try {
+      const items = await this.getFundItems(userId);
+      return items.length > 0 ? items : null;
+    } catch (error) {
+      console.error('Failed to get funding proof:', error);
+      return null;
+    }
+  }
+
   async deleteFundItem(id: string): Promise<void> {
     try {
       await this.ensureInitialized();
@@ -686,6 +850,151 @@ class SecureStorageService {
     }
   }
 
+  async getEntryInfoByDestination(destinationId: string, entryInfoId: string | null = null): Promise<any | null> {
+    try {
+      await this.ensureInitialized();
+      if (!this.entryInfoRepository) {
+        throw new Error('Entry info repository not initialized');
+      }
+
+      if (entryInfoId) {
+        return await this.entryInfoRepository.getById(entryInfoId);
+      }
+
+      const userId = this.requireActiveUserId();
+      const entries = await this.entryInfoRepository.getByDestination(userId, destinationId);
+      return entries.length > 0 ? entries[0] : null;
+    } catch (error) {
+      console.error('Failed to get entry info by destination:', error);
+      return null;
+    }
+  }
+
+  async deleteTravelInfoForDestination(userId: string, destination: string): Promise<void> {
+    try {
+      await this.ensureInitialized();
+      if (!this.travelInfoRepository) {
+        throw new Error('Travel info repository not initialized');
+      }
+      const records = await this.travelInfoRepository.getByDestination(userId, destination);
+      for (const record of records) {
+        if (record?.id) {
+          await this.travelInfoRepository.delete(record.id);
+          await this.logAudit('DELETE', 'travel_info', record.id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete travel info for destination:', error);
+      throw error;
+    }
+  }
+
+  // ========================================
+  // Legacy / Compatibility Helpers
+  // ========================================
+
+  async batchLoad(userId: string, dataTypes: string[] = ['passport', 'personalInfo']): Promise<Record<string, any>> {
+    await this.ensureInitialized();
+    const result: Record<string, any> = {};
+    for (const type of dataTypes) {
+      try {
+        switch (type) {
+          case 'passport':
+            result.passport = await this.getUserPassport(userId);
+            break;
+          case 'personalInfo':
+            result.personalInfo = await this.getPersonalInfo(userId);
+            break;
+          case 'travelInfo':
+            result.travelInfo = this.travelInfoRepository
+              ? await this.travelInfoRepository.getByUserId(userId)
+              : [];
+            break;
+          case 'fundItems':
+          case 'fundingProof':
+            result.fundItems = await this.getFundItems(userId);
+            break;
+          case 'entryInfo':
+            result.entryInfo = await this.getAllEntryInfosForUser(userId);
+            break;
+          case 'digitalArrivalCards':
+            result.digitalArrivalCards = await this.getDigitalArrivalCardsByUserId(userId);
+            break;
+          default:
+            console.warn(`batchLoad: Unsupported data type "${type}"`);
+        }
+      } catch (error) {
+        console.error(`batchLoad failed for type "${type}":`, error);
+        result[type] = null;
+      }
+    }
+    return result;
+  }
+
+  async batchSave(operations: Array<{ type: string; data: any }>): Promise<SaveResult[]> {
+    await this.ensureInitialized();
+    if (!this.modernDb) {
+      throw new Error('Database not initialized');
+    }
+
+    const execute = async (): Promise<SaveResult[]> => {
+      const results: SaveResult[] = [];
+      for (const operation of operations) {
+        try {
+          switch (operation.type) {
+            case 'passport':
+              results.push(await this.savePassport(operation.data));
+              break;
+            case 'personalInfo':
+              results.push(await this.savePersonalInfo(operation.data));
+              break;
+            case 'travelInfo':
+              results.push(await this.saveTravelInfo(operation.data));
+              break;
+            case 'fundItem':
+            case 'fundItems':
+              results.push(await this.saveFundItem(operation.data));
+              break;
+            case 'entryInfo':
+              results.push(await this.saveEntryInfo(operation.data));
+              break;
+            case 'digitalArrivalCard':
+              results.push(await this.saveDigitalArrivalCard(operation.data));
+              break;
+            default:
+              console.warn(`batchSave: Unsupported operation type "${operation.type}"`);
+          }
+        } catch (error) {
+          console.error(`batchSave failed for type "${operation.type}":`, error);
+          throw error;
+        }
+      }
+      return results;
+    };
+
+    if (typeof this.modernDb.withTransactionAsync === 'function') {
+      return this.modernDb.withTransactionAsync(execute);
+    }
+    return execute();
+  }
+
+  async getTravelHistory(userId: string, limit = 50): Promise<any[]> {
+    try {
+      await this.ensureInitialized();
+      if (!this.modernDb) {
+        return [];
+      }
+      const rows = await this.modernDb.getAllAsync(
+        'SELECT * FROM travel_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
+        [userId, limit],
+      );
+      return Array.isArray(rows) ? rows : [];
+    } catch (error) {
+      console.warn('Failed to get travel history:', error);
+      return [];
+    }
+  }
+
   // ========================================
   // Digital Arrival Card Methods (delegate to repository)
   // ========================================
@@ -715,6 +1024,19 @@ class SecureStorageService {
     } catch (error) {
       console.error('Failed to get digital arrival card:', error);
       throw error;
+    }
+  }
+
+  async getDigitalArrivalCardsByUserId(userId: string, _filters: Record<string, unknown> = {}): Promise<any[]> {
+    try {
+      await this.ensureInitialized();
+      if (!this.digitalArrivalCardRepository) {
+        throw new Error('Digital arrival card repository not initialized');
+      }
+      return await this.digitalArrivalCardRepository.getByUserId(userId);
+    } catch (error) {
+      console.error('Failed to get digital arrival cards by user ID:', error);
+      return [];
     }
   }
 
@@ -842,6 +1164,7 @@ class SecureStorageService {
       if (this.modernDb) {
         await this.modernDb.closeAsync();
         this.modernDb = null;
+        this.activeUserId = null;
         // Also clear repository references
         this.passportRepository = null;
         this.personalInfoRepository = null;
@@ -868,7 +1191,9 @@ class SecureStorageService {
     try {
       await this.close();
       // Small delay to ensure all pending operations complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise<void>(resolve => {
+        setTimeout(resolve, 100);
+      });
       await this.initialize(userId);
       console.log('✅ Database connection force reinitialized successfully');
     } catch (error) {

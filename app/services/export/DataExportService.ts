@@ -1791,12 +1791,17 @@ class DataExportService {
             'Share Entry Pack Image' :
             'Share Entry Pack Export';
 
-          return await Sharing.shareAsync(filePath, {
+          const result = await Sharing.shareAsync(filePath, {
             mimeType,
             dialogTitle: shareOptions.title || defaultTitle,
             UTI,
             ...shareOptions
-          });
+          }) as unknown as SharingShareResult | undefined;
+
+          return result ?? {
+            action: 'shared',
+            activityType: undefined
+          };
         }
       };
     } catch (error: unknown) {

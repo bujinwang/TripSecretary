@@ -6,7 +6,7 @@
  * CRUD operations, queries, and relationships.
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type TravelInfoRow } from '../utils/DataSerializer';
 import { formatLocalDate, isValidDateString } from '../../../utils/dateUtils';
 
 // Type definitions
@@ -362,7 +362,7 @@ class TravelInfoRepository {
       return null;
     }
 
-    return this.serializer.deserializeTravelInfo(row) as TravelInfoRecord;
+    return this.serializer.deserializeTravelInfo(this.assertRow(row)) as TravelInfoRecord;
   }
 
   /**
@@ -383,7 +383,7 @@ class TravelInfoRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeTravelInfo(row) as TravelInfoRecord);
+    return rows.map(row => this.serializer.deserializeTravelInfo(this.assertRow(row)) as TravelInfoRecord);
   }
 
   /**
@@ -399,7 +399,7 @@ class TravelInfoRepository {
       return null;
     }
 
-    return this.serializer.deserializeTravelInfo(row) as TravelInfoRecord;
+    return this.serializer.deserializeTravelInfo(this.assertRow(row)) as TravelInfoRecord;
   }
 
   /**
@@ -421,7 +421,7 @@ class TravelInfoRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeTravelInfo(row) as TravelInfoRecord);
+    return rows.map(row => this.serializer.deserializeTravelInfo(this.assertRow(row)) as TravelInfoRecord);
   }
 
   /**
@@ -442,7 +442,7 @@ class TravelInfoRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeTravelInfo(row) as TravelInfoRecord);
+    return rows.map(row => this.serializer.deserializeTravelInfo(this.assertRow(row)) as TravelInfoRecord);
   }
 
   /**
@@ -475,6 +475,13 @@ class TravelInfoRepository {
     const query = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE user_id = ?`;
     const result = await this.db.getFirstAsync(query, [userId]) as { count: number } | null;
     return result?.count || 0;
+  }
+
+  private assertRow(row: unknown): TravelInfoRow {
+    if (row && typeof row === 'object') {
+      return row as TravelInfoRow;
+    }
+    throw new Error('Invalid travel info row retrieved from database');
   }
 
   /**

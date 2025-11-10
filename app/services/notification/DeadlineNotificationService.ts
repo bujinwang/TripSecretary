@@ -309,15 +309,18 @@ class DeadlineNotificationService {
    */
   async shouldSendDeadlineNotification(entryInfoId: string): Promise<boolean> {
     try {
-      // Check if entry info exists and is not submitted
-      const entryInfo = await UserDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
-      if (!entryInfo || entryInfo.id !== entryInfoId) {
+      // Load entry info details so we can derive user/destination context
+      const entryInfo = await EntryInfoService.getEntryInfoById(entryInfoId);
+      if (!entryInfo) {
         console.log(`Entry info ${entryInfoId} not found, not sending deadline notification`);
         return false;
       }
 
+      const userId: UserId | undefined = (entryInfo as any).userId;
+      const destinationId: string | undefined = (entryInfo as any).destinationId;
+
       // Check if DAC is already submitted
-      const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+      const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
       const hasSuccessfulSubmission = digitalArrivalCards.some((dac: any) => dac.status === 'success');
 
       if (hasSuccessfulSubmission) {
@@ -325,15 +328,25 @@ class DeadlineNotificationService {
         return false;
       }
 
-      // Check if it's actually the arrival day
-      const now = new Date();
-      const travel = await UserDataService.getTravelInfo('current_user', 'thailand');
-      if (!travel || !(travel as any).arrivalDate) {
+      // Determine arrival date from stored metadata or travel info
+      const metadata = await this.getScheduledDeadlineNotification(entryInfoId);
+      const storedArrivalDate = metadata?.arrivalDate;
+      let arrivalDate = storedArrivalDate ? new Date(storedArrivalDate) : undefined;
+
+      if (!arrivalDate || Number.isNaN(arrivalDate.getTime())) {
+        const travelInfo = userId ? await UserDataService.getTravelInfo(userId, destinationId ?? null) : null;
+        const arrivalValue = (travelInfo as any)?.arrivalDate || (entryInfo as any)?.travel?.arrivalDate;
+        if (arrivalValue) {
+          arrivalDate = new Date(arrivalValue);
+        }
+      }
+
+      if (!arrivalDate || Number.isNaN(arrivalDate.getTime())) {
         console.log(`No arrival date found for entry info ${entryInfoId}, not sending deadline notification`);
         return false;
       }
 
-      const arrivalDate = new Date((travel as any).arrivalDate);
+      const now = new Date();
       const isArrivalDay = now.toDateString() === arrivalDate.toDateString();
 
       if (!isArrivalDay) {

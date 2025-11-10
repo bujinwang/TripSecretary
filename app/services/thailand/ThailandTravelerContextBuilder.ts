@@ -9,7 +9,7 @@ import { formatLocalDate, isValidDateString } from '../../utils/dateUtils';
 import { parseFullName } from '../../utils/nameUtils';
 import { extractCountryCode, extractNationalNumber } from '../../utils/phoneUtils';
 import { formatLocationCode } from '../../utils/locationUtils';
-import { isTestOrDummyAddress } from '../../utils/addressValidation.js';
+import { isTestOrDummyAddress } from '../../utils/addressValidation';
 import tdacSessionManager from './TDACSessionManager';
 import {
   normalizeAccommodationType,
@@ -156,6 +156,8 @@ interface TDACPayload {
   [key: string]: any;
 }
 
+type TDACPayloadDraft = Omit<TDACPayload, 'userId' | 'cloudflareToken'>;
+
 interface NameInfo {
   familyName: string;
   firstName: string;
@@ -249,13 +251,11 @@ class ThailandTravelerContextBuilder {
       });
 
       // Add required technical fields that are not user-provided
-      const travelerPayload: TDACPayload = {
+      const travelerPayload = {
         ...tdacData,
-        // Technical fields required by TDAC API
-        userId, // Include userId for post-submission entry info creation
+        userId,
         cloudflareToken: 'auto',
-        tranModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo || {}), // Required transport mode
-      };
+      } as TDACPayload;
       
       logger.debug('Using pure user data with minimal technical fields');
 
@@ -393,7 +393,7 @@ class ThailandTravelerContextBuilder {
    * @param userData - User data from UserDataService
    * @returns TDAC-formatted data
    */
-  static transformToTDACFormat(userData: UserData): Partial<TDACPayload> {
+  static transformToTDACFormat(userData: UserData): TDACPayloadDraft {
     const { passport, personalInfo, travelInfo, fundItems } = userData;
 
     logger.debug('Transforming user data to TDAC format', {
@@ -411,7 +411,7 @@ class ThailandTravelerContextBuilder {
     const nameInfo: NameInfo = parseFullName(passport?.fullName || '', { debug: true });
 
     // Transform passport data - use ONLY actual user data, no fallbacks
-    const tdacData: Partial<TDACPayload> = {
+    const tdacData: TDACPayloadDraft = {
       // Personal Information In Passport (from user's passport data)
       familyName: nameInfo.familyName,
       firstName: nameInfo.firstName,
@@ -704,7 +704,10 @@ class ThailandTravelerContextBuilder {
       }
       return `${match.name} - ${match.nameZh}`;
     } catch (error) {
-      logger.warn('Failed to load province display data', error instanceof Error ? error : new Error(String(error)), { provinceCode });
+      logger.warn('Failed to load province display data', {
+        provinceCode,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return formatLocationCode(provinceCode);
     }
   }
@@ -1193,7 +1196,11 @@ class ThailandTravelerContextBuilder {
         }
       } catch (error) {
         const destinationStr = destinationId === null ? 'null' : destinationId;
-        logger.warn('Failed to get travel info with destination', error instanceof Error ? error : new Error(String(error)), { userId, destinationStr });
+        logger.warn('Failed to get travel info with destination', {
+          userId,
+          destinationStr,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
     

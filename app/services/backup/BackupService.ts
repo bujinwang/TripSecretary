@@ -12,7 +12,7 @@ import { Platform } from 'react-native';
 import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../data/UserDataService';
 import DataExportService from '../export/DataExportService';
-import SecureStorageService from '../security/SecureStorageService';
+import EncryptionService, { FieldType } from '../security/EncryptionService';
 
 // Type definitions
 type BackupType = 'manual' | 'automatic' | 'cloud';
@@ -142,6 +142,8 @@ interface BackupStatistics {
   oldestBackup: BackupInfo | null;
   newestBackup: BackupInfo | null;
   averageSize: number;
+  localBackups?: number;
+  cloudBackups?: number;
   cloudBackupsCount: number;
   cloudTotalSize: number;
   syncedCloudBackups: number;
@@ -194,7 +196,7 @@ interface EncryptResult {
   filePath: string;
   fileSize: number;
   encrypted: boolean;
-  fieldType: string;
+  fieldType: FieldType;
 }
 
 interface DecryptResult {
@@ -211,7 +213,8 @@ interface AvailableBackupsResult {
 }
 
 interface BackupListItem extends BackupInfo {
-  type: BackupTypeFilter;
+  location: BackupTypeFilter;
+  cloudBackupId?: string;
 }
 
 interface RecoveryInfo {
@@ -241,6 +244,7 @@ interface RecoveryResult {
   conflicts?: unknown[];
   importResult?: unknown;
   recoveredAt?: number;
+  cloudBackupId?: string;
   error?: string;
 }
 
@@ -313,6 +317,7 @@ interface SyncResult {
   syncedCount?: number;
   totalPending?: number;
   syncResults?: SyncResultItem[];
+  message?: string;
   error?: string;
 }
 
@@ -348,6 +353,9 @@ class BackupService {
   private backupSettingsKey: string;
   private cloudBackupKey: string;
   private encryptionKey: string;
+  private encryptionInitialized: boolean;
+  private readonly encryptionService = EncryptionService;
+  private readonly defaultEncryptionField: FieldType = 'recovery';
 
   constructor() {
     this.backupDirectory = FileSystem.documentDirectory + 'backups/';
@@ -358,6 +366,7 @@ class BackupService {
     this.backupSettingsKey = 'backup_settings';
     this.cloudBackupKey = 'cloud_backup_status';
     this.encryptionKey = 'backup_encryption_key';
+    this.encryptionInitialized = false;
   }
 
   /**
@@ -1344,6 +1353,25 @@ class BackupService {
   // Encryption Methods
 
   /**
+   * Ensure encryption service is initialized before use.
+   */
+  private async ensureEncryptionReady(): Promise<void> {
+    if (this.encryptionInitialized) {
+      return;
+    }
+
+    try {
+      await this.encryptionService.initialize();
+      await this.encryptionService.setupUserKey('backup_service_user');
+      this.encryptionInitialized = true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Failed to initialize backup encryption service:', errorMessage);
+      throw new Error('Encryption service initialization failed');
+    }
+  }
+
+  /**
    * Encrypt backup file
    * @param filePath - Source file path
    * @param password - Encryption password (optional, uses default field type if not provided)
@@ -1351,14 +1379,20 @@ class BackupService {
    */
   async encryptBackupFile(filePath: string, password?: string): Promise<EncryptResult> {
     try {
+      await this.ensureEncryptionReady();
+
       // Read source file
       const sourceFile = new FileSystem.File(filePath) as unknown as FileSystemFile;
       const sourceData = await sourceFile.text();
 
       // Use EncryptionService for encryption
-      // If password is provided, use it as a custom field type for key derivation
-      const fieldType = password ? `backup_${password.slice(0, 8)}` : 'backup_data';
-      const encryptedData = await SecureStorageService.encryption.encrypt(sourceData, fieldType);
+      const payload = password
+        ? JSON.stringify({ data: sourceData, password })
+        : sourceData;
+      const encryptedData = await this.encryptionService.encrypt(
+        payload,
+        this.defaultEncryptionField
+      );
 
       // Create encrypted file
       const encryptedFilePath = filePath.replace('.json', '.enc');
@@ -1371,7 +1405,7 @@ class BackupService {
         filePath: encryptedFilePath,
         fileSize: fileSize,
         encrypted: true,
-        fieldType: fieldType
+        fieldType: this.defaultEncryptionField
       };
 
     } catch (error: unknown) {
@@ -1389,19 +1423,47 @@ class BackupService {
    */
   async decryptBackupFile(encryptedFilePath: string, password?: string): Promise<DecryptResult> {
     try {
+      await this.ensureEncryptionReady();
+
       // Read encrypted file
       const encryptedFile = new FileSystem.File(encryptedFilePath) as unknown as FileSystemFile;
       const encryptedData = await encryptedFile.text();
 
       // Use EncryptionService for decryption
-      // If password is provided, use it as a custom field type for key derivation
-      const fieldType = password ? `backup_${password.slice(0, 8)}` : 'backup_data';
-      const decryptedData = await SecureStorageService.encryption.decrypt(encryptedData, fieldType);
+      const decryptedPayload = await this.encryptionService.decrypt(
+        encryptedData,
+        this.defaultEncryptionField
+      );
+
+      let restoredData = decryptedPayload;
+
+      if (password) {
+        try {
+          const parsed = JSON.parse(decryptedPayload) as { data: string; password: string };
+          if (parsed.password !== password) {
+            throw new Error('Invalid password');
+          }
+          restoredData = parsed.data;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          throw new Error(`Failed to decrypt backup with password: ${message}`);
+        }
+      } else {
+        // Handle legacy payloads that may contain structured data
+        try {
+          const parsed = JSON.parse(decryptedPayload) as { data?: string };
+          if (parsed?.data) {
+            restoredData = parsed.data;
+          }
+        } catch {
+          // Not JSON - keep original string
+        }
+      }
 
       // Create decrypted file
       const decryptedFilePath = encryptedFilePath.replace('.enc', '_decrypted.json');
       const decryptedFile = new FileSystem.File(decryptedFilePath) as unknown as FileSystemFile;
-      await decryptedFile.write(decryptedData);
+      await decryptedFile.write(restoredData);
 
       const fileSize = await decryptedFile.size();
 
@@ -1432,18 +1494,23 @@ class BackupService {
 
       // Combine and sort by creation date
       const allBackups: BackupListItem[] = [
-        ...localBackups.map(backup => ({ ...backup, type: 'local' as BackupTypeFilter })),
-        ...cloudBackups.map(backup => ({ 
+        ...localBackups.map(backup => ({
+          ...backup,
+          location: 'local' as BackupTypeFilter,
+        })),
+        ...cloudBackups.map(backup => ({
           backupId: backup.cloudBackupId,
           filename: backup.filename,
           filePath: backup.filePath,
           fileSize: backup.fileSize,
           createdAt: backup.createdAt,
           timestamp: new Date(backup.createdAt).toISOString(),
-          type: backup.cloudProvider === 'device' ? 'local' : 'cloud' as BackupTypeFilter,
+          type: 'cloud' as BackupType,
           entryPackCount: backup.entryInfoCount,
-          includePhotos: backup.encrypted,
-          appVersion: undefined
+          includePhotos: Boolean(backup.encrypted),
+          appVersion: undefined,
+          location: 'cloud' as BackupTypeFilter,
+          cloudBackupId: backup.cloudBackupId,
         }))
       ].sort((a, b) => b.createdAt - a.createdAt);
 
@@ -1530,7 +1597,7 @@ class BackupService {
         fileExists,
         fileSize,
         encrypted: metadata.encrypted || false,
-        syncStatus: metadata.syncStatus || 'local',
+      syncStatus: metadata.syncStatus ?? 'pending',
         canRecover: fileExists,
         requiresPassword: metadata.encrypted || false,
         estimatedRecoveryTime: this.estimateRecoveryTime(metadata.entryInfoCount, metadata.includePhotos),

@@ -1,7 +1,7 @@
 // 韩国入境指引服务 - 仁川机场ICN/金浦机场GMP完整流程管理
 // 整合K-ETA电子旅行许可、生物识别预注册
 
-import { koreaEntryGuide } from '../../config/entryGuide/korea.js';
+import { koreaEntryGuide } from '../../config/entryGuide/korea';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions (reusing common types from other entry guide services)

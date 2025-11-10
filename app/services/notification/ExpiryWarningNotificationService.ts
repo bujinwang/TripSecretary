@@ -16,6 +16,7 @@ import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EntryInfoService from '../EntryInfoService';
+import UserDataService from '../data/UserDataService';
 import type { UserId } from '../../types/data';
 
 // Type definitions
@@ -381,7 +382,7 @@ class ExpiryWarningNotificationService {
   async handleArchiveAction(entryInfoId: string, userId: UserId): Promise<boolean> {
     try {
       // Archive the entry info (update status to archived)
-      const success = await EntryInfoService.updateEntryInfoStatus(entryInfoId, 'archived', {
+      const success = await UserDataService.updateEntryInfoStatus(entryInfoId, 'archived', {
         reason: 'expired',
         triggeredBy: 'notification_action',
         metadata: {

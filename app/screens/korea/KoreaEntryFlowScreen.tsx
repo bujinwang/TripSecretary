@@ -268,7 +268,16 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
     }
   };
 
-  const getPrimaryButtonState = () => {
+  type PrimaryButtonAction = 'start_new' | 'view_entry_pack' | 'continue_improving' | 'apply_keta';
+  type PrimaryButtonState = {
+    title: string;
+    action: PrimaryButtonAction;
+    disabled: boolean;
+    variant: 'primary' | 'secondary';
+    subtitle?: string;
+  };
+
+  const getPrimaryButtonState = (): PrimaryButtonState => {
     const isComplete = completionPercent === 100;
 
     if (completionPercent >= 80 && isComplete) {

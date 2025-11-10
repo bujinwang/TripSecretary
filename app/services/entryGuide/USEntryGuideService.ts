@@ -1,7 +1,7 @@
 // 美国入境指引服务 - 主要机场JFK/LAX/ORD/SFO完整流程管理
 // 整合ESTA电子旅行许可、VWP资格验证、生物识别系统
 
-import { usaEntryGuide } from '../../config/entryGuide/usa.js';
+import { usaEntryGuide } from '../../config/entryGuide/usa';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type definitions

@@ -66,7 +66,9 @@ const HomeScreen = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
-  const { t, language, setLanguage } = useLocale();
+  const locale = useLocale();
+  const { t, language } = locale;
+  const setLanguage = locale.setLanguage as (code: string) => void;
 
   // Available languages for selection
   const availableLanguages = [

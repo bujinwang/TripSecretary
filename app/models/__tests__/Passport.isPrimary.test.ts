@@ -3,8 +3,7 @@
  */
 
 import Passport from '../Passport';
-import type SecureStorageServiceType from '../../services/security/SecureStorageService';
-import SecureStorageService from '../../services/security/SecureStorageService';
+import secureStorageService from '../../services/security/SecureStorageService';
 
 jest.mock('../../services/security/SecureStorageService', () => {
   const mockService = {
@@ -20,7 +19,8 @@ jest.mock('../../services/security/SecureStorageService', () => {
   };
 });
 
-const mockedSecureStorage = SecureStorageService as jest.Mocked<SecureStorageServiceType>;
+type SecureStorageServiceType = typeof secureStorageService;
+const mockedSecureStorage = secureStorageService as jest.Mocked<SecureStorageServiceType>;
 
 describe('Passport isPrimary Constraint', () => {
   const TEST_USER_ID = 'test_user_123';
@@ -31,12 +31,12 @@ describe('Passport isPrimary Constraint', () => {
     const mockPassports = new Map<string, Record<string, unknown>>();
 
     mockedSecureStorage.savePassport.mockImplementation(async data => {
-      mockPassports.set(String(data.id), { ...data });
-      return { id: data.id } as unknown as ReturnType<typeof mockedSecureStorage.savePassport>;
+      mockPassports.set(String(data.id), { ...(data as unknown as Record<string, unknown>) });
+      return { id: data.id ?? '' };
     });
 
     mockedSecureStorage.getPassport.mockImplementation(async id => {
-      return (mockPassports.get(String(id)) as Record<string, unknown> | undefined) ?? null;
+      return (mockPassports.get(String(id)) ?? null) as unknown;
     });
 
     mockedSecureStorage.listUserPassports.mockImplementation(async userId => {
@@ -66,7 +66,7 @@ describe('Passport isPrimary Constraint', () => {
       await passport.setAsPrimary();
       expect(passport.isPrimary).toBe(true);
 
-      const saveCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      const saveCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0];
       expect(saveCall).toBeDefined();
       if (!saveCall) {
         throw new Error('Expected savePassport to be called');
@@ -142,7 +142,7 @@ describe('Passport isPrimary Constraint', () => {
       await passport2.setAsPrimary();
       expect(passport2.isPrimary).toBe(true);
 
-      const lastCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+      const lastCall = mockedSecureStorage.savePassport.mock.calls[mockedSecureStorage.savePassport.mock.calls.length - 1]?.[0];
       expect(lastCall).toBeDefined();
       if (!lastCall) {
         throw new Error('Expected savePassport to be called');

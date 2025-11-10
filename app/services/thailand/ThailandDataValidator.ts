@@ -90,7 +90,7 @@ class ThailandDataValidator {
   static validatePassportData(passport: PassportData | null | undefined): ValidationResult {
     const errors: string[] = [];
     // Thailand TDAC requires: passport number, full name, nationality, date of birth, expiry date
-    const requiredFields: Array<keyof PassportData> = ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'];
+    const requiredFields: Array<keyof PassportData & string> = ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'];
     const fieldStatus: FieldStatus = {};
     
     // Check required fields
@@ -172,7 +172,7 @@ class ThailandDataValidator {
     const errors: string[] = [];
     // Thailand TDAC requires: occupation, phone number, email
     // Note: sex/gender is handled separately in passport validation
-    const requiredFields: Array<keyof PersonalInfoData> = ['occupation', 'phoneNumber', 'email'];
+    const requiredFields: Array<keyof PersonalInfoData & string> = ['occupation', 'phoneNumber', 'email'];
     const fieldStatus: FieldStatus = {};
 
     // Check required fields
@@ -235,7 +235,7 @@ class ThailandDataValidator {
   static validateTravelInfo(travelInfo: TravelInfoData | null | undefined): ValidationResult {
     const errors: string[] = [];
     // Thailand TDAC requires comprehensive flight and accommodation information
-    const requiredFields: Array<keyof TravelInfoData> = [
+    const requiredFields: Array<keyof TravelInfoData & string> = [
       'arrivalFlightNumber', 'arrivalDepartureAirport', 'arrivalArrivalAirport',
       'arrivalDepartureDate', 'arrivalArrivalDate',
       'departureFlightNumber', 'departureDepartureAirport', 'departureArrivalAirport',

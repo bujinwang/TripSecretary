@@ -1,5 +1,5 @@
 // 入境通 - Thailand Entry Flow Screen (泰国入境准备状态)
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -7,227 +7,322 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
-import CompletionSummaryCard from '../../components/CompletionSummaryCard';
+import EntryPackStatusBanner, { type EntryPackStatusBannerProps } from '../../components/EntryPackStatusBanner';
 import PreparedState from '../../components/thailand/PreparedState';
-import SubmissionCountdown from '../../components/SubmissionCountdown';
 import DataChangeAlert from '../../components/DataChangeAlert';
 import { colors, typography, spacing, shadows } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
+import EntryInfoService from '../../services/EntryInfoService';
+import ThailandTravelerContextBuilder from '../../services/thailand/ThailandTravelerContextBuilder';
+import ArrivalWindowCalculator from '../../utils/thailand/ArrivalWindowCalculator';
+import type { DestinationParam, RootStackScreenProps } from '../../types/navigation';
+import type { AllUserData, SerializablePassport } from '../../types/data';
+import type { SubmissionMethod, EntryPackPresentationStatus, TDACTravelerInfo } from '../../types/thailand';
+import type { ResubmissionWarningEvent } from '../../services/data/events/DataEventService';
+import type { ButtonProps } from '../../components/Button';
 
-const ThailandEntryFlowScreen = ({ navigation, route }) => {
+type ThailandEntryFlowScreenProps = RootStackScreenProps<'ThailandEntryFlow'>;
+
+type CompletionStatus = 'incomplete' | 'needs_improvement' | 'mostly_complete' | 'ready' | string;
+
+type CompletionCategoryId = 'passport' | 'personal' | 'funds' | 'travel';
+
+type CompletionCategory = {
+  id: CompletionCategoryId;
+  name: string;
+  icon: string;
+  status: string;
+  completedCount: number;
+  totalCount: number;
+  missingFields: string[];
+};
+
+type EntryPreparationData = {
+  entryInfoId: string | null;
+  passport: Record<string, unknown>;
+  personalInfo: Record<string, unknown>;
+  funds: unknown[];
+  travel: Record<string, unknown>;
+  lastUpdatedAt: string;
+};
+
+type LatestTdacData = {
+  arrCardNo?: string | null;
+  qrUri?: string | null;
+  pdfUrl?: string | null;
+  submittedAt?: string | null;
+  submissionMethod?: SubmissionMethod | null;
+};
+
+type PrimaryActionKey = 'continue_improving' | 'submit_tdac' | 'view_entry_pack' | 'resubmit_tdac' | 'wait_for_window';
+type ButtonVariant = NonNullable<ButtonProps['variant']>;
+
+type PrimaryActionState = {
+  title: string;
+  action: PrimaryActionKey;
+  disabled: boolean;
+  variant: ButtonVariant;
+  subtitle?: string;
+};
+
+type EntryPackStatus = EntryPackStatusBannerProps['status'];
+
+const DEFAULT_USER_ID = 'user_001';
+const DEFAULT_DESTINATION_ID = 'th';
+const TDAC_CARD_TYPE = 'TDAC';
+
+const ThailandEntryFlowScreen: React.FC<ThailandEntryFlowScreenProps> = ({ navigation, route }) => {
   const { t, language } = useLocale();
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
-  
+  const params = route.params ?? {};
+  const destinationParam = useMemo<DestinationParam | null>(() => {
+    const incoming = params.destination;
+    if (!incoming) {
+      return null;
+    }
+    if (typeof incoming === 'string') {
+      return { id: incoming };
+    }
+    if (typeof incoming === 'object') {
+      return incoming;
+    }
+    return null;
+  }, [params.destination]);
+  const destinationId = (typeof params.destination === 'string'
+    ? params.destination
+    : destinationParam?.id) ?? DEFAULT_DESTINATION_ID;
+  const passportParam = useMemo<SerializablePassport | null>(() => {
+    const incoming = params.passport ?? null;
+    if (!incoming) {
+      return null;
+    }
+    try {
+      const serializable = UserDataService.toSerializablePassport(incoming as any);
+      return (serializable || incoming) as SerializablePassport;
+    } catch {
+      return incoming as SerializablePassport;
+    }
+  }, [params.passport]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
   // Completion state - calculated from real user data
-  const [completionPercent, setCompletionPercent] = useState(0);
-  const [completionStatus, setCompletionStatus] = useState('incomplete');
-  const [categories, setCategories] = useState([]);
-  const [userData, setUserData] = useState(null);
-  const [arrivalDate, setArrivalDate] = useState(null);
-  
+  const [completionPercent, setCompletionPercent] = useState<number>(0);
+  const [completionStatus, setCompletionStatus] = useState<CompletionStatus>('incomplete');
+  const [categories, setCategories] = useState<CompletionCategory[]>([]);
+  const [userData, setUserData] = useState<EntryPreparationData | null>(null);
+  const [arrivalDate, setArrivalDate] = useState<string | null>(null);
+
   // Data change detection state
-  const [resubmissionWarning, setResubmissionWarning] = useState(null);
-  const [entryPackStatus, setEntryPackStatus] = useState(null);
-  const [showSupersededStatus, setShowSupersededStatus] = useState(false);
-  const [latestTdacData, setLatestTdacData] = useState(null);
+  const [resubmissionWarning, setResubmissionWarning] = useState<ResubmissionWarningEvent | null>(null);
+  const [entryPackStatus, setEntryPackStatus] = useState<EntryPackPresentationStatus | null>(null);
+  const [showSupersededStatus, setShowSupersededStatus] = useState<boolean>(false);
+  const [latestTdacData, setLatestTdacData] = useState<LatestTdacData | null>(null);
 
   // Passport selection state
-  const [userId, setUserId] = useState(null);
+  const [activeUserId, setActiveUserId] = useState<string | null>(null);
 
+  const dataChangeUnsubscribeRef = useRef<(() => void) | null>(null);
 
+  const loadEntryInfoStatus = useCallback(async (activeUserId: string) => {
+    try {
+      const allEntryInfos = await EntryInfoService.getAllEntryInfos(activeUserId);
+      const thailandEntryInfo = allEntryInfos?.find((info: any) => info?.destinationId === destinationId);
 
-  // Load data on component mount and when screen gains focus
-  useFocusEffect(
-    React.useCallback(() => {
-      loadData();
-      setupDataChangeListener();
-      
-      return () => {
-        // Cleanup listener on unmount
-        if (dataChangeUnsubscribe) {
-          dataChangeUnsubscribe();
-        }
-      };
-    }, [])
-  );
-
-  // Data change listener
-  let dataChangeUnsubscribe = null;
-
-  const setupDataChangeListener = () => {
-    // Add listener for data changes and resubmission warnings
-    dataChangeUnsubscribe = UserDataService.addDataChangeListener((event) => {
-      console.log('Data change event received in ThailandEntryFlowScreen:', event);
-      
-      if (event.type === 'RESUBMISSION_WARNING') {
-        // Check if this warning is for the current entry pack
-        const currentEntryPackId = route.params?.entryPackId;
-        if (currentEntryPackId && event.entryPackId === currentEntryPackId) {
-          setResubmissionWarning(event);
-        }
-      } else if (event.type === 'DATA_CHANGED') {
-        // Refresh data when changes are detected
-        loadData();
+      if (!thailandEntryInfo?.id) {
+        setEntryPackStatus(null);
+        setShowSupersededStatus(false);
+        setLatestTdacData(null);
+        setResubmissionWarning(null);
+        return;
       }
-    });
-  };
 
-  const loadData = async () => {
+      const latestDACRecord = await EntryInfoService.getLatestSuccessfulDigitalArrivalCard(
+        thailandEntryInfo.id,
+        TDAC_CARD_TYPE
+      );
+
+      if (latestDACRecord) {
+        const record = latestDACRecord as Record<string, any>;
+        setEntryPackStatus('submitted');
+        const isSuperseded = record.status === 'superseded';
+        setShowSupersededStatus(isSuperseded);
+        const submissionMethodRaw = typeof record.submissionMethod === 'string' ? record.submissionMethod.toLowerCase() : undefined;
+        const normalizedSubmissionMethod: SubmissionMethod =
+          submissionMethodRaw === 'api' ||
+          submissionMethodRaw === 'webview' ||
+          submissionMethodRaw === 'hybrid'
+            ? (submissionMethodRaw as SubmissionMethod)
+            : 'unknown';
+
+        setLatestTdacData({
+          arrCardNo: record.arrCardNo ?? null,
+          qrUri: record.qrUri ?? null,
+          pdfUrl: record.pdfUrl ?? null,
+          submittedAt: record.submittedAt ?? null,
+          submissionMethod: normalizedSubmissionMethod,
+        });
+
+        try {
+          const warning = UserDataService.getResubmissionWarning(thailandEntryInfo.id) as ResubmissionWarningEvent | null;
+          setResubmissionWarning(warning);
+        } catch (warningError) {
+          console.log('Resubmission warning check failed:', warningError);
+        }
+      } else {
+        setEntryPackStatus('in_progress');
+        setShowSupersededStatus(false);
+        setLatestTdacData(null);
+        setResubmissionWarning(null);
+      }
+    } catch (error) {
+      ErrorHandler.handle(error, {
+        context: 'ThailandEntryFlowScreen.loadEntryInfoStatus',
+        type: ErrorType.DATA_LOAD,
+        severity: ErrorSeverity.SILENT,
+      } as any);
+      setEntryPackStatus(null);
+      setShowSupersededStatus(false);
+      setLatestTdacData(null);
+      setResubmissionWarning(null);
+    }
+  }, [destinationId]);
+
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      // Get user ID from route params or use default
-      const currentUserId = passportParam?.id || 'user_001';
-      setUserId(currentUserId);
+      const resolvedUserId = passportParam?.userId ?? passportParam?.id ?? DEFAULT_USER_ID;
+      setActiveUserId(resolvedUserId);
 
-      // Initialize UserDataService
-      await UserDataService.initialize(currentUserId);
+      await UserDataService.initialize(resolvedUserId);
 
-      // Load all user data - use currentUserId directly instead of userId state
-      const allUserData = await UserDataService.getAllUserData(currentUserId);
-      console.log('Loaded user data for completion calculation:', allUserData);
+      const allUserData = (await UserDataService.getAllUserData(resolvedUserId)) as AllUserData;
+      const fundItems = await UserDataService.getFundItems(resolvedUserId).catch(() => []);
+      const travelInfo = await UserDataService.getTravelInfo(resolvedUserId, destinationId).catch(() => null);
 
-      // Load fund items - use currentUserId directly
-      const fundItems = await UserDataService.getFundItems(currentUserId);
-
-      // Load travel info for Thailand - use currentUserId directly
-      // Note: This screen is Thailand-specific, so 'th' is the expected destinationId
-      const destinationId = route.params?.destination?.id || 'th';
-      if (!route.params?.destination?.id) {
-        console.warn('⚠️ ThailandEntryFlowScreen: No destination.id in route params, defaulting to "th"');
-      }
-      const travelInfo = await UserDataService.getTravelInfo(currentUserId, destinationId);
-
-      // Get entry info ID for this destination
-      let entryInfoId = null;
+      let entryInfoId: string | null = null;
       try {
-        const EntryInfoService = require('../../services/EntryInfoService').default;
-        if (EntryInfoService && typeof EntryInfoService.getAllEntryInfos === 'function') {
-          const allEntryInfos = await EntryInfoService.getAllEntryInfos(currentUserId);
-          const thailandEntryInfo = allEntryInfos?.find(info => info.destinationId === destinationId);
-          if (thailandEntryInfo) {
-            entryInfoId = thailandEntryInfo.id;
-            console.log('✅ Found entry info ID:', entryInfoId);
-          }
-        } else {
-          console.log('EntryInfoService not available, skipping entry info ID lookup');
+        const allEntryInfos = await EntryInfoService.getAllEntryInfos(resolvedUserId);
+        const thailandEntryInfo = allEntryInfos?.find((info: any) => info?.destinationId === destinationId);
+        if (thailandEntryInfo?.id) {
+          entryInfoId = String(thailandEntryInfo.id);
         }
-      } catch (error) {
-        console.error('Failed to get entry info ID:', error);
+      } catch (lookupError) {
+        console.error('Failed to get entry info ID:', lookupError);
       }
 
-      // Prepare entry info for completion calculation
-      const passportInfo = allUserData.passport || {};
-      const personalInfoFromStore = allUserData.personalInfo || {};
-      const normalizedPersonalInfo = { ...personalInfoFromStore };
-
-      // Gender removed from personalInfo - use passport data directly
-      // Gender normalization logic removed - handled by passport model
-
-      const entryInfo = {
-        entryInfoId, // Include the entry info ID
-        passport: passportInfo,
-        personalInfo: normalizedPersonalInfo,
-        funds: fundItems || [],
-        travel: travelInfo || {},
-        lastUpdatedAt: new Date().toISOString()
+      const entryInfo: EntryPreparationData = {
+        entryInfoId,
+        passport: (allUserData?.passport as Record<string, unknown>) ?? {},
+        personalInfo: (allUserData?.personalInfo as Record<string, unknown>) ?? {},
+        funds: Array.isArray(fundItems) ? fundItems : [],
+        travel: travelInfo ? { ...(travelInfo as Record<string, unknown>) } : {},
+        lastUpdatedAt: new Date().toISOString(),
       };
 
       setUserData(entryInfo);
-      
-      // Extract arrival date for countdown
-      const arrivalDateFromTravel = travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate;
-      setArrivalDate(arrivalDateFromTravel);
-      
-      // Calculate completion using EntryCompletionCalculator
-      const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
-      console.log('Completion summary:', completionSummary);
-      
-      // Update completion state
-      setCompletionPercent(completionSummary.totalPercent);
-      
-      if (completionSummary.totalPercent === 100) {
+
+      const travelRecord = travelInfo as Record<string, any> | null;
+      const arrivalDateFromTravel =
+        travelRecord?.arrivalArrivalDate ??
+        travelRecord?.arrivalDate ??
+        null;
+      setArrivalDate(arrivalDateFromTravel ?? null);
+
+      const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo) as any;
+      const totalPercent = Number(completionSummary?.totalPercent ?? 0);
+      setCompletionPercent(totalPercent);
+
+      if (totalPercent === 100) {
         setCompletionStatus('ready');
-      } else if (completionSummary.totalPercent >= 50) {
+      } else if (totalPercent >= 50) {
         setCompletionStatus('mostly_complete');
       } else {
         setCompletionStatus('needs_improvement');
       }
 
-      // Create category data from completion metrics
-      const categoryData = [
+      const passportSummary = completionSummary?.categorySummary?.passport ?? {};
+      const personalSummary = completionSummary?.categorySummary?.personalInfo ?? {};
+      const fundsSummary = completionSummary?.categorySummary?.funds ?? {};
+      const travelSummary = completionSummary?.categorySummary?.travel ?? {};
+
+      const categoryData: CompletionCategory[] = [
         {
           id: 'passport',
           name: t('progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
           icon: '📘',
-          status: completionSummary.categorySummary.passport.state,
-          completedCount: completionSummary.categorySummary.passport.completed,
-          totalCount: completionSummary.categorySummary.passport.total,
-          missingFields: completionSummary.missingFields.passport || [],
+          status: String(passportSummary?.state ?? 'incomplete'),
+          completedCount: Number(passportSummary?.completed ?? 0),
+          totalCount: Number(passportSummary?.total ?? 5),
+          missingFields: Array.isArray(completionSummary?.missingFields?.passport)
+            ? completionSummary.missingFields.passport
+            : [],
         },
         {
           id: 'personal',
           name: t('progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
           icon: '👤',
-          status: completionSummary.categorySummary.personalInfo.state,
-          completedCount: completionSummary.categorySummary.personalInfo.completed,
-          totalCount: completionSummary.categorySummary.personalInfo.total,
-          missingFields: completionSummary.missingFields.personalInfo || [],
+          status: String(personalSummary?.state ?? 'incomplete'),
+          completedCount: Number(personalSummary?.completed ?? 0),
+          totalCount: Number(personalSummary?.total ?? 4),
+          missingFields: Array.isArray(completionSummary?.missingFields?.personalInfo)
+            ? completionSummary.missingFields.personalInfo
+            : [],
         },
         {
           id: 'funds',
           name: t('progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
           icon: '💰',
-          status: completionSummary.categorySummary.funds.state,
-          completedCount: completionSummary.categorySummary.funds.validFunds,
-          totalCount: 1, // At least 1 fund item required
-          missingFields: completionSummary.missingFields.funds || [],
+          status: String(fundsSummary?.state ?? 'incomplete'),
+          completedCount: Number(fundsSummary?.validFunds ?? fundsSummary?.completed ?? 0),
+          totalCount: 1,
+          missingFields: Array.isArray(completionSummary?.missingFields?.funds)
+            ? completionSummary.missingFields.funds
+            : [],
         },
         {
           id: 'travel',
           name: t('progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
           icon: '✈️',
-          status: completionSummary.categorySummary.travel.state,
-          completedCount: completionSummary.categorySummary.travel.completed,
-          totalCount: completionSummary.categorySummary.travel.total,
-          missingFields: completionSummary.missingFields.travel || [],
+          status: String(travelSummary?.state ?? 'incomplete'),
+          completedCount: Number(travelSummary?.completed ?? 0),
+          totalCount: Number(travelSummary?.total ?? 4),
+          missingFields: Array.isArray(completionSummary?.missingFields?.travel)
+            ? completionSummary.missingFields.travel
+            : [],
         },
       ];
-      
+
       setCategories(categoryData);
 
-      // Check for entry info and resubmission warnings (non-blocking) - use currentUserId directly
-      loadEntryInfoStatus(currentUserId).catch(error => {
+      void loadEntryInfoStatus(resolvedUserId).catch(error => {
         console.log('Entry info status check failed, continuing without it:', error);
       });
-      
     } catch (error) {
       ErrorHandler.handleDataLoadError(error, 'ThailandEntryFlowScreen.loadData', {
         severity: ErrorSeverity.WARNING,
         customMessage: '加载入境准备信息时出现问题，请下拉刷新重试。',
-        onRetry: () => loadData(),
+        onRetry: () => {
+          void loadData();
+        },
       });
 
-      // Fallback to empty state on error
       setCompletionPercent(0);
       setCompletionStatus('needs_improvement');
       setCategories([
         {
           id: 'passport',
-          name: '护照信息',
+          name: t('progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
           icon: '📘',
           status: 'incomplete',
           completedCount: 0,
@@ -236,7 +331,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: '护照信息',
+          name: t('progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
           icon: '👤',
           status: 'incomplete',
           completedCount: 0,
@@ -245,7 +340,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'funds',
-          name: '资金证明',
+          name: t('progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
           icon: '💰',
           status: 'incomplete',
           completedCount: 0,
@@ -254,7 +349,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'travel',
-          name: '旅行信息',
+          name: t('progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
           icon: '✈️',
           status: 'incomplete',
           completedCount: 0,
@@ -265,112 +360,68 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [destinationId, loadEntryInfoStatus, passportParam, t]);
 
-  const handleRefresh = async () => {
+  const setupDataChangeListener = useCallback(() => {
+    if (dataChangeUnsubscribeRef.current) {
+      dataChangeUnsubscribeRef.current();
+      dataChangeUnsubscribeRef.current = null;
+    }
+
+    dataChangeUnsubscribeRef.current = UserDataService.addDataChangeListener(
+      (dataTypeOrEvent: unknown, maybeUserId?: string, changeDetails?: Record<string, any>) => {
+        const event = (typeof dataTypeOrEvent === 'object' && dataTypeOrEvent !== null
+          ? dataTypeOrEvent
+          : {
+              type: 'DATA_CHANGED',
+              dataType: String(dataTypeOrEvent ?? 'unknown'),
+              userId: maybeUserId ?? '',
+              timestamp: new Date().toISOString(),
+              ...(changeDetails ?? {}),
+            }) as Record<string, unknown>;
+
+        const eventType = typeof event.type === 'string' ? event.type : undefined;
+        console.log('Data change event received in ThailandEntryFlowScreen:', event);
+
+        if (eventType === 'RESUBMISSION_WARNING') {
+          const warning = event as ResubmissionWarningEvent;
+          const matchesEntry =
+            !warning.entryInfoId ||
+            warning.entryInfoId === params.entryPackId ||
+            (userData?.entryInfoId ? warning.entryInfoId === userData.entryInfoId : false);
+          if (matchesEntry) {
+            setResubmissionWarning(warning);
+          }
+          return;
+        }
+
+        if (eventType === 'DATA_CHANGED' || eventType === 'TDAC_SUBMISSION_SUCCESS') {
+          void loadData();
+        }
+      }
+    );
+  }, [loadData, params.entryPackId, userData?.entryInfoId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadData();
+      setupDataChangeListener();
+
+      return () => {
+        if (dataChangeUnsubscribeRef.current) {
+          dataChangeUnsubscribeRef.current();
+          dataChangeUnsubscribeRef.current = null;
+        }
+      };
+    }, [loadData, setupDataChangeListener])
+  );
+
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-  };
+  }, [loadData]);
 
-  /**
-   * Load entry info status including DAC submissions and resubmission warnings
-   *
-   * Checks for existing entry info and digital arrival cards to determine:
-   * - Whether entry pack has been submitted
-   * - If DAC is superseded
-   * - Any pending resubmission warnings
-   *
-   * @param {string} userId - User ID to load entry info for
-   * @returns {Promise<void>}
-   */
-  const loadEntryInfoStatus = async (userId) => {
-    try {
-      // Use EntryInfoService to check for entry info with DAC submissions
-      const EntryInfoService = require('../../services/EntryInfoService').default;
-
-      if (!EntryInfoService || typeof EntryInfoService.getAllEntryInfos !== 'function') {
-        console.log('EntryInfoService methods not available, skipping entry info status check');
-        setEntryPackStatus(null);
-        setShowSupersededStatus(false);
-        setResubmissionWarning(null);
-        return;
-      }
-
-      const allEntryInfos = await EntryInfoService.getAllEntryInfos(userId);
-
-      // Find entry info for Thailand
-      // Note: This screen is Thailand-specific, so 'th' is the expected destinationId
-      const destinationId = route.params?.destination?.id || 'th';
-      const thailandEntryInfo = allEntryInfos?.find(info =>
-        info.destinationId === destinationId
-      );
-
-      if (thailandEntryInfo) {
-        // Check if this entry info has a successful DAC submission
-        const latestDAC = await EntryInfoService.getLatestSuccessfulDigitalArrivalCard(thailandEntryInfo.id, 'TDAC');
-
-        if (latestDAC) {
-          // Has successful DAC - consider it "submitted"
-          setEntryPackStatus('submitted');
-          setShowSupersededStatus(latestDAC.status === 'superseded');
-
-          // Store the latest TDAC data for use in preview
-          setLatestTdacData({
-            arrCardNo: latestDAC.arrCardNo,
-            qrUri: latestDAC.qrUri,
-            pdfUrl: latestDAC.pdfUrl,
-            submittedAt: latestDAC.submittedAt,
-            submissionMethod: latestDAC.submissionMethod,
-          });
-
-          console.log('📌 Stored TDAC data:', {
-            arrCardNo: latestDAC.arrCardNo,
-            hasQr: !!latestDAC.qrUri,
-            hasPdf: !!latestDAC.pdfUrl
-          });
-
-          // Check for pending resubmission warnings
-          try {
-            const warning = UserDataService.getResubmissionWarning(thailandEntryInfo.id);
-            if (warning) {
-              setResubmissionWarning(warning);
-            }
-          } catch (warningError) {
-            console.log('Resubmission warning check failed:', warningError);
-          }
-
-          console.log('Entry info status loaded:', {
-            entryInfoId: thailandEntryInfo.id,
-            hasDAC: !!latestDAC,
-            dacStatus: latestDAC.status,
-            hasWarning: !!resubmissionWarning
-          });
-        } else {
-          // No successful DAC - consider it "in_progress"
-          setEntryPackStatus('in_progress');
-          setShowSupersededStatus(false);
-          setResubmissionWarning(null);
-          setLatestTdacData(null);
-        }
-      } else {
-        setEntryPackStatus(null);
-        setShowSupersededStatus(false);
-        setLatestTdacData(null);
-        setResubmissionWarning(null);
-      }
-    } catch (error) {
-      ErrorHandler.handle(error, {
-        context: 'ThailandEntryFlowScreen.loadEntryInfoStatus',
-        type: ErrorType.DATA_LOAD,
-        severity: ErrorSeverity.SILENT, // Silent - don't notify user as this is non-critical
-      });
-      // Don't let entry info status loading failure block the main UI
-      setEntryPackStatus(null);
-      setShowSupersededStatus(false);
-      setResubmissionWarning(null);
-    }
-  };
 
   /**
    * Handle resubmission warning actions (resubmit or ignore)
@@ -381,16 +432,19 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
    * - Navigating to edit screen for resubmission
    *
    * @param {Object} warning - Resubmission warning object
-   * @param {string} warning.entryPackId - ID of the entry pack
+   * @param {string} warning.entryInfoId - ID of the entry info record
    * @param {Object} warning.diffResult - Details of data changes
    * @param {string} action - Action to take ('resubmit' or 'ignore')
    * @returns {Promise<void>}
    */
-  const handleResubmissionWarning = async (warning, action) => {
+  const handleResubmissionWarning = async (warning: ResubmissionWarningEvent, action: 'resubmit' | 'ignore') => {
     try {
       if (action === 'resubmit') {
+        if (!warning.entryInfoId) {
+          return;
+        }
         // Mark entry pack as superseded and navigate to edit
-        await UserDataService.markEntryPackAsSuperseded(warning.entryPackId, {
+        await UserDataService.markEntryInfoAsSuperseded(warning.entryInfoId, {
           changedFields: warning.diffResult.changedFields,
           changeReason: 'user_confirmed_resubmission'
         });
@@ -401,13 +455,20 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
 
         // Navigate to edit screen
         navigation.navigate('ThailandTravelInfo', {
-          passport: passportParam,
-          destination: route.params?.destination,
-          resubmissionMode: true
+          entryInfoId: warning.entryInfoId,
+          destinationId,
+          destination: destinationParam ?? undefined,
+          passport: passportParam ?? undefined,
+          resubmissionMode: true,
+          showResubmissionHint: true,
+          highlightMissingFields: true,
         });
       } else if (action === 'ignore') {
+        if (!warning.entryInfoId) {
+          return;
+        }
         // Clear the warning but don't mark as superseded
-        UserDataService.clearResubmissionWarning(warning.entryPackId);
+        UserDataService.clearResubmissionWarning(warning.entryInfoId);
         setResubmissionWarning(null);
       }
     } catch (error) {
@@ -429,8 +490,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
   const handleEditInformation = () => {
     // Navigate back to ThailandTravelInfoScreen
     navigation.navigate('ThailandTravelInfo', {
-      passport: passportParam,
-      destination: route.params?.destination,
+      entryInfoId: userData?.entryInfoId ?? undefined,
+      destinationId,
+      destination: destinationParam ?? undefined,
+      passport: passportParam ?? undefined,
     });
   };
 
@@ -438,28 +501,32 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     console.log('🎯 Opening entry pack with TDAC data:', latestTdacData);
 
     // Navigate to EntryPackPreview to show the complete entry pack preview
-    navigation.navigate('EntryPackPreview', {
-      userData,
-      passport: passportParam,
-      destination: route.params?.destination,
+    const previewParams = {
+      userData: userData ? (userData as unknown as Record<string, unknown>) : undefined,
+      passport: passportParam ?? undefined,
+      destination: destinationParam ?? undefined,
+      entryPackId: userData?.entryInfoId ?? undefined,
       entryPackData: {
-        personalInfo: userData?.personalInfo,
-        travelInfo: userData?.travel,
-        funds: userData?.funds,
-        tdacSubmission: latestTdacData // Use the loaded TDAC data
-      }
-    });
+        personalInfo: userData?.personalInfo ?? {},
+        travelInfo: userData?.travel ?? {},
+        funds: userData?.funds ?? [],
+        tdacSubmission: latestTdacData ?? undefined,
+      } as Record<string, unknown>,
+    };
+
+    navigation.navigate('EntryPackPreview', previewParams);
   };
 
 
 
-  const handleCategoryPress = (category) => {
+  const handleCategoryPress = (category: CompletionCategory) => {
     // Navigate back to ThailandTravelInfoScreen with the specific section expanded
-    // This will be enhanced in future tasks to expand the correct section
     navigation.navigate('ThailandTravelInfo', {
+      entryInfoId: userData?.entryInfoId ?? undefined,
+      destinationId,
+      destination: destinationParam ?? undefined,
+      passport: passportParam ?? undefined,
       expandSection: category.id,
-      passport: passportParam,
-      destination: route.params?.destination,
     });
   };
 
@@ -471,19 +538,20 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       case 'continue_improving':
         // Navigate back to ThailandTravelInfoScreen
         navigation.navigate('ThailandTravelInfo', {
-          passport: passportParam,
-          destination: route.params?.destination,
+          entryInfoId: userData?.entryInfoId ?? undefined,
+          destinationId,
+          destination: destinationParam ?? undefined,
+          passport: passportParam ?? undefined,
         });
         break;
       case 'submit_tdac':
         // Navigate to TDAC submission screen with complete traveler info
         try {
           // Build complete traveler context from user data
-          const userId = passportParam?.id || 'user_001';
-          const ThailandTravelerContextBuilder = require('../../services/thailand/ThailandTravelerContextBuilder').default;
-          const contextResult = await ThailandTravelerContextBuilder.buildThailandTravelerContext(userId);
+          const resolvedUserId = activeUserId ?? passportParam?.userId ?? passportParam?.id ?? DEFAULT_USER_ID;
+          const contextResult = await ThailandTravelerContextBuilder.buildThailandTravelerContext(resolvedUserId);
           
-          if (contextResult.success) {
+          if (contextResult.success && contextResult.payload) {
             console.log('✅ Built traveler context for TDAC submission:', {
               hasPassportNo: !!contextResult.payload.passportNo,
               hasFullName: !!contextResult.payload.familyName && !!contextResult.payload.firstName,
@@ -502,8 +570,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     text: '完善信息',
                     onPress: () => {
                       navigation.navigate('ThailandTravelInfo', {
-                        passport: passportParam,
-                        destination: route.params?.destination,
+                        entryInfoId: userData?.entryInfoId ?? undefined,
+                        destinationId,
+                        destination: destinationParam ?? undefined,
+                        passport: passportParam ?? undefined,
                       });
                     }
                   },
@@ -512,9 +582,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
                     style: 'default',
                     onPress: () => {
                       navigation.navigate('TDACHybrid', {
-                        passport: passportParam,
-                        destination: route.params?.destination,
-                        travelerInfo: contextResult.payload,
+                        travelerInfo: contextResult.payload as TDACTravelerInfo,
                       });
                     }
                   }
@@ -523,24 +591,27 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             } else {
               // No warnings, proceed directly to flash submission
               navigation.navigate('TDACHybrid', {
-                passport: passportParam,
-                destination: route.params?.destination,
-                travelerInfo: contextResult.payload,
+                travelerInfo: contextResult.payload as TDACTravelerInfo,
               });
             }
           } else {
             console.error('❌ Failed to build traveler context:', contextResult.errors);
+            const errors = contextResult.errors?.length ? contextResult.errors : ['请检查并完善所有必填信息'];
             Alert.alert(
               '❌ TDAC提交要求严格',
-              '泰国入境卡(TDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ' + contextResult.errors.join('\n• ') + '\n\n请返回完善所有必需信息后再提交。',
+              '泰国入境卡(TDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ' +
+                errors.join('\n• ') +
+                '\n\n请返回完善所有必需信息后再提交。',
               [
                 {
                   text: '立即完善',
                   style: 'default',
                   onPress: () => {
                     navigation.navigate('ThailandTravelInfo', {
-                      passport: passportParam,
-                      destination: route.params?.destination,
+                      entryInfoId: userData?.entryInfoId ?? undefined,
+                      destinationId,
+                      destination: destinationParam ?? undefined,
+                      passport: passportParam ?? undefined,
                       highlightMissingFields: true, // Flag to highlight missing fields
                     });
                   }
@@ -554,7 +625,9 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
             severity: ErrorSeverity.WARNING,
             customTitle: '系统错误',
             customMessage: '构建旅行者信息时出错，请稍后重试。',
-            onRetry: () => handlePrimaryAction(),
+            onRetry: () => {
+              void handlePrimaryAction();
+            },
           });
         }
         break;
@@ -565,8 +638,10 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       case 'resubmit_tdac':
         // Handle resubmission - navigate to edit screen first
         navigation.navigate('ThailandTravelInfo', {
-          passport: passportParam,
-          destination: route.params?.destination,
+          entryInfoId: userData?.entryInfoId ?? undefined,
+          destinationId,
+          destination: destinationParam ?? undefined,
+          passport: passportParam ?? undefined,
           resubmissionMode: true,
           showResubmissionHint: true
         });
@@ -594,7 +669,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
    * @returns {string} returns.variant - Button variant (primary, secondary)
    * @returns {string} [returns.subtitle] - Optional subtitle text
    */
-  const getPrimaryButtonState = () => {
+  const getPrimaryButtonState = (): PrimaryActionState => {
     // Check if TDAC has been submitted successfully
     if (entryPackStatus === 'submitted' && !showSupersededStatus) {
       return {
@@ -623,8 +698,12 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
     // Check submission window status
     let canSubmitNow = false;
     if (arrivalDate) {
-      const window = require('../../utils/thailand/ArrivalWindowCalculator').default.getSubmissionWindow(arrivalDate);
-      canSubmitNow = window.canSubmit;
+      try {
+        const submissionWindow = ArrivalWindowCalculator.getSubmissionWindow(arrivalDate);
+        canSubmitNow = Boolean(submissionWindow?.canSubmit);
+      } catch {
+        canSubmitNow = false;
+      }
     }
 
     // If completion is high enough, show entry pack option
@@ -720,7 +799,7 @@ const ThailandEntryFlowScreen = ({ navigation, route }) => {
       arrivalDate={arrivalDate}
       t={t}
       passportParam={passportParam}
-      destination={route.params?.destination}
+      destination={params.destination}
       userData={userData}
       handleEditInformation={handleEditInformation}
       handlePreviewEntryCard={handlePreviewEntryCard}

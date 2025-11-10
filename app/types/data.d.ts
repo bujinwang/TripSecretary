@@ -83,6 +83,7 @@ export interface AllUserData {
   entryInfo?: EntryInfoData | null;
   loadedAt?: string;
   loadDurationMs?: number;
+  [key: string]: unknown;
 }
 
 // Cache Statistics

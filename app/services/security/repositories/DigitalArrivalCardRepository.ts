@@ -14,7 +14,7 @@
  * - pdfUrl: file:///.../Documents/tdac/TDAC_TH12345_timestamp.pdf
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type DigitalArrivalCardRow } from '../utils/DataSerializer';
 
 // Type definitions
 interface SQLiteDatabase {
@@ -137,7 +137,7 @@ class DigitalArrivalCardRepository {
       return null;
     }
 
-    return this.serializer.deserializeDigitalArrivalCard(row) as DigitalArrivalCardRecord;
+    return this.serializer.deserializeDigitalArrivalCard(this.assertRow(row)) as DigitalArrivalCardRecord;
   }
 
   /**
@@ -158,7 +158,7 @@ class DigitalArrivalCardRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(row) as DigitalArrivalCardRecord);
+    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(this.assertRow(row)) as DigitalArrivalCardRecord);
   }
 
   /**
@@ -179,7 +179,7 @@ class DigitalArrivalCardRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(row) as DigitalArrivalCardRecord);
+    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(this.assertRow(row)) as DigitalArrivalCardRecord);
   }
 
   /**
@@ -202,7 +202,7 @@ class DigitalArrivalCardRepository {
       return null;
     }
 
-    return this.serializer.deserializeDigitalArrivalCard(row) as DigitalArrivalCardRecord;
+    return this.serializer.deserializeDigitalArrivalCard(this.assertRow(row)) as DigitalArrivalCardRecord;
   }
 
   /**
@@ -224,7 +224,7 @@ class DigitalArrivalCardRepository {
       return [];
     }
 
-    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(row) as DigitalArrivalCardRecord);
+    return rows.map(row => this.serializer.deserializeDigitalArrivalCard(this.assertRow(row)) as DigitalArrivalCardRecord);
   }
 
   /**
@@ -257,6 +257,13 @@ class DigitalArrivalCardRepository {
     const query = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE user_id = ?`;
     const result = await this.db.getFirstAsync(query, [userId]) as { count: number } | null;
     return result?.count || 0;
+  }
+
+  private assertRow(row: unknown): DigitalArrivalCardRow {
+    if (row && typeof row === 'object') {
+      return row as DigitalArrivalCardRow;
+    }
+    throw new Error('Invalid digital arrival card row retrieved from database');
   }
 
   /**

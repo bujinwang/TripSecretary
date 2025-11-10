@@ -15,6 +15,7 @@ import NotificationService from './NotificationService';
 import NotificationTemplateService from './NotificationTemplateService';
 import { NOTIFICATION_TYPES } from './NotificationTemplates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EntryInfoService from '../EntryInfoService';
 import UserDataService from '../data/UserDataService';
 import type { UserId } from '../../types/data';
 
@@ -272,14 +273,16 @@ class UrgentReminderNotificationService {
   async shouldSendUrgentReminder(entryInfoId: string): Promise<boolean> {
     try {
       // Check if entry info exists and is not submitted
-      const entryInfo = await UserDataService.getEntryInfo('current_user', 'thailand'); // Assuming destination is Thailand for now
-      if (!entryInfo || entryInfo.id !== entryInfoId) {
+      const entryInfo = await EntryInfoService.getEntryInfoById(entryInfoId);
+      if (!entryInfo) {
         console.log(`Entry info ${entryInfoId} not found, not sending urgent reminder`);
         return false;
       }
 
+      const userId: UserId | undefined = (entryInfo as any).userId;
+
       // Check if DAC is already submitted
-      const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfoId(entryInfoId);
+      const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
       const hasSuccessfulSubmission = digitalArrivalCards.some((dac: any) => dac.status === 'success');
 
       if (hasSuccessfulSubmission) {
