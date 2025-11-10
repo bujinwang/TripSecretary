@@ -662,6 +662,12 @@ initialState.visaNumber = passport.visaNumber;
 
         entryInfo = await UserDataService.createEntryInfo(entryInfoPayload);
       } else {
+        // Legacy records (or ones created outside the template) might not have userId set.
+        // Always align the entry record with the active user to satisfy EntryInfo.save validation.
+        if (userId && entryInfo.userId !== userId) {
+          entryInfo.userId = userId;
+        }
+
         if (passportRaw?.id && entryInfo.passportId !== passportRaw.id) {
           entryInfo.passportId = passportRaw.id;
         }

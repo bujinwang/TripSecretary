@@ -731,9 +731,10 @@ return null;
         // Get submission countdown if arrival date is set
         const submissionCountdown = getSubmissionCountdown(destination.arrivalDate);
 
-        // Use entryInfoId as key to ensure unique rendering for each entry info
-        // If entryInfoId is not available, fall back to a combination of destinationId and index
-        const uniqueKey = destination.entryInfoId || `${destination.destinationId}-${destination.completionPercent}`;
+        // Prefer entryInfoId for stability; otherwise include arrivalDate + index
+        // to avoid duplicate keys when multiple drafts share the same destination + progress.
+        const uniqueKey = destination.entryInfoId
+          || `${destination.destinationId}-${destination.arrivalDate || 'unknown'}-${index}`;
 
         return (
           <Card
