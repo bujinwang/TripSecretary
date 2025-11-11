@@ -206,6 +206,19 @@ const ensureBlob = (data: unknown): Blob => {
   throw new Error('Unsupported PDF payload format');
 };
 
+const MIN_TURNSTILE_TOKEN_LENGTH = 100;
+
+const normalizeCloudflareToken = (token?: string | null): string | null => {
+  if (!token) {
+    return null;
+  }
+  const trimmed = token.trim();
+  if (trimmed.length < MIN_TURNSTILE_TOKEN_LENGTH || trimmed === 'auto') {
+    return null;
+  }
+  return trimmed;
+};
+
 const TDACAPIScreen: React.FC<TDACAPIScreenProps> = ({ navigation, route }) => {
   const travelerInfo = useMemo<TDACTravelerInfo>(
     () => ({ ...(route.params?.travelerInfo ?? {}) }),
@@ -253,10 +266,14 @@ const TDACAPIScreen: React.FC<TDACAPIScreenProps> = ({ navigation, route }) => {
 
     try {
       const birthDate = convertBirthDate(travelerInfo, buildBirthDateParts(travelerInfo.birthDate));
+      const token = normalizeCloudflareToken(travelerInfo.cloudflareToken ?? null);
+      if (!token) {
+        throw new Error('Cloudflare 验证尚未完成或已过期，请重新完成验证后再试。');
+      }
       const travelerPayload = buildTravelerPayload(
         travelerInfo,
         birthDate,
-        travelerInfo.cloudflareToken ?? ''
+        token
       );
 
       const apiResult = await TDACAPIService.submitArrivalCard(travelerPayload);

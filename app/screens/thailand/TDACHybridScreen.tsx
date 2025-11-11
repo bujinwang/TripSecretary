@@ -224,6 +224,19 @@ const buildResultState = (
   };
 };
 
+const MIN_TURNSTILE_TOKEN_LENGTH = 100;
+
+const normalizeCloudflareToken = (token?: string | null): string | null => {
+  if (!token) {
+    return null;
+  }
+  const trimmed = token.trim();
+  if (trimmed.length < MIN_TURNSTILE_TOKEN_LENGTH || trimmed === 'auto') {
+    return null;
+  }
+  return trimmed;
+};
+
 const TDACHybridScreen: React.FC<TDACHybridScreenProps> = ({ navigation, route }) => {
   const { t } = useLocale();
   const travelerInfo = useMemo<TDACTravelerInfo>(
@@ -233,7 +246,9 @@ const TDACHybridScreen: React.FC<TDACHybridScreenProps> = ({ navigation, route }
 
   const [stage, setStage] = useState<TDACHybridStage>('awaitingToken');
   const [progressMessage, setProgressMessage] = useState<string>('正在准备 Cloudflare 验证...');
-  const [cloudflareToken, setCloudflareToken] = useState<string | null>(travelerInfo.cloudflareToken ?? null);
+  const [cloudflareToken, setCloudflareToken] = useState<string | null>(
+    normalizeCloudflareToken(travelerInfo.cloudflareToken ?? null)
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resultState, setResultState] = useState<SubmissionResultState | null>(null);
   const webViewRef = useRef<WebView>(null);
@@ -267,6 +282,10 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
     setProgressMessage('正在提交泰国入境卡...');
 
     try {
+      if (!token || token.length < MIN_TURNSTILE_TOKEN_LENGTH) {
+        throw new Error('Cloudflare 验证未完成或已过期，请重新验证后再提交。');
+      }
+
       const birthDate = convertBirthDate(travelerInfo, buildBirthDateParts(travelerInfo.birthDate));
       const travelerPayload = buildTravelerPayload(travelerInfo, birthDate, token);
       const apiResult = (await TDACAPIService.submitArrivalCard(travelerPayload)) as TDACAPISubmitResponse;
@@ -297,9 +316,13 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
   }, [savePDF, travelerInfo]);
 
   useEffect(() => {
-    if (cloudflareToken && stage === 'awaitingToken') {
-      void submitToAPI(cloudflareToken);
+    if (stage !== 'awaitingToken') {
+      return;
     }
+    if (!cloudflareToken) {
+      return;
+    }
+    void submitToAPI(cloudflareToken);
   }, [cloudflareToken, stage, submitToAPI]);
 
   const handleWebViewMessage = useCallback(
@@ -309,8 +332,19 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
 
         switch (payload.type) {
           case 'CLOUDFLARE_TOKEN_EXTRACTED':
-            if (payload.token) {
-              setCloudflareToken(payload.token);
+            {
+              const sanitizedToken = normalizeCloudflareToken(payload.token ?? null);
+              if (!sanitizedToken) {
+                setProgressMessage('未获取到有效的 Cloudflare 验证，请重试。');
+                return;
+              }
+              setStage('submitting');
+              setProgressMessage('Token 获取成功，正在提交...');
+              setCloudflareToken(sanitizedToken);
+              if (webViewRef.current) {
+                webViewRef.current.stopLoading();
+              }
+              void submitToAPI(sanitizedToken);
             }
             break;
           case 'CLOUDFLARE_TOKEN_POLLING':
@@ -334,8 +368,11 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
     setErrorMessage(null);
     setStage('awaitingToken');
     setProgressMessage('正在准备 Cloudflare 验证...');
-    setCloudflareToken(null);
-  }, []);
+    setCloudflareToken(normalizeCloudflareToken(travelerInfo.cloudflareToken ?? null));
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
+  }, [travelerInfo.cloudflareToken]);
 
   const handleSuccessClose = useCallback(() => {
     navigation.pop(2);
