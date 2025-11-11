@@ -197,13 +197,8 @@ class SecureStorageService {
 
       console.log('Opening database:', this.DB_NAME);
       
-      // Log database path for debugging
-      try {
-        const dbPath = `${FileSystem.documentDirectory}SQLite/${this.DB_NAME}.db`;
-        console.log('Database path:', dbPath);
-      } catch (e) {
-        // Ignore if FileSystem is not available
-      }
+      // Database will be created in: {documentDirectory}SQLite/{DB_NAME}.db
+      // Expo SQLite automatically adds the .db extension to the filename
       
       this.modernDb = await openDatabaseAsync(this.DB_NAME) as SQLiteDatabase;
 
@@ -435,10 +430,7 @@ class SecureStorageService {
           passportId: String(normalized.passportId ?? passportCountry.passportId),
           countryCode: String(normalized.countryCode ?? passportCountry.countryCode),
           visaRequired: Boolean(normalized.visaRequired),
-          maxStayDays:
-            normalized.maxStayDays !== undefined && normalized.maxStayDays !== null
-              ? Number(normalized.maxStayDays)
-              : null,
+          maxStayDays: (normalized.maxStayDays as number) ?? null,
           notes: (normalized.notes as string | null) ?? null,
           createdAt: (normalized.createdAt as string) ?? new Date().toISOString(),
         };
@@ -812,13 +804,10 @@ class SecureStorageService {
       if (!this.entryInfoRepository) {
         throw new Error('Entry info repository not initialized');
       }
-      console.log(`[SecureStorageService] Getting all entry infos for user: ${userId}`);
       const result = await this.entryInfoRepository.getByUserId(userId);
-      console.log(`[SecureStorageService] Retrieved ${result.length} entry infos`);
       return result;
     } catch (error) {
-      console.error('[SecureStorageService] Failed to get all entry infos:', error);
-      console.error('[SecureStorageService] Error stack:', error.stack);
+      console.error('Failed to get all entry infos:', error);
       throw error;
     }
   }

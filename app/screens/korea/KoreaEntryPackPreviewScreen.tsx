@@ -17,6 +17,7 @@ import UserDataService from '../../services/data/UserDataService';
 const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
+  const country = entryPackData?.country || destination?.id || 'kr';
 
   const handleClose = () => {
     navigation.goBack();
@@ -31,6 +32,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
     travel: userData?.travel || {},
     funds: userData?.funds || [],
     passport: userData?.passport || passport || {},
+    country,
   };
 
   return (
@@ -39,16 +41,16 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>入境信息包 - 预览 / Entry Pack Preview</Text>
+        <Text style={styles.headerTitle}>입국 정보 팩 - 미리보기 / Entry Pack Preview</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>预览模式 / Preview Mode</Text>
+          <Text style={styles.previewTitle}>미리보기 모드 / Preview Mode</Text>
           <Text style={styles.previewDescription}>
-            这是您的入境信息包预览。申请K-ETA后将包含完整的入境信息。 / This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.
+            이것은 입국 정보 팩의 미리보기입니다. K-ETA 신청 후 전체 입국 정보가 포함됩니다. / This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.
           </Text>
         </View>
 
@@ -58,6 +60,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
           travelInfo={mockEntryPack.travel}
           funds={mockEntryPack.funds}
           isModal={false}
+          country={country}
           onClose={handleClose}
         />
 
@@ -74,7 +77,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
             }}
           >
             <Text style={styles.continueButtonText}>
-              继续完善信息 ✏️ / Continue updating info
+              정보 계속 업데이트 ✏️ / Continue updating info
             </Text>
           </TouchableOpacity>
 
@@ -84,23 +87,23 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
               navigation.goBack();
               // Navigate to K-ETA application
               // TODO: Implement K-ETA application screen
-              Alert.alert('提示', 'K-ETA申请功能即将推出 / K-ETA application screen coming soon');
+              Alert.alert('알림', 'K-ETA 신청 기능이 곧 제공됩니다 / K-ETA application screen coming soon');
             }}
           >
             <Text style={styles.submitButtonText}>
-              申请 K-ETA 🇰🇷 / Apply for K-ETA
+              K-ETA 신청 🇰🇷 / Apply for K-ETA
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Info Card about K-ETA */}
         <View style={styles.ketaInfoCard}>
-          <Text style={styles.ketaInfoTitle}>📱 K-ETA 电子旅行许可信息</Text>
+          <Text style={styles.ketaInfoTitle}>📱 K-ETA 전자 여행 허가 안내</Text>
           <Text style={styles.ketaInfoText}>
-            • K-ETA必须在抵达前72小时申请{'\n'}
-            • 审批通常在24小时内完成{'\n'}
-            • 批准的K-ETA有效期为2年{'\n'}
-            • 申请费用约为10,000韩元
+            • K-ETA는 출국 72시간 전에 신청해야 합니다{'\n'}
+            • 심사는 보통 24시간 이내 완료됩니다{'\n'}
+            • 승인된 K-ETA는 2년간 유효합니다{'\n'}
+            • 신청 수수료는 약 10,000원입니다
           </Text>
         </View>
       </ScrollView>

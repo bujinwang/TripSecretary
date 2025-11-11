@@ -6,8 +6,7 @@
 
 import React from 'react';
 import { EntryGuideTemplate } from '../../templates';
-// TODO: Add Japan config import when config is available
-// import { japanEntryGuide as japanGuideConfig } from '../../config/entryGuide/japan';
+import { japanEntryGuide as japanGuideConfig } from '../../config/entryGuide/japan';
 
 interface JapanEntryGuideScreenProps {
   navigation: {
@@ -18,7 +17,7 @@ interface JapanEntryGuideScreenProps {
 
 const JapanEntryGuideScreen: React.FC<JapanEntryGuideScreenProps> = ({ navigation, route }) => (
   <EntryGuideTemplate
-    config={{} as any} // Temporary empty config
+    config={japanGuideConfig}
     navigation={navigation}
     route={route}
     onComplete={() => {}}

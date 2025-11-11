@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase 5 Refactoring Script for HongkongTravelInfoScreen.js
+Phase 5 Refactoring Script for HongKongTravelInfoScreen.js
 
 Removes duplicate code that's already in hooks:
 1. Duplicate navigation listeners (focus/blur)
@@ -15,7 +15,7 @@ Removes duplicate code that's already in hooks:
 import re
 
 # Read the file
-with open('app/screens/hongkong/HongkongTravelInfoScreen.tsx', 'r', encoding='utf-8') as f:
+with open('app/screens/hongkong/HongKongTravelInfoScreen.tsx', 'r', encoding='utf-8') as f:
     content = f.read()
     lines = content.split('\n')
 
@@ -201,7 +201,7 @@ print(f"\nNew file: {len(new_lines)} lines")
 print(f"Removed: {len(lines) - len(new_lines)} lines")
 
 # Write the refactored file
-with open('app/screens/hongkong/HongkongTravelInfoScreen.tsx', 'w', encoding='utf-8') as f:
+with open('app/screens/hongkong/HongKongTravelInfoScreen.tsx', 'w', encoding='utf-8') as f:
     f.write('\n'.join(new_lines))
 
 print("\nPhase 5 refactoring complete!")

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { EntryGuideTemplate } from '../../templates';
-// import { vietnamEntryGuide as vietnamGuideConfig } from '../../config/entryGuide/vietnam';
+import { vietnamEntryGuide as vietnamGuideConfig } from '../../config/entryGuide/vietnam';
 
 interface VietnamEntryGuideScreenProps {
   navigation: {
@@ -16,7 +16,7 @@ interface VietnamEntryGuideScreenProps {
 
 const VietnamEntryGuideScreen: React.FC<VietnamEntryGuideScreenProps> = ({ navigation, route }) => (
   <EntryGuideTemplate
-    config={{} as any} // Temporary empty config
+    config={vietnamGuideConfig}
     navigation={navigation}
     route={route}
     onComplete={() => {}}

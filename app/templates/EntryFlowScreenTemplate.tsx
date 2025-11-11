@@ -48,6 +48,7 @@ import BackButton from '../components/BackButton';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 import EntryCompletionCalculator from '../utils/EntryCompletionCalculator';
+import { getDefaultArrivalDate } from '../utils/defaultTravelDates';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   YStack,
@@ -57,13 +58,42 @@ import {
   Text as TamaguiText,
 } from '../components/tamagui';
 
+// Provide a resilient default context so dependent components don't crash
+const defaultEntryFlowContextValue = {
+  config: {},
+  t: (key, options = {}) => options?.defaultValue ?? key,
+  navigation: {
+    goBack: () => {},
+    navigate: () => {},
+  },
+  route: null,
+  passport: null,
+  destination: null,
+  userId: null,
+  isLoading: true,
+  refreshing: false,
+  completionPercent: 0,
+  completionStatus: 'needs_improvement',
+  categories: [],
+  userData: null,
+  arrivalDate: null,
+  loadData: () => {},
+  onRefresh: () => {},
+};
+
 // Template Context
-const EntryFlowTemplateContext = createContext(null);
+const EntryFlowTemplateContext = createContext(defaultEntryFlowContextValue);
 
 const useEntryFlowTemplate = () => {
   const context = useContext(EntryFlowTemplateContext);
   if (!context) {
-    throw new Error('useEntryFlowTemplate must be used within EntryFlowScreenTemplate');
+    if (__DEV__) {
+      console.error(
+        '[EntryFlowScreenTemplate] useEntryFlowTemplate accessed outside provider. ' +
+          'Returning default context to prevent crash.'
+      );
+    }
+    return defaultEntryFlowContextValue;
   }
   return context;
 };
@@ -214,7 +244,8 @@ const EntryFlowScreenTemplate = ({
 
       // Extract arrival date
       const arrivalDateFromTravel = travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate;
-      setArrivalDate(arrivalDateFromTravel);
+      const resolvedArrivalDate = arrivalDateFromTravel || getDefaultArrivalDate();
+      setArrivalDate(resolvedArrivalDate);
 
       // Calculate completion using EntryCompletionCalculator
       const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
@@ -699,7 +730,10 @@ function PrimaryActionCard({
         return;
       }
       if (useEntryGuideAsPrimary && entryGuideScreen) {
-        navigation.navigate(entryGuideScreen, route.params);
+        navigation.navigate(entryGuideScreen, {
+          ...route.params,
+          userData,
+        });
         return;
       }
     }
@@ -934,7 +968,15 @@ function CountdownCard({ arrivalDate, t, config }) {
   );
 }
 
-function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuideAsPrimary, primaryActionIsEdit }) {
+function QuickActionsRow({
+  t,
+  navigation,
+  route,
+  userData,
+  config,
+  useEntryGuideAsPrimary,
+  primaryActionIsEdit,
+}) {
   const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
   // Hide edit quick action if:
   // 1. Primary action is already showing "edit travel info" (when incomplete)
@@ -955,8 +997,8 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
       'EntryPackPreview';
 
     navigation.navigate(previewScreen, {
-      userData,
       ...route.params,
+      userData,
       entryPackData: {
         personalInfo: userData?.personalInfo,
         travelInfo: userData?.travel,
@@ -971,7 +1013,10 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
       route?.params?.travelInfoScreen ||
       route?.params?.nextScreen ||
       'VietnamTravelInfo';
-    navigation.navigate(target, route.params);
+    navigation.navigate(target, {
+      ...route.params,
+      userData,
+    });
   };
 
   const handleEntryGuide = () => {
@@ -979,85 +1024,93 @@ function QuickActionsRow({ t, navigation, route, userData, config, useEntryGuide
       config.screens?.entryGuide ||
       route?.params?.entryGuideScreen ||
       'VietnamEntryGuide';
-    navigation.navigate(target, route.params);
+    navigation.navigate(target, {
+      ...route.params,
+      userData,
+    });
   };
 
+  const actionCards = [];
+
+  if (showPreviewQuickAction) {
+    actionCards.push({
+      key: 'preview',
+      icon: '👁️',
+      title: t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' }),
+      subtitle: t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, {
+        defaultValue: '查看已经准备好的资料',
+      }),
+      borderColor: 'rgba(11,214,123,0.35)',
+      iconBackground: 'rgba(11,214,123,0.12)',
+      onPress: handlePreview,
+    });
+  }
+
+  if (showEntryGuideQuickAction) {
+    actionCards.push({
+      key: 'entryGuide',
+      icon: '🛂',
+      title: t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' }),
+      subtitle: t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, {
+        defaultValue: '查看纸质入境卡与海关申报填写步骤',
+      }),
+      borderColor: 'rgba(37,99,235,0.3)',
+      iconBackground: 'rgba(37,99,235,0.12)',
+      onPress: handleEntryGuide,
+    });
+  }
+
+  if (showEditQuickAction) {
+    actionCards.push({
+      key: 'edit',
+      icon: '✏️',
+      title: t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' }),
+      subtitle: t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, {
+        defaultValue: '如需修改，返回编辑',
+      }),
+      borderColor: 'rgba(255,152,0,0.35)',
+      iconBackground: 'rgba(255,152,0,0.12)',
+      onPress: handleEdit,
+    });
+  }
+
   return (
-    <YStack paddingHorizontal="$md" gap="$md" marginBottom="$lg">
-      <XStack gap="$md" alignItems="stretch">
-        {showPreviewQuickAction && (
-          <BaseCard
-            variant="flat"
-            padding="lg"
-            flex={1}
-            pressable
-            onPress={handlePreview}
-            borderWidth={2}
-            borderColor="rgba(11,214,123,0.3)"
-            minHeight={140}
-          >
-            <YStack gap="$sm" flex={1}>
-              <YStack alignItems="center">
-                <TamaguiText fontSize={26}>👁️</TamaguiText>
-              </YStack>
-              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' })}
+    <YStack paddingHorizontal="$md" marginBottom="$xl" gap="$md">
+      {actionCards.map(({ key, icon, title, subtitle, borderColor, iconBackground, onPress }) => (
+        <BaseCard
+          key={key}
+          variant="flat"
+          padding="lg"
+          pressable
+          onPress={onPress}
+          borderWidth={2}
+          borderColor={borderColor}
+        >
+          <XStack alignItems="center" gap="$md">
+            <YStack
+              width={48}
+              height={48}
+              borderRadius={24}
+              backgroundColor={iconBackground}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <TamaguiText fontSize={24}>{icon}</TamaguiText>
+            </YStack>
+            <YStack flex={1} gap="$xs">
+              <TamaguiText fontSize="$3" fontWeight="700" color="$text">
+                {title}
               </TamaguiText>
-              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, { defaultValue: '查看已经准备好的资料' })}
+              <TamaguiText fontSize="$2" color="$textSecondary">
+                {subtitle}
               </TamaguiText>
             </YStack>
-          </BaseCard>
-        )}
-        {showEntryGuideQuickAction && (
-          <BaseCard
-            variant="flat"
-            padding="lg"
-            flex={1}
-            pressable
-            onPress={handleEntryGuide}
-            borderWidth={2}
-            borderColor="rgba(25,118,210,0.3)"
-            minHeight={140}
-          >
-            <YStack gap="$sm" flex={1}>
-              <YStack alignItems="center">
-                <TamaguiText fontSize={26}>🛂</TamaguiText>
-              </YStack>
-              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' })}
-              </TamaguiText>
-              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, { defaultValue: '查看纸质入境卡与海关申报填写步骤' })}
-              </TamaguiText>
-            </YStack>
-          </BaseCard>
-        )}
-        {showEditQuickAction && (
-          <BaseCard
-            variant="flat"
-            padding="lg"
-            flex={1}
-            pressable
-            onPress={handleEdit}
-            borderWidth={2}
-            borderColor="rgba(255,152,0,0.3)"
-            minHeight={140}
-          >
-            <YStack gap="$sm" flex={1}>
-              <YStack alignItems="center">
-                <TamaguiText fontSize={26}>✏️</TamaguiText>
-              </YStack>
-              <TamaguiText fontSize="$3" fontWeight="700" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' })}
-              </TamaguiText>
-              <TamaguiText fontSize="$2" color="$textSecondary" textAlign="left">
-                {t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, { defaultValue: '如需修改，返回编辑' })}
-              </TamaguiText>
-            </YStack>
-          </BaseCard>
-        )}
-      </XStack>
+            <TamaguiText fontSize="$5" color="$textSecondary">
+              ›
+            </TamaguiText>
+          </XStack>
+        </BaseCard>
+      ))}
     </YStack>
   );
 }

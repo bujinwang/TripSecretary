@@ -3,6 +3,14 @@
 
 import { thailandEntryGuide } from '../../config/entryGuide/thailand';
 import { japanEntryGuide } from '../../config/entryGuide/japan';
+import { malaysiaEntryGuide } from '../../config/entryGuide/malaysia';
+import { singaporeEntryGuide } from '../../config/entryGuide/singapore';
+import { vietnamEntryGuide } from '../../config/entryGuide/vietnam';
+import { koreaEntryGuide } from '../../config/entryGuide/korea';
+import { hongkongEntryGuide } from '../../config/entryGuide/hongkong';
+import { taiwanEntryGuide } from '../../config/entryGuide/taiwan';
+import { usaEntryGuide } from '../../config/entryGuide/usa';
+import { canadaEntryGuide } from '../../config/entryGuide/canada';
 import JapanEntryGuideService from './JapanEntryGuideService';
 import ThailandEntryGuideService from './ThailandEntryGuideService';
 
@@ -43,7 +51,18 @@ interface CountryFeature {
   available: boolean;
 }
 
-type CountryCode = 'thailand' | 'japan' | 'singapore' | 'malaysia' | 'korea' | 'hongkong' | 'taiwan' | string;
+type CountryCode =
+  | 'thailand'
+  | 'japan'
+  | 'singapore'
+  | 'malaysia'
+  | 'korea'
+  | 'hongkong'
+  | 'taiwan'
+  | 'vietnam'
+  | 'usa'
+  | 'canada'
+  | string;
 
 interface CountryService {
   getTDACInfo?: () => any;
@@ -61,8 +80,15 @@ class EntryGuideService {
   constructor() {
     this.guides = {
       thailand: thailandEntryGuide,
-      japan: japanEntryGuide
-      // 未来添加更多国家...
+      japan: japanEntryGuide,
+      singapore: singaporeEntryGuide,
+      malaysia: malaysiaEntryGuide,
+      korea: koreaEntryGuide,
+      hongkong: hongkongEntryGuide,
+      taiwan: taiwanEntryGuide,
+      vietnam: vietnamEntryGuide,
+      usa: usaEntryGuide,
+      canada: canadaEntryGuide
     };
 
     this.activeCountry = null;
@@ -74,14 +100,22 @@ class EntryGuideService {
    * @returns Supported countries list
    */
   getSupportedCountries(): SupportedCountry[] {
-    return Object.keys(this.guides).map(country => ({
-      code: country,
-      name: this.guides[country].countryName,
-      nameZh: this.guides[country].countryNameZh,
-      flag: this._getCountryFlag(country),
-      airport: this.guides[country].airport,
-      currency: this.guides[country].currency
-    }));
+    return Object.keys(this.guides).map(country => {
+      const guide = this.guides[country];
+      const airport =
+        (guide as any).primaryAirport ||
+        (guide as any).airport ||
+        ((guide as any).airports ? (guide as any).airports[0] : undefined);
+
+      return {
+        code: country,
+        name: guide.countryName,
+        nameZh: guide.countryNameZh,
+        flag: this._getCountryFlag(country),
+        airport,
+        currency: guide.currency
+      };
+    });
   }
 
   /**
@@ -162,7 +196,10 @@ class EntryGuideService {
       malaysia: '🇲🇾',
       korea: '🇰🇷',
       hongkong: '🇭🇰',
-      taiwan: '🇹🇼'
+      taiwan: '🇹🇼',
+      vietnam: '🇻🇳',
+      usa: '🇺🇸',
+      canada: '🇨🇦'
     };
     return flags[country] || '🌍';
   }
@@ -248,4 +285,3 @@ class GenericEntryGuideService implements CountryService {
 }
 
 export default EntryGuideService;
-

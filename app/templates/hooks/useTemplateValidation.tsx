@@ -247,17 +247,13 @@ return { filled: 0, total: 0 };
       return { filled: funds.length, total: Math.max(funds.length, sectionConfig.minRequired || 1) };
     }
 
-    // Get all fields (not just required ones) for counting
-    const allFields = Object.values(sectionConfig.fields || {})
-      .map(f => (f as any).fieldName);
-    
-    // Also get required fields for tracking-based calculation
-    const requiredFields = Object.values(sectionConfig.fields || {})
-      .filter(f => (f as any).required)
-      .map(f => (f as any).fieldName);
+    const fieldEntries = Object.values(sectionConfig.fields || {});
+    const countableFields = fieldEntries
+      .filter(field => field?.fieldName && field.countable !== false);
+
+    const allFields = countableFields.map(field => field.fieldName);
 
     if (userInteractionTracker && config.tracking?.trackFieldModifications) {
-      // Use all fields for counting, but still use tracking logic
       return TemplateFieldStateManager.calculateFieldCompletion(
         formState,
         userInteractionTracker.interactionState,
@@ -265,7 +261,6 @@ return { filled: 0, total: 0 };
       );
     }
 
-    // Fallback without tracking - count all fields
     const filled = allFields.filter(fieldName => {
       const value = formState[fieldName];
       return value !== null && value !== undefined && value !== '';

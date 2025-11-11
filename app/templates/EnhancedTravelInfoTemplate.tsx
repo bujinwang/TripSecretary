@@ -28,6 +28,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 import { getPhoneCode } from '../data/phoneCodes';
+import { getDefaultArrivalDate, getDefaultDepartureDate } from '../utils/defaultTravelDates';
 
 // Import Tamagui components
 import {
@@ -500,6 +501,10 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
   // Initialize form state from config
   useEffect(() => {
     const initialState = {};
+    const arrivalFieldNames = ['arrivalDate', 'arrivalArrivalDate'];
+    const departureFieldNames = ['departureDate', 'departureDepartureDate'];
+    const defaultArrivalDate = getDefaultArrivalDate();
+    const defaultDepartureDate = getDefaultDepartureDate(defaultArrivalDate);
 
     // Build state object from config sections
     if (!config?.sections) {
@@ -511,24 +516,33 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
     Object.entries(config.sections).forEach(([sectionKey, sectionConfig]) => {
       if (sectionConfig.enabled && sectionConfig.fields) {
         Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
-          initialState[fieldConfig.fieldName] = '';
+          const fieldName = fieldConfig.fieldName;
+          const isArrivalField = arrivalFieldNames.includes(fieldName);
+          const isDepartureField = departureFieldNames.includes(fieldName);
+          initialState[fieldName] = '';
 
           // Set smart defaults
-          if (fieldConfig.smartDefault) {
+          if (fieldConfig.smartDefault && !isArrivalField && !isDepartureField) {
             if (fieldConfig.smartDefault === 'tomorrow') {
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
-              initialState[fieldConfig.fieldName] = tomorrow.toISOString().split('T')[0];
+              initialState[fieldName] = tomorrow.toISOString().split('T')[0];
             } else if (fieldConfig.smartDefault === 'nextWeek') {
               const nextWeek = new Date();
               nextWeek.setDate(nextWeek.getDate() + 7);
-              initialState[fieldConfig.fieldName] = nextWeek.toISOString().split('T')[0];
+              initialState[fieldName] = nextWeek.toISOString().split('T')[0];
             }
           }
 
           // Set default values
-          if (fieldConfig.default !== undefined) {
-            initialState[fieldConfig.fieldName] = fieldConfig.default;
+          if (fieldConfig.default !== undefined && !isArrivalField && !isDepartureField) {
+            initialState[fieldName] = fieldConfig.default;
+          }
+
+          if (isArrivalField) {
+            initialState[fieldName] = defaultArrivalDate;
+          } else if (isDepartureField) {
+            initialState[fieldName] = defaultDepartureDate;
           }
         });
 
@@ -891,8 +905,10 @@ initialState.visaNumber = passport.visaNumber;
         boardingCountry: resolvedTravelData?.boardingCountry || '',
         arrivalFlightNumber: resolvedTravelData?.arrivalFlightNumber || '',
         arrivalDate: resolvedTravelData?.arrivalDate || resolvedTravelData?.arrivalArrivalDate || '',
+        arrivalArrivalDate: resolvedTravelData?.arrivalArrivalDate || resolvedTravelData?.arrivalDate || '',
         departureFlightNumber: resolvedTravelData?.departureFlightNumber || '',
         departureDate: resolvedTravelData?.departureDate || resolvedTravelData?.departureDepartureDate || '',
+        departureDepartureDate: resolvedTravelData?.departureDepartureDate || resolvedTravelData?.departureDate || '',
         isTransitPassenger: resolvedTravelData?.isTransitPassenger || false,
         accommodationType: resolvedTravelData?.accommodationType || '',
         customAccommodationType: resolvedTravelData?.customAccommodationType || '',
@@ -921,6 +937,20 @@ initialState.visaNumber = passport.visaNumber;
             userInteractionTracker.markFieldAsPreFilled(fieldName, value);
           }
         });
+      }
+
+      if (!loadedData.arrivalDate) {
+        loadedData.arrivalDate = getDefaultArrivalDate();
+      }
+      if (!loadedData.arrivalArrivalDate) {
+        loadedData.arrivalArrivalDate = loadedData.arrivalDate;
+      }
+      const fallbackDeparture = getDefaultDepartureDate(loadedData.arrivalDate);
+      if (!loadedData.departureDate) {
+        loadedData.departureDate = fallbackDeparture;
+      }
+      if (!loadedData.departureDepartureDate) {
+        loadedData.departureDepartureDate = loadedData.departureDate || fallbackDeparture;
       }
 
       updateFormState({ ...loadedData, isLoading: false });

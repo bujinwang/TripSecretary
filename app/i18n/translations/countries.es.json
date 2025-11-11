@@ -164,18 +164,18 @@
       "ignore": "Ignorar Cambios",
       "viewDetails": "Ver Detalles"
     },
-      "superseded": {
-        "resubmitHint": "Information updated, resubmission required",
-        "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
+    "superseded": {
+      "resubmitHint": "Information updated, resubmission required",
+      "message": "Your entry information has been updated, and you need to resubmit the entry card to ensure information accuracy."
+    },
+    "immigrationOfficer": {
+      "title": "Vista de Oficial de Inmigración",
+      "authentication": {
+        "title": "Authentication Required",
+        "message": "To protect your privacy, authentication is required to enter presentation mode",
+        "authenticate": "Authenticate",
+        "cancel": "Cancel"
       },
-      "immigrationOfficer": {
-        "title": "Vista de Oficial de Inmigración",
-        "authentication": {
-          "title": "Authentication Required",
-          "message": "To protect your privacy, authentication is required to enter presentation mode",
-          "authenticate": "Authenticate",
-          "cancel": "Cancel"
-        },
       "presentation": {
         "exitTitle": "Salir del Modo de Presentación",
         "exitMessage": "¿Está seguro de que desea salir del modo de presentación?",
@@ -292,11 +292,7 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy te lo hace fácil",
-          "items": [
-            "• Cero ansiedad",
-            "• Cero errores",
-            "• Gestión de PIN"
-          ]
+          "items": ["• Cero ansiedad", "• Cero errores", "• Gestión de PIN"]
         }
       },
       "continueButton": "Continuar"
@@ -412,18 +408,18 @@
     "info": {
       "headerTitle": "Información de entrada a Japón",
       "title": "Guía de entrada a Japón",
-      "subtitle": "Se requiere visa previa para titulares de pasaporte chino",
+      "subtitle": "Sin visa por 90 días para titulares de pasaporte chino",
       "sections": {
         "visa": {
-          "title": "⚠️ Requisito de visa",
+          "title": "✓ ¡Buenas noticias! Política sin visa",
           "items": [
-            "Los titulares de pasaporte chino deben obtener una visa antes de viajar a Japón; no existe exención de visado.",
-            "• La opción más común es la visa de corta estadía (turismo/negocios/familia) válida hasta 90 días.",
-            "• La solicitud se presenta ante la embajada/consulado de Japón o centros de solicitud acreditados antes del viaje.",
-            "• Prepare pasaporte, itinerario y comprobantes financieros; reserve al menos una semana para el trámite."
+            "Los titulares de pasaporte chino pueden entrar a Japón sin visa y permanecer hasta 90 días.",
+            "• Aplica para turismo, visitas familiares y reuniones de negocios de corta duración.",
+            "• A su llegada, muestre boleto de regreso/continuación, comprobante de fondos y dirección de alojamiento.",
+            "• Todavía debe completar la tarjeta de llegada y la declaración de aduanas en papel."
           ]
         },
-        "important": {
+        "onsite": {
           "title": "⚠️ Información de entrada",
           "items": [
             "• Los formularios deben completarse con tinta negra o azul.",
@@ -450,22 +446,22 @@
       "introTitle": "Lista de preparación de entrada",
       "introSubtitle": "Complete lo que tenga y complete gradualmente",
       "items": {
-        "validVisa": {
-          "title": "Visa válida",
-          "description": "Visa turística de Japón aprobada",
-          "details": "Los ciudadanos chinos deben solicitar una visa con anticipación. Confirme que su visa sea válida."
-        },
         "validPassport": {
           "title": "Pasaporte válido",
           "description": "Pasaporte válido por al menos 6 meses",
           "details": "El pasaporte debe ser válido por más de 6 meses desde la fecha de salida planificada"
         },
-        "returnTicket": {
+        "visaFreeEntry": {
+          "title": "Condición de entrada sin visa",
+          "description": "Estancia de 90 días sin solicitud de visa",
+          "details": "Los ciudadanos chinos pueden entrar sin visa hasta 90 días. Mantenga el pasaporte válido 6 meses y tenga documentos de respaldo por si inmigración los solicita."
+        },
+        "onwardTicket": {
           "title": "Boleto de regreso",
           "description": "Boleto de regreso o viaje posterior confirmado",
           "details": "Debe tener un plan de salida claro, mostrando que dejará Japón dentro de 90 días"
         },
-        "sufficientFunds": {
+        "funds": {
           "title": "Fondos suficientes",
           "description": "Comprobante de fondos para toda la estadía",
           "details": "Recomendado llevar al menos 100,000 yenes o equivalente, o mostrar tarjeta de crédito/estados de cuenta bancarios"
@@ -474,6 +470,11 @@
           "title": "Comprobante de alojamiento",
           "description": "Reserva de hotel o contacto de anfitrión en Japón",
           "details": "Proporcionar confirmación de reserva de hotel o información de contacto detallada de amigos/familiares en Japón"
+        },
+        "paperArrivalCard": {
+          "title": "Tarjeta de llegada y declaración de aduanas en papel",
+          "description": "Se completa en el avión o en el mostrador",
+          "details": "Japón aún requiere formularios escritos a mano. Use tinta negra o azul y revise los datos antes de entregarlos."
         }
       },
       "status": {

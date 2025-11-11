@@ -19,10 +19,10 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import { colors, typography, spacing } from '../../theme';
 import UserDataService from '../../services/data/UserDataService';
+import { hongkongEntryGuide as hongkongGuideConfig } from '../../config/entryGuide/hongkong';
 
 // 从统一配置中获取步骤，确保屏幕与服务保持一致
-// const HONGKONG_ENTRY_STEPS = hongkongGuideConfig.steps;
-const HONGKONG_ENTRY_STEPS: any[] = []; // Placeholder
+const HONGKONG_ENTRY_STEPS = hongkongGuideConfig.steps;
 
 interface HongKongEntryGuideScreenProps {
   navigation: {

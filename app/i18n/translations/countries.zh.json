@@ -465,7 +465,18 @@
         },
         "travel": {
           "title": "旅行信息",
-          "subtitle": "请填写旅行相关信息"
+          "subtitle": "请填写旅行相关信息",
+          "introText": "包括航班信息和住宿信息",
+          "introIcon": "✈️",
+          "isTransitPassenger": "是否过境旅客",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/郡",
+          "subDistrictPlaceholder": "请选择街道/区",
+          "accommodationTypePlaceholder": "请选择住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "sectionTitles": {
@@ -569,7 +580,13 @@
       "departureFlightTicketUploaded": "离境航班票照片已上传",
       "fieldHelp": {
         "recentStayCountry": "选择您最近30天访问过的国家",
-        "boardingCountry": "选择您登机前往泰国的国家"
+        "boardingCountry": "选择您登机前往泰国的国家",
+        "arrivalFlightNumber": "填写抵达航班号",
+        "arrivalDate": "请选择抵达日期",
+        "departureFlightNumber": "填写离境航班号",
+        "departureDate": "请选择离境日期",
+        "accommodationType": "选择您的住宿类型",
+        "hotelAddress": "请填写完整的住宿地址"
       },
       "funds": {
         "addCash": "添加现金",
@@ -919,15 +936,15 @@
     "info": {
       "headerTitle": "日本入境信息",
       "title": "日本入境指南",
-      "subtitle": "中国护照持有人需提前办理签证",
+      "subtitle": "中国护照持有人可免签停留90天",
       "sections": {
         "visa": {
-          "title": "⚠️ 签证要求",
+          "title": "✓ 免签政策",
           "items": [
-            "中国护照持有人需提前申请日本签证，目前暂无短期免签政策。",
-            "• 常见签证类型为短期停留（旅游/商务/探亲），最长可停留90天。",
-            "• 需通过日本驻华使领馆或指定的签证申请中心提交材料。",
-            "• 办理需准备护照、行程、财力证明等，建议至少预留1周时间。"
+            "中国护照旅客可免签入境日本，最长停留90天。",
+            "• 适用于旅游、探亲访友、商务洽谈等短期行程。",
+            "• 抵达时需出示返程或续程行程、住宿证明与资金证明。",
+            "• 仍需填写纸质入境卡与海关申报单，请提前准备。"
           ]
         },
         "onsite": {
@@ -957,30 +974,35 @@
       "introTitle": "入境准备清单",
       "introSubtitle": "填写您有的内容，逐步完善",
       "items": {
-        "validVisa": {
-          "title": "有效签证",
-          "description": "已批准的日本旅游签证",
-          "details": "中国公民需提前申请签证。确认您的签证有效且有足够入境次数。"
-        },
         "validPassport": {
           "title": "有效护照",
           "description": "护照有效期至少6个月",
           "details": "护照必须在计划离境日期后6个月以上有效"
         },
-        "returnTicket": {
-          "title": "返程机票",
-          "description": "已确认的返程或后续行程机票",
-          "details": "必须有明确的离境计划，显示您将在90天内离开日本"
+        "visaFreeEntry": {
+          "title": "免签资格确认",
+          "description": "中国护照可免签停留90天",
+          "details": "随身携带护照、行程单及资金证明，以备入境官员抽查。"
         },
-        "sufficientFunds": {
-          "title": "充足资金",
-          "description": "整个停留期间的资金证明",
-          "details": "建议携带至少10万日元或等值，或出示信用卡/银行对账单"
+        "onwardTicket": {
+          "title": "返程/续程机票",
+          "description": "明确的离境计划",
+          "details": "准备纸质或电子机票凭证，常被要求现场出示。"
+        },
+        "funds": {
+          "title": "资金证明",
+          "description": "展示可负担行程的资金",
+          "details": "建议携带至少10万日元现金或等值的信用卡、银行流水等证明。"
         },
         "accommodation": {
           "title": "住宿证明",
           "description": "日本的酒店预订或房东联系方式",
           "details": "提供酒店预订确认或日本朋友/亲戚的详细联系信息"
+        },
+        "paperArrivalCard": {
+          "title": "纸质入境卡与海关申报单",
+          "description": "飞机或机场现场填写",
+          "details": "使用黑/蓝色墨水手写，提交前检查姓名、航班等信息。"
         }
       },
       "status": {

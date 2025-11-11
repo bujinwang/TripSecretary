@@ -113,7 +113,7 @@ export type RootStackParamList = {
   HongKongEntryFlow: undefined;
   HongKongEntryPackPreview: undefined;
   HongKongEntryGuide: undefined;
-  HongkongTravelInfo: undefined;
+  HongKongTravelInfo: undefined;
   HDACSelection: undefined;
   HDACGuide: undefined;
   HDACWebView: undefined;
@@ -129,6 +129,7 @@ export type RootStackParamList = {
   USAEntryFlow: undefined;
   USAEntryPackPreview: undefined;
   USAEntryGuide: undefined;
+  CanadaEntryGuide: undefined;
   SGArrivalSelection: {
     passport?: SerializablePassport | null;
     destination?: DestinationParam;
@@ -218,6 +219,7 @@ export type RootStackParamList = {
   JapanTravelInfo: undefined;
   JapanEntryFlow: undefined;
   JapanEntryGuide: undefined;
+  JapanEntryPackPreview: undefined;
   JapanInteractiveImmigrationGuide: undefined;
   EntryInfoDetail:
     | {
@@ -249,4 +251,3 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeSta
 export type MainTabScreenProps<T extends keyof MainTabParamList> = BottomTabScreenProps<MainTabParamList, T>;
 
 export type ScreenProps = RootStackScreenProps<keyof RootStackParamList>;
-

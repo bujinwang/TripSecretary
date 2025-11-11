@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { hongkongComprehensiveTravelInfoConfig } from '../../config/destinations/hongkong/comprehensiveTravelInfoConfig';
 
-const HongkongTravelInfoScreen = ({ navigation, route }) => (
+const HongKongTravelInfoScreen = ({ navigation, route }) => (
   <EnhancedTravelInfoTemplate
     config={hongkongComprehensiveTravelInfoConfig}
     navigation={navigation}
@@ -11,9 +11,9 @@ const HongkongTravelInfoScreen = ({ navigation, route }) => (
   />
 );
 
-HongkongTravelInfoScreen.propTypes = {
+HongKongTravelInfoScreen.propTypes = {
   navigation: PropTypes.object.isRequired,
   route: PropTypes.object.isRequired,
 };
 
-export default HongkongTravelInfoScreen;
+export default HongKongTravelInfoScreen;

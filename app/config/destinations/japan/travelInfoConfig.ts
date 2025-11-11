@@ -295,6 +295,7 @@ export const japanTravelInfoConfig = {
           defaultLabel: '出境航班号',
           placeholder: '例如 NH820',
           uppercaseNormalize: true,
+          countable: false,
         },
         departureDate: {
           fieldName: 'departureDate',
@@ -302,6 +303,7 @@ export const japanTravelInfoConfig = {
           type: 'date',
           labelKey: 'jp.travelInfo.fields.departureDate',
           defaultLabel: '出境日期',
+          countable: false,
         },
         accommodationType: {
           fieldName: 'accommodationType',
@@ -333,6 +335,7 @@ export const japanTravelInfoConfig = {
           type: 'select',
           labelKey: 'jp.travelInfo.fields.city',
           defaultLabel: '城市',
+          countable: false,
         },
         postalCode: {
           fieldName: 'postalCode',
@@ -340,6 +343,7 @@ export const japanTravelInfoConfig = {
           maxLength: 10,
           labelKey: 'jp.travelInfo.fields.postalCode',
           defaultLabel: '邮编',
+          countable: false,
         },
         hotelAddress: {
           fieldName: 'hotelAddress',

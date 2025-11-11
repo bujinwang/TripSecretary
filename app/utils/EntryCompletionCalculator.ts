@@ -357,6 +357,12 @@ return false;
       travel.dateOfDeparture
     );
 
+    const departureFlightNumberValue = firstNonEmpty(
+      travel.departureFlightNumber,
+      travel.returnFlightNumber,
+      travel.departureFlight
+    );
+
     const combinedFlightNumber = (() => {
       const arrivalFlight = firstNonEmpty(
         travel.arrivalFlightNumber,
@@ -451,9 +457,23 @@ return false;
       { name: 'boardingCountry', type: 'text', value: firstNonEmpty(travel.boardingCountry) },
       { name: 'arrivalFlightNumber', type: 'text', value: firstNonEmpty(travel.arrivalFlightNumber, travel.arrivalFlight) },
       { name: 'arrivalArrivalDate', type: 'date', value: arrivalDate },
-      { name: 'departureFlightNumber', type: 'text', value: firstNonEmpty(travel.departureFlightNumber, travel.returnFlightNumber, travel.departureFlight) },
-      { name: 'departureDepartureDate', type: 'date', value: departureDate }
     ];
+
+    if (departureFlightNumberValue) {
+      requiredFields.push({
+        name: 'departureFlightNumber',
+        type: 'text',
+        value: departureFlightNumberValue
+      });
+    }
+
+    if (departureDate) {
+      requiredFields.push({
+        name: 'departureDepartureDate',
+        type: 'date',
+        value: departureDate
+      });
+    }
 
     // Add accommodation fields only if not a transit passenger
     if (!travel.isTransitPassenger) {

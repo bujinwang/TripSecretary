@@ -111,6 +111,37 @@ const countryConfigs = {
     },
     dateLocales: ['en-US', 'zh-CN']
   },
+  kr: {
+    entryCardName: 'K-ETA',
+    entryCardTab: 'personal',
+    entryCardTitle: '입국 정보 / Entry Information',
+    personalInfoTitle: '개인 정보 / Personal Information',
+    travelInfoTitle: '여행 정보 / Travel Information',
+    fundsTitle: '자금 정보 / Funds Information',
+    currency: 'KRW',
+    currencyName: '원',
+    notProvided: '미입력 / Not provided',
+    fallbackHotelText: '숙소 주소를 입력해주세요 / Please provide accommodation address',
+    labels: {
+      fullName: '성명 / Full Name',
+      passportNumber: '여권 번호 / Passport Number',
+      passportExpiryDate: '여권 만료일 / Passport Expiry Date',
+      nationality: '국적 / Nationality',
+      dateOfBirth: '생년월일 / Date of Birth',
+      arrivalDate: '입국일 / Arrival Date',
+      arrivalFlightNumber: '입국 항공편 / Arrival Flight Number',
+      departureDate: '출국일 / Departure Date',
+      departureFlightNumber: '출국 항공편 / Departure Flight Number',
+      flightNumber: '항공편 번호 / Flight Number',
+      stayLocation: '숙소 주소 / Stay Location',
+      lengthOfStay: '체류 기간 / Length of Stay',
+      purpose: '방문 목적 / Purpose of Visit',
+      totalFunds: '총 자금 / Total Funds',
+      fundType: '종류 / Type',
+      amount: '금액 / Amount'
+    },
+    dateLocales: ['ko-KR', 'en-US']
+  },
   us: {
     entryCardName: 'I-94',
     entryCardTab: 'i94',
@@ -1182,6 +1213,11 @@ return config.notProvided;
       { key: 'travel', label: '旅行情報', labelEn: 'Travel' },
       { key: 'funds', label: '資金情報', labelEn: 'Funds' },
     ],
+    korea: [
+      { key: 'personal', label: '개인 정보', labelEn: 'Personal' },
+      { key: 'travel', label: '여행 정보', labelEn: 'Travel' },
+      { key: 'funds', label: '자금 정보', labelEn: 'Funds' },
+    ],
     vietnam: [
       { key: 'personal', label: 'Thông tin cá nhân', labelEn: '' },
       { key: 'travel', label: 'Thông tin hành trình', labelEn: '' },
@@ -1196,6 +1232,7 @@ return config.notProvided;
                         country === 'hk' ? 'hongkong' :
                         country === 'tw' ? 'taiwan' :
                         country === 'jp' ? 'japan' :
+                        country === 'kr' ? 'korea' :
                         country === 'vn' ? 'vietnam' :
                         country === 'th' ? 'thailand' :
                         country;
@@ -1209,6 +1246,7 @@ return config.notProvided;
   usa: '🇺🇸 Entry Pack',
   hongkong: '🇭🇰 入境資料包',
   japan: '🇯🇵 入国情報パック',
+  korea: '🇰🇷 입국 정보 팩',
   vietnam: '🇻🇳 Gói thông tin nhập cảnh Việt Nam'
 };
 
@@ -1220,6 +1258,7 @@ return config.notProvided;
   usa: 'Important information for immigration officer',
   hongkong: '入境處重要資料',
   japan: '入国審査官への重要情報',
+  korea: '출입국 심사관을 위한 중요한 정보',
   vietnam: 'Thông tin quan trọng dành cho cán bộ nhập cảnh'
 };
 
@@ -1307,6 +1346,7 @@ return config.notProvided;
                  country === 'sg' || country === 'us' ? 'Fund Proof Photo' :
                  country === 'hk' || country === 'tw' ? '資金證明照片' :
                  country === 'jp' ? '資金証明写真' :
+                 country === 'kr' ? '자금 증빙 사진' :
                  'รูปหลักฐานเงินทุน'}
               </Text>
             </View>

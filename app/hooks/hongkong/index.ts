@@ -7,7 +7,7 @@
  * following the proven refactoring methodology from Thailand.
  *
  * These hooks extract state management, data persistence, and validation
- * from the monolithic 3,907-line HongkongTravelInfoScreen component.
+ * from the monolithic 3,907-line HongKongTravelInfoScreen component.
  */
 
 export { useHongKongFormState } from './useHongKongFormState';

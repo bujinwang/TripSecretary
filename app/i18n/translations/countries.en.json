@@ -2576,25 +2576,30 @@
           "description": "Passport valid for your intended stay",
           "details": "Ensure passport is valid for the duration of your stay. Renew if expiry is near."
         },
-        "returnTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed booking for departure from Japan",
-          "details": "Immigration may ask to see proof of your return flight or onward journey."
+        "visaFreeEntry": {
+          "title": "Visa-free entry status",
+          "description": "90-day stay without a visa",
+          "details": "China passport holders can enter Japan visa-free for up to 90 days. Keep your passport valid for at least 6 months and carry supporting documents in case immigration asks for proof."
+        },
+        "onwardTicket": {
+          "title": "Onward or return ticket",
+          "description": "Confirmed plan to leave Japan",
+          "details": "Have a printed or digital copy of your return flight or onward journey. Officers often verify your departure plan at the counter."
+        },
+        "funds": {
+          "title": "Proof of funds",
+          "description": "Show you can afford the trip",
+          "details": "Prepare bank statements, cash (recommended ¥100,000 or more), or international credit cards to demonstrate sufficient travel funds."
         },
         "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or host contact information",
-          "details": "Bring hotel reservation confirmation or contact details of your host in Japan, including address and phone number."
+          "title": "Accommodation confirmation",
+          "description": "Hotel booking or host details",
+          "details": "Bring hotel confirmations or the address and phone number of friends/family you will stay with. Immigration may ask you to write this on the arrival card."
         },
-        "sufficientFunds": {
-          "title": "Sufficient funds",
-          "description": "Cash, credit cards, or bank statements",
-          "details": "You may need to demonstrate you have enough money for your stay."
-        },
-        "customsDeclaration": {
-          "title": "Customs Declaration",
-          "description": "Prepare for customs inspection",
-          "details": "Be ready to declare goods, cash over ¥1,000,000, or prohibited items."
+        "paperArrivalCard": {
+          "title": "Paper arrival card + customs form",
+          "description": "Fill in forms on the plane or at the counter",
+          "details": "Japan still requires handwritten arrival and customs cards. Use black or blue ink and double-check information before submission."
         }
       },
       "status": {

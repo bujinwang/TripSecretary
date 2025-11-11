@@ -38,3 +38,4 @@ export * from './taiwan';
 export * from './hongkong';
 export * from './korea';
 export * from './usa';
+export * from './canada';

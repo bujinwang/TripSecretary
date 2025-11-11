@@ -31,7 +31,6 @@ import BackButton from '../components/BackButton';
 import Button from '../components/Button';
 import { useLocale } from '../i18n/LocaleContext';
 import { colors, typography, spacing } from '../theme';
-import { Alert } from 'react-native';
 
 const EntryGuideTemplateContext = createContext(null);
 
@@ -575,7 +574,12 @@ const EntryGuideTemplateCurrentStep = () => {
   };
 
   const renderWarnings = () => {
-    if (!Array.isArray(currentStep.warnings) || !currentStep.warnings.length) {
+    const warnings =
+      isChinese && Array.isArray(currentStep.warningsZh) && currentStep.warningsZh.length
+        ? currentStep.warningsZh
+        : currentStep.warnings;
+
+    if (!Array.isArray(warnings) || !warnings.length) {
       return null;
     }
     
@@ -584,7 +588,7 @@ const EntryGuideTemplateCurrentStep = () => {
         <Text style={styles.warningsTitle}>
           {t('entryGuide.sections.warnings', { defaultValue: isChinese ? '⚠️ 重要提醒' : '⚠️ Important Warnings' })}
         </Text>
-        {currentStep.warnings.map((warning, index) => (
+        {warnings.map((warning, index) => (
           <Text key={`warning-${index}`} style={styles.warningText}>
             • {warning}
           </Text>
@@ -594,12 +598,17 @@ const EntryGuideTemplateCurrentStep = () => {
   };
 
   const renderTips = () => {
-    if (!Array.isArray(currentStep.tips) || !currentStep.tips.length) {
+    const tipsSource =
+      isChinese && Array.isArray(currentStep.tipsZh) && currentStep.tipsZh.length
+        ? currentStep.tipsZh
+        : currentStep.tips;
+
+    if (!Array.isArray(tipsSource) || !tipsSource.length) {
       return null;
     }
     
     // Resolve tips - support both direct strings and translation keys
-    const resolvedTips = currentStep.tips.map((tip, index) => {
+    const resolvedTips = tipsSource.map((tip) => {
       // If tip is a translation key object with key property
       if (typeof tip === 'object' && tip.key) {
         // For Chinese, try to use tipsZh key, otherwise use tips key
@@ -668,6 +677,17 @@ const EntryGuideTemplateCurrentStep = () => {
       defaultValue: isChinese ? '打开通关包 📋' : 'Open Entry Pack 📋' 
     });
 
+    const entryPackHintText = resolveLabel(
+      {
+        zh: currentStep.entryPackHintZh,
+        en: currentStep.entryPackHint,
+        default: currentStep.entryPackHint,
+      },
+      isChinese,
+      currentStep.entryPackHintZh || currentStep.entryPackHint,
+      currentStep.entryPackHint || currentStep.entryPackHintZh || currentStep.entryPackHint
+    );
+
     return (
       <View style={styles.entryPackButtonContainer}>
         <Button
@@ -677,9 +697,9 @@ const EntryGuideTemplateCurrentStep = () => {
           variant="primary"
           style={styles.entryPackButton}
         />
-        {currentStep.entryPackHint ? (
+        {entryPackHintText ? (
           <Text style={styles.entryPackButtonHint}>
-            {currentStep.entryPackHint}
+            {entryPackHintText}
           </Text>
         ) : null}
       </View>
@@ -718,13 +738,28 @@ const EntryGuideTemplateCurrentStep = () => {
         </Text>
       </View>
 
-      {currentStep.entryPackHint ? (
-        <View style={styles.entryPackHint}>
-          <Text style={styles.entryPackHintText}>
-            {currentStep.entryPackHint}
-          </Text>
-        </View>
-      ) : null}
+      {(() => {
+        const entryPackHintText = resolveLabel(
+          {
+            zh: currentStep.entryPackHintZh,
+            en: currentStep.entryPackHint,
+            default: currentStep.entryPackHint,
+          },
+          isChinese,
+          currentStep.entryPackHintZh || currentStep.entryPackHint,
+          currentStep.entryPackHint || currentStep.entryPackHintZh || currentStep.entryPackHint
+        );
+
+        if (!entryPackHintText) {
+          return null;
+        }
+
+        return (
+          <View style={styles.entryPackHint}>
+            <Text style={styles.entryPackHintText}>{entryPackHintText}</Text>
+          </View>
+        );
+      })()}
 
       {renderEntryPackButton()}
 

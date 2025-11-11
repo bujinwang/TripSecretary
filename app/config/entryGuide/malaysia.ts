@@ -11,6 +11,11 @@ export const malaysiaEntryGuide = {
   currency: 'MYR',
   language: ['ms', 'en', 'zh'], // 马来语、英语、华语
 
+  // Navigation targets for related screens
+  screens: {
+    entryPackPreview: 'MalaysiaEntryPackPreview',
+  },
+
   // 重要提醒
   importantNotes: [
     'malaysia.entryGuide.importantNotes.0',
@@ -168,6 +173,8 @@ export const malaysiaEntryGuide = {
       estimatedTime: '15分钟',
       icon: '🛂',
       required: true,
+      showEntryPack: true,
+      entryPackHint: '将护照、MDAC确认邮件和资金证明整理好，方便向移民官快速展示。',
       tips: [
         '排队等候相应通道',
         '准备护照和MDAC确认邮件',

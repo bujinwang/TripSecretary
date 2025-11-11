@@ -238,10 +238,7 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Assistant de communication"
-          ]
+          "items": ["• Zéro anxiété", "• Assistant de communication"]
         }
       },
       "continueButton": "Continuer"
@@ -297,10 +294,7 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy vous facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Gestion du PIN"
-          ]
+          "items": ["• Zéro anxiété", "• Gestion du PIN"]
         }
       },
       "continueButton": "Continuer"
@@ -364,10 +358,7 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Liste de documents"
-          ]
+          "items": ["• Zéro anxiété", "• Liste de documents"]
         }
       },
       "continueButton": "Continuer"
@@ -397,10 +388,7 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy facilite",
-          "items": [
-            "• Zéro anxiété",
-            "• Liste de documents"
-          ]
+          "items": ["• Zéro anxiété", "• Liste de documents"]
         }
       },
       "continueButton": "Continuer"
@@ -421,7 +409,7 @@
             "• Doit remplir la carte d'arrivée et la déclaration de douane à l'arrivée"
           ]
         },
-        "important": {
+        "onsite": {
           "title": "⚠️ Informations d'entrée",
           "items": [
             "• Les formulaires doivent être remplis à l'encre noire ou bleue.",
@@ -448,22 +436,22 @@
       "introTitle": "Liste de préparation d'entrée",
       "introSubtitle": "Remplissez ce que vous avez et complétez progressivement",
       "items": {
-        "validVisa": {
-          "title": "Visa valide",
-          "description": "Visa touristique japonais approuvé",
-          "details": "Les citoyens chinois doivent demander un visa à l'avance. Confirmez que votre visa est valide et a suffisamment d'entrées."
-        },
         "validPassport": {
           "title": "Passeport valide",
           "description": "Passeport valide pour au moins 6 mois",
           "details": "Le passeport doit être valide plus de 6 mois à partir de la date de départ prévue"
         },
-        "returnTicket": {
+        "visaFreeEntry": {
+          "title": "Entrée sans visa",
+          "description": "Séjour de 90 jours sans demande de visa",
+          "details": "Les titulaires de passeport chinois peuvent entrer sans visa jusqu'à 90 jours. Gardez votre passeport valide au moins 6 mois et préparez les justificatifs à montrer si nécessaire."
+        },
+        "onwardTicket": {
           "title": "Billet de retour",
           "description": "Billet de retour ou de voyage ultérieur confirmé",
           "details": "Doit avoir un plan de départ clair, montrant que vous quitterez le Japon dans les 90 jours"
         },
-        "sufficientFunds": {
+        "funds": {
           "title": "Fonds suffisants",
           "description": "Preuve de fonds pour tout le séjour",
           "details": "Recommandé de porter au moins 100 000 yens ou équivalent, ou montrer carte de crédit/relevés bancaires"
@@ -472,6 +460,11 @@
           "title": "Preuve d'hébergement",
           "description": "Réservation d'hôtel ou contact d'hôte au Japon",
           "details": "Fournir une confirmation de réservation d'hôtel ou des informations de contact détaillées d'amis/famille au Japon"
+        },
+        "paperArrivalCard": {
+          "title": "Carte d'arrivée papier et déclaration douanière",
+          "description": "À remplir dans l'avion ou au comptoir",
+          "details": "Le Japon exige toujours des cartes manuscrites. Utilisez de l'encre noire ou bleue et vérifiez attentivement les informations avant de soumettre."
         }
       },
       "status": {

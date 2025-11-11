@@ -23,6 +23,13 @@ export const japanEntryGuide = {
     '现金准备：日本接受信用卡，但现金仍是主流',
     '准时到达，机场安检和入境可能需要1-2小时'
   ],
+  importantNotesZh: [
+    '大多数国家公民享受日本90天免签待遇',
+    '准备充足的资金证明，建议每人10万日元以上',
+    '日本对食品和植物入境有严格限制',
+    '现金准备：日本接受信用卡，但现金仍是主流',
+    '准时到达，机场安检和入境可能需要1-2小时'
+  ],
 
   // 6步骤完整流程 (日本流程相对简单，免签国家无需签证)
   steps: [
@@ -47,6 +54,17 @@ export const japanEntryGuide = {
         'Airport Service (Narita): +81-476-34-5000',
         'Save these numbers in your phone contacts',
         'Call immediately in case of emergency'
+      ],
+      tipsZh: [
+        '警察：110',
+        '急救/消防：119',
+        '旅游服务热线（英语）：050-3816-2787',
+        '中国驻日大使馆：+81-3-3403-3388',
+        '美国大使馆：+81-3-3224-5000',
+        '出入境咨询：+81-57-001-200',
+        '成田机场服务台：+81-476-34-5000',
+        '把这些号码保存到手机联系人',
+        '遇到紧急情况立即拨打'
       ]
     },
     {
@@ -65,11 +83,22 @@ export const japanEntryGuide = {
         'Working is strictly prohibited',
         'Stay period is usually 90 days maximum'
       ],
+      warningsZh: [
+        '免签仅适用于旅游目的',
+        '严禁在免签期间工作',
+        '停留时间通常最多90天'
+      ],
       tips: [
         'Check if your country is on the visa-free list',
         'Prepare proof of return ticket',
         'Confirm your passport validity (6+ months)',
         'Have travel insurance ready'
+      ],
+      tipsZh: [
+        '确认本国是否在免签名单',
+        '准备返程机票证明',
+        '确认护照有效期至少6个月',
+        '准备好旅行保险'
       ]
     },
     {
@@ -94,6 +123,11 @@ export const japanEntryGuide = {
         'Every traveler must complete their own card',
         'Use blue or black pen, write in English block letters',
         'Keep the departure portion for when you leave Japan'
+      ],
+      warningsZh: [
+        '每位旅客都需单独填写入境卡',
+        '使用黑色或蓝色签字笔，英文大写填写',
+        '保留出境联，离境时需要提交'
       ],
       formFields: [
         {
@@ -143,6 +177,11 @@ export const japanEntryGuide = {
         'Bring your own pen to avoid asking flight attendants',
         'Practice filling the form before traveling to reduce stress',
         'If you forget to take one, you can get it at immigration but may need to queue again'
+      ],
+      tipsZh: [
+        '随身携带签字笔，避免临时向空乘索要',
+        '提前练习填写表格，减少现场压力',
+        '若忘记领取可在入境处索取，但可能需要重新排队'
       ]
     },
     {
@@ -160,10 +199,19 @@ export const japanEntryGuide = {
         'Do not use mobile phones when aircraft is landing',
         'WiFi should also be turned off during landing'
       ],
+      warningsZh: [
+        '飞机降落滑行时不要使用手机',
+        '降落时也应关闭WiFi'
+      ],
       tips: [
         'Follow "Arrivals" signs',
         'Prepare for offline mode',
         'Be ready for Japanese efficiency and politeness'
+      ],
+      tipsZh: [
+        '跟随“Arrivals”指示牌前进',
+        '提前切换到离线模式',
+        '做好迎接日本高效率与礼貌服务的准备'
       ]
     },
     {
@@ -179,12 +227,20 @@ export const japanEntryGuide = {
       required: true,
       showEntryPack: true,
       entryPackHint: 'Organize your entry materials (passport, arrival card, travel plan, fund proof) to show directly to the officer.',
+      entryPackHintZh: '把护照、入境卡、行程和资金证明整理好，方便直接出示给移民官。',
       tips: [
         'Queue for the appropriate lane (Visitor/Visa)',
         'Place passport and arrival card ready to present',
         'Be polite and answer questions clearly',
         'Fingerprints and photo may be required',
         'Keep arrival card departure portion safe for exit'
+      ],
+      tipsZh: [
+        '排到合适通道（访客/签证）',
+        '提前拿好护照和入境卡',
+        '保持礼貌，清楚回答问题',
+        '可能需要按指纹和拍照',
+        '妥善保管出境联以便离境时使用'
       ]
     },
     {
@@ -203,6 +259,12 @@ export const japanEntryGuide = {
         'Japanese airports usually have efficient baggage systems',
         'Report missing baggage immediately',
         'Make sure you have all your luggage before proceeding'
+      ],
+      tipsZh: [
+        '查看电子屏确认行李转盘号',
+        '日本机场行李系统高效',
+        '如有行李遗失立即报告',
+        '离开前确认所有行李已取齐'
       ]
     },
     {
@@ -227,6 +289,12 @@ export const japanEntryGuide = {
         'Food and plant items have strict restrictions',
         'Duty-free allowance: 1 liter alcohol, 200 cigarettes per person',
         'High-value electronics may need declaration'
+      ],
+      tipsZh: [
+        '如实申报携带物品',
+        '食品和植物有严格限制',
+        '免税额度：酒1升、香烟200支',
+        '高价值电子产品可能需申报'
       ]
     },
     {
@@ -252,6 +320,13 @@ export const japanEntryGuide = {
         'Look at camera for photo capture',
         'Process is quick and automated',
         'Data used for border security purposes'
+      ],
+      tipsZh: [
+        '16岁以上外国旅客必须采集',
+        '按指示把手指放在扫描仪上',
+        '配合看向摄像头完成拍照',
+        '流程快捷且自动化',
+        '数据仅用于边境安全目的'
       ]
     }
   ],

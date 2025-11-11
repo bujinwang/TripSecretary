@@ -84,7 +84,7 @@ import {
   HDACSelectionScreen,
   HDACGuideScreen,
   HDACWebViewScreen,
-  HongkongTravelInfoScreen,
+  HongKongTravelInfoScreen,
   HongKongEntryFlowScreen,
   HongKongEntryPackPreviewScreen,
   // Korea screens
@@ -99,6 +99,7 @@ import {
   USAEntryFlowScreen,
   USEntryPackPreviewScreen,
   USAEntryGuideScreen,
+  CanadaEntryGuideScreen,
 } from '../screens';
 
 // Import NotificationSettingsScreen directly since it's not in the screens index yet
@@ -114,6 +115,7 @@ import HongKongEntryGuideScreen from '../screens/entryGuide/HongKongEntryGuideSc
 import VietnamEntryGuideScreen from '../screens/entryGuide/VietnamEntryGuideScreen';
 import JapanEntryGuideScreen from '../screens/entryGuide/JapanEntryGuideScreen';
 import KoreaEntryPackPreviewScreen from '../screens/korea/KoreaEntryPackPreviewScreen';
+import JapanEntryPackPreviewScreen from '../screens/japan/JapanEntryPackPreviewScreen';
 
 import { colors } from '../theme';
 
@@ -536,6 +538,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="CanadaEntryGuide"
+          component={CanadaEntryGuideScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
 
         <Stack.Screen
           name="SGArrivalSelection"
@@ -647,6 +656,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
           component={JapanEntryGuideScreen}
           options={{
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="JapanEntryPackPreview"
+          component={JapanEntryPackPreviewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
         <Stack.Screen
@@ -774,8 +791,8 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
-          name="HongkongTravelInfo"
-          component={HongkongTravelInfoScreen}
+          name="HongKongTravelInfo"
+          component={HongKongTravelInfoScreen}
           options={{
             headerShown: false,
           }}
