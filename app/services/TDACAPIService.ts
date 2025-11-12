@@ -112,6 +112,31 @@ const ID_MAPS = {
   }
 };
 
+type GenderKey = keyof typeof ID_MAPS.gender;
+
+const GENDER_KEY_ALIASES: Record<string, GenderKey> = {
+  M: 'MALE',
+  MALES: 'MALE',
+  MAN: 'MALE',
+  MEN: 'MALE',
+  BOY: 'MALE',
+  F: 'FEMALE',
+  FEMALES: 'FEMALE',
+  WOMAN: 'FEMALE',
+  WOMEN: 'FEMALE',
+  GIRL: 'FEMALE',
+  X: 'UNDEFINED',
+  OTHER: 'UNDEFINED',
+  OTHERS: 'UNDEFINED',
+  UNKNOWN: 'UNDEFINED',
+  UNSPECIFIED: 'UNDEFINED',
+  UNDISCLOSED: 'UNDEFINED',
+  U: 'UNDEFINED',
+  NOT_SPECIFIED: 'UNDEFINED',
+  NON_BINARY: 'UNDEFINED',
+  NONBINARY: 'UNDEFINED'
+};
+
 // Type definitions
 interface SelectItemRow {
   key: string;
@@ -1939,4 +1964,3 @@ class TDACAPIService {
 }
 
 export default new TDACAPIService();
-

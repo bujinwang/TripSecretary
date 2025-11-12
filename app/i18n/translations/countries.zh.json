@@ -376,6 +376,14 @@
       },
       "startButton": "开始填写"
     },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "请完成 Cloudflare 验证",
+          "instructions": "请在下方页面完成“我不是机器人”验证。"
+        }
+      }
+    },
     "entryFlow": {
       "title": "泰国入境准备状态",
       "preparationTitle": "泰国入境准备状态",
@@ -3137,6 +3145,14 @@
         }
       },
       "startButton": "开始填写"
+    },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "请完成 Cloudflare 验证",
+          "instructions": "请在下方页面完成“我不是机器人”验证。"
+        }
+      }
     },
     "occupations": {
       "SOFTWARE_ENGINEER": "软件工程师",

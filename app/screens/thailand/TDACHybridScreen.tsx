@@ -253,6 +253,28 @@ const TDACHybridScreen: React.FC<TDACHybridScreenProps> = ({ navigation, route }
   const [resultState, setResultState] = useState<SubmissionResultState | null>(null);
   const webViewRef = useRef<WebView>(null);
   const isMountedRef = useRef(true);
+  const scrollChallengeIntoView = useCallback(() => {
+    if (!webViewRef.current) {
+      return;
+    }
+    const script = CloudflareTokenExtractor.getScrollToChallengeScript();
+    webViewRef.current.injectJavaScript(script);
+  }, []);
+
+  useEffect(() => {
+    if (stage !== 'awaitingToken') {
+      return;
+    }
+
+    const timeouts = [0, 600, 1500, 3000, 5000].map((delay) =>
+      setTimeout(scrollChallengeIntoView, delay)
+    );
+
+    return () => {
+      timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    };
+  }, [stage, scrollChallengeIntoView]);
+
 
   useEffect(() => {
     return () => {
@@ -388,8 +410,16 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
       <View style={styles.container}>
         {stage === 'awaitingToken' && (
           <View style={styles.centerContent}>
-            <Text style={styles.headingText}>{t('thailand.selection.hybrid.stage.token', '请输入 Cloudflare 验证')}</Text>
-            <Text style={styles.subText}>请在下方页面完成“我不是机器人”验证。</Text>
+            <Text style={styles.headingText}>
+              {t('thailand.selection.hybrid.stage.token', {
+                defaultValue: '请完成 Cloudflare 验证',
+              })}
+            </Text>
+            <Text style={styles.subText}>
+              {t('thailand.selection.hybrid.stage.instructions', {
+                defaultValue: '请在下方页面完成“我不是机器人”验证。',
+              })}
+            </Text>
             <View style={styles.webViewWrapper}>
               <WebView
                 ref={webViewRef}
@@ -398,7 +428,10 @@ const savePDF = useCallback(async (arrCardNo: string, pdfBlob: unknown) => {
                 onMessage={handleWebViewMessage}
                 injectedJavaScriptBeforeContentLoaded={CloudflareTokenExtractor.getInterceptionScript()}
                 injectedJavaScript={CloudflareTokenExtractor.getExtractionScript()}
-                onLoadEnd={() => setProgressMessage('等待用户完成验证...')}
+                onLoadEnd={() => {
+                  setProgressMessage('等待用户完成验证...');
+                  scrollChallengeIntoView();
+                }}
               />
             </View>
             <Text style={styles.progressText}>{progressMessage}</Text>

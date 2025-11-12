@@ -219,6 +219,65 @@ class CloudflareTokenExtractor {
   }
 
   /**
+   * JavaScript to ensure the Cloudflare checkbox is visible to the user
+   */
+  static getScrollToChallengeScript(): string {
+    return `
+      (function() {
+        var MAX_OBSERVER_DURATION = 5000;
+
+        function focusChallenge() {
+          var selectors = [
+            '.cf-turnstile',
+            '#challenge-form',
+            '#challenge-stage',
+            'iframe[src*="challenges.cloudflare"]'
+          ];
+
+          for (var i = 0; i < selectors.length; i++) {
+            var element = document.querySelector(selectors[i]);
+            if (element) {
+              if (element.scrollIntoView) {
+                element.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' });
+              } else if (typeof window.scrollTo === 'function' && element.getBoundingClientRect) {
+                var rect = element.getBoundingClientRect();
+                window.scrollTo(0, Math.max(0, (window.pageYOffset || 0) + rect.top - (window.innerHeight * 0.25)));
+              } else if (typeof window.scrollTo === 'function') {
+                window.scrollTo(0, 0);
+              }
+              return true;
+            }
+          }
+
+          if (typeof window.scrollTo === 'function') {
+            window.scrollTo(0, 0);
+          }
+          return false;
+        }
+
+        if (!focusChallenge()) {
+          var observer = new MutationObserver(function() {
+            if (focusChallenge()) {
+              observer.disconnect();
+            }
+          });
+
+          observer.observe(document.documentElement || document.body, {
+            childList: true,
+            subtree: true
+          });
+
+          setTimeout(function() {
+            observer.disconnect();
+            focusChallenge();
+          }, MAX_OBSERVER_DURATION);
+        }
+      })();
+      true;
+    `;
+  }
+
+  /**
    * Get the TDAC URL to load for token extraction
    */
   static getTDACUrl(): string {

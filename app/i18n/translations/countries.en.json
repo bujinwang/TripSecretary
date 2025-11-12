@@ -336,6 +336,14 @@
       },
       "startButton": "Start filling"
     },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "Please complete the Cloudflare verification",
+          "instructions": "Finish the “I'm not a robot” check on the page below."
+        }
+      }
+    },
     "entryFlow": {
       "title": "Thailand Entry Preparation Status",
       "preparationTitle": "Thailand Entry Preparation Status",
@@ -1213,6 +1221,14 @@
         }
       },
       "startButton": "Start filling"
+    },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "Please complete the Cloudflare verification",
+          "instructions": "Finish the “I'm not a robot” check on the page below."
+        }
+      }
     },
     "occupations": {
       "SOFTWARE_ENGINEER": "Software Engineer",
