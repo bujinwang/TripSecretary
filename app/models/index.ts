@@ -74,7 +74,12 @@ export const ModelUtils = {
   createCompleteEntry(inputData: Record<string, unknown>, userId: string) {
     const passport = Passport.fromOCRResult(inputData.passport as Record<string, unknown> | undefined ?? {}, userId);
     const personalInfo = PersonalInfo.fromUserInput((inputData.personalInfo as Record<string, unknown> | undefined) ?? {}, userId);
-    const entryData = EntryData.fromUserInput((inputData.entryData as Record<string, unknown> | undefined) ?? {}, userId, passport.id, personalInfo.id);
+    const entryData = EntryData.fromUserInput(
+      (inputData.entryData as Record<string, unknown> | undefined) ?? {},
+      userId,
+      passport.id || null,
+      personalInfo.id || null
+    );
 
     return {
       passport,
@@ -339,4 +344,3 @@ export default {
   PassportCountry,
   ModelUtils
 };
-

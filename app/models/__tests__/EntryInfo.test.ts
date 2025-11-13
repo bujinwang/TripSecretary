@@ -241,8 +241,8 @@ afterAll(async () => {
   describe('Summary and Export', () => {
     test('should include documents and displayStatus in summary', async () => {
       mockedSecureStorage.saveEntryInfo.mockResolvedValue({
+        ...testEntryInfo,
         id: 'entry_123',
-        ...testEntryInfo
       });
 
       await testEntryInfo.save();
@@ -254,8 +254,8 @@ afterAll(async () => {
 
     test('should include documents and displayStatus in export', async () => {
       mockedSecureStorage.saveEntryInfo.mockResolvedValue({
+        ...testEntryInfo,
         id: 'entry_123',
-        ...testEntryInfo
       });
 
       await testEntryInfo.save();
@@ -274,8 +274,8 @@ afterAll(async () => {
 
   describe('Digital Arrival Card Integration', () => {
     test('should get latest DigitalArrivalCard by type', async () => {
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: 'entry_123', ...testEntryInfo });
-      mockedSecureStorage.getEntryInfo.mockResolvedValue({ id: 'entry_123', ...testEntryInfo });
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ ...testEntryInfo, id: 'entry_123' });
+      mockedSecureStorage.getEntryInfo.mockResolvedValue({ ...testEntryInfo, id: 'entry_123' });
       mockedSecureStorage.getLatestSuccessfulDigitalArrivalCard.mockResolvedValue(null);
 
       await testEntryInfo.save();
@@ -284,8 +284,8 @@ afterAll(async () => {
     });
 
     test('should get all DigitalArrivalCards', async () => {
-      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ id: 'entry_123', ...testEntryInfo });
-      mockedSecureStorage.getEntryInfo.mockResolvedValue({ id: 'entry_123', ...testEntryInfo });
+      mockedSecureStorage.saveEntryInfo.mockResolvedValue({ ...testEntryInfo, id: 'entry_123' });
+      mockedSecureStorage.getEntryInfo.mockResolvedValue({ ...testEntryInfo, id: 'entry_123' });
       mockedSecureStorage.getDigitalArrivalCardsByEntryInfoId.mockResolvedValue([]);
 
       await testEntryInfo.save();
@@ -313,4 +313,3 @@ afterAll(async () => {
     });
   });
 });
-

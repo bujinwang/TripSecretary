@@ -57,9 +57,29 @@ interface InProgressDestination {
   flightNumber?: string;
 }
 
+interface LeftEntryInfo {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  leftAt: string;
+  completionPercent: number;
+  arrivalDate?: string | null;
+}
+
+interface ArchivedEntryInfo {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  archivedAt: string;
+  status: string;
+  arrivalDate?: string | null;
+}
+
 interface HomeScreenSummary {
   submittedEntryPacks: number;
   inProgressDestinations: number;
+  leftEntryInfos: number;
+  archivedEntryInfos: number;
   overallCompletionPercent: number;
   hasAnyProgress: boolean;
 }
@@ -67,6 +87,8 @@ interface HomeScreenSummary {
 interface HomeScreenData {
   submittedEntryPacks: SubmittedEntryPack[];
   inProgressDestinations: InProgressDestination[];
+  leftEntryInfos: LeftEntryInfo[];
+  archivedEntryInfos: ArchivedEntryInfo[];
   summary: HomeScreenSummary;
 }
 
@@ -275,6 +297,8 @@ class EntryInfoService {
       // Filter and categorize entry infos
       const submittedEntryPacks: SubmittedEntryPack[] = [];
       const inProgressDestinations: InProgressDestination[] = [];
+      const leftEntryInfos: LeftEntryInfo[] = [];
+      const archivedEntryInfos: ArchivedEntryInfo[] = [];
 
       for (const entryInfo of allEntryInfos) {
         // Skip entries without destinationId
@@ -288,6 +312,8 @@ class EntryInfoService {
         // Derive destination name from destinationId if not present
         const destinationName = entryInfo.destinationName || getDestinationName(entryInfo.destinationId);
 
+        const status: string = entryInfo.status ?? 'incomplete';
+
         // Load associated travel info if available
         let travelInfo: any = null;
         if (entryInfo.travelInfoId) {
@@ -299,6 +325,35 @@ class EntryInfoService {
           }
         }
 
+        const arrivalDate: string | null =
+          travelInfo?.arrivalArrivalDate ?? entryInfo.travel?.arrivalDate ?? null;
+
+        const completionPercent = this.calculateCompletionPercent(entryInfo);
+
+        if (status === 'archived' || status === 'expired') {
+          archivedEntryInfos.push({
+            id: entryInfo.id,
+            destinationId: entryInfo.destinationId,
+            destinationName,
+            archivedAt: entryInfo.lastUpdatedAt ?? new Date().toISOString(),
+            status,
+            arrivalDate,
+          });
+          continue;
+        }
+
+        if (status === 'left') {
+          leftEntryInfos.push({
+            id: entryInfo.id,
+            destinationId: entryInfo.destinationId,
+            destinationName,
+            leftAt: entryInfo.lastUpdatedAt ?? new Date().toISOString(),
+            completionPercent,
+            arrivalDate,
+          });
+          continue;
+        }
+
         // Check if entry info has a successful DAC submission
         const latestDAC = await this.getLatestSuccessfulDigitalArrivalCard(entryInfo.id, 'TDAC');
         if (latestDAC) {
@@ -308,7 +363,7 @@ class EntryInfoService {
             destinationId: entryInfo.destinationId,
             destinationName: destinationName,
             status: 'submitted',
-            arrivalDate: travelInfo?.arrivalArrivalDate || entryInfo.travel?.arrivalDate,
+            arrivalDate,
             submittedAt: latestDAC.submittedAt,
             cardType: latestDAC.cardType,
             // Additional travel information
@@ -319,8 +374,6 @@ class EntryInfoService {
           });
         } else {
           // No successful DAC - add to in-progress destinations
-          // Calculate completion percentage based on filled fields
-          const completionPercent = this.calculateCompletionPercent(entryInfo);
           // Include all entries without submitted DAC, even if 0% complete
           // This ensures user can see destinations they started working on
           inProgressDestinations.push({
@@ -330,7 +383,7 @@ class EntryInfoService {
             isReady: completionPercent >= 80, // Consider ready if 80%+ complete
             entryInfoId: entryInfo.id, // Add ID for navigation
             // Include arrival date for submission countdown
-            arrivalDate: travelInfo?.arrivalArrivalDate,
+            arrivalDate,
             flightNumber: travelInfo?.arrivalFlightNumber
           });
         }
@@ -338,20 +391,30 @@ class EntryInfoService {
 
       logger.debug('EntryInfoService', 'Categorized entry infos', {
         submittedPacks: submittedEntryPacks.length,
-        inProgressDestinations: inProgressDestinations.length
+        inProgressDestinations: inProgressDestinations.length,
+        leftEntryInfos: leftEntryInfos.length,
+        archivedEntryInfos: archivedEntryInfos.length
       });
 
       // Calculate summary statistics
       const summary: HomeScreenSummary = {
         submittedEntryPacks: submittedEntryPacks.length,
         inProgressDestinations: inProgressDestinations.length,
+        leftEntryInfos: leftEntryInfos.length,
+        archivedEntryInfos: archivedEntryInfos.length,
         overallCompletionPercent: this.calculateOverallCompletion(submittedEntryPacks, inProgressDestinations),
-        hasAnyProgress: submittedEntryPacks.length > 0 || inProgressDestinations.length > 0
+        hasAnyProgress:
+          submittedEntryPacks.length > 0 ||
+          inProgressDestinations.length > 0 ||
+          leftEntryInfos.length > 0 ||
+          archivedEntryInfos.length > 0
       };
 
       return {
         submittedEntryPacks,
         inProgressDestinations,
+        leftEntryInfos,
+        archivedEntryInfos,
         summary
       };
     } catch (error: any) {

@@ -113,7 +113,7 @@ const TravelInfoFormSection: React.FC<TravelInfoFormSectionProps> = (props) => {
 
       <InputWithUserTracking
         fieldName={fieldName}
-        value={value}
+        value={value ?? ''}
         onChangeText={handleTextChange}
         onUserInteraction={handleUserInteraction}
         showSuggestions={showSuggestions}

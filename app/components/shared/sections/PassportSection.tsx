@@ -170,7 +170,7 @@ const PassportSection: React.FC<PassportSectionProps> = ({
   const c = { ...defaultConfig, ...config };
 
   // Handle gender change with immediate save
-  const handleGenderChange = async (newSex) => {
+  const handleGenderChange = async (newSex: string) => {
     setSex(newSex);
     if (saveDataToSecureStorageWithOverride && setLastEditedAt) {
       try {

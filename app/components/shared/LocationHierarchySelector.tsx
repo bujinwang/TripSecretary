@@ -10,6 +10,8 @@ import { useLocale } from '../../i18n/LocaleContext';
 
 type DisplayFormat = 'bilingual' | 'native' | 'english' | 'custom';
 
+type DisplayFormatter = (location: LocationRecord, isChinese: boolean) => string;
+
 export interface LocationRecord {
   id?: string;
   code?: string;
@@ -49,39 +51,47 @@ export interface LocationHierarchySelectorProps
 
 const normalize = (value?: string | null) => (value ?? '').toLowerCase().trim();
 
-const DISPLAY_FORMATS = {
-  bilingual: (location: LocationRecord, isChinese: boolean) => {
-    if (!location) {
-      return '';
-    }
-    const fallback = location.nameTh ?? location.nameLocal ?? location.nameZh ?? '';
-    const secondary = isChinese ? location.nameZh ?? fallback : fallback ?? location.nameZh ?? '';
+const formatBilingual: DisplayFormatter = (location, isChinese) => {
+  if (!location) {
+    return '';
+  }
+  const fallback = location.nameTh ?? location.nameLocal ?? location.nameZh ?? '';
+  const secondary = isChinese ? location.nameZh ?? fallback : fallback ?? location.nameZh ?? '';
 
-    if (!secondary || secondary === location.nameEn) {
-      return location.nameEn ?? location.name ?? '';
-    }
-    return `${location.nameEn ?? location.name ?? ''} - ${secondary}`;
-  },
-  native: (location: LocationRecord, isChinese: boolean) => {
-    if (!location) {
-      return '';
-    }
-    return isChinese
-      ? location.nameZh ?? location.nameTh ?? location.nameLocal ?? location.name ?? ''
-      : location.nameTh ?? location.nameLocal ?? location.nameZh ?? location.name ?? '';
-  },
-  english: (location: LocationRecord) => {
-    if (!location) {
-      return '';
-    }
+  if (!secondary || secondary === location.nameEn) {
     return location.nameEn ?? location.name ?? '';
-  },
-  withPostalCode: (location: LocationRecord, isChinese: boolean) => {
-    const base = DISPLAY_FORMATS.bilingual(location, isChinese);
-    const postal = location.postalCode ? ` (${location.postalCode})` : '';
-    return `${base}${postal}`;
-  },
-} satisfies Record<string, (location: LocationRecord, isChinese: boolean) => string>;
+  }
+  return `${location.nameEn ?? location.name ?? ''} - ${secondary}`;
+};
+
+const formatNative: DisplayFormatter = (location, isChinese) => {
+  if (!location) {
+    return '';
+  }
+  return isChinese
+    ? location.nameZh ?? location.nameTh ?? location.nameLocal ?? location.name ?? ''
+    : location.nameTh ?? location.nameLocal ?? location.nameZh ?? location.name ?? '';
+};
+
+const formatEnglish: DisplayFormatter = (location) => {
+  if (!location) {
+    return '';
+  }
+  return location.nameEn ?? location.name ?? '';
+};
+
+const formatWithPostalCode: DisplayFormatter = (location, isChinese) => {
+  const base = formatBilingual(location, isChinese);
+  const postal = location.postalCode ? ` (${location.postalCode})` : '';
+  return `${base}${postal}`;
+};
+
+const DISPLAY_FORMATS: Record<'bilingual' | 'native' | 'english' | 'withPostalCode', DisplayFormatter> = {
+  bilingual: formatBilingual,
+  native: formatNative,
+  english: formatEnglish,
+  withPostalCode: formatWithPostalCode,
+};
 
 const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
   label,
@@ -143,7 +153,9 @@ const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
       return (loc: LocationRecord) => DISPLAY_FORMATS.withPostalCode(loc, isChinese);
     }
 
-    const formatter = DISPLAY_FORMATS[displayFormat] ?? DISPLAY_FORMATS.bilingual;
+    const formatterKey: keyof typeof DISPLAY_FORMATS =
+      displayFormat === 'custom' ? 'bilingual' : displayFormat;
+    const formatter = DISPLAY_FORMATS[formatterKey] ?? DISPLAY_FORMATS.bilingual;
     return (loc: LocationRecord) => formatter(loc, isChinese);
   }, [displayFormat, getDisplayLabel, isChinese, showPostalCode]);
 
@@ -301,4 +313,3 @@ const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
 };
 
 export default LocationHierarchySelector;
-

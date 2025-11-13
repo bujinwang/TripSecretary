@@ -93,7 +93,7 @@ class PassportCountry {
   static async getByPassportId(passportId: string): Promise<PassportCountry[]> {
     try {
       const data = await SecureStorageService.getPassportCountriesByPassportId(passportId);
-      return data.map((item: PassportCountryRecord) => new PassportCountry(item));
+      return (data || []).map((item) => new PassportCountry(item as PassportCountryInit));
     } catch (error) {
       console.error('Failed to get PassportCountries by passportId:', error);
       throw error;
@@ -112,4 +112,3 @@ class PassportCountry {
 }
 
 export default PassportCountry;
-

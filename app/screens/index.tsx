@@ -6,7 +6,6 @@ export { default as LoginScreen } from './LoginScreen';
 export { default as HomeScreen } from './HomeScreen';
 export { default as ScanPassportScreen } from './ScanPassportScreen';
 export { default as SelectDestinationScreen } from './SelectDestinationScreen';
-export { default as TravelInfoScreen } from './TravelInfoScreen';
 export { default as GeneratingScreen } from './GeneratingScreen';
 export { default as ResultScreen } from './ResultScreen';
 export { default as HistoryScreen } from './HistoryScreen';

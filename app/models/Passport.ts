@@ -45,15 +45,15 @@ interface SaveResult {
 interface PassportSavePayload {
   id?: string;
   userId: string;
-  passportNumber?: string | null;
-  fullName?: string | null;
-  dateOfBirth?: string | null;
-  nationality?: string | null;
+  passportNumber?: string;
+  fullName?: string;
+  dateOfBirth?: string;
+  nationality?: string;
   gender?: Gender;
-  expiryDate?: string | null;
-  issueDate?: string | null;
-  issuePlace?: string | null;
-  photoUri?: string | null;
+  expiryDate?: string;
+  issueDate?: string;
+  issuePlace?: string;
+  photoUri?: string;
   isPrimary?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -491,4 +491,3 @@ class Passport {
 }
 
 export default Passport;
-

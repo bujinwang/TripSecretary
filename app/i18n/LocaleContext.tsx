@@ -6,7 +6,7 @@ type LanguageCode = 'en' | 'zh-CN' | 'zh-TW' | 'fr' | 'de' | 'es' | 'th' | 'my' 
 
 interface TranslationOptions {
   defaultValue?: string;
-  [key: string]: string | undefined;
+  [key: string]: string | number | undefined;
 }
 
 interface LocaleContextType {
@@ -82,6 +82,9 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   korea: 'kr',
 };
 
+type TranslationTree = Record<string, any>;
+const translationSource: TranslationTree = translations as TranslationTree;
+
 const getTranslationByPath = (language: string, key: string): any => {
   if (!key) {
     return undefined;
@@ -94,7 +97,7 @@ const getTranslationByPath = (language: string, key: string): any => {
   }
 
   const resolve = (lang: string): any => {
-    let current = translations[lang];
+    let current = translationSource[lang];
     for (const segment of segments) {
       if (current && Object.prototype.hasOwnProperty.call(current, segment)) {
         current = current[segment];
@@ -152,7 +155,11 @@ export const LocaleProvider: React.FC<LocaleProviderProps> = ({ initialLanguage 
           Object.keys(options).forEach((param) => {
             if (param !== 'defaultValue') {
               const regex = new RegExp(`\\{\\{${param}\\}\\}`, 'g');
-              translation = translation.replace(regex, options[param]);
+              const replacement =
+                options[param] === undefined || options[param] === null
+                  ? ''
+                  : String(options[param]);
+              translation = translation.replace(regex, replacement);
             }
           });
         }

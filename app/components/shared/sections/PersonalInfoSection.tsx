@@ -157,7 +157,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
   // Support both residentCountry and countryOfResidence prop names
   const resolvedCountry = countryOfResidence ?? residentCountry ?? '';
-  const updateCountry = (code) => {
+  const updateCountry = (code: string) => {
     setResidentCountry?.(code);
     setCountryOfResidence?.(code);
   };

@@ -364,7 +364,8 @@ class EntryPackSnapshot {
 
       return { snapshotId: result.id ?? this.snapshotId };
     } catch (error) {
-      logger.error('EntryPackSnapshot', error, { operation: 'save', snapshotId: this.snapshotId });
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logger.error('EntryPackSnapshot', normalizedError, { operation: 'save', snapshotId: this.snapshotId });
       throw error;
     }
   }
@@ -374,7 +375,8 @@ class EntryPackSnapshot {
       const data = await SecureStorageService.getSnapshot(snapshotId);
       return data ? new EntryPackSnapshot(data as EntryPackSnapshotInit) : null;
     } catch (error) {
-      logger.error('EntryPackSnapshot', error, { operation: 'load', snapshotId });
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logger.error('EntryPackSnapshot', normalizedError, { operation: 'load', snapshotId });
       throw error;
     }
   }
@@ -384,30 +386,43 @@ class EntryPackSnapshot {
       const snapshots = await SecureStorageService.getSnapshotsByUserId(userId);
       let filteredSnapshots = (snapshots || []).map(snapshot => new EntryPackSnapshot(snapshot as EntryPackSnapshotInit));
 
-      if (filters.status) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.status === filters.status);
+      const {
+        status,
+        destinationId: filterDestinationId,
+        entryInfoId: filterEntryInfoId,
+        hasSubmission,
+        minAge,
+        maxAge,
+      } = filters;
+
+      if (status) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.status === status);
       }
-      if (filters.destinationId) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.destinationId === filters.destinationId);
+      if (filterDestinationId) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.destinationId === filterDestinationId);
       }
-      if (filters.entryInfoId) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.entryInfoId === filters.entryInfoId);
+      if (filterDestinationId === null) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.destinationId === null);
       }
-      if (filters.hasSubmission !== undefined) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.hasTDACSubmission() === filters.hasSubmission);
+      if (filterEntryInfoId) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.entryInfoId === filterEntryInfoId);
       }
-      if (filters.minAge !== undefined) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.getAgeInDays() >= filters.minAge);
+      if (hasSubmission !== undefined) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.hasTDACSubmission() === hasSubmission);
       }
-      if (filters.maxAge !== undefined) {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.getAgeInDays() <= filters.maxAge);
+      if (typeof minAge === 'number') {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.getAgeInDays() >= minAge);
+      }
+      if (typeof maxAge === 'number') {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => snapshot.getAgeInDays() <= maxAge);
       }
 
       filteredSnapshots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       return filteredSnapshots;
     } catch (error) {
-      logger.error('EntryPackSnapshot', error, { operation: 'loadByUserId', userId });
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logger.error('EntryPackSnapshot', normalizedError, { operation: 'loadByUserId', userId });
       throw error;
     }
   }
@@ -423,7 +438,8 @@ class EntryPackSnapshot {
 
       return result;
     } catch (error) {
-      logger.error('EntryPackSnapshot', error, { operation: 'delete', snapshotId: this.snapshotId });
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logger.error('EntryPackSnapshot', normalizedError, { operation: 'delete', snapshotId: this.snapshotId });
       throw error;
     }
   }
@@ -553,4 +569,3 @@ class EntryPackSnapshot {
 }
 
 export default EntryPackSnapshot;
-

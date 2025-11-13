@@ -25,7 +25,14 @@ export interface CompletionMetrics {
   [key: string]: CompletionMetric;
 }
 
-export type EntryInfoStatus = 'incomplete' | 'ready' | 'submitted' | 'superseded' | 'expired' | 'archived';
+export type EntryInfoStatus =
+  | 'incomplete'
+  | 'ready'
+  | 'submitted'
+  | 'superseded'
+  | 'expired'
+  | 'archived'
+  | 'left';
 
 export interface EntryInfoInit {
   completionMetrics?: CompletionMetrics | string | null;
@@ -122,7 +129,15 @@ const DEFAULT_COMPLETION_METRICS: CompletionMetrics = {
   travel: { complete: 0, total: 6, state: 'missing' }
 };
 
-const VALID_STATUSES: EntryInfoStatus[] = ['incomplete', 'ready', 'submitted', 'superseded', 'expired', 'archived'];
+const VALID_STATUSES: EntryInfoStatus[] = [
+  'incomplete',
+  'ready',
+  'submitted',
+  'superseded',
+  'expired',
+  'archived',
+  'left'
+];
 
 class EntryInfo extends EntryData {
   // Base class properties (from EntryData)
@@ -303,6 +318,10 @@ class EntryInfo extends EntryData {
     this.updateStatus('archived', reason);
   }
 
+  markAsLeft(reason: string = 'user_left_trip'): void {
+    this.updateStatus('left', reason);
+  }
+
   canBeEdited(): boolean {
     return ['incomplete', 'ready', 'superseded'].includes(this.status);
   }
@@ -318,7 +337,8 @@ class EntryInfo extends EntryData {
       submitted: { color: 'blue', message: '已提交', icon: '📋' },
       superseded: { color: 'red', message: '需要重新提交', icon: '🔄' },
       expired: { color: 'gray', message: '已过期', icon: '⏰' },
-      archived: { color: 'gray', message: '已归档', icon: '📁' }
+      archived: { color: 'gray', message: '已归档', icon: '📁' },
+      left: { color: 'gray', message: '已离开', icon: '🚪' }
     };
 
     return statusMap[this.status] ?? statusMap.incomplete;

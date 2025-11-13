@@ -104,11 +104,19 @@ class DigitalArrivalCard {
 
   async save(): Promise<SaveResult> {
     try {
+      const entryInfoId = this.entryInfoId;
+      const userId = this.userId;
+      if (!entryInfoId) {
+        throw new Error('DigitalArrivalCard.save requires entryInfoId');
+      }
+      if (!userId) {
+        throw new Error('DigitalArrivalCard.save requires userId');
+      }
       this.updatedAt = new Date().toISOString();
       const result = await SecureStorageService.saveDigitalArrivalCard({
         id: this.id,
-        entryInfoId: this.entryInfoId,
-        userId: this.userId,
+        entryInfoId,
+        userId,
         cardType: this.cardType,
         destinationId: this.destinationId,
         arrCardNo: this.arrCardNo,
@@ -211,4 +219,3 @@ class DigitalArrivalCard {
 }
 
 export default DigitalArrivalCard;
-

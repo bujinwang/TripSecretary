@@ -9,9 +9,10 @@ import {
 import type { BaseSearchableSelectorProps, SearchableOption } from './tamagui';
 
 export interface AccommodationTypeSelectorProps
-  extends Omit<BaseSearchableSelectorProps, 'options' | 'getDisplayValue'> {
+  extends Omit<BaseSearchableSelectorProps, 'options' | 'getDisplayValue' | 'variant'> {
   options: SearchableOption[];
-  variant?: 'modal' | 'quickSelect';
+  displayMode?: 'modal' | 'quickSelect';
+  baseVariant?: BaseSearchableSelectorProps['variant'];
 }
 
 const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
@@ -19,7 +20,7 @@ const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
   value,
   options,
   onValueChange,
-  variant = 'modal',
+  displayMode = 'modal',
   placeholder = 'Select accommodation type',
   error,
   errorMessage,
@@ -28,6 +29,7 @@ const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
   modalTitle = 'Select accommodation type',
   showSearch = false,
   searchPlaceholder = 'Search accommodation types...',
+  baseVariant,
   ...rest
 }) => {
   const sanitizedOptions = useMemo(
@@ -46,7 +48,7 @@ const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
     helpText ||
     (typeof label === 'object' && label !== null && 'help' in label ? label.help ?? null : null);
 
-  if (variant === 'quickSelect') {
+  if (displayMode === 'quickSelect') {
     return (
       <YStack marginBottom="$md" style={style}>
         {normalizedLabel ? (
@@ -68,7 +70,7 @@ const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
                 onPress={() => onValueChange(option.value)}
                 width="48%"
                 marginBottom="$sm"
-                padding="$md"
+                padding="md"
                 borderWidth={1.5}
                 borderColor={isActive ? '$primary' : '$borderColor'}
                 backgroundColor={isActive ? '$primaryLight' : '$card'}
@@ -120,6 +122,7 @@ const AccommodationTypeSelector: React.FC<AccommodationTypeSelectorProps> = ({
       errorMessage={errorMessage}
       helpText={helpText}
       style={style}
+      variant={baseVariant}
       {...rest}
     />
   );

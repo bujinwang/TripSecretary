@@ -185,10 +185,14 @@ class PersonalInfo {
       }
 
       this.updatedAt = new Date().toISOString();
+      if (!this.userId) {
+        throw new Error('User ID is required to save personal info');
+      }
+      const userId = this.userId;
 
       const result = await SecureStorageService.savePersonalInfo({
         id: this.id,
-        userId: this.userId,
+        userId,
         passportId: this.passportId,
         phoneNumber: this.phoneNumber ?? undefined,
         email: this.email ?? undefined,
@@ -386,4 +390,3 @@ class PersonalInfo {
 }
 
 export default PersonalInfo;
-

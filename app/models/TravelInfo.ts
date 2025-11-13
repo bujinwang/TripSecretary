@@ -236,9 +236,14 @@ class TravelInfo {
         this.status = 'completed';
       }
 
+      if (!this.userId) {
+        throw new Error('User ID is required to save travel info');
+      }
+      const userId = this.userId;
+
       const result = await SecureStorageService.saveTravelInfo({
         id: this.id,
-        userId: this.userId,
+        userId,
         destination: this.destination ?? undefined,
         travelPurpose: this.travelPurpose ?? undefined,
         recentStayCountry: this.recentStayCountry ?? undefined,
@@ -400,4 +405,3 @@ class TravelInfo {
 }
 
 export default TravelInfo;
-

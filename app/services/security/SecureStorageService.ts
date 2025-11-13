@@ -173,6 +173,10 @@ class SecureStorageService {
     return this.activeUserId;
   }
 
+  getActiveUserId(): string | null {
+    return this.activeUserId;
+  }
+
   /**
    * Initialize secure storage service
    */
@@ -1314,4 +1318,3 @@ class SecureStorageService {
 const secureStorageService = new SecureStorageService();
 
 export default secureStorageService;
-

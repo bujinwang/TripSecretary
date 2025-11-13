@@ -25,6 +25,16 @@ import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import { getHotCountries, navigateToCountry, getCountryFlag, getCountryName } from '../utils/countriesService';
 
+type InProgressDestinationItem = {
+  destinationId: string;
+  destinationName: string;
+  completionPercent: number;
+  isReady: boolean;
+  entryInfoId: string;
+  arrivalDate?: string | null;
+  flightNumber?: string | null;
+};
+
 const UPCOMING_TRIPS_CONFIG = [
   {
     id: 'jp',
@@ -60,8 +70,8 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [passportData, setPassportData] = useState(null);
   const [activeEntryPacks, setActiveEntryPacks] = useState([]);
-  const [multiDestinationData, setMultiDestinationData] = useState(null);
-  const [inProgressDestinations, setInProgressDestinations] = useState([]);
+  const [multiDestinationData, setMultiDestinationData] = useState<any>(null);
+  const [inProgressDestinations, setInProgressDestinations] = useState<InProgressDestinationItem[]>([]);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -317,11 +327,11 @@ return '';
       console.log('[HomeScreen] About to set inProgressDestinations state:', homeScreenData.inProgressDestinations);
       setInProgressDestinations(homeScreenData.inProgressDestinations);
       console.log('[HomeScreen] State set - inProgressDestinations should now be:', homeScreenData.inProgressDestinations.length, 'items');
-      
+
       // Set overall multi-destination data
       setMultiDestinationData({
         ...homeScreenData,
-        submittedEntryPacks: activeSubmittedPacks
+        submittedEntryPacks: activeSubmittedPacks,
       });
 
       PerformanceMonitor.endTiming(operationId, {
@@ -343,6 +353,36 @@ return '';
       setMultiDestinationData(null);
     }
   }, []);
+
+  type StatusUpdateConfig = {
+    reason?: string;
+    successMessage?: string;
+  };
+
+  const performStatusUpdate = useCallback(
+    async (entryInfoId: string, nextStatus: string, config: StatusUpdateConfig = {}) => {
+      try {
+        setLoading(true);
+        const options = config.reason ? { reason: config.reason } : {};
+        await UserDataService.updateEntryInfoStatus(entryInfoId, nextStatus, options);
+        await loadMultiDestinationData();
+        if (config.successMessage) {
+          Alert.alert('', config.successMessage);
+        }
+      } catch (error: any) {
+        console.error('[HomeScreen] Failed to update entry info status:', error);
+        Alert.alert(
+          t('home.actions.errorTitle', { defaultValue: '操作失败' }),
+          t('home.actions.errorMessage', {
+            defaultValue: error?.message || '请稍后再试。',
+          })
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadMultiDestinationData, t]
+  );
 
   const getMockHistory = () => {
     // 返回空数组，不使用mock数据
@@ -480,27 +520,62 @@ return '';
   };
 
 
-  const getDestinationName = (destinationId, fallbackName) => {
-    if (!destinationId) {
-      return fallbackName || t('home.common.unknown', { defaultValue: '未知目的地' });
-    }
+  const getDestinationName = useCallback(
+    (destinationId: string | null, fallbackName?: string | null) => {
+      if (!destinationId) {
+        return fallbackName || t('home.common.unknown', { defaultValue: '未知目的地' });
+      }
 
-    const localized = getCountryName(destinationId, language);
-    if (localized && localized !== destinationId) {
-      return localized;
-    }
+      const localized = getCountryName(destinationId, language);
+      if (localized && localized !== destinationId) {
+        return localized;
+      }
 
-    return (
-      fallbackName ||
-      t(`home.destinationNames.${destinationId}`, {
-        defaultValue: destinationId,
-      })
-    );
-  };
+      return (
+        fallbackName ||
+        t(`home.destinationNames.${destinationId}`, {
+          defaultValue: destinationId,
+        })
+      );
+    },
+    [language, t]
+  );
 
-  const getDestinationFlag = (destinationId) => {
+  const getDestinationFlag = (destinationId: string | null) => {
     return getCountryFlag(destinationId);
   };
+
+  const confirmLeaveEntry = useCallback(
+    (destination: InProgressDestinationItem) => {
+      const destinationName = getDestinationName(destination.destinationId, destination.destinationName);
+      Alert.alert(
+        t('home.leaveTrip.title', { defaultValue: '暂停这个行程？' }),
+        t('home.leaveTrip.message', {
+          destination: destinationName,
+          defaultValue: `${destinationName} 将移动到“已离开的行程”，稍后可以再恢复。`,
+        }),
+        [
+          {
+            text: t('home.actions.cancel', { defaultValue: '取消' }),
+            style: 'cancel',
+          },
+          {
+            text: t('home.leaveTrip.confirm', { defaultValue: '确认离开' }),
+            style: 'destructive',
+            onPress: () =>
+              void performStatusUpdate(destination.entryInfoId, 'left', {
+                reason: 'user_marked_left',
+                successMessage: t('home.feedback.tripLeft', {
+                  destination: destinationName,
+                  defaultValue: `${destinationName} 已移动到“已离开的行程”。`,
+                }),
+              }),
+          },
+        ]
+      );
+    },
+    [performStatusUpdate, t, getDestinationName]
+  );
 
   // Get estimated flight duration based on destination
   const getFlightDuration = (destinationId) => {
@@ -810,6 +885,16 @@ return null;
               </View>
               <Text style={styles.historyArrow}>›</Text>
             </View>
+            <View style={styles.entryActionsRow}>
+              <Button
+                title={t('home.actions.leaveTrip', { defaultValue: '不去了' })}
+                onPress={() => confirmLeaveEntry(destination)}
+                variant="secondary"
+                icon="🚪"
+                disabled={loading}
+                style={styles.entryActionButton}
+              />
+            </View>
           </Card>
         );
       } catch (error) {
@@ -822,7 +907,7 @@ return null;
       console.warn('[HomeScreen] WARNING: No cards were rendered despite having', inProgressDestinations.length, 'destinations');
     }
     return cards;
-  }, [inProgressDestinations, t, navigation, passportData]);
+  }, [inProgressDestinations, t, navigation, passportData, confirmLeaveEntry, loading]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1433,6 +1518,45 @@ const styles = StyleSheet.create({
   submissionCountdownUrgent: {
     color: colors.error,
     fontWeight: '600',
+  },
+  entryActionsRow: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  entryActionButton: {
+    flex: 1,
+  },
+  entryActionDangerText: {
+    color: colors.error,
+    fontWeight: '600',
+  },
+  leftCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.border,
+    backgroundColor: colors.backgroundLight,
+  },
+  archivedCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.textDisabled,
+    backgroundColor: colors.white,
+  },
+  leftStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  archivedStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  entryMetaText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 
   // Multi-destination Summary Card Styles

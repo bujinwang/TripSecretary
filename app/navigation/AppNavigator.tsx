@@ -13,7 +13,6 @@ import {
   HomeScreen,
   ScanPassportScreen,
   SelectDestinationScreen,
-  TravelInfoScreen,
   GeneratingScreen,
   ResultScreen,
   HistoryScreen,
@@ -241,7 +240,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
         <Stack.Screen
           name="TravelInfo"
-          component={TravelInfoScreen}
+          component={VietnamTravelInfoScreen}
           options={{
             headerShown: false,
           }}

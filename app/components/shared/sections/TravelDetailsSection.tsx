@@ -65,6 +65,31 @@ type ErrorMap = Record<string, string | undefined>;
 
 type WarningMap = Record<string, string | undefined>;
 
+type AccommodationOption = {
+  label: string;
+  value: string;
+};
+
+interface TravelDetailsSectionConfig {
+  showTravelPurpose: boolean;
+  showRecentStayCountry: boolean;
+  showBoardingCountry: boolean;
+  showArrivalFlight: boolean;
+  showDepartureFlight: boolean;
+  showAccommodation: boolean;
+  showFlightTicketPhoto: boolean;
+  showDepartureFlightTicketPhoto: boolean;
+  showTransitPassenger: boolean;
+  showHotelReservationPhoto: boolean;
+  locationDepth: number;
+  showPostalCode: boolean;
+  purposeType: string;
+  accommodationOptions: AccommodationOption[];
+  accommodationSelectorVariant: 'modal' | 'quickSelect';
+  hideDistrictForAccommodationTypes: string[];
+  hideSubDistrictForAccommodationTypes: string[];
+}
+
 export interface TravelDetailsSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
@@ -122,7 +147,7 @@ export interface TravelDetailsSectionProps {
   handleDepartureFlightTicketPhotoUpload?: () => void;
   handleHotelReservationPhotoUpload?: () => void;
   labels?: Record<string, string>;
-  config?: Record<string, any>;
+  config?: Partial<TravelDetailsSectionConfig>;
 }
 
 const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
@@ -249,7 +274,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
   };
 
   // Default configuration
-  const defaultConfig = {
+  const defaultConfig: TravelDetailsSectionConfig = {
     // Show/hide subsections
     showTravelPurpose: true,
     showRecentStayCountry: true,
@@ -286,7 +311,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
 
   // Merge defaults with provided values
   const l = { ...defaultLabels, ...labels };
-  const c = { ...defaultConfig, ...config };
+  const c: TravelDetailsSectionConfig = { ...defaultConfig, ...config };
 
   const shouldHideDistrictForType = (type?: string | null) =>
     Boolean(type) &&
@@ -484,7 +509,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
               </TamaguiText>
               <GenderSelector
                 value={isTransitPassenger ? 'yes' : 'no'}
-                onChange={(val) => setIsTransitPassenger(val === 'yes')}
+                onChange={(val) => setIsTransitPassenger?.(val === 'yes')}
                 options={[
                   { label: l.transitYes, value: 'yes' },
                   { label: l.transitNo, value: 'no' },
@@ -505,7 +530,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                 helpText={l.accommodationTypeHelp}
                 error={!!errors.accommodationType}
                 errorMessage={errors.accommodationType}
-                variant={c.accommodationSelectorVariant}
+                displayMode={c.accommodationSelectorVariant}
               />
 
               {/* Location Selection */}
@@ -539,8 +564,8 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                   placeholder={l.districtPlaceholder}
                   selectedId={districtId}
                   onSelect={(district) => {
-                    setDistrictId?.(district.id);
-                    setDistrict?.(district.nameEn || district.name);
+                    setDistrictId?.(district.id ?? '');
+                    setDistrict?.(district.nameEn || district.name || '');
                     // Reset child selections
                     setSubDistrict?.('');
                     setSubDistrictId?.('');
@@ -561,8 +586,8 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
                   placeholder={l.subDistrictPlaceholder}
                   selectedId={subDistrictId}
                   onSelect={(subDistrict) => {
-                    setSubDistrictId?.(subDistrict.id);
-                    setSubDistrict?.(subDistrict.nameEn || subDistrict.name);
+                    setSubDistrictId?.(subDistrict.id ?? '');
+                    setSubDistrict?.(subDistrict.nameEn || subDistrict.name || '');
                     setPostalCode?.(subDistrict.postalCode || '');
                   }}
                   showPostalCode={c.showPostalCode}

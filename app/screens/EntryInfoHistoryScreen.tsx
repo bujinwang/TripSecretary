@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,18 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import { colors, spacing, borderRadius, typography } from '../theme';
 import EntryInfoService from '../services/EntryInfoService';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import LazyLoadingHelper from '../utils/LazyLoadingHelper';
 import type { RootStackScreenProps } from '../types/navigation';
 import EntryInfo from '../models/EntryInfo';
+import UserDataService from '../services/data/UserDataService';
+import { useLocale } from '../i18n/LocaleContext';
+import SecureStorageService from '../services/security/SecureStorageService';
 
 type EntryInfoInstance = InstanceType<typeof EntryInfo>;
 
@@ -36,6 +41,9 @@ type HistoryItem = {
   createdAt?: string | null;
   lastUpdatedAt?: string | null;
   travel?: { arrivalDate?: string | null } | null;
+  completionPercent?: number;
+  leftAt?: string | null;
+  archivedAt?: string | null;
   [key: string]: unknown;
 };
 
@@ -107,7 +115,7 @@ const getStatusLabel = (status?: string | null): string => {
   }
 };
 
-const formatDateDisplay = (date?: string | null): string => {
+const formatDateDisplay = (date?: string | null, locale?: string): string => {
   if (!date) {
     return '未填写';
   }
@@ -115,7 +123,7 @@ const formatDateDisplay = (date?: string | null): string => {
   if (Number.isNaN(parsed.getTime())) {
     return date;
   }
-  return DateFormatter.formatDate(parsed, 'zh-CN');
+  return DateFormatter.formatDate(parsed, locale ?? 'zh-CN');
 };
 
 const getTimeGroup = (date: string | Date | null | undefined): string => {
@@ -156,14 +164,49 @@ const groupItemsByTime = (items: HistoryItem[]): Record<string, HistoryItem[]> =
   return groups;
 };
 
-const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigation }) => {
+const FALLBACK_HISTORY_USER_IDS: readonly string[] = ['current_user', 'user_001'];
+type EntryInfoHistoryRouteParams = {
+  userId?: string;
+} | undefined;
+
+const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigation, route }) => {
+  const { t, language } = useLocale();
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<HistoryItem[]>([]);
+  const [leftEntries, setLeftEntries] = useState<HistoryItem[]>([]);
+  const [archivedEntries, setArchivedEntries] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>('all');
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [showLeftSection, setShowLeftSection] = useState<boolean>(false);
+  const [showArchivedSection, setShowArchivedSection] = useState<boolean>(false);
+  const [leftSectionToggled, setLeftSectionToggled] = useState<boolean>(false);
+  const [archivedSectionToggled, setArchivedSectionToggled] = useState<boolean>(false);
+  const routeUserId = (route?.params as EntryInfoHistoryRouteParams)?.userId;
+
+  const resolveUserIdCandidates = useCallback((): string[] => {
+    const activeUserId =
+      typeof SecureStorageService.getActiveUserId === 'function'
+        ? SecureStorageService.getActiveUserId()
+        : null;
+
+    const orderedCandidates = [routeUserId, activeUserId, ...FALLBACK_HISTORY_USER_IDS];
+    const dedupedCandidates: string[] = [];
+
+    orderedCandidates.forEach((candidate) => {
+      if (typeof candidate !== 'string' || candidate.trim().length === 0) {
+        return;
+      }
+      if (!dedupedCandidates.includes(candidate)) {
+        dedupedCandidates.push(candidate);
+      }
+    });
+
+    return dedupedCandidates.length > 0 ? dedupedCandidates : ['user_001'];
+  }, [routeUserId]);
 
   const applyFiltersAndSearch = useCallback(
     (items: HistoryItem[], filter: FilterKey, query: string) => {
@@ -177,14 +220,14 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
         const lowerQuery = query.toLowerCase();
         filtered = filtered.filter((item) => {
           const destinationText = `${item.destination ?? item.destinationId ?? ''}`.toLowerCase();
-          const arrivalText = formatDateDisplay(item.arrivalDate).toLowerCase();
+          const arrivalText = formatDateDisplay(item.arrivalDate, language).toLowerCase();
           return destinationText.includes(lowerQuery) || arrivalText.includes(lowerQuery);
         });
       }
 
       setFilteredItems(filtered);
     },
-    [],
+    [language],
   );
 
   const filterOptions: ReadonlyArray<{ key: FilterKey; label: string; count: number }> = [
@@ -202,42 +245,86 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
 
     try {
       setLoading(true);
-      
-      // Get current user ID (this would come from auth context in real app)
-      const userId = 'current_user'; // TODO: Get from auth context
-      
-      // Load EntryInfo records
-      const entryInfos = await EntryInfoService.getAllEntryInfos(userId);
+      const seenEntryIds = new Set<string>();
+      const normalizedItems: HistoryItem[] = [];
+      const candidateUserIds = resolveUserIdCandidates();
+      let loadedUserId: string | null = null;
 
-      const normalizedItems: HistoryItem[] = entryInfos.map((entryInfo: EntryInfoInstance) => {
-        const destinationId = entryInfo.destinationId ?? null;
-        const travelData =
-          entryInfo.travel && typeof entryInfo.travel === 'object'
-            ? (entryInfo.travel as { arrivalDate?: string | null })
-            : null;
-        const documents =
-          entryInfo.documents && typeof entryInfo.documents === 'object'
-            ? (entryInfo.documents as { submittedAt?: string | null })
-            : null;
+      for (const candidateUserId of candidateUserIds) {
+        if (!candidateUserId) {
+          continue;
+        }
+        try {
+          await UserDataService.initialize(candidateUserId as any);
+          const entryInfos = await EntryInfoService.getAllEntryInfos(candidateUserId as any);
 
-        return {
-          id: entryInfo.id,
-          destinationId,
-          destination: destinationId ? getDestinationName(destinationId) : null,
-          status: entryInfo.status ?? null,
-          arrivalDate: travelData?.arrivalDate ?? null,
-          submittedAt: documents?.submittedAt ?? null,
-          createdAt: entryInfo.createdAt ?? entryInfo.lastUpdatedAt ?? null,
-          lastUpdatedAt: entryInfo.lastUpdatedAt ?? null,
-          travel: travelData,
-        };
-      });
+          entryInfos.forEach((entryInfo: EntryInfoInstance) => {
+            if (seenEntryIds.has(entryInfo.id)) {
+              return;
+            }
 
-      setHistoryItems(normalizedItems);
-      applyFiltersAndSearch(normalizedItems, selectedFilter, searchQuery);
+            const destinationId = entryInfo.destinationId ?? null;
+            const travelData =
+              entryInfo.travel && typeof entryInfo.travel === 'object'
+                ? (entryInfo.travel as { arrivalDate?: string | null })
+                : null;
+            const documents =
+              entryInfo.documents && typeof entryInfo.documents === 'object'
+                ? (entryInfo.documents as { submittedAt?: string | null })
+                : null;
+            const completionPercent =
+              typeof entryInfo.getTotalCompletionPercent === 'function'
+                ? entryInfo.getTotalCompletionPercent()
+                : 0;
+            const status = entryInfo.status ?? null;
+
+            const baseItem: HistoryItem = {
+              id: entryInfo.id,
+              destinationId,
+              destination: destinationId ? getDestinationName(destinationId) : null,
+              status,
+              arrivalDate: travelData?.arrivalDate ?? null,
+              submittedAt: documents?.submittedAt ?? null,
+              createdAt: entryInfo.createdAt ?? entryInfo.lastUpdatedAt ?? null,
+              lastUpdatedAt: entryInfo.lastUpdatedAt ?? null,
+              travel: travelData,
+              completionPercent,
+            };
+
+            if (status === 'left') {
+              baseItem.leftAt = entryInfo.lastUpdatedAt ?? null;
+            } else if (status === 'archived') {
+              baseItem.archivedAt = entryInfo.lastUpdatedAt ?? null;
+            }
+
+            normalizedItems.push(baseItem);
+            seenEntryIds.add(entryInfo.id);
+          });
+          loadedUserId = candidateUserId;
+          break;
+        } catch (candidateError) {
+          console.warn('[EntryInfoHistoryScreen] Failed to load entry infos for user', candidateUserId, candidateError);
+        }
+      }
+
+      console.log('[EntryInfoHistoryScreen] normalized items', normalizedItems.map(item => ({ id: item.id, destinationId: item.destinationId, status: item.status })));
+
+      const leftItems = normalizedItems.filter((item) => item.status === 'left');
+      const archivedItems = normalizedItems.filter((item) => item.status === 'archived');
+      const remainingItems = normalizedItems.filter(
+        (item) => item.status !== 'left' && item.status !== 'archived'
+      );
+
+      setLeftEntries(leftItems);
+      setArchivedEntries(archivedItems);
+      setHistoryItems(remainingItems);
+      applyFiltersAndSearch(remainingItems, selectedFilter, searchQuery);
 
       PerformanceMonitor.endTiming(operationId, {
         itemsLoaded: normalizedItems.length,
+        leftCount: leftItems.length,
+        archivedCount: archivedItems.length,
+        userId: loadedUserId ?? 'unknown',
       });
     } catch (error) {
       console.error('Failed to load history data:', error);
@@ -248,7 +335,19 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
     } finally {
       setLoading(false);
     }
-  }, [selectedFilter, searchQuery, applyFiltersAndSearch]);
+  }, [selectedFilter, searchQuery, applyFiltersAndSearch, resolveUserIdCandidates]);
+
+  useEffect(() => {
+    if (!leftSectionToggled) {
+      setShowLeftSection(leftEntries.length > 0);
+    }
+  }, [leftEntries, leftSectionToggled]);
+
+  useEffect(() => {
+    if (!archivedSectionToggled) {
+      setShowArchivedSection(archivedEntries.length > 0);
+    }
+  }, [archivedEntries, archivedSectionToggled]);
 
   const handleItemPress = useCallback(
     (item: HistoryItem) => {
@@ -328,6 +427,95 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
     applyFiltersAndSearch(historyItems, filterKey, searchQuery);
   };
 
+  type StatusUpdateConfig = {
+    reason?: string;
+    successMessage?: string;
+  };
+
+  const performStatusUpdate = useCallback(
+    async (entryInfoId: string, nextStatus: string, config: StatusUpdateConfig = {}) => {
+      try {
+        setActionLoading(true);
+        const options = config.reason ? { reason: config.reason } : {};
+        await UserDataService.updateEntryInfoStatus(entryInfoId, nextStatus, options);
+        await loadHistoryData();
+        if (config.successMessage) {
+          Alert.alert('', config.successMessage);
+        }
+      } catch (error: unknown) {
+        console.error('Failed to update entry info status:', error);
+        Alert.alert(
+          t('history.actions.errorTitle', { defaultValue: '操作失败' }),
+          t('history.actions.errorMessage', {
+            defaultValue: error instanceof Error ? error.message : '请稍后再试。',
+          })
+        );
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [loadHistoryData, t]
+  );
+
+  const handleRejoinEntry = useCallback(
+    (entry: HistoryItem) => {
+      const destinationName = entry.destination ?? getDestinationName(entry.destinationId);
+      void performStatusUpdate(entry.id, 'incomplete', {
+        reason: 'user_rejoined_trip',
+        successMessage: t('history.actions.restoreSuccess', {
+          destination: destinationName,
+          defaultValue: `${destinationName} 已恢复到首页。`,
+        }),
+      });
+    },
+    [performStatusUpdate, t]
+  );
+
+  const handleArchiveEntry = useCallback(
+    (entry: HistoryItem) => {
+      const destinationName = entry.destination ?? getDestinationName(entry.destinationId);
+      Alert.alert(
+        t('history.actions.archiveTitle', { defaultValue: '归档这个行程？' }),
+        t('history.actions.archiveMessage', {
+          destination: destinationName,
+          defaultValue: '行程将移到“已完成/归档”，您仍可以稍后恢复。',
+        }),
+        [
+          {
+            text: t('common.cancel', { defaultValue: '取消' }),
+            style: 'cancel',
+          },
+          {
+            text: t('history.actions.archiveConfirm', { defaultValue: '确认归档' }),
+            onPress: () =>
+              void performStatusUpdate(entry.id, 'archived', {
+                reason: 'user_archived_trip',
+                successMessage: t('history.actions.archiveSuccess', {
+                  destination: destinationName,
+                  defaultValue: `${destinationName} 已归档。`,
+                }),
+              }),
+          },
+        ]
+      );
+    },
+    [performStatusUpdate, t]
+  );
+
+  const handleRestoreArchived = useCallback(
+    (entry: HistoryItem) => {
+      const destinationName = entry.destination ?? getDestinationName(entry.destinationId);
+      void performStatusUpdate(entry.id, 'incomplete', {
+        reason: 'user_restored_from_archive',
+        successMessage: t('history.actions.restoreSuccess', {
+          destination: destinationName,
+          defaultValue: `${destinationName} 已恢复到首页。`,
+        }),
+      });
+    },
+    [performStatusUpdate, t]
+  );
+
   const handleSearchChange = (query: string): void => {
     setSearchQuery(query);
     applyFiltersAndSearch(historyItems, selectedFilter, query);
@@ -371,7 +559,10 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
           <View style={styles.dateRow}>
             <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
             <Text style={styles.dateText}>
-              抵达日期: {formatDateDisplay(item.arrivalDate)}
+              {t('history.labels.arrivalDate', {
+                defaultValue: '抵达日期',
+              })}
+              : {formatDateDisplay(item.arrivalDate, language)}
             </Text>
           </View>
 
@@ -379,7 +570,10 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
             <View style={styles.dateRow}>
               <Ionicons name="checkmark-circle-outline" size={16} color={colors.textSecondary} />
               <Text style={styles.dateText}>
-                提交日期: {formatDateDisplay(item.submittedAt)}
+                {t('history.labels.submittedAt', {
+                  defaultValue: '提交日期',
+                })}
+                : {formatDateDisplay(item.submittedAt, language)}
               </Text>
             </View>
           )}
@@ -387,7 +581,10 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
           <View style={styles.dateRow}>
             <Ionicons name="archive-outline" size={16} color={colors.textSecondary} />
             <Text style={styles.dateText}>
-              创建日期: {formatDateDisplay(item.createdAt)}
+              {t('history.labels.createdAt', {
+                defaultValue: '创建日期',
+              })}
+              : {formatDateDisplay(item.createdAt, language)}
             </Text>
           </View>
         </View>
@@ -400,6 +597,124 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
     [handleItemLongPress, handleItemPress],
   );
 
+  const renderLeftEntryCard = useCallback(
+    (entry: HistoryItem) => {
+      const destinationName = entry.destination ?? getDestinationName(entry.destinationId);
+      const completionPercent =
+        typeof entry.completionPercent === 'number'
+          ? entry.completionPercent
+          : entry.travel?.arrivalDate
+            ? 100
+            : 0;
+
+      return (
+        <Card key={`left_${entry.id}`} style={[styles.historyCard, styles.leftCard]}>
+          <View style={styles.entryPackItem}>
+            <View style={styles.inProgressLeft}>
+              <Text style={styles.entryPackFlag}>{getDestinationFlag(entry.destinationId)}</Text>
+              <View style={styles.progressIndicator}>
+                <Text style={styles.progressPercent}>{`${completionPercent}%`}</Text>
+              </View>
+            </View>
+            <View style={styles.entryPackInfo}>
+              <Text style={styles.entryPackTitle}>{destinationName}</Text>
+              <Text style={styles.leftStatusLabel}>
+                {t('history.left.status', { defaultValue: '已离开' })}
+              </Text>
+              {entry.leftAt && (
+                <Text style={styles.entryMetaText}>
+                  {t('history.left.movedAt', {
+                    date: formatDateDisplay(entry.leftAt, language),
+                    defaultValue: `移到此列表：${formatDateDisplay(entry.leftAt, language)}`,
+                  })}
+                </Text>
+              )}
+              <Text style={styles.entryMetaText}>
+                {t('history.left.completion', {
+                  percent: completionPercent,
+                  defaultValue: `完成度 ${completionPercent}%`,
+                })}
+              </Text>
+              {entry.arrivalDate && (
+                <Text style={styles.entryMetaText}>
+                  {t('history.labels.arrivalDate', { defaultValue: '抵达日期' })}
+                  ：{formatDateDisplay(entry.arrivalDate, language)}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.entryActionsRow}>
+            <Button
+              title={t('history.actions.restoreTrip', { defaultValue: '恢复到首页' })}
+              onPress={() => handleRejoinEntry(entry)}
+              variant="primary"
+              icon="↩️"
+              disabled={actionLoading}
+              style={styles.entryActionButton}
+            />
+            <Button
+              title={t('history.actions.archiveTrip', { defaultValue: '归档' })}
+              onPress={() => handleArchiveEntry(entry)}
+              variant="text"
+              icon="📁"
+              disabled={actionLoading}
+              style={styles.entryActionButton}
+              textStyle={styles.entryActionDangerText}
+            />
+          </View>
+        </Card>
+      );
+    },
+    [actionLoading, handleArchiveEntry, handleRejoinEntry, language, t]
+  );
+
+  const renderArchivedEntryCard = useCallback(
+    (entry: HistoryItem) => {
+      const destinationName = entry.destination ?? getDestinationName(entry.destinationId);
+
+      return (
+        <Card key={`archived_${entry.id}`} style={[styles.historyCard, styles.archivedCard]}>
+          <View style={styles.entryPackItem}>
+            <View style={styles.inProgressLeft}>
+              <Text style={styles.entryPackFlag}>{getDestinationFlag(entry.destinationId)}</Text>
+            </View>
+            <View style={styles.entryPackInfo}>
+              <Text style={styles.entryPackTitle}>{destinationName}</Text>
+              <Text style={styles.archivedStatusLabel}>
+                {t('history.archived.status', { defaultValue: '已归档' })}
+              </Text>
+              {entry.archivedAt && (
+                <Text style={styles.entryMetaText}>
+                  {t('history.archived.archivedAt', {
+                    date: formatDateDisplay(entry.archivedAt, language),
+                    defaultValue: `归档日期：${formatDateDisplay(entry.archivedAt, language)}`,
+                  })}
+                </Text>
+              )}
+              {entry.arrivalDate && (
+                <Text style={styles.entryMetaText}>
+                  {t('history.labels.arrivalDate', { defaultValue: '抵达日期' })}
+                  ：{formatDateDisplay(entry.arrivalDate, language)}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.entryActionsRow}>
+            <Button
+              title={t('history.actions.restoreTrip', { defaultValue: '恢复到首页' })}
+              onPress={() => handleRestoreArchived(entry)}
+              variant="secondary"
+              icon="🔄"
+              disabled={actionLoading}
+              style={styles.entryActionButton}
+            />
+          </View>
+        </Card>
+      );
+    },
+    [actionLoading, handleRestoreArchived, language, t]
+  );
+
   const renderSectionHeader = (title: string): React.ReactElement => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -407,18 +722,21 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
   );
 
   // Memoize optimized FlatList props
-  const optimizedListProps = useMemo(
-    () =>
-      LazyLoadingHelper.getOptimizedFlatListProps({
-        itemHeight: 120, // Estimated height of history item
-        windowSize: 10,
-        initialNumToRender: 8,
-        maxToRenderPerBatch: 5,
-        updateCellsBatchingPeriod: 50,
-        removeClippedSubviews: true,
-      }),
-    [],
-  );
+  const optimizedListProps = useMemo(() => {
+    const {
+      keyExtractor: _ignoredKeyExtractor,
+      getItemLayout: _ignoredGetItemLayout,
+      ...restProps
+    } = LazyLoadingHelper.getOptimizedFlatListProps({
+      itemHeight: 120, // Estimated height of history item
+      windowSize: 10,
+      initialNumToRender: 8,
+      maxToRenderPerBatch: 5,
+      updateCellsBatchingPeriod: 50,
+      removeClippedSubviews: true,
+    });
+    return restProps;
+  }, []);
 
   // Flatten grouped data for virtualized list
   const flattenedData = useMemo<FlattenedHistoryItem[]>(() => {
@@ -507,6 +825,88 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
     />
   );
 
+  const renderLeftSection = (): React.ReactElement | null => {
+    if (!leftEntries.length) {
+      return null;
+    }
+
+    return (
+      <View style={styles.sectionContainer}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {t('history.left.title', { defaultValue: '已离开的行程' })}
+          </Text>
+          <View style={styles.sectionHeaderRight}>
+            <Text style={styles.sectionBadge}>{leftEntries.length}</Text>
+            <TouchableOpacity
+              style={styles.sectionToggle}
+              onPress={() => {
+                setLeftSectionToggled(true);
+                setShowLeftSection((prev) => !prev);
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={styles.sectionToggleText}>
+                {showLeftSection
+                  ? t('history.actions.hide', { defaultValue: '收起' })
+                  : t('history.actions.show', { defaultValue: '展开' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {showLeftSection && (
+          <>
+            <Text style={styles.sectionHelperText}>
+              {t('history.left.helper', { defaultValue: '可以随时恢复，行程会回到首页。' })}
+            </Text>
+            {leftEntries.map(renderLeftEntryCard)}
+          </>
+        )}
+      </View>
+    );
+  };
+
+  const renderArchivedSection = (): React.ReactElement | null => {
+    if (!archivedEntries.length) {
+      return null;
+    }
+
+    return (
+      <View style={styles.sectionContainer}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {t('history.archived.title', { defaultValue: '已完成 / 归档' })}
+          </Text>
+          <View style={styles.sectionHeaderRight}>
+            <Text style={styles.sectionBadge}>{archivedEntries.length}</Text>
+            <TouchableOpacity
+              style={styles.sectionToggle}
+              onPress={() => {
+                setArchivedSectionToggled(true);
+                setShowArchivedSection((prev) => !prev);
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={styles.sectionToggleText}>
+                {showArchivedSection
+                  ? t('history.actions.hide', { defaultValue: '收起' })
+                  : t('history.actions.show', { defaultValue: '展开' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {showArchivedSection && (
+          <>
+            <Text style={styles.sectionHelperText}>
+              {t('history.archived.helper', { defaultValue: '需要时也能再次恢复到首页。' })}
+            </Text>
+            {archivedEntries.map(renderArchivedEntryCard)}
+          </>
+        )}
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -526,7 +926,9 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
         >
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>历史记录</Text>
+        <Text style={styles.headerTitle}>
+          {t('history.headerTitle', { defaultValue: '归档记录' })}
+        </Text>
         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setShowFilters(!showFilters)}
@@ -540,7 +942,7 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
         <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="搜索目的地或日期..."
+          placeholder={t('history.searchPlaceholder', { defaultValue: '搜索目的地或日期…' })}
           value={searchQuery}
           onChangeText={handleSearchChange}
           placeholderTextColor={colors.textSecondary}
@@ -579,11 +981,17 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
       )}
 
       <View style={styles.listWrapper}>
+        {renderLeftSection()}
+        {renderArchivedSection()}
         {filteredItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="folder-open" size={48} color={colors.textSecondary} />
-            <Text style={styles.emptyTitle}>暂无历史记录</Text>
-            <Text style={styles.emptySubtitle}>完成行程后可以在此查看历史记录</Text>
+            <Text style={styles.emptyTitle}>
+              {t('history.empty.title', { defaultValue: '暂无历史记录' })}
+            </Text>
+            <Text style={styles.emptySubtitle}>
+              {t('history.empty.subtitle', { defaultValue: '完成行程后可以在此查看记录' })}
+            </Text>
           </View>
         ) : (
           renderGroupedList()
@@ -693,6 +1101,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  historyCard: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -771,7 +1187,127 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
-
+  sectionContainer: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  sectionHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  sectionBadge: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.white,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    minWidth: 24,
+    textAlign: 'center',
+  },
+  sectionToggle: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionToggleText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  sectionHelperText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  entryPackItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inProgressLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  entryPackFlag: {
+    fontSize: 32,
+    marginRight: spacing.sm,
+  },
+  progressIndicator: {
+    width: 42,
+    height: 42,
+    borderRadius: 8,
+    backgroundColor: colors.warningLight,
+    borderWidth: 1,
+    borderColor: colors.warning,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressPercent: {
+    ...typography.caption,
+    color: colors.warning,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  entryPackInfo: {
+    flex: 1,
+  },
+  entryPackTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  leftStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  archivedStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  entryMetaText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  entryActionsRow: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  entryActionButton: {
+    flex: 1,
+  },
+  entryActionDangerText: {
+    color: colors.error,
+    fontWeight: '600',
+  },
+  leftCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.border,
+    backgroundColor: colors.backgroundLight,
+  },
+  archivedCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.textDisabled,
+    backgroundColor: colors.surface,
+  },
 });
 
 export default EntryInfoHistoryScreen;

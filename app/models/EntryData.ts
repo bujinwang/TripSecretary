@@ -154,7 +154,7 @@ class EntryData {
    * @param {string} id - Entry data ID
    * @returns {Promise<EntryData>} - Complete entry data instance
    */
-  static async load(id) {
+  static async load(id: string): Promise<EntryData | null> {
     try {
       // Load funding proof from secure storage
       const fundingData = await SecureStorageService.getFundingProof(id);

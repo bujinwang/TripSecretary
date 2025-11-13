@@ -26,7 +26,7 @@ export interface EntryInfoRecord {
   destinationId: string;
   tripId: string;
   completionMetrics: CompletionMetrics;
-  status: 'incomplete' | 'ready' | 'submitted' | 'superseded' | 'expired' | 'archived';
+  status: 'incomplete' | 'ready' | 'submitted' | 'superseded' | 'expired' | 'archived' | 'left';
   lastUpdatedAt: string;
   tdacSubmission: TDACSubmission;
   createdAt: string;

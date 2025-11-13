@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
+import type { RootStackScreenProps } from '../types/navigation';
 import UserDataService from '../services/data/UserDataService';
 
-const AirportArrivalScreen = ({ navigation, route }) => {
+type AirportArrivalScreenProps = RootStackScreenProps<'AirportArrival'>;
+
+const AirportArrivalScreen: React.FC<AirportArrivalScreenProps> = ({ navigation, route }) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const [currentStep, setCurrentStep] = useState(0);
