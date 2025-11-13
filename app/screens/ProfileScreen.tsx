@@ -1,4 +1,4 @@
-// 入境通 - Profile Screen
+// RuJingTong - Profile Screen
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -117,7 +117,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
 
   // Passport data - loaded from database
   const [passportData, setPassportData] = useState<PassportForm>({
-    type: '中国护照',
+    type: t('profile.passport.defaultType', { defaultValue: 'Chinese Passport' }),
     name: '',
     nameEn: '',
     passportNo: '',
@@ -210,7 +210,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           
           // Map passport model fields to component state
           const mappedPassport = {
-            type: '中国护照',
+            type: t('profile.passport.defaultType', { defaultValue: 'Chinese Passport' }),
             name: userData.passport.fullName || '',
             nameEn: userData.passport.fullName || '',
             passportNo: userData.passport.passportNumber || '',
@@ -298,8 +298,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
         key: 'dateOfBirth',
         title: t('profile.personal.fields.dateOfBirth.title', { defaultValue: 'Date of Birth' }),
         subtitle: t('profile.personal.fields.dateOfBirth.subtitle', { defaultValue: 'Date of Birth' }),
-        placeholder: t('profile.personal.fields.dateOfBirth.placeholder', { defaultValue: 'YYYY-MM-DD (自动格式化)' }),
-        formatHint: '格式: YYYY-MM-DD',
+        placeholder: t('profile.personal.fields.dateOfBirth.placeholder', { defaultValue: 'YYYY-MM-DD (auto formatted)' }),
+        formatHint: t('profile.personal.fields.dateOfBirth.formatHint', { defaultValue: 'Format: YYYY-MM-DD' }),
       },
       {
         key: 'gender',
@@ -763,7 +763,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       console.error('Error saving gender:', error);
     }
 
-    showDraftSavedNotification(editingContext.title ?? '性别');
+    showDraftSavedNotification(
+      editingContext.title ??
+        t('profile.personal.fields.gender.title', { defaultValue: 'Gender' })
+    );
     setTimeout(() => {
       handleCancelEdit();
     }, 500);
@@ -771,9 +774,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
 
   const renderGenderOptions = () => {
     const options = [
-      { value: 'MALE', label: '男性' },
-      { value: 'FEMALE', label: '女性' },
-      { value: 'UNDEFINED', label: '未定义' }
+      {
+        value: 'MALE',
+        label: t('profile.personal.gender.male', { defaultValue: 'Male' }),
+      },
+      {
+        value: 'FEMALE',
+        label: t('profile.personal.gender.female', { defaultValue: 'Female' }),
+      },
+      {
+        value: 'UNDEFINED',
+        label: t('profile.personal.gender.undefined', { defaultValue: 'Undefined' }),
+      }
     ];
 
     return (
@@ -823,7 +835,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
   ): { valid: boolean; error: string | null } => {
     // Check if date is in correct format (YYYY-MM-DD)
     if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateStr)) {
-      return { valid: false, error: '请输入完整日期 (YYYY-MM-DD)' };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.incomplete', {
+          defaultValue: 'Please enter the full date (YYYY-MM-DD)',
+        }),
+      };
     }
 
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -831,18 +848,35 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
     // Validate year (reasonable range: 1900 to current year)
     const currentYear = new Date().getFullYear();
     if (year < 1900 || year > currentYear) {
-      return { valid: false, error: `年份必须在 1900 到 ${currentYear} 之间` };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.yearRange', {
+          currentYear,
+          defaultValue: `Year must be between 1900 and ${currentYear}`,
+        }),
+      };
     }
 
     // Validate month (1-12)
     if (month < 1 || month > 12) {
-      return { valid: false, error: '月份必须在 01 到 12 之间' };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.monthRange', {
+          defaultValue: 'Month must be between 01 and 12',
+        }),
+      };
     }
 
     // Validate day based on month and year
     const daysInMonth = new Date(year, month, 0).getDate();
     if (day < 1 || day > daysInMonth) {
-      return { valid: false, error: `该月份只有 ${daysInMonth} 天` };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.invalidDay', {
+          daysInMonth,
+          defaultValue: `This month only has ${daysInMonth} days`,
+        }),
+      };
     }
 
     // Check if date is not in the future
@@ -851,13 +885,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
     today.setHours(0, 0, 0, 0);
     
     if (inputDate > today) {
-      return { valid: false, error: '出生日期不能是未来日期' };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.futureDate', {
+          defaultValue: 'Birthdate cannot be in the future',
+        }),
+      };
     }
 
     // Check if person is not unreasonably old (e.g., over 150 years)
     const age = currentYear - year;
     if (age > 150) {
-      return { valid: false, error: '请检查出生年份是否正确' };
+      return {
+        valid: false,
+        error: t('profile.errors.dateOfBirth.unrealisticAge', {
+          defaultValue: 'Please verify the birth year is correct',
+        }),
+      };
     }
 
     return { valid: true, error: null };
@@ -1015,7 +1059,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             console.error('Error saving date of birth:', error);
           }
           
-          showDraftSavedNotification('出生日期');
+          showDraftSavedNotification(
+            t('profile.personal.fields.dateOfBirth.title', { defaultValue: 'Date of Birth' })
+          );
         }
       }
     }, 1000);
@@ -1266,7 +1312,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             <Text style={styles.avatarText}>👤</Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{passportData.name || '张伟'}</Text>
+            <Text style={styles.userName}>
+              {passportData.name ||
+                t('profile.user.defaultName', { defaultValue: 'Guest User' })}
+            </Text>
             <Text style={styles.userPhone}>
               {personalInfo.phoneNumber
                 ? t('profile.user.phone', { phone: personalInfo.phoneNumber })
@@ -1336,9 +1385,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                           testID={`${field.key}-input`}
                         >
                           {field.key === 'gender' ?
-                            (value === 'MALE' ? '男性' :
-                             value === 'FEMALE' ? '女性' :
-                             value === 'UNDEFINED' ? '未定义' : value) || notFilledLabel
+                            (value === 'MALE'
+                              ? t('profile.personal.gender.male', { defaultValue: 'Male' })
+                              : value === 'FEMALE'
+                              ? t('profile.personal.gender.female', { defaultValue: 'Female' })
+                              : value === 'UNDEFINED'
+                              ? t('profile.personal.gender.undefined', { defaultValue: 'Undefined' })
+                              : value) || notFilledLabel
                             : field.key === 'countryRegion' ?
                             (value ? `${value} : ${t(`nationalities.${value}`, { defaultValue: value })}` : notFilledLabel)
                             : value || notFilledLabel}
@@ -1574,14 +1627,30 @@ return '';
               <View style={styles.infoList}>
                 <TouchableOpacity
                   style={styles.infoItem}
-                  onPress={() => handleStartEdit('passport-name', { key: 'name', title: '姓名', subtitle: 'Full Name' })}
+                  onPress={() =>
+                    handleStartEdit('passport-name', {
+                      key: 'name',
+                      title: t('profile.passport.fields.fullName.title', {
+                        defaultValue: 'Full Name',
+                      }),
+                      subtitle: t('profile.passport.fields.fullName.subtitle', {
+                        defaultValue: 'Full Name (as in passport)',
+                      }),
+                    })
+                  }
                 >
                   <View style={styles.infoHeader}>
-                    <Text style={styles.infoTitle}>姓名</Text>
-                    <Text style={styles.infoSubtitle}>Full Name</Text>
+                    <Text style={styles.infoTitle}>
+                      {t('profile.passport.fields.fullName.title', { defaultValue: 'Full Name' })}
+                    </Text>
+                    <Text style={styles.infoSubtitle}>
+                      {t('profile.passport.fields.fullName.subtitle', {
+                        defaultValue: 'Full Name (as in passport)',
+                      })}
+                    </Text>
                   </View>
                   <View style={styles.infoValueWrap}>
-                    <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
+                  <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
                     <Text style={styles.rowArrow}>›</Text>
                   </View>
                 </TouchableOpacity>
@@ -1758,7 +1827,9 @@ return '';
                 </>
               ) : editingContext?.key === 'gender' ? (
                 <View>
-                  <Text style={styles.modalSubtitle}>请选择性别</Text>
+                <Text style={styles.modalSubtitle}>
+                  {t('profile.personal.gender.selectPrompt', { defaultValue: 'Select gender' })}
+                </Text>
                   {renderGenderOptions()}
                 </View>
               ) : editingContext?.key === 'dateOfBirth' ? (
@@ -1807,8 +1878,8 @@ return '';
                     <Text style={styles.validationError}>{validationError}</Text>
                   )}
                   <Text style={styles.dateHint}>
-                    {t('profile.personal.fields.dateOfBirth.hint', { 
-                      defaultValue: '示例: 1990-05-15 (年-月-日)' 
+                    {t('profile.personal.fields.dateOfBirth.hint', {
+                      defaultValue: 'Example: 1990-05-15 (year-month-day)'
                     })}
                   </Text>
                 </View>

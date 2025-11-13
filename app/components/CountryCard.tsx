@@ -4,6 +4,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
+import { useLocale } from '../i18n/LocaleContext';
 
 const CountryCard = ({
   flag,
@@ -14,59 +15,61 @@ const CountryCard = ({
   disabled = false,
   visaRequirement = 'unknown',
 }) => {
+  const { t } = useLocale();
+
   const badgeConfig = {
     visa_free: {
       icon: '✅',
-      label: '免签',
+      label: t('home.visaBadges.visaFree', { defaultValue: '免签' }),
       textColor: '#0E9F61',
       backgroundColor: 'rgba(7, 193, 96, 0.12)',
       borderColor: 'rgba(7, 193, 96, 0.28)',
     },
     visa_on_arrival: {
       icon: '🛄',
-      label: '落地签',
+      label: t('home.visaBadges.visaOnArrival', { defaultValue: '落地签' }),
       textColor: '#C8781F',
       backgroundColor: 'rgba(250, 157, 59, 0.12)',
       borderColor: 'rgba(250, 157, 59, 0.28)',
     },
     evisa: {
       icon: '💻',
-      label: '电子签',
+      label: t('home.visaBadges.eVisa', { defaultValue: '电子签' }),
       textColor: colors.secondary,
       backgroundColor: 'rgba(87, 107, 149, 0.12)',
       borderColor: 'rgba(87, 107, 149, 0.24)',
     },
     eta: {
       icon: '🌐',
-      label: 'ETA',
+      label: t('home.visaBadges.eta', { defaultValue: 'ETA' }),
       textColor: colors.secondary,
       backgroundColor: 'rgba(87, 107, 149, 0.12)',
       borderColor: 'rgba(87, 107, 149, 0.24)',
     },
     hk_permit: {
       icon: '🛃',
-      label: '港澳证',
+      label: t('home.visaBadges.hkPermit', { defaultValue: '港澳证' }),
       textColor: '#0F91C7',
       backgroundColor: 'rgba(15, 145, 199, 0.12)',
       borderColor: 'rgba(15, 145, 199, 0.26)',
     },
     tw_entry_permit: {
       icon: '📄',
-      label: '入台证',
+      label: t('home.visaBadges.twEntryPermit', { defaultValue: '入台证' }),
       textColor: '#7A5AF5',
       backgroundColor: 'rgba(122, 90, 245, 0.12)',
       borderColor: 'rgba(122, 90, 245, 0.26)',
     },
     visa_required: {
       icon: '🛂',
-      label: '需签证',
+      label: t('home.visaBadges.visaRequired', { defaultValue: '需签证' }),
       textColor: '#D64545',
       backgroundColor: 'rgba(245, 108, 108, 0.12)',
       borderColor: 'rgba(245, 108, 108, 0.28)',
     },
     unknown: {
       icon: '❓',
-      label: '待确认',
+      label: t('home.visaBadges.unknown', { defaultValue: '待确认' }),
       textColor: colors.textSecondary,
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
       borderColor: 'rgba(0, 0, 0, 0.08)',
@@ -111,7 +114,9 @@ const CountryCard = ({
       <Text style={[styles.name, disabled && styles.nameDisabled]}>{name}</Text>
 
       {disabled ? (
-        <Text style={styles.comingSoon}>敬请期待</Text>
+        <Text style={styles.comingSoon}>
+          {t('home.alerts.notAvailableTitle', { defaultValue: '敬请期待' })}
+        </Text>
       ) : (
         <Text style={styles.flightTime}>{flightTime}</Text>
       )}

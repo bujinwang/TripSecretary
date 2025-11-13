@@ -1182,6 +1182,16 @@ const baseTranslations = {
         malaysia: { flightTime: '4 hours flight' },
         usa: { flightTime: '13 hours flight' },
       },
+      visaBadges: {
+        visaFree: 'Visa-free',
+        visaOnArrival: 'Visa on arrival',
+        eVisa: 'eVisa',
+        eta: 'ETA',
+        hkPermit: 'Home Return Permit',
+        twEntryPermit: 'Taiwan Entry Permit',
+        visaRequired: 'Visa required',
+        unknown: 'To be confirmed',
+      },
       pendingTrips: {
         departSuffix: 'Departure',
         cards: {
@@ -2943,6 +2953,16 @@ const baseTranslations = {
         vietnam: { flightTime: '3.5小时飞行' },
         malaysia: { flightTime: '4小时飞行' },
         usa: { flightTime: '13小时飞行' },
+      },
+      visaBadges: {
+        visaFree: '免签',
+        visaOnArrival: '落地签',
+        eVisa: '电子签',
+        eta: 'ETA',
+        hkPermit: '港澳证',
+        twEntryPermit: '入台证',
+        visaRequired: '需签证',
+        unknown: '待确认',
       },
       pendingTrips: {
         departSuffix: '出发',
