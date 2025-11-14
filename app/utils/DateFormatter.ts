@@ -44,7 +44,7 @@ return '';
       }
     } catch (error) {
       console.warn('Date formatting error:', error);
-      return dateObj.toLocaleDateString();
+      return dateObj.toLocaleDateString(locale);
     }
   }
 

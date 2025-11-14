@@ -13,8 +13,10 @@ import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import EntryPackDisplay from '../../components/EntryPackDisplay';
 import UserDataService from '../../services/data/UserDataService';
+import { useLocale } from '../../i18n/LocaleContext';
 
 const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
+  const { t } = useLocale();
   const { userData, passport: rawPassport, destination, entryPackData } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const country = entryPackData?.country || destination?.id || 'kr';
@@ -41,17 +43,15 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>입국 정보 팩 - 미리보기 / Entry Pack Preview</Text>
+        <Text style={styles.headerTitle}>{t('dest.korea.preview.headerTitle', { defaultValue: 'Entry Pack Preview' })}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.previewBanner}>
           <Text style={styles.previewIcon}>👁️</Text>
-          <Text style={styles.previewTitle}>미리보기 모드 / Preview Mode</Text>
-          <Text style={styles.previewDescription}>
-            이것은 입국 정보 팩의 미리보기입니다. K-ETA 신청 후 전체 입국 정보가 포함됩니다. / This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.
-          </Text>
+          <Text style={styles.previewTitle}>{t('dest.korea.preview.previewMode', { defaultValue: 'Preview Mode' })}</Text>
+          <Text style={styles.previewDescription}>{t('dest.korea.preview.description')}</Text>
         </View>
 
         <EntryPackDisplay
@@ -76,9 +76,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
               });
             }}
           >
-            <Text style={styles.continueButtonText}>
-              정보 계속 업데이트 ✏️ / Continue updating info
-            </Text>
+            <Text style={styles.continueButtonText}>{t('dest.korea.preview.continue')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -87,7 +85,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
               navigation.goBack();
               // Navigate to K-ETA application
               // TODO: Implement K-ETA application screen
-              Alert.alert('알림', 'K-ETA 신청 기능이 곧 제공됩니다 / K-ETA application screen coming soon');
+              Alert.alert('알림', t('dest.korea.preview.applyKETA'));
             }}
           >
             <Text style={styles.submitButtonText}>
@@ -98,7 +96,7 @@ const KoreaEntryPackPreviewScreen = ({ route, navigation }) => {
 
         {/* Info Card about K-ETA */}
         <View style={styles.ketaInfoCard}>
-          <Text style={styles.ketaInfoTitle}>📱 K-ETA 전자 여행 허가 안내</Text>
+          <Text style={styles.ketaInfoTitle}>📱 {t('dest.korea.preview.ketaInfoTitle')}</Text>
           <Text style={styles.ketaInfoText}>
             • K-ETA는 출국 72시간 전에 신청해야 합니다{'\n'}
             • 심사는 보통 24시간 이내 완료됩니다{'\n'}

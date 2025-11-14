@@ -5,7 +5,7 @@
 
 export const malaysiaEntryGuide = {
   country: 'malaysia',
-  countryName: '马来西亚',
+  countryName: 'Malaysia',
   countryNameZh: '马来西亚',
   airports: ['KUL', 'BKI', 'PEN'], // 吉隆坡、亚庇、槟城机场
   currency: 'MYR',
@@ -40,19 +40,19 @@ export const malaysiaEntryGuide = {
       category: 'pre-arrival',
       categoryZh: '出发前',
       priority: 1,
-      estimatedTime: '2分钟',
+      estimatedTime: '2 minutes',
       icon: '🆘',
       required: false,
       tips: [
-        '警察/救护车：999',
-        '旅游警察：03-2115-9999',
-        '中国大使馆：+60-3-2161-6000',
-        '美国大使馆：+60-3-2168-5000',
-        '韩国大使馆：+60-3-4251-5000',
-        '移民局：+60-3-8000-8000',
-        '吉隆坡机场：+60-3-8776-4000',
-        '将这些号码保存到手机通讯录',
-        '遇到紧急情况立即拨打999'
+        'Police/Ambulance: 999',
+        'Tourist Police: 03-2115-9999',
+        'Chinese Embassy: +60-3-2161-6000',
+        'U.S. Embassy: +60-3-2168-5000',
+        'Korean Embassy: +60-3-4251-5000',
+        'Immigration Department: +60-3-8000-8000',
+        'KUL Airport Hotline: +60-3-8776-4000',
+        'Save these numbers in your phone contacts',
+        'Dial 999 immediately for emergencies'
       ]
     },
     {
@@ -68,19 +68,19 @@ export const malaysiaEntryGuide = {
       category: 'pre-arrival',
       categoryZh: '出发前',
       priority: 2,
-      estimatedTime: '10分钟',
+      estimatedTime: '10 minutes',
       icon: '📱',
       required: true,
       warnings: [
-        '必须在抵达前3天内提交',
-        '东马和西马可能有不同要求',
-        '保存好MDAC确认邮件和二维码'
+        'Must be submitted within 3 days before arrival',
+        'East and West Malaysia can have different requirements',
+        'Keep the MDAC confirmation email and QR code'
       ],
       tips: [
-        '准备护照、旅行信息、资金证明',
-        '确认入境机场（东马/西马）',
-        '填写英文个人信息',
-        '保存确认邮件到手机'
+        'Have your passport, trip details, and proof of funds ready',
+        'Confirm your arrival airport (East vs West Malaysia)',
+        'Fill out all personal details in English',
+        'Save the confirmation email on your phone'
       ]
     },
     {
@@ -96,17 +96,17 @@ export const malaysiaEntryGuide = {
       category: 'pre-flight',
       categoryZh: '登机前',
       priority: 3,
-      estimatedTime: '5分钟',
+      estimatedTime: '5 minutes',
       icon: '🛂',
       required: true,
       warnings: [
-        '商务签证和技术签证有特殊要求',
-        '东马入境可能需要额外许可'
+        'Business and technical visas may have extra requirements',
+        'Entering East Malaysia can require additional permits'
       ],
       tips: [
-        '检查签证有效期和停留天数',
-        '确认入境目的与签证类型匹配',
-        '商务访问者准备邀请函'
+        'Double-check visa validity and permitted stay length',
+        'Make sure your visit purpose matches the visa type',
+        'Business visitors should carry an invitation letter'
       ]
     },
     {
@@ -122,13 +122,13 @@ export const malaysiaEntryGuide = {
       category: 'in-flight',
       categoryZh: '飞行中',
       priority: 4,
-      estimatedTime: '5分钟',
+      estimatedTime: '5 minutes',
       icon: '📋',
       required: true,
       tips: [
-        '检查MDAC确认邮件',
-        '准备护照和相关文件',
-        '确认资金证明文件'
+        'Review the MDAC confirmation email',
+        'Keep your passport and documents within reach',
+        'Make sure proof-of-funds documents are accessible'
       ]
     },
     {
@@ -144,17 +144,17 @@ export const malaysiaEntryGuide = {
       category: 'post-landing',
       categoryZh: '落地后',
       priority: 5,
-      estimatedTime: '2分钟',
+      estimatedTime: '2 minutes',
       icon: '📱',
       required: true,
       warnings: [
-        '飞机滑行时勿使用手机',
-        'WiFi也需要关闭'
+        'Do not use your phone while the plane is taxiing',
+        'Switch off Wi-Fi as well'
       ],
       tips: [
-        '跟着Arrivals标识前进',
-        '准备手机离线模式',
-        '注意热带气候，做好防晒准备'
+        'Follow the “Arrivals” signage',
+        'Put your phone in airplane/offline mode',
+        'Remember the tropical climate and prep sun protection'
       ]
     },
     {
@@ -170,16 +170,16 @@ export const malaysiaEntryGuide = {
       category: 'immigration',
       categoryZh: '移民检查',
       priority: 6,
-      estimatedTime: '15分钟',
+      estimatedTime: '15 minutes',
       icon: '🛂',
       required: true,
       showEntryPack: true,
-      entryPackHint: '将护照、MDAC确认邮件和资金证明整理好，方便向移民官快速展示。',
+      entryPackHint: 'Organize your passport, MDAC confirmation email, and proof of funds so you can show them quickly to the officer.',
       tips: [
-        '排队等候相应通道',
-        '准备护照和MDAC确认邮件',
-        '配合官员检查',
-        '东马入境可能需要额外检查'
+        'Queue in the appropriate immigration lane',
+        'Have your passport and MDAC confirmation ready',
+        'Follow the officer\'s instructions',
+        'Expect additional screening when entering East Malaysia'
       ]
     },
     {
@@ -195,13 +195,13 @@ export const malaysiaEntryGuide = {
       category: 'baggage',
       categoryZh: '行李',
       priority: 7,
-      estimatedTime: '15分钟',
+      estimatedTime: '15 minutes',
       icon: '🧳',
       required: true,
       tips: [
-        '查看屏幕了解行李转盘号',
-        '马来西亚机场行李系统高效',
-        '找不到行李立即报告'
+        'Check the monitor for your carousel number',
+        'Baggage handling is efficient but stay alert',
+        'Report missing luggage immediately'
       ]
     },
     {
@@ -217,13 +217,13 @@ export const malaysiaEntryGuide = {
       category: 'customs',
       categoryZh: '海关',
       priority: 8,
-      estimatedTime: '10分钟',
+      estimatedTime: '10 minutes',
       icon: '🔍',
       required: true,
       tips: [
-        '如实申报所有物品',
-        '猪肉制品禁止入境',
-        '免税额度：香烟200支，酒类1升'
+        'Declare everything honestly',
+        'Pork products are not allowed',
+        'Duty-free allowance: 200 cigarettes and 1L of alcohol'
       ]
     }
   ],
@@ -402,11 +402,11 @@ export const malaysiaEntryGuide = {
 
   // 文化和礼仪提醒
   cultureTips: [
-    '马来西亚是穆斯林国家，尊重伊斯兰教义',
-    '公共场合着装保守',
-    '用右手递接物品',
-    '清真餐厅标有Halal标识',
-    '斋戒月期间注意营业时间变化'
+    'Malaysia is majority Muslim - respect Islamic customs',
+    'Dress modestly in public spaces',
+    'Use your right hand when giving or receiving items',
+    'Look for the Halal label at restaurants',
+    'Expect changing business hours during Ramadan'
   ],
 
   // 语言帮助卡（备用）

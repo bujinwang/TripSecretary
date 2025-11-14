@@ -13,6 +13,10 @@ export const vietnamEntryGuide = {
   currency: 'VND',
   language: ['vi', 'en', 'zh'], // 越南语、英语、汉语
 
+  screens: {
+    entryPackPreview: 'VietnamEntryPackPreview',
+  },
+
   // 重要提醒
   importantNotes: [
     '电子签证申请需在抵达前至少3个工作日',

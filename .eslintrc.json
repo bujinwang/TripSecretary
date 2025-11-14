@@ -47,6 +47,7 @@
     "react/jsx-no-undef": "error",
     "react/jsx-uses-react": "off",
     "react/jsx-uses-vars": "error",
+    "react/jsx-no-literals": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "no-unused-vars": [
@@ -96,7 +97,7 @@
   },
   "overrides": [
     {
-      "files": ["*.ts", "*.tsx"],
+      "files": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.js", "app/**/*.jsx"],
       "parser": "@typescript-eslint/parser",
       "extends": [
         "eslint:recommended",
@@ -105,6 +106,14 @@
         "plugin:react-hooks/recommended"
       ],
       "rules": {
+        "react/jsx-no-literals": [
+          "warn",
+          {
+            "noStrings": true,
+            "ignoreProps": true,
+            "allowedStrings": [":", "%", "(", ")", "›", "✓", "✕", "✖", "—", "…", "•", "★", "☆", "💎", "🛂", "🎫", "🏨", "👤", "⚙️", "✈️", "🗣️", "🆘", "⚠️", "✅"]
+          }
+        ],
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",

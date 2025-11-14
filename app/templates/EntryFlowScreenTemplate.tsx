@@ -753,14 +753,14 @@ function PrimaryActionCard({
     ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: '提交入境卡' })
     : t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: '编辑旅行信息' });
   const subtitle = useEntryGuideAsPrimary
-    ? t(`${destinationId}.entryFlow.actions.entryGuide.subtitle`, {
+    ? t(`${destinationId}.entryFlow.actions.entryGuideSubtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
       })
     : isReady && hasSubmitScreen
-    ? t(`${destinationId}.entryFlow.actions.submit.subtitle`, {
+    ? t(`${destinationId}.entryFlow.actions.submitSubtitle`, {
         defaultValue: `准备完成！现在可以提交${destination}入境卡了`,
       })
-    : t(`${destinationId}.entryFlow.actions.edit.subtitle`, { defaultValue: '如需修改，返回编辑' });
+    : t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: '如需修改，返回编辑' });
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -871,7 +871,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
               marginTop="$xs"
               textAlign="center"
             >
-              {t(`${destinationId}.entryFlow.actions.edit.subtitle`, { defaultValue: '如需修改，返回编辑' })}
+              {t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: '如需修改，返回编辑' })}
             </TamaguiText>
           </YStack>
         </XStack>
@@ -884,6 +884,8 @@ function CountdownCard({ arrivalDate, t, config }) {
   if (!arrivalDate) {
     return null;
   }
+
+  const { language } = useLocale();
 
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
@@ -903,11 +905,18 @@ function CountdownCard({ arrivalDate, t, config }) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  const formattedArrival = arrival.toLocaleDateString(undefined, {
+  const dateFormatOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  };
+
+  let formattedArrival = arrivalDate;
+  try {
+    formattedArrival = arrival.toLocaleDateString(language || undefined, dateFormatOptions);
+  } catch (error) {
+    formattedArrival = arrival.toLocaleDateString(undefined, dateFormatOptions);
+  }
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -959,7 +968,10 @@ function CountdownCard({ arrivalDate, t, config }) {
             borderColor="rgba(255,152,0,0.25)"
           >
             <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
-              {t(`${destinationId}.entryFlow.countdown.arrival`, { defaultValue: `抵达日期 ${formattedArrival}` })}
+              {t(`${destinationId}.entryFlow.countdown.arrival`, {
+                defaultValue: `抵达日期 ${formattedArrival}`,
+                date: formattedArrival,
+              })}
             </TamaguiText>
           </BaseCard>
         </YStack>
@@ -1037,7 +1049,7 @@ function QuickActionsRow({
       key: 'preview',
       icon: '👁️',
       title: t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.previewPack.subtitle`, {
+      subtitle: t(`${config.destinationId}.entryFlow.actions.previewPackSubtitle`, {
         defaultValue: '查看已经准备好的资料',
       }),
       borderColor: 'rgba(11,214,123,0.35)',
@@ -1051,7 +1063,7 @@ function QuickActionsRow({
       key: 'entryGuide',
       icon: '🛂',
       title: t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.entryGuide.subtitle`, {
+      subtitle: t(`${config.destinationId}.entryFlow.actions.entryGuideSubtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
       }),
       borderColor: 'rgba(37,99,235,0.3)',
@@ -1065,7 +1077,7 @@ function QuickActionsRow({
       key: 'edit',
       icon: '✏️',
       title: t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.editThai.subtitle`, {
+      subtitle: t(`${config.destinationId}.entryFlow.actions.editThaiSubtitle`, {
         defaultValue: '如需修改，返回编辑',
       }),
       borderColor: 'rgba(255,152,0,0.35)',
@@ -1148,7 +1160,7 @@ function HelpCard() {
             {t(`${config.destinationId}.entryFlow.actions.help.callout`, { defaultValue: '寻求帮助' })}
           </TamaguiText>
           <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
-            {t(`${config.destinationId}.entryFlow.actions.help.callout.subtitle`, { defaultValue: '遇到问题？点我获取协助' })}
+            {t(`${config.destinationId}.entryFlow.actions.help.calloutSubtitle`, { defaultValue: '遇到问题？点我获取协助' })}
           </TamaguiText>
         </YStack>
       </BaseCard>

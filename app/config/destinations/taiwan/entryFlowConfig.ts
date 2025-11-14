@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 export const taiwanEntryFlowConfig = {
-  destinationId: 'taiwan',
+  destinationId: 'tw',
   name: 'Taiwan',
   nameZh: '台湾',
   flag: '🇹🇼',
@@ -22,7 +22,7 @@ export const taiwanEntryFlowConfig = {
   categories: [
     {
       id: 'passport',
-      nameKey: 'taiwan.entryFlow.categories.passport',
+      nameKey: 'tw.entryFlow.categories.passport',
       icon: '📘',
       requiredFields: [
         'surname',
@@ -36,7 +36,7 @@ export const taiwanEntryFlowConfig = {
     },
     {
       id: 'personal',
-      nameKey: 'taiwan.entryFlow.categories.personal',
+      nameKey: 'tw.entryFlow.categories.personal',
       icon: '👤',
       requiredFields: [
         'occupation',
@@ -49,7 +49,7 @@ export const taiwanEntryFlowConfig = {
     },
     {
       id: 'travel',
-      nameKey: 'taiwan.entryFlow.categories.travel',
+      nameKey: 'tw.entryFlow.categories.travel',
       icon: '✈️',
       requiredFields: [
         'travelPurpose',
@@ -70,31 +70,31 @@ export const taiwanEntryFlowConfig = {
 
   status: {
     ready: {
-      titleKey: 'taiwan.entryFlow.status.ready.title',
-      subtitleKey: 'taiwan.entryFlow.status.ready.subtitle',
+      titleKey: 'tw.entryFlow.status.ready.title',
+      subtitleKey: 'tw.entryFlow.status.ready.subtitle',
     },
     mostly_complete: {
-      titleKey: 'taiwan.entryFlow.status.mostlyComplete.title',
-      subtitleKey: 'taiwan.entryFlow.status.mostlyComplete.subtitle',
+      titleKey: 'tw.entryFlow.status.mostlyComplete.title',
+      subtitleKey: 'tw.entryFlow.status.mostlyComplete.subtitle',
     },
     needs_improvement: {
-      titleKey: 'taiwan.entryFlow.status.needsImprovement.title',
-      subtitleKey: 'taiwan.entryFlow.status.needsImprovement.subtitle',
+      titleKey: 'tw.entryFlow.status.needsImprovement.title',
+      subtitleKey: 'tw.entryFlow.status.needsImprovement.subtitle',
     },
   },
 
   entryFlow: {
-    titleKey: 'taiwan.entryFlow.title',
+    titleKey: 'tw.entryFlow.title',
     progress: {
       headline: {
-        ready: 'taiwan.entryFlow.progress.headline.ready',
-        almost: 'taiwan.entryFlow.progress.headline.almost',
-        start: 'taiwan.entryFlow.progress.headline.start',
+        ready: 'tw.entryFlow.progress.headline.ready',
+        almost: 'tw.entryFlow.progress.headline.almost',
+        start: 'tw.entryFlow.progress.headline.start',
       },
       subtitle: {
-        ready: 'taiwan.entryFlow.progress.subtitle.ready',
-        almost: 'taiwan.entryFlow.progress.subtitle.almost',
-        start: 'taiwan.entryFlow.progress.subtitle.start',
+        ready: 'tw.entryFlow.progress.subtitle.ready',
+        almost: 'tw.entryFlow.progress.subtitle.almost',
+        start: 'tw.entryFlow.progress.subtitle.start',
       },
     },
   },
@@ -111,7 +111,7 @@ export const taiwanEntryFlowConfig = {
     hasWindow: true,
     windowHours: 72,
     reminderHours: 24,
-    labelKey: 'taiwan.entryFlow.submissionWindow',
+    labelKey: 'tw.entryFlow.submissionWindow',
   },
 };
 

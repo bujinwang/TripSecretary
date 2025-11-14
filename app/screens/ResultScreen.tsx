@@ -1348,7 +1348,7 @@ return null;
         <View style={styles.privacyBox}>
           <Text style={styles.privacyIcon}>💾</Text>
           <Text style={styles.privacyText}>
-            {t('result.infoBox', { defaultValue: '所有信息仅保存在您的手机本地' })}
+            {t('common.privacy.localStorage')}
           </Text>
         </View>
 
@@ -1356,7 +1356,7 @@ return null;
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
-            {t('result.infoBox')}
+            {t('common.privacy.localStorage')}
           </Text>
         </View>
       </ScrollView>

@@ -1083,7 +1083,7 @@ return null;
           >
             <View style={styles.modalContainer}>
               <View style={styles.modalHandle} />
-              <Text style={styles.modalTitle}>Select Language</Text>
+              <Text style={styles.modalTitle}>{t('home.languageModal.title')}</Text>
               <View style={styles.languageList}>
                 {availableLanguages.map((lang, index) => (
                   <TouchableOpacity
@@ -1112,7 +1112,7 @@ return null;
                 style={styles.cancelButton}
                 onPress={() => setShowLanguageModal(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('common.buttons.cancel')}</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

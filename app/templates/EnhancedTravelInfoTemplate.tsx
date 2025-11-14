@@ -1880,9 +1880,10 @@ const LastEditedTimestamp = ({ time }) => {
     return null;
   }
 
+  const { language } = useLocale();
   return (
     <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginBottom="$sm">
-      Last edited: {time.toLocaleTimeString()}
+      {language && language.startsWith('zh') ? '最后编辑：' : 'Last edited: '} {time.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
     </TamaguiText>
   );
 };

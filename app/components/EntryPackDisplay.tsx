@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Modal, Image, Platform } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -12,6 +12,7 @@ import { thailandProvinces } from '../data/thailandProvinces';
 import { hongkongDistricts, getAllDistricts } from '../data/hongkongLocations';
 import { calculateTotalFundsForCountry } from '../utils/currencyConverter';
 import PDFManagementService from '../services/PDFManagementService';
+import { useLocale } from '../i18n/LocaleContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
@@ -310,6 +311,15 @@ const EntryPackDisplay = ({
     [rawEntryPack, country]
   );
   const config = countryConfigs[country] || countryConfigs.th;
+  const { t } = useLocale();
+  const translationNamespace = `entryPackDisplay.${country}`;
+  const translate = useCallback(
+    (path, fallback) =>
+      t(`${translationNamespace}.${path}`, {
+        defaultValue: fallback,
+      }),
+    [t, translationNamespace]
+  );
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoUri, setSelectedPhotoUri] = useState(null);
@@ -855,15 +865,6 @@ return config.notProvided;
       hk: '香港入境無需預先提交電子表格，到達時填寫即可'
     };
 
-    const qrPlaceholderTexts = {
-      th: 'จะแสดงรหัส QR หลังจากส่งเรียบร้อย',
-      my: 'QR Code will appear after submission',
-      sg: 'DE Number will appear after submission',
-      us: 'I-94 number will be provided at entry',
-      jp: 'QRコードは提出後に表示されます',
-      hk: '入境時會獲得入境蓋章'
-    };
-
     const placeholderNotes = {
       th: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้',
       my: 'You can still show other information to immigration officer',
@@ -873,14 +874,18 @@ return config.notProvided;
       hk: '可以向入境處人員出示此資料包'
     };
 
-    const pdfDocumentTitle = {
-      th: '📄 เอกสาร TDAC',
-      my: '📄 MDAC Document',
-      sg: '📄 SGAC Document',
-      us: '📄 I-94 Document',
-      jp: '📄 入国カード',
-      hk: '📄 入境文件'
-    };
+    const fallbackTitle = config.placeholderTitle || placeholderTitles[country] || placeholderTitles.th;
+    const fallbackDescription =
+      config.placeholderDescription || placeholderDescriptions[country] || placeholderDescriptions.th;
+    const fallbackNote = config.placeholderNote || placeholderNotes[country] || placeholderNotes.th;
+
+    const placeholderTitleText = translate('status.notSubmittedTitle', fallbackTitle);
+    const placeholderDescriptionText = fallbackDescription
+      ? translate('status.notSubmittedDescription', fallbackDescription)
+      : null;
+    const placeholderNoteText = fallbackNote
+      ? translate('status.note', fallbackNote)
+      : null;
 
     return (
       <View style={styles.section}>
@@ -907,19 +912,17 @@ return config.notProvided;
                 <View style={styles.placeholderIcon}>
                   <Text style={styles.placeholderIconText}>📱</Text>
                 </View>
-                <Text style={styles.placeholderTitle}>
-                  {config.placeholderTitle || placeholderTitles[country] || placeholderTitles.th}
-                </Text>
-                {(config.placeholderDescription || placeholderDescriptions[country]) && (
+                <Text style={styles.placeholderTitle}>{placeholderTitleText}</Text>
+                {placeholderDescriptionText ? (
                   <Text style={styles.placeholderDescription}>
-                    {config.placeholderDescription || placeholderDescriptions[country]}
+                    {placeholderDescriptionText}
                   </Text>
-                )}
-                {(config.placeholderNote || placeholderNotes[country]) && (
+                ) : null}
+                {placeholderNoteText ? (
                   <Text style={styles.placeholderNote}>
-                    {config.placeholderNote || placeholderNotes[country]}
+                    {placeholderNoteText}
                   </Text>
-                )}
+                ) : null}
               </View>
             )}
 
@@ -1237,6 +1240,11 @@ return config.notProvided;
                         country === 'th' ? 'thailand' :
                         country;
   const tabs = tabsConfig[tabsConfigKey] || tabsConfig.thailand;
+  const localizedTabs = tabs.map((tab) => ({
+    ...tab,
+    primaryLabel: translate(`tabs.${tab.key}.label`, tab.label),
+    secondaryLabel: translate(`tabs.${tab.key}.labelSecondary`, tab.labelEn || ''),
+  }));
 
   const headerTitles = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง',
@@ -1266,8 +1274,12 @@ return config.notProvided;
     <View style={[styles.container, isModal && styles.modalContainer]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{headerTitles[tabsConfigKey] || headerTitles.thailand}</Text>
-        <Text style={styles.subtitle}>{headerSubtitles[tabsConfigKey] || headerSubtitles.thailand}</Text>
+        <Text style={styles.title}>
+          {translate('header.title', headerTitles[tabsConfigKey] || headerTitles.thailand)}
+        </Text>
+        <Text style={styles.subtitle}>
+          {translate('header.subtitle', headerSubtitles[tabsConfigKey] || headerSubtitles.thailand)}
+        </Text>
 
         {onClose && (
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -1283,7 +1295,7 @@ return config.notProvided;
         style={styles.tabContainer}
         contentContainerStyle={styles.tabContentContainer}
       >
-        {tabs.map((tab, index) => (
+        {localizedTabs.map((tab, index) => (
           <TouchableOpacity
             key={tab.key}
             style={[
@@ -1294,13 +1306,13 @@ return config.notProvided;
             onPress={() => setActiveTab(tab.key)}
           >
             <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
-              {tab.label}
+              {tab.primaryLabel}
             </Text>
-            {tab.labelEn && (
+            {tab.secondaryLabel ? (
               <Text style={[styles.tabTextEn, activeTab === tab.key && styles.activeTabText]}>
-                {tab.labelEn}
+                {tab.secondaryLabel}
               </Text>
-            )}
+            ) : null}
           </TouchableOpacity>
         ))}
       </ScrollView>

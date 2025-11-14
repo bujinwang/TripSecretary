@@ -33,11 +33,13 @@ import DeadlineNotificationService from '../services/notification/DeadlineNotifi
 import ExpiryWarningNotificationService from '../services/notification/ExpiryWarningNotificationService';
 import type { NotificationStats } from '../services/notification/NotificationCoordinator';
 import type { RootStackParamList } from '../types/navigation';
+import { useTranslation } from '../i18n/LocaleContext';
 
 type NotificationTestNavigation = NativeStackNavigationProp<RootStackParamList>;
 type TestNotificationType = 'windowOpen' | 'urgentReminder' | 'deadline' | 'expiry' | 'simple';
 
 const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation }> = ({ navigation }) => {
+  const { t } = useTranslation();
   const [scheduledNotifications, setScheduledNotifications] = useState<Notifications.NotificationRequest[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [notificationStats, setNotificationStats] = useState<NotificationStats | null>(null);
@@ -305,7 +307,7 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
 
   const renderStatsSection = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Notification Statistics</Text>
+      <Text style={styles.sectionTitle}>{t('notifications.stats.title')}</Text>
       <View style={styles.statsContainer}>
         <Text style={styles.statItem}>
           Window Open: {getStatTotal(notificationStats?.windowOpen)} scheduled
@@ -317,7 +319,7 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
           Deadline: {getStatTotal(notificationStats?.deadline)} scheduled
         </Text>
         <Text style={styles.statItem}>
-          Initialized: {isInitialized ? 'Yes' : 'No'}
+          Initialized: {isInitialized ? t('common.confirm') : t('common.buttons.cancel')}
         </Text>
       </View>
     </View>
@@ -333,13 +335,13 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Notification Testing Tools</Text>
-          <Text style={styles.subtitle}>Development Mode Only</Text>
+          <Text style={styles.title}>{t('notifications.testingTools.title')}</Text>
+          <Text style={styles.subtitle}>{t('notifications.testingTools.developmentOnly')}</Text>
         </View>
 
         {/* Test Notification Buttons */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Test Notifications</Text>
+          <Text style={styles.sectionTitle}>{t('notifications.sections.test')}</Text>
           
           {renderNotificationButton(
             'Window Open Notification',
@@ -377,13 +379,13 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
 
         {/* Control Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
+          <Text style={styles.sectionTitle}>{t('notifications.sections.actions')}</Text>
           
           <TouchableOpacity
             style={styles.actionButton}
             onPress={viewNotificationLogs}
           >
-            <Text style={styles.actionButtonText}>View Notification Logs</Text>
+            <Text style={styles.actionButtonText}>{t('notifications.actions.viewLogs')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -391,7 +393,7 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
             onPress={cancelAllNotifications}
           >
             <Text style={[styles.actionButtonText, styles.dangerButtonText]}>
-              Cancel All Notifications
+              {t('notifications.actions.cancelAll')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -399,11 +401,11 @@ const NotificationTestScreen: React.FC<{ navigation: NotificationTestNavigation 
         {/* Scheduled Notifications List */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Scheduled Notifications ({scheduledNotifications.length})
+            {t('notifications.sections.scheduled', { count: scheduledNotifications.length })}
           </Text>
           
           {scheduledNotifications.length === 0 ? (
-            <Text style={styles.emptyText}>No scheduled notifications</Text>
+            <Text style={styles.emptyText}>{t('notifications.stats.empty')}</Text>
           ) : (
             scheduledNotifications.map(renderScheduledNotification)
           )}

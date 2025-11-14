@@ -54,15 +54,15 @@ const FundsInfoSection = ({ fundData, language, t }) => {
   const handleFundPhotoPress = () => {
     Alert.alert(
       language === 'english'
-        ? 'Fund Proof Photo'
+        ? t('photos.fundProof.title')
         : language === 'thai'
         ? 'รูปหลักฐานเงินทุน'
-        : 'รูปหลักฐานเงินทุน / Fund Proof Photo',
+        : `รูปหลักฐานเงินทุน / ${t('photos.fundProof.title')}`,
       language === 'english'
-        ? 'Tap to view larger image'
+        ? t('photos.fundProof.tapToViewLargerImage')
         : language === 'thai'
         ? 'แตะเพื่อดูภาพขนาดใหญ่'
-        : 'แตะเพื่อดูภาพขนาดใหญ่ / Tap to view larger image'
+        : `แตะเพื่อดูภาพขนาดใหญ่ / ${t('photos.fundProof.tapToViewLargerImage')}`
     );
   };
 
@@ -75,10 +75,10 @@ const FundsInfoSection = ({ fundData, language, t }) => {
         <View style={styles.infoRow}>
           <Text style={styles.infoValue}>
             {language === 'english'
-              ? 'No fund information available'
+              ? t('funds.noInfoAvailable')
               : language === 'thai'
               ? 'ไม่มีข้อมูลเงินทุน'
-              : 'ไม่มีข้อมูลเงินทุน / No fund information available'}
+              : `ไม่มีข้อมูลเงินทุน / ${t('funds.noInfoAvailable')}`}
           </Text>
         </View>
       </View>
@@ -135,7 +135,7 @@ const FundsInfoSection = ({ fundData, language, t }) => {
             return (
               <View key={index} style={styles.fundItem}>
                 <View style={styles.fundItemHeader}>
-                  <Text style={styles.fundItemType}>{fund.type || 'Cash'}</Text>
+                  <Text style={styles.fundItemType}>{fund.type || t('funds.cash')}</Text>
                   <View style={styles.fundItemAmounts}>
                     <Text style={styles.fundItemAmount}>
                       {formatCurrency(originalAmount, originalCurrency)}
@@ -164,7 +164,7 @@ const FundsInfoSection = ({ fundData, language, t }) => {
                     />
                     <Text style={styles.fundPhotoHint}>
                       {language === 'english'
-                        ? 'Tap to enlarge'
+                        ? t('common.images.tapToEnlarge')
                         : language === 'thai'
                         ? 'แตะเพื่อขยาย'
                         : 'แตะเพื่อขยาย'}

@@ -13,6 +13,11 @@ export const vietnamEntryPackPreviewConfig = {
   name: 'Vietnam',
   flag: '🇻🇳',
 
+  header: {
+    title: 'Vietnam Entry Pack Preview',
+    closeIcon: '✕',
+  },
+
   // Colors
   colors: {
     background: '#F9FAFB',

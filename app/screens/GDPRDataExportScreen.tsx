@@ -282,7 +282,7 @@ return null;
             />
           ) : (
             <View style={styles.exportedCard}>
-              <Text style={styles.exportedTitle}>✅ Export Complete</Text>
+              <Text style={styles.exportedTitle}>✅ {t('gdpr.export.exported.title')}</Text>
               <Text style={styles.exportedInfo}>
                 File: {exportData.filename}
               </Text>
@@ -298,7 +298,7 @@ return null;
                   style={styles.shareButton}
                   onPress={() => handleShareFile(exportData.fileUri)}
                 >
-                  <Text style={styles.shareButtonText}>Share File</Text>
+                  <Text style={styles.shareButtonText}>{t('gdpr.export.exported.share')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity

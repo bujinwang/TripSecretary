@@ -21,6 +21,7 @@ import type {
   LogFilters,
 } from '../services/notification/NotificationLogService';
 import type { RootStackScreenProps } from '../types/navigation';
+import { useTranslation } from '../i18n/LocaleContext';
 
 type NotificationLogScreenProps = RootStackScreenProps<'NotificationLog'>;
 type NotificationLogTab = 'logs' | 'analytics' | 'performance';
@@ -37,6 +38,7 @@ type NotificationLogTab = 'logs' | 'analytics' | 'performance';
  * Requirements: 16.5
  */
 const NotificationLogScreen = ({ navigation }: NotificationLogScreenProps) => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -188,7 +190,7 @@ return null;
     return (
       <ScrollView style={styles.tabContent}>
         <View style={styles.analyticsSection}>
-          <Text style={styles.sectionTitle}>Overall Statistics</Text>
+      <Text style={styles.sectionTitle}>{t('notificationLog.analytics.overall.title')}</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{analytics.total.scheduled}</Text>
@@ -204,13 +206,13 @@ return null;
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{analytics.total.clickRate}%</Text>
-              <Text style={styles.statLabel}>Click Rate</Text>
+              <Text style={styles.statLabel}>{t('notificationLog.analytics.overall.clickRate')}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.analyticsSection}>
-          <Text style={styles.sectionTitle}>By Notification Type</Text>
+          <Text style={styles.sectionTitle}>{t('notificationLog.analytics.byType')}</Text>
           {Object.entries(analytics.byType).map(([type, stats]) => (
             <View key={type} style={styles.typeStats}>
               <Text style={styles.typeTitle}>{type}</Text>
@@ -225,14 +227,14 @@ return null;
 
         {analytics.timing && (
           <View style={styles.analyticsSection}>
-            <Text style={styles.sectionTitle}>Optimal Timing</Text>
+            <Text style={styles.sectionTitle}>{t('notificationLog.analytics.timing.title')}</Text>
             <Text style={styles.timingText}>
-              Best Hour: {analytics.timing.bestHour !== null ? `${analytics.timing.bestHour}:00` : 'No data'}
+              Best Hour: {analytics.timing.bestHour !== null ? `${analytics.timing.bestHour}:00` : t('notificationLog.analytics.timing.noData')}
             </Text>
             <Text style={styles.timingText}>
               Best Day: {analytics.timing.bestDay !== null ? 
                 ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][analytics.timing.bestDay] : 
-                'No data'
+                t('notificationLog.analytics.timing.noData')
               }
             </Text>
           </View>
@@ -245,7 +247,7 @@ return null;
     return (
       <ScrollView style={styles.tabContent}>
         <View style={styles.performanceSection}>
-          <Text style={styles.sectionTitle}>Performance Insights</Text>
+          <Text style={styles.sectionTitle}>{t('notificationLog.performance.title')}</Text>
           
           <TouchableOpacity 
             style={styles.performanceButton}
@@ -253,37 +255,37 @@ return null;
               try {
                 const metrics = await NotificationLogService.getPerformanceMetrics();
                 Alert.alert(
-                  'Performance Metrics',
+                  t('notificationLog.performance.title'),
                   JSON.stringify(metrics.recommendations, null, 2),
                   [{ text: 'OK' }]
                 );
               } catch (error) {
-                Alert.alert('Error', 'Failed to get performance metrics');
+                Alert.alert(t('common.error'), 'Failed to get performance metrics');
               }
             }}
           >
-            <Text style={styles.performanceButtonText}>View Recommendations</Text>
+            <Text style={styles.performanceButtonText}>{t('notificationLog.performance.viewRecommendations')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.performanceButton}
             onPress={handleExportLogs}
           >
-            <Text style={styles.performanceButtonText}>Export Logs</Text>
+            <Text style={styles.performanceButtonText}>{t('notificationLog.performance.exportLogs')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={[styles.performanceButton, styles.warningButton]}
             onPress={handleClearOldLogs}
           >
-            <Text style={styles.performanceButtonText}>Clear Old Logs (30+ days)</Text>
+            <Text style={styles.performanceButtonText}>{t('notificationLog.performance.clearOldLogs')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={[styles.performanceButton, styles.dangerButton]}
             onPress={handleClearAllLogs}
           >
-            <Text style={styles.performanceButtonText}>Clear All Logs</Text>
+            <Text style={styles.performanceButtonText}>{t('notificationLog.performance.clearAllLogs')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -299,40 +301,40 @@ return null;
       <SafeAreaView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
-            <Text style={styles.modalCancelButton}>Cancel</Text>
+          <Text style={styles.modalCancelButton}>{t('notificationLog.filterModal.cancel')}</Text>
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>Filter Logs</Text>
+          <Text style={styles.modalTitle}>{t('notificationLog.filterModal.title')}</Text>
           <TouchableOpacity onPress={() => applyFilters({})}>
-            <Text style={styles.modalApplyButton}>Clear</Text>
+            <Text style={styles.modalApplyButton}>{t('notificationLog.filterModal.clear')}</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.modalContent}>
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Event Type</Text>
+            <Text style={styles.filterLabel}>{t('notificationLog.filterModal.labels.eventType')}</Text>
             <TextInput
               style={styles.filterInput}
-              placeholder="e.g., scheduled, clicked, interacted"
+              placeholder={t('notificationLog.filterModal.labels.eventTypePlaceholder')}
               value={filters.eventType || ''}
               onChangeText={(text) => setFilters(prev => ({ ...prev, eventType: text }))}
             />
           </View>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Notification Type</Text>
+            <Text style={styles.filterLabel}>{t('notificationLog.filterModal.labels.notificationType')}</Text>
             <TextInput
               style={styles.filterInput}
-              placeholder="e.g., submissionWindow, urgentReminder"
+              placeholder={t('notificationLog.filterModal.labels.notificationTypePlaceholder')}
               value={filters.notificationType || ''}
               onChangeText={(text) => setFilters(prev => ({ ...prev, notificationType: text }))}
             />
           </View>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Entry Pack ID</Text>
+            <Text style={styles.filterLabel}>{t('notificationLog.filterModal.labels.entryPackId')}</Text>
             <TextInput
               style={styles.filterInput}
-              placeholder="Entry pack identifier"
+              placeholder={t('notificationLog.filterModal.labels.entryPackIdPlaceholder')}
               value={filters.entryPackId || ''}
               onChangeText={(text) => setFilters(prev => ({ ...prev, entryPackId: text }))}
             />
@@ -342,7 +344,7 @@ return null;
             style={styles.applyFiltersButton}
             onPress={() => applyFilters(filters)}
           >
-            <Text style={styles.applyFiltersButtonText}>Apply Filters</Text>
+            <Text style={styles.applyFiltersButtonText}>{t('notificationLog.filterModal.apply')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -353,11 +355,11 @@ return null;
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>← {t('notificationLog.header.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Notification Logs</Text>
+        <Text style={styles.title}>{t('notificationLog.header.title')}</Text>
         <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-          <Text style={styles.filterButton}>Filter</Text>
+          <Text style={styles.filterButton}>{t('notificationLog.header.filter')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -367,7 +369,7 @@ return null;
           onPress={() => setSelectedTab('logs')}
         >
           <Text style={[styles.tabText, selectedTab === 'logs' && styles.activeTabText]}>
-            Logs ({logs.length})
+            {t('notificationLog.tabs.logs', { count: logs.length })}
           </Text>
         </TouchableOpacity>
         
@@ -376,7 +378,7 @@ return null;
           onPress={() => setSelectedTab('analytics')}
         >
           <Text style={[styles.tabText, selectedTab === 'analytics' && styles.activeTabText]}>
-            Analytics
+            {t('notificationLog.tabs.analytics')}
           </Text>
         </TouchableOpacity>
         
@@ -385,7 +387,7 @@ return null;
           onPress={() => setSelectedTab('performance')}
         >
           <Text style={[styles.tabText, selectedTab === 'performance' && styles.activeTabText]}>
-            Tools
+            {t('notificationLog.tabs.performance')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -401,10 +403,8 @@ return null;
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No notification logs found</Text>
-              <Text style={styles.emptyStateSubtext}>
-                Logs will appear here as notifications are sent and interacted with
-              </Text>
+              <Text style={styles.emptyStateText}>{t('notificationLog.empty.title')}</Text>
+              <Text style={styles.emptyStateSubtext}>{t('notificationLog.empty.subtitle')}</Text>
             </View>
           }
         />

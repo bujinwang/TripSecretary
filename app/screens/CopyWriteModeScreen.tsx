@@ -414,14 +414,14 @@ const CopyWriteModeScreen: React.FC<CopyWriteModeScreenProps> = ({ navigation, r
             style={styles.fontButton}
             onPress={decreaseFontSize}
           >
-            <Text style={styles.fontButtonText}>A-</Text>
+            <Text style={styles.fontButtonText}>{t('common.reader.font.decrease')}</Text>
           </TouchableOpacity>
           <Text style={styles.fontCurrent}>{fontSize}pt</Text>
           <TouchableOpacity
             style={styles.fontButton}
             onPress={increaseFontSize}
           >
-            <Text style={styles.fontButtonText}>A+</Text>
+            <Text style={styles.fontButtonText}>{t('common.reader.font.increase')}</Text>
           </TouchableOpacity>
         </View>
 

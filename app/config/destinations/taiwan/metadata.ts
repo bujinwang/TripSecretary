@@ -30,7 +30,7 @@ export const metadata = {
     submissionWindowHours: 72,
   },
   visaRequirement: {
-    CHN: 'entry_permit',
+    CHN: 'tw_entry_permit',
     default: 'visa_free',
   },
   locales: ['en', 'zh-CN', 'zh-TW'],

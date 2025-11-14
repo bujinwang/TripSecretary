@@ -5,32 +5,32 @@
 
 import React from 'react';
 import { EntryGuideTemplate } from '../../templates';
+import { useTranslation } from '../../i18n/LocaleContext';
 import { vietnamEntryGuide as vietnamGuideConfig } from '../../config/entryGuide/vietnam';
+import type { RootStackScreenProps } from '../../types/navigation';
 
-interface VietnamEntryGuideScreenProps {
-  navigation: {
-    goBack: () => void;
-  };
-  route?: any;
-}
+type VietnamEntryGuideScreenProps = RootStackScreenProps<'VietnamEntryGuide'>;
 
-const VietnamEntryGuideScreen: React.FC<VietnamEntryGuideScreenProps> = ({ navigation, route }) => (
-  <EntryGuideTemplate
-    config={vietnamGuideConfig}
-    navigation={navigation}
-    route={route}
-    onComplete={() => {}}
-  >
-    <EntryGuideTemplate.Header
-      title="越南入境指引 🇻🇳"
-      titleEn="Vietnam Entry Guide 🇻🇳"
-      titleZh="越南入境指引 🇻🇳"
-      backLabel="返回"
-      backLabelEn="Back"
-      backLabelZh="返回"
-    />
-    <EntryGuideTemplate.AutoContent />
-  </EntryGuideTemplate>
-);
+const VietnamEntryGuideScreen: React.FC<VietnamEntryGuideScreenProps> = ({ navigation, route }) => {
+  const { t } = useTranslation();
+  return (
+    <EntryGuideTemplate
+      config={vietnamGuideConfig}
+      navigation={navigation}
+      route={route}
+      onComplete={() => {}}
+    >
+      <EntryGuideTemplate.Header
+        title={t('dest.vietnam.entryGuide.title')}
+        titleEn={t('dest.vietnam.entryGuide.title')}
+        titleZh={t('dest.vietnam.entryGuide.titleZh')}
+        backLabel={t('common.back')}
+        backLabelEn={t('common.back')}
+        backLabelZh={t('common.back')}
+      />
+      <EntryGuideTemplate.AutoContent />
+    </EntryGuideTemplate>
+  );
+};
 
 export default VietnamEntryGuideScreen;

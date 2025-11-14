@@ -1660,7 +1660,7 @@ return '';
                     <Text style={styles.infoTitle}>
                       {t('profile.passport.fields.passportNo', { defaultValue: 'Passport Number' })}
                     </Text>
-                    <Text style={styles.infoSubtitle}>Passport No.</Text>
+                    <Text style={styles.infoSubtitle}>{t('profile.passport.fields.passportNo.short', { defaultValue: 'Passport No.' })}</Text>
                   </View>
                   <Text style={styles.infoValue} testID="passport-number-input">{passportData.passportNo}</Text>
                 </View>
@@ -1673,7 +1673,7 @@ return '';
                     <Text style={styles.infoTitle}>
                       {t('profile.passport.fields.nationality', { defaultValue: 'Nationality' })}
                     </Text>
-                    <Text style={styles.infoSubtitle}>Nationality</Text>
+                    <Text style={styles.infoSubtitle}>{t('profile.passport.fields.nationality.short', { defaultValue: 'Nationality' })}</Text>
                   </View>
                   <View style={styles.infoValueWrap}>
                     <Text style={styles.infoValue}>
@@ -1690,7 +1690,7 @@ return '';
                     <Text style={styles.infoTitle}>
                       {t('profile.passport.fields.expiry', { defaultValue: 'Expiry Date' })}
                     </Text>
-                    <Text style={styles.infoSubtitle}>Valid Until</Text>
+                    <Text style={styles.infoSubtitle}>{t('profile.passport.fields.expiry.short', { defaultValue: 'Valid Until' })}</Text>
                   </View>
                   <Text style={styles.infoValue}>{passportData.expiry}</Text>
                 </View>

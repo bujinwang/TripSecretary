@@ -80,7 +80,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code ('zh', 'en', etc.)
    * @returns {string} - Localized status message
    */
-  static getStatusMessage(window, locale = 'zh') {
+  static getStatusMessage(window, locale = 'zh-CN') {
     if (!window.arrivalDate) {
       return this.getTranslation('no_arrival_date', locale);
     }
@@ -116,7 +116,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {string} - Formatted availability message
    */
-  static getAvailabilityMessage(window, locale = 'zh') {
+  static getAvailabilityMessage(window, locale = 'zh-CN') {
     if (!window.submissionWindowStart) {
       return '';
     }
@@ -125,8 +125,8 @@ class ArrivalWindowCalculator {
       return this.getTranslation('available_now', locale);
     }
 
-    const date = window.submissionWindowStart.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US');
-    const time = window.submissionWindowStart.toLocaleTimeString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    const date = window.submissionWindowStart.toLocaleDateString(locale);
+    const time = window.submissionWindowStart.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -150,7 +150,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {string} - Countdown display string
    */
-  static getCountdownDisplay(window, locale = 'zh') {
+  static getCountdownDisplay(window, locale = 'zh-CN') {
     if (!window.canSubmit || window.hoursRemaining > 24) {
       return '';
     }
@@ -158,7 +158,7 @@ class ArrivalWindowCalculator {
     const hours = Math.floor(window.hoursRemaining);
     const minutes = Math.floor((window.hoursRemaining % 1) * 60);
 
-    if (locale === 'zh') {
+    if (locale && locale.startsWith('zh')) {
       return `${hours}小时${minutes}分钟后抵达`;
     } else {
       return `${hours}h ${minutes}m until arrival`;
@@ -171,7 +171,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {string} - Time remaining display
    */
-  static getTimeUntilWindowDisplay(window, locale = 'zh') {
+  static getTimeUntilWindowDisplay(window, locale = 'zh-CN') {
     if (window.canSubmit || !window.daysRemaining) {
       return '';
     }
@@ -179,7 +179,7 @@ class ArrivalWindowCalculator {
     const days = window.daysRemaining;
     const hours = Math.ceil(window.hoursUntilWindow % 24);
 
-    if (locale === 'zh') {
+    if (locale && locale.startsWith('zh')) {
       if (days > 0) {
         return `${days}天 ${hours}小时`;
       } else {
@@ -203,7 +203,7 @@ class ArrivalWindowCalculator {
    */
   static getTranslation(key, locale, params = {}) {
     const translations = {
-      zh: {
+      'zh-CN': {
         no_arrival_date: '请设置抵达日期',
         arrival_passed: '抵达时间已过',
         countdown_hours: `${params.hours || 0}小时后抵达 - 可以提交！`,
@@ -211,6 +211,16 @@ class ArrivalWindowCalculator {
         days_until_window: `${params.days || 0}天后可提交`,
         hours_until_window: `${params.hours || 0}小时后可提交`,
         available_now: '现在可以提交',
+        available_at: `${params.date} ${params.time} 可提交`
+      },
+      'zh-TW': {
+        no_arrival_date: '請設置抵達日期',
+        arrival_passed: '抵達時間已過',
+        countdown_hours: `${params.hours || 0}小時後抵達 - 可以提交！`,
+        can_submit: '可以提交 TDAC',
+        days_until_window: `${params.days || 0}天後可提交`,
+        hours_until_window: `${params.hours || 0}小時後可提交`,
+        available_now: '現在可以提交',
         available_at: `${params.date} ${params.time} 可提交`
       },
       en: {
@@ -225,7 +235,7 @@ class ArrivalWindowCalculator {
       }
     };
 
-    const localeTranslations = translations[locale] || translations.en;
+    const localeTranslations = translations[locale] || (locale && locale.startsWith('zh') ? translations['zh-CN'] : translations.en);
     return localeTranslations[key] || key;
   }
 
@@ -337,7 +347,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code ('zh', 'en', 'es', etc.)
    * @returns {Object} - Submission window information
    */
-  static getSubmissionWindow(arrivalDate, locale = 'zh') {
+  static getSubmissionWindow(arrivalDate, locale = 'zh-CN') {
     if (!arrivalDate) {
       return {
         state: 'no-date',
@@ -420,12 +430,19 @@ class ArrivalWindowCalculator {
    */
   static getProgressiveTranslation(key, locale, params = {}) {
     const translations = {
-      zh: {
+      'zh-CN': {
         no_date: '未设置泰国入境日期，无法提交入境卡',
         pre_window: `还有 ${params.days || 0} 天 ${params.hours || 0} 小时可以提交入境卡`,
         within_window: '提交窗口已开启，请在倒计时结束前完成提交',
         urgent: '进入最后冲刺！窗口即将关闭，请立即提交入境卡',
         past_deadline: '提交截止时间已过，请联系相关部门'
+      },
+      'zh-TW': {
+        no_date: '未設置泰國入境日期，無法提交入境卡',
+        pre_window: `還有 ${params.days || 0} 天 ${params.hours || 0} 小時可以提交入境卡`,
+        within_window: '提交窗口已開啟，請在倒計時結束前完成提交',
+        urgent: '進入最後衝刺！窗口即將關閉，請立即提交入境卡',
+        past_deadline: '提交截止時間已過，請聯繫相關部門'
       },
       en: {
         no_date: 'No Thailand arrival date set, cannot submit entry card',
@@ -457,7 +474,7 @@ class ArrivalWindowCalculator {
       }
     };
 
-    const localeTranslations = translations[locale] || translations.en;
+    const localeTranslations = translations[locale] || (locale && locale.startsWith('zh') ? translations['zh-CN'] : translations.en);
     return localeTranslations[key] || key;
   }
 
@@ -468,7 +485,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {Function} - Function to stop updates
    */
-  static startRealtimeUpdates(arrivalDate, callback, locale = 'zh') {
+  static startRealtimeUpdates(arrivalDate, callback, locale = 'zh-CN') {
     if (!arrivalDate || typeof callback !== 'function') {
       return () => {}; // Return empty stop function
     }
@@ -498,10 +515,10 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {Object} - Formatted countdown
    */
-  static formatTimeRemaining(milliseconds, locale = 'zh') {
+  static formatTimeRemaining(milliseconds, locale = 'zh-CN') {
     if (!milliseconds || milliseconds <= 0) {
       return {
-        display: locale === 'zh' ? '已过期' : 'Expired',
+        display: locale && locale.startsWith('zh') ? '已过期' : 'Expired',
         days: 0,
         hours: 0,
         minutes: 0,
@@ -519,22 +536,19 @@ class ArrivalWindowCalculator {
     let display, color, isUrgent;
 
     if (days > 0) {
-      // More than 1 day
-      display = locale === 'zh' 
+      display = locale && locale.startsWith('zh') 
         ? `${days} 天 ${hours} 小时` 
         : `${days}d ${hours}h`;
       color = 'green';
       isUrgent = false;
     } else if (hours > 0) {
-      // Hours remaining
-      display = locale === 'zh' 
+      display = locale && locale.startsWith('zh') 
         ? `${hours} 小时 ${minutes} 分钟` 
         : `${hours}h ${minutes}m`;
       color = hours <= 6 ? 'red' : 'yellow';
       isUrgent = hours <= 6;
     } else {
-      // Minutes only
-      display = locale === 'zh' 
+      display = locale && locale.startsWith('zh') 
         ? `${minutes} 分钟` 
         : `${minutes}m`;
       color = 'red';

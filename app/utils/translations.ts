@@ -351,8 +351,8 @@ export function getDestinationLanguage(destinationId) {
 /**
  * 翻译字段名
  */
-export function translateField(fieldKey, destinationId, sourceLanguage = 'zh-CN') {
-  const langCode = getDestinationLanguage(destinationId);
+export function translateField(fieldKey, destinationId, targetLanguageOverride) {
+  const langCode = targetLanguageOverride || getDestinationLanguage(destinationId);
   const translations = FIELD_TRANSLATIONS[fieldKey];
   
   if (!translations) {

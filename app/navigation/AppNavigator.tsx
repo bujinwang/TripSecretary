@@ -325,7 +325,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
           component={TDACFilesScreen}
           options={{
             headerShown: true,
-            title: 'Saved TDAC Files',
+            title: t('screenTitles.tdacFiles'),
             headerTintColor: colors.text,
             headerStyle: {
               backgroundColor: colors.white,

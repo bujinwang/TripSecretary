@@ -5,32 +5,32 @@
 
 import React from 'react';
 import { EntryGuideTemplate } from '../../templates';
+import { useTranslation } from '../../i18n/LocaleContext';
 import { singaporeEntryGuide as singaporeGuideConfig } from '../../config/entryGuide/singapore';
+import type { RootStackScreenProps } from '../../types/navigation';
 
-interface SingaporeEntryGuideScreenProps {
-  navigation: {
-    goBack: () => void;
-  };
-  route?: any;
-}
+type SingaporeEntryGuideScreenProps = RootStackScreenProps<'SingaporeEntryGuide'>;
 
-const SingaporeEntryGuideScreen: React.FC<SingaporeEntryGuideScreenProps> = ({ navigation, route }) => (
-  <EntryGuideTemplate
-    config={singaporeGuideConfig}
-    navigation={navigation}
-    route={route}
-    onComplete={() => {}}
-  >
-    <EntryGuideTemplate.Header
-      title="新加坡入境指引 🇸🇬"
-      titleEn="Singapore Entry Guide 🇸🇬"
-      titleZh="新加坡入境指引 🇸🇬"
-      backLabel="返回"
-      backLabelEn="Back"
-      backLabelZh="返回"
-    />
-    <EntryGuideTemplate.AutoContent />
-  </EntryGuideTemplate>
-);
+const SingaporeEntryGuideScreen: React.FC<SingaporeEntryGuideScreenProps> = ({ navigation, route }) => {
+  const { t } = useTranslation();
+  return (
+    <EntryGuideTemplate
+      config={singaporeGuideConfig}
+      navigation={navigation}
+      route={route}
+      onComplete={() => {}}
+    >
+      <EntryGuideTemplate.Header
+        title={t('dest.singapore.entryGuide.title')}
+        titleEn={t('dest.singapore.entryGuide.title')}
+        titleZh={t('dest.singapore.entryGuide.titleZh')}
+        backLabel={t('common.back')}
+        backLabelEn={t('common.back')}
+        backLabelZh={t('common.back')}
+      />
+      <EntryGuideTemplate.AutoContent />
+    </EntryGuideTemplate>
+  );
+};
 
 export default SingaporeEntryGuideScreen;

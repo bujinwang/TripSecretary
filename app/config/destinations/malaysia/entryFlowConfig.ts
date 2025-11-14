@@ -87,16 +87,16 @@ export const malaysiaEntryFlowConfig = {
   // Status messages
   status: {
     ready: {
-      title: '准备好提交MDAC！',
-      subtitle: '所有信息已完成',
+      title: 'Ready to submit MDAC!',
+      subtitle: 'All information is complete',
     },
     mostly_complete: {
-      title: '快完成了！',
-      subtitle: '继续完成剩余项目',
+      title: 'Almost finished!',
+      subtitle: 'Complete the remaining items',
     },
     needs_improvement: {
-      title: '开始填写',
-      subtitle: '继续填写您的信息以使旅程更顺利',
+      title: 'Get started',
+      subtitle: 'Keep filling in your information for a smoother trip',
     },
   },
 
@@ -104,14 +104,14 @@ export const malaysiaEntryFlowConfig = {
   entryFlow: {
     progress: {
       headline: {
-        ready: '马来西亚准备就绪！🌴',
-        almost: '几乎完成了！',
-        start: '让我们开始吧！',
+        ready: 'Malaysia prep ready! 🌴',
+        almost: 'Almost there!',
+        start: 'Let\'s get started!',
       },
       subtitle: {
-        ready: '所有信息完整',
-        almost: '继续填写您的信息以使旅程更顺利',
-        start: '继续填写您的信息以使旅程更顺利',
+        ready: 'All required info complete',
+        almost: 'Keep filling in your info for a smoother trip',
+        start: 'Keep filling in your info for a smoother trip',
       },
     },
   },

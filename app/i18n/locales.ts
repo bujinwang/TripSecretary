@@ -308,6 +308,38 @@ const sgTravelInfoZh = {
 // Base translations object (will be extended with Traditional Chinese variants)
 const baseTranslations = {
   en: {
+    common: {
+      buttons: {
+        cancel: 'Cancel',
+        share: 'Share',
+      },
+      back: 'Back',
+      confirm: 'Confirm',
+      delete: 'Delete',
+      error: 'Error',
+      images: {
+        tapToEnlarge: 'Tap to enlarge',
+      },
+      reader: {
+        font: {
+          decrease: 'A-',
+          increase: 'A+',
+        },
+      },
+      privacy: {
+        localStorage: 'All information is saved locally on your device only',
+      },
+    },
+    funds: {
+      noInfoAvailable: 'No fund information available',
+      cash: 'Cash',
+    },
+    photos: {
+      fundProof: {
+        title: 'Fund Proof Photo',
+        tapToViewLargerImage: 'Tap to view larger image',
+      },
+    },
     languages: {
       en: 'English',
       'zh-CN': '简体中文',
@@ -1150,6 +1182,9 @@ const baseTranslations = {
     home: {
       header: {
         title: 'BorderBuddy',
+      },
+      languageModal: {
+        title: 'Select Language',
       },
       greeting: 'Hi, {{name}} 👋',
       welcomeText: 'Choose a destination to generate your entry pack',
@@ -2746,6 +2781,138 @@ const baseTranslations = {
         },
       },
     },
+    notifications: {
+      testingTools: {
+        title: 'Notification Testing Tools',
+        developmentOnly: 'Development Mode Only',
+      },
+      sections: {
+        test: 'Test Notifications',
+        actions: 'Actions',
+        scheduled: 'Scheduled Notifications ({{count}})',
+      },
+      stats: {
+        title: 'Notification Statistics',
+        empty: 'No scheduled notifications',
+      },
+      actions: {
+        viewLogs: 'View Notification Logs',
+        cancelAll: 'Cancel All Notifications',
+      },
+    },
+    notificationLog: {
+      header: {
+        title: 'Notification Logs',
+        back: 'Back',
+        filter: 'Filter',
+      },
+      tabs: {
+        logs: 'Logs ({{count}})',
+        analytics: 'Analytics',
+        performance: 'Tools',
+      },
+      empty: {
+        title: 'No notification logs found',
+        subtitle: 'Logs will appear here as notifications are sent and interacted with',
+      },
+      analytics: {
+        overall: {
+          title: 'Overall Statistics',
+          clickRate: 'Click Rate',
+          scheduled: 'Scheduled',
+          sent: 'Sent',
+          clicked: 'Clicked',
+        },
+        byType: 'By Notification Type',
+        timing: {
+          title: 'Optimal Timing',
+          bestHour: 'Best Hour',
+          bestDay: 'Best Day',
+          noData: 'No data',
+        },
+      },
+      filterModal: {
+        title: 'Filter Logs',
+        cancel: 'Cancel',
+        clear: 'Clear',
+        apply: 'Apply Filters',
+        labels: {
+          eventType: 'Event Type',
+          notificationType: 'Notification Type',
+          entryPackId: 'Entry Pack ID',
+          eventTypePlaceholder: 'e.g., scheduled, clicked, interacted',
+          notificationTypePlaceholder: 'e.g., submissionWindow, urgentReminder',
+          entryPackIdPlaceholder: 'Entry pack identifier',
+        },
+      },
+      performance: {
+        title: 'Performance Insights',
+        viewRecommendations: 'View Recommendations',
+        exportLogs: 'Export Logs',
+        clearOldLogs: 'Clear Old Logs (30+ days)',
+        clearAllLogs: 'Clear All Logs',
+      },
+    },
+    gdpr: {
+      export: {
+        exported: {
+          title: 'Export Complete',
+          share: 'Share File',
+        },
+      },
+      deletion: {
+        dataItem: {
+          willDelete: 'Will be deleted',
+          noData: 'No data',
+        },
+        consequences: {
+          accountDeactivated: 'Your account will be deactivated',
+        },
+      },
+    },
+    dest: {
+      hongkong: {
+        hdac: {
+          selection: {
+            aiValue: 'AI',
+          },
+        },
+      },
+      korea: {
+        preview: {
+          headerTitle: 'Entry Pack Preview',
+          previewMode: 'Preview Mode',
+          description: 'This is a preview of your entry pack. After applying for K-ETA it will include the full entry details.',
+          continue: 'Continue updating info',
+          applyKETA: 'Apply for K-ETA',
+          ketaInfoTitle: 'K-ETA Electronic Travel Authorization',
+        },
+      },
+      usa: {
+        entryGuide: {
+          title: 'US Entry Guide',
+          titleZh: '美国入境指引',
+        },
+      },
+      hongkong: { entryGuide: { title: 'Hong Kong Entry Guide', titleZh: '香港入境指引' } },
+      singapore: { entryGuide: { title: 'Singapore Entry Guide', titleZh: '新加坡入境指引' } },
+      malaysia: { entryGuide: { title: 'Malaysia Entry Guide', titleZh: '马来西亚入境指引' } },
+      japan: { entryGuide: { title: 'Japan Entry Guide', titleZh: '日本入境指引' } },
+      thailand: { entryGuide: { title: 'Thailand Entry Guide (TDAC)', titleZh: '泰国入境指引 (TDAC)' } },
+      vietnam: { entryGuide: { title: 'Vietnam Entry Guide', titleZh: '越南入境指引' } },
+    },
+    tdac: {
+      files: {
+        loading: 'Loading saved files...',
+        empty: {
+          pdfs: 'No saved PDFs found',
+          qr: 'No saved QR codes found',
+        },
+      },
+    },
+    screenTitles: {
+      tdacFiles: 'Saved TDAC Files',
+    },
   },
   zh: {
     languages: {
@@ -2808,6 +2975,18 @@ const baseTranslations = {
       yes: '是',
       no: '否',
       error: '错误',
+      images: {
+        tapToEnlarge: '点击放大',
+      },
+      reader: {
+        font: {
+          decrease: 'A-',
+          increase: 'A+',
+        },
+      },
+      privacy: {
+        localStorage: '所有信息仅保存在您的手机本地',
+      },
     },
     tabs: {
       home: '首页',
@@ -4977,6 +5156,148 @@ const baseTranslations = {
       steps: { verifyDocument: 'Vérification document', checkExpiry: 'Vérification validité', generateForm: 'Génération formulaire {{country}}', generateQA: 'Génération Q&R douane', translate: 'Traduction' },
       errors: { title: 'Échec génération', message: 'Réessayer plus tard', retry: 'Réessayer', goBack: 'Retour' },
     },
+    funds: {
+      noInfoAvailable: '没有可用的资金信息',
+      cash: '现金',
+    },
+    photos: {
+      fundProof: {
+        title: '资金证明照片',
+        tapToViewLargerImage: '点击查看大图',
+      },
+    },
+    notifications: {
+      testingTools: {
+        title: '通知测试工具',
+        developmentOnly: '仅限开发模式',
+      },
+      sections: {
+        test: '测试通知',
+        actions: '操作',
+        scheduled: '已安排的通知（{{count}}）',
+      },
+      stats: {
+        title: '通知统计',
+        empty: '暂无已安排通知',
+      },
+      actions: {
+        viewLogs: '查看通知日志',
+        cancelAll: '取消所有通知',
+      },
+    },
+    notificationLog: {
+      header: {
+        title: '通知日志',
+        back: '返回',
+        filter: '筛选',
+      },
+      tabs: {
+        logs: '日志（{{count}}）',
+        analytics: '分析',
+        performance: '工具',
+      },
+      empty: {
+        title: '未找到通知日志',
+        subtitle: '当通知被发送并产生互动时，这里会显示日志',
+      },
+      analytics: {
+        overall: {
+          title: '总体统计',
+          clickRate: '点击率',
+          scheduled: '已安排',
+          sent: '已发送',
+          clicked: '已点击',
+        },
+        byType: '按通知类型',
+        timing: {
+          title: '最佳时机',
+          bestHour: '最佳小时',
+          bestDay: '最佳日期',
+          noData: '无数据',
+        },
+      },
+      filterModal: {
+        title: '筛选日志',
+        cancel: '取消',
+        clear: '清除',
+        apply: '应用筛选',
+        labels: {
+          eventType: '事件类型',
+          notificationType: '通知类型',
+          entryPackId: '入境信息包 ID',
+          eventTypePlaceholder: '例如：已安排、已点击、已互动',
+          notificationTypePlaceholder: '例如：提交窗口、紧急提醒',
+          entryPackIdPlaceholder: '入境信息包标识符',
+        },
+      },
+      performance: {
+        title: '性能洞察',
+        viewRecommendations: '查看建议',
+        exportLogs: '导出日志',
+        clearOldLogs: '清除旧日志（30+ 天）',
+        clearAllLogs: '清除所有日志',
+      },
+    },
+    gdpr: {
+      export: {
+        exported: {
+          title: '导出完成',
+          share: '分享文件',
+        },
+      },
+      deletion: {
+        dataItem: {
+          willDelete: '将被删除',
+          noData: '无数据',
+        },
+        consequences: {
+          accountDeactivated: '您的账户将被停用',
+        },
+      },
+    },
+    dest: {
+      hongkong: {
+        hdac: {
+          selection: {
+            aiValue: 'AI',
+          },
+        },
+      },
+      korea: {
+        preview: {
+          headerTitle: '入境信息包预览',
+          previewMode: '预览模式',
+          description: '这是您的入境信息包的预览。申请 K-ETA 后将包含完整的入境详情。',
+          continue: '继续更新信息',
+          applyKETA: '申请 K-ETA',
+          ketaInfoTitle: 'K-ETA 电子旅行许可',
+        },
+      },
+      usa: {
+        entryGuide: {
+          title: '美国入境指引',
+          titleZh: '美国入境指引',
+        },
+      },
+      hongkong: { entryGuide: { title: '香港入境指引', titleZh: '香港入境指引' } },
+      singapore: { entryGuide: { title: '新加坡入境指引', titleZh: '新加坡入境指引' } },
+      malaysia: { entryGuide: { title: '马来西亚入境指引', titleZh: '马来西亚入境指引' } },
+      japan: { entryGuide: { title: '日本入境指引', titleZh: '日本入境指引' } },
+      thailand: { entryGuide: { title: '泰国入境指引 (TDAC)', titleZh: '泰国入境指引 (TDAC)' } },
+      vietnam: { entryGuide: { title: '越南入境指引', titleZh: '越南入境指引' } },
+    },
+    tdac: {
+      files: {
+        loading: '正在加载已保存的文件...',
+        empty: {
+          pdfs: '未找到已保存的 PDF',
+          qr: '未找到已保存的二维码',
+        },
+      },
+    },
+    screenTitles: {
+      tdacFiles: '已保存的 TDAC 文件',
+    },
   },
 };
 
@@ -4992,6 +5313,88 @@ export const translations = {
   ...baseTranslations,
   'zh-CN': baseTranslations.zh,
   'zh-TW': generateTraditionalChineseTranslations(),
+  fr: {
+    common: {
+      buttons: { cancel: 'Annuler', share: 'Partager' },
+      back: 'Retour',
+      confirm: 'Confirmer',
+      delete: 'Supprimer',
+      error: 'Erreur',
+      images: { tapToEnlarge: "Appuyer pour agrandir" },
+      reader: { font: { decrease: 'A-', increase: 'A+' } },
+    },
+    funds: { noInfoAvailable: 'Aucune information sur les fonds disponible', cash: 'Espèces' },
+    photos: { fundProof: { title: 'Photo de preuve des fonds', tapToViewLargerImage: "Appuyer pour voir l’image en grand" } },
+    notifications: {
+      testingTools: { title: 'Outils de test de notifications', developmentOnly: 'Mode développement uniquement' },
+      sections: { test: 'Tester les notifications', actions: 'Actions', scheduled: 'Notifications programmées ({{count}})' },
+      stats: { title: 'Statistiques des notifications', empty: 'Aucune notification programmée' },
+      actions: { viewLogs: 'Voir les journaux de notification', cancelAll: 'Annuler toutes les notifications' },
+    },
+    notificationLog: {
+      header: { title: 'Journaux des notifications', back: 'Retour', filter: 'Filtrer' },
+      tabs: { logs: 'Journaux ({{count}})', analytics: 'Analyses', performance: 'Outils' },
+      empty: { title: 'Aucun journal de notification trouvé', subtitle: 'Les journaux apparaîtront ici lorsque des notifications sont envoyées et utilisées' },
+      analytics: {
+        overall: { title: 'Statistiques globales', clickRate: 'Taux de clics', scheduled: 'Programmées', sent: 'Envoyées', clicked: 'Cliquées' },
+        byType: 'Par type de notification',
+        timing: { title: 'Moment optimal', bestHour: 'Heure optimale', bestDay: 'Jour optimal', noData: 'Aucune donnée' },
+      },
+      filterModal: {
+        title: 'Filtrer les journaux', cancel: 'Annuler', clear: 'Effacer', apply: 'Appliquer les filtres',
+        labels: {
+          eventType: "Type d’événement",
+          notificationType: 'Type de notification',
+          entryPackId: "Identifiant du pack d’entrée",
+          eventTypePlaceholder: 'p.ex., programmées, cliquées, interagies',
+          notificationTypePlaceholder: 'p.ex., fenêtre de dépôt, rappel urgent',
+          entryPackIdPlaceholder: "Identifiant du pack d’entrée",
+        },
+      },
+      performance: { title: 'Analyses de performance', viewRecommendations: 'Voir les recommandations', exportLogs: 'Exporter les journaux', clearOldLogs: 'Effacer les anciens journaux (30+ jours)', clearAllLogs: 'Effacer tous les journaux' },
+    },
+    gdpr: { export: { exported: { title: 'Export terminé', share: 'Partager le fichier' } }, deletion: { dataItem: { willDelete: 'Sera supprimé', noData: 'Aucune donnée' }, consequences: { accountDeactivated: 'Votre compte sera désactivé' } } },
+    dest: {
+      hongkong: { hdac: { selection: { aiValue: 'AI' } } },
+      korea: { preview: { headerTitle: "Aperçu du pack d’entrée", previewMode: 'Mode aperçu', description: "Ceci est un aperçu de votre pack d’entrée. Après la demande de K‑ETA, il inclura tous les détails d’entrée.", continue: 'Continuer à mettre à jour les informations', applyKETA: 'Demander le K‑ETA', ketaInfoTitle: "Autorisation de voyage électronique K‑ETA" } },
+      usa: { entryGuide: { title: 'US Entry Guide' } },
+    },
+    tdac: { files: { loading: 'Chargement des fichiers enregistrés...', empty: { pdfs: 'Aucun PDF enregistré trouvé', qr: 'Aucun QR code enregistré trouvé' } } },
+    screenTitles: { tdacFiles: 'Fichiers TDAC enregistrés' },
+  },
+  de: {
+    common: { buttons: { cancel: 'Abbrechen', share: 'Teilen' }, back: 'Zurück', confirm: 'Bestätigen', delete: 'Löschen', error: 'Fehler', images: { tapToEnlarge: 'Tippen zum Vergrößern' }, reader: { font: { decrease: 'A-', increase: 'A+' } } },
+    funds: { noInfoAvailable: 'Keine Fondsinformationen verfügbar', cash: 'Bargeld' },
+    photos: { fundProof: { title: 'Nachweisfoto der Mittel', tapToViewLargerImage: 'Tippen, um das Bild zu vergrößern' } },
+    notifications: { testingTools: { title: 'Benachrichtigungs-Testwerkzeuge', developmentOnly: 'Nur Entwicklungsmodus' }, sections: { test: 'Benachrichtigungen testen', actions: 'Aktionen', scheduled: 'Geplante Benachrichtigungen ({{count}})' }, stats: { title: 'Benachrichtigungsstatistiken', empty: 'Keine geplanten Benachrichtigungen' }, actions: { viewLogs: 'Benachrichtigungsprotokolle anzeigen', cancelAll: 'Alle Benachrichtigungen löschen' } },
+    notificationLog: { header: { title: 'Benachrichtigungsprotokolle', back: 'Zurück', filter: 'Filtern' }, tabs: { logs: 'Protokolle ({{count}})', analytics: 'Analysen', performance: 'Werkzeuge' }, empty: { title: 'Keine Benachrichtigungsprotokolle gefunden', subtitle: 'Protokolle erscheinen hier, sobald Benachrichtigungen gesendet und verwendet werden' }, analytics: { overall: { title: 'Gesamtstatistiken', clickRate: 'Klickrate', scheduled: 'Geplant', sent: 'Gesendet', clicked: 'Geklickt' }, byType: 'Nach Benachrichtigungstyp', timing: { title: 'Optimale Zeit', bestHour: 'Beste Stunde', bestDay: 'Bester Tag', noData: 'Keine Daten' } }, filterModal: { title: 'Protokolle filtern', cancel: 'Abbrechen', clear: 'Löschen', apply: 'Filter anwenden', labels: { eventType: 'Ereignistyp', notificationType: 'Benachrichtigungstyp', entryPackId: 'Einreisepaket-ID', eventTypePlaceholder: 'z. B. geplant, geklickt, interagiert', notificationTypePlaceholder: 'z. B. Einreichungsfenster, dringende Erinnerung', entryPackIdPlaceholder: 'Einreisepaket-Bezeichner' } }, performance: { title: 'Leistungsübersicht', viewRecommendations: 'Empfehlungen anzeigen', exportLogs: 'Protokolle exportieren', clearOldLogs: 'Alte Protokolle löschen (30+ Tage)', clearAllLogs: 'Alle Protokolle löschen' } },
+    gdpr: { export: { exported: { title: 'Export abgeschlossen', share: 'Datei teilen' } }, deletion: { dataItem: { willDelete: 'Wird gelöscht', noData: 'Keine Daten' }, consequences: { accountDeactivated: 'Ihr Konto wird deaktiviert' } } },
+    dest: { hongkong: { hdac: { selection: { aiValue: 'AI' } } }, korea: { preview: { headerTitle: 'Einreisepaket-Vorschau', previewMode: 'Vorschau-Modus', description: 'Dies ist eine Vorschau Ihres Einreisepakets. Nach der K‑ETA-Beantragung enthält es alle Einreisedetails.', continue: 'Informationen weiter aktualisieren', applyKETA: 'K‑ETA beantragen', ketaInfoTitle: 'Elektronische Reisegenehmigung K‑ETA' } }, usa: { entryGuide: { title: 'US Entry Guide' } } },
+    tdac: { files: { loading: 'Gespeicherte Dateien werden geladen...', empty: { pdfs: 'Keine gespeicherten PDFs gefunden', qr: 'Keine gespeicherten QR-Codes gefunden' } } },
+    screenTitles: { tdacFiles: 'Gespeicherte TDAC-Dateien' },
+  },
+  es: {
+    common: { buttons: { cancel: 'Cancelar', share: 'Compartir' }, back: 'Atrás', confirm: 'Confirmar', delete: 'Eliminar', error: 'Error', images: { tapToEnlarge: 'Toca para ampliar' }, reader: { font: { decrease: 'A-', increase: 'A+' } } },
+    funds: { noInfoAvailable: 'No hay información de fondos disponible', cash: 'Efectivo' },
+    photos: { fundProof: { title: 'Foto de comprobante de fondos', tapToViewLargerImage: 'Toca para ver la imagen ampliada' } },
+    notifications: { testingTools: { title: 'Herramientas de prueba de notificaciones', developmentOnly: 'Solo modo de desarrollo' }, sections: { test: 'Probar notificaciones', actions: 'Acciones', scheduled: 'Notificaciones programadas ({{count}})' }, stats: { title: 'Estadísticas de notificaciones', empty: 'No hay notificaciones programadas' }, actions: { viewLogs: 'Ver registros de notificaciones', cancelAll: 'Cancelar todas las notificaciones' } },
+    notificationLog: { header: { title: 'Registros de notificaciones', back: 'Atrás', filter: 'Filtrar' }, tabs: { logs: 'Registros ({{count}})', analytics: 'Análisis', performance: 'Herramientas' }, empty: { title: 'No se encontraron registros de notificaciones', subtitle: 'Los registros aparecerán aquí cuando se envíen e interactúen con las notificaciones' }, analytics: { overall: { title: 'Estadísticas generales', clickRate: 'Tasa de clics', scheduled: 'Programadas', sent: 'Enviadas', clicked: 'Clicadas' }, byType: 'Por tipo de notificación', timing: { title: 'Momento óptimo', bestHour: 'Mejor hora', bestDay: 'Mejor día', noData: 'Sin datos' } }, filterModal: { title: 'Filtrar registros', cancel: 'Cancelar', clear: 'Limpiar', apply: 'Aplicar filtros', labels: { eventType: 'Tipo de evento', notificationType: 'Tipo de notificación', entryPackId: 'ID del paquete de entrada', eventTypePlaceholder: 'p. ej., programadas, clicadas, interactuadas', notificationTypePlaceholder: 'p. ej., ventana de envío, recordatorio urgente', entryPackIdPlaceholder: 'Identificador del paquete de entrada' } }, performance: { title: 'Información de rendimiento', viewRecommendations: 'Ver recomendaciones', exportLogs: 'Exportar registros', clearOldLogs: 'Borrar registros antiguos (30+ días)', clearAllLogs: 'Borrar todos los registros' } },
+    gdpr: { export: { exported: { title: 'Exportación completada', share: 'Compartir archivo' } }, deletion: { dataItem: { willDelete: 'Se eliminará', noData: 'Sin datos' }, consequences: { accountDeactivated: 'Tu cuenta será desactivada' } } },
+    dest: { hongkong: { hdac: { selection: { aiValue: 'AI' } } }, korea: { preview: { headerTitle: 'Vista previa del paquete de entrada', previewMode: 'Modo de vista previa', description: 'Esta es una vista previa de tu paquete de entrada. Después de solicitar K‑ETA incluirá todos los detalles de entrada.', continue: 'Continuar actualizando la información', applyKETA: 'Solicitar K‑ETA', ketaInfoTitle: 'Autorización electrónica de viaje K‑ETA' } }, usa: { entryGuide: { title: 'Guía de entrada de EE. UU.' } } },
+    tdac: { files: { loading: 'Cargando archivos guardados...', empty: { pdfs: 'No se encontraron PDF guardados', qr: 'No se encontraron códigos QR guardados' } } },
+    screenTitles: { tdacFiles: 'Archivos TDAC guardados' },
+  },
+  ms: {
+    common: { buttons: { cancel: 'Batal', share: 'Kongsi' }, back: 'Kembali', confirm: 'Sahkan', delete: 'Padam', error: 'Ralat', images: { tapToEnlarge: 'Ketik untuk besarkan' }, reader: { font: { decrease: 'A-', increase: 'A+' } } },
+    funds: { noInfoAvailable: 'Tiada maklumat dana tersedia', cash: 'Tunai' },
+    photos: { fundProof: { title: 'Foto bukti dana', tapToViewLargerImage: 'Ketik untuk melihat imej yang lebih besar' } },
+    notifications: { testingTools: { title: 'Alat ujian pemberitahuan', developmentOnly: 'Mod pembangunan sahaja' }, sections: { test: 'Uji pemberitahuan', actions: 'Tindakan', scheduled: 'Pemberitahuan berjadual ({{count}})' }, stats: { title: 'Statistik pemberitahuan', empty: 'Tiada pemberitahuan berjadual' }, actions: { viewLogs: 'Lihat log pemberitahuan', cancelAll: 'Batalkan semua pemberitahuan' } },
+    notificationLog: { header: { title: 'Log pemberitahuan', back: 'Kembali', filter: 'Tapis' }, tabs: { logs: 'Log ({{count}})', analytics: 'Analitik', performance: 'Alat' }, empty: { title: 'Tiada log pemberitahuan ditemui', subtitle: 'Log akan muncul di sini apabila pemberitahuan dihantar dan digunakan' }, analytics: { overall: { title: 'Statistik keseluruhan', clickRate: 'Kadar klik', scheduled: 'Berjadual', sent: 'Dihantar', clicked: 'Diklik' }, byType: 'Mengikut jenis pemberitahuan', timing: { title: 'Masa optimum', bestHour: 'Jam terbaik', bestDay: 'Hari terbaik', noData: 'Tiada data' } }, filterModal: { title: 'Tapis log', cancel: 'Batal', clear: 'Kosongkan', apply: 'Guna penapis', labels: { eventType: 'Jenis acara', notificationType: 'Jenis pemberitahuan', entryPackId: 'ID pakej masuk', eventTypePlaceholder: 'contohnya: berjadual, diklik, berinteraksi', notificationTypePlaceholder: 'contohnya: tetingkap penyerahan, peringatan segera', entryPackIdPlaceholder: 'Pengecam pakej masuk' } }, performance: { title: 'Cerapan prestasi', viewRecommendations: 'Lihat cadangan', exportLogs: 'Eksport log', clearOldLogs: 'Kosongkan log lama (30+ hari)', clearAllLogs: 'Kosongkan semua log' } },
+    gdpr: { export: { exported: { title: 'Eksport selesai', share: 'Kongsi fail' } }, deletion: { dataItem: { willDelete: 'Akan dipadam', noData: 'Tiada data' }, consequences: { accountDeactivated: 'Akaun anda akan dinyahaktifkan' } } },
+    dest: { hongkong: { hdac: { selection: { aiValue: 'AI' } } }, korea: { preview: { headerTitle: 'Pratonton Pakej Masuk', previewMode: 'Mod pratonton', description: 'Ini ialah pratonton pakej masuk anda. Selepas memohon K‑ETA ia akan merangkumi semua butiran masuk.', continue: 'Teruskan mengemas kini maklumat', applyKETA: 'Mohon K‑ETA', ketaInfoTitle: 'K‑ETA Kebenaran Perjalanan Elektronik' } }, usa: { entryGuide: { title: 'Panduan Kemasukan AS' } } },
+    tdac: { files: { loading: 'Memuatkan fail yang disimpan...', empty: { pdfs: 'Tiada PDF yang disimpan ditemui', qr: 'Tiada kod QR yang disimpan ditemui' } } },
+    screenTitles: { tdacFiles: 'Fail TDAC yang disimpan' },
+  },
 };
 
 // Merge country-specific translations from JSON files

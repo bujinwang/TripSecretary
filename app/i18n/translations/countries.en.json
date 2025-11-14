@@ -566,7 +566,9 @@
     }
   },
   "my": {
+    "name": "Malaysia",
     "entryFlow": {
+      "title": "Malaysia Entry Preparation",
       "submissionWindow": "Submit within 3 days of arrival"
     },
     "travelInfo": {
@@ -785,21 +787,21 @@
     "entryPack": {
       "preview": {
         "actions": {
-          "editInfo": "Edit Information / 编辑信息 / Edit Maklumat",
-          "viewGuide": "MDAC Guide / MDAC指南 / Panduan MDAC",
-          "submitMdac": "Submit MDAC / 提交MDAC / Hantar MDAC"
+          "editInfo": "Edit Information",
+          "viewGuide": "MDAC Guide",
+          "submitMdac": "Submit MDAC"
         },
         "completion": {
-          "title": "Ready for MDAC! / 准备提交MDAC！ / Sedia untuk MDAC!",
-          "subtitle": "Your Malaysia entry information is complete. Submit your MDAC within 3 days before arrival. / 您的马来西亚入境信息已完整。请在入境前3天内提交MDAC。/ Maklumat kemasukan Malaysia anda lengkap. Hantar MDAC anda dalam tempoh 3 hari sebelum ketibaan."
+          "title": "Ready for MDAC!",
+          "subtitle": "Your Malaysia entry information is complete. Submit your MDAC within 3 days before arrival."
         },
         "validation": {
-          "title": "Complete Required Information / 完成必填信息 / Lengkapkan Maklumat Diperlukan",
-          "message": "Please complete all required fields before submitting your MDAC. / 请完成所有必填项目后再提交MDAC。/ Sila lengkapkan semua medan yang diperlukan sebelum menghantar MDAC anda."
+          "title": "Complete Required Information",
+          "message": "Please complete all required fields before submitting your MDAC."
         },
         "documents": {
-          "title": "Malaysia Digital Arrival Card (MDAC) / 马来西亚数字入境卡 / Kad Ketibaan Digital Malaysia",
-          "subtitle": "Your information will be submitted digitally to Malaysian immigration authorities. / 您的信息将数字提交给马来西亚移民局。/ Maklumat anda akan dihantar secara digital kepada pihak berkuasa imigresen Malaysia."
+          "title": "Malaysia Digital Arrival Card (MDAC)",
+          "subtitle": "Your information will be submitted digitally to Malaysian immigration authorities."
         }
       }
     },
@@ -981,12 +983,54 @@
         },
         "subtitle": {
           "ready": "Submit the SG Arrival Card within the 3-day window to stay compliant.",
-          "almost": "Just {{remainingPercent}}% left—once done you can submit SGAC with one tap.",
+          "almost": "Only {{remaining}}% left—once done you can submit SGAC with one tap.",
           "start": "Fill in passport, travel, and accommodation details to unlock SGAC submission."
-        }
+        },
+        "label": "Preparation progress"
       },
       "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time).",
-      "title": "Singapore Entry Preparation"
+      "title": "Singapore Entry Preparation",
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit SG Arrival Card",
+        "submitSubtitle": "All set! Submit your Singapore entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% of the sections before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Singapore entry information is complete."
+        },
+        "continue": "Continue editing"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "completionCard": {
+        "title": "Completion progress",
+        "summary": "{{completedCategories}} of {{totalCategories}} sections complete"
+      }
     },
     "navigation": {
       "submitButton": {
@@ -2405,7 +2449,49 @@
           "ready": "Submit the online arrival card within the 3-day window to stay compliant.",
           "almost": "Just {{remainingPercent}}% left—complete the info and you can finish the arrival card.",
           "start": "Fill in passport, contact, and itinerary details to unlock the arrival card helper."
-        }
+        },
+        "label": "Preparation Progress"
+      },
+      "countdown": {
+        "title": "Submission Window",
+        "subtitle": "Submit the Taiwan Online Arrival Card within 3 days before landing.",
+        "time": "{{days}} days {{hours}} hours remaining",
+        "arrival": "Arrival: {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "startEntryGuide": "Start Guided Mode",
+        "entryGuideSubtitle": "Step-by-step help for the Taiwan arrival card",
+        "submit": "Submit Arrival Card",
+        "submitSubtitle": "Open the official Taiwan Online Arrival Card",
+        "edit": "Edit Travel Information",
+        "editSubtitle": "Update passport, contact, or itinerary details",
+        "previewPack": "Preview Entry Pack",
+        "previewPackSubtitle": "Review every document and answer in one place",
+        "entryGuide": "Arrival Guide",
+        "editThai": "Edit Information",
+        "editThaiSubtitle": "Jump back into the form to add or fix details",
+        "help": {
+          "title": "Need help?",
+          "message": "Share a screenshot or contact support if anything looks wrong.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Get help",
+          "calloutSubtitle": "We're here if the arrival card feels confusing"
+        },
+        "incomplete": {
+          "title": "More details needed",
+          "message": "Please complete at least 80% of the information before submitting."
+        },
+        "success": {
+          "title": "Ready to submit",
+          "message": "Everything looks complete—submit within the 3-day window."
+        },
+        "continue": "Continue editing"
+      },
+      "completionCard": {
+        "title": "Completion Progress",
+        "summary": "{{completedCategories}} of {{totalCategories}} sections complete"
       },
       "submissionWindow": "Taiwan online arrival card must be submitted within 3 days before arrival."
     },
@@ -3400,6 +3486,37 @@
         "commercialGoods": "Are you bringing commercial goods, samples, or goods for resale?",
         "firearms": "Are you bringing firearms or weapons?",
         "dutyFree": "Are you bringing goods that exceed your duty-free allowance?"
+      }
+    }
+  },
+  "entryPackDisplay": {
+    "my": {
+      "header": {
+        "title": "🇲🇾 Entry Pack",
+        "subtitle": "Important information for immigration officer"
+      },
+      "tabs": {
+        "mdac": {
+          "label": "MDAC",
+          "labelSecondary": "MDAC"
+        },
+        "personal": {
+          "label": "Personal",
+          "labelSecondary": "Peribadi"
+        },
+        "travel": {
+          "label": "Travel",
+          "labelSecondary": "Perjalanan"
+        },
+        "funds": {
+          "label": "Funds",
+          "labelSecondary": "Kewangan"
+        }
+      },
+      "status": {
+        "notSubmittedTitle": "MDAC Not Submitted",
+        "notSubmittedDescription": "Please submit MDAC within 3 days before arrival",
+        "note": "You can still show other information to immigration officer"
       }
     }
   }

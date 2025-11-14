@@ -59,7 +59,7 @@ const HDACSelectionScreen = ({ navigation, route }) => {
             <Text style={styles.statLabel}>{t('hongkong.selection.smartFlow.successLabel', { defaultValue: '成功率' })}</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>AI</Text>
+            <Text style={styles.statValue}>{t('dest.hongkong.hdac.selection.aiValue', { defaultValue: 'AI' })}</Text>
             <Text style={styles.statLabel}>{t('hongkong.selection.smartFlow.aiLabel', { defaultValue: '智能填充' })}</Text>
           </View>
         </View>

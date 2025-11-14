@@ -131,12 +131,12 @@ const formatGeneratedTimeLabel = (
   } else if (diffDays === 1) {
     relativeLabel = translate('history.sections.yesterday', { defaultValue: 'Yesterday' });
   } else {
-    relativeLabel = DateFormatter.formatDate(date, language, 'datetime') || date.toLocaleString();
+    relativeLabel = DateFormatter.formatDate(date, language, 'datetime') || date.toLocaleString(language);
     return `${translate('history.timePrefix', { defaultValue: 'Generated' })} ${relativeLabel}`;
   }
 
   const connector = language.startsWith('en') ? ' at ' : ' ';
-  const timePart = DateFormatter.formatDate(date, language, 'time') || date.toLocaleTimeString();
+  const timePart = DateFormatter.formatDate(date, language, 'time') || date.toLocaleTimeString(language, { hour12: !language.startsWith('zh') });
   const formatted = `${relativeLabel}${connector}${timePart}`;
   return `${translate('history.timePrefix', { defaultValue: 'Generated' })} ${formatted}`;
 };

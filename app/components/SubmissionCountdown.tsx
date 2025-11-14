@@ -11,10 +11,11 @@ import { colors, typography, spacing } from '../theme';
 import ArrivalWindowCalculator from '../utils/thailand/ArrivalWindowCalculator';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
+import { useLocale } from '../i18n/LocaleContext';
 
 const SubmissionCountdown = ({
    arrivalDate,
-   locale = 'zh',
+   locale,
    showIcon = true,
    updateInterval = 1000, // Update every second for real-time countdown
    variant = 'default',
@@ -24,6 +25,9 @@ const SubmissionCountdown = ({
   const [timeRemaining, setTimeRemaining] = useState(null);
   const isCompact = variant === 'compact';
 
+  const { language } = useLocale();
+  const localeToUse = locale || language;
+
   // Update countdown information
   const updateCountdown = () => {
     if (!arrivalDate) {
@@ -32,13 +36,13 @@ const SubmissionCountdown = ({
       return;
     }
 
-    const window = ArrivalWindowCalculator.getSubmissionWindow(arrivalDate, locale);
+    const window = ArrivalWindowCalculator.getSubmissionWindow(arrivalDate, localeToUse);
     const uiState = ArrivalWindowCalculator.getUIState(window);
     
     setWindowInfo({ ...window, ...uiState });
 
     if (window.timeRemaining) {
-       const formatted = CountdownFormatter.formatTimeRemaining(window.timeRemaining, locale, { showSeconds: true, maxUnit: 'hours' });
+       const formatted = CountdownFormatter.formatTimeRemaining(window.timeRemaining, localeToUse, { showSeconds: true, maxUnit: 'hours' });
        setTimeRemaining(formatted);
      } else {
        setTimeRemaining(null);
@@ -61,7 +65,7 @@ const SubmissionCountdown = ({
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [arrivalDate, locale, updateInterval]);
+  }, [arrivalDate, localeToUse, updateInterval]);
 
   // Handle case when arrival date is not set
   if (!arrivalDate || !windowInfo) {
@@ -73,7 +77,7 @@ const SubmissionCountdown = ({
             还没告诉我泰国旅行日期呢 📅
           </Text>
           <Text style={styles.noDateSubtext}>
-            {locale === 'zh'
+            {localeToUse && localeToUse.startsWith('zh')
               ? '快去旅行信息中告诉我你什么时候到泰国吧！✈️'
               : 'Please tell me when you\'re arriving in Thailand! ✈️'
             }
@@ -154,7 +158,7 @@ const SubmissionCountdown = ({
             isCompact && styles.countdownLabelCompact,
             { color: colorScheme.text }
           ]}>
-            {locale === 'zh' ? '倒计时' : 'Countdown'}
+            {localeToUse && localeToUse.startsWith('zh') ? '倒计时' : 'Countdown'}
           </Text>
           <Text style={[
             styles.countdownTime,
@@ -172,7 +176,7 @@ const SubmissionCountdown = ({
               { backgroundColor: colorScheme.accent }
             ]}>
               <Text style={styles.urgencyText}>
-                {locale === 'zh' ? '紧急' : 'URGENT'}
+                {localeToUse && localeToUse.startsWith('zh') ? '紧急' : 'URGENT'}
               </Text>
             </View>
           )}
@@ -186,7 +190,7 @@ const SubmissionCountdown = ({
             styles.arrivalLabel,
             isCompact && styles.arrivalLabelCompact
           ]}>
-            {locale === 'zh' ? '抵达日期' : 'Arrival Date'}
+            {localeToUse && localeToUse.startsWith('zh') ? '抵达日期' : 'Arrival Date'}
           </Text>
           <Text style={[
             styles.arrivalDate,
@@ -200,7 +204,7 @@ const SubmissionCountdown = ({
               const localDate = new Date(year, month - 1, day);
               return DateFormatter.formatLongDate(
                 localDate,
-                locale === 'zh' ? 'zh-CN' : locale
+                localeToUse
               );
             })()}
           </Text>
@@ -214,7 +218,7 @@ const SubmissionCountdown = ({
             styles.windowInfoLabel,
             isCompact && styles.windowInfoLabelCompact
           ]}>
-            {locale === 'zh' ? '提交窗口开启时间' : 'Submission Window Opens'}
+            {localeToUse && localeToUse.startsWith('zh') ? '提交窗口开启时间' : 'Submission Window Opens'}
           </Text>
           <Text style={[
             styles.windowInfoTime,
@@ -222,7 +226,7 @@ const SubmissionCountdown = ({
           ]}>
             {DateFormatter.formatDateTime(
               windowInfo.submissionOpensAt,
-              locale === 'zh' ? 'zh-CN' : locale
+              localeToUse
             )}
           </Text>
         </View>

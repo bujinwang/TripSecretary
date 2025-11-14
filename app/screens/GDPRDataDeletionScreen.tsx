@@ -227,9 +227,9 @@ return null;
                     {t(`gdpr.deletion.dataTypes.${type}`, { defaultValue: type })}
                   </Text>
                   {exists ? (
-                    <Text style={styles.willDelete}>Will be deleted</Text>
+                    <Text style={styles.willDelete}>{t('gdpr.deletion.dataItem.willDelete')}</Text>
                   ) : (
-                    <Text style={styles.noData}>No data</Text>
+                    <Text style={styles.noData}>{t('gdpr.deletion.dataItem.noData')}</Text>
                   )}
                 </View>
                 <Text style={styles.dataDescription}>
@@ -258,7 +258,7 @@ return null;
           <View style={styles.consequenceCard}>
             <Text style={styles.consequenceItem}>• All your personal information will be permanently deleted</Text>
             <Text style={styles.consequenceItem}>• You will be logged out of the app</Text>
-            <Text style={styles.consequenceItem}>• Your account will be deactivated</Text>
+            <Text style={styles.consequenceItem}>• {t('gdpr.deletion.consequences.accountDeactivated')}</Text>
             <Text style={styles.consequenceItem}>• Generated documents will no longer be accessible</Text>
             <Text style={styles.consequenceItem}>• Travel history will be lost</Text>
           </View>

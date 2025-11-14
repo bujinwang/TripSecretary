@@ -8,17 +8,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme';
-import { translateField, getDestinationLanguage } from '../utils/translations';
+import { translateField } from '../utils/translations';
 import BackButton from '../components/BackButton';
 import UserDataService from '../services/data/UserDataService';
 import { useLocale } from '../i18n/LocaleContext';
 
 const PresentToCustomsScreen = ({ navigation, route }) => {
-  const { t } = useLocale();
+  const { t, language } = useLocale();
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   
-  const destLang = getDestinationLanguage(destination?.id);
+  const destLang = language;
 
   // 翻译字段
   const fields = {
@@ -48,64 +48,25 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
   // 获取目的地国家的名称（根据目的地语言）
   const getDestinationName = (destId) => {
-    const destLang = getDestinationLanguage(destId);
-    
     const nameMap = {
-      'hk': {
-        'zh-HK': '香港',
-        'en': 'Hong Kong',
-      },
-      'tw': {
-        'zh-TW': '台灣',
-        'en': 'Taiwan',
-      },
-      'th': {
-        'en': 'Thailand',
-      },
-      'jp': {
-        'ja': '日本',
-        'en': 'Japan',
-      },
-      'kr': {
-        'ko': '한국',
-        'en': 'South Korea',
-      },
-      'sg': {
-        'en': 'Singapore',
-      },
-      'my': {
-        'en': 'Malaysia',
-      },
-      'us': {
-        'en': 'United States',
-      },
-      'ca': {
-        'en': 'Canada',
-      },
-      'au': {
-        'en': 'Australia',
-      },
-      'nz': {
-        'en': 'New Zealand',
-      },
-      'gb': {
-        'en': 'United Kingdom',
-      },
-      'fr': {
-        'en': 'France',
-      },
-      'de': {
-        'en': 'Germany',
-      },
-      'it': {
-        'en': 'Italy',
-      },
-      'es': {
-        'en': 'Spain',
-      },
+      'hk': { 'zh-CN': '香港', 'zh-TW': '香港', 'en': 'Hong Kong' },
+      'tw': { 'zh-CN': '台湾', 'zh-TW': '台灣', 'en': 'Taiwan' },
+      'th': { 'zh-CN': '泰国', 'en': 'Thailand' },
+      'jp': { 'zh-CN': '日本', 'ja': '日本', 'en': 'Japan' },
+      'kr': { 'zh-CN': '韩国', 'ko': '한국', 'en': 'South Korea' },
+      'sg': { 'zh-CN': '新加坡', 'en': 'Singapore' },
+      'my': { 'zh-CN': '马来西亚', 'en': 'Malaysia' },
+      'us': { 'zh-CN': '美国', 'en': 'United States' },
+      'ca': { 'zh-CN': '加拿大', 'en': 'Canada' },
+      'au': { 'zh-CN': '澳大利亚', 'en': 'Australia' },
+      'nz': { 'zh-CN': '新西兰', 'en': 'New Zealand' },
+      'gb': { 'zh-CN': '英国', 'en': 'United Kingdom' },
+      'fr': { 'zh-CN': '法国', 'en': 'France' },
+      'de': { 'zh-CN': '德国', 'en': 'Germany' },
+      'it': { 'zh-CN': '意大利', 'en': 'Italy' },
+      'es': { 'zh-CN': '西班牙', 'en': 'Spain' },
     };
-    
-    return nameMap[destId]?.[destLang] || nameMap[destId]?.['en'] || destination?.name || '';
+    return nameMap[destId]?.[language] || nameMap[destId]?.['en'] || destination?.name || '';
   };
 
   // 将中文旅行目的转换为英文key
@@ -125,8 +86,8 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
     { label: fields.passportNumber, value: passport?.passportNo, important: true },
     { label: fields.flightNumber, value: travelInfo?.flightNumber, important: true },
     { label: fields.arrivalDate, value: travelInfo?.arrivalDate, important: true },
-    { label: translateField('departureDate', destination?.id), value: calculateDepartureDate(), important: true },
-    { label: fields.purposeOfVisit, value: translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id), important: true },
+    { label: translateField('departureDate', destination?.id, language), value: calculateDepartureDate(), important: true },
+    { label: fields.purposeOfVisit, value: translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id, language), important: true },
     { label: fields.hotelName, value: travelInfo?.hotelName },
     { label: fields.hotelAddress, value: travelInfo?.hotelAddress },
     { label: fields.contactPhone, value: travelInfo?.contactPhone },
@@ -141,9 +102,9 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
         iconStyle={styles.backArrow}
       >
         <View style={styles.backTextContainer}>
-          <Text style={styles.backTextPrimary}>{translateField('back', destination?.id)}</Text>
+          <Text style={styles.backTextPrimary}>{translateField('back', destination?.id, language)}</Text>
           {/* 如果目的地语言不是中文，显示简体中文帮助老人 */}
-          {destLang !== 'zh-CN' && destLang !== 'zh-HK' && destLang !== 'zh-TW' && (
+          {destLang !== 'zh-CN' && destLang !== 'zh-TW' && (
             <Text style={styles.backTextSecondary}>{t('common.back', { defaultValue: '返回' })}</Text>
           )}
         </View>
@@ -157,12 +118,12 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
         {/* Title - Large and Clear */}
         <View style={styles.titleSection}>
           <Text style={styles.titleMain}>{getDestinationName(destination?.id)}</Text>
-          <Text style={styles.titleSub}>{translateField('entryInformation', destination?.id)}</Text>
+          <Text style={styles.titleSub}>{translateField('entryInformation', destination?.id, language)}</Text>
         </View>
 
         {/* Most Important Info - Highlighted */}
         <View style={styles.importantSection}>
-          <Text style={styles.sectionTitle}>✓ {translateField('keyInformation', destination?.id)}</Text>
+          <Text style={styles.sectionTitle}>✓ {translateField('keyInformation', destination?.id, language)}</Text>
           {formData.filter(item => item.important).map((item, index) => (
             <View key={index} style={styles.formRowImportant}>
               <Text style={styles.labelPrimaryImportant}>{item.label}</Text>
@@ -175,7 +136,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
         {/* Additional Details */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>{translateField('additionalDetails', destination?.id)}</Text>
+          <Text style={styles.sectionTitle}>{translateField('additionalDetails', destination?.id, language)}</Text>
           {formData.filter(item => !item.important).map((item, index) => (
             <View key={index} style={styles.formRow}>
               <Text style={styles.labelPrimary}>{item.label}</Text>
@@ -188,26 +149,26 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
         {/* Common Questions Quick Reference */}
         <View style={styles.qaSection}>
-          <Text style={styles.sectionTitle}>💬 {translateField('commonQuestions', destination?.id)}</Text>
+          <Text style={styles.sectionTitle}>💬 {translateField('commonQuestions', destination?.id, language)}</Text>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('purposeOfVisit', destination?.id)}?
+              {translateField('purposeOfVisit', destination?.id, language)}?
             </Text>
             <Text style={styles.qaAnswer}>
-              {translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id)}
+              {translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id, language)}
             </Text>
           </View>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('howLongStay', destination?.id)}
+              {translateField('howLongStay', destination?.id, language)}
             </Text>
             <Text style={styles.qaAnswer}>
-              {travelInfo?.stayDuration || '7'} {translateField('days', destination?.id)}
+              {travelInfo?.stayDuration || '7'} {translateField('days', destination?.id, language)}
             </Text>
           </View>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('returnFlightDate', destination?.id)}
+              {translateField('returnFlightDate', destination?.id, language)}
             </Text>
             <Text style={styles.qaAnswer}>
               {calculateDepartureDate()}
@@ -218,11 +179,11 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
         {/* Customs Declaration - Canada E311 */}
         {(destination?.id === 'ca' || destination?.name === '加拿大') && travelInfo && (
           <View style={styles.customsSection}>
-            <Text style={styles.sectionTitle}>🛃 {translateField('customsDeclaration', destination?.id)}</Text>
+            <Text style={styles.sectionTitle}>🛃 {translateField('customsDeclaration', destination?.id, language)}</Text>
             
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('arrivingFromCountry', destination?.id)}
+                {translateField('arrivingFromCountry', destination?.id, language)}
               </Text>
               <Text style={styles.declarationAnswer}>
                 {travelInfo.arrivingFrom === '美国' || travelInfo.arrivingFrom === 'United States' 
@@ -233,7 +194,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('currencyOverLimit', destination?.id)}
+                {translateField('currencyOverLimit', destination?.id, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasHighCurrency === '是' || travelInfo.hasHighCurrency === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasHighCurrency === '是' || travelInfo.hasHighCurrency === true) 
@@ -244,7 +205,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('exceedsDutyFree', destination?.id)}
+                {translateField('exceedsDutyFree', destination?.id, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.exceedsDutyFree === '是' || travelInfo.exceedsDutyFree === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.exceedsDutyFree === '是' || travelInfo.exceedsDutyFree === true)
@@ -255,7 +216,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasFirearms', destination?.id)}
+                {translateField('hasFirearms', destination?.id, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasFirearms === '是' || travelInfo.hasFirearms === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasFirearms === '是' || travelInfo.hasFirearms === true)
@@ -266,7 +227,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasCommercialGoods', destination?.id)}
+                {translateField('hasCommercialGoods', destination?.id, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasCommercialGoods === '是' || travelInfo.hasCommercialGoods === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasCommercialGoods === '是' || travelInfo.hasCommercialGoods === true)
@@ -277,7 +238,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasFoodAnimals', destination?.id)}
+                {translateField('hasFoodAnimals', destination?.id, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.visitedFarm === '是' || travelInfo.visitedFarm === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.visitedFarm === '是' || travelInfo.visitedFarm === true)
@@ -292,7 +253,7 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
         <View style={styles.qrSection}>
           <View style={styles.qrPlaceholder}>
             <Text style={styles.qrText}>{t('common.qrCode', { defaultValue: 'QR Code' })}</Text>
-            <Text style={styles.qrSubtext}>{translateField('scanForDetails', destination?.id)}</Text>
+            <Text style={styles.qrSubtext}>{translateField('scanForDetails', destination?.id, language)}</Text>
           </View>
         </View>
 
@@ -300,7 +261,12 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
         <View style={styles.footer}>
           <Text style={styles.footerText}>{t('common.generatedBy', { defaultValue: 'Generated by BorderBuddy' })}</Text>
           <Text style={styles.footerTimestamp}>
-            {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+            {(() => {
+              const now = new Date();
+              const date = now.toLocaleDateString(language);
+              const time = now.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
+              return `${date} ${time}`;
+            })()}
           </Text>
         </View>
       </ScrollView>

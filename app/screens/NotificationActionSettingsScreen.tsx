@@ -139,7 +139,7 @@ const NotificationActionSettingsScreen: React.FC = () => {
     
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Remind Later Duration</Text>
+        <Text style={styles.sectionTitle}>{t('notifications.settings.remindLaterDuration', { defaultValue: 'Remind Later Duration' })}</Text>
         <Text style={styles.sectionDescription}>
           How long to wait before showing reminder again
         </Text>
@@ -177,7 +177,7 @@ const NotificationActionSettingsScreen: React.FC = () => {
     
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Default Action</Text>
+        <Text style={styles.sectionTitle}>{t('notifications.settings.defaultAction', { defaultValue: 'Default Action' })}</Text>
         <Text style={styles.sectionDescription}>
           Default action when tapping notification (no action button)
         </Text>
@@ -260,13 +260,13 @@ const NotificationActionSettingsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={styles.sectionTitle}>{t('notifications.settings.quickActions', { defaultValue: 'Quick Actions' })}</Text>
         <Text style={styles.sectionDescription}>
           Show action buttons on notifications for quick access
         </Text>
         
         <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Enable Action Buttons</Text>
+          <Text style={styles.settingLabel}>{t('notifications.settings.enableActionButtons', { defaultValue: 'Enable Action Buttons' })}</Text>
           <Switch
             value={preferences.showQuickActions}
             onValueChange={(value) => updatePreference('showQuickActions', value)}
@@ -282,7 +282,7 @@ const NotificationActionSettingsScreen: React.FC = () => {
           {renderRemindLaterDurationPicker()}
           
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Learning & Feedback</Text>
+            <Text style={styles.sectionTitle}>{t('notifications.settings.learningFeedback', { defaultValue: 'Learning & Feedback' })}</Text>
             
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Learn from Usage</Text>
@@ -308,14 +308,14 @@ const NotificationActionSettingsScreen: React.FC = () => {
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Data & Analytics</Text>
+        <Text style={styles.sectionTitle}>{t('notifications.settings.dataAnalytics', { defaultValue: 'Data & Analytics' })}</Text>
         
         <TouchableOpacity
           style={styles.button}
           onPress={() => setShowAnalytics(!showAnalytics)}
         >
           <Text style={styles.buttonText}>
-            {showAnalytics ? 'Hide' : 'Show'} Usage Statistics
+            {showAnalytics ? t('notifications.settings.hideUsageStats', { defaultValue: 'Hide' }) : t('notifications.settings.showUsageStats', { defaultValue: 'Show' })} {t('notifications.settings.usageStatistics', { defaultValue: 'Usage Statistics' })}
           </Text>
         </TouchableOpacity>
         

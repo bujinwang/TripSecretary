@@ -18,24 +18,30 @@ import BackButton from '../../components/BackButton';
 import Button from '../../components/Button';
 import { colors, typography, spacing } from '../../theme';
 import { koreaEntryGuide as koreaGuideConfig } from '../../config/entryGuide/korea';
+import type { RootStackScreenProps } from '../../types/navigation';
 import UserDataService from '../../services/data/UserDataService';
 
 // 从统一配置中获取步骤，确保屏幕与服务保持一致
-const KOREA_ENTRY_STEPS = koreaGuideConfig.steps;
+type KoreaEntryStep = {
+  id: string;
+  title: string;
+  titleZh: string;
+  description: string;
+  descriptionZh: string;
+  category: string;
+  priority: number;
+  estimatedTime: string;
+  icon: string;
+  required: boolean;
+  warnings?: string[];
+  tips?: string[];
+  showEntryPack?: boolean;
+  categoryZh?: string;
+};
 
-interface KoreaEntryGuideScreenProps {
-  navigation: {
-    goBack: () => void;
-    navigate: (route: string, params?: any) => void;
-  };
-  route: {
-    params?: {
-      passport?: any;
-      destination?: string;
-      completionData?: any;
-    };
-  };
-}
+const KOREA_ENTRY_STEPS: KoreaEntryStep[] = koreaGuideConfig.steps as KoreaEntryStep[];
+
+type KoreaEntryGuideScreenProps = RootStackScreenProps<'KoreaEntryGuide'>;
 
 const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigation, route }) => {
   const { t, language } = useLocale();
@@ -44,7 +50,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set<string>());
 
-  const currentStep = KOREA_ENTRY_STEPS[currentStepIndex];
+  const currentStep: KoreaEntryStep = KOREA_ENTRY_STEPS[currentStepIndex];
   const progress = ((currentStepIndex + 1) / KOREA_ENTRY_STEPS.length) * 100;
 
   const handleStepComplete = (stepId: string) => {
@@ -98,7 +104,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
           style={styles.stepIndicatorScroll}
           contentContainerStyle={styles.stepIndicatorContent}
         >
-          {KOREA_ENTRY_STEPS.map((step: any, index: number) => {
+          {KOREA_ENTRY_STEPS.map((step: KoreaEntryStep, index: number) => {
             const status = getStepStatus(index);
             return (
               <TouchableOpacity
@@ -161,7 +167,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
   const renderCurrentStep = () => {
     const title = language?.startsWith('zh') ? currentStep.titleZh : currentStep.title;
     const description = language?.startsWith('zh') ? currentStep.descriptionZh : currentStep.description;
-    const category = language?.startsWith('zh') ? (currentStep as any).categoryZh : currentStep.category;
+    const category = language?.startsWith('zh') ? (currentStep.categoryZh || currentStep.category) : currentStep.category;
 
     return (
       <View style={styles.currentStepContainer}>
@@ -187,7 +193,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
           </Text>
         </View>
 
-        {(currentStep as any).showEntryPack && (
+        {currentStep.showEntryPack && (
           <View style={styles.entryPackCompactContainer}>
             <Button
               title={`${t('immigrationGuide.openEntryPack', { defaultValue: '打开通关包' })} 📋`}

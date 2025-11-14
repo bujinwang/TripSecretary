@@ -30,9 +30,9 @@ const normalizeLanguage = (code: string): string => {
     return DEFAULT_LANGUAGE;
   }
   
-  // Handle legacy 'zh' mapping - prefer Traditional for generic 'zh'
+  // Handle legacy 'zh' mapping - default to Simplified Chinese
   if (code === 'zh') {
-    return 'zh-TW';
+    return 'zh-CN';
   }
   
   // Handle regional variants - map all Traditional variants to zh-TW
