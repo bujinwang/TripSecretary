@@ -162,8 +162,9 @@ class SnapshotService {
   private initialized: boolean;
 
   constructor() {
-    // Use type assertion for documentDirectory (not fully typed in expo-file-system)
-    this.snapshotStorageDir = (FileSystem as any).documentDirectory + 'snapshots/';
+    const snapshotDirectory = new FileSystem.Directory(FileSystem.Paths.document, 'snapshots');
+    const uri = snapshotDirectory.uri.endsWith('/') ? snapshotDirectory.uri : `${snapshotDirectory.uri}/`;
+    this.snapshotStorageDir = uri;
     this.encryptionService = DataEncryptionService;
     this.encryptionEnabled = true; // Enable encryption for snapshots by default
     this.initialized = false;
