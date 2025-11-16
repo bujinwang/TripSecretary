@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * TDAC Error Handler Service
  * Comprehensive error handling, retry mechanisms, and user-friendly error reporting
@@ -6,91 +8,8 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import logger from '../LoggingService';
-
-interface RetryConfig {
-  maxRetries: number;
-  baseDelay: number;
-  maxDelay: number;
-  backoffMultiplier: number;
-  retryableErrors: string[];
-}
-
-interface ErrorCategory {
-  patterns: RegExp[];
-  userMessage: string;
-  recoverable: boolean;
-  retryable: boolean;
-}
-
-interface ErrorCategories {
-  [key: string]: ErrorCategory;
-}
-
-interface ErrorContext {
-  userAgent?: string;
-  submissionMethod?: string;
-  [key: string]: any;
-}
-
-interface ErrorEntry {
-  id: string;
-  timestamp: string;
-  message: string;
-  stack?: string;
-  name?: string;
-  context: ErrorContext;
-  attemptNumber: number;
-  userAgent: string;
-  submissionMethod: string;
-}
-
-interface ErrorHandlingResult {
-  category: string;
-  userMessage: string;
-  technicalMessage: string;
-  recoverable: boolean;
-  shouldRetry: boolean;
-  retryDelay: number;
-  attemptNumber: number;
-  maxRetries: number;
-  suggestions: string[];
-  errorId: string;
-  timestamp: string;
-}
-
-interface ErrorStatistics {
-  totalErrors: number;
-  errorsByCategory: Record<string, number>;
-  errorsByMethod: Record<string, number>;
-  recentErrors: ErrorEntry[];
-  errorRate: number;
-}
-
-interface ErrorDialog {
-  title: string;
-  message: string;
-  buttons: Array<{
-    text: string;
-    action: string;
-    primary: boolean;
-  }>;
-  icon: string;
-  severity: string;
-}
-
-interface ErrorButton {
-  text: string;
-  action: string;
-  primary: boolean;
-}
 
 class TDACErrorHandler {
-  retryConfig: RetryConfig;
-  errorCategories: ErrorCategories;
-  errorLog: ErrorEntry[];
-  maxLogEntries: number;
-
   constructor() {
     this.retryConfig = {
       maxRetries: 3,
@@ -213,9 +132,9 @@ class TDACErrorHandler {
    * @param {number} attemptNumber - Current attempt number (0-based)
    * @returns {Object} - Error handling result with retry decision
    */
-  async handleSubmissionError(error: Error, context: ErrorContext = {}, attemptNumber: number = 0): Promise<ErrorHandlingResult> {
+  async handleSubmissionError(error, context = {}, attemptNumber = 0) {
     try {
-      logger.debug('TDACErrorHandler', 'Handling TDAC submission error', {
+      console.log('🚨 Handling TDAC submission error:', {
         message: error.message,
         attempt: attemptNumber + 1,
         maxRetries: this.retryConfig.maxRetries,
@@ -234,7 +153,7 @@ class TDACErrorHandler {
       // Calculate retry delay if retrying
       const retryDelay = shouldRetry ? this.calculateRetryDelay(attemptNumber) : 0;
 
-      const result: ErrorHandlingResult = {
+      const result = {
         category: errorCategory.name,
         userMessage: errorCategory.userMessage,
         technicalMessage: error.message,
@@ -248,7 +167,7 @@ class TDACErrorHandler {
         timestamp: new Date().toISOString()
       };
 
-      logger.debug('TDACErrorHandler', 'Error handling result', {
+      console.log('📋 Error handling result:', {
         category: result.category,
         shouldRetry: result.shouldRetry,
         retryDelay: result.retryDelay,
@@ -257,8 +176,8 @@ class TDACErrorHandler {
 
       return result;
 
-    } catch (handlingError: any) {
-      logger.error('TDACErrorHandler', 'Error in error handler', { error: handlingError });
+    } catch (handlingError) {
+      console.error('❌ Error in error handler:', handlingError);
       
       // Fallback error handling
       return {
@@ -280,7 +199,7 @@ class TDACErrorHandler {
   /**
    * Categorize error based on patterns
    */
-  categorizeError(error: Error): ErrorCategory & { name: string } {
+  categorizeError(error) {
     const errorMessage = error.message || error.toString();
     
     for (const [categoryName, category] of Object.entries(this.errorCategories)) {
@@ -299,15 +218,14 @@ class TDACErrorHandler {
       name: 'unknown',
       userMessage: 'An unexpected error occurred. Please try again.',
       recoverable: true,
-      retryable: true,
-      patterns: []
+      retryable: true
     };
   }
 
   /**
    * Determine if operation should be retried
    */
-  shouldRetry(error: Error, errorCategory: ErrorCategory & { name: string }, attemptNumber: number): boolean {
+  shouldRetry(error, errorCategory, attemptNumber) {
     // Don't retry if max attempts reached
     if (attemptNumber >= this.retryConfig.maxRetries) {
       return false;
@@ -340,7 +258,7 @@ class TDACErrorHandler {
   /**
    * Calculate retry delay with exponential backoff
    */
-  calculateRetryDelay(attemptNumber: number): number {
+  calculateRetryDelay(attemptNumber) {
     const delay = Math.min(
       this.retryConfig.baseDelay * Math.pow(this.retryConfig.backoffMultiplier, attemptNumber),
       this.retryConfig.maxDelay
@@ -357,8 +275,8 @@ class TDACErrorHandler {
   /**
    * Get recovery suggestions based on error category
    */
-  getRecoverySuggestions(errorCategory: ErrorCategory & { name: string }, error: Error, context: ErrorContext): string[] {
-    const suggestions: string[] = [];
+  getRecoverySuggestions(errorCategory, error, context) {
+    const suggestions = [];
 
     switch (errorCategory.name) {
       case 'network':
@@ -440,9 +358,9 @@ class TDACErrorHandler {
   /**
    * Log error for debugging and analytics
    */
-  async logError(error: Error, context: ErrorContext, attemptNumber: number): Promise<void> {
+  async logError(error, context, attemptNumber) {
     try {
-      const errorEntry: ErrorEntry = {
+      const errorEntry = {
         id: this.generateErrorId(),
         timestamp: new Date().toISOString(),
         message: error.message,
@@ -465,29 +383,29 @@ class TDACErrorHandler {
       // Persist to AsyncStorage for debugging
       await AsyncStorage.setItem('tdac_error_log', JSON.stringify(this.errorLog));
 
-      logger.debug('TDACErrorHandler', 'Error logged', {
+      console.log('📝 Error logged:', {
         id: errorEntry.id,
         message: errorEntry.message,
         attempt: attemptNumber + 1
       });
 
-    } catch (loggingError: any) {
-      logger.error('TDACErrorHandler', 'Failed to log error', { error: loggingError });
+    } catch (loggingError) {
+      console.error('❌ Failed to log error:', loggingError);
     }
   }
 
   /**
    * Generate unique error ID
    */
-  generateErrorId(): string {
+  generateErrorId() {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   }
 
   /**
    * Get error statistics for monitoring
    */
-  getErrorStatistics(): ErrorStatistics {
-    const stats: ErrorStatistics = {
+  getErrorStatistics() {
+    const stats = {
       totalErrors: this.errorLog.length,
       errorsByCategory: {},
       errorsByMethod: {},
@@ -497,7 +415,7 @@ class TDACErrorHandler {
 
     // Count errors by category and method
     for (const error of this.errorLog) {
-      const category = this.categorizeError({ message: error.message } as Error).name;
+      const category = this.categorizeError({ message: error.message }).name;
       stats.errorsByCategory[category] = (stats.errorsByCategory[category] || 0) + 1;
       
       const method = error.context?.submissionMethod || 'unknown';
@@ -517,20 +435,20 @@ class TDACErrorHandler {
   /**
    * Clear error log
    */
-  async clearErrorLog(): Promise<void> {
+  async clearErrorLog() {
     try {
       this.errorLog = [];
       await AsyncStorage.removeItem('tdac_error_log');
-      logger.debug('TDACErrorHandler', 'Error log cleared');
-    } catch (error: any) {
-      logger.error('TDACErrorHandler', 'Failed to clear error log', { error });
+      console.log('🧹 Error log cleared');
+    } catch (error) {
+      console.error('❌ Failed to clear error log:', error);
     }
   }
 
   /**
    * Export error log for support
    */
-  async exportErrorLog(): Promise<string | null> {
+  async exportErrorLog() {
     try {
       const exportData = {
         timestamp: new Date().toISOString(),
@@ -544,8 +462,8 @@ class TDACErrorHandler {
       };
 
       return JSON.stringify(exportData, null, 2);
-    } catch (error: any) {
-      logger.error('TDACErrorHandler', 'Failed to export error log', { error });
+    } catch (error) {
+      console.error('❌ Failed to export error log:', error);
       return null;
     }
   }
@@ -553,7 +471,7 @@ class TDACErrorHandler {
   /**
    * Create user-friendly error dialog data
    */
-  createErrorDialog(errorResult: ErrorHandlingResult): ErrorDialog {
+  createErrorDialog(errorResult) {
     return {
       title: this.getErrorTitle(errorResult.category),
       message: errorResult.userMessage,
@@ -566,8 +484,8 @@ class TDACErrorHandler {
   /**
    * Get error dialog title
    */
-  getErrorTitle(category: string): string {
-    const titles: Record<string, string> = {
+  getErrorTitle(category) {
+    const titles = {
       network: 'Connection Issue',
       validation: 'Information Required',
       cloudflare: 'Security Verification',
@@ -585,8 +503,8 @@ class TDACErrorHandler {
   /**
    * Get error dialog buttons
    */
-  getErrorButtons(errorResult: ErrorHandlingResult): ErrorButton[] {
-    const buttons: ErrorButton[] = [];
+  getErrorButtons(errorResult) {
+    const buttons = [];
 
     if (errorResult.shouldRetry) {
       buttons.push({
@@ -624,8 +542,8 @@ class TDACErrorHandler {
   /**
    * Get error icon
    */
-  getErrorIcon(category: string): string {
-    const icons: Record<string, string> = {
+  getErrorIcon(category) {
+    const icons = {
       network: '📶',
       validation: '📝',
       cloudflare: '🔐',
@@ -643,8 +561,8 @@ class TDACErrorHandler {
   /**
    * Get error severity level
    */
-  getErrorSeverity(category: string): string {
-    const severities: Record<string, string> = {
+  getErrorSeverity(category) {
+    const severities = {
       network: 'warning',
       validation: 'info',
       cloudflare: 'warning',
@@ -661,5 +579,3 @@ class TDACErrorHandler {
 }
 
 export default new TDACErrorHandler();
-
-

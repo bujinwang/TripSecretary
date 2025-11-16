@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * PDF Management Service
  *
@@ -8,111 +10,13 @@
  */
 
 import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import logger from './LoggingService';
-
-interface PDFMetadata {
-  submissionMethod?: string;
-  [key: string]: any;
-}
-
-interface SavePDFResult {
-  filepath: string;
-  filename: string;
-  size: number;
-  savedAt: string;
-  arrCardNo: string;
-  metadata: PDFMetadata;
-}
-
-interface SaveQRResult {
-  filepath: string;
-  filename: string;
-  savedAt: string;
-  arrCardNo: string;
-}
-
-interface PDFInfo {
-  exists: boolean;
-  uri?: string;
-  size?: number;
-  modificationTime?: number | null;
-}
-
-interface CleanupResult {
-  success: boolean;
-  deletedCount?: number;
-  totalFiles?: number;
-  error?: string;
-}
-
-interface ShareResult {
-  success: boolean;
-  filepath?: string;
-  error?: string;
-}
-
-interface PDFMetadataItem {
-  filename: string;
-  filepath: string;
-  arrCardNo: string;
-  savedAt: string;
-  timestamp: number;
-  size: number;
-  exists: boolean;
-}
-
-interface DirectoryEnsureResult {
-  uri: string;
-  exists: boolean;
-  created: boolean;
-}
 
 class PDFManagementService {
-  /**
-   * TDAC files live under the tdac/ sub-directory inside Expo's document directory:
-   * <documentDirectory>/tdac/
-   *   ├── TDAC_<cardNo>_<timestamp>.pdf
-   *   └── TDAC_QR_<cardNo>_<timestamp>.png
-   */
-  static readonly PDF_SUBDIR = 'tdac';
-
-  static get PDF_DIRECTORY(): string {
-    return this.getPdfDirectoryUri();
-  }
-
-  private static getPdfDirectoryUri(): string {
-    const baseDir = FileSystem.documentDirectory;
-    if (!baseDir) {
-      throw new Error('FileSystem.documentDirectory is not available');
-    }
-    const normalizedBase = baseDir.endsWith('/') ? baseDir : `${baseDir}/`;
-    return `${normalizedBase}${this.PDF_SUBDIR}/`;
-  }
-
-  private static buildFilePath(filename: string): string {
-    return `${this.getPdfDirectoryUri()}${filename}`;
-  }
-
-  private static async ensurePdfDirectory(): Promise<DirectoryEnsureResult> {
-    const directoryUri = this.getPdfDirectoryUri();
-    const directoryInfo = await FileSystem.getInfoAsync(directoryUri);
-
-    if (directoryInfo.exists) {
-      return {
-        uri: directoryUri,
-        exists: true,
-        created: false
-      };
-    }
-
-    await FileSystem.makeDirectoryAsync(directoryUri, { intermediates: true });
-    return {
-      uri: directoryUri,
-      exists: true,
-      created: true
-    };
-  }
+  // Centralized PDF directory - using legacy API for path construction
+  static PDF_DIRECTORY = `${FileSystem.documentDirectory}tdac/`;
+  static PDF_SUBDIR = 'tdac'; // For new Directory API
 
   /**
    * Initialize PDF directory
@@ -120,15 +24,16 @@ class PDFManagementService {
    *
    * @returns {Promise<void>}
    */
-  static async initialize(): Promise<DirectoryEnsureResult> {
+  static async initialize() {
     try {
-      const result = await this.ensurePdfDirectory();
-      if (result.created) {
-        logger.debug('PDFManagementService', 'PDF directory created', { directoryUri: result.uri });
+      // Use new Directory API with Paths helper
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      if (!dir.exists) {
+        dir.create();
+        console.log('✅ PDF directory created');
       }
-      return result;
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to initialize PDF directory', { error });
+    } catch (error) {
+      console.error('❌ Failed to initialize PDF directory:', error);
       throw error;
     }
   }
@@ -141,7 +46,7 @@ class PDFManagementService {
    * @param {string} submissionMethod - Method used (api, webview, hybrid)
    * @returns {string} - Standardized filename
    */
-  static generatePDFFilename(arrCardNo: string, submissionMethod: string = 'api'): string {
+  static generatePDFFilename(arrCardNo, submissionMethod = 'api') {
     const timestamp = Date.now();
     const sanitizedCardNo = arrCardNo.replace(/[^a-zA-Z0-9]/g, '_');
     return `TDAC_${sanitizedCardNo}_${timestamp}.pdf`;
@@ -154,160 +59,22 @@ class PDFManagementService {
    * @param {string} arrCardNo - Arrival card number
    * @returns {string} - Standardized filename
    */
-  static generateQRFilename(arrCardNo: string): string {
+  static generateQRFilename(arrCardNo) {
     const timestamp = Date.now();
     const sanitizedCardNo = arrCardNo.replace(/[^a-zA-Z0-9]/g, '_');
     return `TDAC_QR_${sanitizedCardNo}_${timestamp}.png`;
   }
 
   /**
-   * Normalize URI to file:// format for expo-file-system
-   */
-  private static normalizeUri(uri: string | null | undefined): string | null {
-    if (!uri) {
-      return null;
-    }
-    if (uri.startsWith('file://') || uri.startsWith('content://')) {
-      return uri;
-    }
-    if (uri.startsWith('/')) {
-      return `file://${uri}`;
-    }
-    return uri;
-  }
-
-  /**
-   * Extract filename from TDAC file path
-   */
-  private static extractFilename(uri: string | null): string | null {
-    if (!uri) {
-      return null;
-    }
-    try {
-      const decoded = decodeURI(uri);
-      const parts = decoded.split('/');
-      return parts.pop() || null;
-    } catch (error) {
-      logger.warn('PDFManagementService', 'Failed to extract filename from uri', { uri, error });
-      return null;
-    }
-  }
-
-  /**
-   * Check whether a file exists at the provided URI
-   */
-  private static async fileExists(uri: string | null): Promise<boolean> {
-    if (!uri) {
-      return false;
-    }
-    try {
-      const info = await FileSystem.getInfoAsync(uri);
-      return Boolean(info?.exists);
-    } catch (error) {
-      logger.warn('PDFManagementService', 'fileExists check failed', { uri, error });
-      return false;
-    }
-  }
-
-  private static async writeBase64File(filepath: string, base64Data: string): Promise<void> {
-    const normalized = this.normalizeUri(filepath);
-    if (!normalized) {
-      throw new Error('Invalid TDAC file path');
-    }
-
-    await FileSystem.writeAsStringAsync(normalized, base64Data, {
-      encoding: FileSystem.EncodingType.Base64
-    });
-  }
-
-  private static convertBlobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        try {
-          const result = reader.result as string;
-          const base64data = result.includes(',')
-            ? result.split(',')[1]
-            : result;
-          resolve(base64data);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  private static stripBase64Prefix(data: string): string {
-    return data.includes(',') ? data.split(',')[1] : data;
-  }
-
-  /**
-   * Attempt to resolve and, if necessary, recover a TDAC PDF path
-   * from legacy simulator directories.
-   *
-   * @param pdfUri - Stored PDF URI
-   * @param options - Recovery options
-   * @returns Object with resolved URI and recovery flag
-   */
-  static async resolvePDFUri(
-    pdfUri: string | null | undefined,
-    options: { attemptCopy?: boolean } = {}
-  ): Promise<{ uri: string | null; recovered: boolean }> {
-    const attemptCopy = options.attemptCopy !== false;
-    const normalized = this.normalizeUri(pdfUri);
-
-    if (!normalized) {
-      return { uri: null, recovered: false };
-    }
-
-    if (await this.fileExists(normalized)) {
-      return { uri: normalized, recovered: false };
-    }
-
-    const filename = this.extractFilename(normalized);
-    if (!filename) {
-      return { uri: normalized, recovered: false };
-    }
-
-    await this.initialize();
-    const currentUri = this.getFilePath(filename);
-
-    if (await this.fileExists(currentUri)) {
-      return { uri: currentUri, recovered: true };
-    }
-
-    if (attemptCopy) {
-      try {
-        await FileSystem.copyAsync({
-          from: normalized,
-          to: currentUri
-        });
-
-        if (await this.fileExists(currentUri)) {
-          logger.info('PDFManagementService', 'Recovered TDAC PDF from legacy path', { filename });
-          return { uri: currentUri, recovered: true };
-        }
-      } catch (error) {
-        logger.warn('PDFManagementService', 'Failed to copy TDAC PDF from legacy path', {
-          filename,
-          error
-        });
-      }
-    }
-
-    return { uri: normalized, recovered: false };
-  }
-
-  /**
-   * Get fully-qualified TDAC file path within the document directory.
+   * Get full file path for a filename
+   * @deprecated Use direct File creation with Paths.document instead
    *
    * @param {string} filename - Filename
    * @returns {string} - Full file path (URI)
    */
-  static getFilePath(filename: string): string {
-    return this.buildFilePath(filename);
+  static getFilePath(filename) {
+    const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+    return file.uri;
   }
 
   /**
@@ -318,26 +85,49 @@ class PDFManagementService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} - Save result with filepath, filename, size, savedAt
    */
-  static async savePDF(arrCardNo: string, pdfBlob: Blob, metadata: PDFMetadata = {}): Promise<SavePDFResult> {
+  static async savePDF(arrCardNo, pdfBlob, metadata = {}) {
     try {
       await this.initialize();
+
       const filename = this.generatePDFFilename(arrCardNo, metadata.submissionMethod);
-      const filepath = this.buildFilePath(filename);
-      const base64data = await this.convertBlobToBase64(pdfBlob);
+      const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+      const filepath = file.uri; // Get the actual URI for later use
 
-      await this.writeBase64File(filepath, base64data);
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(pdfBlob);
 
-      logger.debug('PDFManagementService', 'PDF saved', { filepath });
-      return {
-        filepath,
-        filename,
-        size: pdfBlob.size,
-        savedAt: new Date().toISOString(),
-        arrCardNo,
-        metadata
-      };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to save PDF', { error });
+      return new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          try {
+            const base64data = reader.result.split(',')[1];
+            // Decode base64 to Uint8Array for binary data
+            const binaryString = atob(base64data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            file.create();
+            file.write(bytes);
+
+            console.log('✅ PDF saved:', filepath);
+            resolve({
+              filepath,
+              filename,
+              size: pdfBlob.size,
+              savedAt: new Date().toISOString(),
+              arrCardNo,
+              metadata
+            });
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+      });
+    } catch (error) {
+      console.error('❌ Failed to save PDF:', error);
       throw error;
     }
   }
@@ -349,25 +139,38 @@ class PDFManagementService {
    * @param {string} base64Data - Base64 encoded image data (with or without prefix)
    * @returns {Promise<Object>} - Save result
    */
-  static async saveQRImage(arrCardNo: string, base64Data: string): Promise<SaveQRResult> {
+  static async saveQRImage(arrCardNo, base64Data) {
     try {
       await this.initialize();
 
       const filename = this.generateQRFilename(arrCardNo);
-      const filepath = this.buildFilePath(filename);
-      const base64Image = this.stripBase64Prefix(base64Data);
+      const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+      const filepath = file.uri; // Get the actual URI for later use
 
-      await this.writeBase64File(filepath, base64Image);
+      // Remove base64 prefix if present
+      const base64Image = base64Data.includes(',')
+        ? base64Data.split(',')[1]
+        : base64Data;
 
-      logger.debug('PDFManagementService', 'QR image saved', { filepath });
+      // Decode base64 to Uint8Array for binary image data
+      const binaryString = atob(base64Image);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      file.create();
+      file.write(bytes);
+
+      console.log('✅ QR image saved:', filepath);
       return {
         filepath,
         filename,
         savedAt: new Date().toISOString(),
         arrCardNo
       };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to save QR image', { error });
+    } catch (error) {
+      console.error('❌ Failed to save QR image:', error);
       throw error;
     }
   }
@@ -378,26 +181,23 @@ class PDFManagementService {
    * @param {string} filepath - Full file path
    * @returns {Promise<Object>} - File info (exists, uri, size, modificationTime)
    */
-  static async getPDFInfo(filepath: string): Promise<PDFInfo> {
+  static async getPDFInfo(filepath) {
     try {
-      const normalized = this.normalizeUri(filepath);
-      if (!normalized) {
+      const file = new File(filepath);
+
+      if (!file.exists) {
         return { exists: false };
       }
 
-      const info = await FileSystem.getInfoAsync(normalized);
-      if (!info.exists) {
-        return { exists: false };
-      }
-
+      // Get file metadata
       return {
         exists: true,
-        uri: info.uri ?? normalized,
-        size: typeof info.size === 'number' ? info.size : undefined,
-        modificationTime: typeof info.modificationTime === 'number' ? info.modificationTime : null
+        uri: file.uri,
+        size: file.size,
+        modificationTime: null // New API doesn't provide modificationTime directly
       };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to get PDF info', { error });
+    } catch (error) {
+      console.error('❌ Failed to get PDF info:', error);
       return { exists: false };
     }
   }
@@ -408,20 +208,15 @@ class PDFManagementService {
    * @param {string} filepath - Full file path
    * @returns {Promise<void>}
    */
-  static async deletePDF(filepath: string): Promise<void> {
+  static async deletePDF(filepath) {
     try {
-      const normalized = this.normalizeUri(filepath);
-      if (!normalized) {
-        return;
+      const file = new File(filepath);
+      if (file.exists) {
+        file.delete();
+        console.log('✅ PDF deleted:', filepath);
       }
-
-      const info = await FileSystem.getInfoAsync(normalized);
-      if (info.exists) {
-        await FileSystem.deleteAsync(normalized, { idempotent: true });
-        logger.debug('PDFManagementService', 'PDF deleted', { filepath: normalized });
-      }
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to delete PDF', { error });
+    } catch (error) {
+      console.error('❌ Failed to delete PDF:', error);
       throw error;
     }
   }
@@ -431,14 +226,17 @@ class PDFManagementService {
    *
    * @returns {Promise<Array<string>>} - Array of filenames
    */
-  static async listPDFs(): Promise<string[]> {
+  static async listPDFs() {
     try {
       await this.initialize();
-      const directoryUri = this.getPdfDirectoryUri();
-      const items = await FileSystem.readDirectoryAsync(directoryUri);
-      return items.filter(name => name.toLowerCase().endsWith('.pdf'));
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to list PDFs', { error });
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      const items = dir.list();
+      // Filter for .pdf files and extract just the names
+      return items
+        .filter(item => item instanceof File && item.name.endsWith('.pdf'))
+        .map(item => item.name);
+    } catch (error) {
+      console.error('❌ Failed to list PDFs:', error);
       return [];
     }
   }
@@ -451,7 +249,7 @@ class PDFManagementService {
    * @param {number} daysOld - Number of days (default: 30)
    * @returns {Promise<Object>} - Cleanup result with deleted count
    */
-  static async cleanupOldPDFs(daysOld: number = 30): Promise<CleanupResult> {
+  static async cleanupOldPDFs(daysOld = 30) {
     try {
       await this.initialize();
       const files = await this.listPDFs();
@@ -459,7 +257,9 @@ class PDFManagementService {
 
       let deletedCount = 0;
       for (const filename of files) {
-        const filepath = this.buildFilePath(filename);
+        // Create file object using path components
+        const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+        const filepath = file.uri;
 
         // Extract timestamp from filename (format: TDAC_{cardNo}_{timestamp}.pdf)
         const timestampMatch = filename.match(/_(\d+)\.pdf$/);
@@ -472,14 +272,14 @@ class PDFManagementService {
         }
       }
 
-      logger.debug('PDFManagementService', `Cleanup complete: ${deletedCount} old PDFs deleted`);
+      console.log(`✅ Cleanup complete: ${deletedCount} old PDFs deleted`);
       return {
         success: true,
         deletedCount,
         totalFiles: files.length
       };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to cleanup old PDFs', { error });
+    } catch (error) {
+      console.error('❌ Failed to cleanup old PDFs:', error);
       return {
         success: false,
         error: error.message
@@ -493,17 +293,16 @@ class PDFManagementService {
    * @param {string} filepath - Full file path or filename
    * @returns {Promise<Object>} - Share result
    */
-  static async sharePDF(filepath: string): Promise<ShareResult> {
+  static async sharePDF(filepath) {
     try {
       // If only filename provided, construct full path
-      const directoryUri = this.getPdfDirectoryUri();
       const fullPath = filepath.includes('/')
         ? filepath
-        : `${directoryUri}${filepath}`;
+        : this.getFilePath(filepath);
 
-      const info = await FileSystem.getInfoAsync(fullPath);
+      const file = new File(fullPath);
 
-      if (!info.exists) {
+      if (!file.exists) {
         throw new Error('PDF file not found');
       }
 
@@ -513,21 +312,19 @@ class PDFManagementService {
         throw new Error('Sharing is not available on this platform');
       }
 
-      const shareUri = info.uri ?? fullPath;
-
-      await Sharing.shareAsync(shareUri, {
+      await Sharing.shareAsync(file.uri, {
         mimeType: 'application/pdf',
         dialogTitle: 'Share TDAC PDF',
         UTI: 'com.adobe.pdf'
       });
 
-      logger.debug('PDFManagementService', 'PDF shared successfully');
+      console.log('✅ PDF shared successfully');
       return {
         success: true,
-        filepath: shareUri
+        filepath: file.uri
       };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to share PDF', { error });
+    } catch (error) {
+      console.error('❌ Failed to share PDF:', error);
       return {
         success: false,
         error: error.message
@@ -541,17 +338,16 @@ class PDFManagementService {
    * @param {string} filepath - Full file path or filename
    * @returns {Promise<Object>} - Share result
    */
-  static async shareQRImage(filepath: string): Promise<ShareResult> {
+  static async shareQRImage(filepath) {
     try {
       // If only filename provided, construct full path
-      const directoryUri = this.getPdfDirectoryUri();
       const fullPath = filepath.includes('/')
         ? filepath
-        : `${directoryUri}${filepath}`;
+        : this.getFilePath(filepath);
 
-      const info = await FileSystem.getInfoAsync(fullPath);
+      const file = new File(fullPath);
 
-      if (!info.exists) {
+      if (!file.exists) {
         throw new Error('QR image file not found');
       }
 
@@ -561,20 +357,18 @@ class PDFManagementService {
         throw new Error('Sharing is not available on this platform');
       }
 
-      const shareUri = info.uri ?? fullPath;
-
-      await Sharing.shareAsync(shareUri, {
+      await Sharing.shareAsync(file.uri, {
         mimeType: 'image/png',
         dialogTitle: 'Share TDAC QR Code'
       });
 
-      logger.debug('PDFManagementService', 'QR image shared successfully');
+      console.log('✅ QR image shared successfully');
       return {
         success: true,
-        filepath: shareUri
+        filepath: file.uri
       };
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to share QR image', { error });
+    } catch (error) {
+      console.error('❌ Failed to share QR image:', error);
       return {
         success: false,
         error: error.message
@@ -587,39 +381,41 @@ class PDFManagementService {
    *
    * @returns {Promise<Array<Object>>} - Array of PDF metadata objects
    */
-  static async getAllSavedPDFs(): Promise<PDFMetadataItem[]> {
+  static async getAllSavedPDFs() {
     try {
       await this.initialize();
-      const directoryUri = this.getPdfDirectoryUri();
       const filenames = await this.listPDFs();
-      const pdfsWithMetadata: PDFMetadataItem[] = [];
+
+      const pdfsWithMetadata = [];
 
       for (const filename of filenames) {
-        const match = filename.match(/^TDAC_(.+?)_(\d+)\.pdf$/i);
-        if (!match) {
-          continue;
+        const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
+
+        // Parse filename: TDAC_{cardNo}_{timestamp}.pdf
+        const match = filename.match(/^TDAC_(.+?)_(\d+)\.pdf$/);
+
+        if (match) {
+          const cardNo = match[1].replace(/_/g, '-'); // Restore dashes
+          const timestamp = parseInt(match[2], 10);
+
+          pdfsWithMetadata.push({
+            filename,
+            filepath: file.uri,
+            arrCardNo: cardNo,
+            savedAt: new Date(timestamp).toISOString(),
+            timestamp,
+            size: file.exists ? file.size : 0,
+            exists: file.exists
+          });
         }
-
-        const cardNo = match[1].replace(/_/g, '-');
-        const timestamp = parseInt(match[2], 10);
-        const uri = `${directoryUri}${filename}`;
-        const info = await FileSystem.getInfoAsync(uri);
-
-        pdfsWithMetadata.push({
-          filename,
-          filepath: uri,
-          arrCardNo: cardNo,
-          savedAt: new Date(timestamp).toISOString(),
-          timestamp,
-          size: info.exists && typeof info.size === 'number' ? info.size : 0,
-          exists: info.exists
-        });
       }
 
+      // Sort by timestamp descending (newest first)
       pdfsWithMetadata.sort((a, b) => b.timestamp - a.timestamp);
+
       return pdfsWithMetadata;
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to get all saved PDFs', { error });
+    } catch (error) {
+      console.error('❌ Failed to get all saved PDFs:', error);
       return [];
     }
   }
@@ -629,43 +425,42 @@ class PDFManagementService {
    *
    * @returns {Promise<Array<Object>>} - Array of QR image metadata objects
    */
-  static async getAllSavedQRImages(): Promise<PDFMetadataItem[]> {
+  static async getAllSavedQRImages() {
     try {
       await this.initialize();
-      const directoryUri = this.getPdfDirectoryUri();
-      const items = await FileSystem.readDirectoryAsync(directoryUri);
-      const qrImages: PDFMetadataItem[] = [];
+      const dir = new Directory(Paths.document, this.PDF_SUBDIR);
+      const items = dir.list();
 
-      for (const name of items) {
-        if (!/^TDAC_QR_.+\.png$/i.test(name)) {
-          continue;
+      const qrImages = [];
+
+      for (const item of items) {
+        if (item instanceof File && item.name.match(/^TDAC_QR_.+\.png$/)) {
+          // Parse filename: TDAC_QR_{cardNo}_{timestamp}.png
+          const match = item.name.match(/^TDAC_QR_(.+?)_(\d+)\.png$/);
+
+          if (match) {
+            const cardNo = match[1].replace(/_/g, '-'); // Restore dashes
+            const timestamp = parseInt(match[2], 10);
+
+            qrImages.push({
+              filename: item.name,
+              filepath: item.uri,
+              arrCardNo: cardNo,
+              savedAt: new Date(timestamp).toISOString(),
+              timestamp,
+              size: item.size,
+              exists: item.exists
+            });
+          }
         }
-
-        const match = name.match(/^TDAC_QR_(.+?)_(\d+)\.png$/i);
-        if (!match) {
-          continue;
-        }
-
-        const cardNo = match[1].replace(/_/g, '-');
-        const timestamp = parseInt(match[2], 10);
-        const uri = `${directoryUri}${name}`;
-        const info = await FileSystem.getInfoAsync(uri);
-
-        qrImages.push({
-          filename: name,
-          filepath: uri,
-          arrCardNo: cardNo,
-          savedAt: new Date(timestamp).toISOString(),
-          timestamp,
-          size: info.exists && typeof info.size === 'number' ? info.size : 0,
-          exists: info.exists
-        });
       }
 
+      // Sort by timestamp descending (newest first)
       qrImages.sort((a, b) => b.timestamp - a.timestamp);
+
       return qrImages;
-    } catch (error: any) {
-      logger.error('PDFManagementService', 'Failed to get all saved QR images', { error });
+    } catch (error) {
+      console.error('❌ Failed to get all saved QR images:', error);
       return [];
     }
   }

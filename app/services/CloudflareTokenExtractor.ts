@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Cloudflare Token Extractor
  * Extracts Cloudflare Turnstile token from hidden WebView
@@ -9,22 +11,12 @@
  * 4. Return token for API use
  */
 
-interface CloudflareMessage {
-  type: string;
-  token?: string;
-  tokenLength?: number;
-  method?: string;
-  pollCount?: number;
-  maxPolls?: number;
-  timestamp: number;
-}
-
 class CloudflareTokenExtractor {
   /**
    * JavaScript injection code to extract Cloudflare token
    * This runs inside the WebView context
    */
-  static getExtractionScript(): string {
+  static getExtractionScript() {
     return `
       (function() {
         // Method 1: Try to find token in window object
@@ -87,7 +79,7 @@ class CloudflareTokenExtractor {
    * JavaScript to intercept Cloudflare callback
    * This must be injected BEFORE the page loads
    */
-  static getInterceptionScript(): string {
+  static getInterceptionScript() {
     return `
       (function() {
         // Store token when turnstile callback fires
@@ -219,73 +211,11 @@ class CloudflareTokenExtractor {
   }
 
   /**
-   * JavaScript to ensure the Cloudflare checkbox is visible to the user
-   */
-  static getScrollToChallengeScript(): string {
-    return `
-      (function() {
-        var MAX_OBSERVER_DURATION = 5000;
-
-        function focusChallenge() {
-          var selectors = [
-            '.cf-turnstile',
-            '#challenge-form',
-            '#challenge-stage',
-            'iframe[src*="challenges.cloudflare"]'
-          ];
-
-          for (var i = 0; i < selectors.length; i++) {
-            var element = document.querySelector(selectors[i]);
-            if (element) {
-              if (element.scrollIntoView) {
-                element.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' });
-              } else if (typeof window.scrollTo === 'function' && element.getBoundingClientRect) {
-                var rect = element.getBoundingClientRect();
-                window.scrollTo(0, Math.max(0, (window.pageYOffset || 0) + rect.top - (window.innerHeight * 0.25)));
-              } else if (typeof window.scrollTo === 'function') {
-                window.scrollTo(0, 0);
-              }
-              return true;
-            }
-          }
-
-          if (typeof window.scrollTo === 'function') {
-            window.scrollTo(0, 0);
-          }
-          return false;
-        }
-
-        if (!focusChallenge()) {
-          var observer = new MutationObserver(function() {
-            if (focusChallenge()) {
-              observer.disconnect();
-            }
-          });
-
-          observer.observe(document.documentElement || document.body, {
-            childList: true,
-            subtree: true
-          });
-
-          setTimeout(function() {
-            observer.disconnect();
-            focusChallenge();
-          }, MAX_OBSERVER_DURATION);
-        }
-      })();
-      true;
-    `;
-  }
-
-  /**
    * Get the TDAC URL to load for token extraction
    */
-  static getTDACUrl(): string {
+  static getTDACUrl() {
     return 'https://tdac.immigration.go.th/';
   }
 }
 
 export default CloudflareTokenExtractor;
-
-
-

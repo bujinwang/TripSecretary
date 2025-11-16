@@ -86,6 +86,7 @@ export type RootStackParamList = {
   TDACHybrid:
     | {
         travelerInfo?: TDACTravelerInfo | null;
+        autoSubmit?: boolean;
       }
     | undefined;
   TDACFiles: undefined;

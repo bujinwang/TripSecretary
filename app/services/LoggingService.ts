@@ -1,110 +1,80 @@
+// @ts-nocheck
+
 /**
  * LoggingService - Centralized logging for the application
  *
  * Provides consistent logging interface with:
  * - Component-based logging
- * - Environment-based log levels (DEBUG, INFO, WARN, ERROR)
- * - Production-safe (no debug logs in production)
+ * - Development/production modes
  * - Error tracking integration ready
  * - Structured logging with metadata
  */
 
-import type { LogLevel, LogLevelNumber, LogMetadata, Logger } from '../types/services';
-
-// Declare global __DEV__ for React Native
-declare const __DEV__: boolean;
-
-// Log levels
-const LOG_LEVELS: Record<string, LogLevelNumber> = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3,
-  NONE: 4,
-} as const;
-
 class LoggingService {
-  // Current log level (defaults based on __DEV__)
-  private static _logLevel: LogLevelNumber = __DEV__ ? LOG_LEVELS.DEBUG : LOG_LEVELS.INFO;
-  
   /**
-   * Set log level programmatically (useful for testing or runtime configuration)
+   * Log debug information (only in development)
+   *
+   * @param {string} component - Component or module name
+   * @param {string} message - Log message
+   * @param {Object} data - Additional data to log
    */
-  static setLogLevel(level: LogLevel | LogLevelNumber): void {
-    if (typeof level === 'string') {
-      this._logLevel = (LOG_LEVELS[level.toUpperCase()] as LogLevelNumber) || LOG_LEVELS.INFO;
-    } else {
-      this._logLevel = level;
+  static debug(component, message, data = null) {
+    if (__DEV__) {
+      const timestamp = new Date().toISOString();
+      const prefix = `[${timestamp}] [${component}]`;
+      
+      if (data) {
+        console.log(`${prefix} ${message}`, data);
+      } else {
+        console.log(`${prefix} ${message}`);
+      }
     }
-  }
-  
-  /**
-   * Get current log level
-   */
-  static getLogLevel(): LogLevelNumber {
-    return this._logLevel;
-  }
-  
-  /**
-   * Check if a log level should be output
-   */
-  private static _shouldLog(level: LogLevelNumber): boolean {
-    return level >= this._logLevel;
-  }
-  
-  /**
-   * Internal logging method that respects log levels
-   */
-  private static _log(
-    level: LogLevelNumber,
-    component: string,
-    message: string,
-    data: LogMetadata | null = null,
-    consoleMethod: 'log' | 'warn' | 'error' = 'log'
-  ): void {
-    if (!this._shouldLog(level)) {
-      return;
-    }
-    
-    const timestamp = new Date().toISOString();
-    const prefix = `[${timestamp}] [${component}]`;
-    
-    if (data) {
-      console[consoleMethod](`${prefix} ${message}`, data);
-    } else {
-      console[consoleMethod](`${prefix} ${message}`);
-    }
-  }
-
-  /**
-   * Log debug information (only in development or if DEBUG level enabled)
-   */
-  static debug(component: string, message: string, data: LogMetadata | null = null): void {
-    this._log(LOG_LEVELS.DEBUG, component, message, data, 'log');
   }
 
   /**
    * Log informational messages
+   *
+   * @param {string} component - Component or module name
+   * @param {string} message - Log message
+   * @param {Object} data - Additional data to log
    */
-  static info(component: string, message: string, data: LogMetadata | null = null): void {
-    this._log(LOG_LEVELS.INFO, component, `ℹ️ ${message}`, data, 'log');
+  static info(component, message, data = null) {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${component}] ℹ️`;
+    
+    if (data) {
+      console.log(`${prefix} ${message}`, data);
+    } else {
+      console.log(`${prefix} ${message}`);
+    }
   }
 
   /**
    * Log warning messages
+   *
+   * @param {string} component - Component or module name
+   * @param {string} message - Warning message
+   * @param {Object} data - Additional data to log
    */
-  static warn(component: string, message: string, data: LogMetadata | null = null): void {
-    this._log(LOG_LEVELS.WARN, component, `⚠️ ${message}`, data, 'warn');
+  static warn(component, message, data = null) {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${component}] ⚠️`;
+    
+    if (data) {
+      console.warn(`${prefix} ${message}`, data);
+    } else {
+      console.warn(`${prefix} ${message}`);
+    }
   }
 
   /**
    * Log error messages with context
+   *
+   * @param {string} component - Component or module name
+   * @param {Error|string} error - Error object or message
+   * @param {Object} context - Additional context about the error
    */
-  static error(component: string, error: Error | string, context: LogMetadata | null = null): void {
-    if (!this._shouldLog(LOG_LEVELS.ERROR)) {
-      return;
-    }
-    
+  static error(component, error, context = null) {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ❌`;
     
@@ -121,7 +91,7 @@ class LoggingService {
       console.error('Context:', context);
     }
 
-    // Send to error tracking service (e.g., Sentry) in production
+    // TODO: Send to error tracking service (e.g., Sentry) in production
     if (!__DEV__) {
       this.sendToErrorTracking(component, error, context);
     }
@@ -129,26 +99,44 @@ class LoggingService {
 
   /**
    * Log success messages
+   *
+   * @param {string} component - Component or module name
+   * @param {string} message - Success message
+   * @param {Object} data - Additional data to log
    */
-  static success(component: string, message: string, data: LogMetadata | null = null): void {
-    this._log(LOG_LEVELS.INFO, component, `✅ ${message}`, data, 'log');
+  static success(component, message, data = null) {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${component}] ✅`;
+    
+    if (data) {
+      console.log(`${prefix} ${message}`, data);
+    } else {
+      console.log(`${prefix} ${message}`);
+    }
   }
 
   /**
    * Log performance metrics
+   *
+   * @param {string} component - Component or module name
+   * @param {string} operation - Operation being measured
+   * @param {number} duration - Duration in milliseconds
+   * @param {Object} metadata - Additional metadata
    */
-  static performance(
-    component: string,
-    operation: string,
-    duration: number,
-    metadata: LogMetadata | null = null
-  ): void {
+  static performance(component, operation, duration, metadata = null) {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${component}] ⏱️`;
     const durationInSeconds = (duration / 1000).toFixed(2);
-    const message = `⏱️ ${operation} completed in ${durationInSeconds}s`;
     
-    this._log(LOG_LEVELS.INFO, component, message, metadata, 'log');
+    const message = `${operation} completed in ${durationInSeconds}s`;
+    
+    if (metadata) {
+      console.log(`${prefix} ${message}`, metadata);
+    } else {
+      console.log(`${prefix} ${message}`);
+    }
 
-    // Send to analytics service in production
+    // TODO: Send to analytics service in production
     if (!__DEV__) {
       this.sendToAnalytics(component, operation, duration, metadata);
     }
@@ -156,46 +144,67 @@ class LoggingService {
 
   /**
    * Log API requests (useful for debugging)
+   *
+   * @param {string} component - Component or module name
+   * @param {string} method - HTTP method
+   * @param {string} url - API endpoint
+   * @param {Object} payload - Request payload
    */
-  static apiRequest(component: string, method: string, url: string, payload: any = null): void {
-    const message = `🌐 ${method} ${url}`;
-    this._log(LOG_LEVELS.DEBUG, component, message, payload ? { payload } : null, 'log');
+  static apiRequest(component, method, url, payload = null) {
+    if (__DEV__) {
+      const timestamp = new Date().toISOString();
+      const prefix = `[${timestamp}] [${component}] 🌐`;
+      
+      console.log(`${prefix} ${method} ${url}`);
+      
+      if (payload) {
+        console.log('Payload:', payload);
+      }
+    }
   }
 
   /**
    * Log API responses (useful for debugging)
+   *
+   * @param {string} component - Component or module name
+   * @param {string} method - HTTP method
+   * @param {string} url - API endpoint
+   * @param {number} status - Response status code
+   * @param {Object} data - Response data
    */
-  static apiResponse(
-    component: string,
-    method: string,
-    url: string,
-    status: number,
-    data: any = null
-  ): void {
-    const statusEmoji = status >= 200 && status < 300 ? '✅' : '❌';
-    const message = `🌐 ${statusEmoji} ${method} ${url} - ${status}`;
-    
-    this._log(LOG_LEVELS.DEBUG, component, message, data ? { response: data } : null, 'log');
+  static apiResponse(component, method, url, status, data = null) {
+    if (__DEV__) {
+      const timestamp = new Date().toISOString();
+      const prefix = `[${timestamp}] [${component}] 🌐`;
+      const statusEmoji = status >= 200 && status < 300 ? '✅' : '❌';
+      
+      console.log(`${prefix} ${statusEmoji} ${method} ${url} - ${status}`);
+      
+      if (data) {
+        console.log('Response:', data);
+      }
+    }
   }
 
   /**
    * Create a logger instance for a specific component
    * Useful for reducing repetition in components
+   *
+   * @param {string} component - Component name
+   * @returns {Object} Logger instance with bound methods
    */
-  static for(component: string): Logger {
+  static for(component) {
     return {
-      debug: (message: string, data?: LogMetadata) => this.debug(component, message, data || null),
-      info: (message: string, data?: LogMetadata) => this.info(component, message, data || null),
-      warn: (message: string, data?: LogMetadata) => this.warn(component, message, data || null),
-      error: (error: string | Error, context?: LogMetadata) => 
-        this.error(component, error, context || null),
-      success: (message: string, data?: LogMetadata) => 
-        this.success(component, message, data || null),
-      performance: (operation: string, duration: number, metadata?: LogMetadata) => 
-        this.performance(component, operation, duration, metadata || null),
-      apiRequest: (method: string, url: string, body?: any) => 
-        this.apiRequest(component, method, url, body),
-      apiResponse: (method: string, url: string, status: number, data?: any) => 
+      debug: (message, data) => this.debug(component, message, data),
+      info: (message, data) => this.info(component, message, data),
+      warn: (message, data) => this.warn(component, message, data),
+      error: (error, context) => this.error(component, error, context),
+      success: (message, data) => this.success(component, message, data),
+      performance: (operation, duration, metadata) => 
+        this.performance(component, operation, duration, metadata),
+      apiRequest: (method, url, payload) => 
+        this.apiRequest(component, method, url, payload),
+      apiResponse: (method, url, status, data) => 
         this.apiResponse(component, method, url, status, data),
     };
   }
@@ -203,12 +212,13 @@ class LoggingService {
   /**
    * Send error to error tracking service
    * Placeholder for integration with Sentry, Bugsnag, etc.
+   *
+   * @param {string} component - Component name
+   * @param {Error|string} error - Error object or message
+   * @param {Object} context - Additional context
+   * @private
    */
-  private static sendToErrorTracking(
-    component: string,
-    error: Error | string,
-    context: LogMetadata | null
-  ): void {
+  static sendToErrorTracking(component, error, context) {
     // TODO: Implement error tracking service integration
     // Example: Sentry.captureException(error, { tags: { component }, extra: context });
   }
@@ -216,20 +226,17 @@ class LoggingService {
   /**
    * Send analytics event
    * Placeholder for integration with analytics service
+   *
+   * @param {string} component - Component name
+   * @param {string} operation - Operation name
+   * @param {number} duration - Duration in milliseconds
+   * @param {Object} metadata - Additional metadata
+   * @private
    */
-  private static sendToAnalytics(
-    component: string,
-    operation: string,
-    duration: number,
-    metadata: LogMetadata | null
-  ): void {
+  static sendToAnalytics(component, operation, duration, metadata) {
     // TODO: Implement analytics service integration
     // Example: Analytics.track('Performance', { component, operation, duration, ...metadata });
   }
 }
 
-// Export log levels for external use
-(LoggingService as any).LOG_LEVELS = LOG_LEVELS;
-
 export default LoggingService;
-

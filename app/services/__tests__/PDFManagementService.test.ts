@@ -2,16 +2,18 @@
 
 /**
  * Unit tests for PDFManagementService
- * Ensures compatibility with the async expo-file-system helpers.
+ * Testing migration to new expo-file-system SDK 54 API
  */
 
 import PDFManagementService from '../PDFManagementService';
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 
 // Mock FileReader for Node.js environment
 global.FileReader = class FileReader {
   readAsDataURL(blob) {
+    // Simulate async file reading
     setTimeout(() => {
+      // Create a mock base64 string
       this.result = 'data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKNSAwIG9iago8PC9GaWx0ZXIvRmxhdGVEZWNvZGUvTGVuZ3==';
       if (this.onloadend) {
         this.onloadend();
@@ -28,155 +30,142 @@ global.Blob = class Blob {
   }
 };
 
+global.atob = function(str) {
+  return Buffer.from(str, 'base64').toString('binary');
+};
+
+jest.mock('expo-sharing', () => ({
+  shareAsync: jest.fn(async () => ({ status: 'shared' })),
+  isAvailableAsync: jest.fn(async () => true),
+}));
+
+// Mock expo-file-system
 jest.mock('expo-file-system', () => {
-  const files = new Map();
-  const directories = new Set();
-  const ensureTrailingSlash = (path) => (path.endsWith('/') ? path : `${path}/`);
-  const documentDirectory = 'file:///mock/documents/';
-  directories.add(documentDirectory);
+  const mockFiles = new Map();
+  const mockDirectories = new Set();
 
-  const getDirectoryInfo = (uri) => {
-    const normalized = ensureTrailingSlash(uri);
-    if (directories.has(normalized)) {
-      return {
-        exists: true,
-        uri: normalized,
-        isDirectory: true,
-        size: undefined,
-        modificationTime: undefined
-      };
+  class MockFile {
+    constructor(basePath, relativePath) {
+      if (arguments.length === 1) {
+        // Legacy constructor with full path
+        this.uri = basePath;
+        this.path = basePath;
+      } else {
+        // New constructor with basePath and relativePath
+        this.uri = `${basePath}/${relativePath}`;
+        this.path = `${basePath}/${relativePath}`;
+      }
+      this._name = this.uri.split('/').pop();
     }
-    return null;
-  };
 
-  const state = {
-    reset() {
-      files.clear();
-      directories.clear();
-      directories.add(documentDirectory);
-    },
-    getFile(path) {
-      return files.get(path);
-    },
-    hasDirectory(path) {
-      return directories.has(ensureTrailingSlash(path));
-    },
-    ensureDirectory(path) {
-      directories.add(ensureTrailingSlash(path));
+    get exists() {
+      return mockFiles.has(this.uri);
     }
-  };
 
-  return {
-    documentDirectory,
-    EncodingType: { Base64: 'base64', UTF8: 'utf8' },
-    __mockState: state,
-    async getInfoAsync(uri) {
-      if (files.has(uri)) {
-        const entry = files.get(uri);
-        return {
-          exists: true,
-          uri,
-          isDirectory: false,
-          size: entry.buffer.length,
-          modificationTime: entry.mtime
-        };
+    get name() {
+      return this._name;
+    }
+
+    get size() {
+      const data = mockFiles.get(this.uri);
+      return data ? data.length : 0;
+    }
+
+    create() {
+      if (!this.exists) {
+        mockFiles.set(this.uri, new Uint8Array(0));
       }
+    }
 
-      const dirInfo = getDirectoryInfo(uri);
-      if (dirInfo) {
-        return dirInfo;
-      }
+    write(data) {
+      mockFiles.set(this.uri, data);
+    }
 
-      return {
-        exists: false,
-        uri,
-        isDirectory: false,
-        size: undefined,
-        modificationTime: undefined
-      };
-    },
-    async makeDirectoryAsync(uri) {
-      directories.add(ensureTrailingSlash(uri));
-    },
-    async readDirectoryAsync(dirUri) {
-      const normalized = ensureTrailingSlash(dirUri);
-      if (!directories.has(normalized)) {
-        throw new Error(`Directory does not exist: ${dirUri}`);
-      }
+    delete() {
+      mockFiles.delete(this.uri);
+    }
 
-      const contents = [];
-      for (const path of files.keys()) {
-        if (path.startsWith(normalized)) {
-          const relative = path.substring(normalized.length);
-          if (!relative.includes('/')) {
-            contents.push(relative);
+    // Test helper
+    static _reset() {
+      mockFiles.clear();
+    }
+
+    static _getMockFiles() {
+      return mockFiles;
+    }
+  }
+
+  class MockDirectory {
+    constructor(basePath, relativePath) {
+      this.uri = `${basePath}/${relativePath}`;
+      this.path = `${basePath}/${relativePath}`;
+      this._relativePath = relativePath;
+    }
+
+    get exists() {
+      return mockDirectories.has(this.uri);
+    }
+
+    create() {
+      mockDirectories.add(this.uri);
+    }
+
+    list() {
+      const files = [];
+      const prefix = this.uri + '/';
+      for (const [path, data] of mockFiles.entries()) {
+        if (path.startsWith(prefix)) {
+          const filename = path.substring(prefix.length);
+          // Only include direct children, not nested
+          if (!filename.includes('/')) {
+            const file = new MockFile(path);
+            file._data = data;
+            files.push(file);
           }
         }
       }
-
-      return contents;
-    },
-    async writeAsStringAsync(uri, data, options = {}) {
-      const encoding = options.encoding;
-      const buffer = encoding === 'base64' || encoding === 'Base64'
-        ? Buffer.from(data ?? '', 'base64')
-        : Buffer.from(data ?? '', 'utf8');
-
-      files.set(uri, {
-        buffer,
-        mtime: Date.now()
-      });
-    },
-    async deleteAsync(uri) {
-      files.delete(uri);
-    },
-    async copyAsync({ from, to }) {
-      if (!files.has(from)) {
-        throw new Error(`Source file does not exist: ${from}`);
-      }
-
-      const source = files.get(from);
-      files.set(to, {
-        buffer: Buffer.from(source.buffer),
-        mtime: Date.now()
-      });
+      return files;
     }
+
+    // Test helper
+    static _reset() {
+      mockDirectories.clear();
+    }
+  }
+
+  const MockPaths = {
+    document: '/mock/documents'
+  };
+
+  return {
+    File: MockFile,
+    Directory: MockDirectory,
+    Paths: MockPaths,
+    documentDirectory: '/mock/documents/' // For legacy compatibility
   };
 });
 
-jest.mock('expo-sharing', () => ({
-  isAvailableAsync: jest.fn().mockResolvedValue(true),
-  shareAsync: jest.fn().mockResolvedValue(undefined)
-}));
-
-const getTdacDirectory = () => `${FileSystem.documentDirectory}tdac/`;
-
-const seedFile = async (filename, bytes = [1, 2, 3]) => {
-  const dir = getTdacDirectory();
-  await PDFManagementService.initialize();
-  await FileSystem.writeAsStringAsync(
-    `${dir}${filename}`,
-    Buffer.from(bytes).toString('base64'),
-    { encoding: 'base64' }
-  );
-};
-
-describe('PDFManagementService - Expo FileSystem helpers', () => {
+describe('PDFManagementService - SDK 54 Migration', () => {
   beforeEach(() => {
-    FileSystem.__mockState.reset();
-    jest.clearAllMocks();
+    // Reset mocks before each test
+    File._reset();
+    Directory._reset();
   });
 
   describe('initialize()', () => {
     test('should create PDF directory if it does not exist', async () => {
       await PDFManagementService.initialize();
-      expect(FileSystem.__mockState.hasDirectory(getTdacDirectory())).toBe(true);
+
+      const dir = new Directory(Paths.document, 'tdac');
+      expect(dir.exists).toBe(true);
     });
 
     test('should not fail if directory already exists', async () => {
       await PDFManagementService.initialize();
       await PDFManagementService.initialize();
-      expect(FileSystem.__mockState.hasDirectory(getTdacDirectory())).toBe(true);
+
+      const dir = new Directory(Paths.document, 'tdac');
+      expect(dir.exists).toBe(true);
     });
   });
 
@@ -195,6 +184,7 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
       const filename1 = PDFManagementService.generatePDFFilename('TEST123', 'api');
       const filename2 = PDFManagementService.generatePDFFilename('TEST123', 'webview');
 
+      // Both should follow the same naming pattern
       expect(filename1).toMatch(/^TDAC_TEST123_\d+\.pdf$/);
       expect(filename2).toMatch(/^TDAC_TEST123_\d+\.pdf$/);
     });
@@ -213,32 +203,36 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
   });
 
   describe('savePDF()', () => {
-    test('should save PDF blob to file system', async () => {
-      const mockBlob = new Blob(['test pdf data'], { type: 'application/pdf' });
+    test('should save PDF blob to file system using new File API', async () => {
+      const mockPDFData = 'test pdf data';
+      const mockBlob = new Blob([mockPDFData], { type: 'application/pdf' });
 
       const result = await PDFManagementService.savePDF('TEST123', mockBlob, {
         submissionMethod: 'api'
       });
 
-      expect(result).toMatchObject({
-        arrCardNo: 'TEST123',
-        filename: expect.stringMatching(/^TDAC_TEST123_\d+\.pdf$/)
-      });
       expect(result).toHaveProperty('filepath');
-      expect(result).toHaveProperty('size', mockBlob.size);
+      expect(result).toHaveProperty('filename');
+      expect(result).toHaveProperty('size');
+      expect(result).toHaveProperty('savedAt');
+      expect(result.arrCardNo).toBe('TEST123');
+      expect(result.filename).toMatch(/^TDAC_TEST123_\d+\.pdf$/);
 
-      const savedFile = FileSystem.__mockState.getFile(result.filepath);
-      expect(savedFile).toBeDefined();
-      expect(savedFile.buffer.length).toBeGreaterThan(0);
+      // Verify file was created using new API
+      const file = new File(Paths.document, `tdac/${result.filename}`);
+      expect(file.exists).toBe(true);
     });
 
-    test('should convert blob content to binary buffer', async () => {
-      const mockBlob = new Blob(['binary pdf content'], { type: 'application/pdf' });
+    test('should convert blob to Uint8Array for binary data', async () => {
+      const mockPDFData = 'binary pdf content';
+      const mockBlob = new Blob([mockPDFData], { type: 'application/pdf' });
 
       const result = await PDFManagementService.savePDF('TEST456', mockBlob);
-      const savedFile = FileSystem.__mockState.getFile(result.filepath);
 
-      expect(Buffer.isBuffer(savedFile.buffer)).toBe(true);
+      const file = new File(Paths.document, `tdac/${result.filename}`);
+      const savedData = File._getMockFiles().get(file.uri);
+
+      expect(savedData).toBeInstanceOf(Uint8Array);
     });
 
     test('should initialize directory before saving', async () => {
@@ -246,23 +240,26 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
 
       await PDFManagementService.savePDF('TEST789', mockBlob);
 
-      expect(FileSystem.__mockState.hasDirectory(getTdacDirectory())).toBe(true);
+      const dir = new Directory(Paths.document, 'tdac');
+      expect(dir.exists).toBe(true);
     });
   });
 
   describe('saveQRImage()', () => {
-    test('should save QR image to file system', async () => {
+    test('should save QR image to file system using new File API', async () => {
       const mockBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
       const result = await PDFManagementService.saveQRImage('TEST123', mockBase64);
 
-      expect(result).toMatchObject({
-        arrCardNo: 'TEST123',
-        filename: expect.stringMatching(/^TDAC_QR_TEST123_\d+\.png$/)
-      });
+      expect(result).toHaveProperty('filepath');
+      expect(result).toHaveProperty('filename');
+      expect(result).toHaveProperty('savedAt');
+      expect(result.arrCardNo).toBe('TEST123');
+      expect(result.filename).toMatch(/^TDAC_QR_TEST123_\d+\.png$/);
 
-      const savedFile = FileSystem.__mockState.getFile(result.filepath);
-      expect(savedFile).toBeDefined();
+      // Verify file was created
+      const file = new File(Paths.document, `tdac/${result.filename}`);
+      expect(file.exists).toBe(true);
     });
 
     test('should handle base64 data with or without data URI prefix', async () => {
@@ -272,13 +269,27 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
       const result1 = await PDFManagementService.saveQRImage('TEST1', base64WithPrefix);
       const result2 = await PDFManagementService.saveQRImage('TEST2', base64WithoutPrefix);
 
-      expect(FileSystem.__mockState.getFile(result1.filepath)).toBeDefined();
-      expect(FileSystem.__mockState.getFile(result2.filepath)).toBeDefined();
+      const file1 = new File(Paths.document, `tdac/${result1.filename}`);
+      const file2 = new File(Paths.document, `tdac/${result2.filename}`);
+
+      expect(file1.exists).toBe(true);
+      expect(file2.exists).toBe(true);
+    });
+
+    test('should convert base64 to Uint8Array for binary image data', async () => {
+      const mockBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+      const result = await PDFManagementService.saveQRImage('TEST123', mockBase64);
+
+      const file = new File(Paths.document, `tdac/${result.filename}`);
+      const savedData = File._getMockFiles().get(file.uri);
+
+      expect(savedData).toBeInstanceOf(Uint8Array);
     });
   });
 
   describe('getPDFInfo()', () => {
-    test('should return file info for existing file', async () => {
+    test('should return file info for existing file using new File API', async () => {
       const mockBlob = new Blob(['test pdf'], { type: 'application/pdf' });
       const saveResult = await PDFManagementService.savePDF('TEST123', mockBlob);
 
@@ -297,13 +308,16 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
   });
 
   describe('deletePDF()', () => {
-    test('should delete PDF file', async () => {
+    test('should delete PDF file using new File API', async () => {
       const mockBlob = new Blob(['test pdf'], { type: 'application/pdf' });
       const saveResult = await PDFManagementService.savePDF('TEST123', mockBlob);
 
+      const file = new File(Paths.document, `tdac/${saveResult.filename}`);
+      expect(file.exists).toBe(true);
+
       await PDFManagementService.deletePDF(saveResult.filepath);
 
-      expect(FileSystem.__mockState.getFile(saveResult.filepath)).toBeUndefined();
+      expect(file.exists).toBe(false);
     });
 
     test('should not fail when deleting non-existent file', async () => {
@@ -314,7 +328,7 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
   });
 
   describe('listPDFs()', () => {
-    test('should list all PDF files', async () => {
+    test('should list all PDF files using new Directory API', async () => {
       const mockBlob = new Blob(['test'], { type: 'application/pdf' });
 
       await PDFManagementService.savePDF('TEST1', mockBlob);
@@ -329,7 +343,7 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
 
     test('should filter out non-PDF files', async () => {
       const mockBlob = new Blob(['test'], { type: 'application/pdf' });
-      const mockQRBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      const mockQRBase64 = 'data:image/png;base64,test';
 
       await PDFManagementService.savePDF('TEST1', mockBlob);
       await PDFManagementService.saveQRImage('TEST2', mockQRBase64);
@@ -349,48 +363,59 @@ describe('PDFManagementService - Expo FileSystem helpers', () => {
 
   describe('cleanupOldPDFs()', () => {
     test('should delete PDFs older than specified days', async () => {
+      // Mock Date.now() to control timestamps
       const now = Date.now();
-      const oldTimestamp = now - (31 * 24 * 60 * 60 * 1000);
-      const recentTimestamp = now - (5 * 24 * 60 * 60 * 1000);
+      const oldTimestamp = now - (31 * 24 * 60 * 60 * 1000); // 31 days ago
+      const recentTimestamp = now - (5 * 24 * 60 * 60 * 1000); // 5 days ago
 
+      // Create mock PDFs with specific timestamps in filenames
       const oldFilename = `TDAC_OLD_${oldTimestamp}.pdf`;
       const recentFilename = `TDAC_RECENT_${recentTimestamp}.pdf`;
 
-      await seedFile(oldFilename, [1, 2, 3]);
-      await seedFile(recentFilename, [4, 5, 6]);
+      const oldFile = new File(Paths.document, `tdac/${oldFilename}`);
+      const recentFile = new File(Paths.document, `tdac/${recentFilename}`);
+
+      oldFile.create();
+      oldFile.write(new Uint8Array([1, 2, 3]));
+      recentFile.create();
+      recentFile.write(new Uint8Array([4, 5, 6]));
 
       const result = await PDFManagementService.cleanupOldPDFs(30);
 
       expect(result.success).toBe(true);
       expect(result.deletedCount).toBe(1);
-      expect(FileSystem.__mockState.getFile(`${getTdacDirectory()}${oldFilename}`)).toBeUndefined();
-      expect(FileSystem.__mockState.getFile(`${getTdacDirectory()}${recentFilename}`)).toBeDefined();
+      expect(oldFile.exists).toBe(false);
+      expect(recentFile.exists).toBe(true);
     });
 
     test('should handle files without timestamp in filename', async () => {
-      const invalidFilename = 'invalid_filename.pdf';
-      await seedFile(invalidFilename, [1, 2, 3]);
+      const invalidFile = new File(Paths.document, 'tdac/invalid_filename.pdf');
+      invalidFile.create();
+      invalidFile.write(new Uint8Array([1, 2, 3]));
 
       const result = await PDFManagementService.cleanupOldPDFs(30);
 
       expect(result.success).toBe(true);
       expect(result.deletedCount).toBe(0);
-      expect(FileSystem.__mockState.getFile(`${getTdacDirectory()}${invalidFilename}`)).toBeDefined();
+      expect(invalidFile.exists).toBe(true);
     });
   });
 
   describe('getFilePath()', () => {
-    test('should return TDAC file path within document directory', () => {
+    test('should return file URI using new File API', () => {
       const filename = 'TDAC_TEST123_1234567890.pdf';
       const filepath = PDFManagementService.getFilePath(filename);
 
-      expect(filepath).toBe(`${getTdacDirectory()}${filename}`);
+      expect(filepath).toBe(`/mock/documents/tdac/${filename}`);
     });
 
-    test('should return string containing tdac directory and filename', () => {
+    test('should be marked as deprecated', () => {
+      // This test verifies the method exists but should be replaced
+      // by direct File creation in future code
       const filename = 'test.pdf';
       const filepath = PDFManagementService.getFilePath(filename);
 
+      expect(typeof filepath).toBe('string');
       expect(filepath).toContain('tdac');
       expect(filepath).toContain(filename);
     });

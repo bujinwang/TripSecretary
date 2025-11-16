@@ -427,7 +427,7 @@ class ThailandTravelerContextBuilder {
       occupation: personalInfo?.occupation || '',
       // IMPORTANT: Pass plain text gender value, NOT the TDAC ID
       // TDACAPIService will look it up from the session-specific cache
-      gender: passport?.gender || '', // Pass "Male", "Female", etc. as plain text
+      gender: ThailandTravelerContextBuilder.transformGender(passport?.gender || ''), // Normalize before submission
       countryResidence: ThailandTravelerContextBuilder.getCountryFromNationality(passport?.nationality),
       cityResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
       phoneCode: ThailandTravelerContextBuilder.getPhoneCode(personalInfo),
@@ -1219,4 +1219,3 @@ class ThailandTravelerContextBuilder {
 }
 
 export default ThailandTravelerContextBuilder;
-

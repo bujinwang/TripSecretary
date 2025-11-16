@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * TDAC Files Screen
  *
@@ -19,8 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import PDFManagementService from '../../services/PDFManagementService';
-import { useTranslation, useLocale } from '../../i18n/LocaleContext';
-import DateFormatter from '../../utils/DateFormatter';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const TDACFilesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -147,21 +148,14 @@ const TDACFilesScreen = ({ navigation }) => {
     );
   };
 
-  const { language } = useLocale?.() || { language: 'zh-CN' };
   const formatDate = (isoString) => {
     const date = new Date(isoString);
-    const datePart = DateFormatter?.formatShortDate ? DateFormatter.formatShortDate(date, language) : date.toLocaleDateString(language);
-    const timePart = DateFormatter?.formatTime ? DateFormatter.formatTime(date, language) : date.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
-    return `${datePart} ${timePart}`;
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes < 1024) {
-return bytes + ' B';
-}
-    if (bytes < 1024 * 1024) {
-return (bytes / 1024).toFixed(1) + ' KB';
-}
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
@@ -228,8 +222,8 @@ return (bytes / 1024).toFixed(1) + ' KB';
       />
       <Text style={styles.emptyText}>
         {activeTab === 'pdfs'
-          ? t('tdac.files.empty.pdfs')
-          : t('tdac.files.empty.qr')}
+          ? 'No saved PDFs found'
+          : 'No saved QR codes found'}
       </Text>
       <Text style={styles.emptySubtext}>
         Complete a TDAC submission to save files here

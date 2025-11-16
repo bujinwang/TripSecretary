@@ -105,6 +105,8 @@ class TDACSessionManager {
   private sessionData: TDACSessionData | null = null;
   private sessionId: string | null = null;
   private isInitialized: boolean = false;
+  private cloudflareToken: string | null = null;
+  private cloudflareTokenAt: number | null = null;
 
   /**
    * Initialize TDAC session and fetch dropdown IDs
@@ -363,6 +365,8 @@ class TDACSessionManager {
     this.sessionData = null;
     this.sessionId = null;
     this.isInitialized = false;
+    this.cloudflareToken = null;
+    this.cloudflareTokenAt = null;
     logger.info('TDACSessionManager', 'TDAC session cleared');
   }
 
@@ -384,6 +388,21 @@ class TDACSessionManager {
       nationalities: Object.keys(this.sessionData.nationalityIds),
     };
   }
+
+  setCloudflareToken(token: string | null): void {
+    const normalized = typeof token === 'string' ? token.trim() : '';
+    this.cloudflareToken = normalized && normalized.length > 50 ? normalized : null;
+    this.cloudflareTokenAt = this.cloudflareToken ? Date.now() : null;
+  }
+
+  getCloudflareToken(): string | null {
+    return this.cloudflareToken;
+  }
+
+  getCloudflareTokenAgeMs(): number | null {
+    if (!this.cloudflareTokenAt) return null;
+    return Date.now() - this.cloudflareTokenAt;
+  }
 }
 
 // Create singleton instance
@@ -401,4 +420,3 @@ export type {
   PurposeIds,
   NationalityIds
 };
-

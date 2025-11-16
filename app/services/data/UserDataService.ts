@@ -53,6 +53,7 @@ import TravelInfoOperations from './operations/TravelInfoOperations';
 import EntryInfoOperations from './operations/EntryInfoOperations';
 import DataValidationService from './validation/DataValidationService';
 import DataEventService, { DataChangeListener as EventDataChangeListener } from './events/DataEventService';
+import EntryInfoService from '../EntryInfoService';
 import logger from '../LoggingService';
 
 import type {
@@ -692,6 +693,39 @@ class UserDataService {
       options,
       this.triggerEntryInfoStateChangeEvent.bind(this)
     );
+  }
+
+  /**
+   * Update entry info fields with the latest traveler data
+   */
+  static async updateEntryInfo(
+    entryInfoId: string,
+    updateData: Partial<EntryInfoData>,
+    userId?: UserId
+  ): Promise<EntryInfoModel> {
+    try {
+      const entryInfo = await EntryInfoService.updateEntryInfo(entryInfoId, updateData);
+
+      if (entryInfo?.userId) {
+        const destinationId = entryInfo.destinationId || 'default';
+        CacheManager.invalidate('entryInfo', `${entryInfo.userId}_${destinationId}`);
+
+        if (!CacheStore.cache.entryInfo) {
+          CacheStore.cache.entryInfo = new Map<string, EntryInfoModel>();
+        }
+        (CacheStore.cache.entryInfo as Map<string, EntryInfoModel>).set(`${entryInfo.userId}_${destinationId}`, entryInfo);
+        CacheManager.updateTimestamp(`entryInfo_${entryInfo.userId}_${destinationId}`);
+      }
+
+      DataEventService.triggerDataChangeEvent?.('entryInfo', userId || entryInfo?.userId || 'unknown', {
+        entryInfoId
+      });
+
+      return entryInfo;
+    } catch (error) {
+      logger.error('UserDataService', 'Failed to update entry info', { entryInfoId, error });
+      throw error;
+    }
   }
 
   /**
@@ -1350,4 +1384,3 @@ class UserDataService {
 }
 
 export default UserDataService;
-

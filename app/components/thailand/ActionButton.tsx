@@ -151,6 +151,7 @@ const ActionButton = ({
           color: variantConfig.textColor,
           fontSize: sizeConfig.fontSize,
           ...typography.button,
+          lineHeight: Math.round(sizeConfig.fontSize * 1.4),
         },
         loading && styles.titleWithLoader,
       ]}>
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   fullWidth: {
     width: '100%',

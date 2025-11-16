@@ -662,9 +662,9 @@ class SnapshotService {
     try {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
-      const dirInfo = await FileSystem.getInfoAsync(snapshotPhotoDir);
-      if (dirInfo.exists && dirInfo.isDirectory) {
-        await FileSystem.deleteAsync(snapshotPhotoDir, { idempotent: true });
+      const directory = new FileSystem.Directory(snapshotPhotoDir);
+      if (directory.exists) {
+        directory.delete();
         logger.info('SnapshotService', 'Snapshot photos deleted', { snapshotPhotoDir });
       }
     } catch (error: any) {
@@ -867,62 +867,99 @@ class SnapshotService {
   }
 
   private async ensureDirectory(path: string): Promise<void> {
-    const info = await FileSystem.getInfoAsync(path);
-    if (info.exists) {
-      if (!info.isDirectory) {
-        throw new Error(`Expected directory at path: ${path}`);
-      }
+    const directory = new FileSystem.Directory(path);
+    if (directory.exists) {
       return;
     }
 
-    await FileSystem.makeDirectoryAsync(path, { intermediates: true });
+    const file = new FileSystem.File(path);
+    if (file.exists) {
+      throw new Error(`Expected directory at path: ${path}`);
+    }
+
+    directory.create({ intermediates: true, idempotent: true });
   }
 
   private async listDirectory(path: string): Promise<string[]> {
-    const info = await FileSystem.getInfoAsync(path);
-    if (!info.exists || !info.isDirectory) {
+    const directory = new FileSystem.Directory(path);
+    if (!directory.exists) {
       return [];
     }
 
-    return FileSystem.readDirectoryAsync(path);
+    return directory.list().map((entry: any) => entry.name ?? entry.uri ?? String(entry));
   }
 
   private async getFileInfo(path: string): Promise<FileSystem.FileInfo | null> {
     try {
-      const info = await FileSystem.getInfoAsync(path);
-      if (!info.exists || info.isDirectory) {
+      const file = new FileSystem.File(path);
+      if (!file.exists) {
         return null;
       }
-      return info;
+
+      return {
+        exists: true,
+        uri: file.uri,
+        size: file.size ?? 0,
+        modificationTime: file.modificationTime ?? undefined
+      } as FileSystem.FileInfo;
     } catch {
       return null;
     }
   }
 
   private async fileExists(path: string): Promise<boolean> {
-    const info = await this.getFileInfo(path);
-    return info !== null;
+    const file = new FileSystem.File(path);
+    return file.exists;
   }
 
   private async getFileSize(path: string): Promise<number> {
-    const info = await this.getFileInfo(path);
-    return info?.size ?? 0;
+    const file = new FileSystem.File(path);
+    return file.exists ? file.size ?? 0 : 0;
   }
 
   private async readFile(path: string, encoding?: FileEncoding): Promise<string> {
-    return FileSystem.readAsStringAsync(path, encoding ? { encoding } : undefined);
+    const file = new FileSystem.File(path);
+    if (!file.exists) {
+      throw new Error(`File not found: ${path}`);
+    }
+
+    if (encoding === FileSystem.EncodingType.Base64) {
+      return file.base64();
+    }
+
+    return file.text();
   }
 
   private async writeFile(path: string, data: string, encoding?: FileEncoding): Promise<void> {
-    await FileSystem.writeAsStringAsync(path, data, encoding ? { encoding } : undefined);
+    const file = new FileSystem.File(path);
+    const parent = file.parentDirectory;
+    if (!parent.exists) {
+      parent.create({ intermediates: true, idempotent: true });
+    }
+
+    file.write(data, encoding ? { encoding } : undefined);
   }
 
   private async copyFile(from: string, to: string): Promise<void> {
-    await FileSystem.copyAsync({ from, to });
+    const source = new FileSystem.File(from);
+    if (!source.exists) {
+      throw new Error(`Source file not found: ${from}`);
+    }
+
+    const destination = new FileSystem.File(to);
+    const parent = destination.parentDirectory;
+    if (!parent.exists) {
+      parent.create({ intermediates: true, idempotent: true });
+    }
+
+    source.copy(destination);
   }
 
   private async deleteFile(path: string): Promise<void> {
-    await FileSystem.deleteAsync(path, { idempotent: true });
+    const file = new FileSystem.File(path);
+    if (file.exists) {
+      file.delete();
+    }
   }
 
   /**
@@ -1211,29 +1248,18 @@ class SnapshotService {
     try {
       let totalSize = 0;
 
-      const dirInfo = await FileSystem.getInfoAsync(dirPath);
-      if (!dirInfo.exists || !dirInfo.isDirectory) {
+      const directory = new FileSystem.Directory(dirPath);
+      if (!directory.exists) {
         return 0;
       }
 
-      const items = await FileSystem.readDirectoryAsync(dirPath);
+      const items = directory.list();
 
       for (const item of items) {
-        const itemPath = `${dirPath}/${item}`;
-        // Check if item is a directory or file
-        try {
-          const itemInfo = await FileSystem.getInfoAsync(itemPath);
-          if (!itemInfo.exists) {
-            continue;
-          }
-
-          if (itemInfo.isDirectory) {
-            totalSize += await this.calculateDirectorySize(itemPath);
-          } else {
-            totalSize += itemInfo.size ?? 0;
-          }
-        } catch {
-          // Skip if can't determine type
+        if (item instanceof FileSystem.Directory) {
+          totalSize += await this.calculateDirectorySize(item.uri);
+        } else if (item instanceof FileSystem.File) {
+          totalSize += item.size ?? 0;
         }
       }
 
@@ -1334,4 +1360,3 @@ export type {
   CompleteEntryInfoData,
   FundItem
 };
-

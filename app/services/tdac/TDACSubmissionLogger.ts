@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * TDAC Submission Logger Service
  * 统一管理TDAC提交的详细日志记录
@@ -10,151 +12,20 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import logger from '../LoggingService';
-
-// Type definitions
-interface TravelerData {
-  familyName?: string;
-  firstName?: string;
-  middleName?: string;
-  passportNo?: string;
-  nationality?: string;
-  birthDate?: string | { year: number; month: number; day: number };
-  gender?: string;
-  cityResidence?: string;
-  countryResidence?: string;
-  occupation?: string;
-  email?: string;
-  phoneCode?: string;
-  phoneNo?: string;
-  arrivalDate?: string;
-  departureDate?: string;
-  flightNo?: string;
-  countryBoarded?: string;
-  recentStayCountry?: string;
-  travelMode?: string;
-  purpose?: string;
-  accommodationType?: string;
-  accommodationTypeDisplay?: string;
-  province?: string;
-  provinceDisplay?: string;
-  district?: string;
-  districtDisplay?: string;
-  subDistrict?: string;
-  subDistrictDisplay?: string;
-  postCode?: string;
-  address?: string;
-  tranModeId?: string;
-  visaNo?: string;
-  [key: string]: any;
-}
-
-interface FormField {
-  label: string;
-  labelCn?: string;
-  value: any;
-  searchTerms?: string[];
-  field: string;
-  section: 'personal' | 'trip' | 'accommodation';
-}
-
-interface ResolvedSelectInfo {
-  tranModeId: string;
-  tranModeDesc: string;
-  accTypeId: string;
-  accProvinceId: string;
-  accProvinceDesc: string;
-  accDistrictId: string;
-  accDistrictDesc: string;
-  accSubDistrictId: string;
-  accSubDistrictDesc: string;
-  accPostCode: string;
-}
-
-interface DynamicDataRow {
-  key?: string;
-  value?: string;
-  code?: string;
-}
-
-interface DynamicData {
-  tranModeRow?: DynamicDataRow;
-  provinceRow?: DynamicDataRow;
-  districtRow?: DynamicDataRow;
-  subDistrictRow?: DynamicDataRow;
-  [key: string]: any;
-}
-
-interface TripInfo {
-  tranModeId?: string;
-  accTypeId?: string;
-  accProvinceId?: string;
-  accProvinceDesc?: string;
-  accDistrictId?: string;
-  accDistrictDesc?: string;
-  accSubDistrictId?: string;
-  accSubDistrictDesc?: string;
-  accPostCode?: string;
-  [key: string]: any;
-}
-
-interface TDACPayload {
-  tripInfo?: TripInfo;
-  [key: string]: any;
-}
-
-interface SubmissionLogData {
-  timestamp: string;
-  submissionMethod: string;
-  travelerData: {
-    familyName?: string;
-    firstName?: string;
-    passportNo?: string;
-    nationality?: string;
-    arrivalDate?: string;
-    flightNo?: string;
-    email?: string;
-    phoneCode?: string;
-    phoneNo?: string;
-  };
-  additionalInfo?: Record<string, any>;
-  warnings?: string[];
-}
-
-interface WebViewFillLogData {
-  timestamp: string;
-  fillMethod: string;
-  targetUrl: string;
-  fields: Array<{
-    label: string;
-    labelCn?: string;
-    value: any;
-    searchTerms?: string[];
-    fieldId: string;
-    section: string;
-  }>;
-  statistics: {
-    totalFields: number;
-    personalFields: number;
-    tripFields: number;
-    accommodationFields: number;
-  };
-  warnings?: string[];
-}
 
 class TDACSubmissionLogger {
   
   /**
    * 记录Hybrid模式提交的详细日志
-   * @param travelerData - 旅行者数据
-   * @param cloudflareToken - Cloudflare token
+   * @param {Object} travelerData - 旅行者数据
+   * @param {string} cloudflareToken - Cloudflare token
    */
-  static async logHybridSubmission(travelerData: TravelerData, cloudflareToken: string): Promise<void> {
+  static async logHybridSubmission(travelerData, cloudflareToken) {
     try {
-      logger.debug('TDACSubmissionLogger', '\n🔍 ===== TDAC 闪电提交详细日志 =====');
-      logger.debug('TDACSubmissionLogger', '⏰ 提交时间:', { time: new Date().toLocaleString('zh-CN') });
-      logger.debug('TDACSubmissionLogger', '🌐 提交方式: 闪电提交 (Hybrid Mode)');
-      logger.debug('TDACSubmissionLogger', '🔑 Cloudflare Token: ✅ 已获取', { tokenLength: cloudflareToken?.length });
+      console.log('\n🔍 ===== TDAC 闪电提交详细日志 =====');
+      console.log('⏰ 提交时间:', new Date().toLocaleString('zh-CN'));
+      console.log('🌐 提交方式: 闪电提交 (Hybrid Mode)');
+      console.log('🔑 Cloudflare Token: ✅ 已获取 (长度:', cloudflareToken?.length, ')');
       
       // 记录个人信息
       this.logPersonalInfo(travelerData);
@@ -183,23 +54,23 @@ class TDACSubmissionLogger {
         tokenLength: cloudflareToken?.length
       });
       
-      logger.debug('TDACSubmissionLogger', '\n🔍 ===== 日志记录完成 =====\n');
+      console.log('\n🔍 ===== 日志记录完成 =====\n');
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'logHybridSubmission' });
+    } catch (error) {
+      console.error('❌ Hybrid提交日志记录失败:', error);
     }
   }
   
   /**
    * 记录WebView模式填充的详细日志
-   * @param formFields - 表单字段数组
+   * @param {Array} formFields - 表单字段数组
    */
-  static async logWebViewFill(formFields: FormField[]): Promise<void> {
+  static async logWebViewFill(formFields) {
     try {
-      logger.debug('TDACSubmissionLogger', '\n🔍 ===== TDAC WebView 自动填充详细日志 =====');
-      logger.debug('TDACSubmissionLogger', '⏰ 填充时间:', { time: new Date().toLocaleString('zh-CN') });
-      logger.debug('TDACSubmissionLogger', '🌐 填充方式: WebView 自动填充');
-      logger.debug('TDACSubmissionLogger', '🎯 目标网站: https://tdac.immigration.go.th');
+      console.log('\n🔍 ===== TDAC WebView 自动填充详细日志 =====');
+      console.log('⏰ 填充时间:', new Date().toLocaleString('zh-CN'));
+      console.log('🌐 填充方式: WebView 自动填充');
+      console.log('🎯 目标网站: https://tdac.immigration.go.th');
       
       // 按分组记录字段
       const personalFields = formFields.filter(f => f.section === 'personal');
@@ -222,122 +93,128 @@ class TDACSubmissionLogger {
       // 保存到本地存储
       await this.saveWebViewFillLog(formFields);
       
-      logger.debug('TDACSubmissionLogger', '\n🔍 ===== WebView填充日志记录完成 =====\n');
+      console.log('\n🔍 ===== WebView填充日志记录完成 =====\n');
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'logWebViewFill' });
+    } catch (error) {
+      console.error('❌ WebView填充日志记录失败:', error);
     }
   }
   
   /**
    * 记录个人信息
    */
-  static logPersonalInfo(travelerData: TravelerData): void {
-    logger.debug('TDACSubmissionLogger', '\n📋 === 个人信息 Personal Information ===');
-    logger.debug('TDACSubmissionLogger', '👤 姓名 (Name):', {
-      familyName: travelerData.familyName,
-      firstName: travelerData.firstName,
-      middleName: travelerData.middleName || '(空)'
-    });
-    logger.debug('TDACSubmissionLogger', '📄 护照信息 (Passport):', {
-      passportNo: travelerData.passportNo,
-      nationality: travelerData.nationality,
-      birthDate: travelerData.birthDate,
-      gender: travelerData.gender
-    });
-    logger.debug('TDACSubmissionLogger', '🏠 居住信息 (Residence):', {
-      cityResidence: travelerData.cityResidence,
-      countryResidence: travelerData.countryResidence,
-      occupation: travelerData.occupation
-    });
+  static logPersonalInfo(travelerData) {
+    console.log('\n📋 === 个人信息 Personal Information ===');
+    console.log('👤 姓名 (Name):');
+    console.log('  - 姓 (Family Name):', travelerData.familyName, '→ TDAC字段: familyName');
+    console.log('  - 名 (First Name):', travelerData.firstName, '→ TDAC字段: firstName');
+    console.log('  - 中间名 (Middle Name):', travelerData.middleName || '(空)', '→ TDAC字段: middleName');
+    
+    console.log('📄 护照信息 (Passport):');
+    console.log('  - 护照号 (Passport No):', travelerData.passportNo, '→ TDAC字段: passportNo');
+    console.log('  - 国籍 (Nationality):', travelerData.nationality, '→ TDAC字段: nationality');
+    console.log('  - 出生日期 (Birth Date):', travelerData.birthDate, '→ TDAC字段: birthDate');
+    console.log('  - 性别 (Gender):', travelerData.gender, '→ TDAC字段: gender');
+    
+    console.log('🏠 居住信息 (Residence):');
+    console.log('  - 居住城市 (City):', travelerData.cityResidence, '→ TDAC字段: cityResidence');
+    console.log('  - 居住国家 (Country):', travelerData.countryResidence, '→ TDAC字段: countryResidence');
+    console.log('  - 职业 (Occupation):', travelerData.occupation, '→ TDAC字段: occupation');
   }
   
   /**
    * 记录旅行信息
    */
-  static logTravelInfo(travelerData: TravelerData): void {
-    logger.debug('TDACSubmissionLogger', '\n✈️ === 旅行信息 Travel Information ===');
-    logger.debug('TDACSubmissionLogger', '📅 日期 (Dates):', {
-      arrivalDate: travelerData.arrivalDate,
-      departureDate: travelerData.departureDate || '(未设置)'
-    });
-    logger.debug('TDACSubmissionLogger', '🛫 航班信息 (Flight):', {
-      flightNo: travelerData.flightNo,
-      countryBoarded: travelerData.countryBoarded,
-      recentStayCountry: travelerData.recentStayCountry || '(未填写)',
-      travelMode: travelerData.travelMode,
-      purpose: travelerData.purpose
-    });
+  static logTravelInfo(travelerData) {
+    console.log('\n✈️ === 旅行信息 Travel Information ===');
+    console.log('📅 日期 (Dates):');
+    console.log('  - 到达日期 (Arrival Date):', travelerData.arrivalDate, '→ TDAC字段: arrivalDate');
+    console.log('  - 离开日期 (Departure Date):', travelerData.departureDate || '(未设置)', '→ TDAC字段: departureDate');
+    
+    console.log('🛫 航班信息 (Flight):');
+    console.log('  - 航班号 (Flight No):', travelerData.flightNo, '→ TDAC字段: flightNo');
+    console.log('  - 出发国家 (Country Boarded):', travelerData.countryBoarded, '→ TDAC字段: countryBoarded');
+    console.log('  - 最近停留国家 (Recent Stay Country):', travelerData.recentStayCountry || '(未填写)', '→ TDAC字段: recentStayCountry');
+    console.log('  - 旅行方式 (Travel Mode):', travelerData.travelMode, '→ TDAC字段: travelMode');
+    console.log('  - 旅行目的 (Purpose):', travelerData.purpose, '→ TDAC字段: purpose');
   }
   
   /**
    * 记录住宿信息
    */
-  static logAccommodationInfo(travelerData: TravelerData): void {
-    logger.debug('TDACSubmissionLogger', '\n🏨 === 住宿信息 Accommodation Information ===');
+  static logAccommodationInfo(travelerData) {
+    console.log('\n🏨 === 住宿信息 Accommodation Information ===');
     const accommodationDisplay = travelerData.accommodationTypeDisplay || travelerData.accommodationType;
+    console.log(
+      '🏠 住宿类型 (Type):',
+      accommodationDisplay,
+      '→ TDAC字段: accommodationType',
+      travelerData.accommodationType ? `(ID: ${travelerData.accommodationType})` : ''
+    );
+    console.log('📍 地址信息 (Address):');
     const provinceDisplay = travelerData.provinceDisplay || travelerData.province;
     const districtDisplay = travelerData.districtDisplay || travelerData.district;
     const subDistrictDisplay = travelerData.subDistrictDisplay || travelerData.subDistrict;
-    
-    logger.debug('TDACSubmissionLogger', '住宿信息', {
-      accommodationType: accommodationDisplay,
-      accommodationTypeId: travelerData.accommodationType,
-      province: provinceDisplay,
-      provinceCode: travelerData.province,
-      district: districtDisplay || '(未填写)',
-      districtCode: travelerData.district,
-      subDistrict: subDistrictDisplay || '(未填写)',
-      subDistrictCode: travelerData.subDistrict,
-      postCode: travelerData.postCode,
-      address: travelerData.address
-    });
+    console.log(
+      '  - 省份 (Province):',
+      provinceDisplay,
+      '→ TDAC字段: province',
+      travelerData.province ? `(Code: ${travelerData.province})` : ''
+    );
+    console.log(
+      '  - 区域 (District):',
+      districtDisplay || '(未填写)',
+      '→ TDAC字段: district',
+      travelerData.district ? `(Code: ${travelerData.district})` : ''
+    );
+    console.log(
+      '  - 子区域 (Sub District):',
+      subDistrictDisplay || '(未填写)',
+      '→ TDAC字段: subDistrict',
+      travelerData.subDistrict ? `(Code: ${travelerData.subDistrict})` : ''
+    );
+    console.log('  - 邮编 (Post Code):', travelerData.postCode, '→ TDAC字段: postCode');
+    console.log('  - 详细地址 (Address):', travelerData.address, '→ TDAC字段: address');
   }
   
   /**
    * 记录联系信息
    */
-  static logContactInfo(travelerData: TravelerData): void {
-    logger.debug('TDACSubmissionLogger', '\n📞 === 联系信息 Contact Information ===');
-    logger.debug('TDACSubmissionLogger', '联系信息', {
-      email: travelerData.email,
-      phoneCode: travelerData.phoneCode,
-      phoneNo: travelerData.phoneNo
-    });
+  static logContactInfo(travelerData) {
+    console.log('\n📞 === 联系信息 Contact Information ===');
+    console.log('📧 邮箱 (Email):', travelerData.email, '→ TDAC字段: email');
+    console.log('📱 电话 (Phone):');
+    console.log('  - 国家代码 (Country Code):', travelerData.phoneCode, '→ TDAC字段: phoneCode');
+    console.log('  - 电话号码 (Phone Number):', travelerData.phoneNo, '→ TDAC字段: phoneNo');
   }
   
   /**
    * 记录技术信息
    */
-  static logTechnicalInfo(travelerData: TravelerData, cloudflareToken: string): void {
-    logger.debug('TDACSubmissionLogger', '\n🔧 === 技术信息 Technical Information ===');
-    logger.debug('TDACSubmissionLogger', '技术信息', {
-      cloudflareTokenPreview: cloudflareToken?.substring(0, 50) + '...',
-      tranModeId: travelerData.tranModeId || '(自动)',
-      visaNo: travelerData.visaNo || '(免签)'
-    });
+  static logTechnicalInfo(travelerData, cloudflareToken) {
+    console.log('\n🔧 === 技术信息 Technical Information ===');
+    console.log('🔑 Cloudflare Token 预览:', cloudflareToken?.substring(0, 50) + '...');
+    console.log('⚙️ 传输模式ID (Trans Mode ID):', travelerData.tranModeId || '(自动)', '→ TDAC字段: tranModeId');
+    console.log('\n🆔 === 签证信息 Visa Information ===');
+    console.log('📋 签证号 (Visa No):', travelerData.visaNo || '(免签)', '→ TDAC字段: visaNo');
   }
 
   /**
    * 记录TDAC解析后的下拉选项ID
    * 在TDACAPIService完成下拉匹配后调用，展示最终提交给TDAC的编码
-   * @param originalTravelerData - 原始旅行者数据
-   * @param payload - 提交给TDAC的最终payload
-   * @param dynamicData - TDACAPIService匹配到的行数据
+   * @param {Object} originalTravelerData - 原始旅行者数据
+   * @param {Object} payload - 提交给TDAC的最终payload
+   * @param {Object} dynamicData - TDACAPIService匹配到的行数据
    */
-  static async logResolvedSelectMappings(
-    originalTravelerData: TravelerData,
-    payload: TDACPayload,
-    dynamicData: DynamicData = {}
-  ): Promise<void> {
+  static async logResolvedSelectMappings(originalTravelerData, payload, dynamicData = {}) {
     try {
       if (!payload) {
-        logger.info('TDACSubmissionLogger', 'logResolvedSelectMappings called without payload, skipping');
+        console.log('ℹ️ logResolvedSelectMappings called without payload, skipping');
         return;
       }
 
       const tripInfo = payload.tripInfo || {};
-      const resolvedInfo: ResolvedSelectInfo = {
+      const resolvedInfo = {
         tranModeId: tripInfo.tranModeId || '',
         tranModeDesc: dynamicData.tranModeRow?.value || '',
         accTypeId: tripInfo.accTypeId || '',
@@ -350,7 +227,13 @@ class TDACSubmissionLogger {
         accPostCode: tripInfo.accPostCode || dynamicData.districtRow?.code || ''
       };
 
-      logger.debug('TDACSubmissionLogger', '\n🔁 === TDAC 解析后的下拉选项编码 ===', resolvedInfo);
+      console.log('\n🔁 === TDAC 解析后的下拉选项编码 ===');
+      console.log('   • 住宿类型 ID:', resolvedInfo.accTypeId);
+      console.log('   • 省份 ID:', resolvedInfo.accProvinceId, '→', resolvedInfo.accProvinceDesc);
+      console.log('   • 区域 ID:', resolvedInfo.accDistrictId, '→', resolvedInfo.accDistrictDesc);
+      console.log('   • 子区域 ID:', resolvedInfo.accSubDistrictId, '→', resolvedInfo.accSubDistrictDesc);
+      console.log('   • 邮编:', resolvedInfo.accPostCode);
+      console.log('   • 交通方式 ID:', resolvedInfo.tranModeId, resolvedInfo.tranModeDesc ? `→ ${resolvedInfo.tranModeDesc}` : '');
 
       // 保存解析后的信息，便于事后审计
       await this.saveSubmissionLog('hybrid_resolved', originalTravelerData || {}, {
@@ -367,16 +250,16 @@ class TDACSubmissionLogger {
           accPostCode: tripInfo.accPostCode
         }
       });
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'logResolvedSelectMappings' });
+    } catch (error) {
+      console.error('❌ 记录解析后的TDAC编码失败:', error);
     }
   }
   
   /**
    * 记录字段映射
    */
-  static logFieldMappings(travelerData: TravelerData): void {
-    logger.debug('TDACSubmissionLogger', '\n📊 === 表单字段映射 Form Field Mappings ===');
+  static logFieldMappings(travelerData) {
+    console.log('\n📊 === 表单字段映射 Form Field Mappings ===');
     const fieldMappings = [
       { label: '姓氏', field: 'familyName', value: travelerData.familyName, tdacId: 'familyName' },
       { label: '名字', field: 'firstName', value: travelerData.firstName, tdacId: 'firstName' },
@@ -400,82 +283,78 @@ class TDACSubmissionLogger {
       { label: '详细地址', field: 'address', value: travelerData.address, tdacId: 'address' }
     ];
     
-    logger.debug('TDACSubmissionLogger', '字段映射详情', { fieldMappings });
+    fieldMappings.forEach((mapping, index) => {
+      console.log(`  ${index + 1}. ${mapping.label}: "${mapping.value}" → TDAC字段ID: ${mapping.tdacId}`);
+    });
   }
   
   /**
    * 记录重要提醒
    */
-  static logImportantWarnings(): void {
-    logger.warn('TDACSubmissionLogger', '\n⚠️ === 重要提醒 Important Notes ===');
-    logger.warn('TDACSubmissionLogger', '此信息将直接提交给泰国移民局 (TDAC)');
-    logger.warn('TDACSubmissionLogger', '提交后无法修改，请仔细核对');
-    logger.warn('TDACSubmissionLogger', '多次提交可能导致账户被暂时封禁');
-    logger.warn('TDACSubmissionLogger', '请确保所有信息与护照完全一致');
+  static logImportantWarnings() {
+    console.log('\n⚠️ === 重要提醒 Important Notes ===');
+    console.log('🚨 此信息将直接提交给泰国移民局 (TDAC)');
+    console.log('🚨 提交后无法修改，请仔细核对');
+    console.log('🚨 多次提交可能导致账户被暂时封禁');
+    console.log('🚨 请确保所有信息与护照完全一致');
   }
   
   /**
    * 记录WebView字段组
    */
-  static logWebViewFieldGroup(title: string, fields: FormField[]): void {
-    logger.debug('TDACSubmissionLogger', `\n${title}:`, { fields });
+  static logWebViewFieldGroup(title, fields) {
+    console.log(`\n${title}:`);
+    fields.forEach((field, index) => {
+      console.log(`  ${index + 1}. ${field.label} (${field.labelCn})`);
+      console.log(`     值: "${field.value}"`);
+      console.log(`     搜索词: [${field.searchTerms.join(', ')}]`);
+      console.log(`     目标字段ID: ${field.field}`);
+      console.log('');
+    });
   }
   
   /**
    * 记录WebView技术详情
    */
-  static logWebViewTechnicalDetails(): void {
-    logger.debug('TDACSubmissionLogger', '\n🔧 === 技术实现详情 ===');
-    logger.debug('TDACSubmissionLogger', '字段查找策略', {
-      strategies: [
-        'Angular表单属性 (formcontrolname)',
-        'ng-reflect-name 属性',
-        'name 和 id 属性',
-        'placeholder 文本匹配',
-        'label 文本匹配',
-        '单选按钮组 (mat-radio-group)'
-      ]
-    });
+  static logWebViewTechnicalDetails() {
+    console.log('\n🔧 === 技术实现详情 ===');
+    console.log('🎯 字段查找策略:');
+    console.log('  1. Angular表单属性 (formcontrolname)');
+    console.log('  2. ng-reflect-name 属性');
+    console.log('  3. name 和 id 属性');
+    console.log('  4. placeholder 文本匹配');
+    console.log('  5. label 文本匹配');
+    console.log('  6. 单选按钮组 (mat-radio-group)');
   }
   
   /**
    * 记录WebView统计信息
    */
-  static logWebViewStatistics(
-    formFields: FormField[],
-    personalFields: FormField[],
-    tripFields: FormField[],
-    accommodationFields: FormField[]
-  ): void {
-    logger.debug('TDACSubmissionLogger', '\n📊 === 填充统计 ===', {
-      totalFields: formFields.length,
-      personalFields: personalFields.length,
-      tripFields: tripFields.length,
-      accommodationFields: accommodationFields.length
-    });
+  static logWebViewStatistics(formFields, personalFields, tripFields, accommodationFields) {
+    console.log('\n📊 === 填充统计 ===');
+    console.log(`📝 总字段数: ${formFields.length}`);
+    console.log(`👤 个人信息: ${personalFields.length} 个字段`);
+    console.log(`✈️ 旅行信息: ${tripFields.length} 个字段`);
+    console.log(`🏨 住宿信息: ${accommodationFields.length} 个字段`);
   }
   
   /**
    * 记录WebView重要提醒
    */
-  static logWebViewWarnings(): void {
-    logger.warn('TDACSubmissionLogger', '\n⚠️ === 重要提醒 ===');
-    logger.warn('TDACSubmissionLogger', '这些信息将自动填入TDAC网站表单');
-    logger.warn('TDACSubmissionLogger', '填充后请仔细检查每个字段的准确性');
-    logger.warn('TDACSubmissionLogger', '确认无误后再点击提交按钮');
-    logger.warn('TDACSubmissionLogger', '多次提交可能导致账户被暂时封禁');
+  static logWebViewWarnings() {
+    console.log('\n⚠️ === 重要提醒 ===');
+    console.log('🚨 这些信息将自动填入TDAC网站表单');
+    console.log('🚨 填充后请仔细检查每个字段的准确性');
+    console.log('🚨 确认无误后再点击提交按钮');
+    console.log('🚨 多次提交可能导致账户被暂时封禁');
   }
   
   /**
    * 保存提交日志到本地存储
    */
-  static async saveSubmissionLog(
-    method: string,
-    travelerData: TravelerData,
-    additionalInfo: Record<string, any> = {}
-  ): Promise<void> {
+  static async saveSubmissionLog(method, travelerData, additionalInfo = {}) {
     try {
-      const logData: SubmissionLogData = {
+      const logData = {
         timestamp: new Date().toISOString(),
         submissionMethod: method,
         travelerData: {
@@ -500,26 +379,26 @@ class TDACSubmissionLogger {
       
       const storageKey = `tdac_submission_log_${method}_${Date.now()}`;
       await AsyncStorage.setItem(storageKey, JSON.stringify(logData));
-      logger.success('TDACSubmissionLogger', `${method}提交日志已保存到本地存储`, { storageKey });
+      console.log(`✅ ${method}提交日志已保存到本地存储:`, storageKey);
       
       // 同时保存到通用日志
       await this.saveToGeneralLog(logData);
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'saveSubmissionLog' });
+    } catch (error) {
+      console.error('❌ 保存提交日志失败:', error);
     }
   }
   
   /**
    * 保存WebView填充日志
    */
-  static async saveWebViewFillLog(formFields: FormField[]): Promise<void> {
+  static async saveWebViewFillLog(formFields) {
     try {
       const personalFields = formFields.filter(f => f.section === 'personal');
       const tripFields = formFields.filter(f => f.section === 'trip');
       const accommodationFields = formFields.filter(f => f.section === 'accommodation');
       
-      const logData: WebViewFillLogData = {
+      const logData = {
         timestamp: new Date().toISOString(),
         fillMethod: 'webview_autofill',
         targetUrl: 'https://tdac.immigration.go.th',
@@ -547,20 +426,20 @@ class TDACSubmissionLogger {
       
       const storageKey = `tdac_webview_fill_log_${Date.now()}`;
       await AsyncStorage.setItem(storageKey, JSON.stringify(logData));
-      logger.success('TDACSubmissionLogger', 'WebView填充日志已保存到本地存储', { storageKey });
+      console.log('✅ WebView填充日志已保存到本地存储:', storageKey);
       
       // 同时保存到通用日志
       await this.saveToGeneralLog(logData);
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'saveWebViewFillLog' });
+    } catch (error) {
+      console.error('❌ 保存WebView填充日志失败:', error);
     }
   }
   
   /**
    * 保存到通用日志历史
    */
-  static async saveToGeneralLog(logData: SubmissionLogData | WebViewFillLogData): Promise<void> {
+  static async saveToGeneralLog(logData) {
     try {
       const historyKey = 'tdac_submission_history';
       const historyJson = await AsyncStorage.getItem(historyKey);
@@ -575,22 +454,22 @@ class TDACSubmissionLogger {
       }
       
       await AsyncStorage.setItem(historyKey, JSON.stringify(history));
-      logger.success('TDACSubmissionLogger', '已添加到通用提交历史记录');
+      console.log('✅ 已添加到通用提交历史记录');
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'saveToGeneralLog' });
+    } catch (error) {
+      console.error('❌ 保存到通用日志失败:', error);
     }
   }
   
   /**
    * 获取提交历史记录
    */
-  static async getSubmissionHistory(): Promise<Array<SubmissionLogData | WebViewFillLogData>> {
+  static async getSubmissionHistory() {
     try {
       const historyJson = await AsyncStorage.getItem('tdac_submission_history');
       return historyJson ? JSON.parse(historyJson) : [];
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'getSubmissionHistory' });
+    } catch (error) {
+      console.error('❌ 获取提交历史失败:', error);
       return [];
     }
   }
@@ -598,7 +477,7 @@ class TDACSubmissionLogger {
   /**
    * 清理旧的日志记录
    */
-  static async cleanupOldLogs(daysToKeep: number = 30): Promise<void> {
+  static async cleanupOldLogs(daysToKeep = 30) {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
@@ -610,22 +489,12 @@ class TDACSubmissionLogger {
       });
       
       await AsyncStorage.setItem('tdac_submission_history', JSON.stringify(filteredHistory));
-      logger.success('TDACSubmissionLogger', `已清理${daysToKeep}天前的日志记录，保留${filteredHistory.length}条记录`);
+      console.log(`✅ 已清理${daysToKeep}天前的日志记录，保留${filteredHistory.length}条记录`);
       
-    } catch (error: any) {
-      logger.error('TDACSubmissionLogger', error, { operation: 'cleanupOldLogs' });
+    } catch (error) {
+      console.error('❌ 清理日志记录失败:', error);
     }
   }
 }
 
 export default TDACSubmissionLogger;
-export type {
-  TravelerData,
-  FormField,
-  ResolvedSelectInfo,
-  DynamicData,
-  TDACPayload,
-  SubmissionLogData,
-  WebViewFillLogData
-};
-

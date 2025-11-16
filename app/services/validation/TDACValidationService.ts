@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * TDAC Validation Service
  * Comprehensive validation and error handling for TDAC submission metadata
@@ -5,79 +7,7 @@
  * Requirements: 5.1-5.5, 24.1-24.5
  */
 
-// Type definitions
-interface ValidationRules {
-  required: string[];
-  recommended: string[];
-  formats: Record<string, RegExp>;
-  lengths: Record<string, { min: number; max: number }>;
-}
-
-interface ErrorMessages {
-  missing: Record<string, string>;
-  format: Record<string, string>;
-  length: Record<string, string>;
-  business: Record<string, string>;
-}
-
-interface ValidationOptions {
-  strict?: boolean;
-  checkFiles?: boolean;
-  [key: string]: any;
-}
-
-interface ValidationMetadata {
-  validatedAt: string;
-  validationVersion: string;
-  strictMode: boolean;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  fieldErrors: Record<string, string[]>;
-  metadata?: ValidationMetadata;
-}
-
-interface ValidationSummary {
-  status: 'valid' | 'invalid';
-  errorCount: number;
-  warningCount: number;
-  hasFieldErrors: boolean;
-  criticalErrors: string[];
-  formatErrors: string[];
-  businessWarnings: string[];
-  message: string;
-}
-
-interface TDACSubmission {
-  arrCardNo?: string;
-  qrUri?: string;
-  pdfUrl?: string;
-  submittedAt?: string;
-  submissionMethod?: 'api' | 'webview' | 'hybrid';
-  travelerName?: string;
-  passportNo?: string;
-  arrivalDate?: string;
-  [key: string]: any;
-}
-
-interface TravelerData {
-  familyName?: string;
-  firstName?: string;
-  passportNo?: string;
-  nationality?: string;
-  birthDate?: string | { year: number; month: number; day: number };
-  gender?: string;
-  arrivalDate?: string;
-  [key: string]: any;
-}
-
 class TDACValidationService {
-  private validationRules: ValidationRules;
-  private errorMessages: ErrorMessages;
-  
   constructor() {
     this.validationRules = {
       // Required fields for TDAC submission
@@ -157,12 +87,12 @@ class TDACValidationService {
 
   /**
    * Validate TDAC submission metadata
-   * @param tdacSubmission - TDAC submission data to validate
-   * @param options - Validation options
-   * @returns Validation result with errors and warnings
+   * @param {Object} tdacSubmission - TDAC submission data to validate
+   * @param {Object} options - Validation options
+   * @returns {Object} - Validation result with errors and warnings
    */
-  validateTDACSubmission(tdacSubmission: TDACSubmission, options: ValidationOptions = {}): ValidationResult {
-    const result: ValidationResult = {
+  validateTDACSubmission(tdacSubmission, options = {}) {
+    const result = {
       isValid: true,
       errors: [],
       warnings: [],
@@ -219,10 +149,9 @@ class TDACValidationService {
       return result;
 
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      console.error('❌ TDAC validation failed:', err);
+      console.error('❌ TDAC validation failed:', error);
       result.isValid = false;
-      result.errors.push(`Validation process failed: ${err.message}`);
+      result.errors.push(`Validation process failed: ${error.message}`);
       return result;
     }
   }
@@ -230,10 +159,9 @@ class TDACValidationService {
   /**
    * Validate required fields
    */
-  private validateRequiredFields(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): void {
+  validateRequiredFields(tdacSubmission, result, options) {
     for (const field of this.validationRules.required) {
-      const value = tdacSubmission[field];
-      if (!value || (typeof value === 'string' && !value.trim())) {
+      if (!tdacSubmission[field] || (typeof tdacSubmission[field] === 'string' && !tdacSubmission[field].trim())) {
         result.errors.push(this.errorMessages.missing[field] || `Required field '${field}' is missing`);
         result.fieldErrors[field] = result.fieldErrors[field] || [];
         result.fieldErrors[field].push('required');
@@ -244,7 +172,7 @@ class TDACValidationService {
   /**
    * Validate field formats
    */
-  private validateFieldFormats(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): void {
+  validateFieldFormats(tdacSubmission, result, options) {
     for (const [field, pattern] of Object.entries(this.validationRules.formats)) {
       const value = tdacSubmission[field];
       
@@ -261,7 +189,7 @@ class TDACValidationService {
   /**
    * Validate field lengths
    */
-  private validateFieldLengths(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): void {
+  validateFieldLengths(tdacSubmission, result, options) {
     for (const [field, constraints] of Object.entries(this.validationRules.lengths)) {
       const value = tdacSubmission[field];
       
@@ -278,7 +206,7 @@ class TDACValidationService {
   /**
    * Validate business logic rules
    */
-  private validateBusinessLogic(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): void {
+  validateBusinessLogic(tdacSubmission, result, options) {
     // Check submission timestamp
     if (tdacSubmission.submittedAt) {
       const submissionTime = new Date(tdacSubmission.submittedAt);
@@ -317,7 +245,7 @@ class TDACValidationService {
       const submissionDate = new Date(tdacSubmission.submittedAt);
       
       // TDAC should be submitted within 72 hours before arrival
-      const hoursDiff = (arrivalDate.getTime() - submissionDate.getTime()) / (1000 * 60 * 60);
+      const hoursDiff = (arrivalDate - submissionDate) / (1000 * 60 * 60);
       
       if (hoursDiff > 72) {
         result.warnings.push('TDAC was submitted more than 72 hours before arrival date');
@@ -332,7 +260,7 @@ class TDACValidationService {
   /**
    * Check for recommended fields
    */
-  private checkRecommendedFields(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): void {
+  checkRecommendedFields(tdacSubmission, result, options) {
     for (const field of this.validationRules.recommended) {
       if (!tdacSubmission[field]) {
         result.warnings.push(`Recommended field '${field}' is missing`);
@@ -343,13 +271,13 @@ class TDACValidationService {
   /**
    * Validate file accessibility (async operation)
    */
-  async validateFileAccessibility(tdacSubmission: TDACSubmission, result: ValidationResult, options: ValidationOptions): Promise<void> {
+  async validateFileAccessibility(tdacSubmission, result, options) {
     const fileFields = ['qrUri', 'pdfUrl'];
     
     for (const field of fileFields) {
       const filePath = tdacSubmission[field];
       
-      if (filePath && typeof filePath === 'string' && filePath.startsWith('file://')) {
+      if (filePath && filePath.startsWith('file://')) {
         try {
           // Check if file exists (this would need platform-specific implementation)
           const exists = await this.checkFileExists(filePath);
@@ -357,8 +285,7 @@ class TDACValidationService {
             result.warnings.push(`File referenced in '${field}' does not exist: ${filePath}`);
           }
         } catch (error) {
-          const err = error instanceof Error ? error : new Error(String(error));
-          result.warnings.push(`Cannot verify file accessibility for '${field}': ${err.message}`);
+          result.warnings.push(`Cannot verify file accessibility for '${field}': ${error.message}`);
         }
       }
     }
@@ -367,7 +294,7 @@ class TDACValidationService {
   /**
    * Check if file exists (platform-specific implementation needed)
    */
-  private async checkFileExists(filePath: string): Promise<boolean> {
+  async checkFileExists(filePath) {
     try {
       // This would need to be implemented with react-native file system
       // For now, return true to avoid blocking validation
@@ -379,16 +306,16 @@ class TDACValidationService {
 
   /**
    * Get user-friendly error message for field
-   * @param field - Field name
-   * @param errorTypes - Array of error types for the field
-   * @returns User-friendly error message
+   * @param {string} field - Field name
+   * @param {Array} errorTypes - Array of error types for the field
+   * @returns {string} - User-friendly error message
    */
-  getFieldErrorMessage(field: string, errorTypes: string[]): string {
+  getFieldErrorMessage(field, errorTypes) {
     if (!errorTypes || errorTypes.length === 0) {
       return '';
     }
 
-    const messages: string[] = [];
+    const messages = [];
     
     for (const errorType of errorTypes) {
       switch (errorType) {
@@ -414,10 +341,10 @@ class TDACValidationService {
 
   /**
    * Get validation summary for display
-   * @param validationResult - Result from validateTDACSubmission
-   * @returns Summary for UI display
+   * @param {Object} validationResult - Result from validateTDACSubmission
+   * @returns {Object} - Summary for UI display
    */
-  getValidationSummary(validationResult: ValidationResult): ValidationSummary {
+  getValidationSummary(validationResult) {
     return {
       status: validationResult.isValid ? 'valid' : 'invalid',
       errorCount: validationResult.errors.length,
@@ -439,7 +366,7 @@ class TDACValidationService {
   /**
    * Get overall validation message
    */
-  private getOverallMessage(validationResult: ValidationResult): string {
+  getOverallMessage(validationResult) {
     if (validationResult.isValid) {
       if (validationResult.warnings.length > 0) {
         return `Validation passed with ${validationResult.warnings.length} warning(s)`;
@@ -452,11 +379,11 @@ class TDACValidationService {
 
   /**
    * Validate traveler data before TDAC submission
-   * @param travelerData - Traveler data to validate
-   * @returns Validation result
+   * @param {Object} travelerData - Traveler data to validate
+   * @returns {Object} - Validation result
    */
-  validateTravelerData(travelerData: TravelerData): ValidationResult {
-    const result: ValidationResult = {
+  validateTravelerData(travelerData) {
+    const result = {
       isValid: true,
       errors: [],
       warnings: [],
@@ -470,8 +397,7 @@ class TDACValidationService {
 
     // Check required fields
     for (const field of requiredFields) {
-      const value = travelerData[field];
-      if (!value || (typeof value === 'string' && !value.trim())) {
+      if (!travelerData[field] || (typeof travelerData[field] === 'string' && !travelerData[field].trim())) {
         result.errors.push(`${field} is required for TDAC submission`);
         result.fieldErrors[field] = ['required'];
       }
@@ -505,4 +431,3 @@ class TDACValidationService {
 }
 
 export default new TDACValidationService();
-

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { colors, typography, borderRadius, shadows, touchable } from '../theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'success' | 'text';
+type ButtonVariant = 'primary' | 'secondary' | 'success' | 'text' | 'prominent' | 'outline' | 'soft';
 type ButtonSize = 'large' | 'medium' | 'small';
 
 type ButtonIcon = ReactNode | null | false | undefined;
@@ -34,6 +34,9 @@ const VARIANT_ACTIVITY_INDICATOR_COLOR: Record<ButtonVariant, string> = {
   secondary: colors.primary,
   success: colors.white,
   text: colors.primary,
+  prominent: colors.white,
+  outline: colors.primary,
+  soft: colors.text,
 };
 
 const styles = StyleSheet.create({
@@ -54,6 +57,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
   },
+  prominent: {
+    backgroundColor: colors.primary,
+    ...shadows.button,
+  },
+  outline: {
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  soft: {
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   success: {
     backgroundColor: '#4CAF50',
     ...shadows.button,
@@ -63,16 +80,19 @@ const styles = StyleSheet.create({
   },
 
   large: {
-    height: 48,
+    minHeight: 48,
     paddingHorizontal: 32,
+    paddingVertical: 12,
   },
   medium: {
-    height: 40,
+    minHeight: 40,
     paddingHorizontal: 24,
+    paddingVertical: 10,
   },
   small: {
-    height: 32,
+    minHeight: 32,
     paddingHorizontal: 16,
+    paddingVertical: 8,
   },
 
   disabled: {
@@ -90,6 +110,15 @@ const styles = StyleSheet.create({
   secondaryText: {
     color: colors.primary,
   },
+  prominentText: {
+    color: colors.white,
+  },
+  outlineText: {
+    color: colors.primary,
+  },
+  softText: {
+    color: colors.text,
+  },
   successText: {
     color: colors.white,
   },
@@ -103,6 +132,8 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
   },
   icon: {
     marginRight: 8,
@@ -117,6 +148,9 @@ const VARIANT_TEXT_STYLE_KEY: Record<ButtonVariant, keyof typeof styles> = {
   secondary: 'secondaryText',
   success: 'successText',
   text: 'textText',
+  prominent: 'prominentText',
+  outline: 'outlineText',
+  soft: 'softText',
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -167,7 +201,9 @@ const Button: React.FC<ButtonProps> = ({
               )}
             </View>
           ) : null}
-          <Text style={textStyles}>{title}</Text>
+          <Text style={[{ textAlign: 'center', flexShrink: 1 }, ...textStyles]}>
+            {title}
+          </Text>
         </View>
       )}
     </TouchableOpacity>

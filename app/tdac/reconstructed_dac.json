@@ -1,0 +1,26 @@
+[
+  {
+    "id": null,
+    "entry_info_id": "entry_1761348094096_5kg7bla7e",
+    "user_id": "user_001",
+    "card_type": "TDAC",
+    "destination_id": "th",
+    "arr_card_no": "5F9CE2E",
+    "qr_uri": "app/tdac/TDAC_5F9CE2E_1763152788.pdf",
+    "pdf_url": "app/tdac/TDAC_5F9CE2E_1763152788.pdf",
+    "submitted_at": "2025-11-14T18:35:07.561Z",
+    "submission_method": "api",
+    "status": "success",
+    "api_response": null,
+    "processing_time": 9270,
+    "retry_count": 0,
+    "error_details": null,
+    "is_superseded": 0,
+    "superseded_at": null,
+    "superseded_by": null,
+    "superseded_reason": null,
+    "version": 1,
+    "created_at": "2025-11-14T18:35:07.561Z",
+    "updated_at": "2025-11-14T18:35:07.561Z"
+  }
+]
