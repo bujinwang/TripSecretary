@@ -1120,71 +1120,71 @@
   "my": {
     "name": "Malaysia",
     "entryFlow": {
-      "title": "Malaysia Entry Preparation",
-      "submissionWindow": "Submit within 3 days of arrival",
+      "title": "Persiapan Kemasukan Malaysia",
+      "submissionWindow": "Hantar dalam 3 hari sebelum ketibaan",
       "status": {
         "ready": {
-          "title": "Ready to Submit!",
-          "subtitle": "All information complete"
+          "title": "Sedia untuk dihantar!",
+          "subtitle": "Semua maklumat lengkap"
         },
         "mostlyComplete": {
-          "title": "Almost There",
-          "subtitle": "A few more fields needed"
+          "title": "Hampir siap",
+          "subtitle": "Perlu isi beberapa medan lagi"
         },
         "needsImprovement": {
-          "title": "Please Complete",
-          "subtitle": "More information needed"
+          "title": "Lengkapkan maklumat",
+          "subtitle": "Maklumat tambahan diperlukan"
         }
       },
       "progress": {
         "headline": {
-          "ready": "Malaysia prep ready! 🌴",
-          "almost": "Almost there!",
-          "start": "Let's get started!"
+          "ready": "Persiapan Malaysia sudah siap! 🌴",
+          "almost": "Hampir siap!",
+          "start": "Mari mulakan!"
         },
         "subtitle": {
-          "ready": "All required info complete",
-          "almost": "Keep filling in your info for a smoother trip",
-          "start": "Keep filling in your info for a smoother trip"
+          "ready": "Semua maklumat diperlukan telah lengkap",
+          "almost": "Teruskan mengisi untuk perjalanan lebih lancar",
+          "start": "Teruskan mengisi untuk perjalanan lebih lancar"
         },
-        "label": "Preparation progress"
+        "label": "Kemajuan persiapan"
       },
       "countdown": {
-        "title": "Submission Window",
-        "subtitle": "Submission window is open. Please submit before it ends.",
-        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s",
-        "arrival": "Arrival date {{date}}",
-        "days": "{{days}} days until arrival"
+        "title": "Tempoh penghantaran",
+        "subtitle": "Tempoh penghantaran dibuka. Hantar sebelum tamat.",
+        "time": "Baki {{days}}h {{hours}}j {{minutes}}m {{seconds}}s",
+        "arrival": "Tarikh ketibaan {{date}}",
+        "days": "{{days}} hari sebelum tiba"
       },
       "actions": {
-        "startEntryGuide": "Start entry guide",
-        "submit": "Submit MDAC",
-        "submitSubtitle": "All set! Submit your Malaysia entry card now.",
-        "edit": "Edit travel information",
-        "editSubtitle": "Review or update any details before submitting.",
-        "entryGuide": "Entry guide",
-        "entryGuideSubtitle": "View the paper card & customs walkthrough",
-        "previewPack": "Preview entry pack",
-        "previewPackSubtitle": "See everything you've already prepared",
-        "editThai": "Edit travel information",
-        "editThaiSubtitle": "Jump back to make changes",
+        "startEntryGuide": "Mula panduan kemasukan",
+        "submit": "Hantar MDAC",
+        "submitSubtitle": "Semua siap! Hantar kad kemasukan Malaysia sekarang.",
+        "edit": "Edit maklumat perjalanan",
+        "editSubtitle": "Semak atau kemas kini sebelum menghantar",
+        "entryGuide": "Panduan kemasukan",
+        "entryGuideSubtitle": "Langkah kad ketibaan & kastam",
+        "previewPack": "Pratonton pek kemasukan",
+        "previewPackSubtitle": "Lihat semua yang telah anda sediakan",
+        "editThai": "Edit maklumat perjalanan",
+        "editThaiSubtitle": "Kembali untuk membuat perubahan",
         "help": {
-          "title": "Need help?",
-          "message": "Run into an issue? Share a screenshot and we'll help.",
-          "share": "Share screenshot",
-          "contact": "Contact support",
-          "callout": "Need assistance?",
-          "calloutSubtitle": "Tap to get help"
+          "title": "Perlu bantuan?",
+          "message": "Ada masalah? Kongsi tangkapan skrin atau hubungi sokongan.",
+          "share": "Kongsi tangkapan skrin",
+          "contact": "Hubungi sokongan",
+          "callout": "Memerlukan bantuan",
+          "calloutSubtitle": "Ketuk untuk bantuan"
         },
         "incomplete": {
-          "title": "More information needed",
-          "message": "Please complete at least 85% of the sections before submitting."
+          "title": "Perlu maklumat tambahan",
+          "message": "Lengkapkan sekurang-kurangnya 85% sebelum menghantar"
         },
         "success": {
-          "title": "Ready!",
-          "message": "Your Malaysia entry information is complete."
+          "title": "Sedia!",
+          "message": "Maklumat kemasukan Malaysia anda telah lengkap"
         },
-        "continue": "Continue editing"
+        "continue": "Teruskan mengedit"
       }
     },
     "entryPack": {

@@ -1531,94 +1531,94 @@
     }
   },
   "kr": {
-    "name": "South Korea",
+    "name": "대한민국",
     "info": {
-      "headerTitle": "Korea Entry Information",
-      "title": "Korea Entry Guide",
-      "subtitle": "Most travellers require K-ETA or a visa",
+      "headerTitle": "대한민국 입국 정보",
+      "title": "대한민국 입국 가이드",
+      "subtitle": "대부분 K-ETA 또는 비자가 필요합니다",
       "sections": {
         "visa": {
-          "title": "✓ Visa/K-ETA Policy",
+          "title": "✓ 비자/K-ETA 안내",
           "items": [
-            "Check if you are eligible for K-ETA; otherwise apply for a visa",
-            "• K-ETA is required prior to boarding for eligible nationalities",
-            "• Ensure passport validity and accurate personal details"
+            "K-ETA 대상 여부를 확인하세요. 대상이 아니면 비자를 신청해야 합니다",
+            "• 대상 국적의 경우 출국 전 K-ETA가 필요합니다",
+            "• 여권 유효기간과 개인정보를 정확히 확인하세요"
           ]
         },
         "onsite": {
-          "title": "⚠️ Entry Notes",
+          "title": "⚠️ 입국 시 주의사항",
           "items": [
-            "• Immigration may ask purpose of visit and accommodation details",
-            "• Prepare proof of funds and return ticket",
-            "• Keep hotel address and contact information handy"
+            "• 방문 목적과 숙소 정보를 질문받을 수 있습니다",
+            "• 자금 증빙과 귀국/이동 항공권을 준비하세요",
+            "• 호텔 주소와 연락처를 준비해두세요"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy Helps",
+          "title": "✨ BorderBuddy가 도와드립니다",
           "items": [
-            "• Reminders for K-ETA steps",
-            "• Pre-fill travel information",
-            "• Organize all documents"
+            "• K-ETA 단계 안내 및 알림",
+            "• 여행 정보 자동 입력",
+            "• 문서 정리 및 보관"
           ]
         }
       },
-      "continueButton": "Got it, continue"
+      "continueButton": "확인했어요, 계속 진행"
     },
     "entryFlow": {
-      "title": "Korea Entry Preparation",
+      "title": "대한민국 입국 준비",
       "progress": {
         "headline": {
-          "ready": "Korea trip is ready! 🇰🇷",
-          "almost": "Almost there!",
-          "start": "Let's get started!"
+          "ready": "한국 여행 준비 완료! 🇰🇷",
+          "almost": "거의 다 됐어요!",
+          "start": "지금부터 준비를 시작해요!"
         },
         "subtitle": {
-          "ready": "All required info complete",
-          "almost": "Finish the remaining fields",
-          "start": "Fill passport, travel and accommodation details"
+          "ready": "필수 정보가 모두 완료되었습니다",
+          "almost": "남은 항목을 입력하면 됩니다",
+          "start": "여권/여행/숙소 정보를 입력하세요"
         },
-        "label": "Preparation progress"
+        "label": "준비 진행률"
       },
       "status": {
         "ready": {
-          "title": "Ready",
-          "subtitle": "Everything looks complete"
+          "title": "준비 완료",
+          "subtitle": "모든 정보가 준비되었습니다"
         },
         "mostlyComplete": {
-          "title": "Almost complete",
-          "subtitle": "A few more fields needed"
+          "title": "거의 완료",
+          "subtitle": "몇 가지 항목이 더 필요합니다"
         },
         "needsImprovement": {
-          "title": "Please complete",
-          "subtitle": "More information needed"
+          "title": "추가 입력 필요",
+          "subtitle": "더 많은 정보가 필요합니다"
         }
       },
       "countdown": {
-        "title": "Submission countdown",
-        "subtitle": "Finish any remaining steps before arrival.",
-        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
-        "arrival": "Arrival date {{date}}",
-        "days": "{{days}} days until arrival"
+        "title": "제출 마감 카운트다운",
+        "subtitle": "도착 전까지 남은 절차를 완료하세요",
+        "time": "남은 시간 {{days}}일 {{hours}}시간 {{minutes}}분 {{seconds}}초",
+        "arrival": "도착일 {{date}}",
+        "days": "도착까지 {{days}}일"
       },
       "actions": {
-        "previewPack": "Preview entry pack",
-        "previewPackSubtitle": "See everything you've already prepared",
-        "entryGuide": "Entry guide",
-        "entryGuideSubtitle": "View the paper card & customs walkthrough",
-        "editThai": "Edit travel information",
-        "editThaiSubtitle": "Jump back to make changes",
-        "edit": "Edit travel information",
-        "editSubtitle": "Review or update any details before submitting.",
+        "previewPack": "입국 패키지 미리보기",
+        "previewPackSubtitle": "준비된 내용을 한눈에 확인",
+        "entryGuide": "입국 가이드",
+        "entryGuideSubtitle": "종이 입국 카드·세관 신고서 작성 안내",
+        "editThai": "여행 정보 수정",
+        "editThaiSubtitle": "수정이 필요하면 뒤로 가서 편집",
+        "edit": "여행 정보 수정",
+        "editSubtitle": "제출 전 내용 검토 및 업데이트",
         "help": {
-          "title": "Need help?",
-          "message": "Run into an issue? Share a screenshot and we'll help.",
-          "share": "Share screenshot",
-          "contact": "Contact support",
-          "callout": "Need assistance?",
-          "calloutSubtitle": "Tap to get help"
+          "title": "도움이 필요하신가요?",
+          "message": "문제가 있으면 스크린샷을 공유하거나 지원팀에 문의하세요",
+          "share": "스크린샷 공유",
+          "contact": "지원팀 문의",
+          "callout": "도움 요청",
+          "calloutSubtitle": "도움을 받기"
         },
-        "continue": "Continue editing",
-        "submit": "Submit entry card"
+        "continue": "편집 계속하기",
+        "submit": "입국 카드 제출"
       }
     },
     "travelInfo": {

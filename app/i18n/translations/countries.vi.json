@@ -1171,96 +1171,96 @@
     }
   },
   "vn": {
-    "name": "Vietnam",
+    "name": "Việt Nam",
     "entryFlow": {
-      "title": "Vietnam Entry Preparation",
+      "title": "Chuẩn bị nhập cảnh Việt Nam",
       "status": {
         "ready": {
-          "title": "Vietnam Entry Ready",
-          "subtitle": "All information complete, ready for entry process"
+          "title": "Sẵn sàng nhập cảnh",
+          "subtitle": "Thông tin đã đầy đủ, sẵn sàng làm thủ tục"
         },
         "mostlyComplete": {
-          "title": "Almost There",
-          "subtitle": "A few more fields needed"
+          "title": "Gần xong",
+          "subtitle": "Cần bổ sung vài mục"
         },
         "needsImprovement": {
-          "title": "Please Complete",
-          "subtitle": "More information needed"
+          "title": "Cần hoàn thiện",
+          "subtitle": "Cần thêm thông tin"
         }
       },
       "progress": {
         "headline": {
-          "ready": "Vietnam Ready! 🌴",
-          "almost": "Good progress! 💪",
-          "start": "Let's get started! 🌺"
+          "ready": "Đã sẵn sàng cho Việt Nam! 🌴",
+          "almost": "Tiến độ tốt! 💪",
+          "start": "Bắt đầu thôi! 🌺"
         },
         "subtitle": {
-          "ready": "Awesome! Your Vietnam trip is ready! 🌴",
-          "almost": "Keep it up! Just {{remaining}}% left to complete your Vietnam trip preparation!",
-          "start": "Continue filling out your information to make the journey smoother."
+          "ready": "Tuyệt vời! Chuyến đi Việt Nam của bạn đã sẵn sàng! 🌴",
+          "almost": "Tiếp tục nhé! Chỉ còn {{remaining}}% là hoàn thành chuẩn bị!",
+          "start": "Tiếp tục điền thông tin để hành trình suôn sẻ hơn."
         },
-        "label": "Preparation Progress"
+        "label": "Tiến độ chuẩn bị"
       },
       "countdown": {
-        "title": "Submission countdown",
-        "subtitle": "Finish any remaining steps before arrival.",
-        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
-        "arrival": "Arrival date {{date}}",
-        "days": "{{days}} days until arrival"
+        "title": "Đếm ngược đến hạn",
+        "subtitle": "Hoàn tất các bước còn lại trước khi đến nơi.",
+        "time": "Còn {{days}} ngày {{hours}} giờ {{minutes}} phút {{seconds}} giây",
+        "arrival": "Ngày đến {{date}}",
+        "days": "Còn {{days}} ngày nữa đến nơi"
       },
       "actions": {
-        "previewPack": "Preview entry pack",
-        "previewPackSubtitle": "See everything you've already prepared",
-        "entryGuide": "Entry guide",
-        "entryGuideSubtitle": "View the paper card & customs walkthrough",
-        "editThai": "Edit travel information",
-        "editThaiSubtitle": "Jump back to make changes",
-        "edit": "Edit travel information",
-        "editSubtitle": "Review or update any details before submitting.",
+        "previewPack": "Xem trước gói nhập cảnh",
+        "previewPackSubtitle": "Xem những gì bạn đã chuẩn bị",
+        "entryGuide": "Hướng dẫn nhập cảnh",
+        "entryGuideSubtitle": "Hướng dẫn điền thẻ nhập cảnh và hải quan",
+        "editThai": "Chỉnh sửa thông tin chuyến đi",
+        "editThaiSubtitle": "Quay lại để chỉnh sửa khi cần",
+        "edit": "Chỉnh sửa thông tin chuyến đi",
+        "editSubtitle": "Xem lại/cập nhật trước khi nộp",
         "help": {
-          "title": "Need help?",
-          "message": "Run into an issue? Share a screenshot and we'll help.",
-          "share": "Share screenshot",
-          "contact": "Contact support",
-          "callout": "Need assistance?",
-          "calloutSubtitle": "Tap to get help"
+          "title": "Cần trợ giúp?",
+          "message": "Gặp vấn đề? Hãy chia sẻ ảnh chụp màn hình hoặc liên hệ hỗ trợ.",
+          "share": "Chia sẻ ảnh màn hình",
+          "contact": "Liên hệ hỗ trợ",
+          "callout": "Cần trợ giúp",
+          "calloutSubtitle": "Nhấn để nhận trợ giúp"
         },
-        "continue": "Continue editing",
-        "submit": "Submit entry card"
+        "continue": "Tiếp tục chỉnh sửa",
+        "submit": "Nộp thẻ nhập cảnh"
       }
     },
     "info": {
-      "headerTitle": "Vietnam Entry Info",
-      "title": "Vietnam Entry Guide",
-      "subtitle": "E-Visa & Entry Requirements",
+      "headerTitle": "Thông tin nhập cảnh Việt Nam",
+      "title": "Hướng dẫn nhập cảnh Việt Nam",
+      "subtitle": "E‑Visa và yêu cầu nhập cảnh",
       "sections": {
         "visa": {
-          "title": "Visa Requirements",
+          "title": "Yêu cầu thị thực",
           "items": [
-            "Chinese citizens can apply for e-Visa online",
-            "E-Visa valid for 90 days, single or multiple entry",
-            "Processing time: 3 business days",
-            "E-Visa fee: $25 USD"
+            "Công dân Trung Quốc có thể nộp E‑Visa trực tuyến",
+            "E‑Visa có hiệu lực 90 ngày, một lần hoặc nhiều lần nhập cảnh",
+            "Thời gian xử lý: khoảng 3 ngày làm việc",
+            "Lệ phí E‑Visa: 25 USD"
           ]
         },
         "onsite": {
-          "title": "On-Site Requirements",
+          "title": "Yêu cầu tại cửa khẩu",
           "items": [
-            "Present your passport and approved e-Visa",
-            "Immigration form may be required on arrival",
-            "Customs declaration form for goods over $5,000 USD"
+            "Xuất trình hộ chiếu và E‑Visa đã được chấp thuận",
+            "Có thể cần điền mẫu đơn nhập cảnh khi đến",
+            "Khai báo hải quan đối với hàng hóa trên 5.000 USD"
           ]
         },
         "appFeatures": {
-          "title": "App Features",
+          "title": "Tính năng ứng dụng",
           "items": [
-            "✅ E-Visa application guidance",
-            "✅ Entry form templates",
-            "✅ Bilingual support (Vietnamese, English, Chinese)"
+            "✅ Hướng dẫn nộp E‑Visa",
+            "✅ Mẫu biểu nhập cảnh",
+            "✅ Hỗ trợ song ngữ (Việt, Anh, Trung)"
           ]
         }
       },
-      "continueButton": "Continue to Travel Info"
+      "continueButton": "Tiếp tục đến thông tin chuyến đi"
     },
     "requirements": {
       "headerTitle": "Entry Requirements",

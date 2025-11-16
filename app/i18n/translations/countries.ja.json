@@ -2988,42 +2988,42 @@
     }
   },
   "jp": {
-    "name": "Japan",
+    "name": "日本",
     "info": {
-      "headerTitle": "Japan Entry Information",
-      "title": "Japan Entry Guide",
-      "subtitle": "Visa-free for 90 days for Chinese passport holders",
+      "headerTitle": "日本入国情報",
+      "title": "日本入国ガイド",
+      "subtitle": "中国籍旅券所持者は90日間のビザ免除",
       "sections": {
         "visa": {
-          "title": "✓ Great News! Visa-Free Policy",
+          "title": "✓ ビザ免除のご案内",
           "items": [
-            "Chinese passport holders can enjoy visa-free entry for 90 days - spontaneous travel!",
-            "• No visa application needed in advance",
-            "• Valid for tourism, family visits, business purposes",
-            "• Paper arrival card still required on entry"
+            "中国籍旅券所持者は最大90日間のビザ免除で入国できます",
+            "• 事前のビザ申請は不要",
+            "• 観光・親族訪問・商用などの短期滞在に適用",
+            "• 入国時に紙の上陸カードと税関申告書の記入が必要"
           ]
         },
         "onsite": {
-          "title": "⚠️ Entry Information",
+          "title": "⚠️ 入国時の注意",
           "items": [
-            "• Forms must be completed in black or blue ink.",
-            "• Handwriting should be clear and legible.",
-            "• Answer all questions truthfully on customs forms.",
-            "• Keep your entry card stub until departure.",
-            "• Biometric scanning (fingerprint/face) is required."
+            "• 黒または青のペンで記入",
+            "• 文字は読みやすく丁寧に",
+            "• 税関申告は事実に基づき正確に",
+            "• 出国まで上陸カード控えを保管",
+            "• 指紋・顔認証などの生体認証が必要"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy Makes It Easy",
+          "title": "✨ BorderBuddyでかんたん準備",
           "items": [
-            "• Zero anxiety: Auto-reminds about form completion and biometric step.",
-            "• Zero errors: Copy Mode ensures accurate data transfer to paper forms.",
-            "• Zero hassle: Detailed step-by-step guide for the entire process.",
-            "• Document checklist: Comprehensive preparation list for immigration/customs."
+            "• 不安ゼロ：記入・生体認証のタイミングを自動通知",
+            "• ミスゼロ：コピー用モードで紙の記入も正確",
+            "• 手間ゼロ：手順に沿った詳細ガイド",
+            "• 書類チェックリスト：入国・税関に必要な準備を網羅"
           ]
         }
       },
-      "continueButton": "Understood, continue to checklist"
+      "continueButton": "理解しました、チェックリストへ"
     },
     "requirements": {
       "headerTitle": "Japan Entry Checklist",
@@ -3070,60 +3070,60 @@
       "startButton": "Start filling"
     },
     "entryFlow": {
-      "title": "Japan Entry Preparation",
+      "title": "日本入国準備",
       "progress": {
         "headline": {
-          "ready": "Japan trip is ready! 🇯🇵",
-          "almost": "Almost there!",
-          "start": "Let's get started!"
+          "ready": "日本旅行の準備は万端です！ 🇯🇵",
+          "almost": "もう少しで完了！",
+          "start": "さあ準備を始めましょう！"
         },
         "subtitle": {
-          "ready": "All required info complete",
-          "almost": "Finish the remaining fields",
-          "start": "Fill passport, travel and accommodation details"
+          "ready": "必要情報はすべて完了しています",
+          "almost": "残りの項目を入力してください",
+          "start": "パスポート・旅程・宿泊情報を入力しましょう"
         },
-        "label": "Preparation progress"
+        "label": "準備進捗"
       },
       "status": {
         "ready": {
-          "title": "Ready to Go",
-          "subtitle": "All information complete"
+          "title": "出発準備完了",
+          "subtitle": "情報はすべて揃っています"
         },
         "mostlyComplete": {
-          "title": "Almost There",
-          "subtitle": "A few more fields needed"
+          "title": "もう少し",
+          "subtitle": "あと少し入力が必要です"
         },
         "needsImprovement": {
-          "title": "Please Complete",
-          "subtitle": "More information needed"
+          "title": "入力を完了してください",
+          "subtitle": "追加で情報が必要です"
         }
       },
       "countdown": {
-        "title": "Submission countdown",
-        "subtitle": "Finish paperwork and preparations before arrival.",
-        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
-        "arrival": "Arrival date {{date}}",
-        "days": "{{days}} days until arrival"
+        "title": "提出までのカウントダウン",
+        "subtitle": "到着前に必要な準備を完了しましょう",
+        "time": "残り {{days}}日 {{hours}}時間 {{minutes}}分 {{seconds}}秒",
+        "arrival": "到着日 {{date}}",
+        "days": "到着まであと {{days}} 日"
       },
       "actions": {
-        "previewPack": "Preview entry pack",
-        "previewPackSubtitle": "See everything you've already prepared",
-        "entryGuide": "Entry guide",
-        "entryGuideSubtitle": "Paper arrival card & customs walkthrough",
-        "editThai": "Edit travel information",
-        "editThaiSubtitle": "Jump back to make changes",
-        "edit": "Edit travel information",
-        "editSubtitle": "Review or update any details before submitting.",
+        "previewPack": "入国パックをプレビュー",
+        "previewPackSubtitle": "準備済みの内容を確認できます",
+        "entryGuide": "入国ガイド",
+        "entryGuideSubtitle": "紙の上陸カード・税関申告の手順",
+        "editThai": "旅行情報を編集",
+        "editThaiSubtitle": "修正がある場合は戻って編集",
+        "edit": "旅行情報を編集",
+        "editSubtitle": "提出前に内容を見直し・更新",
         "help": {
-          "title": "Need help?",
-          "message": "If something looks wrong, share a screenshot or contact support.",
-          "share": "Share screenshot",
-          "contact": "Contact support",
-          "callout": "Need assistance?",
-          "calloutSubtitle": "Tap to get help"
+          "title": "ヘルプが必要ですか？",
+          "message": "不明点があればスクリーンショットを共有するか、サポートへお問い合わせください",
+          "share": "スクリーンショットを共有",
+          "contact": "サポートへ連絡",
+          "callout": "お困りですか？",
+          "calloutSubtitle": "ヘルプを受け取る"
         },
-        "continue": "Continue editing",
-        "submit": "Submit entry card"
+        "continue": "編集を続ける",
+        "submit": "入国カードを提出"
       }
     },
     "travelInfo": {
