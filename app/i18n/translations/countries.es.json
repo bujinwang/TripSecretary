@@ -21,7 +21,8 @@
         "all": "Todos",
         "completed": "Completados",
         "cancelled": "Cancelados",
-        "expired": "Expirados"
+        "expired": "Expirados",
+        "legacy": "Legacy Records"
       },
       "timeGroups": {
         "today": "Hoy",
@@ -32,7 +33,14 @@
       },
       "resultCount": "Mostrando {{count}} resultados",
       "deleteConfirm": "Esto no se puede deshacer. ¿Está seguro de que desea eliminar?",
-      "storageUsage": "Almacenamiento del historial: {{size}} MB"
+      "storageUsage": "Almacenamiento del historial: {{size}} MB",
+      "migrationBanner": "Found {{count}} legacy records that can be migrated to new format",
+      "batchMigrate": "Migrate All",
+      "migrateItem": "Migrate to New Format",
+      "migrationSuccess": "Record successfully migrated to new format",
+      "migrationFailed": "Migration failed: {{error}}",
+      "batchMigrationConfirm": "Found {{count}} legacy records that can be migrated. Do you want to migrate them all to the new format?",
+      "batchMigrationResult": "Successfully migrated {{success}} records, {{failed}} failed."
     },
     "entryPack": {
       "title": "Paquete de Entrada {{destination}} - Enviado",
@@ -118,6 +126,16 @@
       "backupCompleted": {
         "title": "Copia de Seguridad de Datos Completada",
         "body": "Sus datos del paquete de entrada han sido respaldados exitosamente. Tamaño de respaldo: {{backupSize}}MB"
+      },
+      "feedback": {
+        "submitTitle": "Submitting Entry Card",
+        "submitMessage": "You've entered the submission flow from a notification. Please complete your entry card submission.",
+        "resubmitTitle": "Resubmitting Entry Card",
+        "resubmitMessage": "Your data has changed. Please resubmit your entry card to ensure accurate information.",
+        "continueTitle": "Continue Filling Information",
+        "continueMessage": "Please complete the remaining entry information fields.",
+        "viewTitle": "Viewing Entry Pack Details",
+        "viewMessage": "Displaying your entry pack details as requested."
       }
     },
     "entryFlow": {
@@ -131,7 +149,21 @@
       "webviewFill": "Autocompletar WebView",
       "incompleteMessage": "Este viaje no está completo, por favor continúe llenando la información",
       "resubmissionWarning": "Editar información requerirá reenvío. ¿Continuar?",
-      "completionPercent": "{{percent}}% Completo"
+      "completionPercent": "{{percent}}% Completo",
+      "status": {
+        "ready": {
+          "title": "Ready to Submit!",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      }
     },
     "countdown": {
       "noDate": "No se ha establecido fecha de llegada a Tailandia, no se puede enviar tarjeta de entrada",
@@ -219,6 +251,16 @@
         "email": "Correo Electrónico",
         "thaiAddress": "Dirección Tailandesa"
       }
+    },
+    "multiDestination": {
+      "summary": "Multi-Destination Progress",
+      "stats": "{{submitted}} Submitted • {{inProgress}} In Progress • {{overall}}% Overall"
+    },
+    "inProgress": {
+      "title": "{{destination}} - In Progress",
+      "ready": "Ready to Submit",
+      "incomplete": "In Progress",
+      "completionPercent": "{{percent}}% Complete"
     }
   },
   "thailand": {
@@ -292,7 +334,11 @@
         },
         "appFeatures": {
           "title": "✨ BorderBuddy te lo hace fácil",
-          "items": ["• Cero ansiedad", "• Cero errores", "• Gestión de PIN"]
+          "items": [
+            "• Cero ansiedad",
+            "• Cero errores",
+            "• Gestión de PIN"
+          ]
         }
       },
       "continueButton": "Continuar"
@@ -334,6 +380,117 @@
         }
       },
       "continueButton": "Entendido, continuar"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Singapore Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Singapore customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "hotelAddress": "Accommodation Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      }
     }
   },
   "hongkong": {
@@ -402,6 +559,103 @@
         }
       },
       "continueButton": "Continuar"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Taiwan Entry Information Center",
+        "subtitle": "Fill in passport, itinerary, and accommodation once, and travel to Formosa with peace of mind",
+        "valuePropositions": {
+          "0": "Entry permit & arrival card in one place",
+          "1": "Smart reminder for 3-day arrival card window",
+          "2": "Securely stored, works offline"
+        },
+        "beginnerTip": "Tip: Complete the online arrival card within 3 days before arrival—we'll remind you at the perfect time."
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "stayDuration": "Stay Duration",
+        "accommodationType": "Accommodation Type",
+        "city": "City",
+        "hotelAddress": "Accommodation Address",
+        "contactNumber": "Contact Number"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "stayDuration": "Enter number of days you plan to stay",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "hotelAddress": "Enter full address",
+        "contactNumber": "Enter contact phone number"
+      }
     }
   },
   "japan": {
@@ -689,6 +943,14 @@
             "• Sin estrés: Nunca te preocupes por cuándo aplicar - nosotros cuidamos el tiempo",
             "• Preparación progresiva: Prepare documentos con anticipación, el sistema activa recordatorios una vez confirmado su viaje"
           ]
+        },
+        "onsite": {
+          "title": "Entry Notes",
+          "items": [
+            "• CBP may ask purpose of visit and accommodation details",
+            "• Prepare return/onward ticket and proof of funds",
+            "• Keep hotel address and contact information handy"
+          ]
         }
       },
       "continueButton": "Entendido, continuar preparación"
@@ -735,6 +997,64 @@
         }
       },
       "continueButton": "Continuar a información de viaje"
+    },
+    "name": "United States",
+    "entryFlow": {
+      "title": "US Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "US trip is ready! 🇺🇸",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready",
+          "subtitle": "Everything looks complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
     }
   },
   "profile": {
@@ -1052,5 +1372,3152 @@
   },
   "screenTitles": {
     "notificationSettings": "Configuración de Notificaciones"
+  },
+  "th": {
+    "name": "Thailand",
+    "info": {
+      "headerTitle": "Thailand Entry Information",
+      "title": "Thailand Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: TDAC Digital Arrival Card must be submitted (can submit up to 72 hours before arrival)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• TDAC submission timing: Can submit up to 72 hours before arrival, but must complete before arrival",
+            "• QR code required: Must show TDAC QR code upon entry, can't find PDF is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection",
+            "• Cloudflare verification: May encounter CAPTCHA challenges during submission"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill TDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• QR code management: Auto-save TDAC QR code PDF, quick display upon entry"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue to the checklist"
+    },
+    "requirements": {
+      "headerTitle": "Thailand Entry Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Valid passport",
+          "description": "Passport valid for at least 6 months",
+          "details": "Your passport must be valid for at least 6 months from your entry date into Thailand."
+        },
+        "onwardTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed departure booking",
+          "details": "Provide confirmed flight booking showing you will leave Thailand within the authorized stay period."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or local contact information",
+          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Thailand, including address and phone number."
+        },
+        "funds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
+        },
+        "healthCheck": {
+          "title": "Health requirements",
+          "description": "Check current health regulations",
+          "details": "Verify any health requirements or documents needed for entry. Complete any required health declarations before arrival."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "You can start filling anytime",
+          "subtitle": "We support progressive completion of the checklist"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "Please complete the Cloudflare verification",
+          "instructions": "Finish the “I'm not a robot” check on the page below."
+        }
+      }
+    },
+    "entryFlow": {
+      "title": "Thailand Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Thailand trip is ready! 🇹🇭",
+          "almost": "Great progress—nearly done!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Keep filling in your info for a smoother trip",
+          "start": "Fill in passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to submit TDAC",
+          "subtitle": "Everything is complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "A few more fields to finish"
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "preparationTitle": "Thailand Entry Preparation Status",
+      "preparationSubtitle": "Check your entry information completion status",
+      "loading": "Loading preparation status...",
+      "completionStatus": "Completion Status",
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Fund Proof",
+        "travel": "Travel Information"
+      },
+      "submissionWindow": "Submission Window",
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit TDAC",
+        "submitSubtitle": "All set! Submit your Thailand entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Thailand entry information is complete."
+        },
+        "continue": "Continue editing"
+      },
+      "continueImproving": "Continue Improving Information",
+      "completeAllFields": "Need to complete information",
+      "setArrivalDate": "Please Set Arrival Date",
+      "arrivalDateRequired": "Arrival date required for submission",
+      "waitForWindow": "Wait for Submission Window",
+      "windowNotOpen": "Submission window not yet open",
+      "submitTDAC": "Submit Thailand Entry Card",
+      "readyToSubmit": "All information complete, ready to submit",
+      "editInfo": "Edit Information",
+      "preview": "Preview Entry Card",
+      "share": "Ask a friend to help fill in",
+      "noData": {
+        "title": "Start Filling Thailand Entry Information",
+        "description": "You haven't filled any entry information yet. Click the button below to start, and we'll guide you through the entire process.",
+        "hintsTitle": "You need to prepare:",
+        "startButton": "Start Filling"
+      },
+      "categoriesTitle": "Information Categories"
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "OTHER": "Other"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Thailand Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Thai customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "sectionTitles": {
+        "passport": "Passport Information",
+        "passportSubtitle": "Enter your passport details",
+        "personal": "Personal Information",
+        "personalSubtitle": "Contact and occupation details",
+        "travel": "Travel Information",
+        "travelSubtitle": "Flight and accommodation details",
+        "funds": "Proof of Funds",
+        "fundsSubtitle": "Financial proof for your stay"
+      },
+      "sectionIntros": {
+        "passport": "Please ensure all details match your passport exactly",
+        "personal": "Contact information for immigration purposes",
+        "travel": "Immigration needs to know your travel plans",
+        "funds": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses."
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": {
+          "label": "Occupation",
+          "help": "Select or enter your occupation"
+        },
+        "cityOfResidence": {
+          "label": "City of Residence",
+          "label.china": "Province",
+          "help": "City where you currently live",
+          "help.china": "For Chinese addresses, enter your province (use English, e.g., Anhui)",
+          "placeholder": "e.g., Anhui, Shanghai",
+          "placeholder.china": "e.g., Anhui, Guangdong"
+        },
+        "countryOfResidence": {
+          "label": "Country where you currently live",
+          "help": "Country where you currently live"
+        },
+        "residentCountry": {
+          "label": "Country where you currently live",
+          "help": "Country where you currently live"
+        },
+        "phoneCode": {
+          "label": "Code",
+          "help": "Phone area code"
+        },
+        "phoneNumber": {
+          "label": "Phone Number",
+          "help": "Your contact number"
+        },
+        "email": {
+          "label": "Email Address",
+          "help": "Your email address"
+        },
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "flightTicketPhoto": "Flight Ticket Photo",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "departureFlightTicketPhoto": "Departure Flight Ticket Photo",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "subDistrict": "Sub-District",
+        "postalCode": "Postal Code",
+        "hotelAddress": "Accommodation Address",
+        "hotelReservationPhoto": "Hotel Reservation Photo"
+      },
+      "submitButton": "Save and Continue",
+      "scan": {
+        "ticketTitle": "Scan Ticket",
+        "ticketMessage": "Please select ticket image source",
+        "hotelTitle": "Scan Hotel Booking",
+        "hotelMessage": "Please select hotel booking confirmation image source",
+        "takePhoto": "Take Photo",
+        "fromLibrary": "From Library",
+        "permissionTitle": "Permission Required",
+        "cameraPermissionMessage": "Camera permission required to take photos for document scanning",
+        "libraryPermissionMessage": "Photo library permission required to select photos",
+        "scanFailed": "Scan Failed",
+        "scanFailedMessage": "Document scanning failed, please try again",
+        "processing": "Processing...",
+        "processingMessage": "Recognizing document content, please wait"
+      },
+      "lastEdited": "Recently edited",
+      "uploadSuccess": "Upload successful",
+      "uploadError": "Upload failed",
+      "uploadErrorMessage": "Failed to save, please try again",
+      "flightTicketUploaded": "Flight ticket photo uploaded",
+      "hotelReservationUploaded": "Hotel reservation photo uploaded",
+      "departureFlightTicketUploaded": "Departure flight ticket photo uploaded",
+      "fieldHelp": {
+        "recentStayCountry": "Select countries you visited in the last 30 days",
+        "boardingCountry": "Select the country where you boarded the flight to Thailand"
+      },
+      "funds": {
+        "addCash": "Add Cash",
+        "addCreditCard": "Add Credit Card Photo",
+        "addBankBalance": "Add Bank Balance",
+        "empty": "No funds added yet. Please add at least one proof of funds."
+      }
+    },
+    "locations": {
+      "province": "Province",
+      "district": "District",
+      "subDistrict": "Sub-District"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost There",
+        "ready": "Continue",
+        "default": "Save and Continue"
+      }
+    }
+  },
+  "my": {
+    "name": "Malaysia",
+    "entryFlow": {
+      "title": "Malaysia Entry Preparation",
+      "submissionWindow": "Submit within 3 days of arrival",
+      "status": {
+        "ready": {
+          "title": "Ready to Submit!",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Malaysia prep ready! 🌴",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Keep filling in your info for a smoother trip",
+          "start": "Keep filling in your info for a smoother trip"
+        },
+        "label": "Preparation progress"
+      },
+      "countdown": {
+        "title": "Submission Window",
+        "subtitle": "Submission window is open. Please submit before it ends.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit MDAC",
+        "submitSubtitle": "All set! Submit your Malaysia entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% of the sections before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Malaysia entry information is complete."
+        },
+        "continue": "Continue editing"
+      }
+    },
+    "entryPack": {
+      "preview": {
+        "actions": {
+          "editInfo": "Edit Information",
+          "viewGuide": "MDAC Guide",
+          "submitMdac": "Submit MDAC"
+        },
+        "completion": {
+          "title": "Ready for MDAC!",
+          "subtitle": "Your Malaysia entry information is complete. Submit your MDAC within 3 days before arrival."
+        },
+        "validation": {
+          "title": "Complete Required Information",
+          "message": "Please complete all required fields before submitting your MDAC."
+        },
+        "documents": {
+          "title": "Malaysia Digital Arrival Card (MDAC)",
+          "subtitle": "Your information will be submitted digitally to Malaysian immigration authorities."
+        }
+      }
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Malaysia Entry Preparation Guide",
+        "subtitle": "Complete MDAC in 3 minutes, stress-free entry!",
+        "valuePropositions": [
+          "3 minutes to complete",
+          "Smart MDAC reminders",
+          "Offline friendly, secure storage"
+        ],
+        "beginnerTip": "MDAC must be submitted within 3 days before arrival. We remind you at the perfect time."
+      },
+      "buttonLabels": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue"
+      },
+      "validation": {
+        "arrivalDateWithinWindow": "Arrival date must be within the next 30 days to comply with MDAC submission window."
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
+        },
+        "funds": {
+          "title": "Proof of Funds"
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation information"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Recent Country of Stay",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Transit Passenger",
+        "accommodationType": "Accommodation Type",
+        "province": "State",
+        "district": "District",
+        "hotelAddress": "Hotel Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select state",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "FREELANCER": "Freelancer",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISITING_RELATIVES": "Visiting Relatives",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "state": "State",
+        "district": "District"
+      },
+      "navigation": {
+        "submitButton": {
+          "incomplete": "Complete Required Fields",
+          "almostDone": "Almost Done",
+          "ready": "Continue to MDAC"
+        }
+      }
+    },
+    "info": {
+      "headerTitle": "Malaysia Entry Information",
+      "title": "Malaysia Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Since December 1, 2023, Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: MDAC Digital Arrival Card must be submitted (submission time limit applies)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• MDAC has strict time limit: Submit too early = rejected, too late = can't make it",
+            "• Time calculation error-prone: Must calculate by Malaysia time, timezone issues cause mistakes",
+            "• PIN code easy to lose: Must show PIN upon entry, can't find email or lost screenshot is troublesome",
+            "• CAPTCHA recognition difficult: Alphanumeric code unclear, multiple wrong attempts may get locked",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill MDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• PIN management: Auto-save PIN and confirmation email, quick display upon entry"
+          ]
+        }
+      },
+      "continueButton": "Understood, continue to checklist"
+    },
+    "requirements": {
+      "headerTitle": "Malaysia MDAC Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Passport validity",
+          "description": "Passport valid at least 6 months with blank pages",
+          "details": "Malaysia immigration requires your passport to remain valid >=6 months beyond your entry date. Renew before traveling if needed."
+        },
+        "returnTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed departure booking",
+          "details": "Provide confirmed flight booking showing you will leave Malaysia within authorized stay period."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or local contact information",
+          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Malaysia, including address and phone number."
+        },
+        "sufficientFunds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Great! You can proceed.",
+          "subtitle": "Next we will confirm your travel information."
+        },
+        "warning": {
+          "title": "Please review each item",
+          "subtitle": "Ensure you meet the MDAC prerequisites before continuing."
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Information"
+      }
+    },
+    "entryPackPreview": {
+      "header": {
+        "title": "Malaysia Entry Pack - Preview / 马来西亚入境包预览"
+      },
+      "previewBanner": {
+        "title": "Preview Mode / Mod Pratonton",
+        "descriptions": [
+          "This is your Malaysia entry information preview. All information helps you pass Malaysian immigration smoothly.",
+          "Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat membantu anda melalui imigresen dengan lancar."
+        ]
+      },
+      "actions": {
+        "continueEditing": "✏️ Continue Editing / 继续补充信息",
+        "goToMdac": "🇲🇾 Go to MDAC / 前往MDAC"
+      },
+      "infoSection": {
+        "items": [
+          "Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.",
+          "提示：提交 MDAC 前请确认资料正确，到达前 3 天内完成提交。"
+        ]
+      }
+    },
+    "selection": {
+      "headerTitle": "Choose how you submit MDAC",
+      "headerSubtitle": "Smart Flow is guided, bilingual, and saves your PIN automatically.",
+      "recommendedBadge": "Recommended",
+      "smartFlow": {
+        "title": "Smart Flow (Guided)",
+        "subtitle": "Step-by-step helper with reminders and auto-fill from your entry pack.",
+        "highlights": [
+          {
+            "title": "Average time",
+            "value": "≈3 min"
+          },
+          {
+            "title": "Deadline alerts",
+            "value": "24h coverage"
+          },
+          {
+            "title": "PIN stored",
+            "value": "Auto-save"
+          }
+        ],
+        "features": [
+          "Auto-fill with the info you've already saved in BorderBuddy",
+          "Countdown reminders plus WhatsApp-style nudges before the 3-day window closes",
+          "Offline PIN backup and bilingual (EN/中文) hints at every step"
+        ],
+        "cta": "Use Smart Flow"
+      },
+      "webFlow": {
+        "title": "Official MDAC Web Form",
+        "subtitle": "Manual entry on the immigration website.",
+        "features": [
+          "You type every field yourself on the MDAC portal",
+          "Need to calculate the Malaysia-time submission window manually",
+          "Remember to save the confirmation email and PIN on your own"
+        ],
+        "cta": "Fill on Web"
+      },
+      "notes": {
+        "title": "Before you choose",
+        "items": [
+          "MDAC only accepts submissions within 3 days before arrival (Malaysia time).",
+          "Smart Flow stores your submission proof and PIN for quick inspection.",
+          "Families can create one entry pack and submit every traveler together."
+        ]
+      }
+    }
+  },
+  "sg": {
+    "name": "Singapore",
+    "info": {
+      "headerTitle": "Singapore Entry Information",
+      "title": "Singapore Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Since February 9, 2024, Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: SG Arrival Card must be submitted (submission time limit applies)"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• SG Arrival Card has time limit: Submit too early = invalid, too late = can't make it",
+            "• Time calculation error-prone: Must calculate by Singapore time, timezone issues cause mistakes",
+            "• Confirmation code easy to lose: Must show upon entry, can't find email is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill SG Arrival Card, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• Confirmation management: Auto-save confirmation code, quick display upon entry"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue to the checklist"
+    },
+    "requirements": {
+      "headerTitle": "SG Arrival Card Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Passport validity",
+          "description": "Passport should be valid 6+ months beyond arrival",
+          "details": "Singapore recommends at least 6 months validity. Renew or replace damaged passports before travel."
+        },
+        "submissionWindow": {
+          "title": "3-day submission window",
+          "description": "Submit within 3 days before arrival (Singapore time, GMT+8)",
+          "details": "Submitting too early triggers an error. Set a reminder and complete SGAC when the countdown reaches the window."
+        },
+        "travelDetails": {
+          "title": "Travel & stay information",
+          "description": "Flight/entry checkpoint, accommodation/contact, purpose of visit",
+          "details": "Prepare your airline/ferry/bus details, stay address, and an international-format phone number. Business travellers may need a local sponsor contact."
+        },
+        "familyGroups": {
+          "title": "Family/group plan",
+          "description": "Decide between individual or family submission",
+          "details": "Family submission supports up to 10 travellers. Collect everyone’s passport details and confirm minors are linked to a guardian."
+        },
+        "sgArrivalHistory": {
+          "title": "Previous submissions",
+          "description": "Each SG Arrival Card is valid for a single entry",
+          "details": "Re-entering soon? Submit a fresh declaration with updated travel details. Old submissions cannot be reused."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Great! You can proceed.",
+          "subtitle": "Next we will confirm your travel information."
+        },
+        "warning": {
+          "title": "Review each checklist item",
+          "subtitle": "Complete the prerequisites before moving on."
+        },
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "We support progressive completion"
+        }
+      },
+      "startButton": "Start filling",
+      "continueButton": "Continue to travel information"
+    },
+    "entryFlow": {
+      "status": {
+        "ready": {
+          "title": "Ready to submit SGAC",
+          "subtitle": "Everything is complete—submit within the 3-day window."
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "A few more fields to finish before submitting."
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections for SG Arrival Card submission."
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Singapore trip is ready! 🇸🇬",
+          "almost": "Great progress—nearly done!",
+          "start": "Let's get your SG Arrival Card ready"
+        },
+        "subtitle": {
+          "ready": "Submit the SG Arrival Card within the 3-day window to stay compliant.",
+          "almost": "Only {{remaining}}% left—once done you can submit SGAC with one tap.",
+          "start": "Fill in passport, travel, and accommodation details to unlock SGAC submission."
+        },
+        "label": "Preparation progress"
+      },
+      "submissionWindow": "SG Arrival Card must be submitted within 3 days before arrival (Singapore time).",
+      "title": "Singapore Entry Preparation",
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit SG Arrival Card",
+        "submitSubtitle": "All set! Submit your Singapore entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% of the sections before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Singapore entry information is complete."
+        },
+        "continue": "Continue editing"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "completionCard": {
+        "title": "Completion progress",
+        "summary": "{{completedCategories}} of {{totalCategories}} sections complete"
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    }
+  },
+  "vn": {
+    "name": "Vietnam",
+    "entryFlow": {
+      "title": "Vietnam Entry Preparation",
+      "status": {
+        "ready": {
+          "title": "Vietnam Entry Ready",
+          "subtitle": "All information complete, ready for entry process"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Vietnam Ready! 🌴",
+          "almost": "Good progress! 💪",
+          "start": "Let's get started! 🌺"
+        },
+        "subtitle": {
+          "ready": "Awesome! Your Vietnam trip is ready! 🌴",
+          "almost": "Keep it up! Just {{remaining}}% left to complete your Vietnam trip preparation!",
+          "start": "Continue filling out your information to make the journey smoother."
+        },
+        "label": "Preparation Progress"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    },
+    "info": {
+      "headerTitle": "Vietnam Entry Info",
+      "title": "Vietnam Entry Guide",
+      "subtitle": "E-Visa & Entry Requirements",
+      "sections": {
+        "visa": {
+          "title": "Visa Requirements",
+          "items": [
+            "Chinese citizens can apply for e-Visa online",
+            "E-Visa valid for 90 days, single or multiple entry",
+            "Processing time: 3 business days",
+            "E-Visa fee: $25 USD"
+          ]
+        },
+        "onsite": {
+          "title": "On-Site Requirements",
+          "items": [
+            "Present your passport and approved e-Visa",
+            "Immigration form may be required on arrival",
+            "Customs declaration form for goods over $5,000 USD"
+          ]
+        },
+        "appFeatures": {
+          "title": "App Features",
+          "items": [
+            "✅ E-Visa application guidance",
+            "✅ Entry form templates",
+            "✅ Bilingual support (Vietnamese, English, Chinese)"
+          ]
+        }
+      },
+      "continueButton": "Continue to Travel Info"
+    },
+    "requirements": {
+      "headerTitle": "Entry Requirements",
+      "introTitle": "What You Need to Enter Vietnam",
+      "introSubtitle": "Please ensure you have the following documents and requirements ready",
+      "items": {
+        "validPassport": {
+          "title": "Valid Passport",
+          "description": "Passport must be valid for at least 6 months",
+          "details": "Your passport must have at least 6 months validity from your date of entry into Vietnam."
+        },
+        "visa": {
+          "title": "E-Visa or Visa",
+          "description": "Apply for e-Visa online or obtain visa on arrival",
+          "details": "Chinese citizens can apply for e-Visa online (90 days validity) or obtain visa on arrival with pre-approval letter."
+        },
+        "onwardTicket": {
+          "title": "Return or Onward Ticket",
+          "description": "Proof of departure from Vietnam",
+          "details": "You must show proof of onward or return travel (flight, bus, or train ticket)."
+        },
+        "accommodation": {
+          "title": "Accommodation Proof",
+          "description": "Hotel booking or address in Vietnam",
+          "details": "Provide hotel reservation or address of where you will stay in Vietnam."
+        },
+        "funds": {
+          "title": "Sufficient Funds",
+          "description": "Proof of financial means",
+          "details": "Be prepared to show proof of sufficient funds for your stay (cash, credit cards, or bank statements)."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Ready to Fill Entry Information",
+          "subtitle": "The app will help you organize these details for a smooth entry process"
+        }
+      },
+      "startButton": "Continue to Travel Details"
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please accurately fill in the information on your passport"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Travel funds and payment methods",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information"
+        }
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    }
+  },
+  "ca": {
+    "info": {
+      "headerTitle": "Canada Entry Information",
+      "title": "Canada Entry Guide",
+      "subtitle": "Visa/eTA and entry requirements",
+      "sections": {
+        "visa": {
+          "title": "Visa/eTA Requirements",
+          "items": [
+            "Check if you are eligible for eTA",
+            "• Otherwise apply for a visitor visa",
+            "• Ensure passport validity and accurate personal details"
+          ]
+        },
+        "onsite": {
+          "title": "Entry Notes",
+          "items": [
+            "• CBSA may ask purpose of visit and accommodation details",
+            "• Prepare proof of funds and return ticket",
+            "• Keep hotel address and contact information handy"
+          ]
+        },
+        "appFeatures": {
+          "title": "BorderBuddy Helps",
+          "items": [
+            "• Reminders for eTA/visa steps",
+            "• Pre-fill travel information",
+            "• Organize documents"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "entryFlow": {
+      "title": "Canada Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Canada trip is ready! 🇨🇦",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready",
+          "subtitle": "Everything looks complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    }
+  },
+  "kr": {
+    "name": "South Korea",
+    "info": {
+      "headerTitle": "Korea Entry Information",
+      "title": "Korea Entry Guide",
+      "subtitle": "Most travellers require K-ETA or a visa",
+      "sections": {
+        "visa": {
+          "title": "✓ Visa/K-ETA Policy",
+          "items": [
+            "Check if you are eligible for K-ETA; otherwise apply for a visa",
+            "• K-ETA is required prior to boarding for eligible nationalities",
+            "• Ensure passport validity and accurate personal details"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Notes",
+          "items": [
+            "• Immigration may ask purpose of visit and accommodation details",
+            "• Prepare proof of funds and return ticket",
+            "• Keep hotel address and contact information handy"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Helps",
+          "items": [
+            "• Reminders for K-ETA steps",
+            "• Pre-fill travel information",
+            "• Organize all documents"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "entryFlow": {
+      "title": "Korea Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Korea trip is ready! 🇰🇷",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready",
+          "subtitle": "Everything looks complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "South Korea Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Korean customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay (recommended: bank cards, cash, etc.)",
+          "introText": "Proof of funds helps with smooth customs clearance",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number (Optional)",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "accommodationAddress": "Accommodation Address",
+        "accommodationPhone": "Accommodation Phone",
+        "ketaNumber": "K-ETA Number",
+        "hasKeta": "I have K-ETA"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "subDistrict": "Select sub-district",
+        "hotelAddress": "Enter full address",
+        "accommodationAddress": "Enter full accommodation address",
+        "accommodationPhone": "Enter accommodation phone number",
+        "ketaNumber": "Enter your K-ETA number if you have one",
+        "hasKeta": "Check if you already have a K-ETA"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      },
+      "submitButton": "Save and Continue"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    }
+  },
+  "vietnam": {
+    "travelInfo": {
+      "hero": {
+        "title": "Vietnam Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Vietnam customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please accurately fill in the information on your passport"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and occupation details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Travel funds and payment methods",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information",
+          "introText": "Customs needs to know your travel plans",
+          "introIcon": "✈️",
+          "isTransitPassenger": "Are you a transit passenger?",
+          "transitYes": "Yes",
+          "transitNo": "No",
+          "hotelAddressPlaceholder": "Enter address",
+          "provincePlaceholder": "Please select province",
+          "districtPlaceholder": "Please select district",
+          "subDistrictPlaceholder": "Please select sub-district",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "province": "Province",
+        "district": "District",
+        "hotelAddress": "Accommodation Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "province": "Select province",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      }
+    }
+  },
+  "hk": {
+    "name": "Hong Kong",
+    "info": {
+      "headerTitle": "Hong Kong Entry Information",
+      "title": "Hong Kong Entry Guide",
+      "subtitle": "Visa-free for 7 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Chinese passport visa-free for 7 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, business, family visits",
+            "• Extensions can be applied through Hong Kong Immigration if needed"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• Short stay duration: Only 7 days, must leave on time or apply for extension",
+            "• Immigration checks strict: May ask detailed questions about purpose, accommodation, funds",
+            "• Document preparation required: Return ticket, hotel booking, funds proof all needed",
+            "• Health declaration may required: Depending on current health policies",
+            "• E-channels limited: First-time visitors must use manual counters, longer queues"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-reminds 7-day limit, no worries about overstay",
+            "• Zero errors: Pre-filled travel information, immigration questions prepared",
+            "• Zero hassle: Enter once, all documents organized",
+            "• Document checklist: Comprehensive preparation list, no missing items"
+          ]
+        }
+      },
+      "continueButton": "Understood, continue to checklist"
+    },
+    "requirements": {
+      "headerTitle": "Hong Kong Entry Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Passport validity",
+          "description": "Passport should be valid for at least 1 month beyond your stay",
+          "details": "Hong Kong requires your passport to be valid beyond your intended stay. Check expiry date and renew if necessary."
+        },
+        "returnTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed booking for departure from Hong Kong",
+          "details": "Immigration may ask to see proof of your return flight or onward journey. Have your e-ticket or booking confirmation ready."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or host contact information",
+          "details": "Bring hotel reservation confirmation or contact details of your host in Hong Kong, including address and phone number."
+        },
+        "sufficientFunds": {
+          "title": "Sufficient funds",
+          "description": "Cash, credit cards, or bank statements",
+          "details": "You may need to demonstrate you have enough money for your stay. Bring cash, credit cards, or recent bank statements."
+        },
+        "healthDeclaration": {
+          "title": "Health declaration",
+          "description": "Complete if required by current health regulations",
+          "details": "Check if health declarations or COVID-related documents are needed. Complete any required forms before arrival."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "We support progressive completion"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Proof of Funds",
+        "travel": "Travel Details"
+      }
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Hong Kong Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing Hong Kong customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Details",
+          "subtitle": "Flight and accommodation information",
+          "introText": "Customs needs to know your travel plans",
+          "introIcon": "✈️",
+          "isTransitPassenger": "Are you a transit passenger?",
+          "transitYes": "Yes",
+          "transitNo": "No",
+          "hotelAddressPlaceholder": "Enter address",
+          "provincePlaceholder": "Please select province",
+          "districtPlaceholder": "Please select district",
+          "subDistrictPlaceholder": "Please select sub-district",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name (Optional)",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number (if any)",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country/Region of Residence",
+        "phoneCode": "Phone Country Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email (optional)",
+        "travelPurpose": "Purpose of Visit",
+        "recentStayCountry": "Countries visited in last 30 days",
+        "boardingCountry": "Boarding Country/Region",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Return Flight Number (optional)",
+        "departureDate": "Return Date (optional)",
+        "isTransitPassenger": "Are you a transit passenger?",
+        "accommodationType": "Accommodation Type",
+        "region": "Region",
+        "district": "District",
+        "hotelAddress": "Accommodation Address",
+        "hotelReservationPhoto": "Hotel Reservation Screenshot",
+        "flightTicketPhoto": "Flight Ticket Screenshot",
+        "departureFlightTicketPhoto": "Return Ticket Screenshot"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "region": "Select region",
+        "district": "Select district",
+        "hotelAddress": "Enter full address"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISIT_FAMILY": "Visit family/friends",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        },
+        "accommodationTypes": {
+          "HOTEL": "Hotel",
+          "GUESTHOUSE": "Guesthouse/Hostel",
+          "FRIEND_HOUSE": "Friend's House",
+          "RELATIVE_HOUSE": "Relative's House",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "region": "Region",
+        "district": "District"
+      },
+      "continue": "Continue"
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    },
+    "entryFlow": {
+      "title": "Hong Kong Entry Preparation",
+      "submissionWindow": "Visa-free stay is typically 7 days. Keep track of your departure plan.",
+      "progress": {
+        "headline": {
+          "ready": "Ready for Hong Kong! 🇭🇰",
+          "almost": "Almost there, keep going!",
+          "start": "Start preparing your Hong Kong entry pack"
+        },
+        "subtitle": {
+          "ready": "Passport, funds, and accommodation details are complete. Ready for inspection.",
+          "almost": "{{remaining}}% left. Complete the highlighted tasks to be inspection-ready.",
+          "start": "Fill passport, funds, and travel info to breeze through immigration questions."
+        },
+        "label": "Preparation Progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All details prepared for inspection."
+        },
+        "mostlyComplete": {
+          "title": "Almost Complete",
+          "subtitle": "A few more details to finalise."
+        },
+        "needsImprovement": {
+          "title": "Keep Completing",
+          "subtitle": "Finish key details to avoid delays at immigration."
+        }
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "If something looks wrong, share a screenshot or contact support.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      }
+    },
+    "validation": {
+      "region": {
+        "required": "Select your accommodation region."
+      },
+      "district": {
+        "required": "Select the district of your stay."
+      },
+      "accommodationType": {
+        "required": "Select an accommodation type."
+      },
+      "warnings": {
+        "noDeparture": {
+          "message": "Return information not filled. It's recommended to prepare this in case immigration officers ask."
+        },
+        "lowFunds": {
+          "message": "It's recommended to prepare sufficient proof of funds. Hong Kong customs may conduct spot checks."
+        }
+      }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "FINANCE_PROFESSIONAL": "Finance Professional",
+      "OTHER": "Other"
+    }
+  },
+  "us": {
+    "info": {
+      "headerTitle": "USA Entry Information",
+      "title": "USA Entry Guide",
+      "subtitle": "Chinese passport holders require a visa",
+      "sections": {
+        "visa": {
+          "title": "✓ Visa Policy",
+          "items": [
+            "Visa required. Apply for a B1/B2 visa before travel.",
+            "• Ten-year validity common, each stay usually up to 180 days",
+            "• Covers tourism, visiting family, and business meetings",
+            "• Important: EVUS registration must be valid before travel"
+          ]
+        },
+        "important": {
+          "title": "⚠️ Key Entry Notes",
+          "items": [
+            "• EVUS must stay valid: expired EVUS leads to denied boarding",
+            "• CBP declaration is detailed: mistakes bring extra questioning",
+            "• CBP interview pressure: language gaps or nervous answers impact decisions",
+            "• Multiple systems to manage: EVUS, CBP declaration, I-94 history",
+            "• Overstaying carries serious consequences for future visas"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: EVUS expiry reminders keep you on schedule",
+            "• Zero errors: Smart-fill CBP customs declaration",
+            "• Zero hassle: Enter once, manage everything in one hub",
+            "• Interview prep: Common CBP questions to practise"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "requirements": {
+      "headerTitle": "USA Entry Checklist",
+      "introTitle": "Prepare these items for entry",
+      "introSubtitle": "Fill what you have now, finish the rest later",
+      "items": {
+        "validPassport": {
+          "title": "Valid passport",
+          "description": "At least 6 months validity beyond intended stay",
+          "details": "Ensure your passport is valid at least six months past your planned departure date."
+        },
+        "validVisa": {
+          "title": "Valid US visa + EVUS",
+          "description": "B1/B2 visa with up-to-date EVUS registration",
+          "details": "A valid visa stamp and EVUS enrollment (renew every 2 years) are both required for boarding."
+        },
+        "returnTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed flight leaving the US",
+          "details": "Bring proof of departure such as a return ticket or onward itinerary."
+        },
+        "sufficientFunds": {
+          "title": "Proof of funds",
+          "description": "Financial evidence covering your visit",
+          "details": "Bank statements, credit cards, or cash—anything that proves you can support your stay."
+        },
+        "accommodation": {
+          "title": "Accommodation details",
+          "description": "Hotel booking or host information",
+          "details": "Provide hotel confirmation or complete contact details of the friend/family hosting you."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "Progressive completion supported"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "USA Entry Preparation Guide",
+        "subtitle": "Don't worry, we're here to help!",
+        "valuePropositions": {
+          "0": "3 minutes to complete",
+          "1": "100% privacy protection",
+          "2": "Avoid customs delays"
+        },
+        "beginnerTip": "First time crossing US customs? We'll guide you step by step to prepare all necessary documents!"
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport & EVUS",
+          "subtitle": "Please fill in your passport and EVUS details accurately"
+        },
+        "personal": {
+          "title": "Personal & Contact",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel & Stay",
+          "subtitle": "Flight and accommodation details",
+          "accommodationTypePlaceholder": "Please select accommodation type",
+          "accommodationTypeModalTitle": "Select accommodation type"
+        }
+      },
+      "fields": {
+        "surname": "Surname (uppercase)",
+        "middleName": "Middle Name (optional)",
+        "givenName": "Given Name (uppercase)",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Passport Expiry Date",
+        "sex": "Gender",
+        "evusStatus": "EVUS Status",
+        "occupation": "Occupation",
+        "employer": "Employer / Company (optional)",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country/Region of Residence",
+        "phoneCode": "Phone Country Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email (optional)",
+        "emergencyContact": "Emergency Contact Name (optional)",
+        "travelPurpose": "Purpose of Visit",
+        "arrivalCity": "Port of Entry / Arrival City",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number (optional)",
+        "departureDate": "Departure Date (optional)",
+        "lengthOfStay": "Expected Length of Stay (days)",
+        "accommodationType": "Accommodation Type",
+        "state": "State",
+        "address": "Accommodation Address (with ZIP)",
+        "hotelContactNumber": "Accommodation Phone (optional)",
+        "flightTicketPhoto": "Flight Ticket Screenshot",
+        "hotelReservationPhoto": "Hotel / Stay Confirmation"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "arrivalCity": "Enter your port of entry or arrival city (e.g., LAX, JFK)",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number (optional)",
+        "departureDate": "Select your departure date (optional)",
+        "lengthOfStay": "CBP often asks expected stay duration, prepare your answer",
+        "accommodationType": "Select where you will stay",
+        "state": "Select state where accommodation is located",
+        "address": "CBP may require specific address, prepare in advance",
+        "hotelContactNumber": "Enter accommodation phone number (optional)"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel / Apartment",
+        "FRIEND_FAMILY": "Friend/Family",
+        "RENTAL": "Short-term Rental / Airbnb",
+        "OTHER": "Other"
+      },
+      "continue": "Continue"
+    },
+    "entryFlow": {
+      "title": "USA Entry Preparation",
+      "submissionWindow": "No fixed submission window, but review EVUS, flights, and stay details before departure.",
+      "progress": {
+        "headline": {
+          "ready": "Ready for the USA! 🇺🇸",
+          "almost": "Almost there—keep it up!",
+          "start": "Start preparing your USA entry pack"
+        },
+        "subtitle": {
+          "ready": "Passport, EVUS, funds, and stay details are ready for CBP questions.",
+          "almost": "{{remaining}}% left. Complete the highlighted tasks for a smooth arrival.",
+          "start": "Fill in passport, travel, and accommodation info to build your customs pack."
+        }
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All documents prepared for inspection."
+        },
+        "mostlyComplete": {
+          "title": "Almost Complete",
+          "subtitle": "Finish the remaining details to be inspection-ready."
+        },
+        "needsImprovement": {
+          "title": "Keep Completing",
+          "subtitle": "Complete key items to avoid issues at the border."
+        }
+      }
+    },
+    "validation": {
+      "state": {
+        "required": "Select the state where you will stay."
+      },
+      "address": {
+        "required": "Provide the full accommodation address including ZIP code."
+      },
+      "lengthOfStay": {
+        "range": "Length of stay must be between 1 and 180 days."
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue",
+        "default": "Continue"
+      }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "Software Engineer",
+      "STUDENT": "Student",
+      "TEACHER": "Teacher",
+      "DOCTOR": "Doctor",
+      "ACCOUNTANT": "Accountant",
+      "SALES_MANAGER": "Sales Manager",
+      "RETIRED": "Retired",
+      "ENGINEER": "Engineer",
+      "CIVIL_SERVANT": "Civil Servant",
+      "LAWYER": "Lawyer",
+      "NURSE": "Nurse",
+      "FREELANCER": "Freelancer",
+      "BUSINESS_OWNER": "Business Owner",
+      "HOMEMAKER": "Homemaker",
+      "DESIGNER": "Designer",
+      "OTHER": "Other"
+    }
+  },
+  "tw": {
+    "name": "Taiwan",
+    "info": {
+      "headerTitle": "Taiwan Entry Information",
+      "title": "Taiwan Entry Guide",
+      "subtitle": "Entry permit required for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Entry Permit Policy",
+          "items": [
+            "Chinese passport requires Entry Permit to Taiwan - apply online easily",
+            "• Online application, about 5 business days processing",
+            "• Valid for 3 months multiple entries, each stay up to 15 days",
+            "• Also need to complete online arrival card before entry"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• Check permit validity: Expired or wrong dates = entry denied",
+            "• Email verification required: Online card needs verification code, inaccessible email = can't complete",
+            "• Complete documents preparation: Permit, return ticket, accommodation, funds proof all needed",
+            "• Immigration questions detailed: May ask travel purpose, itinerary, contact info - prepare in advance",
+            "• Entry permit easily lost: Paper or electronic copy must be carried, lost = big trouble"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Reminds permit validity, auto-checks expiry",
+            "• Zero errors: Smart-fill online arrival card, information accurate",
+            "• Zero hassle: Enter once, we manage permits and cards",
+            "• Document checklist: Comprehensive list, no missing items"
+          ]
+        }
+      },
+      "continueButton": "Understood, continue to checklist"
+    },
+    "requirements": {
+      "headerTitle": "Taiwan Online Arrival Card Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "entryPermit": {
+          "title": "Entry Permit",
+          "description": "Valid Entry Permit (入台证) obtained",
+          "details": "Mainland Chinese travelers must obtain Entry Permit in advance. Single-entry valid 3 months, stay up to 15 days. Ensure permit is valid."
+        },
+        "validPassport": {
+          "title": "Passport validity",
+          "description": "Passport valid for at least 6 months",
+          "details": "Taiwan requires passport validity of 6 months beyond entry date. Check and renew if needed."
+        },
+        "returnTicket": {
+          "title": "Return or onward ticket",
+          "description": "Confirmed departure booking",
+          "details": "Provide confirmed flight booking showing you will leave Taiwan within authorized stay period."
+        },
+        "accommodation": {
+          "title": "Accommodation proof",
+          "description": "Hotel booking or host contact information",
+          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Taiwan, including address and phone number."
+        }
+      },
+      "status": {
+        "success": {
+          "title": "Great! You can proceed.",
+          "subtitle": "Next we will confirm your travel information."
+        },
+        "warning": {
+          "title": "Review each checklist item",
+          "subtitle": "Complete the prerequisites before moving on."
+        },
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "We support progressive completion"
+        }
+      },
+      "startButton": "Start filling",
+      "continueButton": "Continue to travel information"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Taiwan Entry Information Center",
+        "subtitle": "Fill in passport, itinerary, and accommodation once, and travel to Formosa with peace of mind",
+        "valuePropositions": {
+          "0": "Entry permit & arrival card in one place",
+          "1": "Smart reminder for 3-day arrival card window",
+          "2": "Securely stored, works offline"
+        },
+        "beginnerTip": "Tip: Complete the online arrival card within 3 days before arrival—we'll remind you at the perfect time."
+      },
+      "buttonLabels": {
+        "incomplete": "Complete Required Fields",
+        "almostDone": "Almost Done",
+        "ready": "Continue"
+      },
+      "continue": "Continue"
+    },
+    "entryFlow": {
+      "title": "Taiwan Entry Preparation",
+      "status": {
+        "ready": {
+          "title": "Ready to submit Taiwan arrival card",
+          "subtitle": "All sections complete—submit within the 3-day window."
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "Finish the highlighted fields to proceed."
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections before submitting."
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Taiwan trip is ready! 🇹🇼",
+          "almost": "Great progress—almost there!",
+          "start": "Let's prepare your Taiwan arrival documents"
+        },
+        "subtitle": {
+          "ready": "Submit the online arrival card within the 3-day window to stay compliant.",
+          "almost": "Just {{remainingPercent}}% left—complete the info and you can finish the arrival card.",
+          "start": "Fill in passport, contact, and itinerary details to unlock the arrival card helper."
+        },
+        "label": "Preparation Progress"
+      },
+      "countdown": {
+        "title": "Submission Window",
+        "subtitle": "Submit the Taiwan Online Arrival Card within 3 days before landing.",
+        "time": "{{days}} days {{hours}} hours remaining",
+        "arrival": "Arrival: {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "startEntryGuide": "Start Guided Mode",
+        "entryGuideSubtitle": "Step-by-step help for the Taiwan arrival card",
+        "submit": "Submit Arrival Card",
+        "submitSubtitle": "Open the official Taiwan Online Arrival Card",
+        "edit": "Edit Travel Information",
+        "editSubtitle": "Update passport, contact, or itinerary details",
+        "previewPack": "Preview Entry Pack",
+        "previewPackSubtitle": "Review every document and answer in one place",
+        "entryGuide": "Arrival Guide",
+        "editThai": "Edit Information",
+        "editThaiSubtitle": "Jump back into the form to add or fix details",
+        "help": {
+          "title": "Need help?",
+          "message": "Share a screenshot or contact support if anything looks wrong.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Get help",
+          "calloutSubtitle": "We're here if the arrival card feels confusing"
+        },
+        "incomplete": {
+          "title": "More details needed",
+          "message": "Please complete at least 80% of the information before submitting."
+        },
+        "success": {
+          "title": "Ready to submit",
+          "message": "Everything looks complete—submit within the 3-day window."
+        },
+        "continue": "Continue editing"
+      },
+      "completionCard": {
+        "title": "Completion Progress",
+        "summary": "{{completedCategories}} of {{totalCategories}} sections complete"
+      },
+      "submissionWindow": "Taiwan online arrival card must be submitted within 3 days before arrival."
+    },
+    "guide": {
+      "headerTitle": "Taiwan Arrival Card Guided Mode",
+      "banner": {
+        "title": "Use your entry pack to pass the email verification quickly",
+        "subtitle": "We walk you through requesting the OTP and filling each section"
+      },
+      "stepSectionTitle": "Follow these steps",
+      "steps": [
+        {
+          "title": "Request verification email",
+          "subtitle": "Confirm your email inbox is ready",
+          "details": [
+            "Enter your email and tap \"Send Code\" on the official site.",
+            "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
+            "Paste the code within the time limit to unlock the form."
+          ]
+        },
+        {
+          "title": "Fill traveler & arrival details",
+          "subtitle": "Autofill from your entry pack for speed",
+          "details": [
+            "Verify your passport number, nationality, and date of birth.",
+            "Enter arrival flight number, date/time, and port of entry.",
+            "Provide accommodation address/phone or host details in Taiwan."
+          ]
+        },
+        {
+          "title": "Travel history & confirmation",
+          "subtitle": "Answer the 14-day travel history questions accurately",
+          "details": [
+            "Declare countries visited in the last 14 days and health status truthfully.",
+            "Review the summary page carefully before submitting.",
+            "Wait for the confirmation page/email and save a screenshot for arrival."
+          ]
+        }
+      ],
+      "entryGuide": {
+        "steps": {
+          "request_verification_email": {
+            "title": "Request verification email",
+            "titleZh": "请求验证邮箱",
+            "description": "Confirm your email inbox is ready",
+            "descriptionZh": "确认您的邮箱收件箱已准备好",
+            "tips": {
+              "0": "Enter your email and tap \"Send Code\" on the official site.",
+              "1": "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
+              "2": "Paste the code within the time limit to unlock the form."
+            },
+            "tipsZh": {
+              "0": "在官方网站输入您的邮箱并点击\"发送验证码\"。",
+              "1": "检查收件箱（和垃圾邮件）中来自台湾移民署的6位数字验证码。",
+              "2": "在时限内粘贴验证码以解锁表单。"
+            }
+          },
+          "fill_traveler_details": {
+            "title": "Fill traveler & arrival details",
+            "titleZh": "填写旅客和抵达信息",
+            "description": "Autofill from your entry pack for speed",
+            "descriptionZh": "从您的入境包自动填充以加快速度",
+            "tips": {
+              "0": "Verify your passport number, nationality, and date of birth.",
+              "1": "Enter arrival flight number, date/time, and port of entry.",
+              "2": "Provide accommodation address/phone or host details in Taiwan."
+            },
+            "tipsZh": {
+              "0": "验证您的护照号码、国籍和出生日期。",
+              "1": "输入抵达航班号、日期/时间和入境口岸。",
+              "2": "提供台湾的住宿地址/电话或接待人详细信息。"
+            }
+          },
+          "travel_history_confirmation": {
+            "title": "Travel history & confirmation",
+            "titleZh": "旅行历史和确认",
+            "description": "Answer the 14-day travel history questions accurately",
+            "descriptionZh": "准确回答14天旅行历史问题",
+            "tips": {
+              "0": "Declare countries visited in the last 14 days and health status truthfully.",
+              "1": "Review the summary page carefully before submitting.",
+              "2": "Wait for the confirmation page/email and save a screenshot for arrival."
+            },
+            "tipsZh": {
+              "0": "如实申报过去14天访问的国家和健康状况。",
+              "1": "提交前仔细检查摘要页面。",
+              "2": "等待确认页面/邮件并保存截图以备抵达时使用。"
+            }
+          }
+        },
+        "quickActions": {
+          "title": "Quick tools",
+          "titleZh": "快速工具",
+          "items": {
+            "otp_checker": {
+              "title": "OTP checker",
+              "titleZh": "验证码检查器",
+              "description": "Tick off once the verification email arrives so you don't miss it.",
+              "descriptionZh": "验证邮件到达后勾选，这样您就不会错过。"
+            },
+            "auto_fill_clipboard": {
+              "title": "Auto-fill clipboard",
+              "titleZh": "自动填充剪贴板",
+              "description": "Copy passport/flight info with one tap while filling the form.",
+              "descriptionZh": "填写表单时一键复制护照/航班信息。"
+            },
+            "resubmit_helper": {
+              "title": "Resubmit helper",
+              "titleZh": "重新提交助手",
+              "description": "If plans change, reuse saved info to create a new arrival card quickly.",
+              "descriptionZh": "如果计划改变，快速重用保存的信息创建新的入境卡。"
+            }
+          }
+        }
+      },
+      "quickActions": {
+        "title": "Quick tools",
+        "items": [
+          {
+            "icon": "✉️",
+            "title": "OTP checker",
+            "description": "Tick off once the verification email arrives so you don't miss it."
+          },
+          {
+            "icon": "📄",
+            "title": "Auto-fill clipboard",
+            "description": "Copy passport/flight info with one tap while filling the form."
+          },
+          {
+            "icon": "🔁",
+            "title": "Resubmit helper",
+            "description": "If plans change, reuse saved info to create a new arrival card quickly."
+          }
+        ]
+      },
+      "primaryCta": "Open Taiwan arrival assistant",
+      "ctaHint": "Loads the official arrival card site inside the app."
+    }
+  },
+  "jp": {
+    "name": "Japan",
+    "info": {
+      "headerTitle": "Japan Entry Information",
+      "title": "Japan Entry Guide",
+      "subtitle": "Visa-free for 90 days for Chinese passport holders",
+      "sections": {
+        "visa": {
+          "title": "✓ Great News! Visa-Free Policy",
+          "items": [
+            "Chinese passport holders can enjoy visa-free entry for 90 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• Paper arrival card still required on entry"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Information",
+          "items": [
+            "• Forms must be completed in black or blue ink.",
+            "• Handwriting should be clear and legible.",
+            "• Answer all questions truthfully on customs forms.",
+            "• Keep your entry card stub until departure.",
+            "• Biometric scanning (fingerprint/face) is required."
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Makes It Easy",
+          "items": [
+            "• Zero anxiety: Auto-reminds about form completion and biometric step.",
+            "• Zero errors: Copy Mode ensures accurate data transfer to paper forms.",
+            "• Zero hassle: Detailed step-by-step guide for the entire process.",
+            "• Document checklist: Comprehensive preparation list for immigration/customs."
+          ]
+        }
+      },
+      "continueButton": "Understood, continue to checklist"
+    },
+    "requirements": {
+      "headerTitle": "Japan Entry Checklist",
+      "introTitle": "Entry preparation checklist",
+      "introSubtitle": "Fill in what you have and complete gradually",
+      "items": {
+        "validPassport": {
+          "title": "Passport validity",
+          "description": "Passport valid for your intended stay",
+          "details": "Ensure passport is valid for the duration of your stay. Renew if expiry is near."
+        },
+        "visaFreeEntry": {
+          "title": "Visa-free entry status",
+          "description": "90-day stay without a visa",
+          "details": "China passport holders can enter Japan visa-free for up to 90 days. Keep your passport valid for at least 6 months and carry supporting documents in case immigration asks for proof."
+        },
+        "onwardTicket": {
+          "title": "Onward or return ticket",
+          "description": "Confirmed plan to leave Japan",
+          "details": "Have a printed or digital copy of your return flight or onward journey. Officers often verify your departure plan at the counter."
+        },
+        "funds": {
+          "title": "Proof of funds",
+          "description": "Show you can afford the trip",
+          "details": "Prepare bank statements, cash (recommended ¥100,000 or more), or international credit cards to demonstrate sufficient travel funds."
+        },
+        "accommodation": {
+          "title": "Accommodation confirmation",
+          "description": "Hotel booking or host details",
+          "details": "Bring hotel confirmations or the address and phone number of friends/family you will stay with. Immigration may ask you to write this on the arrival card."
+        },
+        "paperArrivalCard": {
+          "title": "Paper arrival card + customs form",
+          "description": "Fill in forms on the plane or at the counter",
+          "details": "Japan still requires handwritten arrival and customs cards. Use black or blue ink and double-check information before submission."
+        }
+      },
+      "status": {
+        "info": {
+          "title": "Start anytime",
+          "subtitle": "We support progressive completion"
+        }
+      },
+      "startButton": "Start filling"
+    },
+    "entryFlow": {
+      "title": "Japan Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Japan trip is ready! 🇯🇵",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish paperwork and preparations before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "Paper arrival card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "If something looks wrong, share a screenshot or contact support.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "Japan Entry Information Center",
+        "subtitle": "Fill out once, view and update anytime",
+        "valuePropositions": {
+          "0": "Passport information one-time backup",
+          "1": "Flight and accommodation centralized management",
+          "2": "Available offline, auto-save"
+        },
+        "beginnerTip": "Tip: Prepare accommodation and flight information in advance for the fastest entry."
+      },
+      "sections": {
+        "passport": {
+          "title": "Passport Information",
+          "subtitle": "Please fill in your passport details accurately"
+        },
+        "personal": {
+          "title": "Personal Information",
+          "subtitle": "Contact and personal details"
+        },
+        "funds": {
+          "title": "Proof of Funds",
+          "subtitle": "Financial proof for your stay",
+          "introText": "Immigration wants to ensure you won't be a burden. Simply prove you have enough money to cover your expenses.",
+          "addCash": "Add Cash",
+          "addCreditCard": "Add Credit Card Photo",
+          "addBankBalance": "Add Bank Balance",
+          "addBankCard": "Add Bank Card",
+          "addDocument": "Add Document",
+          "empty": "No funds added yet. Please add at least one proof of funds.",
+          "notProvided": "Not provided",
+          "photoAttached": "Photo attached",
+          "fundTypes": {
+            "cash": "Cash",
+            "credit_card": "Credit Card",
+            "bank_card": "Bank Card",
+            "bank_balance": "Bank Balance",
+            "document": "Document",
+            "other": "Other"
+          }
+        },
+        "travel": {
+          "title": "Travel Information",
+          "subtitle": "Flight and accommodation details"
+        }
+      },
+      "fields": {
+        "surname": "Surname",
+        "middleName": "Middle Name",
+        "givenName": "Given Name",
+        "passportNo": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "expiryDate": "Expiry Date",
+        "sex": "Gender",
+        "visaNumber": "Visa Number",
+        "occupation": "Occupation",
+        "cityOfResidence": "City of Residence",
+        "countryOfResidence": "Country of Residence",
+        "phoneCode": "Phone Code",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "travelPurpose": "Travel Purpose",
+        "recentStayCountry": "Recent Country of Stay",
+        "boardingCountry": "Boarding Country",
+        "arrivalFlightNumber": "Arrival Flight Number",
+        "arrivalDate": "Arrival Date",
+        "departureFlightNumber": "Departure Flight Number",
+        "departureDate": "Departure Date",
+        "isTransitPassenger": "Transit Passenger",
+        "accommodationType": "Accommodation Type",
+        "prefecture": "Prefecture",
+        "city": "City",
+        "hotelAddress": "Hotel Address"
+      },
+      "fieldHelp": {
+        "surname": "Enter your surname as shown on passport",
+        "middleName": "Enter your middle name if applicable",
+        "givenName": "Enter your given name as shown on passport",
+        "passportNo": "Enter your passport number",
+        "nationality": "Select your nationality",
+        "dob": "Select your date of birth",
+        "expiryDate": "Select your passport expiry date",
+        "sex": "Select your gender",
+        "visaNumber": "Enter visa number if applicable",
+        "occupation": "Enter your occupation",
+        "cityOfResidence": "Enter your city of residence",
+        "countryOfResidence": "Select your country of residence",
+        "phoneCode": "Select your phone country code",
+        "phoneNumber": "Enter your phone number",
+        "email": "Enter your email address",
+        "travelPurpose": "Select your reason for visiting",
+        "recentStayCountry": "Select countries you visited recently",
+        "boardingCountry": "Country where you boarded the flight",
+        "arrivalFlightNumber": "Enter your arrival flight number",
+        "arrivalDate": "Select your arrival date",
+        "departureFlightNumber": "Enter your departure flight number",
+        "departureDate": "Select your departure date",
+        "accommodationType": "Select where you will stay",
+        "prefecture": "Select prefecture",
+        "city": "Select city",
+        "hotelAddress": "Enter full address"
+      },
+      "accommodationTypes": {
+        "HOTEL": "Hotel",
+        "HOSTEL": "Hostel",
+        "AIRBNB": "Airbnb",
+        "FRIEND_FAMILY": "Friend/Family",
+        "OTHER": "Other"
+      },
+      "personal": {
+        "occupationOptions": {
+          "OFFICE": "Office Worker",
+          "FREELANCER": "Freelancer",
+          "STUDENT": "Student",
+          "SELF_EMPLOYED": "Self-employed",
+          "HOMEMAKER": "Homemaker",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+      },
+      "travel": {
+        "travelPurposeOptions": {
+          "TOURISM": "Tourism",
+          "BUSINESS": "Business",
+          "VISITING_RELATIVES": "Visiting Relatives",
+          "TRANSIT": "Transit",
+          "OTHER": "Other"
+        }
+      },
+      "locations": {
+        "prefecture": "Prefecture",
+        "city": "City"
+      },
+      "validation": {
+        "arrivalDateValid": "Arrival date must be within the next 90 days."
+      },
+      "navigation": {
+        "submitButton": {
+          "incomplete": "Complete Required Fields",
+          "almostDone": "Almost Done",
+          "ready": "Continue to Entry Guide"
+        }
+      }
+    },
+    "procedures": {
+      "headerTitle": "Japan Entry Procedures",
+      "title": "Japan Entry Guide",
+      "subtitle": "Visa-free for 90 days for Chinese passport holders",
+      "helpSection": {
+        "title": "📝 What BorderBuddy does for you",
+        "description": "We fill out the Landing Card and Customs Declaration for you, you just copy at the airport!",
+        "subdescription": "Don't worry about making errors, just copy what we've prepared"
+      },
+      "entrySteps": {
+        "title": "🚶‍♂️ Entry Steps",
+        "steps": [
+          {
+            "title": "Arrive at airport",
+            "description": "Arrive at Japanese airport immigration hall",
+            "details": "Prepare your passport and completed Landing Card and Customs Declaration"
+          },
+          {
+            "title": "Immigration control",
+            "description": "Go to immigration counter",
+            "details": "Submit passport and Landing Card, undergo officer inspection and fingerprint collection"
+          },
+          {
+            "title": "Customs declaration",
+            "description": "Go to customs inspection area",
+            "details": "Submit Customs Declaration, declare carried items, may require baggage inspection"
+          },
+          {
+            "title": "Entry complete",
+            "description": "Receive entry stamp",
+            "details": "Get entry stamp on passport, officially enter Japan"
+          }
+        ]
+      },
+      "features": {
+        "title": "✨ What BorderBuddy can do for you",
+        "items": [
+          {
+            "icon": "📝",
+            "title": "Auto-fill",
+            "description": "We fill Landing Card and Declaration, you copy"
+          },
+          {
+            "icon": "📋",
+            "title": "Information entry",
+            "description": "Enter travel info once, system auto-fills all forms"
+          },
+          {
+            "icon": "📱",
+            "title": "No internet needed",
+            "description": "View forms offline, works without airport signal"
+          },
+          {
+            "icon": "💾",
+            "title": "Remember information",
+            "description": "Save details, use directly next Japan visit"
+          }
+        ]
+      },
+      "importantNotes": {
+        "title": "⚠️ Important reminders",
+        "items": [
+          "• Landing Card and Declaration must be filled with black or blue pen",
+          "• Writing must be clear, information accurate",
+          "• Answer yes/no questions honestly on Declaration",
+          "• Be polite and cooperate with inspections",
+          "• Keep your Landing Card stub until departure"
+        ]
+      },
+      "startButton": "Start preparing entry pack"
+    },
+    "result": {
+      "manualEntry": {
+        "title": "Japan Entry Card Filling Guide",
+        "intro": "Please fill out the paper entry card and customs declaration form according to the information below. You can view offline, and we recommend taking a screenshot.",
+        "badges": {
+          "handwritten": "✍️ Handwritten Paper Entry Card",
+          "backedUp": "📦 Information Backed Up to Entry Pack",
+          "offline": "📵 Available Offline"
+        },
+        "sections": {
+          "passport": "Passport Information",
+          "personal": "Personal Information",
+          "travel": "Travel Details",
+          "accommodation": "Accommodation & Contact"
+        },
+        "fields": {
+          "fullName": "Full Name",
+          "passportNo": "Passport No.",
+          "nationality": "Nationality",
+          "dateOfBirth": "Date of Birth",
+          "gender": "Gender",
+          "passportExpiry": "Passport Expiry",
+          "occupation": "Occupation",
+          "cityOfResidence": "City of Residence",
+          "countryOfResidence": "Country of Residence",
+          "phone": "Phone",
+          "email": "Email",
+          "purposeOfVisit": "Purpose of Visit",
+          "flightNumber": "Flight Number",
+          "arrivalDate": "Arrival Date",
+          "lengthOfStay": "Length of Stay",
+          "days": "days",
+          "address": "Address",
+          "accommodationPhone": "Accommodation Phone"
+        },
+        "funds": "Funds & Assets",
+        "noFunds": "No fund information provided",
+        "helpTip": "Please fill out the paper entry card and customs declaration form on the plane or after arriving at the airport, referring to the information above. We recommend taking a screenshot for easy reference.",
+        "loading": "Loading Japan entry information...",
+        "heroTitle": "Is my Japan trip ready? 🌸",
+        "heroSubtitle": "See how prepared you are and get ready for your Japan adventure!",
+        "statusText": {
+          "complete": "Japan entry preparation complete! 🌸",
+          "almost": "Just a few more checks needed~",
+          "incomplete": "Continue completing your information!",
+          "loading": "Loading your information..."
+        },
+        "statusSubtitle": {
+          "complete": "All information is organized and ready to present at the airport anytime.",
+          "almost": "A few more items need confirmation, complete them for a worry-free trip.",
+          "incomplete": "Complete all information to generate a complete Japan entry pack.",
+          "loading": "Please wait while we organize your traveler information."
+        },
+        "itemsCompleted": "{{completed}}/{{total}} items completed",
+        "editButton": "Edit Again",
+        "shareButton": "Ask Family/Friends to Help Edit",
+        "progressLabel": "Preparation Progress",
+        "interactiveGuideTitle": "View Interactive Entry Guide",
+        "interactiveGuideSubtitle": "Step-by-step guide · Large text mode"
+      },
+      "title": "Entry Pack Generated Successfully!",
+      "subtitle": "Your entry information has been organized",
+      "entryPack": {
+        "title": "Entry Pack",
+        "subtitleParts": {
+          "departure": "Departure {{date}}",
+          "arrival": "Arrival {{date}}",
+          "flight": "Flight {{flight}}",
+          "missing": "Please complete travel information"
+        },
+        "fields": {
+          "departureDate": "Departure Date",
+          "flightNo": "Flight Number",
+          "arrivalDate": "Arrival Date",
+          "accommodation": "Accommodation"
+        },
+        "actions": {
+          "startGuide": "Start Arrival Guide"
+        },
+        "lastUpdated": "Last updated: {{time}}"
+      },
+      "historyBanner": {
+        "primaryCta": {
+          "title": "Start Arrival Guide",
+          "subtitle": "Step-by-step · Large text available"
+        },
+        "secondaryCta": {
+          "editInfo": "Edit Information"
+        }
+      },
+      "digitalInfo": {
+        "title": "Apply for {{systemName}}",
+        "button": "Apply Now"
+      },
+      "infoBox": "All information is saved locally on your device only",
+      "share": {
+        "modalTitle": "Ask Family/Friends to Verify Information",
+        "modalSubtitle": "Share the link and password below with trusted family/friends. The link is valid for 24 hours. They can add or modify entry information, and updates will sync to this entry pack.",
+        "linkLabel": "Share Link",
+        "passwordLabel": "Access Password",
+        "copy": "Copy",
+        "copied": "Copied",
+        "expiryText": "Valid until: {{time}}",
+        "primaryAction": "Done, Go Paste for Family/Friends",
+        "cancelAction": "Cancel This Share",
+        "securityNote": "Security Tip: Please only share with trusted family or friends. You can cancel sharing at any time to immediately terminate access.",
+        "cancelTitle": "Cancel Sharing",
+        "cancelMessage": "This action will immediately invalidate the share link and password, and family/friends will no longer be able to access. Are you sure you want to cancel?",
+        "keep": "Keep",
+        "confirmCancel": "Cancel Sharing",
+        "active": "Share Active",
+        "viewShare": "View Share Info",
+        "invite": "Invite Verification"
+      },
+      "notProvided": "Not provided",
+      "pending": "Pending confirmation",
+      "changeInfo": "Change Information",
+      "kioskGuide": {
+        "title": "{{kioskName}} Guide",
+        "kioskName": "Self-Service Kiosk",
+        "subtitle": "Step-by-step instructions"
+      }
+    }
+  },
+  "devMode": {
+    "submissionInfo": "🔍 Information to be submitted:",
+    "personalInfo": "👤 Personal Information:",
+    "name": "Name",
+    "passportNo": "Passport No.",
+    "nationality": "Nationality",
+    "gender": "Gender",
+    "birthDate": "Date of Birth",
+    "travelInfo": "✈️ Travel Information:",
+    "arrivalDate": "Arrival Date",
+    "flightNo": "Flight Number",
+    "countryBoarded": "Country Boarded",
+    "recentStayCountry": "Recent Stay Country",
+    "purpose": "Purpose of Visit",
+    "accommodationInfo": "🏨 Accommodation Information:",
+    "accommodationType": "Accommodation Type",
+    "province": "Province",
+    "district": "District",
+    "subDistrict": "Sub-District",
+    "address": "Address",
+    "contactInfo": "📞 Contact Information:",
+    "email": "Email",
+    "phone": "Phone",
+    "importantReminder": "⚠️ Important Reminder:",
+    "reminder1": "Information will be submitted directly to Thailand Immigration",
+    "reminder2": "Cannot be modified after submission",
+    "reminder3": "Multiple submissions may result in ban",
+    "reminder4": "Please ensure information matches passport",
+    "confirmTitle": "🛑 Confirm Submission",
+    "viewLogs": "📝 View Detailed Logs",
+    "confirmSubmit": "✅ Confirm Submission",
+    "notProvided": "Not provided",
+    "tokenObtained": "Obtained ({{length}} characters)",
+    "tokenNotObtained": "Not obtained"
+  },
+  "preview": {
+    "badge": {
+      "preview": "Preview Mode",
+      "previewHint": "Your information has not been submitted yet",
+      "draft": "Draft Mode",
+      "readonly": "Read Only"
+    },
+    "status": {
+      "incomplete": "Draft - Action Required",
+      "complete": "Ready to Submit",
+      "submitted": "Submitted",
+      "missing": "Missing:",
+      "completionProgress": "{{completed}} of {{total}} sections complete"
+    },
+    "steps": {
+      "tdac": "TDAC Card",
+      "personal": "Personal Information",
+      "travel": "Travel Details",
+      "funds": "Proof of Funds",
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "inProgress": "In Progress"
+    },
+    "buttons": {
+      "submit": "Submit TDAC Entry Card",
+      "continueEditing": "Continue Editing",
+      "addTdac": "Add TDAC Card",
+      "addPersonalInfo": "Add Personal Information",
+      "addTravelDetails": "Add Travel Details",
+      "addFunds": "Add Proof of Funds",
+      "edit": "Edit",
+      "viewDocument": "View Document",
+      "close": "Close"
+    },
+    "info": {
+      "submissionWindow": "Submit within 72 hours before arrival",
+      "daysRemaining": "{{days}} days remaining to submit",
+      "readyToSubmit": "All information complete. Ready to submit!",
+      "missingInformation": "Please complete all required sections before submitting",
+      "documentPreview": "Preview of TDAC document",
+      "tapToView": "Tap to view full size",
+      "scrollToView": "Scroll to view all sections"
+    },
+    "alerts": {
+      "deadline": "Deadline approaching: Submit by {{date}}",
+      "incomplete": "Complete all sections to enable submission",
+      "error": "Unable to load preview. Please try again."
+    },
+    "document": {
+      "title": "TDAC Document Preview",
+      "sampleNotice": "This is a sample preview. Actual document will include your information.",
+      "notGenerated": "Document will be generated after submission",
+      "pages": "Page {{current}} of {{total}}"
+    }
+  },
+  "entryGuide": {
+    "stepProgress": {
+      "title": "Entry Steps Progress",
+      "noSteps": "No steps configured",
+      "noStepsDescription": "Please ensure the configuration supplies the expected steps."
+    },
+    "step": {
+      "required": "Required",
+      "optional": "Optional",
+      "requiredLabel": "Mandatory Step",
+      "optionalLabel": "Optional Step"
+    },
+    "category": {
+      "preArrival": "Pre-Arrival",
+      "preFlight": "Pre-Flight",
+      "inFlight": "In-Flight",
+      "postLanding": "Post-Landing",
+      "immigration": "Immigration",
+      "baggage": "Baggage",
+      "customs": "Customs",
+      "default": "Step"
+    },
+    "navigation": {
+      "previous": "← Previous",
+      "next": "Next →",
+      "complete": "Guide Completed ✅"
+    },
+    "sections": {
+      "formFields": "📝 Form Filling Tips",
+      "warnings": "⚠️ Important Warnings",
+      "tips": "💡 Pro Tips"
+    },
+    "entryPack": {
+      "openButton": "Open Entry Pack 📋"
+    }
+  },
+  "canada": {
+    "pikGuide": {
+      "headerTitle": "Self-Service Kiosk Guide",
+      "title": "Primary Inspection Kiosk (PIK) Operation Guide",
+      "subtitle": "Primary Inspection Kiosk (PIK)",
+      "description": "Canada's border self-service kiosk is simple. Just follow this guide step by step.",
+      "fontSizeLabel": "Font Size:",
+      "step": "Step {{number}}",
+      "stepImportant": "Step {{number}} ⭐",
+      "importantBadge": "Important",
+      "step1": {
+        "title": "Find the Self-Service Kiosk",
+        "description": "After getting off the plane, follow the \"Arrivals\" or \"入境\" signs.\n\nEnter the arrival hall and look for machines with large screens.\n\nUsually there are many machines in a row, similar in size to ATM machines."
+      },
+      "step2": {
+        "title": "Select Chinese",
+        "description": "The screen will display language options.\n\nTap \"中文\" or \"Chinese\" with your finger.\n\n⚠️ If you can't find Chinese, selecting \"English\" is fine. The following steps all have picture prompts."
+      },
+      "step3": {
+        "title": "Scan Passport",
+        "description": "Open your passport to the page with your photo (photo page).\n\nPlace the passport flat with the photo facing down.\n\nPlace it on the scanner below the machine (like a copier).\n\nWhen you hear a \"beep\" or the screen shows \"✓\", the scan is successful."
+      },
+      "step3Tip": "Tip: Keep the passport flat, don't bend it. If scanning fails, just place it again.",
+      "step4": {
+        "title": "Answer Questions",
+        "description": "The screen will display several questions.\n\nEach question has \"Yes/YES\" and \"No/NO\" buttons below.\n\nTap the corresponding button with your finger based on the answers below:"
+      },
+      "answersTitle": "📋 Your Answers (Just tap accordingly)",
+      "answerLabel": "Tap:",
+      "step4Warning": "Important: Answer truthfully! If you answer \"Yes\", you may need additional checks, but there won't be any trouble.",
+      "step5": {
+        "title": "Take Receipt",
+        "description": "After answering all questions, the machine will print a small slip.\n\nThe receipt will come out from below or the side of the machine.\n\n⚠️ Be sure to keep this receipt!\n\nYou'll need to give it to the customs officer later."
+      },
+      "step6": {
+        "title": "Go to Manual Counter",
+        "description": "Take your passport and the receipt you just printed.\n\nFollow the crowd and queue up to the manual counter.\n\nGive the receipt and passport together to the customs officer.\n\nThe officer may ask a few simple questions:\n• What are you doing in Canada? (Tourism)\n• Where are you staying? (Hotel name)\n• How long are you staying? (A few days)\n\n✅ Done! Welcome to Canada"
+      },
+      "helpTitle": "What if I don't know how to operate it?",
+      "helpOption1": {
+        "title": "Ask Staff for Help",
+        "description": "There are usually uniformed staff near the machines.\nSay to them: \"I need help\"\nThey will help you operate it."
+      },
+      "helpOption2": {
+        "title": "Ask Chinese Travelers for Help",
+        "description": "If there are Chinese travelers nearby, you can ask them for help. Everyone is happy to help fellow countrymen."
+      },
+      "helpOption3": {
+        "title": "Go to Manual Counter",
+        "description": "If you really don't know how to use the machine, go directly to the manual counter.\nAlthough it's slower, you can still enter the country.\nJust show the officer your passport and the form on your phone."
+      },
+      "reassuranceTitle": "Don't worry! No need to be nervous",
+      "reassuranceText": "• Canadian border officers are very friendly and won't give you trouble\n\n• Many airports have Chinese service or Chinese interpreters\n\n• Even if you can't use the machine, you can use the manual channel\n\n• Millions of Chinese tourists enter Canada every year, all smoothly\n\nMost importantly: Answer questions honestly and don't carry prohibited items",
+      "phrasesTitle": "Common English Phrases (Show to Staff)",
+      "phrases": {
+        "helpKiosk": {
+          "en": "I need help with the kiosk.",
+          "zh": "我需要帮助使用自助机。"
+        },
+        "canYouHelp": {
+          "en": "Can you help me?",
+          "zh": "你能帮我吗？"
+        },
+        "whereManualCounter": {
+          "en": "Where is the manual counter?",
+          "zh": "人工柜台在哪里？"
+        },
+        "noEnglish": {
+          "en": "I don't speak English.",
+          "zh": "我不会说英语。"
+        },
+        "chineseInterpreter": {
+          "en": "Do you have Chinese interpreter?",
+          "zh": "有中文翻译吗？"
+        }
+      },
+      "buttonViewInfo": "📋 View My Information",
+      "buttonCopyMode": "✍️ Copy Mode",
+      "customsQuestions": {
+        "currencyOverLimit": "Are you bringing currency or monetary instruments totaling CAN$10,000 or more?",
+        "foodAnimals": "Are you bringing food, plants, animals, or related products?",
+        "visitedFarm": "Have you visited a farm or been in contact with farm animals?",
+        "commercialGoods": "Are you bringing commercial goods, samples, or goods for resale?",
+        "firearms": "Are you bringing firearms or weapons?",
+        "dutyFree": "Are you bringing goods that exceed your duty-free allowance?"
+      }
+    }
+  },
+  "entryPackDisplay": {
+    "my": {
+      "header": {
+        "title": "🇲🇾 Entry Pack",
+        "subtitle": "Important information for immigration officer"
+      },
+      "tabs": {
+        "mdac": {
+          "label": "MDAC",
+          "labelSecondary": "MDAC"
+        },
+        "personal": {
+          "label": "Personal",
+          "labelSecondary": "Peribadi"
+        },
+        "travel": {
+          "label": "Travel",
+          "labelSecondary": "Perjalanan"
+        },
+        "funds": {
+          "label": "Funds",
+          "labelSecondary": "Kewangan"
+        }
+      },
+      "status": {
+        "notSubmittedTitle": "MDAC Not Submitted",
+        "notSubmittedDescription": "Please submit MDAC within 3 days before arrival",
+        "note": "You can still show other information to immigration officer"
+      }
+    }
   }
 }
