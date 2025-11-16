@@ -261,6 +261,7 @@
     }
   },
   "th": {
+    "name": "Thailand",
     "info": {
       "headerTitle": "Thailand Entry Information",
       "title": "Thailand Entry Guide",
@@ -345,17 +346,37 @@
       }
     },
     "entryFlow": {
-      "title": "Thailand Entry Preparation Status",
+      "title": "Thailand Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Thailand trip is ready! 🇹🇭",
+          "almost": "Great progress—nearly done!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Keep filling in your info for a smoother trip",
+          "start": "Fill in passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": { "title": "Ready to submit TDAC", "subtitle": "Everything is complete" },
+        "mostlyComplete": { "title": "Almost ready", "subtitle": "A few more fields to finish" },
+        "needsImprovement": { "title": "Keep going", "subtitle": "Complete the required sections" }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
       "preparationTitle": "Thailand Entry Preparation Status",
       "preparationSubtitle": "Check your entry information completion status",
       "loading": "Loading preparation status...",
       "completionStatus": "Completion Status",
-      "categories": {
-        "passport": "Passport Information",
-        "personal": "Personal Information",
-        "funds": "Fund Proof",
-        "travel": "Travel Information"
-      },
+      "categories": { "passport": "Passport Information", "personal": "Personal Information", "funds": "Fund Proof", "travel": "Travel Information" },
       "submissionWindow": "Submission Window",
       "actions": "Actions",
       "continueImproving": "Continue Improving Information",
@@ -376,6 +397,31 @@
         "startButton": "Start Filling"
       },
       "categoriesTitle": "Information Categories"
+    ,
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit TDAC",
+        "submitSubtitle": "All set! Submit your Thailand entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": { "title": "More information needed", "message": "Please complete at least 85% before submitting." },
+        "success": { "title": "Ready!", "message": "Your Thailand entry information is complete." },
+        "continue": "Continue editing"
+      }
     },
     "occupations": {
       "SOFTWARE_ENGINEER": "Software Engineer",
@@ -569,7 +615,92 @@
     "name": "Malaysia",
     "entryFlow": {
       "title": "Malaysia Entry Preparation",
-      "submissionWindow": "Submit within 3 days of arrival"
+      "submissionWindow": "Submit within 3 days of arrival",
+      "status": {
+        "ready": {
+          "title": "Ready to Submit!",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "progress": {
+        "headline": {
+          "ready": "Malaysia prep ready! 🌴",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Keep filling in your info for a smoother trip",
+          "start": "Keep filling in your info for a smoother trip"
+        },
+        "label": "Preparation progress"
+      },
+      "countdown": {
+        "title": "Submission Window",
+        "subtitle": "Submission window is open. Please submit before it ends.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit MDAC",
+        "submitSubtitle": "All set! Submit your Malaysia entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% of the sections before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Malaysia entry information is complete."
+        },
+        "continue": "Continue editing"
+      }
+    },
+    "entryPack": {
+      "preview": {
+        "actions": {
+          "editInfo": "Edit Information",
+          "viewGuide": "Entry Guide",
+          "submitMdac": "Submit MDAC"
+        },
+        "completion": {
+          "title": "Ready for MDAC!",
+          "subtitle": "Your Malaysia entry information is complete. Submit within 3 days before arrival."
+        },
+        "validation": {
+          "title": "Complete Required Information",
+          "message": "Please complete all required fields before submitting your MDAC."
+        },
+        "documents": {
+          "title": "Malaysia Digital Arrival Card (MDAC)",
+          "subtitle": "Your information will be submitted digitally to Malaysian immigration authorities."
+        }
+      }
     },
     "travelInfo": {
       "hero": {
@@ -876,6 +1007,7 @@
     }
   },
   "sg": {
+    "name": "Singapore",
     "info": {
       "headerTitle": "Singapore Entry Information",
       "title": "Singapore Entry Guide",
@@ -1042,6 +1174,7 @@
     }
   },
   "vn": {
+    "name": "Vietnam",
     "entryFlow": {
       "title": "Vietnam Entry Preparation",
       "status": {
@@ -1070,6 +1203,33 @@
           "start": "Continue filling out your information to make the journey smoother."
         },
         "label": "Preparation Progress"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
       }
     },
     "info": {
@@ -1190,110 +1350,230 @@
       }
     }
   },
-  "thailand": {
+  "usa": {
+    "name": "United States",
     "info": {
-      "headerTitle": "Thailand Entry Information",
-      "title": "Thailand Entry Guide",
-      "subtitle": "Visa-free for 30 days for Chinese passport holders",
+      "headerTitle": "United States Entry Information",
+      "title": "US Entry Guide",
+      "subtitle": "Visa/ESTA and entry requirements",
       "sections": {
         "visa": {
-          "title": "✓ Great News! Visa-Free Policy",
+          "title": "Visa/ESTA Requirements",
           "items": [
-            "Chinese passport visa-free for 30 days - spontaneous travel!",
-            "• No visa application needed in advance",
-            "• Valid for tourism, family visits, business purposes",
-            "• New requirement: TDAC Digital Arrival Card must be submitted (can submit up to 72 hours before arrival)"
+            "Check if you are eligible for ESTA (Visa Waiver Program)",
+            "• Otherwise, apply for a B1/B2 or appropriate visa",
+            "• Ensure passport validity and accurate personal details"
           ]
         },
         "onsite": {
-          "title": "⚠️ Entry Information",
+          "title": "Entry Notes",
           "items": [
-            "• TDAC submission timing: Can submit up to 72 hours before arrival, but must complete before arrival",
-            "• QR code required: Must show TDAC QR code upon entry, can't find PDF is troublesome",
-            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
-            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection",
-            "• Cloudflare verification: May encounter CAPTCHA challenges during submission"
+            "• CBP may ask purpose of visit and accommodation details",
+            "• Prepare return/onward ticket and proof of funds",
+            "• Keep hotel address and contact information handy"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy Makes It Easy",
+          "title": "BorderBuddy Helps",
           "items": [
-            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
-            "• Zero errors: Smart-fill TDAC, accurate information",
-            "• Zero hassle: Enter once, we manage the entire process",
-            "• QR code management: Auto-save TDAC QR code PDF, quick display upon entry"
+            "• Reminders for ESTA/visa steps",
+            "• Pre-fill travel information",
+            "• Organize documents for quick inspection"
           ]
         }
       },
-      "continueButton": "Got it, continue to the checklist"
+      "continueButton": "Got it, continue"
     },
-    "requirements": {
-      "headerTitle": "Thailand Entry Checklist",
-      "introTitle": "Entry preparation checklist",
-      "introSubtitle": "Fill in what you have and complete gradually",
-      "items": {
-        "validPassport": {
-          "title": "Valid passport",
-          "description": "Passport valid for at least 6 months",
-          "details": "Your passport must be valid for at least 6 months from your entry date into Thailand."
-        },
-        "onwardTicket": {
-          "title": "Return or onward ticket",
-          "description": "Confirmed departure booking",
-          "details": "Provide confirmed flight booking showing you will leave Thailand within the authorized stay period."
-        },
-        "accommodation": {
-          "title": "Accommodation proof",
-          "description": "Hotel booking or local contact information",
-          "details": "Provide hotel reservation confirmation or detailed contact information of friends/relatives in Thailand, including address and phone number."
-        },
-        "funds": {
-          "title": "Sufficient funds",
-          "description": "Cash, credit cards, or bank statements",
-          "details": "Recommended to carry sufficient cash or show credit card/bank statements to prove adequate funds for your stay."
-        },
-        "healthCheck": {
-          "title": "Health requirements",
-          "description": "Check current health regulations",
-          "details": "Verify any health requirements or documents needed for entry. Complete any required health declarations before arrival."
-        }
+    "entryFlow": {
+      "title": "US Entry Preparation",
+      "progress": {
+        "headline": { "ready": "US trip is ready! 🇺🇸", "almost": "Almost there!", "start": "Let's get started!" },
+        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "label": "Preparation progress"
       },
       "status": {
-        "info": {
-          "title": "You can start filling anytime",
-          "subtitle": "We support progressive completion of the checklist"
-        }
+        "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
+        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
+        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
       },
-      "startButton": "Start filling"
-    },
-    "selection": {
-      "hybrid": {
-        "stage": {
-          "token": "Please complete the Cloudflare verification",
-          "instructions": "Finish the “I'm not a robot” check on the page below."
-        }
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
       }
-    },
-    "occupations": {
-      "SOFTWARE_ENGINEER": "Software Engineer",
-      "STUDENT": "Student",
-      "TEACHER": "Teacher",
-      "DOCTOR": "Doctor",
-      "ACCOUNTANT": "Accountant",
-      "SALES_MANAGER": "Sales Manager",
-      "RETIRED": "Retired",
-      "ENGINEER": "Engineer",
-      "CIVIL_SERVANT": "Civil Servant",
-      "LAWYER": "Lawyer",
-      "NURSE": "Nurse",
-      "FREELANCER": "Freelancer",
-      "BUSINESS_OWNER": "Business Owner",
-      "HOMEMAKER": "Homemaker",
-      "DESIGNER": "Designer",
-      "OTHER": "Other"
     }
   },
+  "ca": {
+    "info": {
+      "headerTitle": "Canada Entry Information",
+      "title": "Canada Entry Guide",
+      "subtitle": "Visa/eTA and entry requirements",
+      "sections": {
+        "visa": {
+          "title": "Visa/eTA Requirements",
+          "items": [
+            "Check if you are eligible for eTA",
+            "• Otherwise apply for a visitor visa",
+            "• Ensure passport validity and accurate personal details"
+          ]
+        },
+        "onsite": {
+          "title": "Entry Notes",
+          "items": [
+            "• CBSA may ask purpose of visit and accommodation details",
+            "• Prepare proof of funds and return ticket",
+            "• Keep hotel address and contact information handy"
+          ]
+        },
+        "appFeatures": {
+          "title": "BorderBuddy Helps",
+          "items": [
+            "• Reminders for eTA/visa steps",
+            "• Pre-fill travel information",
+            "• Organize documents"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "entryFlow": {
+      "title": "Canada Entry Preparation",
+      "progress": {
+        "headline": { "ready": "Canada trip is ready! 🇨🇦", "almost": "Almost there!", "start": "Let's get started!" },
+        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
+        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
+        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    }
+  }
+  ,
   "kr": {
+    "name": "South Korea",
+    "info": {
+      "headerTitle": "Korea Entry Information",
+      "title": "Korea Entry Guide",
+      "subtitle": "Most travellers require K-ETA or a visa",
+      "sections": {
+        "visa": {
+          "title": "✓ Visa/K-ETA Policy",
+          "items": [
+            "Check if you are eligible for K-ETA; otherwise apply for a visa",
+            "• K-ETA is required prior to boarding for eligible nationalities",
+            "• Ensure passport validity and accurate personal details"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ Entry Notes",
+          "items": [
+            "• Immigration may ask purpose of visit and accommodation details",
+            "• Prepare proof of funds and return ticket",
+            "• Keep hotel address and contact information handy"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ BorderBuddy Helps",
+          "items": [
+            "• Reminders for K-ETA steps",
+            "• Pre-fill travel information",
+            "• Organize all documents"
+          ]
+        }
+      },
+      "continueButton": "Got it, continue"
+    },
+    "entryFlow": {
+      "title": "Korea Entry Preparation",
+      "progress": {
+        "headline": { "ready": "Korea trip is ready! 🇰🇷", "almost": "Almost there!", "start": "Let's get started!" },
+        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
+        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
+        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
+    },
     "travelInfo": {
       "hero": {
         "title": "South Korea Entry Preparation Guide",
@@ -1755,6 +2035,7 @@
     }
   },
   "hk": {
+    "name": "Hong Kong",
     "info": {
       "headerTitle": "Hong Kong Entry Information",
       "title": "Hong Kong Entry Guide",
@@ -2024,6 +2305,51 @@
           "title": "Keep Completing",
           "subtitle": "Finish key details to avoid delays at immigration."
         }
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "If something looks wrong, share a screenshot or contact support.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "If something looks wrong, share a screenshot or contact support.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
       }
     },
     "validation": {
@@ -2326,6 +2652,7 @@
     }
   },
   "tw": {
+    "name": "Taiwan",
     "info": {
       "headerTitle": "Taiwan Entry Information",
       "title": "Taiwan Entry Guide",
@@ -2632,6 +2959,7 @@
     }
   },
   "jp": {
+    "name": "Japan",
     "info": {
       "headerTitle": "Japan Entry Information",
       "title": "Japan Entry Guide",
@@ -2711,6 +3039,46 @@
         }
       },
       "startButton": "Start filling"
+    },
+    "entryFlow": {
+      "title": "Japan Entry Preparation",
+      "progress": {
+        "headline": { "ready": "Japan trip is ready! 🇯🇵", "almost": "Almost there!", "start": "Let's get started!" },
+        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": { "title": "Ready to Go", "subtitle": "All information complete" },
+        "mostlyComplete": { "title": "Almost There", "subtitle": "A few more fields needed" },
+        "needsImprovement": { "title": "Please Complete", "subtitle": "More information needed" }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish paperwork and preparations before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "Paper arrival card & customs walkthrough",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "help": {
+          "title": "Need help?",
+          "message": "If something looks wrong, share a screenshot or contact support.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "continue": "Continue editing",
+        "submit": "Submit entry card"
+      }
     },
     "travelInfo": {
       "hero": {
@@ -2857,36 +3225,7 @@
         }
       }
     },
-    "entryFlow": {
-      "title": "Japan Entry Preparation",
-      "progress": {
-        "headline": {
-          "ready": "Ready for Japan! 🇯🇵",
-          "almost": "Almost There",
-          "start": "Let's get started! 🌺"
-        },
-        "subtitle": {
-          "ready": "Awesome! Your Japan trip is ready! 🇯🇵",
-          "almost": "Keep it up! Just {{remaining}}% left to complete your Japan trip preparation!",
-          "start": "Continue filling out your information to make the journey smoother."
-        },
-        "label": "Preparation Progress"
-      },
-      "status": {
-        "ready": {
-          "title": "Ready to Go",
-          "subtitle": "All information complete"
-        },
-        "mostlyComplete": {
-          "title": "Almost There",
-          "subtitle": "{{percent}}% complete"
-        },
-        "needsImprovement": {
-          "title": "Please Complete",
-          "subtitle": "More information needed"
-        }
-      }
-    },
+    
     "procedures": {
       "headerTitle": "Japan Entry Procedures",
       "title": "Japan Entry Guide",

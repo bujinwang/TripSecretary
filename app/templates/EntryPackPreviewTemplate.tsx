@@ -378,17 +378,6 @@ const EntryPackPreviewTemplate = ({
 
   const contextRef = useRef(null);
 
-  const buildTemplateProps = useCallback(() => {
-    const ctx = contextRef.current || baseContext;
-    if (!ctx) {
-      return {};
-    }
-    return {
-      templateContext: ctx,
-      ...ctx,
-    };
-  }, [baseContext]);
-
   const baseContext = useMemo(
     () => ({
       config,
@@ -425,6 +414,17 @@ const EntryPackPreviewTemplate = ({
       namespace,
     ]
   );
+
+  const buildTemplateProps = useCallback(() => {
+    const ctx = contextRef.current || baseContext;
+    if (!ctx) {
+      return {};
+    }
+    return {
+      templateContext: ctx,
+      ...ctx,
+    };
+  }, [baseContext]);
 
   const renderComponent = useCallback(
     (slot, defaultRenderer) => {

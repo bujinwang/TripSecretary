@@ -673,9 +673,9 @@ const EntryGuideTemplateCurrentStep = () => {
       });
     };
 
-    const buttonTitle = t('entryGuide.entryPack.openButton', { 
-      defaultValue: isChinese ? '打开通关包 📋' : 'Open Entry Pack 📋' 
-    });
+    const buttonTitle = isChinese
+      ? '打开通关包 📋'
+      : t('entryGuide.entryPack.openButton', { defaultValue: 'Open Entry Pack 📋' });
 
     const entryPackHintText = resolveLabel(
       {

@@ -58,6 +58,17 @@ import {
   Text as TamaguiText,
 } from '../components/tamagui';
 
+const mapDestinationId = (id) => {
+  if (id === 'us') return 'usa';
+  if (id === 'malaysia') return 'my';
+  if (id === 'singapore') return 'sg';
+  if (id === 'hongkong') return 'hk';
+  if (id === 'japan') return 'jp';
+  if (id === 'korea') return 'kr';
+  if (id === 'taiwan') return 'tw';
+  return id;
+};
+
 // Provide a resilient default context so dependent components don't crash
 const defaultEntryFlowContextValue = {
   config: {},
@@ -383,10 +394,26 @@ const EntryFlowScreenTemplate = ({
 EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent }) => {
   const { t, navigation, config } = useEntryFlowTemplate();
 
-  const headerTitle = title || t(
-    titleKey || config.entryFlow?.titleKey || `${config.destinationId}.entryFlow.title`,
-    { defaultValue: `${config.name} Entry Preparation` }
-  );
+  const translationKey =
+    titleKey ||
+    config.entryFlow?.titleKey ||
+    (config.destinationId ? `${config.destinationId}.entryFlow.title` : null);
+
+  const fallbackDestinationName =
+    config?.name ||
+    config?.nameEn ||
+    config?.nameZh ||
+    (config?.destinationId ? config.destinationId.toUpperCase() : '');
+
+  const fallbackTitle = fallbackDestinationName
+    ? `${fallbackDestinationName} Entry Preparation`
+    : 'Entry Preparation';
+
+  const headerTitle =
+    title ||
+    (translationKey
+      ? t(translationKey, { defaultValue: fallbackTitle })
+      : fallbackTitle);
 
   return (
     <XStack
@@ -418,7 +445,7 @@ EntryFlowScreenTemplate.StatusBanner = () => {
   
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
-  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationId = mapDestinationId(rawDestinationId);
 
   const statusConfig = {
     ready: {
@@ -531,10 +558,10 @@ EntryFlowScreenTemplate.AutoContent = () => {
   // Get destination name from translation system based on locale
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
-  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationId = mapDestinationId(rawDestinationId);
   const destinationNameKey = `${destinationId}.name`;
   const destinationName = t(destinationNameKey, {
-    defaultValue: config.nameZh || config.name || ''
+    defaultValue: config.name || config.nameZh || ''
   });
 
   if (isLoading) {
@@ -611,7 +638,7 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
   const remaining = Math.max(0, 100 - percent);
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
-  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationId = mapDestinationId(rawDestinationId);
 
   // Build destination-specific translation keys
   const headlineKey = isReady
@@ -677,7 +704,7 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
           </TamaguiText>
           <TamaguiText fontSize="$3" color={accentColor}>
             {t(progressLabelKey, {
-              defaultValue: config.entryFlow?.progress?.label || '准备进度'
+              defaultValue: config.entryFlow?.progress?.label || 'Preparation progress'
             })}
           </TamaguiText>
           <YStack
@@ -714,6 +741,7 @@ function PrimaryActionCard({
   isReady,
   useEntryGuideAsPrimary,
   destination,
+  userData,
   primaryActionIsEdit,
 }) {
   const hasSubmitScreen = Boolean(config.screens?.submit);
@@ -721,7 +749,7 @@ function PrimaryActionCard({
 
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
-  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationId = mapDestinationId(rawDestinationId);
 
   const handlePress = () => {
     if (isReady) {
@@ -748,19 +776,19 @@ function PrimaryActionCard({
     : ['#F97316', '#F59E0B'];
   const icon = useEntryGuideAsPrimary ? '🛂' : isReady && hasSubmitScreen ? '🛫' : '✏️';
   const title = useEntryGuideAsPrimary
-    ? t(`${destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: '开始入境' })
+    ? t(`${destinationId}.entryFlow.actions.startEntryGuide`, { defaultValue: 'Start entry guide' })
     : isReady && hasSubmitScreen
-    ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: '提交入境卡' })
-    : t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: '编辑旅行信息' });
+    ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: 'Submit Entry Card' })
+    : t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: 'Edit travel information' });
   const subtitle = useEntryGuideAsPrimary
     ? t(`${destinationId}.entryFlow.actions.entryGuideSubtitle`, {
-        defaultValue: '查看纸质入境卡与海关申报填写步骤',
+        defaultValue: 'View the paper card & customs walkthrough',
       })
     : isReady && hasSubmitScreen
     ? t(`${destinationId}.entryFlow.actions.submitSubtitle`, {
-        defaultValue: `准备完成！现在可以提交${destination}入境卡了`,
+        defaultValue: `All set! Submit your ${destination} entry card now.`,
       })
-    : t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: '如需修改，返回编辑' });
+    : t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: 'Review or update any details before submitting.' });
 
   return (
     <YStack paddingHorizontal="$md" marginBottom="$lg">
@@ -831,7 +859,7 @@ function PrimaryActionCard({
 function SecondaryEditActionCard({ t, navigation, route, config }) {
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
-  const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
+  const destinationId = mapDestinationId(rawDestinationId);
 
   const handlePress = () => {
     const travelInfoScreen =
@@ -940,13 +968,13 @@ function CountdownCard({ arrivalDate, t, config }) {
             >
               <TamaguiText fontSize={18}>🛂</TamaguiText>
             </YStack>
-            <TamaguiText fontSize="$3" fontWeight="700" color="#D97706">
-              {t(`${destinationId}.entryFlow.countdown.title`, { defaultValue: '距离提交入境卡还有' })}
+          <TamaguiText fontSize="$3" fontWeight="700" color="#D97706">
+              {t(`${destinationId}.entryFlow.countdown.title`, { defaultValue: 'Submission Window' })}
             </TamaguiText>
           </XStack>
 
           <TamaguiText fontSize="$2" color="#D97706" textAlign="center">
-            {t(`${destinationId}.entryFlow.countdown.subtitle`, { defaultValue: '提交窗口已开启，请在倒计时结束前完成提交' })}
+            {t(`${destinationId}.entryFlow.countdown.subtitle`, { defaultValue: 'Submission window is open. Please submit before it ends.' })}
           </TamaguiText>
 
           <TamaguiText fontSize="$6" fontWeight="800" color="#D97706" textAlign="center">
@@ -967,9 +995,9 @@ function CountdownCard({ arrivalDate, t, config }) {
             borderWidth={1}
             borderColor="rgba(255,152,0,0.25)"
           >
-            <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
-              {t(`${destinationId}.entryFlow.countdown.arrival`, {
-                defaultValue: `抵达日期 ${formattedArrival}`,
+          <TamaguiText fontSize="$3" color="#D97706" textAlign="center">
+            {t(`${destinationId}.entryFlow.countdown.arrival`, {
+                defaultValue: `Arrival date ${formattedArrival}`,
                 date: formattedArrival,
               })}
             </TamaguiText>
@@ -989,6 +1017,8 @@ function QuickActionsRow({
   useEntryGuideAsPrimary,
   primaryActionIsEdit,
 }) {
+  const rawDestinationId = config.destinationId || 'japan';
+  const destinationId = mapDestinationId(rawDestinationId);
   const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
   // Hide edit quick action if:
   // 1. Primary action is already showing "edit travel info" (when incomplete)
@@ -1048,8 +1078,8 @@ function QuickActionsRow({
     actionCards.push({
       key: 'preview',
       icon: '👁️',
-      title: t(`${config.destinationId}.entryFlow.actions.previewPack`, { defaultValue: '预览入境包' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.previewPackSubtitle`, {
+      title: t(`${destinationId}.entryFlow.actions.previewPack`, { defaultValue: 'Preview entry pack' }),
+      subtitle: t(`${destinationId}.entryFlow.actions.previewPackSubtitle`, {
         defaultValue: '查看已经准备好的资料',
       }),
       borderColor: 'rgba(11,214,123,0.35)',
@@ -1062,8 +1092,8 @@ function QuickActionsRow({
     actionCards.push({
       key: 'entryGuide',
       icon: '🛂',
-      title: t(`${config.destinationId}.entryFlow.actions.entryGuide`, { defaultValue: '入境手续指南' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.entryGuideSubtitle`, {
+      title: t(`${destinationId}.entryFlow.actions.entryGuide`, { defaultValue: 'Entry guide' }),
+      subtitle: t(`${destinationId}.entryFlow.actions.entryGuideSubtitle`, {
         defaultValue: '查看纸质入境卡与海关申报填写步骤',
       }),
       borderColor: 'rgba(37,99,235,0.3)',
@@ -1076,8 +1106,8 @@ function QuickActionsRow({
     actionCards.push({
       key: 'edit',
       icon: '✏️',
-      title: t(`${config.destinationId}.entryFlow.actions.editThai`, { defaultValue: '编辑旅行信息' }),
-      subtitle: t(`${config.destinationId}.entryFlow.actions.editThaiSubtitle`, {
+      title: t(`${destinationId}.entryFlow.actions.editThai`, { defaultValue: 'Edit travel information' }),
+      subtitle: t(`${destinationId}.entryFlow.actions.editThaiSubtitle`, {
         defaultValue: '如需修改，返回编辑',
       }),
       borderColor: 'rgba(255,152,0,0.35)',
@@ -1129,17 +1159,18 @@ function QuickActionsRow({
 
 function HelpCard() {
   const { t, config } = useEntryFlowTemplate();
+  const destinationId = mapDestinationId(config.destinationId || 'japan');
   
   const handleHelp = () => {
     Alert.alert(
-      t(`${config.destinationId}.entryFlow.actions.help.title`, { defaultValue: '寻求帮助 🤝' }),
-      t(`${config.destinationId}.entryFlow.actions.help.message`, {
+      t(`${destinationId}.entryFlow.actions.help.title`, { defaultValue: 'Need help? 🤝' }),
+      t(`${destinationId}.entryFlow.actions.help.message`, {
         defaultValue: '你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档',
       }),
       [
-        { text: t(`${config.destinationId}.entryFlow.actions.help.share`, { defaultValue: '截图分享' }) },
-        { text: t(`${config.destinationId}.entryFlow.actions.help.contact`, { defaultValue: '联系客服' }) },
-        { text: t('common.cancel', { defaultValue: '取消' }), style: 'cancel' },
+        { text: t(`${destinationId}.entryFlow.actions.help.share`, { defaultValue: 'Share screenshot' }) },
+        { text: t(`${destinationId}.entryFlow.actions.help.contact`, { defaultValue: 'Contact support' }) },
+        { text: t('common.cancel', { defaultValue: 'Cancel' }), style: 'cancel' },
       ]
     );
   };
@@ -1157,10 +1188,10 @@ function HelpCard() {
         <YStack alignItems="center" gap="$sm">
           <TamaguiText fontSize={26}>🙌</TamaguiText>
           <TamaguiText fontSize="$3" fontWeight="700">
-            {t(`${config.destinationId}.entryFlow.actions.help.callout`, { defaultValue: '寻求帮助' })}
+            {t(`${destinationId}.entryFlow.actions.help.callout`, { defaultValue: 'Need assistance?' })}
           </TamaguiText>
           <TamaguiText fontSize="$2" color="$textSecondary" textAlign="center">
-            {t(`${config.destinationId}.entryFlow.actions.help.calloutSubtitle`, { defaultValue: '遇到问题？点我获取协助' })}
+            {t(`${destinationId}.entryFlow.actions.help.calloutSubtitle`, { defaultValue: 'Tap to get help' })}
           </TamaguiText>
         </YStack>
       </BaseCard>
@@ -1270,6 +1301,7 @@ EntryFlowScreenTemplate.SubmissionCountdown = () => {
  */
 EntryFlowScreenTemplate.ActionButtons = () => {
   const { navigation, route, completionPercent, t, config } = useEntryFlowTemplate();
+  const destinationId = mapDestinationId(config.destinationId || 'japan');
 
   const handleContinueEditing = () => {
     const travelInfoScreen = config.screens?.travelInfo || 'VietnamTravelInfo';
@@ -1310,8 +1342,8 @@ EntryFlowScreenTemplate.ActionButtons = () => {
         disabled={completionPercent < (config.completion?.minPercent || 80)}
       >
         {completionPercent >= 100
-          ? t(`${config.destinationId}.entryFlow.actions.submit`, { defaultValue: 'Submit Entry Card' })
-          : t(`${config.destinationId}.entryFlow.actions.continue`, { defaultValue: 'Continue Editing' })
+          ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: 'Submit Entry Card' })
+          : t(`${destinationId}.entryFlow.actions.continue`, { defaultValue: 'Continue Editing' })
         }
       </BaseButton>
 
@@ -1321,7 +1353,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
         onPress={handleContinueEditing}
         fullWidth
       >
-        {t(`${config.destinationId}.entryFlow.actions.edit`, { defaultValue: 'Edit Information' })}
+        {t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: 'Edit Information' })}
       </BaseButton>
     </YStack>
   );

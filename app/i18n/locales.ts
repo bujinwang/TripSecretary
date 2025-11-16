@@ -1259,7 +1259,7 @@ const baseTranslations = {
         cardTitle: '{{country}} Entry Pack',
       },
       actions: {
-        leaveTrip: 'Not going anymore',
+        leaveTrip: 'Cancel',
         archiveTrip: 'Archive',
         restoreTrip: 'Restore to Home',
         show: 'Show',
@@ -1383,6 +1383,9 @@ const baseTranslations = {
     },
     thailand: {
       entryGuide: {
+        entryPack: {
+          openButton: 'Open Entry Pack 📋',
+        },
         title: 'Thailand Entry Guide (DMK Airport)',
         subtitle: 'Complete 8-step process from TDAC to hotel arrival',
         steps: {
@@ -2695,6 +2698,7 @@ const baseTranslations = {
       },
     },
     immigrationGuide: {
+      openEntryPack: '打开通关包',
       back: 'Back',
       needHelp: 'Need Help',
       previousStep: 'Previous',
@@ -3296,6 +3300,10 @@ const baseTranslations = {
         regenerate: '生成新通关包',
         cancel: '取消',
       },
+    },
+    immigrationGuide: {
+      openEntryPack: '打开通关包',
+      previewEntryPack: '预览通关包',
     },
     singapore: {
       info: {
@@ -4227,6 +4235,9 @@ const baseTranslations = {
     },
     thailand: {
       entryGuide: {
+        entryPack: {
+          openButton: '打开通关包 📋',
+        },
         title: '泰国入境指南（廊曼机场DMK）',
         subtitle: '从TDAC到酒店的完整8步骤流程',
         steps: {
