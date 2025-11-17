@@ -938,23 +938,21 @@
     },
     "entryPackPreview": {
       "header": {
-        "title": "Malaysia Entry Pack - Preview / 马来西亚入境包预览"
+        "title": "Malaysia Entry Pack - Preview"
       },
       "previewBanner": {
-        "title": "Preview Mode / Mod Pratonton",
+        "title": "Preview Mode",
         "descriptions": [
-          "This is your Malaysia entry information preview. All information helps you pass Malaysian immigration smoothly.",
-          "Ini adalah pratonton maklumat kemasukan Malaysia anda. Semua maklumat membantu anda melalui imigresen dengan lancar."
+          "This is your Malaysia entry information preview. All information helps you pass Malaysian immigration smoothly."
         ]
       },
       "actions": {
-        "continueEditing": "✏️ Continue Editing / 继续补充信息",
-        "goToMdac": "🇲🇾 Go to MDAC / 前往MDAC"
+        "continueEditing": "✏️ Continue Editing",
+        "goToMdac": "🇲🇾 Go to MDAC"
       },
       "infoSection": {
         "items": [
-          "Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival.",
-          "提示：提交 MDAC 前请确认资料正确，到达前 3 天内完成提交。"
+          "Tip: Ensure all information is accurate before submitting MDAC. The arrival card must be submitted within 3 days before arrival."
         ]
       }
     },
@@ -982,7 +980,7 @@
         "features": [
           "Auto-fill with the info you've already saved in BorderBuddy",
           "Countdown reminders plus WhatsApp-style nudges before the 3-day window closes",
-          "Offline PIN backup and bilingual (EN/中文) hints at every step"
+          "Offline PIN backup and English hints at every step"
         ],
         "cta": "Use Smart Flow"
       },
@@ -2696,7 +2694,7 @@
       "items": {
         "entryPermit": {
           "title": "Entry Permit",
-          "description": "Valid Entry Permit (入台证) obtained",
+          "description": "Valid Entry Permit obtained",
           "details": "Mainland Chinese travelers must obtain Entry Permit in advance. Single-entry valid 3 months, stay up to 15 days. Ensure permit is valid."
         },
         "validPassport": {
@@ -2862,74 +2860,46 @@
         "steps": {
           "request_verification_email": {
             "title": "Request verification email",
-            "titleZh": "请求验证邮箱",
             "description": "Confirm your email inbox is ready",
-            "descriptionZh": "确认您的邮箱收件箱已准备好",
             "tips": {
               "0": "Enter your email and tap \"Send Code\" on the official site.",
               "1": "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
               "2": "Paste the code within the time limit to unlock the form."
             },
-            "tipsZh": {
-              "0": "在官方网站输入您的邮箱并点击\"发送验证码\"。",
-              "1": "检查收件箱（和垃圾邮件）中来自台湾移民署的6位数字验证码。",
-              "2": "在时限内粘贴验证码以解锁表单。"
-            }
           },
           "fill_traveler_details": {
             "title": "Fill traveler & arrival details",
-            "titleZh": "填写旅客和抵达信息",
             "description": "Autofill from your entry pack for speed",
-            "descriptionZh": "从您的入境包自动填充以加快速度",
             "tips": {
               "0": "Verify your passport number, nationality, and date of birth.",
               "1": "Enter arrival flight number, date/time, and port of entry.",
               "2": "Provide accommodation address/phone or host details in Taiwan."
             },
-            "tipsZh": {
-              "0": "验证您的护照号码、国籍和出生日期。",
-              "1": "输入抵达航班号、日期/时间和入境口岸。",
-              "2": "提供台湾的住宿地址/电话或接待人详细信息。"
-            }
           },
           "travel_history_confirmation": {
             "title": "Travel history & confirmation",
-            "titleZh": "旅行历史和确认",
             "description": "Answer the 14-day travel history questions accurately",
-            "descriptionZh": "准确回答14天旅行历史问题",
             "tips": {
               "0": "Declare countries visited in the last 14 days and health status truthfully.",
               "1": "Review the summary page carefully before submitting.",
               "2": "Wait for the confirmation page/email and save a screenshot for arrival."
             },
-            "tipsZh": {
-              "0": "如实申报过去14天访问的国家和健康状况。",
-              "1": "提交前仔细检查摘要页面。",
-              "2": "等待确认页面/邮件并保存截图以备抵达时使用。"
-            }
           }
         },
         "quickActions": {
           "title": "Quick tools",
-          "titleZh": "快速工具",
           "items": {
             "otp_checker": {
               "title": "OTP checker",
-              "titleZh": "验证码检查器",
               "description": "Tick off once the verification email arrives so you don't miss it.",
-              "descriptionZh": "验证邮件到达后勾选，这样您就不会错过。"
             },
             "auto_fill_clipboard": {
               "title": "Auto-fill clipboard",
-              "titleZh": "自动填充剪贴板",
               "description": "Copy passport/flight info with one tap while filling the form.",
-              "descriptionZh": "填写表单时一键复制护照/航班信息。"
             },
             "resubmit_helper": {
               "title": "Resubmit helper",
-              "titleZh": "重新提交助手",
               "description": "If plans change, reuse saved info to create a new arrival card quickly.",
-              "descriptionZh": "如果计划改变，快速重用保存的信息创建新的入境卡。"
             }
           }
         }
@@ -3752,11 +3722,11 @@
       "importantBadge": "Important",
       "step1": {
         "title": "Find the Self-Service Kiosk",
-        "description": "After getting off the plane, follow the \"Arrivals\" or \"入境\" signs.\n\nEnter the arrival hall and look for machines with large screens.\n\nUsually there are many machines in a row, similar in size to ATM machines."
+        "description": "After getting off the plane, follow the \"Arrivals\" signs.\n\nEnter the arrival hall and look for machines with large screens.\n\nUsually there are many machines in a row, similar in size to ATM machines."
       },
       "step2": {
         "title": "Select Chinese",
-        "description": "The screen will display language options.\n\nTap \"中文\" or \"Chinese\" with your finger.\n\n⚠️ If you can't find Chinese, selecting \"English\" is fine. The following steps all have picture prompts."
+        "description": "The screen will display language options.\n\nTap \"Chinese\" with your finger.\n\n⚠️ If you can't find Chinese, selecting \"English\" is fine. The following steps all have picture prompts."
       },
       "step3": {
         "title": "Scan Passport",
@@ -3797,23 +3767,23 @@
       "phrases": {
         "helpKiosk": {
           "en": "I need help with the kiosk.",
-          "zh": "我需要帮助使用自助机。"
+          
         },
         "canYouHelp": {
           "en": "Can you help me?",
-          "zh": "你能帮我吗？"
+          
         },
         "whereManualCounter": {
           "en": "Where is the manual counter?",
-          "zh": "人工柜台在哪里？"
+          
         },
         "noEnglish": {
           "en": "I don't speak English.",
-          "zh": "我不会说英语。"
+          
         },
         "chineseInterpreter": {
           "en": "Do you have Chinese interpreter?",
-          "zh": "有中文翻译吗？"
+          
         }
       },
       "buttonViewInfo": "📋 View My Information",

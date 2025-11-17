@@ -147,6 +147,8 @@ TravelInfoScreenTemplate.Header = ({
       backgroundColor="$background"
       borderBottomWidth={1}
       borderBottomColor="$borderColor"
+      zIndex={10}
+      elevation={10}
     >
       <BackButton
         onPress={onBackPress || (() => navigation.goBack())}
@@ -397,7 +399,7 @@ return null;
 }
 
   return (
-    <YStack padding="$md" alignItems="center">
+    <YStack padding="$md" alignItems="center" pointerEvents="none">
       <TamaguiText fontSize="$3" color="$textSecondary">
         {message || t('common.loading', { defaultValue: 'Loading...' })}
       </TamaguiText>

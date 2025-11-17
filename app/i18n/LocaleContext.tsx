@@ -202,6 +202,10 @@ const NATIVE_LANGUAGE_NAMES: Record<string, string> = {
   'de': 'Deutsch',
   'es': 'Español',
   'zh': '繁體中文',
+  'th': 'ไทย',
+  'vi': 'Tiếng Việt',
+  'ko': '한국어',
+  'ja': '日本語',
 };
 
 export const getLanguageOptions = (t: any) =>

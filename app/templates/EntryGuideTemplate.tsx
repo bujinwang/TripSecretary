@@ -950,11 +950,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   stepIndicatorItem: {
-    minWidth: 100,
-    maxWidth: 140,
-    minHeight: 80, // Ensure enough height for icon + text
+    minWidth: 90,
+    maxWidth: 120,
+    minHeight: 80,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
+    paddingHorizontal: spacing.sm,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
@@ -989,14 +989,14 @@ const styles = StyleSheet.create({
   },
   stepIndicatorText: {
     ...typography.caption,
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 6,
-    minHeight: 18,
-    color: colors.text, // Default color to ensure text is always visible
-    includeFontPadding: false, // Remove extra padding that might hide text
+    minHeight: 16,
+    color: colors.text,
+    includeFontPadding: false,
   },
   stepIndicatorTextCompleted: {
     color: '#0B7A4B',

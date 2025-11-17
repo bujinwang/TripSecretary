@@ -131,7 +131,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
                   status === 'completed' && styles.stepIndicatorTextCompleted,
                   status === 'current' && styles.stepIndicatorTextCurrent,
                   status === 'pending' && styles.stepIndicatorTextPending
-                ]} numberOfLines={1}>
+                ]} numberOfLines={2}>
                   {language?.startsWith('zh') ? step.titleZh : step.title}
                 </Text>
               </TouchableOpacity>
@@ -374,9 +374,11 @@ const styles = StyleSheet.create({
   stepIndicatorItem: {
     alignItems: 'center',
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderRadius: 8,
-    minWidth: 80,
+    minWidth: 90,
+    maxWidth: 120,
+    minHeight: 80,
   },
   stepIndicatorCompleted: {
     backgroundColor: colors.success + '20',
@@ -388,7 +390,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
   },
   stepIndicatorIcon: {
-    fontSize: 24,
+    fontSize: 20,
     marginBottom: spacing.xs,
   },
   stepIndicatorIconCompleted: {
@@ -403,7 +405,10 @@ const styles = StyleSheet.create({
   },
   stepIndicatorText: {
     ...typography.caption,
+    fontSize: 12,
+    lineHeight: 16,
     textAlign: 'center',
+    includeFontPadding: false,
   },
   stepIndicatorTextCompleted: {
     color: colors.success,

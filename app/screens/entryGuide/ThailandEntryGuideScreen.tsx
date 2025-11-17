@@ -226,7 +226,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
                   status === 'completed' && styles.stepIndicatorTextCompleted,
                   status === 'current' && styles.stepIndicatorTextCurrent,
                   status === 'pending' && styles.stepIndicatorTextPending
-                ]} numberOfLines={1}>
+                ]} numberOfLines={2}>
                   {language?.startsWith('zh') ? step.titleZh : step.title}
                 </Text>
               </TouchableOpacity>
@@ -487,9 +487,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: spacing.xs,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     borderRadius: 8,
-    minWidth: 60,
+    minWidth: 90,
+    maxWidth: 120,
+    minHeight: 80,
   },
   stepIndicatorCompleted: {
     backgroundColor: colors.success + '20',
@@ -503,7 +505,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   stepIndicatorIcon: {
-    fontSize: 16,
+    fontSize: 20,
     marginBottom: 2,
   },
   stepIndicatorIconCompleted: {
@@ -516,9 +518,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   stepIndicatorText: {
-    fontSize: 10,
+    fontSize: 12,
+    lineHeight: 16,
     textAlign: 'center',
     fontWeight: '500',
+    includeFontPadding: false,
   },
   stepIndicatorTextCompleted: {
     color: colors.success,

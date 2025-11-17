@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center',
     justifyContent: 'center',
+    pointerEvents: 'none',
   },
   loadingText: {
     ...typography.body2,

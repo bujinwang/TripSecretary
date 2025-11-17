@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
+    pointerEvents: 'none',
   },
   loadingText: {
     ...typography.body2,

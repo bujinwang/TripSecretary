@@ -7,7 +7,7 @@
  */
 
 export const japanEntryFlowConfig = {
-  destinationId: 'japan',
+  destinationId: 'jp',
   name: 'Japan',
   nameZh: '日本',
   flag: '🇯🇵',

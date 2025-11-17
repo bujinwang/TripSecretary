@@ -9,6 +9,10 @@ import countriesDe from './countries.de.json';
 import countriesEs from './countries.es.json';
 import countriesZh from './countries.zh.json';
 import countriesMs from './countries.ms.json';
+import countriesTh from './countries.th.json';
+import countriesVi from './countries.vi.json';
+import countriesKo from './countries.ko.json';
+import countriesJa from './countries.ja.json';
 
 // Lazy conversion cache for Traditional Chinese variants
 let zhTWCache = null;
@@ -39,6 +43,10 @@ const countryTranslations = {
   de: countriesDe,
   es: countriesEs,
   ms: countriesMs,
+  th: countriesTh,
+  vi: countriesVi,
+  ko: countriesKo,
+  ja: countriesJa,
   // Add fallback for legacy 'zh' - use Traditional
   get 'zh'() {
     if (!zhTWCache) {

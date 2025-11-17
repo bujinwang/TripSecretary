@@ -261,42 +261,42 @@
     }
   },
   "th": {
-    "name": "ประเทศไทย",
+    "name": "Thailand",
     "info": {
-      "headerTitle": "ข้อมูลการเข้าประเทศไทย",
-      "title": "คู่มือการเข้าประเทศไทย",
-      "subtitle": "ผู้ถือหนังสือเดินทางจีนได้รับการยกเว้นวีซ่า 30 วัน",
+      "headerTitle": "Thailand Entry Information",
+      "title": "Thailand Entry Guide",
+      "subtitle": "Visa-free for 30 days for Chinese passport holders",
       "sections": {
         "visa": {
-          "title": "✓ นโยบายยกเว้นวีซ่า",
+          "title": "✓ Great News! Visa-Free Policy",
           "items": [
-            "ผู้ถือพาสปอร์ตจีนเข้าประเทศไทยได้โดยไม่ต้องขอวีซ่า สูงสุด 30 วัน",
-            "• ไม่ต้องยื่นขอวีซ่าล่วงหน้า",
-            "• ใช้สำหรับท่องเที่ยว เยี่ยมญาติ ธุรกิจระยะสั้น",
-            "• ต้องกรอก TDAC ดิจิทัล (ยื่นได้ล่วงหน้าสูงสุด 72 ชั่วโมงก่อนถึง)"
+            "Chinese passport visa-free for 30 days - spontaneous travel!",
+            "• No visa application needed in advance",
+            "• Valid for tourism, family visits, business purposes",
+            "• New requirement: TDAC Digital Arrival Card must be submitted (can submit up to 72 hours before arrival)"
           ]
         },
         "onsite": {
-          "title": "⚠️ ข้อควรทราบขณะเข้าประเทศ",
+          "title": "⚠️ Entry Information",
           "items": [
-            "• TDAC ยื่นได้ล่วงหน้า 72 ชั่วโมง แต่ต้องเสร็จก่อนถึง",
-            "• ต้องแสดง QR ของ TDAC ตอนตรวจคนเข้าเมือง",
-            "• ข้อมูลต้องถูกต้อง ทั้งพาสปอร์ต เที่ยวบิน และที่พัก",
-            "• เจ้าหน้าที่ตรวจเข้ม หากเอกสารไม่ครบหรือคำตอบไม่ชัดเจนอาจถูกตรวจเพิ่มเติม",
-            "• อาจเจอ CAPTCHA ระหว่างการยื่น"
+            "• TDAC submission timing: Can submit up to 72 hours before arrival, but must complete before arrival",
+            "• QR code required: Must show TDAC QR code upon entry, can't find PDF is troublesome",
+            "• High accuracy requirement: Any error in passport, flight, accommodation may affect entry",
+            "• Immigration checks strict: Documents incomplete or answers unclear may trigger secondary inspection",
+            "• Cloudflare verification: May encounter CAPTCHA challenges during submission"
           ]
         },
         "appFeatures": {
-          "title": "✨ BorderBuddy ช่วยให้จัดเตรียมง่าย",
+          "title": "✨ BorderBuddy Makes It Easy",
           "items": [
-            "• ไร้กังวล: เตือนเวลายื่นที่เหมาะสม",
-            "• ไร้ข้อผิดพลาด: กรอก TDAC อย่างแม่นยำ",
-            "• ง่าย: กรอกครั้งเดียว จัดการทุกขั้นตอนให้",
-            "• จัดการ QR: บันทึกไฟล์ PDF และแสดงอย่างรวดเร็ว"
+            "• Zero anxiety: Auto-tracks itinerary, reminds you at the perfect time",
+            "• Zero errors: Smart-fill TDAC, accurate information",
+            "• Zero hassle: Enter once, we manage the entire process",
+            "• QR code management: Auto-save TDAC QR code PDF, quick display upon entry"
           ]
         }
       },
-      "continueButton": "เข้าใจแล้ว ไปยังเช็กลิสต์"
+      "continueButton": "Got it, continue to the checklist"
     },
     "requirements": {
       "headerTitle": "Thailand Entry Checklist",
@@ -346,40 +346,31 @@
       }
     },
     "entryFlow": {
-      "title": "การเตรียมเข้าประเทศไทย",
+      "title": "Thailand Entry Preparation",
       "progress": {
         "headline": {
-          "ready": "ทริปไทยพร้อมแล้ว! 🇹🇭",
-          "almost": "คืบหน้าดีมาก ใกล้เสร็จแล้ว!",
-          "start": "เริ่มเตรียมกันเลย!"
+          "ready": "Thailand trip is ready! 🇹🇭",
+          "almost": "Great progress—nearly done!",
+          "start": "Let's get started!"
         },
         "subtitle": {
-          "ready": "กรอกข้อมูลสำคัญครบถ้วนแล้ว",
-          "almost": "กรอกต่ออีกเล็กน้อยเพื่อการเดินทางราบรื่น",
-          "start": "กรอกข้อมูลพาสปอร์ต การเดินทาง และที่พัก"
+          "ready": "All required info complete",
+          "almost": "Keep filling in your info for a smoother trip",
+          "start": "Fill in passport, travel and accommodation details"
         },
-        "label": "ความคืบหน้าในการเตรียมตัว"
+        "label": "Preparation progress"
       },
       "status": {
-        "ready": {
-          "title": "พร้อมยื่น TDAC",
-          "subtitle": "ข้อมูลครบถ้วน"
-        },
-        "mostlyComplete": {
-          "title": "ใกล้พร้อม",
-          "subtitle": "เหลืออีกไม่กี่ช่อง"
-        },
-        "needsImprovement": {
-          "title": "ทำต่อให้เสร็จ",
-          "subtitle": "กรอกส่วนที่จำเป็นให้ครบ"
-        }
+        "ready": { "title": "Ready to submit TDAC", "subtitle": "Everything is complete" },
+        "mostlyComplete": { "title": "Almost ready", "subtitle": "A few more fields to finish" },
+        "needsImprovement": { "title": "Keep going", "subtitle": "Complete the required sections" }
       },
       "countdown": {
-        "title": "นับถอยหลังการยื่น",
-        "subtitle": "ช่วงเวลายื่นเปิดอยู่ กรุณายื่นให้ทัน",
-        "time": "เหลือ {{days}} วัน {{hours}} ชั่วโมง {{minutes}} นาที {{seconds}} วินาที",
-        "arrival": "วันเดินทาง {{date}}",
-        "days": "เหลือ {{days}} วันก่อนถึง"
+        "title": "Submission countdown",
+        "subtitle": "Submission window is open—finish before it closes.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
       },
       "preparationTitle": "Thailand Entry Preparation Status",
       "preparationSubtitle": "Check your entry information completion status",
@@ -394,33 +385,33 @@
       "submissionWindow": "Submission Window",
       "actions": {
         "startEntryGuide": "Start entry guide",
-        "submit": "ยื่น TDAC",
-        "submitSubtitle": "พร้อมแล้ว! ยื่นการ์ดเข้าประเทศไทยตอนนี้",
-        "edit": "แก้ไขข้อมูลการเดินทาง",
-        "editSubtitle": "ตรวจทาน/อัปเดตก่อนยื่น",
-        "entryGuide": "คู่มือการเข้าประเทศ",
-        "entryGuideSubtitle": "ขั้นตอนการกรอกการ์ดและศุลกากร",
-        "previewPack": "ดูตัวอย่างแพ็กเข้าประเทศ",
-        "previewPackSubtitle": "ดูสิ่งที่คุณเตรียมไว้ทั้งหมด",
-        "editThai": "แก้ไขข้อมูลการเดินทาง",
-        "editThaiSubtitle": "ย้อนกลับเพื่อแก้ไขเมื่อจำเป็น",
+        "submit": "Submit TDAC",
+        "submitSubtitle": "Ready—submit the Thailand entry card now",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review/update before submitting",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "Steps for entry card and customs",
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "View everything you've prepared",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Go back to edit when needed",
         "help": {
-          "title": "ต้องการความช่วยเหลือ?",
-          "message": "มีปัญหา? แชร์ภาพหน้าจอหรือ ติดต่อฝ่ายสนับสนุน",
-          "share": "แชร์ภาพหน้าจอ",
-          "contact": "ติดต่อฝ่ายสนับสนุน",
-          "callout": "ต้องการความช่วยเหลือ",
-          "calloutSubtitle": "แตะเพื่อรับความช่วยเหลือ"
+          "title": "Need help?",
+          "message": "Problems? Share a screenshot or contact support",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need help",
+          "calloutSubtitle": "Tap to get assistance"
         },
         "incomplete": {
-          "title": "ต้องการข้อมูลเพิ่ม",
-          "message": "กรอกข้อมูลอย่างน้อย 85% ก่อนยื่น"
+          "title": "More information needed",
+          "message": "Fill at least 85% before submitting"
         },
         "success": {
-          "title": "พร้อมแล้ว!",
-          "message": "ข้อมูลเข้าประเทศไทยของคุณครบถ้วน"
+          "title": "All set!",
+          "message": "Your Thailand entry information is complete"
         },
-        "continue": "แก้ไขต่อ"
+        "continue": "Continue editing"
       },
       "continueImproving": "Continue Improving Information",
       "completeAllFields": "Need to complete information",

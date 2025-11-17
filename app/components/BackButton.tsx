@@ -13,7 +13,7 @@ import {
 
 import { colors, spacing, typography, touchable } from '../theme';
 
-const defaultHitSlop: Insets = { top: 8, bottom: 8, left: 8, right: 8 };
+const defaultHitSlop: Insets = { top: 16, bottom: 16, left: 16, right: 16 };
 
 export interface BackButtonProps extends TouchableOpacityProps {
   label?: string;

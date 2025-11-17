@@ -37,14 +37,6 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
   ScanPassport: undefined;
-  PassportReview:
-    | {
-        passportData?: SerializablePassport | null;
-        confidence?: OCRConfidence;
-        method?: string;
-        validation?: PassportValidationResult | null;
-      }
-    | undefined;
   SelectDestination:
     | {
         passport?: SerializablePassport | null;
@@ -241,7 +233,6 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   NotificationLog: undefined;
   NotificationTest?: undefined;
-  TDACDebug?: undefined;
   TamaguiTest?: undefined;
   ComponentShowcase?: undefined;
 } & {

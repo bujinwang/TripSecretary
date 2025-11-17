@@ -5,7 +5,7 @@
  */
 
 export const singaporeEntryFlowConfig = {
-  destinationId: 'singapore',
+  destinationId: 'sg',
   name: 'Singapore',
   nameZh: '新加坡',
   flag: '🇸🇬',

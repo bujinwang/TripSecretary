@@ -27,7 +27,7 @@ const deepMergeTranslations = (base = {}, overrides = {}) => {
   return result;
 };
 
-export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es', 'ms'];
+export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es', 'ms', 'th', 'vi', 'ko', 'ja'];
 
 // Progressive Entry Flow namespaces
 export const PROGRESSIVE_FLOW_NAMESPACES = ['progressiveFlow', 'entryPack', 'notifications'];
@@ -41,6 +41,10 @@ export const LANGUAGE_FALLBACK = {
   'de': 'en',
   'es': 'en'
 };
+LANGUAGE_FALLBACK['th'] = 'en';
+LANGUAGE_FALLBACK['vi'] = 'en';
+LANGUAGE_FALLBACK['ko'] = 'en';
+LANGUAGE_FALLBACK['ja'] = 'en';
 
 const sgTravelInfoEn = {
   hero: {
@@ -308,28 +312,6 @@ const sgTravelInfoZh = {
 // Base translations object (will be extended with Traditional Chinese variants)
 const baseTranslations = {
   en: {
-    common: {
-      buttons: {
-        cancel: 'Cancel',
-        share: 'Share',
-      },
-      back: 'Back',
-      confirm: 'Confirm',
-      delete: 'Delete',
-      error: 'Error',
-      images: {
-        tapToEnlarge: 'Tap to enlarge',
-      },
-      reader: {
-        font: {
-          decrease: 'A-',
-          increase: 'A+',
-        },
-      },
-      privacy: {
-        localStorage: 'All information is saved locally on your device only',
-      },
-    },
     funds: {
       noInfoAvailable: 'No fund information available',
       cash: 'Cash',
@@ -1068,6 +1050,23 @@ const baseTranslations = {
       yes: 'Yes',
       no: 'No',
       error: 'Error',
+      delete: 'Delete',
+      buttons: {
+        cancel: 'Cancel',
+        share: 'Share',
+      },
+      images: {
+        tapToEnlarge: 'Tap to enlarge',
+      },
+      reader: {
+        font: {
+          decrease: 'A-',
+          increase: 'A+',
+        },
+      },
+      privacy: {
+        localStorage: 'All information is saved locally on your device only',
+      },
     },
     tabs: {
       home: 'Home',
@@ -2987,6 +2986,10 @@ const baseTranslations = {
           decrease: 'A-',
           increase: 'A+',
         },
+      },
+      buttons: {
+        cancel: '取消',
+        share: '分享',
       },
       privacy: {
         localStorage: '所有信息仅保存在您的手机本地',

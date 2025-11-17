@@ -5,7 +5,7 @@
 
 export const usaEntryGuide = {
   country: 'usa',
-  countryName: '美国',
+  countryName: 'USA',
   countryNameZh: '美国',
   airports: ['JFK', 'LAX', 'ORD', 'SFO', 'MIA', 'SEA'], // 主要国际机场
   currency: 'USD',
@@ -16,113 +16,112 @@ export const usaEntryGuide = {
     entryPackPreview: 'USAEntryPackPreview',
   },
 
-  // 重要提醒
+  // Important notes
   importantNotes: [
-    '确认是否属于免签证计划(VWP)国家公民（VWP国家需申请ESTA，非VWP国家需申请B1/B2签证）',
-    '海关申报：申报所有食品、动植物产品',
-    '注意美国严苛的安检和海关检查程序'
+    'Confirm whether you qualify under the Visa Waiver Program (VWP). VWP nationals need ESTA; non‑VWP nationals need a B1/B2 visa.',
+    'CBP customs declaration: declare all food, plants, animal products.',
+    'Be aware of strict security and customs inspections in the US.'
   ],
 
   // 5步骤完整流程 (包含紧急联系方式准备)
   steps: [
     {
       id: 'emergency_contacts',
-      title: '紧急联系方式',
+      title: 'Emergency Contacts',
       titleZh: '紧急联系方式',
-      description: '保存美国紧急联系电话，以备不时之需',
+      description: 'Save important US emergency phone numbers for quick access.',
       descriptionZh: '保存美国紧急联系电话，以备不时之需',
       category: 'pre-arrival',
       categoryZh: '实用信息',
       priority: 1,
-      estimatedTime: '2分钟',
+      estimatedTime: '2 min',
       icon: '🆘',
       required: false,
       tips: [
-        '警察/救护车/火警：911',
-        '旅游警察：1-202-501-4444',
-        '中国大使馆：+1-202-495-2266',
-        '韩国大使馆：+1-202-939-5600',
-        '日本大使馆：+1-202-238-6700',
-        '移民局：+1-202-325-3535',
-        '机场服务：+1-800-882-8880',
-        '将这些号码保存到手机通讯录',
-        '遇到紧急情况立即拨打911'
+        'Police/Fire/Ambulance: 911',
+        'Suicide & Crisis Lifeline: 988',
+        'Poison Control: 1‑800‑222‑1222',
+        'CBP Traveler Information: 1‑877‑227‑5511',
+        'TSA Contact Center: 1‑866‑289‑9673',
+        'Save these numbers to your phone contacts',
+        'In emergencies, dial 911 immediately'
       ]
     },
     {
       id: 'landing_setup',
-      title: '落地前准备',
+      title: 'Post‑Landing Preparation',
       titleZh: '落地前准备',
-      description: '关闭蜂窝网络，准备美元兑换',
+      description: 'Prepare your phone, follow airport signs, and get ready for inspection.',
       descriptionZh: '关闭蜂窝网络，准备美元兑换',
       category: 'post-landing',
       priority: 2,
-      estimatedTime: '2分钟',
+      estimatedTime: '2 min',
       icon: '📱',
       required: true,
       warnings: [
-        '飞机滑行时勿使用手机',
-        'WiFi也需要关闭'
+        'Do not use your phone during taxiing',
+        'Disable Wi‑Fi if instructed by crew'
       ],
       tips: [
-        '跟着Arrivals标识前进',
-        '准备手机离线模式',
-        '注意美国海关的严格检查'
+        'Follow the "Arrivals" signs',
+        'Prepare phone airplane/offline mode',
+        'US customs inspections are strict—have documents ready'
       ]
     },
     {
       id: 'immigration_biometric',
-      title: '移民局生物识别检查',
+      title: 'Biometric & Immigration Check',
       titleZh: '移民局生物识别检查',
-      description: '进行指纹和面部识别，提交入境卡',
+      description: 'Fingerprint and facial recognition; present your documents to CBP.',
       descriptionZh: '进行指纹和面部识别，提交入境卡',
       category: 'immigration',
       priority: 3,
-      estimatedTime: '15分钟',
+      estimatedTime: '15 min',
       icon: '🛂',
       required: true,
-      showEntryPack: true, // 显示通关包按钮
-      entryPackHint: '整理好的通关资料（护照、签证/ESTA、旅行信息、资金证明）可直接展示给移民官。',
+      showEntryPack: true,
+      entryPackHint: 'Have passport, visa/ESTA, travel details, and funds ready to show the officer.',
+      entryPackHintZh: '整理好的通关资料（护照、签证/ESTA、旅行信息、资金证明）可直接展示给移民官。',
       tips: [
-        '排队等候相应通道',
-        '准备护照和签证/ESTA批准文件（VWP国家需ESTA，非VWP国家需B1/B2签证）',
-        '配合生物识别扫描：保持手指清洁干燥，摘掉眼镜和帽子',
-        '保持自然表情，头发不要遮挡脸部',
-        '回答官员关于访问目的的问题'
+        'Queue for the appropriate lane',
+        'Prepare passport and visa/ESTA approval (VWP requires ESTA; non‑VWP requires B1/B2 visa)',
+        'For biometrics: clean/dry fingers; remove glasses and hats',
+        'Keep a natural expression; ensure hair does not cover your face',
+        'Answer questions about your visit purpose'
       ]
     },
     {
       id: 'baggage_customs',
-      title: '行李领取和海关检查',
+      title: 'Baggage Claim & Customs',
       titleZh: '行李领取和海关检查',
-      description: '认领行李并通过海关申报',
+      description: 'Collect your baggage and proceed to customs declaration.',
       descriptionZh: '认领行李并通过海关申报',
       category: 'baggage',
       priority: 4,
-      estimatedTime: '20分钟',
+      estimatedTime: '20 min',
       icon: '🧳',
       required: true,
       tips: [
-        '查看屏幕了解行李转盘号',
-        '如实申报所有物品',
-        '准备好海关申报表'
+        'Check screens for the carousel number',
+        'Declare all items truthfully',
+        'Have your customs declaration ready'
       ]
     },
     {
       id: 'customs_inspection',
-      title: '海关物品检查',
+      title: 'Customs Item Inspection',
       titleZh: '海关物品检查',
-      description: '最终海关检查和物品验证',
+      description: 'Final customs inspection and item verification.',
       descriptionZh: '最终海关检查和物品验证',
       category: 'customs',
       priority: 5,
-      estimatedTime: '10分钟',
+      estimatedTime: '10 min',
       icon: '🔍',
       required: true,
       tips: [
-        '配合海关官员检查',
-        '出示申报的物品',
-        '回答关于物品来源的问题'
+        'Cooperate with customs officers',
+        'Show all declared items',
+        'Answer questions about item origins'
       ]
     }
   ],
@@ -297,14 +296,15 @@ export const usaEntryGuide = {
   emergency: {
     police: '911',
     ambulance: '911',
-    touristPolice: '1-202-501-4444',
+    suicideCrisis: '988',
+    poisonControl: '1-800-222-1222',
     embassy: {
       china: '+1-202-495-2266',
       korea: '+1-202-939-5600',
       japan: '+1-202-238-6700'
     },
-    immigration: '+1-202-325-3535',
-    airport: '+1-800-882-8880'
+    immigration: '+1-877-227-5511',
+    airport: '+1-866-289-9673'
   },
 
   // 文化和礼仪提醒

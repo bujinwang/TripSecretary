@@ -5,6 +5,7 @@ export { default as TDACAPIScreen } from './TDACAPIScreen';
 export { default as TDACHybridScreen } from './TDACHybridScreen';
 export { default as TDACSelectionScreen } from './TDACSelectionScreen';
 export { default as TDACWebViewScreen } from './TDACWebViewScreen';
+export { default as TDACFilesScreen } from './TDACFilesScreen';
 export { default as ThailandEntryFlowScreen } from './ThailandEntryFlowScreen';
 export { default as ThailandInfoScreen } from './ThailandInfoScreen';
 export { default as ThailandRequirementsScreen } from './ThailandRequirementsScreen';

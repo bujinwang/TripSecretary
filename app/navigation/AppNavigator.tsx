@@ -21,6 +21,10 @@ import {
   PresentToCustomsScreen,
   CopyWriteModeScreen,
   AirportArrivalScreen,
+  NotificationSettingsScreen,
+  NotificationTestScreen,
+  NotificationLogScreen,
+  EntryInfoDetailScreen,
   // Japan screens
   JapanInfoScreen,
   JapanRequirementsScreen,
@@ -41,6 +45,7 @@ import {
   ThailandEntryFlowScreen,
   ThailandTravelInfoScreen,
   ThailandEntryGuideScreen,
+  TDACFilesScreen,
   // Malaysia screens
   MalaysiaInfoScreen,
   MalaysiaRequirementsScreen,
@@ -91,30 +96,24 @@ import {
   KoreaRequirementsScreen,
   KoreaTravelInfoScreen,
   KoreaEntryFlowScreen,
+  KoreaEntryPackPreviewScreen,
   // USA screens
   USAInfoScreen,
   USARequirementsScreen,
   USTravelInfoScreen,
   USAEntryFlowScreen,
+  JapanEntryPackPreviewScreen,
   USEntryPackPreviewScreen,
   USAEntryGuideScreen,
   CanadaEntryGuideScreen,
 } from '../screens';
 
-// Import NotificationSettingsScreen directly since it's not in the screens index yet
-import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
-import NotificationTestScreen from '../screens/NotificationTestScreen';
-import NotificationLogScreen from '../screens/NotificationLogScreen';
-import EntryInfoDetailScreen from '../screens/thailand/EntryInfoDetailScreen';
-import TDACFilesScreen from '../screens/thailand/TDACFilesScreen';
 import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
 import KoreaEntryGuideScreen from '../screens/entryGuide/KoreaEntryGuideScreen';
 import MalaysiaEntryGuideScreen from '../screens/entryGuide/MalaysiaEntryGuideScreen';
 import HongKongEntryGuideScreen from '../screens/entryGuide/HongKongEntryGuideScreen';
 import VietnamEntryGuideScreen from '../screens/entryGuide/VietnamEntryGuideScreen';
 import JapanEntryGuideScreen from '../screens/entryGuide/JapanEntryGuideScreen';
-import KoreaEntryPackPreviewScreen from '../screens/korea/KoreaEntryPackPreviewScreen';
-import JapanEntryPackPreviewScreen from '../screens/japan/JapanEntryPackPreviewScreen';
 
 import { colors } from '../theme';
 
@@ -932,22 +931,10 @@ const AppNavigator = React.forwardRef((props, ref) => {
           <>
             <Stack.Screen
               name="NotificationTest"
-              component={require('../screens/NotificationTestScreen').default}
+              component={NotificationTestScreen}
               options={{
                 headerShown: true,
                 title: 'Notification Testing',
-                headerTintColor: colors.text,
-                headerStyle: {
-                  backgroundColor: colors.white,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TDACDebug"
-              component={require('../screens/debug/TDACDebugScreen').default}
-              options={{
-                headerShown: true,
-                title: 'TDAC Debug & Connectivity',
                 headerTintColor: colors.text,
                 headerStyle: {
                   backgroundColor: colors.white,

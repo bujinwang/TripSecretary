@@ -146,33 +146,33 @@ const countryConfigs = {
   us: {
     entryCardName: 'I-94',
     entryCardTab: 'i94',
-    entryCardTitle: 'I-94 Entry Record / 美国入境记录',
-    personalInfoTitle: 'Personal Information / 个人信息',
-    travelInfoTitle: 'Travel Information / 旅行信息',
-    fundsTitle: 'Funds Information / 资金信息',
+    entryCardTitle: 'I-94 Entry Record',
+    personalInfoTitle: 'Personal Information',
+    travelInfoTitle: 'Travel Information',
+    fundsTitle: 'Funds Information',
     currency: 'USD',
-    currencyName: 'Dollar / 美元',
-    notProvided: 'Not provided / 未提供',
-    fallbackHotelText: 'Please provide accommodation address / 请提供住宿地址',
+    currencyName: 'Dollar',
+    notProvided: 'Not provided',
+    fallbackHotelText: 'Please provide accommodation address',
     labels: {
-      fullName: 'Full Name / 全名',
-      passportNumber: 'Passport Number / 护照号码',
-      passportExpiryDate: 'Passport Expiry Date / 护照有效期',
-      nationality: 'Nationality / 国籍',
-      dateOfBirth: 'Date of Birth / 出生日期',
-      arrivalDate: 'Arrival Date / 抵达日期',
-      arrivalFlightNumber: 'Arrival Flight Number / 抵达航班号',
-      departureDate: 'Departure Date / 离开日期',
-      departureFlightNumber: 'Departure Flight Number / 离境航班号',
-      flightNumber: 'Flight Number / 航班号',
-      stayLocation: 'Accommodation Address / 住宿地址',
-      lengthOfStay: 'Length of Stay / 停留时间',
-      purpose: 'Purpose of Visit / 访问目的',
-      totalFunds: 'Total Funds / 资金总额',
-      fundType: 'Type / 类型',
-      amount: 'Amount / 金额'
+      fullName: 'Full Name',
+      passportNumber: 'Passport Number',
+      passportExpiryDate: 'Passport Expiry Date',
+      nationality: 'Nationality',
+      dateOfBirth: 'Date of Birth',
+      arrivalDate: 'Arrival Date',
+      arrivalFlightNumber: 'Arrival Flight Number',
+      departureDate: 'Departure Date',
+      departureFlightNumber: 'Departure Flight Number',
+      flightNumber: 'Flight Number',
+      stayLocation: 'Accommodation Address',
+      lengthOfStay: 'Length of Stay',
+      purpose: 'Purpose of Visit',
+      totalFunds: 'Total Funds',
+      fundType: 'Type',
+      amount: 'Amount'
     },
-    dateLocales: ['en-US', 'zh-CN']
+    dateLocales: ['en-US']
   },
   tw: {
     entryCardName: 'TWAC',
@@ -599,13 +599,13 @@ return display;
         debit_card: '扣帳卡 / Debit Card',
         other: '其他 / Other'},
       us: {
-        cash: 'Cash / 现金',
-        credit_card: 'Credit Card / 信用卡',
-        bank_balance: 'Bank Balance / 银行存款',
-        investment: 'Investments / 投资',
-        card: 'Bank Card / 银行卡',
-        debit_card: 'Debit Card / 借记卡',
-        other: 'Other / 其他'
+        cash: 'Cash',
+        credit_card: 'Credit Card',
+        bank_balance: 'Bank Balance',
+        investment: 'Investments',
+        card: 'Bank Card',
+        debit_card: 'Debit Card',
+        other: 'Other'
       },
       jp: {
         cash: '現金 / Cash',
@@ -1022,12 +1022,12 @@ return config.notProvided;
         ]
       },
       usa: {
-        title: '💡 CBP Officer FAQs / 海关及边境保护局常见问题',
+        title: '💡 CBP Officer FAQs',
         questions: [
-          { q: 'Q: What is the purpose of your visit? / 你来美国的目的是什么？', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游' },
-          { q: 'Q: How long will you stay? / 你会在美国停留多久？', a: travelInfo?.lengthOfStay || '7 days / 7天' },
-          { q: 'Q: Where will you be staying? / 你会住在哪里？', a: stayLocationAnswer },
-          { q: 'Q: How much money do you have? / 你带了多少钱？', a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards / 现金和银行卡)` }
+          { q: 'Q: What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism' },
+          { q: 'Q: How long will you stay?', a: travelInfo?.lengthOfStay || '7 days' },
+          { q: 'Q: Where will you be staying?', a: stayLocationAnswer },
+          { q: 'Q: How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards)` }
         ]
       },
       singapore: {

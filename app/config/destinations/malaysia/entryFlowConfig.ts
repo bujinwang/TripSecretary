@@ -8,7 +8,7 @@
 
 export const malaysiaEntryFlowConfig = {
   // Metadata
-  destinationId: 'malaysia',
+  destinationId: 'my',
   name: 'Malaysia',
   nameZh: '马来西亚',
   flag: '🇲🇾',

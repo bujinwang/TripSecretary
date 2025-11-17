@@ -423,6 +423,8 @@ EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent
       backgroundColor="$background"
       borderBottomWidth={1}
       borderBottomColor="$borderColor"
+      zIndex={10}
+      elevation={10}
     >
       <BackButton
         onPress={onBackPress || (() => navigation.goBack())}
@@ -890,7 +892,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
           </YStack>
           <YStack alignItems="center">
             <TamaguiText fontSize="$3" fontWeight="700" color="#1D4ED8">
-              {t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: '编辑旅行信息' })}
+              {t(`${destinationId}.entryFlow.actions.edit`, { defaultValue: 'Edit travel information' })}
             </TamaguiText>
             <TamaguiText
               fontSize="$2"
@@ -898,7 +900,7 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
               marginTop="$xs"
               textAlign="center"
             >
-              {t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: '如需修改，返回编辑' })}
+              {t(`${destinationId}.entryFlow.actions.editSubtitle`, { defaultValue: 'Review or update any details before submitting.' })}
             </TamaguiText>
           </YStack>
         </XStack>
@@ -978,7 +980,7 @@ function CountdownCard({ arrivalDate, t, config }) {
 
           <TamaguiText fontSize="$6" fontWeight="800" color="#D97706" textAlign="center">
             {t(`${destinationId}.entryFlow.countdown.time`, {
-              defaultValue: `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`,
+              defaultValue: `${days}d ${hours}h ${minutes}m ${seconds}s`,
               days,
               hours,
               minutes,
@@ -1079,7 +1081,7 @@ function QuickActionsRow({
       icon: '👁️',
       title: t(`${destinationId}.entryFlow.actions.previewPack`, { defaultValue: 'Preview entry pack' }),
       subtitle: t(`${destinationId}.entryFlow.actions.previewPackSubtitle`, {
-        defaultValue: '查看已经准备好的资料',
+        defaultValue: "See everything you've already prepared",
       }),
       borderColor: 'rgba(11,214,123,0.35)',
       iconBackground: 'rgba(11,214,123,0.12)',
@@ -1093,7 +1095,7 @@ function QuickActionsRow({
       icon: '🛂',
       title: t(`${destinationId}.entryFlow.actions.entryGuide`, { defaultValue: 'Entry guide' }),
       subtitle: t(`${destinationId}.entryFlow.actions.entryGuideSubtitle`, {
-        defaultValue: '查看纸质入境卡与海关申报填写步骤',
+        defaultValue: 'View the paper card & customs walkthrough',
       }),
       borderColor: 'rgba(37,99,235,0.3)',
       iconBackground: 'rgba(37,99,235,0.12)',
@@ -1107,7 +1109,7 @@ function QuickActionsRow({
       icon: '✏️',
       title: t(`${destinationId}.entryFlow.actions.editThai`, { defaultValue: 'Edit travel information' }),
       subtitle: t(`${destinationId}.entryFlow.actions.editThaiSubtitle`, {
-        defaultValue: '如需修改，返回编辑',
+        defaultValue: 'Jump back to make changes',
       }),
       borderColor: 'rgba(255,152,0,0.35)',
       iconBackground: 'rgba(255,152,0,0.12)',
@@ -1164,7 +1166,7 @@ function HelpCard() {
     Alert.alert(
       t(`${destinationId}.entryFlow.actions.help.title`, { defaultValue: 'Need help? 🤝' }),
       t(`${destinationId}.entryFlow.actions.help.message`, {
-        defaultValue: '你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档',
+        defaultValue: "Run into an issue? Share a screenshot and we'll help.",
       }),
       [
         { text: t(`${destinationId}.entryFlow.actions.help.share`, { defaultValue: 'Share screenshot' }) },
@@ -1369,7 +1371,7 @@ return null;
 }
 
   return (
-    <YStack padding="$md" alignItems="center">
+    <YStack padding="$md" alignItems="center" pointerEvents="none">
       <TamaguiText fontSize="$3" color="$textSecondary">
         {message || t('common.loading', { defaultValue: 'Loading...' })}
       </TamaguiText>

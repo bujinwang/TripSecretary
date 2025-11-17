@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     zIndex: 30,
+    pointerEvents: 'none',
   },
   loadingBox: {
     alignItems: 'center',

@@ -567,13 +567,6 @@ const TDACHybridScreen = ({ navigation, route }) => {
       {__DEV__ && (
         <View style={styles.debugButtonContainer}>
           <TouchableOpacity
-            style={styles.debugButton}
-            onPress={() => navigation.navigate('TDACDebug')}
-          >
-            <Text style={styles.debugButtonText}>🔧 Debug</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             style={[styles.debugButton, styles.testSuccessButton]}
             onPress={testSuccessFlow}
           >
