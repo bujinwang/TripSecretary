@@ -433,30 +433,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           },
         ],
       },
-      // Development tools section (only in development mode)
-      ...(__DEV__ ? [{
-        section: 'Development Tools',
-        items: [
-          {
-            id: 'notificationTest',
-            icon: '🧪',
-            title: 'Notification Testing',
-            subtitle: 'Test and debug notification system',
-          },
-          {
-            id: 'tamaguiTest',
-            icon: '🎨',
-            title: 'Tamagui Test',
-            subtitle: 'View Tamagui design system components',
-          },
-          {
-            id: 'componentShowcase',
-            icon: '🧩',
-            title: 'Component Library',
-            subtitle: 'Browse shared Tamagui components',
-          },
-        ],
-      }] : []),
+      
     ],
     [t, languageLabel]
   );
@@ -499,12 +476,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       navigation.navigate('EntryInfoHistory');
     } else if (itemId === 'exportData') {
       handleExportData();
-    } else if (itemId === 'notificationTest') {
-      navigation.navigate('NotificationTest');
-    } else if (itemId === 'tamaguiTest') {
-      navigation.navigate('TamaguiTest');
-    } else if (itemId === 'componentShowcase') {
-      navigation.navigate('ComponentShowcase');
     }
     // TODO: Navigate to other screens
   };

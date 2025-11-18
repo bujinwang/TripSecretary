@@ -22,7 +22,6 @@ import {
   CopyWriteModeScreen,
   AirportArrivalScreen,
   NotificationSettingsScreen,
-  NotificationTestScreen,
   NotificationLogScreen,
   EntryInfoDetailScreen,
   // Japan screens
@@ -97,6 +96,9 @@ import {
   KoreaTravelInfoScreen,
   KoreaEntryFlowScreen,
   KoreaEntryPackPreviewScreen,
+  // China screens
+  ChinaEntryFlowScreen,
+  ChinaTravelInfoScreen,
   // USA screens
   USAInfoScreen,
   USARequirementsScreen,
@@ -434,6 +436,21 @@ const AppNavigator = React.forwardRef((props, ref) => {
             presentation: 'fullScreenModal',
           }}
         />
+        <Stack.Screen
+          name="ChinaTravelInfo"
+          component={ChinaTravelInfoScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ChinaEntryFlow"
+          component={ChinaEntryFlowScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen
           name="HongKongInfo"
           component={HongKongInfoScreen}
@@ -926,47 +943,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         
-        {/* Development Tools (only in development mode) */}
-        {__DEV__ && (
-          <>
-            <Stack.Screen
-              name="NotificationTest"
-              component={NotificationTestScreen}
-              options={{
-                headerShown: true,
-                title: 'Notification Testing',
-                headerTintColor: colors.text,
-                headerStyle: {
-                  backgroundColor: colors.white,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TamaguiTest"
-              component={require('../tamagui/TamaguiTestScreen').default}
-              options={{
-                headerShown: true,
-                title: 'Tamagui Test',
-                headerTintColor: colors.text,
-                headerStyle: {
-                  backgroundColor: colors.white,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ComponentShowcase"
-              component={require('../components/tamagui/ComponentShowcase').default}
-              options={{
-                headerShown: true,
-                title: 'Component Library',
-                headerTintColor: colors.text,
-                headerStyle: {
-                  backgroundColor: colors.white,
-                },
-              }}
-            />
-          </>
-        )}
+        
         
       </Stack.Navigator>
     </NavigationContainer>

@@ -25,20 +25,62 @@ interface TimeParts {
   minute: number;
 }
 
+type LabelDescriptor = {
+  label?: React.ReactNode;
+  text?: React.ReactNode;
+  title?: React.ReactNode;
+  helper?: React.ReactNode;
+  helperText?: React.ReactNode;
+  help?: React.ReactNode;
+  description?: React.ReactNode;
+  error?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  placeholder?: string;
+};
+
+type LabelProp = React.ReactNode | LabelDescriptor;
+
 export interface DateTimeInputProps {
-  label?: string;
+  label?: LabelProp;
   value?: string;
   onChangeText?: (value: string) => void;
   mode?: Mode;
-  helpText?: string;
+  helpText?: React.ReactNode;
   error?: boolean;
-  errorMessage?: string;
+  errorMessage?: React.ReactNode;
   onBlur?: (value: string) => void;
   dateType?: DateType;
   style?: StyleProp<ViewStyle>;
   placeholder?: string;
   onChange?: (value: string) => void;
 }
+
+const isRenderableContent = (value: unknown): value is React.ReactNode => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return true;
+  }
+  return React.isValidElement(value);
+};
+
+const pickRenderable = (...values: unknown[]): React.ReactNode | undefined => {
+  for (const value of values) {
+    if (isRenderableContent(value)) {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const isLabelDescriptor = (value: unknown): value is LabelDescriptor =>
+  Boolean(
+    value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      !React.isValidElement(value),
+  );
 
 const parseDate = (dateStr?: string): DateParts => {
   if (!dateStr) {
@@ -82,6 +124,29 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
   placeholder,
   onChange,
 }) => {
+  const labelObject = isLabelDescriptor(label) ? label : undefined;
+  const normalizedLabel = pickRenderable(
+    labelObject?.label,
+    labelObject?.text,
+    labelObject?.title,
+    label,
+  );
+  const normalizedHelpText = pickRenderable(
+    helpText,
+    labelObject?.help,
+    labelObject?.helper,
+    labelObject?.helperText,
+    labelObject?.description,
+  );
+  const normalizedErrorMessage = pickRenderable(
+    errorMessage,
+    labelObject?.error,
+    labelObject?.errorMessage,
+  );
+  const resolvedPlaceholder =
+    placeholder ??
+    (typeof labelObject?.placeholder === 'string' ? labelObject.placeholder : undefined);
+
   const [showPicker, setShowPicker] = useState(false);
 
   const currentDate = mode === 'date' ? parseDate(value) : undefined;
@@ -143,8 +208,8 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
     if (value) {
       return value;
     }
-    if (placeholder) {
-      return placeholder;
+    if (resolvedPlaceholder) {
+      return resolvedPlaceholder;
     }
     return mode === 'date' ? 'YYYY-MM-DD' : 'HH:MM';
   };
@@ -186,7 +251,7 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {normalizedLabel ? <Text style={styles.label}>{normalizedLabel}</Text> : null}
 
       <TouchableOpacity
         style={[styles.input, error ? styles.inputError : null]}
@@ -195,8 +260,8 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
         <Text style={[styles.inputText, !value ? styles.placeholder : null]}>{formatValue()}</Text>
       </TouchableOpacity>
 
-      {helpText && !error ? <Text style={styles.helpText}>{helpText}</Text> : null}
-      {error && errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+      {normalizedHelpText && !error ? <Text style={styles.helpText}>{normalizedHelpText}</Text> : null}
+      {error && normalizedErrorMessage ? <Text style={styles.errorText}>{normalizedErrorMessage}</Text> : null}
 
       <Modal visible={showPicker} transparent animationType="slide" onRequestClose={handleCancel}>
         <View style={styles.modalOverlay}>
@@ -366,4 +431,3 @@ const styles = StyleSheet.create({
 });
 
 export default DateTimeInput;
-

@@ -32,6 +32,7 @@ import usaConfig from './usa';
 import japanConfig from './japan';
 import vietnamConfig from './vietnam';
 import koreaConfig from './korea';
+import chinaConfig from './china';
 
 /**
  * Central destination registry
@@ -47,6 +48,7 @@ export const DESTINATIONS: Record<string, any> = {
   jp: japanConfig,
   vn: vietnamConfig,
   kr: koreaConfig,
+  cn: chinaConfig,
 
   // Add more destinations as they are implemented
 };

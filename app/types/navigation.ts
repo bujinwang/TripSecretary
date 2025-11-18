@@ -232,9 +232,6 @@ export type RootStackParamList = {
   EntryInfoHistory: undefined;
   NotificationSettings: undefined;
   NotificationLog: undefined;
-  NotificationTest?: undefined;
-  TamaguiTest?: undefined;
-  ComponentShowcase?: undefined;
 } & {
   [key: string]: Record<string, unknown> | undefined;
 };

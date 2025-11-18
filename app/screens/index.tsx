@@ -19,7 +19,6 @@ export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 
 // Notification screens
 export { default as NotificationSettingsScreen } from './NotificationSettingsScreen';
-export { default as NotificationTestScreen } from './NotificationTestScreen';
 export { default as NotificationLogScreen } from './NotificationLogScreen';
 
 // Entry guide screens
@@ -44,3 +43,4 @@ export * from './hongkong';
 export * from './korea';
 export * from './usa';
 export * from './canada';
+export * from './china';
