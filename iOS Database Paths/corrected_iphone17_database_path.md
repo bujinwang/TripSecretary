@@ -28,6 +28,7 @@ I incorrectly assumed iPhone 17 Pro would be running on a physical iOS device, b
 ## For iPhone 17 Pro
 
 The iPhone 17 Pro would have a similar path with a different device UUID:
+
 ```
 /Users/bujin/Library/Developer/CoreSimulator/Devices/{iPhone_17_Pro_Device_UUID}/data/Containers/Data/Application/{APP_UUID}/Documents/ExponentExperienceData/@anonymous/chujingtong-{APP_ID}/SQLite/tripsecretary_secure
 ```

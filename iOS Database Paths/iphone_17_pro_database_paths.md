@@ -3,21 +3,25 @@
 ## Predicted Database Paths for iPhone 17 Pro iOS 26.0
 
 ### 1. Standard App Sandbox Path (Most Likely)
+
 ```
 /var/mobile/Containers/Data/Application/{APP_UUID}/Documents/tripsecretary_secure.db
 ```
 
 ### 2. Alternative SQLite-Specific Directory
+
 ```
 /var/mobile/Containers/Data/Application/{APP_UUID}/Library/SQLite/tripsecretary_secure.db
 ```
 
 ### 3. App Group Shared Directory (if using App Groups)
+
 ```
 /var/mobile/Containers/Shared/AppGroup/{APP_GROUP_ID}/Documents/tripsecretary_secure.db
 ```
 
 ### 4. Expo/React Native Pattern (if using Expo)
+
 ```
 /var/mobile/Containers/Data/Application/{APP_UUID}/Documents/ExponentExperienceData/@anonymous/{APP_NAME}/{UUID}/SQLite/tripsecretary_secure
 ```
@@ -27,6 +31,7 @@
 Based on the codebase analysis, here are the actual patterns found in the TripSecretary app:
 
 ### Current iOS Simulator Structure
+
 ```
 ~/Library/Developer/CoreSimulator/Devices/{DEVICE_UUID}/data/Containers/Data/Application/{APP_UUID}/
 ├── Library/
@@ -49,11 +54,13 @@ Based on the codebase analysis, here are the actual patterns found in the TripSe
 ## iPhone 17 Pro iOS 26.0 Considerations
 
 ### Expected Changes:
+
 - **Enhanced Security**: Likely more restrictive sandbox permissions
 - **Directory Structure**: May introduce new protected directories
 - **App Group Support**: Potential for improved app group directory structures
 
 ### Most Probable Path:
+
 Based on current iOS trends and the existing codebase patterns, the most likely location for `sqlite_secure` on iPhone 17 Pro iOS 26.0 would be:
 
 ```
@@ -71,11 +78,13 @@ The codebase includes utility scripts to locate database files:
 ## Development vs Production
 
 ### Development (Simulator):
+
 - Easy access via filesystem
 - Multiple backup locations
 - Debug-friendly logging
 
 ### Production (Physical Device):
+
 - Sandboxed access only
 - Requires app-level file system access
 - Limited debugging capabilities

@@ -9,14 +9,15 @@
 ## Component Breakdown
 
 - **Base Path**: `/Users/bujin/Library/Developer/CoreSimulator/Devices/`
-- **Device UUID**: `{iPhone_17_Pro_Device_UUID}` *(different from Pro Max)*
-- **Container ID**: `814C9629-B9C2-4DC3-9A0A-B84B8C00CC16` *(same as Pro Max)*
+- **Device UUID**: `{iPhone_17_Pro_Device_UUID}` _(different from Pro Max)_
+- **Container ID**: `814C9629-B9C2-4DC3-9A0A-B84B8C00CC16` _(same as Pro Max)_
 - **App Path**: `Documents/ExponentExperienceData/@anonymous/chujingtong-f61b0c42-6f26-43cf-9096-a32298ff88c2/`
-- **Database File**: `SQLite/tripsecretary_secure` *(SQLite database without .db extension)*
+- **Database File**: `SQLite/tripsecretary_secure` _(SQLite database without .db extension)_
 
 ## To Find Your iPhone 17 Pro Device UUID
 
 Run this command to list all simulator devices:
+
 ```bash
 xcrun simctl list devices | grep "iPhone 17 Pro"
 ```

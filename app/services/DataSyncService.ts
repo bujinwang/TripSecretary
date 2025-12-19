@@ -1,9 +1,9 @@
-// @ts-nocheck
-
 /**
  * @file DataSyncService.js
  * @description Service for synchronizing arrival requirement data from a remote source.
  */
+
+/* eslint-disable no-console */
 
 class DataSyncService {
   /**
@@ -15,7 +15,9 @@ class DataSyncService {
     console.log('[DataSyncService] Checking for updates...');
 
     // Simulate a network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
 
     const mockData = {
       version: '1.0.0',
@@ -35,3 +37,5 @@ class DataSyncService {
 }
 
 export default DataSyncService;
+
+

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
 // 入境通 - App Navigator
@@ -6,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+import PropTypes from 'prop-types';
 import { useTranslation } from '../i18n/LocaleContext';
 
 import {
@@ -99,6 +101,7 @@ import {
   // China screens
   ChinaEntryFlowScreen,
   ChinaTravelInfoScreen,
+  ChinaEntryPackPreviewScreen,
   // USA screens
   USAInfoScreen,
   USARequirementsScreen,
@@ -126,6 +129,11 @@ const Tab = createBottomTabNavigator();
 const TabBarIcon = ({ emoji, focused }) => (
   <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>
 );
+
+TabBarIcon.propTypes = {
+  emoji: PropTypes.string.isRequired,
+  focused: PropTypes.bool.isRequired,
+};
 
 // Main Tab Navigator
 const MainTabs = () => {
@@ -185,7 +193,7 @@ const MainTabs = () => {
 // Root Stack Navigator
 const AppNavigator = React.forwardRef((props, ref) => {
   const { t } = useTranslation();
-  
+
   return (
     <NavigationContainer ref={ref} onReady={props.onReady}>
       <Stack.Navigator
@@ -444,6 +452,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ChinaEntryPackPreview"
+          component={ChinaEntryPackPreviewScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
           name="ChinaEntryFlow"
           component={ChinaEntryFlowScreen}
           options={{
@@ -625,6 +641,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
         <Stack.Screen
           name="ThailandInteractiveImmigrationGuide"
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           component={require('../screens/thailand/ThailandInteractiveImmigrationGuide').default}
           options={{
             headerShown: false,
@@ -713,6 +730,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
         <Stack.Screen
           name="ThailandEntryQuestions"
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           component={require('../screens/thailand/ThailandEntryQuestionsScreen').default}
           options={{
             headerShown: false,
@@ -792,6 +810,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
         <Stack.Screen
           name="EntryPackPreview"
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           component={require('../screens/thailand/EntryPackPreviewScreen').default}
           options={{
             headerShown: false,
@@ -949,5 +968,11 @@ const AppNavigator = React.forwardRef((props, ref) => {
     </NavigationContainer>
   );
 });
+
+AppNavigator.displayName = 'AppNavigator';
+
+AppNavigator.propTypes = {
+  onReady: PropTypes.func,
+};
 
 export default AppNavigator;

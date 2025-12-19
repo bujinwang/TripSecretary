@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export const metadata = {
   id: 'cn',
   code: 'CN',

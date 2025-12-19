@@ -361,9 +361,18 @@
         "label": "Preparation progress"
       },
       "status": {
-        "ready": { "title": "Ready to submit TDAC", "subtitle": "Everything is complete" },
-        "mostlyComplete": { "title": "Almost ready", "subtitle": "A few more fields to finish" },
-        "needsImprovement": { "title": "Keep going", "subtitle": "Complete the required sections" }
+        "ready": {
+          "title": "Ready to submit TDAC",
+          "subtitle": "Everything is complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "A few more fields to finish"
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -376,7 +385,12 @@
       "preparationSubtitle": "Check your entry information completion status",
       "loading": "Loading preparation status...",
       "completionStatus": "Completion Status",
-      "categories": { "passport": "Passport Information", "personal": "Personal Information", "funds": "Fund Proof", "travel": "Travel Information" },
+      "categories": {
+        "passport": "Passport Information",
+        "personal": "Personal Information",
+        "funds": "Fund Proof",
+        "travel": "Travel Information"
+      },
       "submissionWindow": "Submission Window",
       "actions": "Actions",
       "continueImproving": "Continue Improving Information",
@@ -396,8 +410,7 @@
         "hintsTitle": "You need to prepare:",
         "startButton": "Start Filling"
       },
-      "categoriesTitle": "Information Categories"
-    ,
+      "categoriesTitle": "Information Categories",
       "actions": {
         "startEntryGuide": "Start entry guide",
         "submit": "Submit TDAC",
@@ -418,8 +431,14 @@
           "callout": "Need assistance?",
           "calloutSubtitle": "Tap to get help"
         },
-        "incomplete": { "title": "More information needed", "message": "Please complete at least 85% before submitting." },
-        "success": { "title": "Ready!", "message": "Your Thailand entry information is complete." },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 85% before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Thailand entry information is complete."
+        },
         "continue": "Continue editing"
       }
     },
@@ -1385,14 +1404,28 @@
     "entryFlow": {
       "title": "US Entry Preparation",
       "progress": {
-        "headline": { "ready": "US trip is ready! 🇺🇸", "almost": "Almost there!", "start": "Let's get started!" },
-        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "headline": {
+          "ready": "US trip is ready! 🇺🇸",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
         "label": "Preparation progress"
       },
       "status": {
         "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
-        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
-        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -1459,14 +1492,28 @@
     "entryFlow": {
       "title": "Canada Entry Preparation",
       "progress": {
-        "headline": { "ready": "Canada trip is ready! 🇨🇦", "almost": "Almost there!", "start": "Let's get started!" },
-        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "headline": {
+          "ready": "Canada trip is ready! 🇨🇦",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
         "label": "Preparation progress"
       },
       "status": {
         "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
-        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
-        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -1496,8 +1543,7 @@
         "submit": "Submit entry card"
       }
     }
-  }
-  ,
+  },
   "kr": {
     "name": "South Korea",
     "info": {
@@ -1535,14 +1581,28 @@
     "entryFlow": {
       "title": "Korea Entry Preparation",
       "progress": {
-        "headline": { "ready": "Korea trip is ready! 🇰🇷", "almost": "Almost there!", "start": "Let's get started!" },
-        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "headline": {
+          "ready": "Korea trip is ready! 🇰🇷",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
         "label": "Preparation progress"
       },
       "status": {
         "ready": { "title": "Ready", "subtitle": "Everything looks complete" },
-        "mostlyComplete": { "title": "Almost complete", "subtitle": "A few more fields needed" },
-        "needsImprovement": { "title": "Please complete", "subtitle": "More information needed" }
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -2865,7 +2925,7 @@
               "0": "Enter your email and tap \"Send Code\" on the official site.",
               "1": "Check your inbox (and spam) for a 6-digit OTP from the Taiwan immigration site.",
               "2": "Paste the code within the time limit to unlock the form."
-            },
+            }
           },
           "fill_traveler_details": {
             "title": "Fill traveler & arrival details",
@@ -2874,7 +2934,7 @@
               "0": "Verify your passport number, nationality, and date of birth.",
               "1": "Enter arrival flight number, date/time, and port of entry.",
               "2": "Provide accommodation address/phone or host details in Taiwan."
-            },
+            }
           },
           "travel_history_confirmation": {
             "title": "Travel history & confirmation",
@@ -2883,7 +2943,7 @@
               "0": "Declare countries visited in the last 14 days and health status truthfully.",
               "1": "Review the summary page carefully before submitting.",
               "2": "Wait for the confirmation page/email and save a screenshot for arrival."
-            },
+            }
           }
         },
         "quickActions": {
@@ -2891,15 +2951,15 @@
           "items": {
             "otp_checker": {
               "title": "OTP checker",
-              "description": "Tick off once the verification email arrives so you don't miss it.",
+              "description": "Tick off once the verification email arrives so you don't miss it."
             },
             "auto_fill_clipboard": {
               "title": "Auto-fill clipboard",
-              "description": "Copy passport/flight info with one tap while filling the form.",
+              "description": "Copy passport/flight info with one tap while filling the form."
             },
             "resubmit_helper": {
               "title": "Resubmit helper",
-              "description": "If plans change, reuse saved info to create a new arrival card quickly.",
+              "description": "If plans change, reuse saved info to create a new arrival card quickly."
             }
           }
         }
@@ -3013,14 +3073,31 @@
     "entryFlow": {
       "title": "Japan Entry Preparation",
       "progress": {
-        "headline": { "ready": "Japan trip is ready! 🇯🇵", "almost": "Almost there!", "start": "Let's get started!" },
-        "subtitle": { "ready": "All required info complete", "almost": "Finish the remaining fields", "start": "Fill passport, travel and accommodation details" },
+        "headline": {
+          "ready": "Japan trip is ready! 🇯🇵",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
         "label": "Preparation progress"
       },
       "status": {
-        "ready": { "title": "Ready to Go", "subtitle": "All information complete" },
-        "mostlyComplete": { "title": "Almost There", "subtitle": "A few more fields needed" },
-        "needsImprovement": { "title": "Please Complete", "subtitle": "More information needed" }
+        "ready": {
+          "title": "Ready to Go",
+          "subtitle": "All information complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost There",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please Complete",
+          "subtitle": "More information needed"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -3195,7 +3272,7 @@
         }
       }
     },
-    
+
     "procedures": {
       "headerTitle": "Japan Entry Procedures",
       "title": "Japan Entry Guide",
@@ -3766,24 +3843,19 @@
       "phrasesTitle": "Common English Phrases (Show to Staff)",
       "phrases": {
         "helpKiosk": {
-          "en": "I need help with the kiosk.",
-          
+          "en": "I need help with the kiosk."
         },
         "canYouHelp": {
-          "en": "Can you help me?",
-          
+          "en": "Can you help me?"
         },
         "whereManualCounter": {
-          "en": "Where is the manual counter?",
-          
+          "en": "Where is the manual counter?"
         },
         "noEnglish": {
-          "en": "I don't speak English.",
-          
+          "en": "I don't speak English."
         },
         "chineseInterpreter": {
-          "en": "Do you have Chinese interpreter?",
-          
+          "en": "Do you have Chinese interpreter?"
         }
       },
       "buttonViewInfo": "📋 View My Information",
@@ -3826,6 +3898,25 @@
         "notSubmittedTitle": "MDAC Not Submitted",
         "notSubmittedDescription": "Please submit MDAC within 3 days before arrival",
         "note": "You can still show other information to immigration officer"
+      }
+    }
+  },
+  "th": {
+    "preview": {
+      "deadline": {
+        "passedTitle": "TDAC online submission deadline passed",
+        "passedMessage": "Prepare to fill paper arrival card at airport and allow extra queue time",
+        "warningTitle": "TDAC deadline approaching",
+        "warningMessage": "Submit TDAC within {{days}} days (before {{date}})"
+      },
+      "actions": {
+        "openTdac": "Open TDAC QR Code",
+        "submitTdac": "Submit TDAC online",
+        "edit": "Go back to edit info"
+      },
+      "header": {
+        "title": "Entry Pack Preview",
+        "subtitle": "Check readiness before TDAC submission"
       }
     }
   }

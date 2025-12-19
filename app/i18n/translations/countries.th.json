@@ -361,9 +361,18 @@
         "label": "Preparation progress"
       },
       "status": {
-        "ready": { "title": "Ready to submit TDAC", "subtitle": "Everything is complete" },
-        "mostlyComplete": { "title": "Almost ready", "subtitle": "A few more fields to finish" },
-        "needsImprovement": { "title": "Keep going", "subtitle": "Complete the required sections" }
+        "ready": {
+          "title": "Ready to submit TDAC",
+          "subtitle": "Everything is complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost ready",
+          "subtitle": "A few more fields to finish"
+        },
+        "needsImprovement": {
+          "title": "Keep going",
+          "subtitle": "Complete the required sections"
+        }
       },
       "countdown": {
         "title": "Submission countdown",
@@ -3892,6 +3901,25 @@
         "notSubmittedTitle": "MDAC Not Submitted",
         "notSubmittedDescription": "Please submit MDAC within 3 days before arrival",
         "note": "You can still show other information to immigration officer"
+      }
+    }
+  },
+  "th": {
+    "preview": {
+      "deadline": {
+        "passedTitle": "เลยกำหนดยื่น TDAC ออนไลน์แล้ว",
+        "passedMessage": "เตรียมกรอกบัตร ตม. กระดาษที่สนามบิน และเผื่อเวลาเข้าคิวพิเศษ",
+        "warningTitle": "ใกล้ครบกำหนดยื่น TDAC",
+        "warningMessage": "ควรยื่น TDAC ภายใน {{days}} วัน (ก่อน {{date}})"
+      },
+      "actions": {
+        "openTdac": "เปิด QR Code TDAC",
+        "submitTdac": "ยื่น TDAC ออนไลน์",
+        "edit": "กลับไปแก้ไขข้อมูล"
+      },
+      "header": {
+        "title": "ตัวอย่างชุดข้อมูลตรวจคนเข้าเมือง",
+        "subtitle": "ตรวจสอบความพร้อมก่อนยื่น TDAC"
       }
     }
   }

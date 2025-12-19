@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import countryTranslations from './translations/index';
 import { convertToTraditional } from './chineseConverter';
 

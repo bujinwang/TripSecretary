@@ -8,6 +8,6 @@ export default {
     info: 'ChinaTravelInfo',
     travelInfo: 'ChinaTravelInfo',
     entryFlow: 'ChinaEntryFlow',
-    entryPackPreview: 'EntryPackPreview',
+    entryPackPreview: 'ChinaEntryPackPreview',
   },
 };

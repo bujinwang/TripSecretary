@@ -28,19 +28,21 @@ This code review identified **228 linter errors** across 3 files, with the most 
 **Issue:** React Hooks are being called conditionally after early returns, violating the Rules of Hooks.
 
 **Impact:** This can cause hooks to be called in different orders between renders, leading to:
+
 - State inconsistencies
 - Memory leaks
 - Crashes in production
 - Unpredictable behavior
 
 **Example Violation:**
+
 ```javascript
 const Component = ({ config, route, navigation }) => {
   // ❌ BAD: Early return before hooks
   if (!config) {
     return <ErrorView />;
   }
-  
+
   // ❌ BAD: Hooks called after conditional return
   const { t } = useLocale(); // Line 95
   const memoized = useMemo(...); // Line 98
@@ -49,17 +51,18 @@ const Component = ({ config, route, navigation }) => {
 ```
 
 **Fix Required:**
+
 ```javascript
 const Component = ({ config, route, navigation }) => {
   // ✅ GOOD: Call all hooks first, unconditionally
   const { t } = useLocale();
   const memoized = useMemo(...);
-  
+
   // ✅ GOOD: Early returns AFTER all hooks
   if (!config) {
     return <ErrorView />;
   }
-  
+
   // ... rest of component
 }
 ```
@@ -79,29 +82,33 @@ const Component = ({ config, route, navigation }) => {
 **Issue:** 3,288 console.log/error/warn statements found across 236 files
 
 **Impact:**
+
 - Performance overhead in production
 - Potential information leakage
 - Cluttered debugging output
 - No structured logging
 
 **Recommendation:**
+
 1. Replace all `console.*` with a proper logging service
 2. Use environment-based log levels (DEBUG, INFO, WARN, ERROR)
 3. Remove debug logs from production builds
 
 **Example:**
+
 ```javascript
 // ❌ BAD
-console.log('User data loaded:', userData);
-console.error('Failed to save:', error);
+console.log("User data loaded:", userData);
+console.error("Failed to save:", error);
 
 // ✅ GOOD
-import LoggingService from '../services/LoggingService';
-LoggingService.debug('User data loaded', { userData });
-LoggingService.error('Failed to save', { error });
+import LoggingService from "../services/LoggingService";
+LoggingService.debug("User data loaded", { userData });
+LoggingService.error("Failed to save", { error });
 ```
 
 **Files with Most Console Statements:**
+
 - `app/services/TDACAPIService.js` - 163 statements
 - `app/services/tdac/TDACSubmissionLogger.js` - 103 statements
 - `app/services/notification/WindowOpenNotificationExample.js` - 83 statements
@@ -116,11 +123,13 @@ LoggingService.error('Failed to save', { error });
 **Issue:** Many components missing PropTypes validation
 
 **Impact:**
+
 - Runtime errors from incorrect prop types
 - Poor developer experience (no IDE warnings)
 - Harder to maintain and debug
 
 **Example:**
+
 ```javascript
 // ❌ BAD
 const EntryFlowScreenTemplate = ({ config, route, navigation }) => {
@@ -128,7 +137,7 @@ const EntryFlowScreenTemplate = ({ config, route, navigation }) => {
 };
 
 // ✅ GOOD
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const EntryFlowScreenTemplate = ({ config, route, navigation }) => {
   // Component code
@@ -142,6 +151,7 @@ EntryFlowScreenTemplate.propTypes = {
 ```
 
 **Affected Files:**
+
 - `app/templates/EntryFlowScreenTemplate.js`
 - `app/templates/EnhancedTravelInfoTemplate.v2.js` (if exists)
 - `app/screens/korea/KoreaTravelInfoScreen.js`
@@ -158,6 +168,7 @@ EntryFlowScreenTemplate.propTypes = {
 **File:** `app/templates/hooks/useTemplatePhotoManagement.js`
 
 **Issue:**
+
 ```javascript
 export const useTemplatePhotoManagement = ({
   config,        // ❌ Defined but never used
@@ -169,6 +180,7 @@ export const useTemplatePhotoManagement = ({
 ```
 
 **Fix:**
+
 ```javascript
 export const useTemplatePhotoManagement = ({
   config: _config,        // ✅ Prefix with _ to indicate intentionally unused
@@ -190,6 +202,7 @@ export const useTemplatePhotoManagement = ({
 **Issue:** Multiple if statements missing braces (lines 269-281)
 
 **Example:**
+
 ```javascript
 // ❌ BAD
 if (condition) doSomething();
@@ -297,10 +310,12 @@ if (other) {
 **Status:** ✅ Generally good, minor issues
 
 **Issues:**
+
 - Missing PropTypes (lines 15, 71-75)
 - Some console.error statements (lines 81, 93, 104, 214)
 
 **Recommendations:**
+
 - Add PropTypes
 - Replace console.error with LoggingService
 
@@ -311,10 +326,12 @@ if (other) {
 **Status:** ⚠️ Has unused variables
 
 **Issues:**
+
 - Unused `config` parameter (line 16)
 - Unused `formState` parameter (line 17)
 
 **Recommendations:**
+
 - Remove unused parameters or prefix with `_`
 
 ---
@@ -324,9 +341,11 @@ if (other) {
 **Status:** ⚠️ Missing PropTypes
 
 **Issues:**
+
 - Missing PropTypes for `navigation` and `route` (line 15)
 
 **Recommendations:**
+
 - Add PropTypes validation
 
 ---
@@ -334,12 +353,15 @@ if (other) {
 ## ESLint Configuration Review
 
 **Current Setup:**
+
 - ESLint is configured
 - React hooks plugin enabled
 - Some rules may need tightening
 
 **Recommendations:**
+
 1. Enable stricter rules:
+
    ```json
    {
      "rules": {
@@ -356,13 +378,13 @@ if (other) {
 
 ## Metrics Summary
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Total Linter Errors | 228 | ⚠️ High |
-| Critical Errors | ~50+ | 🔴 Critical |
-| Console Statements | 3,288 | ⚠️ High |
-| Files with Issues | 3+ | ⚠️ Medium |
-| Components Missing PropTypes | Many | ⚠️ Medium |
+| Metric                       | Value | Status      |
+| ---------------------------- | ----- | ----------- |
+| Total Linter Errors          | 228   | ⚠️ High     |
+| Critical Errors              | ~50+  | 🔴 Critical |
+| Console Statements           | 3,288 | ⚠️ High     |
+| Files with Issues            | 3+    | ⚠️ Medium   |
+| Components Missing PropTypes | Many  | ⚠️ Medium   |
 
 ---
 
@@ -371,11 +393,13 @@ if (other) {
 The codebase shows good architectural decisions and modern React patterns. However, there are critical React Hooks violations that must be fixed immediately, and the excessive use of console statements should be addressed soon.
 
 **Priority Order:**
+
 1. 🔴 Fix React Hooks violations (P0)
 2. 🟠 Replace console statements with logging service (P1)
 3. 🟡 Add PropTypes and fix code style (P2)
 
 **Estimated Effort:**
+
 - Critical fixes: 4-8 hours
 - High priority: 1-2 days
 - Medium priority: 1 week
@@ -451,10 +475,13 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - **Recommendation:** Standardize error handling approach
 
 2. **Synchronous require() in async method**
+
    ```javascript
    // Line 237 - ❌ BAD: Synchronous require in async method
-   const EntryCompletionCalculator = require('../utils/EntryCompletionCalculator').default;
+   const EntryCompletionCalculator =
+     require("../utils/EntryCompletionCalculator").default;
    ```
+
    - Should use ES6 import at top of file
    - **Impact:** Potential module loading issues, not tree-shakeable
 
@@ -467,6 +494,7 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - Could be extracted to a utility function
 
 **Recommendations:**
+
 - Use ES6 imports instead of require()
 - Standardize error handling (either throw or return null consistently)
 - Add more null checks for safety
@@ -497,6 +525,7 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - No configuration
 
 **Recommendations:**
+
 - Implement actual network sync logic
 - Add proper error handling and retries
 - Add configuration for API endpoints
@@ -523,13 +552,15 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - **Recommendation:** Break into smaller methods
 
 3. **Magic numbers**
+
    ```javascript
    // Line 798: Magic number
    const maxRetries = 3;
-   
+
    // Line 1086: Magic number
    if (hoursDiff > 72) {
    ```
+
    - Should be constants at top of file
 
 4. **Inconsistent error handling**
@@ -556,7 +587,8 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - Makes it hard to predict return values
 
 **Recommendations:**
-- Replace all console.* with LoggingService
+
+- Replace all console.\* with LoggingService
 - Extract constants for magic numbers
 - Break down large methods
 - Add comprehensive input validation
@@ -600,7 +632,8 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - **Recommendation:** Add cleanup logic
 
 **Recommendations:**
-- Replace console.* with LoggingService
+
+- Replace console.\* with LoggingService
 - Fix FileReader usage for React Native compatibility
 - Add better error handling
 - Remove deprecated methods or update callers
@@ -627,11 +660,13 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - **Recommendation:** Add try-catch in injected code
 
 3. **Magic numbers**
+
    ```javascript
    // Line 127: Magic numbers
    const maxPolls = 120; // 60 seconds max
    const pollInterval = setInterval(() => {
    ```
+
    - Should be constants
 
 4. **Potential memory leaks**
@@ -643,6 +678,7 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - Could be more efficient with early timeout detection
 
 **Recommendations:**
+
 - Make polling configurable
 - Add error handling in injected scripts
 - Extract magic numbers to constants
@@ -690,6 +726,7 @@ Reviewed 6 commonly used services that are critical to the application's functio
    - **Recommendation:** Add circuit breaker pattern
 
 **Recommendations:**
+
 - Implement proper user enumeration
 - Add persistence for stats
 - Add job queue with retries
@@ -703,18 +740,19 @@ Reviewed 6 commonly used services that are critical to the application's functio
 
 ### Services Review Summary
 
-| Service | Issues | Priority | Status |
-|---------|--------|----------|--------|
-| EntryInfoService.js | 4 issues | 🟡 P2 | Generally good |
-| DataSyncService.js | 3 issues | 🟢 P3 | Placeholder |
-| TDACAPIService.js | 8 issues | 🟠 P1 | Needs refactoring |
-| PDFManagementService.js | 6 issues | 🟡 P2 | Good but needs fixes |
-| CloudflareTokenExtractor.js | 5 issues | 🟡 P2 | Well-structured |
-| BackgroundJobService.js | 6 issues | 🟡 P2 | Good but incomplete |
+| Service                     | Issues   | Priority | Status               |
+| --------------------------- | -------- | -------- | -------------------- |
+| EntryInfoService.js         | 4 issues | 🟡 P2    | Generally good       |
+| DataSyncService.js          | 3 issues | 🟢 P3    | Placeholder          |
+| TDACAPIService.js           | 8 issues | 🟠 P1    | Needs refactoring    |
+| PDFManagementService.js     | 6 issues | 🟡 P2    | Good but needs fixes |
+| CloudflareTokenExtractor.js | 5 issues | 🟡 P2    | Well-structured      |
+| BackgroundJobService.js     | 6 issues | 🟡 P2    | Good but incomplete  |
 
 **Total Issues Found:** 32
 
 **Common Patterns:**
+
 1. Excessive console.log statements (all services)
 2. Magic numbers instead of constants
 3. Missing error handling
@@ -722,14 +760,14 @@ Reviewed 6 commonly used services that are critical to the application's functio
 5. Inconsistent error handling patterns
 
 **Recommendations:**
+
 1. Create shared constants file
 2. Standardize error handling across all services
-3. Replace all console.* with LoggingService
+3. Replace all console.\* with LoggingService
 4. Add comprehensive input validation
 5. Extract configuration to external files
 
 ---
 
-*Generated: 2025-11-06*  
-*Last Updated: 2025-11-06 - Added services review*
-
+_Generated: 2025-11-06_  
+_Last Updated: 2025-11-06 - Added services review_

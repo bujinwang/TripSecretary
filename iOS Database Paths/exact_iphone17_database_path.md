@@ -17,9 +17,11 @@
 ## Verification
 
 This path is derived from:
+
 1. Current simulator pattern: `~/Library/Developer/CoreSimulator/Devices/{DEVICE}/data/Containers/Data/Application/{APP}/Documents/ExponentExperienceData/@anonymous/chujingtong-{APP_ID}/SQLite/tripsecretary_secure`
 2. Physical device conversion: Replace simulator root with `/var/mobile/`
 3. App ID extraction: `949aa9fd-5f29-4180-8e63-54175ac2c5e3` from existing codebase paths
 
 ## Note
+
 The exact APP UUID may vary between app installations, but this follows the established pattern from the TripSecretary app's current implementation.

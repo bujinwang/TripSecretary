@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
 /**
@@ -22,13 +23,13 @@ import { useTranslation } from '../../../i18n/LocaleContext';
 
 const getTemplateContext = (props = {}) => props.templateContext || props || {};
 
-const formatDate = (dateString) => {
+const formatDate = (dateString, locale = 'en') => {
   if (!dateString) {
     return null;
   }
 
   try {
-    const formatter = new Intl.DateTimeFormat('th-TH', {
+    const formatter = new Intl.DateTimeFormat(locale || 'en', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -41,20 +42,13 @@ const formatDate = (dateString) => {
 };
 
 const ThailandHeader = (props = {}) => {
-  const { isOfficialPack, config } = getTemplateContext(props);
-  const title = isOfficialPack
-    ? 'ชุดข้อมูลตรวจคนเข้าเมือง / Entry Pack'
-    : config?.header?.title;
-  const subtitle = isOfficialPack
-    ? 'TDAC พร้อมใช้งานที่สนามบิน'
-    : config?.header?.subtitle;
-
-  return <HeaderBase title={title} subtitle={subtitle} />;
+  const { config } = getTemplateContext(props);
+  return <HeaderBase title={config?.header?.title} subtitle={config?.header?.subtitle} />;
 };
 
 const ThailandDeadlineAlert = (props = {}) => {
   const { entryPack } = getTemplateContext(props);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const arrivalDate = entryPack?.travel?.arrivalDate;
   if (!arrivalDate) {
@@ -74,13 +68,8 @@ const ThailandDeadlineAlert = (props = {}) => {
     return (
       <InfoAlert
         variant="error"
-        title={t('thailand.preview.deadline.passedTitle', {
-          defaultValue: 'เลยกำหนดยื่น TDAC ออนไลน์แล้ว',
-        })}
-        message={t('thailand.preview.deadline.passedMessage', {
-          defaultValue:
-            'เตรียมกรอกบัตร ตม. กระดาษที่สนามบิน และเผื่อเวลาเข้าคิวพิเศษ',
-        })}
+        title={t('thailand.preview.deadline.passedTitle')}
+        message={t('thailand.preview.deadline.passedMessage')}
       />
     );
   }
@@ -88,13 +77,10 @@ const ThailandDeadlineAlert = (props = {}) => {
   return (
     <InfoAlert
       variant="warning"
-      title={t('thailand.preview.deadline.warningTitle', {
-        defaultValue: 'ใกล้ครบกำหนดยื่น TDAC',
-      })}
+      title={t('thailand.preview.deadline.warningTitle')}
       message={t('thailand.preview.deadline.warningMessage', {
-        defaultValue: 'ควรยื่น TDAC ภายใน {{days}} วัน (ก่อน {{date}})',
         days: daysRemaining,
-        date: formatDate(deadline),
+        date: formatDate(deadline, language),
       })}
       dismissible={false}
     />
@@ -130,20 +116,14 @@ const ThailandFooterActions = (props = {}) => {
   };
 
   const secondaryLabel = isSubmitted
-    ? t('thailand.preview.actions.openTdac', {
-        defaultValue: 'เปิด QR Code TDAC',
-      })
-    : t('thailand.preview.actions.submitTdac', {
-        defaultValue: 'ยื่น TDAC ออนไลน์',
-      });
+    ? t('thailand.preview.actions.openTdac')
+    : t('thailand.preview.actions.submitTdac');
 
   return (
     <View style={styles.footerContainer}>
       <ActionButtonGroup
         variant="preview-info"
-        primaryLabel={t('thailand.preview.actions.edit', {
-          defaultValue: 'กลับไปแก้ไขข้อมูล',
-        })}
+        primaryLabel={t('thailand.preview.actions.edit')}
         onPrimaryPress={handleContinue}
         secondaryLabel={secondaryLabel}
         onSecondaryPress={handleSecondary}
@@ -170,15 +150,43 @@ export const thailandEntryPackPreviewConfig = {
   countryCode: 'thailand',
   destinationId: 'th',
   header: {
-    title: 'ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง / Entry Pack Preview',
-    subtitle: 'เช็คความพร้อมก่อนยื่น TDAC',
+    title: {
+      values: {
+        th: 'ชุดข้อมูลตรวจคนเข้าเมือง - ตัวอย่าง / Entry Pack Preview',
+        'zh-CN': '通关包预览',
+        'zh-TW': '通關包預覽',
+        en: 'Entry Pack Preview',
+      },
+    },
+    subtitle: {
+      values: {
+        th: 'เช็คความพร้อมก่อนยื่น TDAC',
+        'zh-CN': '提交前检查准备情况',
+        'zh-TW': '提交前檢查準備情況',
+        en: 'Check readiness before TDAC submission',
+      },
+    },
     closeIcon: '✕',
   },
   infoSection: {
     icon: 'ℹ️',
-    items: [
-      'Tip: ยื่น TDAC ก่อนเดินทางอย่างน้อย 24 ชม. เพื่อรับ QR Code ล่วงหน้า.',
-      'เจ้าหน้าที่อาจขอดูหลักฐานการเงินและที่พัก ควรเตรียมเอกสารสำรองไว้เสมอ.',
+    text: [
+      {
+        values: {
+          th: 'Tip: ยื่น TDAC อย่างน้อย 24 ชม. ก่อนเดินทางเพื่อรับ QR ล่วงหน้า',
+          'zh-CN': '提示：尽量在出发前24小时提交TDAC以提前获取二维码',
+          'zh-TW': '提示：出發前24小時提交TDAC以提前獲取二維碼',
+          en: 'Tip: Submit TDAC at least 24h before travel to get QR early',
+        },
+      },
+      {
+        values: {
+          th: 'เจ้าหน้าที่อาจขอดูหลักฐานการเงินและที่พัก ควรเตรียมเอกสารสำรอง',
+          'zh-CN': '移民官可能查看资金与住宿证明，建议准备备用文件',
+          'zh-TW': '移民官可能查看資金與住宿證明，建議準備備用文件',
+          en: 'Immigration may request fund and stay proofs; prepare backup documents',
+        },
+      },
     ],
   },
   components: {

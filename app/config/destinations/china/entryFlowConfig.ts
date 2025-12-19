@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export const chinaEntryFlowConfig = {
   destinationId: 'cn',
   name: 'China',
@@ -16,7 +14,7 @@ export const chinaEntryFlowConfig = {
     travelInfo: 'ChinaTravelInfo',
     submit: null,
     entryGuide: null,
-    entryPackPreview: 'EntryPackPreview',
+    entryPackPreview: 'ChinaEntryPackPreview',
   },
 
   categories: [
