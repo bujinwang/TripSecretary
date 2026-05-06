@@ -461,9 +461,10 @@ class BackupService {
     try {
       const backupId = this.generateBackupId();
       const timestamp = new Date().toISOString();
+      const userId = (options.userId as string) || 'user_001';
       
       // Collect all entry info IDs
-      const entryInfoIds = await this.getAllEntryInfoIds();
+      const entryInfoIds = await this.getAllEntryInfoIds(userId);
       
       if (entryInfoIds.length === 0) {
         return {
@@ -2147,17 +2148,20 @@ class BackupService {
    * Get all entry info IDs
    * @returns Array of entry info IDs
    */
-  async getAllEntryInfoIds(): Promise<string[]> {
+  async getAllEntryInfoIds(userId: string = 'user_001'): Promise<string[]> {
     try {
-      // Get all entry infos from SecureStorageService
-      // Note: This requires a userId, but BackupService doesn't have access to it
-      // For now, we'll need to get it from UserDataService or pass it as a parameter
-      // This is a limitation that should be addressed in the future
+      // Query all entry infos for user through UserDataService
+      await UserDataService.initialize(userId);
+      const entryInfos = await UserDataService.getAllEntryInfosForUser(userId);
       
-      // Try to get all entry infos by querying the database directly
-      // Since we don't have a userId, we'll need to get it from somewhere
-      // For now, return empty array as placeholder - this needs to be implemented properly
-      return [];
+      if (!entryInfos || entryInfos.length === 0) {
+        return [];
+      }
+      
+      // Extract IDs from EntryInfoModel instances
+      return entryInfos
+        .map((entryInfo: any) => entryInfo.id || entryInfo.entryInfoId)
+        .filter((id: string | undefined) => id !== undefined);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Failed to get entry info IDs:', errorMessage);

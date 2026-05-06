@@ -260,6 +260,16 @@
       }
     }
   },
+  "japan": {
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "パスポート情報",
+        "personal": "個人情報",
+        "funds": "資金証明",
+        "travel": "旅行情報"
+      }
+    }
+  },
   "th": {
     "name": "Thailand",
     "info": {
@@ -1743,6 +1753,14 @@
         "ready": "Continue",
         "default": "Continue"
       }
+    },
+    "progressiveEntryFlow": {
+      "categories": {
+        "passport": "パスポート情報",
+        "personal": "個人情報",
+        "funds": "資金証明",
+        "travel": "旅行情報"
+      }
     }
   },
   "vietnam": {
@@ -2324,61 +2342,53 @@
       }
     },
     "entryFlow": {
-      "title": "Hong Kong Entry Preparation",
-      "submissionWindow": "Visa-free stay is typically 7 days. Keep track of your departure plan.",
+      "title": "香港入国準備",
       "progress": {
         "headline": {
-          "ready": "Ready for Hong Kong! 🇭🇰",
-          "almost": "Almost there, keep going!",
-          "start": "Start preparing your Hong Kong entry pack"
+          "ready": "香港旅行の準備完了！🇭🇰",
+          "almost": "素晴らしい進捗—もう少し！",
+          "start": "始めましょう！"
         },
         "subtitle": {
-          "ready": "Passport, funds, and accommodation details are complete. Ready for inspection.",
-          "almost": "{{remaining}}% left. Complete the highlighted tasks to be inspection-ready.",
-          "start": "Fill passport, funds, and travel info to breeze through immigration questions."
+          "ready": "すべての必須情報が完了しました",
+          "almost": "旅行をスムーズにするために情報を入力してください",
+          "start": "パスポート、旅行、宿泊の詳細を入力してください"
         },
-        "label": "Preparation Progress"
+        "label": "準備の進捗"
       },
       "status": {
         "ready": {
-          "title": "Ready to Go",
-          "subtitle": "All details prepared for inspection."
+          "title": "提出準備完了",
+          "subtitle": "すべての情報が完了しました"
         },
         "mostlyComplete": {
-          "title": "Almost Complete",
-          "subtitle": "A few more details to finalise."
+          "title": "ほぼ完了",
+          "subtitle": "あといくつかの項目を追加してください"
         },
         "needsImprovement": {
-          "title": "Keep Completing",
-          "subtitle": "Finish key details to avoid delays at immigration."
+          "title": "続けてください",
+          "subtitle": "必須項目を完了してください"
         }
       },
+      "submissionWindow": "提出期間",
       "actions": {
-        "previewPack": "Preview entry pack",
-        "previewPackSubtitle": "See everything you've already prepared",
-        "entryGuide": "Entry guide",
-        "entryGuideSubtitle": "View the paper card & customs walkthrough",
-        "editThai": "Edit travel information",
-        "editThaiSubtitle": "Jump back to make changes",
-        "edit": "Edit travel information",
-        "editSubtitle": "Review or update any details before submitting.",
+        "startEntryGuide": "入国ガイドを開始",
+        "submit": "入国カードを提出",
+        "submitSubtitle": "準備完了！今すぐ入国カードを提出してください。",
+        "edit": "旅行情報を編集",
+        "editSubtitle": "提出前に詳細を確認または更新してください",
+        "entryGuide": "入国ガイド",
+        "entryGuideSubtitle": "紙のカードと税関手続きを確認する",
+        "previewPack": "入国パックをプレビュー",
+        "previewPackSubtitle": "準備した内容を確認する",
         "help": {
-          "title": "Need help?",
-          "message": "If something looks wrong, share a screenshot or contact support.",
-          "share": "Share screenshot",
-          "contact": "Contact support",
-          "callout": "Need assistance?",
-          "calloutSubtitle": "Tap to get help"
-        },
-        "continue": "Continue editing",
-        "submit": "Submit entry card"
+          "callout": "サポートが必要ですか？",
+          "calloutSubtitle": "タップしてヘルプを表示"
+        }
       },
-      "countdown": {
-        "title": "Submission countdown",
-        "subtitle": "Submission window is open—finish before it closes.",
-        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
-        "arrival": "Arrival date {{date}}",
-        "days": "{{days}} days until arrival"
+      "completionCard": {
+        "title": "完了の進捗",
+        "summary": "{{completedCategories}}/{{totalCategories}} セクションが完了"
       }
     },
     "validation": {
@@ -3901,6 +3911,52 @@
         "notSubmittedTitle": "MDAC Not Submitted",
         "notSubmittedDescription": "Please submit MDAC within 3 days before arrival",
         "note": "You can still show other information to immigration officer"
+      }
+    }
+  },
+  "cn": {
+    "entryFlow": {
+      "title": "中国入国準備",
+      "progress": {
+        "headline": {
+          "ready": "中国旅行の準備完了！🇨🇳",
+          "almost": "素晴らしい進捗—もう少し！",
+          "start": "始めましょう！"
+        },
+        "subtitle": {
+          "ready": "すべての必須情報が完了しました",
+          "almost": "旅行をスムーズにするために情報を入力してください",
+          "start": "パスポート、旅行、宿泊の詳細を入力してください"
+        },
+        "label": "準備の進捗"
+      },
+      "status": {
+        "ready": {
+          "title": "提出準備完了",
+          "subtitle": "すべての情報が完了しました"
+        },
+        "mostlyComplete": {
+          "title": "ほぼ完了",
+          "subtitle": "あといくつかの項目を追加してください"
+        },
+        "needsImprovement": {
+          "title": "続けてください",
+          "subtitle": "必須項目を完了してください"
+        }
+      },
+      "actions": {
+        "edit": "旅行情報を編集",
+        "editSubtitle": "提出前に詳細を確認または更新してください",
+        "previewPack": "入国パックをプレビュー",
+        "previewPackSubtitle": "準備した内容を確認する",
+        "help": {
+          "callout": "サポートが必要ですか？",
+          "calloutSubtitle": "タップしてヘルプを表示"
+        }
+      },
+      "completionCard": {
+        "title": "完了の進捗",
+        "summary": "{{completedCategories}}/{{totalCategories}} セクションが完了"
       }
     }
   }

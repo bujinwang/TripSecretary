@@ -104,7 +104,7 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
       const categoryData = [
         {
           id: 'passport',
-          name: t('progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
+          name: t('kr.progressiveEntryFlow.categories.passport', { defaultValue: '护照信息' }),
           icon: '📘',
           status: completionSummary.categorySummary.passport.state,
           completedCount: completionSummary.categorySummary.passport.completed,
@@ -113,7 +113,7 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'personal',
-          name: t('progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
+          name: t('kr.progressiveEntryFlow.categories.personal', { defaultValue: '个人信息' }),
           icon: '👤',
           status: completionSummary.categorySummary.personalInfo.state,
           completedCount: completionSummary.categorySummary.personalInfo.completed,
@@ -122,7 +122,7 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'funds',
-          name: t('progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
+          name: t('kr.progressiveEntryFlow.categories.funds', { defaultValue: '资金证明' }),
           icon: '💰',
           status: completionSummary.categorySummary.funds.state,
           completedCount: completionSummary.categorySummary.funds.validFunds,
@@ -131,7 +131,7 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         },
         {
           id: 'travel',
-          name: t('progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
+          name: t('kr.progressiveEntryFlow.categories.travel', { defaultValue: '旅行信息' }),
           icon: '✈️',
           status: completionSummary.categorySummary.travel.state,
           completedCount: completionSummary.categorySummary.travel.completed,

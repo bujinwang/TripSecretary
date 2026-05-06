@@ -21,6 +21,9 @@ export { default as AirportArrivalScreen } from './AirportArrivalScreen';
 export { default as NotificationSettingsScreen } from './NotificationSettingsScreen';
 export { default as NotificationLogScreen } from './NotificationLogScreen';
 
+// Settings screens
+export { default as BackupSettingsScreen } from './settings/BackupSettingsScreen';
+
 // Entry guide screens
 export { default as ThailandEntryGuideScreen } from './entryGuide/ThailandEntryGuideScreen';
 export { default as JapanInteractiveImmigrationGuide } from './japan/JapanInteractiveImmigrationGuide';

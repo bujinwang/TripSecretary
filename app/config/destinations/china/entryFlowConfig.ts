@@ -18,10 +18,10 @@ export const chinaEntryFlowConfig = {
   },
 
   categories: [
-    { id: 'passport', nameKey: 'progressiveEntryFlow.categories.passport', icon: '📘' },
-    { id: 'personal', nameKey: 'progressiveEntryFlow.categories.personal', icon: '👤' },
-    { id: 'funds', nameKey: 'progressiveEntryFlow.categories.funds', icon: '💰' },
-    { id: 'travel', nameKey: 'progressiveEntryFlow.categories.travel', icon: '✈️' },
+    { id: 'passport', nameKey: 'cn.progressiveEntryFlow.categories.passport', icon: '📘' },
+    { id: 'personal', nameKey: 'cn.progressiveEntryFlow.categories.personal', icon: '👤' },
+    { id: 'funds', nameKey: 'cn.progressiveEntryFlow.categories.funds', icon: '💰' },
+    { id: 'travel', nameKey: 'cn.progressiveEntryFlow.categories.travel', icon: '✈️' },
   ],
 
   completion: {
@@ -45,19 +45,19 @@ export const chinaEntryFlowConfig = {
   },
 
   entryFlow: {
-    titleKey: 'china.entryFlow.title',
+    titleKey: 'cn.entryFlow.title',
     progress: {
       headline: {
-        ready: 'china.entryFlow.progress.headline.ready',
-        almost: 'china.entryFlow.progress.headline.almost',
-        start: 'china.entryFlow.progress.headline.start',
+        ready: 'cn.entryFlow.progress.headline.ready',
+        almost: 'cn.entryFlow.progress.headline.almost',
+        start: 'cn.entryFlow.progress.headline.start',
       },
       subtitle: {
-        ready: 'china.entryFlow.progress.subtitle.ready',
-        almost: 'china.entryFlow.progress.subtitle.almost',
-        start: 'china.entryFlow.progress.subtitle.start',
+        ready: 'cn.entryFlow.progress.subtitle.ready',
+        almost: 'cn.entryFlow.progress.subtitle.almost',
+        start: 'cn.entryFlow.progress.subtitle.start',
       },
-      label: 'china.entryFlow.progress.label',
+      label: 'cn.entryFlow.progress.label',
     },
   },
 

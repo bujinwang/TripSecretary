@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Hong Kong Entry Flow Configuration
  *
@@ -28,7 +26,7 @@ export const hongkongEntryFlowConfig = {
   categories: [
     {
       id: 'passport',
-      nameKey: 'progressiveEntryFlow.categories.passport',
+      nameKey: 'hk.progressiveEntryFlow.categories.passport',
       icon: '📘',
       requiredFields: [
         'surname',
@@ -42,7 +40,7 @@ export const hongkongEntryFlowConfig = {
     },
     {
       id: 'personal',
-      nameKey: 'progressiveEntryFlow.categories.personal',
+      nameKey: 'hk.progressiveEntryFlow.categories.personal',
       icon: '👤',
       requiredFields: [
         'occupation',
@@ -55,14 +53,14 @@ export const hongkongEntryFlowConfig = {
     },
     {
       id: 'funds',
-      nameKey: 'progressiveEntryFlow.categories.funds',
+      nameKey: 'hk.progressiveEntryFlow.categories.funds',
       icon: '💰',
       minRequired: 1,
       validator: (funds) => Array.isArray(funds) && funds.length > 0,
     },
     {
       id: 'travel',
-      nameKey: 'progressiveEntryFlow.categories.travel',
+      nameKey: 'hk.progressiveEntryFlow.categories.travel',
       icon: '✈️',
       requiredFields: [
         'travelPurpose',
@@ -83,20 +81,20 @@ export const hongkongEntryFlowConfig = {
 
   status: {
     ready: {
-      titleKey: 'hongkong.entryFlow.status.ready.title',
-      subtitleKey: 'hongkong.entryFlow.status.ready.subtitle',
+      titleKey: 'hk.entryFlow.status.ready.title',
+      subtitleKey: 'hk.entryFlow.status.ready.subtitle',
       defaultTitle: '香港行程准备完成',
       defaultSubtitle: '资料齐全，可随时向入境官出示。',
     },
     mostly_complete: {
-      titleKey: 'hongkong.entryFlow.status.mostlyComplete.title',
-      subtitleKey: 'hongkong.entryFlow.status.mostlyComplete.subtitle',
+      titleKey: 'hk.entryFlow.status.mostlyComplete.title',
+      subtitleKey: 'hk.entryFlow.status.mostlyComplete.subtitle',
       defaultTitle: '快完成了',
       defaultSubtitle: '补齐剩余资料即可安心出行。',
     },
     needs_improvement: {
-      titleKey: 'hongkong.entryFlow.status.needsImprovement.title',
-      subtitleKey: 'hongkong.entryFlow.status.needsImprovement.subtitle',
+      titleKey: 'hk.entryFlow.status.needsImprovement.title',
+      subtitleKey: 'hk.entryFlow.status.needsImprovement.subtitle',
       defaultTitle: '继续完善信息',
       defaultSubtitle: '完成关键资料以避免入境受阻。',
     },
@@ -105,19 +103,19 @@ export const hongkongEntryFlowConfig = {
   entryFlow: {
     progress: {
       headline: {
-        ready: 'hongkong.entryFlow.progress.headline.ready',
-        almost: 'hongkong.entryFlow.progress.headline.almost',
-        start: 'hongkong.entryFlow.progress.headline.start',
+        ready: 'hk.entryFlow.progress.headline.ready',
+        almost: 'hk.entryFlow.progress.headline.almost',
+        start: 'hk.entryFlow.progress.headline.start',
       },
       subtitle: {
-        ready: 'hongkong.entryFlow.progress.subtitle.ready',
-        almost: 'hongkong.entryFlow.progress.subtitle.almost',
-        start: 'hongkong.entryFlow.progress.subtitle.start',
+        ready: 'hk.entryFlow.progress.subtitle.ready',
+        almost: 'hk.entryFlow.progress.subtitle.almost',
+        start: 'hk.entryFlow.progress.subtitle.start',
       },
-      label: 'hongkong.entryFlow.progress.label',
+      label: 'hk.entryFlow.progress.label',
     },
-    submissionWindow: 'hongkong.entryFlow.submissionWindow',
-    titleKey: 'hongkong.entryFlow.title',
+    submissionWindow: 'hk.entryFlow.submissionWindow',
+    titleKey: 'hk.entryFlow.title',
   },
 
   features: {

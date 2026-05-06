@@ -272,44 +272,23 @@ const EntryFlowScreenTemplate = ({
       }
 
       // Create category data
-      const categoryData = [
-        {
-          id: 'passport',
-          name: t('progressiveEntryFlow.categories.passport', { defaultValue: 'Passport Information' }),
-          icon: '📘',
-          status: completionSummary.categorySummary.passport.state,
-          completedCount: completionSummary.categorySummary.passport.completed,
-          totalCount: completionSummary.categorySummary.passport.total,
-          missingFields: completionSummary.missingFields.passport || [],
-        },
-        {
-          id: 'personal',
-          name: t('progressiveEntryFlow.categories.personal', { defaultValue: 'Personal Information' }),
-          icon: '👤',
-          status: completionSummary.categorySummary.personalInfo.state,
-          completedCount: completionSummary.categorySummary.personalInfo.completed,
-          totalCount: completionSummary.categorySummary.personalInfo.total,
-          missingFields: completionSummary.missingFields.personalInfo || [],
-        },
-        {
-          id: 'funds',
-          name: t('progressiveEntryFlow.categories.funds', { defaultValue: 'Proof of Funds' }),
-          icon: '💰',
-          status: completionSummary.categorySummary.funds.state,
-          completedCount: completionSummary.categorySummary.funds.validFunds,
-          totalCount: 1,
-          missingFields: completionSummary.missingFields.funds || [],
-        },
-        {
-          id: 'travel',
-          name: t('progressiveEntryFlow.categories.travel', { defaultValue: 'Travel Information' }),
-          icon: '✈️',
-          status: completionSummary.categorySummary.travel.state,
-          completedCount: completionSummary.categorySummary.travel.completed,
-          totalCount: completionSummary.categorySummary.travel.total,
-          missingFields: completionSummary.missingFields.travel || [],
-        },
-      ];
+      const categoryData = config.categories.map(category => {
+        const summaryKey = category.id === 'personal' ? 'personalInfo' : category.id;
+        const summary = completionSummary.categorySummary[summaryKey];
+        if (!summary) {
+          return null;
+        }
+
+        return {
+          id: category.id,
+          name: t(category.nameKey, { defaultValue: category.name }),
+          icon: category.icon,
+          status: summary.state,
+          completedCount: summary.completed || summary.validFunds || 0,
+          totalCount: summary.total || 1,
+          missingFields: completionSummary.missingFields[summaryKey] || [],
+        };
+      }).filter(Boolean);
 
       setCategories(categoryData);
     } catch (error) {

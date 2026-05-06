@@ -143,7 +143,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
   // Fund item detail modal state
   const [selectedFundItem, setSelectedFundItem] = useState<FundItemDisplay | null>(null);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
-  
+
   // Fund item creation state
   const [isCreatingFundItem, setIsCreatingFundItem] = useState(false);
   const [newFundItemType, setNewFundItemType] = useState<string | null>(null);
@@ -177,13 +177,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       try {
         // Get userId (for now using 'user_001', in production this would come from auth)
         const userId = 'user_001';
-        
+
         // Initialize UserDataService (ensures database is ready)
         try {
           await UserDataService.initialize(userId);
         } catch (initError) {
           console.error('Failed to initialize UserDataService:', initError);
-          
+
           // If initialization fails due to schema issues, show alert to user
           if (initError.message && initError.message.includes('no such column')) {
             Alert.alert(
@@ -194,20 +194,20 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           }
           return; // Don't continue if initialization fails
         }
-        
+
         // Check if migration is needed and trigger it
         try {
           await UserDataService.migrateFromAsyncStorage(userId);
         } catch {
           // Continue loading even if migration fails
         }
-        
+
         // Load all user data from centralized service
         const userData = await UserDataService.getAllUserData(userId);
-        
+
         // Load passport data
         if (userData.passport) {
-          
+
           // Map passport model fields to component state
           const mappedPassport = {
             type: t('profile.passport.defaultType', { defaultValue: 'Chinese Passport' }),
@@ -217,9 +217,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             nationality: userData.passport.nationality || '',
             expiry: userData.passport.expiryDate || '',
           };
-          
+
           setPassportData(mappedPassport);
-          
+
           // Load personal info with gender from passport
           const mappedPersonalInfo: PersonalInfoForm = {
             dateOfBirth: userData.passport.dateOfBirth || '1988-01-22',
@@ -230,11 +230,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             phoneNumber: userData.personalInfo?.phoneNumber || '',
             email: userData.personalInfo?.email || '',
           };
-          
+
           setPersonalInfo(mappedPersonalInfo);
         } else if (userData.personalInfo) {
           // If no passport but personal info exists, load personal info only
-          
+
           const mappedPersonalInfo: PersonalInfoForm = {
             dateOfBirth: '1988-01-22',
             gender: 'MALE',
@@ -244,10 +244,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             phoneNumber: userData.personalInfo.phoneNumber || '',
             email: userData.personalInfo.email || '',
           };
-          
+
           setPersonalInfo(mappedPersonalInfo);
         }
-        
+
         // Load fund items (force refresh to ensure fresh data)
         try {
           const items = await UserDataService.getFundItems(userId, { forceRefresh: true });
@@ -257,12 +257,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           console.error('Error loading fund items:', fundItemsError);
           setFundItems([]);
         }
-        
+
       } catch (error) {
         console.error('Error loading saved data:', error);
       }
     };
-    
+
     loadSavedData();
   }, []);
 
@@ -433,7 +433,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           },
         ],
       },
-      
+
     ],
     [t, languageLabel]
   );
@@ -476,8 +476,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       navigation.navigate('EntryInfoHistory');
     } else if (itemId === 'exportData') {
       handleExportData();
+    } else if (itemId === 'backup') {
+      navigation.navigate('BackupSettings');
     }
-    // TODO: Navigate to other screens
   };
 
   const handleExportData = async () => {
@@ -485,8 +486,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       // Show confirmation dialog
       Alert.alert(
         t('profile.export.confirmTitle', { defaultValue: 'Export Data' }),
-        t('profile.export.confirmMessage', { 
-          defaultValue: 'This will export all your entry pack data as a JSON file. Continue?' 
+        t('profile.export.confirmMessage', {
+          defaultValue: 'This will export all your entry pack data as a JSON file. Continue?'
         }),
         [
           {
@@ -513,15 +514,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       // For now, we'll export a sample entry pack
       // In a real implementation, you'd get the actual entry pack ID from the user's data
       const userId = 'user_001';
-      
+
       // Check if user has any entry packs
       const userData = await UserDataService.getAllUserData(userId);
-      
+
       if (!userData.passport && !userData.personalInfo && (!userData.funds || userData.funds.length === 0)) {
         Alert.alert(
           t('profile.export.noDataTitle', { defaultValue: 'No Data to Export' }),
-          t('profile.export.noDataMessage', { 
-            defaultValue: 'You don\'t have any entry pack data to export yet.' 
+          t('profile.export.noDataMessage', {
+            defaultValue: 'You don\'t have any entry pack data to export yet.'
           })
         );
         return;
@@ -566,8 +567,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
         // Show success dialog with sharing option
         Alert.alert(
           t('profile.export.successTitle', { defaultValue: 'Export Complete' }),
-          t('profile.export.successMessage', { 
-            defaultValue: `Data exported successfully!\nFile: ${result.filename}\nSize: ${Math.round(result.fileSize / 1024)} KB` 
+          t('profile.export.successMessage', {
+            defaultValue: `Data exported successfully!\nFile: ${result.filename}\nSize: ${Math.round(result.fileSize / 1024)} KB`
           }),
           [
             {
@@ -585,8 +586,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       console.error('Perform data export error:', error);
       Alert.alert(
         t('profile.export.errorTitle', { defaultValue: 'Export Failed' }),
-        t('profile.export.errorMessage', { 
-          defaultValue: `Failed to export data: ${error.message}` 
+        t('profile.export.errorMessage', {
+          defaultValue: `Failed to export data: ${error.message}`
         })
       );
     }
@@ -597,8 +598,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       if (!sharingOptions.available) {
         Alert.alert(
           t('profile.export.shareUnavailableTitle', { defaultValue: 'Sharing Not Available' }),
-          t('profile.export.shareUnavailableMessage', { 
-            defaultValue: 'File sharing is not supported on this device' 
+          t('profile.export.shareUnavailableMessage', {
+            defaultValue: 'File sharing is not supported on this device'
           })
         );
         return;
@@ -612,8 +613,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       console.error('Share exported file error:', error);
       Alert.alert(
         t('profile.export.shareErrorTitle', { defaultValue: 'Share Failed' }),
-        t('profile.export.shareErrorMessage', { 
-          defaultValue: `Failed to share file: ${error.message}` 
+        t('profile.export.shareErrorMessage', {
+          defaultValue: `Failed to share file: ${error.message}`
         })
       );
     }
@@ -736,7 +737,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
 
     showDraftSavedNotification(
       editingContext.title ??
-        t('profile.personal.fields.gender.title', { defaultValue: 'Gender' })
+      t('profile.personal.fields.gender.title', { defaultValue: 'Gender' })
     );
     setTimeout(() => {
       handleCancelEdit();
@@ -766,14 +767,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           return (
             <TouchableOpacity
               key={option.value}
-              style={[ 
+              style={[
                 styles.genderOption,
                 isActive && styles.genderOptionActive,
               ]}
               onPress={() => handleGenderSelect(option.value)}
             >
               <Text
-                style={[ 
+                style={[
                   styles.genderOptionText,
                   isActive && styles.genderOptionTextActive,
                 ]}
@@ -815,7 +816,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
     }
 
     const [year, month, day] = dateStr.split('-').map(Number);
-    
+
     // Validate year (reasonable range: 1900 to current year)
     const currentYear = new Date().getFullYear();
     if (year < 1900 || year > currentYear) {
@@ -854,7 +855,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
     const inputDate = new Date(year, month - 1, day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (inputDate > today) {
       return {
         valid: false,
@@ -1016,7 +1017,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             ...prev,
             dateOfBirth: formatted,
           }));
-          
+
           // Save to UserDataService
           try {
             const userId = 'user_001';
@@ -1029,7 +1030,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           } catch (error) {
             console.error('Error saving date of birth:', error);
           }
-          
+
           showDraftSavedNotification(
             t('profile.personal.fields.dateOfBirth.title', { defaultValue: 'Date of Birth' })
           );
@@ -1307,10 +1308,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
               <View style={styles.sectionHeaderText}>
                 <View style={styles.sectionTitleRow}>
                   <Text style={styles.personalInfoLabel}>{personalTitle}</Text>
-                  <Text style={[ 
+                  <Text style={[
                     styles.fieldCount,
-                    personalFieldsCount.filled === personalFieldsCount.total 
-                      ? styles.fieldCountComplete 
+                    personalFieldsCount.filled === personalFieldsCount.total
+                      ? styles.fieldCountComplete
                       : styles.fieldCountIncomplete
                   ]}>
                     {personalFieldsCount.filled}/{personalFieldsCount.total}
@@ -1348,7 +1349,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                       </View>
                       <View style={styles.infoValueWrap}>
                         <Text
-                          style={[ 
+                          style={[
                             styles.infoValue,
                             !value && styles.infoPlaceholder,
                           ]}
@@ -1359,13 +1360,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                             (value === 'MALE'
                               ? t('profile.personal.gender.male', { defaultValue: 'Male' })
                               : value === 'FEMALE'
-                              ? t('profile.personal.gender.female', { defaultValue: 'Female' })
-                              : value === 'UNDEFINED'
-                              ? t('profile.personal.gender.undefined', { defaultValue: 'Undefined' })
-                              : value) || notFilledLabel
+                                ? t('profile.personal.gender.female', { defaultValue: 'Female' })
+                                : value === 'UNDEFINED'
+                                  ? t('profile.personal.gender.undefined', { defaultValue: 'Undefined' })
+                                  : value) || notFilledLabel
                             : field.key === 'countryRegion' ?
-                            (value ? `${value} : ${t(`nationalities.${value}`, { defaultValue: value })}` : notFilledLabel)
-                            : value || notFilledLabel}
+                              (value ? `${value} : ${t(`nationalities.${value}`, { defaultValue: value })}` : notFilledLabel)
+                              : value || notFilledLabel}
                         </Text>
                         <Text style={styles.rowArrow}>›</Text>
                       </View>
@@ -1391,10 +1392,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
               <View style={styles.sectionHeaderText}>
                 <View style={styles.sectionTitleRow}>
                   <Text style={styles.fundingTitle}>{fundingTitle}</Text>
-                  <Text style={[ 
+                  <Text style={[
                     styles.fieldCount,
-                    fundingFieldsCount.filled === fundingFieldsCount.total 
-                      ? styles.fieldCountComplete 
+                    fundingFieldsCount.filled === fundingFieldsCount.total
+                      ? styles.fieldCountComplete
                       : styles.fieldCountIncomplete
                   ]}>
                     {fundingFieldsCount.filled}/{fundingFieldsCount.total}
@@ -1470,16 +1471,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
 
                       const normalizeAmount = (value) => {
                         if (value === null || value === undefined || value === '') {
-return '';
-}
+                          return '';
+                        }
                         if (typeof value === 'number' && Number.isFinite(value)) {
                           return value.toLocaleString();
                         }
                         if (typeof value === 'string') {
                           const trimmed = value.trim();
                           if (!trimmed) {
-return '';
-}
+                            return '';
+                          }
                           const parsed = Number(trimmed.replace(/,/g, ''));
                           return Number.isNaN(parsed) ? trimmed : parsed.toLocaleString();
                         }
@@ -1572,10 +1573,10 @@ return '';
                   <Text style={styles.personalInfoLabel}>
                     {t('profile.passport.title', { defaultValue: 'My Passport' })}
                   </Text>
-                  <Text style={[ 
+                  <Text style={[
                     styles.fieldCount,
-                    passportFieldsCount.filled === passportFieldsCount.total 
-                      ? styles.fieldCountComplete 
+                    passportFieldsCount.filled === passportFieldsCount.total
+                      ? styles.fieldCountComplete
                       : styles.fieldCountIncomplete
                   ]}>
                     {passportFieldsCount.filled}/{passportFieldsCount.total}
@@ -1621,7 +1622,7 @@ return '';
                     </Text>
                   </View>
                   <View style={styles.infoValueWrap}>
-                  <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
+                    <Text style={styles.infoValue}>{passportData.name || notFilledLabel}</Text>
                     <Text style={styles.rowArrow}>›</Text>
                   </View>
                 </TouchableOpacity>
@@ -1798,9 +1799,9 @@ return '';
                 </>
               ) : editingContext?.key === 'gender' ? (
                 <View>
-                <Text style={styles.modalSubtitle}>
-                  {t('profile.personal.gender.selectPrompt', { defaultValue: 'Select gender' })}
-                </Text>
+                  <Text style={styles.modalSubtitle}>
+                    {t('profile.personal.gender.selectPrompt', { defaultValue: 'Select gender' })}
+                  </Text>
                   {renderGenderOptions()}
                 </View>
               ) : editingContext?.key === 'dateOfBirth' ? (
@@ -1809,7 +1810,7 @@ return '';
                     value={editValue}
                     onChangeText={handleDateInputChange}
                     placeholder={editingContext?.placeholder}
-                    style={[ 
+                    style={[
                       styles.modalInput,
                       editingContext?.multiline && styles.modalInputMultiline,
                       validationError && styles.modalInputError,
@@ -1820,8 +1821,8 @@ return '';
                     keyboardType="numeric"
                     autoFocus
                     returnKeyType={(() => {
-                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
-                        ? personalFields 
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                        ? personalFields
                         : fundingFields;
                       return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
                     })()}
@@ -1834,9 +1835,9 @@ return '';
                           return;
                         }
                       }
-                      
-                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
-                        ? personalFields 
+
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                        ? personalFields
                         : fundingFields;
                       if (editingContext.fieldIndex < fields.length - 1) {
                         handleNavigateField('next');
@@ -1859,7 +1860,7 @@ return '';
                   value={editValue}
                   onChangeText={handleAutoSave}
                   placeholder={editingContext?.placeholder}
-                  style={[ 
+                  style={[
                     styles.modalInput,
                     editingContext?.multiline && styles.modalInputMultiline,
                   ]}
@@ -1870,19 +1871,19 @@ return '';
                   autoFocus
                   returnKeyType={(() => {
                     if (!editingContext || editingContext?.multiline) {
-return 'default';
-}
-                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
-                      ? personalFields 
+                      return 'default';
+                    }
+                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                      ? personalFields
                       : fundingFields;
                     return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
                   })()}
                   onSubmitEditing={() => {
                     if (!editingContext || editingContext?.multiline) {
-return;
-}
-                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
-                      ? personalFields 
+                      return;
+                    }
+                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                      ? personalFields
                       : fundingFields;
                     if (editingContext.fieldIndex < fields.length - 1) {
                       handleNavigateField('next');
@@ -1896,14 +1897,14 @@ return;
                 {editingContext?.fieldIndex !== null && editingContext !== null && (
                   <View style={styles.modalNavigation}>
                     <TouchableOpacity
-                      style={[ 
+                      style={[
                         styles.modalNavButton,
                         editingContext?.fieldIndex === 0 && styles.modalNavButtonDisabled
                       ]}
                       onPress={() => handleNavigateField('prev')}
                       disabled={editingContext?.fieldIndex === 0}
                     >
-                      <Text style={[ 
+                      <Text style={[
                         styles.modalNavButtonText,
                         editingContext?.fieldIndex === 0 && styles.modalNavButtonTextDisabled
                       ]}>
@@ -1911,28 +1912,28 @@ return;
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[ 
+                      style={[
                         styles.modalNavButton,
                         (() => {
-                          const fields = (editingContext?.type === 'personal' || editingContext?.type === 'nationality-selector') 
-                            ? personalFields 
+                          const fields = (editingContext?.type === 'personal' || editingContext?.type === 'nationality-selector')
+                            ? personalFields
                             : fundingFields;
                           return editingContext?.fieldIndex === fields.length - 1;
                         })() && styles.modalNavButtonDisabled
                       ]}
                       onPress={() => handleNavigateField('next')}
                       disabled={(() => {
-                        const fields = (editingContext?.type === 'personal' || editingContext?.type === 'nationality-selector') 
-                            ? personalFields 
-                            : fundingFields;
+                        const fields = (editingContext?.type === 'personal' || editingContext?.type === 'nationality-selector')
+                          ? personalFields
+                          : fundingFields;
                         return editingContext?.fieldIndex === fields.length - 1;
                       })()}
                     >
-                      <Text style={[ 
+                      <Text style={[
                         styles.modalNavButtonText,
                         (() => {
-                          const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector') 
-                            ? personalFields 
+                          const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                            ? personalFields
                             : fundingFields;
                           return editingContext.fieldIndex === fields.length - 1;
                         })() && styles.modalNavButtonTextDisabled
@@ -1981,39 +1982,39 @@ return;
         <View style={styles.modalOverlay}>
           <View style={styles.modalWrapper}>
             <View style={styles.languageModal}>
-            <View style={styles.languageModalHeader}>
-              <Text style={styles.languageModalTitle}>
-                {t('progressiveEntryFlow.settings.selectLanguage', { defaultValue: 'Select Language' })}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setLanguageSelectorVisible(false)}
-                style={styles.languageModalClose}
-              >
-                <Text style={styles.languageModalCloseText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.languageOptions}>
-              {getLanguageOptions(t).map((option) => (
+              <View style={styles.languageModalHeader}>
+                <Text style={styles.languageModalTitle}>
+                  {t('progressiveEntryFlow.settings.selectLanguage', { defaultValue: 'Select Language' })}
+                </Text>
                 <TouchableOpacity
-                  key={option.code}
-                  style={[ 
-                    styles.languageOption,
-                    language === option.code && styles.languageOptionSelected
-                  ]}
-                  onPress={() => handleLanguageChange(option.code)}
+                  onPress={() => setLanguageSelectorVisible(false)}
+                  style={styles.languageModalClose}
                 >
-                  <Text style={[ 
-                    styles.languageOptionText,
-                    language === option.code && styles.languageOptionTextSelected
-                  ]}>
-                    {option.label}
-                  </Text>
-                  {language === option.code && (
-                    <Text style={styles.languageOptionCheck}>✓</Text>
-                  )}
+                  <Text style={styles.languageModalCloseText}>✕</Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              </View>
+              <ScrollView style={styles.languageOptions}>
+                {getLanguageOptions(t).map((option) => (
+                  <TouchableOpacity
+                    key={option.code}
+                    style={[
+                      styles.languageOption,
+                      language === option.code && styles.languageOptionSelected
+                    ]}
+                    onPress={() => handleLanguageChange(option.code)}
+                  >
+                    <Text style={[
+                      styles.languageOptionText,
+                      language === option.code && styles.languageOptionTextSelected
+                    ]}>
+                      {option.label}
+                    </Text>
+                    {language === option.code && (
+                      <Text style={styles.languageOptionCheck}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
           </View>
         </View>
@@ -2458,7 +2459,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     left: 20,
-    right: 20, 
+    right: 20,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
@@ -2520,7 +2521,7 @@ const styles = StyleSheet.create({
     padding: 0,
     marginTop: -spacing.sm
   },
-  nationalitySelector: { 
+  nationalitySelector: {
 
   },
   dateHint: {
@@ -2622,7 +2623,7 @@ const styles = StyleSheet.create({
   },
   languageOption: {
     paddingVertical: spacing.md,
-    flexDirection: 'row', 
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
@@ -2633,11 +2634,11 @@ const styles = StyleSheet.create({
     ...typography.body1,
   },
   languageOptionTextSelected: {
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
     color: colors.primary
   },
   languageOptionCheck: {
-    ...typography.body1, 
+    ...typography.body1,
     color: colors.primary,
     fontWeight: 'bold'
   },

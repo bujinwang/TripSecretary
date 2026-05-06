@@ -111,6 +111,7 @@ import {
   USEntryPackPreviewScreen,
   USAEntryGuideScreen,
   CanadaEntryGuideScreen,
+  BackupSettingsScreen,
 } from '../screens';
 
 import SingaporeEntryGuideScreen from '../screens/entryGuide/SingaporeEntryGuideScreen';
@@ -138,7 +139,7 @@ TabBarIcon.propTypes = {
 // Main Tab Navigator
 const MainTabs = () => {
   const { t } = useTranslation();
-  
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -953,7 +954,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
             },
           }}
         />
-        
+
         <Stack.Screen
           name="NotificationLog"
           component={NotificationLogScreen}
@@ -961,9 +962,16 @@ const AppNavigator = React.forwardRef((props, ref) => {
             headerShown: false, // Using custom header in the screen
           }}
         />
-        
-        
-        
+
+        <Stack.Screen
+          name="BackupSettings"
+          component={BackupSettingsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
