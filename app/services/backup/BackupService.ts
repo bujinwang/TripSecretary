@@ -9,9 +9,9 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
-import EntryInfo from '../../models/EntryInfo';
 import UserDataService from '../data/UserDataService';
 import DataExportService from '../export/DataExportService';
+import DataImportService from '../import/DataImportService';
 import EncryptionService, { FieldType } from '../security/EncryptionService';
 
 // Type definitions
@@ -358,8 +358,8 @@ class BackupService {
   private readonly defaultEncryptionField: FieldType = 'recovery';
 
   constructor() {
-    this.backupDirectory = FileSystem.documentDirectory + 'backups/';
-    this.cloudBackupDirectory = FileSystem.documentDirectory + 'cloud_backups/';
+    this.backupDirectory = `${FileSystem.documentDirectory  }backups/`;
+    this.cloudBackupDirectory = `${FileSystem.documentDirectory  }cloud_backups/`;
     this.maxBackups = 10; // Keep recent N backups
     this.backupInterval = 7 * 24 * 60 * 60 * 1000; // Weekly (7 days in milliseconds)
     this.backupScheduleKey = 'backup_schedule';
@@ -529,7 +529,7 @@ class BackupService {
         backupId,
         filename: backupFilename,
         filePath: backupFilePath,
-        fileSize: fileSize,
+        fileSize,
         entryInfoCount: entryInfoIds.length,
         createdAt: backupMetadata.createdAt,
         metadata: backupMetadata
@@ -561,7 +561,9 @@ class BackupService {
         if (filename.startsWith('backup_') && filename.endsWith('.json')) {
           try {
             const backupId = this.extractBackupIdFromFilename(filename);
-            if (!backupId) continue;
+            if (!backupId) {
+continue;
+}
 
             const metadata = await this.loadBackupMetadata(backupId);
 
@@ -575,7 +577,7 @@ class BackupService {
                 backupId,
                 filename,
                 filePath,
-                fileSize: fileSize,
+                fileSize,
                 createdAt: metadata.createdAt,
                 timestamp: metadata.timestamp,
                 type: metadata.type,
@@ -621,8 +623,8 @@ class BackupService {
 
       return {
         ...metadata,
-        fileExists: fileExists,
-        currentFileSize: currentFileSize,
+        fileExists,
+        currentFileSize,
         isCorrupted: fileExists && currentFileSize !== (metadata.fileSize || 0)
       };
 
@@ -939,7 +941,7 @@ class BackupService {
       };
 
       // Save to cloud backup directory
-      const cloudBackupPath = this.cloudBackupDirectory + `cloud_${cloudBackupMetadata.cloudBackupId}.enc`;
+      const cloudBackupPath = `${this.cloudBackupDirectory  }cloud_${cloudBackupMetadata.cloudBackupId}.enc`;
       const encryptedFile = new FileSystem.File(encryptedBackup.filePath) as unknown as FileSystemFile;
       await encryptedFile.move(cloudBackupPath);
 
@@ -1010,7 +1012,9 @@ class BackupService {
         if (filename.startsWith('cloud_') && filename.endsWith('.enc')) {
           try {
             const cloudBackupId = this.extractCloudBackupIdFromFilename(filename);
-            if (!cloudBackupId) continue;
+            if (!cloudBackupId) {
+continue;
+}
 
             const metadata = await this.loadCloudBackupMetadata(cloudBackupId);
 
@@ -1023,7 +1027,7 @@ class BackupService {
                 cloudBackupId,
                 filename,
                 filePath,
-                fileSize: fileSize,
+                fileSize,
                 encryptedSize: metadata.encryptedSize,
                 createdAt: metadata.createdAt,
                 uploadedAt: metadata.uploadedAt,
@@ -1083,7 +1087,6 @@ class BackupService {
       const decryptedBackup = await this.decryptBackupFile(encryptedFilePath, password);
       
       // Use DataImportService to restore the data
-      const DataImportService = require('../import/DataImportService').default;
       const importResult = await DataImportService.importFromFile(decryptedBackup.filePath, {
         conflictResolution: options.conflictResolution || 'ask',
         onProgress: options.onProgress
@@ -1404,7 +1407,7 @@ class BackupService {
 
       return {
         filePath: encryptedFilePath,
-        fileSize: fileSize,
+        fileSize,
         encrypted: true,
         fieldType: this.defaultEncryptionField
       };
@@ -1470,7 +1473,7 @@ class BackupService {
 
       return {
         filePath: decryptedFilePath,
-        fileSize: fileSize,
+        fileSize,
         decrypted: true
       };
 
@@ -1672,8 +1675,6 @@ class BackupService {
       }
 
       // Use DataImportService for selective recovery
-      const DataImportService = require('../import/DataImportService').default;
-      
       const importOptions = {
         selectiveImport: true,
         selectedEntryPacks: options.selectedEntryPacks || [],
@@ -1945,7 +1946,7 @@ class BackupService {
       // Set validation result
       validationResult.isValid = validationResult.errors.length === 0;
       validationResult.details = {
-        fileSize: fileSize,
+        fileSize,
         entryInfoCount: actualCount,
         hasPhotos: entryInfos.some(info => info.hasPhotos),
         totalPhotos: entryInfos.reduce((sum, info) => sum + info.photoCount, 0),
@@ -2072,7 +2073,7 @@ class BackupService {
    */
   async saveCloudBackupMetadata(cloudBackupId: string, metadata: BackupMetadata): Promise<void> {
     try {
-      const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
+      const metadataPath = `${this.cloudBackupDirectory  }${cloudBackupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
       await metadataFile.write(JSON.stringify(metadata, null, 2));
     } catch (error: unknown) {
@@ -2089,7 +2090,7 @@ class BackupService {
    */
   async loadCloudBackupMetadata(cloudBackupId: string): Promise<BackupMetadata | null> {
     try {
-      const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
+      const metadataPath = `${this.cloudBackupDirectory  }${cloudBackupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
 
       if (!await metadataFile.exists()) {
@@ -2112,7 +2113,7 @@ class BackupService {
    */
   async deleteCloudBackupMetadata(cloudBackupId: string): Promise<void> {
     try {
-      const metadataPath = this.cloudBackupDirectory + `${cloudBackupId}_metadata.json`;
+      const metadataPath = `${this.cloudBackupDirectory  }${cloudBackupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
 
       if (await metadataFile.exists()) {
@@ -2176,7 +2177,7 @@ class BackupService {
    */
   async saveBackupMetadata(backupId: string, metadata: BackupMetadata): Promise<void> {
     try {
-      const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
+      const metadataPath = `${this.backupDirectory  }${backupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
       await metadataFile.write(JSON.stringify(metadata, null, 2));
     } catch (error: unknown) {
@@ -2193,7 +2194,7 @@ class BackupService {
    */
   async loadBackupMetadata(backupId: string): Promise<BackupMetadata | null> {
     try {
-      const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
+      const metadataPath = `${this.backupDirectory  }${backupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
 
       if (!await metadataFile.exists()) {
@@ -2216,7 +2217,7 @@ class BackupService {
    */
   async deleteBackupMetadata(backupId: string): Promise<void> {
     try {
-      const metadataPath = this.backupDirectory + `${backupId}_metadata.json`;
+      const metadataPath = `${this.backupDirectory  }${backupId}_metadata.json`;
       const metadataFile = new FileSystem.File(metadataPath) as unknown as FileSystemFile;
 
       if (await metadataFile.exists()) {

@@ -1,5 +1,6 @@
 // 入境通 - Korea Entry Flow Screen (韩国入境准备状态)
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -24,7 +25,7 @@ import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 
 const KoreaEntryFlowScreen = ({ navigation, route }) => {
-  const { t, language } = useLocale();
+  const { t, language: _language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const passportParam = UserDataService.toSerializablePassport(route.params?.passport);
@@ -35,9 +36,6 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
   const [categories, setCategories] = useState([]);
   const [userData, setUserData] = useState(null);
   const [arrivalDate, setArrivalDate] = useState(null);
-
-  // Passport selection state
-  const [userId, setUserId] = useState(null);
 
   // Load data on component mount and when screen gains focus
   useFocusEffect(
@@ -52,7 +50,6 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
 
       // Get user ID from route params or use default
       const currentUserId = passportParam?.id || 'user_001';
-      setUserId(currentUserId);
 
       // Initialize UserDataService
       await UserDataService.initialize(currentUserId);
@@ -220,15 +217,6 @@ const KoreaEntryFlowScreen = ({ navigation, route }) => {
         funds: userData?.funds,
         ketaSubmission: null // Will be populated when K-ETA is submitted
       }
-    });
-  };
-
-  const handleCategoryPress = (category) => {
-    // Navigate back to KoreaTravelInfoScreen with the specific section expanded
-    navigation.navigate('KoreaTravelInfo', {
-      expandSection: category.id,
-      passport: passportParam,
-      destination: route.params?.destination,
     });
   };
 
@@ -945,5 +933,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+KoreaEntryFlowScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func,
+    goBack: PropTypes.func,
+  }).isRequired,
+  route: PropTypes.shape({
+    params: PropTypes.object,
+  }).isRequired,
+};
 
 export default KoreaEntryFlowScreen;

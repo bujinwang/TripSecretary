@@ -38,7 +38,7 @@
  * );
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,13 +58,27 @@ import {
 } from '../components/tamagui';
 
 const mapDestinationId = (id) => {
-  if (id === 'us') return 'usa';
-  if (id === 'malaysia') return 'my';
-  if (id === 'singapore') return 'sg';
-  if (id === 'hongkong') return 'hk';
-  if (id === 'japan') return 'jp';
-  if (id === 'korea') return 'kr';
-  if (id === 'taiwan') return 'tw';
+  if (id === 'us') {
+return 'usa';
+}
+  if (id === 'malaysia') {
+return 'my';
+}
+  if (id === 'singapore') {
+return 'sg';
+}
+  if (id === 'hongkong') {
+return 'hk';
+}
+  if (id === 'japan') {
+return 'jp';
+}
+  if (id === 'korea') {
+return 'kr';
+}
+  if (id === 'taiwan') {
+return 'tw';
+}
   return id;
 };
 
@@ -117,54 +131,25 @@ const EntryFlowScreenTemplate = ({
   route,
   navigation,
   // Optional custom data loader
-  useDataLoaderHook,
+  useDataLoaderHook, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   // Get translation function early - needed for context value
   const { t } = useLocale();
-  
-  // Validate required props - provide defaults to prevent context errors
-  if (!config) {
-    console.error('[EntryFlowScreenTemplate] config is required');
-    // Return a minimal context provider to prevent hook errors
-    return (
-      <EntryFlowTemplateContext.Provider value={{ config: {}, t, navigation: null, route: null }}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
-          {children}
-        </SafeAreaView>
-      </EntryFlowTemplateContext.Provider>
-    );
-  }
-  
-  if (!route) {
-    console.error('[EntryFlowScreenTemplate] route is required');
-    return (
-      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route: null }}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
-          {children}
-        </SafeAreaView>
-      </EntryFlowTemplateContext.Provider>
-    );
-  }
-  
-  if (!navigation) {
-    console.error('[EntryFlowScreenTemplate] navigation is required');
-    return (
-      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route }}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
-          {children}
-        </SafeAreaView>
-      </EntryFlowTemplateContext.Provider>
-    );
-  }
-  const routeUserId = route.params?.userId;
-  const routeEntryInfo = route.params?.entryInfo;
-  const routeTravelInfo = route.params?.travelInfo;
-  const routePersonalInfo = route.params?.personalInfo;
-  const routeUser = route.params?.user;
-  const routeUserData = route.params?.userData;
-  const passportParam = route.params?.passport;
-  const destination = route.params?.destination;
-  const passport = useMemo(() => UserDataService.toSerializablePassport(passportParam), [passportParam?.id]);
+
+  // Hooks must be called unconditionally (before any early returns)
+  const routeParams = route?.params;
+  const routeUserId = routeParams?.userId;
+  const routeEntryInfo = routeParams?.entryInfo;
+  const routeTravelInfo = routeParams?.travelInfo;
+  const routePersonalInfo = routeParams?.personalInfo;
+  const routeUser = routeParams?.user;
+  const routeUserData = routeParams?.userData;
+  const passportParam = routeParams?.passport;
+  const destination = routeParams?.destination;
+  const passport = useMemo(
+    () => (passportParam ? UserDataService.toSerializablePassport(passportParam) : null),
+    [passportParam?.id],
+  );
   const userId = useMemo(() => {
     const candidateIds = [
       typeof routeUserId === 'string' ? routeUserId : null,
@@ -184,7 +169,7 @@ const EntryFlowScreenTemplate = ({
     const resolvedId =
       candidateIds.find((value) => value && value.trim().length > 0) || 'user_001';
 
-    if (!resolvedId || resolvedId === 'user_001') {
+    if (__DEV__ && (!resolvedId || resolvedId === 'user_001')) {
       console.log('[EntryFlowScreenTemplate] userId fallback applied:', resolvedId, {
         routeUserId,
         routeUserDataUserId: routeUserData?.userId,
@@ -198,8 +183,6 @@ const EntryFlowScreenTemplate = ({
         passportParamId: passportParam?.id,
         passportParamUserId: passportParam?.userId,
       });
-    } else {
-      console.log('[EntryFlowScreenTemplate] userId resolved:', resolvedId);
     }
 
     return resolvedId;
@@ -232,16 +215,13 @@ const EntryFlowScreenTemplate = ({
     try {
       setIsLoading(true);
 
-      // Initialize UserDataService
       await UserDataService.initialize(userId);
 
-      // Load all user data
       const allUserData = await UserDataService.getAllUserData(userId);
       const fundItems = await UserDataService.getFundItems(userId);
-      const destinationId = destination?.id || config.destinationId;
+      const destinationId = destination?.id || config?.destinationId;
       const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
-      // Prepare entry info for completion calculation
       const entryInfo = {
         passport: allUserData?.passport || {},
         personalInfo: allUserData?.personalInfo || {},
@@ -252,15 +232,12 @@ const EntryFlowScreenTemplate = ({
 
       setUserData(entryInfo);
 
-      // Extract arrival date
       const arrivalDateFromTravel = travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate;
       const resolvedArrivalDate = arrivalDateFromTravel || getDefaultArrivalDate();
       setArrivalDate(resolvedArrivalDate);
 
-      // Calculate completion using EntryCompletionCalculator
       const completionSummary = EntryCompletionCalculator.getCompletionSummary(entryInfo);
 
-      // Update completion state
       setCompletionPercent(completionSummary.totalPercent);
 
       if (completionSummary.totalPercent === 100) {
@@ -271,26 +248,27 @@ const EntryFlowScreenTemplate = ({
         setCompletionStatus('needs_improvement');
       }
 
-      // Create category data
-      const categoryData = config.categories.map(category => {
-        const summaryKey = category.id === 'personal' ? 'personalInfo' : category.id;
-        const summary = completionSummary.categorySummary[summaryKey];
-        if (!summary) {
-          return null;
-        }
+      if (config?.categories) {
+        const categoryData = config.categories.map((category) => {
+          const summaryKey = category.id === 'personal' ? 'personalInfo' : category.id;
+          const summary = completionSummary.categorySummary[summaryKey];
+          if (!summary) {
+            return null;
+          }
 
-        return {
-          id: category.id,
-          name: t(category.nameKey, { defaultValue: category.name }),
-          icon: category.icon,
-          status: summary.state,
-          completedCount: summary.completed || summary.validFunds || 0,
-          totalCount: summary.total || 1,
-          missingFields: completionSummary.missingFields[summaryKey] || [],
-        };
-      }).filter(Boolean);
+          return {
+            id: category.id,
+            name: t(category.nameKey, { defaultValue: category.name }),
+            icon: category.icon,
+            status: summary.state,
+            completedCount: summary.completed || summary.validFunds || 0,
+            totalCount: summary.total || 1,
+            missingFields: completionSummary.missingFields[summaryKey] || [],
+          };
+        }).filter(Boolean);
 
-      setCategories(categoryData);
+        setCategories(categoryData);
+      }
     } catch (error) {
       console.error('Failed to load entry flow data:', error);
       Alert.alert('Error', 'Failed to load entry preparation status. Please try again.');
@@ -300,62 +278,76 @@ const EntryFlowScreenTemplate = ({
     }
   }, [userId, destination, config, t]);
 
-  // Load data on mount and when screen gains focus
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
-  // Refresh handler
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
-  // Context value - memoized to ensure stability
-  const contextValue = useMemo(() => ({
-    // Config
-    config,
-    t,
+  const contextValue = useMemo(
+    () => ({
+      config,
+      t,
+      navigation,
+      route,
+      passport,
+      destination,
+      userId,
+      isLoading,
+      refreshing,
+      completionPercent,
+      completionStatus,
+      categories,
+      userData,
+      arrivalDate,
+      loadData,
+      onRefresh,
+    }),
+    [
+      config, t, navigation, route, passport, destination, userId,
+      isLoading, refreshing, completionPercent, completionStatus,
+      categories, userData, arrivalDate, loadData, onRefresh,
+    ],
+  );
 
-    // Navigation
-    navigation,
-    route,
-    passport,
-    destination,
-    userId,
+  // Validate required props AFTER hooks — render fallback UI when missing
+  if (!config) {
+    console.error('[EntryFlowScreenTemplate] config is required');
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config: {}, t, navigation: null, route: null }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
 
-    // State
-    isLoading,
-    refreshing,
-    completionPercent,
-    completionStatus,
-    categories,
-    userData,
-    arrivalDate,
+  if (!route) {
+    console.error('[EntryFlowScreenTemplate] route is required');
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route: null }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
 
-    // Actions
-    loadData,
-    onRefresh,
-  }), [
-    config,
-    t,
-    navigation,
-    route,
-    passport,
-    destination,
-    userId,
-    isLoading,
-    refreshing,
-    completionPercent,
-    completionStatus,
-    categories,
-    userData,
-    arrivalDate,
-    loadData,
-    onRefresh,
-  ]);
+  if (!navigation) {
+    console.error('[EntryFlowScreenTemplate] navigation is required');
+    return (
+      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
+          {children}
+        </SafeAreaView>
+      </EntryFlowTemplateContext.Provider>
+    );
+  }
 
   return (
     <EntryFlowTemplateContext.Provider value={contextValue}>
@@ -366,6 +358,7 @@ const EntryFlowScreenTemplate = ({
   );
 };
 
+/* eslint-disable react/prop-types, react/display-name, react-hooks/rules-of-hooks */
 /**
  * Header Component
  */
@@ -722,7 +715,7 @@ function PrimaryActionCard({
   useEntryGuideAsPrimary,
   destination,
   userData,
-  primaryActionIsEdit,
+  primaryActionIsEdit, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) {
   const hasSubmitScreen = Boolean(config.screens?.submit);
   const entryGuideScreen = config.screens?.entryGuide;
@@ -836,6 +829,7 @@ function PrimaryActionCard({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SecondaryEditActionCard({ t, navigation, route, config }) {
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
@@ -889,11 +883,11 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
 }
 
 function CountdownCard({ arrivalDate, t, config }) {
+  const { language } = useLocale();
+
   if (!arrivalDate) {
     return null;
   }
-
-  const { language } = useLocale();
 
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
@@ -922,7 +916,7 @@ function CountdownCard({ arrivalDate, t, config }) {
   let formattedArrival = arrivalDate;
   try {
     formattedArrival = arrival.toLocaleDateString(language || undefined, dateFormatOptions);
-  } catch (error) {
+  } catch (_error) {
     formattedArrival = arrival.toLocaleDateString(undefined, dateFormatOptions);
   }
 
@@ -1230,9 +1224,7 @@ EntryFlowScreenTemplate.CompletionCard = () => {
 /**
  * Categories Component
  */
-EntryFlowScreenTemplate.Categories = () => {
-  return null;
-};
+EntryFlowScreenTemplate.Categories = () => null;
 
 /**
  * Submission Countdown Component (optional - for countries with submission windows)
@@ -1346,8 +1338,8 @@ EntryFlowScreenTemplate.LoadingIndicator = ({ message }) => {
   const { t, isLoading } = useEntryFlowTemplate();
 
   if (!isLoading) {
-return null;
-}
+    return null;
+  }
 
   return (
     <YStack padding="$md" alignItems="center" pointerEvents="none">
@@ -1358,13 +1350,18 @@ return null;
   );
 };
 
+/* eslint-enable react/prop-types, react/display-name, react-hooks/rules-of-hooks */
+
 // Export hook for advanced usage
 EntryFlowScreenTemplate.useTemplate = useEntryFlowTemplate;
 
 EntryFlowScreenTemplate.propTypes = {
   children: PropTypes.node,
   config: PropTypes.shape({
-    country: PropTypes.string.isRequired,
+    destinationId: PropTypes.string,
+    country: PropTypes.string,
+    name: PropTypes.string,
+    nameZh: PropTypes.string,
     colors: PropTypes.shape({
       background: PropTypes.string,
       primary: PropTypes.string,
@@ -1373,6 +1370,10 @@ EntryFlowScreenTemplate.propTypes = {
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
     })),
+    entryFlow: PropTypes.object,
+    screens: PropTypes.object,
+    features: PropTypes.object,
+    completion: PropTypes.object,
   }).isRequired,
   route: PropTypes.shape({
     params: PropTypes.object,
