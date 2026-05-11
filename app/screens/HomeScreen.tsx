@@ -66,10 +66,11 @@ const UPCOMING_TRIPS_CONFIG = [
 ];
 
 const HomeScreen = ({ navigation }) => {
-  const [historyList, setHistoryList] = useState([]);
+  const [historyList, setHistoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [passportData, setPassportData] = useState(null);
-  const [activeEntryPacks, setActiveEntryPacks] = useState([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [passportData, setPassportData] = useState<any>(null);
+  const [activeEntryPacks, setActiveEntryPacks] = useState<any[]>([]);
   const [multiDestinationData, setMultiDestinationData] = useState<any>(null);
   const [inProgressDestinations, setInProgressDestinations] = useState<InProgressDestinationItem[]>([]);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -230,7 +231,7 @@ return '';
         // No passport data found - user needs to input it
         setPassportData(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Failed to load passport data:', error.message);
       // No mock data - data must come from user input or SQLite
       setPassportData(null);
@@ -242,7 +243,7 @@ return '';
       // 尝试从API加载历史记录
       const result = await api.getHistory(20, 0);
       setHistoryList(result.items || []);
-    } catch (error) {
+    } catch (error: any) {
       console.log('无法连接后端API，使用本地模拟数据:', error.message);
       // 使用mock数据作为后备（后端未运行时）
       setHistoryList(getMockHistory());
@@ -340,7 +341,7 @@ return '';
         overallCompletion: homeScreenData.summary.overallCompletionPercent
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('[HomeScreen] Failed to load multi-destination data:', error);
       console.error('[HomeScreen] Error message:', error.message);
       console.error('[HomeScreen] Error stack:', error.stack);
@@ -585,13 +586,13 @@ return '';
       if (country?.flightTime) {
         return country.flightTime;
       }
-    } catch (error) {
+    } catch (error: any) {
       // Fallback to translation key
     }
     return t(`home.destinations.${destinationId}.flightTime`, { defaultValue: '' });
   };
 
-  const getArrivalCountdown = (arrivalDate) => {
+  const getArrivalCountdown = (arrivalDate: string | null) => {
     if (!arrivalDate) {
 return '';
 }
@@ -617,14 +618,14 @@ return '';
       } else {
         return DateFormatter.formatDate(arrival, language);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Error formatting arrival countdown:', error);
       return '';
     }
   };
 
   // Get submission countdown - recommends submitting 3-7 days before arrival
-  const getSubmissionCountdown = (arrivalDate) => {
+  const getSubmissionCountdown = (arrivalDate: string | null) => {
     if (!arrivalDate) {
 return null;
 }
@@ -670,7 +671,7 @@ return null;
           urgent: false
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Error calculating submission countdown:', error);
       return null;
     }
@@ -897,7 +898,7 @@ return null;
             </View>
           </Card>
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('[HomeScreen] Error rendering card for destination:', destination.destinationId, error);
         return null;
       }
