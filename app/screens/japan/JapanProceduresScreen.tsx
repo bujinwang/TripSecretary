@@ -13,7 +13,8 @@ import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-const JapanProceduresScreen = ({ navigation, route }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const JapanProceduresScreen = ({ navigation, route }: any) => {
   const { passport: rawPassport, destination } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();

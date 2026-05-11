@@ -13,7 +13,8 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-const MDACGuideScreen = ({ navigation, route }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MDACGuideScreen = ({ navigation, route }: any) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();

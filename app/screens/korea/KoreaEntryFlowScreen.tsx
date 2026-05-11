@@ -24,7 +24,8 @@ import { useLocale } from '../../i18n/LocaleContext';
 import EntryCompletionCalculator from '../../utils/EntryCompletionCalculator';
 import UserDataService from '../../services/data/UserDataService';
 
-const KoreaEntryFlowScreen = ({ navigation, route }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const KoreaEntryFlowScreen = ({ navigation, route }: any) => {
   const { t, language: _language } = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

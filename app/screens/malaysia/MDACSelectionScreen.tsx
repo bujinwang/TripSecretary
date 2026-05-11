@@ -12,7 +12,8 @@ import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-const MDACSelectionScreen = ({ navigation, route }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MDACSelectionScreen = ({ navigation, route }: any) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
   const passport = UserDataService.toSerializablePassport(rawPassport);

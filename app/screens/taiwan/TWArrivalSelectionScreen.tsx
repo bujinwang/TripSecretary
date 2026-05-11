@@ -12,7 +12,8 @@ import { colors, typography, spacing } from '../../theme';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-const TWArrivalSelectionScreen = ({ navigation, route }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
   const passport = UserDataService.toSerializablePassport(rawPassport);
