@@ -30,13 +30,13 @@ const ResultScreen = ({ navigation, route }) => {
   const { generationId, fromHistory = false, userId, context } = routeParams;
   const initialAction = routeParams.initialAction || 'guide';
 
-  const [pdfUri, setPdfUri] = useState(null);
+  const [pdfUri, setPdfUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [resultData, setResultData] = useState(null);
-  const [shareSession, setShareSession] = useState(null);
+  const [resultData, setResultData] = useState<Record<string, any> | null>(null);
+  const [shareSession, setShareSession] = useState<Record<string, any> | null>(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
-  const [copiedField, setCopiedField] = useState(null);
-  const [japanTravelerData, setJapanTravelerData] = useState(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [japanTravelerData, setJapanTravelerData] = useState<Record<string, any> | null>(null);
 
   // Animation values
   const pulseAnimation = useMemo(() => new Animated.Value(1), []);
