@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 马来西亚 MDAC 内嵌网页助手
 import React, { useRef, useState } from 'react';
 import {

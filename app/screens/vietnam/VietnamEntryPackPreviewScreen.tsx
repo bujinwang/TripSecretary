@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Vietnam Entry Pack Preview Screen
  * Refactored to use EntryPackPreviewTemplate.

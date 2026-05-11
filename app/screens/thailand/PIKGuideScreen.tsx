@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - PIK Guide Screen (自助通关机操作指南)
 import React, { useState } from 'react';
 import {

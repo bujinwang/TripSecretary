@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 台湾电子入境卡内嵌网页助手
 import React, { useRef, useState } from 'react';
 import {

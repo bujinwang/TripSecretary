@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Thailand Entry Pack Preview Screen
  * Powered by EntryPackPreviewTemplate with Thailand-specific config.

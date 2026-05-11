@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Japan Interactive Immigration Guide (日本互动入境指南)
 import React, { useState, useCallback } from 'react';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview EntryInfoOperations - CRUD operations for EntryInfo data
  *

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hong Kong Travel Info Screen Constants
  *

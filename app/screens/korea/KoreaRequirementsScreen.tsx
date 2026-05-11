@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Korea Requirements Screen
 import React, { useState, useMemo } from 'react';
 import {

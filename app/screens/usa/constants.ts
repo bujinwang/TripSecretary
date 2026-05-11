@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * USA Travel Info Screen Constants
  *

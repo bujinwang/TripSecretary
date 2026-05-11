@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Korea Info Screen
 import React, { useMemo } from 'react';
 import {

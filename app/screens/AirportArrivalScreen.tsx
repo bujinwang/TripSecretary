@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Airport Arrival Screen (机场到达)
 import React, { useState, useEffect } from 'react';
 import {

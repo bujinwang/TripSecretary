@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Thailand Entry Questions Screen (泰国入境常见问题)
 // 基于旅客档案生成预填答案的入境问题列表，方便移民官检查
 

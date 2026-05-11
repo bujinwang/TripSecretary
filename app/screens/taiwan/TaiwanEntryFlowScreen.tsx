@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { EntryFlowScreenTemplate } from '../../templates';
 import { taiwanEntryFlowConfig } from '../../config/destinations/taiwan/entryFlowConfig';

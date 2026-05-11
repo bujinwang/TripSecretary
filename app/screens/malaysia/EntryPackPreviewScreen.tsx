@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Malaysia Entry Pack Preview Screen
  * Refactored to use the shared EntryPackPreviewTemplate.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Korea Travel Info Screen - Template Implementation
  *

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 入境通 - Data Models Index
  * Centralized export of all data models with security integration

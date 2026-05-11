@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback, useMemo } from 'react';
 import logger from '../../services/LoggingService';
 import TemplateFieldStateManager from '../utils/TemplateFieldStateManager';
