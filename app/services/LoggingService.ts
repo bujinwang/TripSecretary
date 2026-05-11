@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * LoggingService - Centralized logging for the application
  *
@@ -10,15 +8,14 @@
  * - Structured logging with metadata
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LogData = Record<string, any> | null;
+
 class LoggingService {
   /**
    * Log debug information (only in development)
-   *
-   * @param {string} component - Component or module name
-   * @param {string} message - Log message
-   * @param {Object} data - Additional data to log
    */
-  static debug(component, message, data = null) {
+  static debug(component: string, message: string, data: LogData = null): void {
     if (__DEV__) {
       const timestamp = new Date().toISOString();
       const prefix = `[${timestamp}] [${component}]`;
@@ -33,12 +30,8 @@ class LoggingService {
 
   /**
    * Log informational messages
-   *
-   * @param {string} component - Component or module name
-   * @param {string} message - Log message
-   * @param {Object} data - Additional data to log
    */
-  static info(component, message, data = null) {
+  static info(component: string, message: string, data: LogData = null): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ℹ️`;
     
@@ -51,12 +44,8 @@ class LoggingService {
 
   /**
    * Log warning messages
-   *
-   * @param {string} component - Component or module name
-   * @param {string} message - Warning message
-   * @param {Object} data - Additional data to log
    */
-  static warn(component, message, data = null) {
+  static warn(component: string, message: string, data: LogData = null): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ⚠️`;
     
@@ -69,16 +58,13 @@ class LoggingService {
 
   /**
    * Log error messages with context
-   *
-   * @param {string} component - Component or module name
-   * @param {Error|string} error - Error object or message
-   * @param {Object} context - Additional context about the error
    */
-  static error(component, error, context = null) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static error(component: string, error: Error | string | any, context: LogData = null): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ❌`;
     
-    const errorMessage = error instanceof Error ? error.message : error;
+    const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : null;
     
     console.error(`${prefix} ${errorMessage}`);
@@ -99,12 +85,8 @@ class LoggingService {
 
   /**
    * Log success messages
-   *
-   * @param {string} component - Component or module name
-   * @param {string} message - Success message
-   * @param {Object} data - Additional data to log
    */
-  static success(component, message, data = null) {
+  static success(component: string, message: string, data: LogData = null): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ✅`;
     
@@ -117,13 +99,8 @@ class LoggingService {
 
   /**
    * Log performance metrics
-   *
-   * @param {string} component - Component or module name
-   * @param {string} operation - Operation being measured
-   * @param {number} duration - Duration in milliseconds
-   * @param {Object} metadata - Additional metadata
    */
-  static performance(component, operation, duration, metadata = null) {
+  static performance(component: string, operation: string, duration: number, metadata: LogData = null): void {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${component}] ⏱️`;
     const durationInSeconds = (duration / 1000).toFixed(2);
@@ -144,13 +121,8 @@ class LoggingService {
 
   /**
    * Log API requests (useful for debugging)
-   *
-   * @param {string} component - Component or module name
-   * @param {string} method - HTTP method
-   * @param {string} url - API endpoint
-   * @param {Object} payload - Request payload
    */
-  static apiRequest(component, method, url, payload = null) {
+  static apiRequest(component: string, method: string, url: string, payload: LogData = null): void {
     if (__DEV__) {
       const timestamp = new Date().toISOString();
       const prefix = `[${timestamp}] [${component}] 🌐`;
@@ -165,14 +137,8 @@ class LoggingService {
 
   /**
    * Log API responses (useful for debugging)
-   *
-   * @param {string} component - Component or module name
-   * @param {string} method - HTTP method
-   * @param {string} url - API endpoint
-   * @param {number} status - Response status code
-   * @param {Object} data - Response data
    */
-  static apiResponse(component, method, url, status, data = null) {
+  static apiResponse(component: string, method: string, url: string, status: number, data: LogData = null): void {
     if (__DEV__) {
       const timestamp = new Date().toISOString();
       const prefix = `[${timestamp}] [${component}] 🌐`;
@@ -189,22 +155,20 @@ class LoggingService {
   /**
    * Create a logger instance for a specific component
    * Useful for reducing repetition in components
-   *
-   * @param {string} component - Component name
-   * @returns {Object} Logger instance with bound methods
    */
-  static for(component) {
+  static for(component: string) {
     return {
-      debug: (message, data) => this.debug(component, message, data),
-      info: (message, data) => this.info(component, message, data),
-      warn: (message, data) => this.warn(component, message, data),
-      error: (error, context) => this.error(component, error, context),
-      success: (message, data) => this.success(component, message, data),
-      performance: (operation, duration, metadata) => 
+      debug: (message: string, data: LogData) => this.debug(component, message, data),
+      info: (message: string, data: LogData) => this.info(component, message, data),
+      warn: (message: string, data: LogData) => this.warn(component, message, data),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: (error: any, context: LogData) => this.error(component, error, context),
+      success: (message: string, data: LogData) => this.success(component, message, data),
+      performance: (operation: string, duration: number, metadata: LogData) => 
         this.performance(component, operation, duration, metadata),
-      apiRequest: (method, url, payload) => 
+      apiRequest: (method: string, url: string, payload: LogData) => 
         this.apiRequest(component, method, url, payload),
-      apiResponse: (method, url, status, data) => 
+      apiResponse: (method: string, url: string, status: number, data: LogData) => 
         this.apiResponse(component, method, url, status, data),
     };
   }
@@ -212,13 +176,9 @@ class LoggingService {
   /**
    * Send error to error tracking service
    * Placeholder for integration with Sentry, Bugsnag, etc.
-   *
-   * @param {string} component - Component name
-   * @param {Error|string} error - Error object or message
-   * @param {Object} context - Additional context
-   * @private
    */
-  static sendToErrorTracking(component, error, context) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static sendToErrorTracking(component: string, error: any, context: LogData): void {
     // TODO: Implement error tracking service integration
     // Example: Sentry.captureException(error, { tags: { component }, extra: context });
   }
@@ -226,14 +186,8 @@ class LoggingService {
   /**
    * Send analytics event
    * Placeholder for integration with analytics service
-   *
-   * @param {string} component - Component name
-   * @param {string} operation - Operation name
-   * @param {number} duration - Duration in milliseconds
-   * @param {Object} metadata - Additional metadata
-   * @private
    */
-  static sendToAnalytics(component, operation, duration, metadata) {
+  private static sendToAnalytics(component: string, operation: string, duration: number, metadata: LogData): void {
     // TODO: Implement analytics service integration
     // Example: Analytics.track('Performance', { component, operation, duration, ...metadata });
   }
