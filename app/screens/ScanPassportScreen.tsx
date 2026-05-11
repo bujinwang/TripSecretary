@@ -20,13 +20,16 @@ import { useLocale } from '../i18n/LocaleContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const ScanPassportScreen = ({ navigation, route }) => {
-  const { t } = useLocale();
-  const [hasPermission, setHasPermission] = useState(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ScanPassportScreen = ({ navigation, route }: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t } = useLocale() as any;
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [cameraType, setCameraType] = useState(CameraType.back);
-  const [passportData, setPassportData] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [passportData, setPassportData] = useState<any>(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
