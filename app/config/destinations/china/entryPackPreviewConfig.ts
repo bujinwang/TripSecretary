@@ -1,7 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
-export const chinaEntryPackPreviewConfig = {
+export const chinaEntryPackPreviewConfig: EntryPackPreviewConfig = {
   destinationId: 'cn',
   countryCode: 'china',
   header: {

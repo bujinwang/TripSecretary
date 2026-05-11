@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * South Korea Entry Pack Preview Configuration
@@ -7,7 +7,7 @@
  * Defines document generation, data export, and sharing capabilities.
  */
 
-export const koreaEntryPackPreviewConfig = {
+export const koreaEntryPackPreviewConfig: EntryPackPreviewConfig = {
   // Basic Metadata
   destinationId: 'kr',
   name: 'South Korea',

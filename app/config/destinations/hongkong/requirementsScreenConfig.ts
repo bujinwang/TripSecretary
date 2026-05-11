@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { RequirementsScreenConfig } from '../types';
 
-export const hongkongRequirementsScreenConfig = {
+export const hongkongRequirementsScreenConfig: RequirementsScreenConfig = {
   headerTitleKey: 'hongkong.requirements.headerTitle',
   introTitleKey: 'hongkong.requirements.introTitle',
   introSubtitleKey: 'hongkong.requirements.introSubtitle',

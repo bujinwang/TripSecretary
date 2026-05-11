@@ -13,9 +13,12 @@ export interface ArrivalCardConfig {
   name: string;
   nameZh?: string;
   nameJa?: string;
+  nameKo?: string;
   hasDigitalOption?: boolean;
   requires?: boolean;
   languages?: LocaleCode[];
+  submissionWindowHours?: number | null;
+  [extra: string]: unknown;
 }
 
 export type VisaRequirementMap = Record<string, string>;
@@ -168,7 +171,8 @@ export interface FeatureFlags {
 
 export interface TravelInfoFieldOption {
   value: string;
-  defaultLabel: string;
+  defaultLabel?: string;
+  label?: string;
   labelKey?: string;
   icon?: string;
   [extra: string]: unknown;
@@ -177,7 +181,7 @@ export interface TravelInfoFieldOption {
 export interface TravelInfoFieldConfig {
   fieldName: string;
   required?: boolean;
-  type?: string;
+  type?: string | boolean;
   labelKey?: string;
   defaultLabel?: string;
   helpText?: string;
@@ -192,7 +196,7 @@ export interface TravelInfoFieldConfig {
   customPlaceholder?: string;
   uppercaseNormalize?: boolean;
   immediateSave?: boolean;
-  default?: string;
+  default?: string | boolean;
   [extra: string]: unknown;
 }
 
@@ -202,7 +206,7 @@ export interface TravelInfoSectionConfig {
   sectionKey: string;
   titleKey?: string;
   defaultTitle?: string;
-  fields?: Record<string, TravelInfoFieldConfig>;
+  fields?: Record<string, TravelInfoFieldConfig> | string[];
   minRequired?: number;
   maxAllowed?: number;
   fundTypes?: string[];
@@ -310,10 +314,31 @@ export interface EntryPackDocumentConfig {
 }
 
 export interface EntryPackPreviewConfig {
-  destinationId: string;
-  name: string;
+  destinationId?: string;
+  name?: string;
+  countryCode?: string;
   flag?: string;
   colors?: Record<string, string>;
+  actions?: {
+    primary?: {
+      id?: string;
+      label?: string | Record<string, unknown>;
+      type?: string;
+      screen?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      buildParams?: (...args: any[]) => any;
+      [extra: string]: unknown;
+    };
+    secondary?: {
+      id?: string;
+      label?: string | Record<string, unknown>;
+      type?: string;
+      screen?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      buildParams?: (...args: any[]) => any;
+      [extra: string]: unknown;
+    };
+  };
   documents?: Record<string, EntryPackDocumentConfig>;
   export?: Record<string, unknown>;
   preview?: Record<string, unknown>;
@@ -341,7 +366,8 @@ export interface InfoScreenConfig {
   primaryAction?: {
     labelKey?: string;
     screen: string;
-    buildParams?: (...args: unknown[]) => unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    buildParams?: (...args: any[]) => any;
     [extra: string]: unknown;
   };
   [extra: string]: unknown;
@@ -364,7 +390,8 @@ export interface RequirementsScreenConfig {
   primaryAction?: {
     labelKey?: string;
     screen: string;
-    buildParams?: (...args: unknown[]) => unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    buildParams?: (...args: any[]) => any;
     [extra: string]: unknown;
   };
   [extra: string]: unknown;
@@ -387,5 +414,3 @@ export interface DestinationConfig extends DestinationMetadata {
   requirementsScreen?: RequirementsScreenConfig;
   [extra: string]: unknown;
 }
-
-

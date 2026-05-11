@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
 /**
  * Japan Entry Flow Configuration
@@ -6,7 +6,7 @@
  * Matches the shared EntryFlowScreenTemplate structure (same pattern as Malaysia).
  */
 
-export const japanEntryFlowConfig = {
+export const japanEntryFlowConfig: EntryFlowConfig = {
   destinationId: 'jp',
   name: 'Japan',
   nameZh: '日本',

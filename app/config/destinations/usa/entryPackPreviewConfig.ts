@@ -1,10 +1,10 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * United States Entry Pack Preview Configuration
  */
 
-export const usaEntryPackPreviewConfig = {
+export const usaEntryPackPreviewConfig: EntryPackPreviewConfig = {
   countryCode: 'usa',
   header: {
     title: 'US Entry Pack Preview',

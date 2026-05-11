@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
-export const taiwanEntryFlowConfig = {
+export const taiwanEntryFlowConfig: EntryFlowConfig = {
   destinationId: 'tw',
   name: 'Taiwan',
   nameZh: '台湾',

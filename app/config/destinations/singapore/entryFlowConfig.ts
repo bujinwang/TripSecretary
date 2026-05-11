@@ -1,10 +1,10 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
 /**
  * Singapore Entry Flow Configuration (SG Arrival Card focus)
  */
 
-export const singaporeEntryFlowConfig = {
+export const singaporeEntryFlowConfig: EntryFlowConfig = {
   destinationId: 'sg',
   name: 'Singapore',
   nameZh: '新加坡',

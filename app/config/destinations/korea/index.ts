@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * South Korea Destination Configuration
  *

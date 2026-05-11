@@ -1,12 +1,12 @@
-// @ts-nocheck
-
 /**
  * Malaysia Destination Metadata
  *
  * Core metadata for Malaysia destination.
  */
 
-export const metadata = {
+import { DestinationMetadata } from '../types';
+
+export const metadata: DestinationMetadata = {
   id: 'my',
   code: 'MY',
   code3: 'MYS',

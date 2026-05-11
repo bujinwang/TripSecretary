@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { TravelInfoConfig } from '../types';
 
 /**
  * Japan Travel Info Configuration
@@ -9,7 +9,7 @@
 
 import { japanPrefectures, getCitiesByPrefecture } from '../../../data/japanLocations';
 
-export const japanTravelInfoConfig = {
+export const japanTravelInfoConfig: TravelInfoConfig = {
   destinationId: 'jp',
   name: 'Japan',
   nameZh: '日本',

@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * Malaysia Entry Pack Preview Configuration
@@ -6,7 +6,7 @@
  * Provides copy and navigation targets for EntryPackPreviewTemplate.
  */
 
-export const malaysiaEntryPackPreviewConfig = {
+export const malaysiaEntryPackPreviewConfig: EntryPackPreviewConfig = {
   // Basic Metadata
   countryCode: 'my',
   destinationId: 'my',

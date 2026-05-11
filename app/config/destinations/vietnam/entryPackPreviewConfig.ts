@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * Vietnam Entry Pack Preview Configuration
@@ -7,7 +7,7 @@
  * Defines document generation, data export, and sharing capabilities.
  */
 
-export const vietnamEntryPackPreviewConfig = {
+export const vietnamEntryPackPreviewConfig: EntryPackPreviewConfig = {
   // Basic Metadata
   destinationId: 'vn',
   name: 'Vietnam',

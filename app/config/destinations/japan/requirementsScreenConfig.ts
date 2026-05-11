@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { RequirementsScreenConfig } from '../types';
 
-export const japanRequirementsScreenConfig = {
+export const japanRequirementsScreenConfig: RequirementsScreenConfig = {
   headerTitleKey: 'japan.requirements.headerTitle',
   introTitleKey: 'japan.requirements.introTitle',
   introSubtitleKey: 'japan.requirements.introSubtitle',

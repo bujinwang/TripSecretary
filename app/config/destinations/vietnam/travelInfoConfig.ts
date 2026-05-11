@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { TravelInfoConfig } from '../types';
 
 /**
  * Vietnam Travel Info Configuration
@@ -7,7 +7,7 @@
  * Defines sections, fields, validation rules, and behavior.
  */
 
-export const vietnamTravelInfoConfig = {
+export const vietnamTravelInfoConfig: TravelInfoConfig = {
   // Basic Metadata
   destinationId: 'vn',
   name: 'Vietnam',
@@ -31,6 +31,7 @@ export const vietnamTravelInfoConfig = {
     passport: {
       enabled: true,
       icon: '📘',
+      sectionKey: 'passport',
       titleKey: 'vietnam.travelInfo.sections.passport.title',
       fields: [
         'surname',
@@ -46,6 +47,7 @@ export const vietnamTravelInfoConfig = {
     personal: {
       enabled: true,
       icon: '👤',
+      sectionKey: 'personal',
       titleKey: 'vietnam.travelInfo.sections.personal.title',
       fields: [
         'occupation',
@@ -60,6 +62,7 @@ export const vietnamTravelInfoConfig = {
     funds: {
       enabled: true,
       icon: '💰',
+      sectionKey: 'funds',
       titleKey: 'vietnam.travelInfo.sections.funds.title',
       minRequired: 1, // At least 1 fund item required
       maxAllowed: 10, // Up to 10 fund items
@@ -68,6 +71,7 @@ export const vietnamTravelInfoConfig = {
     travel: {
       enabled: true,
       icon: '✈️',
+      sectionKey: 'travel',
       titleKey: 'vietnam.travelInfo.sections.travel.title',
       fields: [
         'travelPurpose',

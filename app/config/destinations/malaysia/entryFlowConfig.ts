@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
 /**
  * Malaysia Entry Flow Configuration
@@ -6,7 +6,7 @@
  * Drives EntryFlowScreenTemplate for Malaysia MDAC flow.
  */
 
-export const malaysiaEntryFlowConfig = {
+export const malaysiaEntryFlowConfig: EntryFlowConfig = {
   // Metadata
   destinationId: 'my',
   name: 'Malaysia',

@@ -1,10 +1,10 @@
-// @ts-nocheck
-
 /**
  * Taiwan Destination Metadata
  */
 
-export const metadata = {
+import { DestinationMetadata } from '../types';
+
+export const metadata: DestinationMetadata = {
   id: 'tw',
   code: 'TW',
   code3: 'TWN',

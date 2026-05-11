@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Japan Destination Configuration
  *

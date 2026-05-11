@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { RequirementsScreenConfig } from '../types';
 
-export const usaRequirementsScreenConfig = {
+export const usaRequirementsScreenConfig: RequirementsScreenConfig = {
   headerTitleKey: 'usa.requirements.headerTitle',
   introTitleKey: 'usa.requirements.introTitle',
   introSubtitleKey: 'usa.requirements.introSubtitle',

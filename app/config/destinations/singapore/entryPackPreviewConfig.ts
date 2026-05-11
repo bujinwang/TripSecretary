@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * Singapore Entry Pack Preview Configuration
@@ -6,7 +6,7 @@
  * Provides copy and navigation targets for EntryPackPreviewTemplate.
  */
 
-export const singaporeEntryPackPreviewConfig = {
+export const singaporeEntryPackPreviewConfig: EntryPackPreviewConfig = {
   countryCode: 'singapore',
   header: {
     title: 'Singapore Entry Pack - Preview / 新加坡入境包预览',

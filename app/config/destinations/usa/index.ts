@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * United States Destination Configuration
  */

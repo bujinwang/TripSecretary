@@ -1,15 +1,14 @@
-// @ts-nocheck
-
 /**
  * Singapore Travel Info Configuration
  *
  * Structured to work with the shared TravelInfo templates (V1/V2).
  */
 
+import { TravelInfoConfig } from '../types';
 import { singaporeLabels, singaporeConfig } from '../../../config/labels/singapore';
 import { singaporeRegions } from '../../../data/singaporeRegions';
 
-export const singaporeTravelInfoConfig = {
+export const singaporeTravelInfoConfig: TravelInfoConfig = {
   destinationId: 'sg',
   name: 'Singapore',
   nameZh: '新加坡',

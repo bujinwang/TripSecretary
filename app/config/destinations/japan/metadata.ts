@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Japan Destination Metadata
  *
@@ -11,31 +9,9 @@
  * - Visa-free entry configuration for many countries
  */
 
-/**
- * @typedef {Object} JapanMetadata
- * @property {string} id - Unique destination identifier
- * @property {string} code - ISO 3166-1 alpha-2 country code
- * @property {string} code3 - ISO 3166-1 alpha-3 country code
- * @property {string} name - English name
- * @property {string} nameZh - Simplified Chinese name
- * @property {string} nameZhTW - Traditional Chinese name
- * @property {string} nameJa - Native Japanese name
- * @property {string} flag - Unicode flag emoji
- * @property {boolean} enabled - Whether destination is available for selection
- * @property {string} currency - ISO 4217 currency code
- * @property {string} currencySymbol - Currency symbol
- * @property {string} dateFormat - Preferred date format pattern
- * @property {string} timezone - IANA timezone identifier
- * @property {string} flightTimeKey - i18n key for flight time from origin
- * @property {Object} arrivalCard - Arrival card configuration
- * @property {string} arrivalCard.type - Type of arrival card (paper/digital)
- * @property {string} arrivalCard.name - Display name for arrival card
- * @property {string} arrivalCard.nameZh - Chinese name for arrival card
- * @property {boolean} arrivalCard.hasDigitalOption - Whether digital option exists
- * @property {Object} visaRequirement - Visa requirements for different passport holders
- */
+import { DestinationMetadata } from '../types';
 
-export const metadata = {
+export const metadata: DestinationMetadata = {
   // Basic Identification
   id: 'jp',
   code: 'JP',

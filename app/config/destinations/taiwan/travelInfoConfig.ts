@@ -1,9 +1,8 @@
-// @ts-nocheck
-
+import { TravelInfoConfig } from '../types';
 import { taiwanLabels, taiwanConfig } from '../../../config/labels/taiwan';
 import { taiwanCities } from '../../../data/taiwanLocations';
 
-export const taiwanTravelInfoConfig = {
+export const taiwanTravelInfoConfig: TravelInfoConfig = {
   destinationId: 'tw',
   name: 'Taiwan',
   nameZh: '台湾',

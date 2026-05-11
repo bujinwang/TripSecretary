@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { RequirementsScreenConfig } from '../types';
 
 /**
  * Malaysia Requirements Screen Configuration
@@ -6,7 +6,7 @@
  * Provides checklist content for EntryRequirementsTemplate.
  */
 
-export const malaysiaRequirementsScreenConfig = {
+export const malaysiaRequirementsScreenConfig: RequirementsScreenConfig = {
   headerTitleKey: 'malaysia.requirements.headerTitle',
   introTitleKey: 'malaysia.requirements.introTitle',
   introSubtitleKey: 'malaysia.requirements.introSubtitle',

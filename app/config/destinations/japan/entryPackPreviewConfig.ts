@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * Japan Entry Pack Preview Configuration
@@ -7,7 +7,7 @@
  * Defines document generation, data export, and sharing capabilities.
  */
 
-export const japanEntryPackPreviewConfig = {
+export const japanEntryPackPreviewConfig: EntryPackPreviewConfig = {
   // Basic Metadata
   destinationId: 'jp',
   name: 'Japan',

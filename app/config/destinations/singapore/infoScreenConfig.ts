@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { InfoScreenConfig } from '../types';
 
-export const singaporeInfoScreenConfig = {
+export const singaporeInfoScreenConfig: InfoScreenConfig = {
   flag: '🇸🇬',
   headerTitleKey: 'sg.info.headerTitle',
   titleKey: 'sg.info.title',

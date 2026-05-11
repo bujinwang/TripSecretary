@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Travel Purpose Configuration
  *
@@ -23,7 +21,7 @@
  * Travel purpose definitions
  * Maps normalized keys to display information
  */
-export const TRAVEL_PURPOSES = {
+export const TRAVEL_PURPOSES: Record<string, { key: string; displayEn: string; displayZh: string; display: string; aliases: string[] }> = {
   HOLIDAY: {
     key: 'HOLIDAY',
     displayEn: 'Holiday/Tourism',
@@ -148,7 +146,7 @@ const ALIAS_MAP = buildAliasMap();
  * normalizeTravelPurpose('VACATION')
  * // → 'HOLIDAY'
  */
-export const normalizeTravelPurpose = (input) => {
+export const normalizeTravelPurpose = (input: string): string => {
   if (!input) {
 return DEFAULT_TRAVEL_PURPOSE;
 }
@@ -173,7 +171,7 @@ return DEFAULT_TRAVEL_PURPOSE;
  * getTravelPurposeDisplay('HOLIDAY', { format: 'en' })
  * // → 'Holiday/Tourism'
  */
-export const getTravelPurposeDisplay = (input, options = {}) => {
+export const getTravelPurposeDisplay = (input: string, options: { format?: string } = {}): string => {
   const { format = 'combined' } = options;
 
   if (!input) {
@@ -213,11 +211,12 @@ return input;
  * //   ...
  * // ]
  */
-export const getAllTravelPurposes = (options = {}) => {
+export const getAllTravelPurposes = (options: { includeAliases?: boolean } = {}): Array<Record<string, unknown>> => {
   const { includeAliases = false } = options;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return Object.entries(TRAVEL_PURPOSES).map(([key, info]) => {
-    const result = {
+    const result: Record<string, unknown> = {
       key: info.key,
       display: info.display,
       displayEn: info.displayEn,
@@ -246,7 +245,7 @@ export const getAllTravelPurposes = (options = {}) => {
  * validateTravelPurpose('INVALID')
  * // → { isValid: false, normalized: 'HOLIDAY', error: 'Unknown travel purpose, defaulting to HOLIDAY' }
  */
-export const validateTravelPurpose = (input) => {
+export const validateTravelPurpose = (input: string): { isValid: boolean; normalized: string; error?: string } => {
   if (!input) {
     return {
       isValid: false,
@@ -282,7 +281,7 @@ export const validateTravelPurpose = (input) => {
  * @param {string} purpose - Travel purpose from user input
  * @returns {string} Normalized purpose key
  */
-export const transformTravelPurpose = (purpose) => {
+export const transformTravelPurpose = (purpose: string): string => {
   if (!purpose) {
 return '';
 }

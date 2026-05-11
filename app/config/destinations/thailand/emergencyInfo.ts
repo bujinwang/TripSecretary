@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EmergencyInfo } from '../types';
 
 /**
  * Thailand Emergency Contact Information
@@ -19,7 +19,7 @@
  * @property {Array<Object>} hotlines - Important hotlines
  */
 
-export const emergencyInfo = {
+export const emergencyInfo: EmergencyInfo = {
   // Emergency Service Numbers
   emergencyNumbers: {
     police: {

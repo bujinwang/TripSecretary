@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import metadata from './metadata';
 import travelInfoConfig from './travelInfoConfig';
 import comprehensiveTravelInfoConfig from './comprehensiveTravelInfoConfig';

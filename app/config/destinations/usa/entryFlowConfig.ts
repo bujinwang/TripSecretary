@@ -1,10 +1,10 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
 /**
  * United States Entry Flow Configuration
  */
 
-export const usaEntryFlowConfig = {
+export const usaEntryFlowConfig: EntryFlowConfig = {
   destinationId: 'us',
   name: 'United States',
   nameZh: '美国',

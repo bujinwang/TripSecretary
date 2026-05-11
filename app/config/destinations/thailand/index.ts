@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Destination Configuration
  *

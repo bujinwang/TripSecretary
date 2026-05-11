@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
-export const taiwanEntryPackPreviewConfig = {
+export const taiwanEntryPackPreviewConfig: EntryPackPreviewConfig = {
   countryCode: 'taiwan',
   header: {
     title: 'Taiwan Entry Pack - Preview / 臺灣入境包預覽',

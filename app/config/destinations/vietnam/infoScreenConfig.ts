@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { InfoScreenConfig } from '../types';
 
-export const vietnamInfoScreenConfig = {
+export const vietnamInfoScreenConfig: InfoScreenConfig = {
   flag: '🇻🇳',
   headerTitleKey: 'vietnam.info.headerTitle',
   titleKey: 'vietnam.info.title',

@@ -56,7 +56,7 @@ export const hongkongEntryFlowConfig = {
       nameKey: 'hk.progressiveEntryFlow.categories.funds',
       icon: '💰',
       minRequired: 1,
-      validator: (funds) => Array.isArray(funds) && funds.length > 0,
+      validator: (funds: unknown) => Array.isArray(funds) && funds.length > 0,
     },
     {
       id: 'travel',

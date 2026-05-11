@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { InfoScreenConfig } from '../types';
 
 /**
  * Malaysia Info Screen Configuration
@@ -7,7 +7,7 @@
  * Reuses the Vietnam template structure with Malaysia translations.
  */
 
-export const malaysiaInfoScreenConfig = {
+export const malaysiaInfoScreenConfig: InfoScreenConfig = {
   flag: '🇲🇾',
   headerTitleKey: 'malaysia.info.headerTitle',
   titleKey: 'malaysia.info.title',

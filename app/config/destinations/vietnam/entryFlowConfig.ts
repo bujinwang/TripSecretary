@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryFlowConfig } from '../types';
 
 /**
  * Vietnam Entry Flow Configuration
@@ -7,7 +7,7 @@
  * Defines status tracking, completion criteria, and navigation.
  */
 
-export const vietnamEntryFlowConfig = {
+export const vietnamEntryFlowConfig: EntryFlowConfig = {
   // Basic Metadata
   destinationId: 'vn',
   name: 'Vietnam',
@@ -63,7 +63,7 @@ export const vietnamEntryFlowConfig = {
       defaultName: '资金证明',
       icon: '💰',
       minRequired: 1, // At least 1 fund item
-      validator: (funds) => funds && funds.length >= 1,
+      validator: (funds: unknown) => Array.isArray(funds) && funds.length >= 1,
     },
     {
       id: 'travel',

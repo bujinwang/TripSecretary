@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { FinancialInfo } from '../types';
 
 /**
  * Thailand Financial Information
@@ -20,7 +20,7 @@
  * @property {Object} exchangeRate - Exchange rate guidance
  */
 
-export const financialInfo = {
+export const financialInfo: FinancialInfo = {
   // ATM Information
   atm: {
     // Standard ATM fee charged by Thai banks (as of 2024)

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * South Korea Destination Metadata
  *
@@ -11,33 +9,9 @@
  * - K-ETA (Korean Electronic Travel Authorization) configuration
  */
 
-/**
- * @typedef {Object} KoreaMetadata
- * @property {string} id - Unique destination identifier
- * @property {string} code - ISO 3166-1 alpha-2 country code
- * @property {string} code3 - ISO 3166-1 alpha-3 country code
- * @property {string} name - English name
- * @property {string} nameZh - Simplified Chinese name
- * @property {string} nameZhTW - Traditional Chinese name
- * @property {string} nameKo - Native Korean name
- * @property {string} flag - Unicode flag emoji
- * @property {boolean} enabled - Whether destination is available for selection
- * @property {string} currency - ISO 4217 currency code
- * @property {string} currencySymbol - Currency symbol
- * @property {string} dateFormat - Preferred date format pattern
- * @property {string} timezone - IANA timezone identifier
- * @property {string} flightTimeKey - i18n key for flight time from origin
- * @property {Object} keta - K-ETA (Korean Electronic Travel Authorization) configuration
- * @property {string} keta.type - Type of authorization (K-ETA)
- * @property {string} keta.name - Display name for K-ETA
- * @property {string} keta.nameZh - Chinese name for K-ETA
- * @property {number} keta.processingDays - Processing time in business days
- * @property {number} keta.validityDays - K-ETA validity period in days
- * @property {number} keta.feesKRW - K-ETA fee in KRW
- * @property {Object} visaRequirement - Visa requirements for different passport holders
- */
+import { DestinationMetadata } from '../types';
 
-export const metadata = {
+export const metadata: DestinationMetadata = {
   // Basic Identification
   id: 'kr',
   code: 'KR',

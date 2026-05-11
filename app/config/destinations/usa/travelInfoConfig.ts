@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { TravelInfoConfig } from '../types';
 
 /**
  * United States Travel Info Configuration
@@ -8,7 +8,7 @@
 
 import { usaStates } from '../../../data/usaLocations';
 
-export const usaTravelInfoConfig = {
+export const usaTravelInfoConfig: TravelInfoConfig = {
   destinationId: 'us',
   name: 'United States',
   nameZh: '美国',
@@ -354,7 +354,7 @@ export const usaTravelInfoConfig = {
         hotelContactNumber: {
           fieldName: 'hotelContactNumber',
           required: false,
-          pattern: /^[0-9\-\+()\s]{6,20}$/,
+          pattern: /^[0-9\-+()\s]{6,20}$/,
           labelKey: 'usa.travelInfo.fields.hotelContactNumber',
           defaultLabel: '住宿联系电话（可选）',
         },

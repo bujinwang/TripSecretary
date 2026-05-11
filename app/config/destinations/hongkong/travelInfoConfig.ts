@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { TravelInfoConfig } from '../types';
 
 /**
  * Hong Kong Travel Info Configuration
@@ -13,7 +13,7 @@ import {
   getSubDistrictsByDistrictId,
 } from '../../../data/hongkongLocations';
 
-export const hongkongTravelInfoConfig = {
+export const hongkongTravelInfoConfig: TravelInfoConfig = {
   destinationId: 'hk',
   name: 'Hong Kong',
   nameZh: '香港',

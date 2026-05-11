@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { EntryPackPreviewConfig } from '../types';
 
 /**
  * Hong Kong Entry Pack Preview Configuration
@@ -6,7 +6,7 @@
  * Provides copy and navigation targets for EntryPackPreviewTemplate.
  */
 
-export const hongkongEntryPackPreviewConfig = {
+export const hongkongEntryPackPreviewConfig: EntryPackPreviewConfig = {
   countryCode: 'hongkong',
   header: {
     title: '香港入境资料包预览',

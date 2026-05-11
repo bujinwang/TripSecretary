@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Accommodation Type Configuration
  *
@@ -23,7 +21,7 @@
  * Accommodation type definitions
  * Maps normalized keys to display information
  */
-export const ACCOMMODATION_TYPES = {
+export const ACCOMMODATION_TYPES: Record<string, { key: string; displayEn: string; displayZh: string; display: string; aliases: string[]; icon: string }> = {
   HOTEL: {
     key: 'HOTEL',
     displayEn: 'Hotel',
@@ -119,7 +117,7 @@ const ALIAS_MAP = buildAliasMap();
  * normalizeAccommodationType('Friend')
  * // → 'FRIEND_HOUSE'
  */
-export const normalizeAccommodationType = (input) => {
+export const normalizeAccommodationType = (input: string): string => {
   if (!input) {
 return DEFAULT_ACCOMMODATION_TYPE;
 }
@@ -144,7 +142,7 @@ return DEFAULT_ACCOMMODATION_TYPE;
  * getAccommodationTypeDisplay('HOTEL', { format: 'en' })
  * // → 'Hotel'
  */
-export const getAccommodationTypeDisplay = (input, options = {}) => {
+export const getAccommodationTypeDisplay = (input: string, options: { format?: string } = {}): string => {
   const { format = 'combined' } = options;
 
   if (!input) {
@@ -184,11 +182,12 @@ return input;
  * //   ...
  * // ]
  */
-export const getAllAccommodationTypes = (options = {}) => {
+export const getAllAccommodationTypes = (options: { includeAliases?: boolean } = {}): Array<Record<string, unknown>> => {
   const { includeAliases = false } = options;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return Object.entries(ACCOMMODATION_TYPES).map(([key, info]) => {
-    const result = {
+    const result: Record<string, unknown> = {
       key: info.key,
       display: info.display,
       displayEn: info.displayEn,
@@ -218,7 +217,7 @@ export const getAllAccommodationTypes = (options = {}) => {
  * validateAccommodationType('INVALID')
  * // → { isValid: false, normalized: 'HOTEL', error: 'Unknown accommodation type, defaulting to HOTEL' }
  */
-export const validateAccommodationType = (input) => {
+export const validateAccommodationType = (input: string): { isValid: boolean; normalized: string; error?: string } => {
   if (!input) {
     return {
       isValid: false,
@@ -264,7 +263,7 @@ export const validateAccommodationType = (input) => {
  * requiresDetailedAddress('GUEST_HOUSE')
  * // → true
  */
-export const requiresDetailedAddress = (input) => {
+export const requiresDetailedAddress = (input: string): boolean => {
   const normalized = normalizeAccommodationType(input);
   return normalized !== 'HOTEL';
 };

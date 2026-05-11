@@ -1,12 +1,12 @@
-// @ts-nocheck
-
 /**
  * Hong Kong Destination Metadata
  *
  * Core identification, currency, and arrival formalities information.
  */
 
-export const metadata = {
+import { DestinationMetadata } from '../types';
+
+export const metadata: DestinationMetadata = {
   // Basic Identification
   id: 'hk',
   code: 'HK',

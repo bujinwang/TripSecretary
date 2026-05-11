@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { InfoScreenConfig } from '../types';
 
-export const taiwanInfoScreenConfig = {
+export const taiwanInfoScreenConfig: InfoScreenConfig = {
   flag: '🇹🇼',
   headerTitleKey: 'taiwan.info.headerTitle',
   titleKey: 'taiwan.info.title',

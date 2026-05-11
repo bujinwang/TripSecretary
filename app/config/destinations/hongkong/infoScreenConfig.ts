@@ -1,6 +1,6 @@
-// @ts-nocheck
+import { InfoScreenConfig } from '../types';
 
-export const hongkongInfoScreenConfig = {
+export const hongkongInfoScreenConfig: InfoScreenConfig = {
   flag: '🇭🇰',
   headerTitleKey: 'hongkong.info.headerTitle',
   titleKey: 'hongkong.info.title',

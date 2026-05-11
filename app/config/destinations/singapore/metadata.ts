@@ -1,12 +1,12 @@
-// @ts-nocheck
-
 /**
  * Singapore Destination Metadata
  *
  * Core identification, currency, and arrival card details for Singapore.
  */
 
-export const metadata = {
+import { DestinationMetadata } from '../types';
+
+export const metadata: DestinationMetadata = {
   // Basic Identification
   id: 'sg',
   code: 'SG',
