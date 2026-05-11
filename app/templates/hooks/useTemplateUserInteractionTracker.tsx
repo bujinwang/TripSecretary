@@ -18,8 +18,9 @@ const generateSessionId = () => {
  * @param {Object} config - Template configuration
  * @returns {Object} Hook interface with tracking methods
  */
-export const useTemplateUserInteractionTracker = (screenId, config) => {
-  const [interactionState, setInteractionState] = useState({});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const useTemplateUserInteractionTracker = (screenId: string, config: any) => {
+  const [interactionState, setInteractionState] = useState<Record<string, any>>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const sessionIdRef = useRef(generateSessionId());
   const storageKey = `${STORAGE_KEY_PREFIX}${screenId}`;
@@ -57,7 +58,7 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
                 };
               } else {
                 hasCorruption = true;
-                logger.warn('Tracker', `Corrupted field state for ${fieldName}, skipping`);
+                logger.warn('Tracker', `Corrupted field state for ${String(fieldName)}, skipping`);
               }
             });
 
@@ -70,14 +71,14 @@ export const useTemplateUserInteractionTracker = (screenId, config) => {
             throw new Error('Invalid state structure');
           }
         } catch (parseError) {
-          logger.error('Tracker', 'Failed to parse interaction state:', parseError);
+          logger.error('Tracker', `Failed to parse interaction state: ${parseError}`);
           await AsyncStorage.removeItem(storageKey);
           setInteractionState({});
         }
       }
       setIsInitialized(true);
     } catch (error) {
-      logger.error('Tracker', 'Failed to load interaction state:', error);
+      logger.error('Tracker', `Failed to load interaction state: ${error}`);
       setInteractionState({});
       setIsInitialized(true);
     }
@@ -99,19 +100,19 @@ return;
       };
       await AsyncStorage.setItem(storageKey, JSON.stringify(stateToSave));
     } catch (error) {
-      logger.error('Tracker', 'Failed to save interaction state:', error);
+      logger.error('Tracker', `Failed to save interaction state: ${error}`);
     }
   }, [storageKey, config.tracking?.trackFieldModifications]);
 
   /**
    * Mark a field as user-modified
    */
-  const markFieldAsModified = useCallback((fieldName, value) => {
+  const markFieldAsModified = useCallback((fieldName: string, value: any) => {
     if (!config.tracking?.trackFieldModifications) {
 return;
 }
 
-    setInteractionState(prevState => {
+    setInteractionState((prevState: Record<string, any>) => {
       const existingState = prevState[fieldName] || {};
       const newState = {
         ...prevState,
@@ -132,7 +133,7 @@ return;
   /**
    * Check if a field has been user-modified
    */
-  const isFieldUserModified = useCallback((fieldName) => {
+  const isFieldUserModified = useCallback((fieldName: string) => {
     if (!config.tracking?.trackFieldModifications) {
 return true;
 } // If tracking disabled, treat all as modified
@@ -142,7 +143,7 @@ return true;
   /**
    * Get field interaction details
    */
-  const getFieldInteractionDetails = useCallback((fieldName) => {
+  const getFieldInteractionDetails = useCallback((fieldName: string) => {
     return interactionState[fieldName] || {
       isUserModified: false,
       lastModified: null,
@@ -153,12 +154,12 @@ return true;
   /**
    * Mark a field as pre-filled (not user-modified)
    */
-  const markFieldAsPreFilled = useCallback((fieldName, value) => {
+  const markFieldAsPreFilled = useCallback((fieldName: string, value: any) => {
     if (!config.tracking?.trackFieldModifications) {
 return;
 }
 
-    setInteractionState(prevState => {
+    setInteractionState((prevState: Record<string, any>) => {
       // Don't overwrite if already user-modified
       if (prevState[fieldName]?.isUserModified) {
         return prevState;
@@ -181,12 +182,12 @@ return;
   /**
    * Reset interaction state for a specific field
    */
-  const resetFieldInteraction = useCallback((fieldName) => {
+  const resetFieldInteraction = useCallback((fieldName: string) => {
     if (!config.tracking?.trackFieldModifications) {
 return;
 }
 
-    setInteractionState(prevState => {
+    setInteractionState((prevState: Record<string, any>) => {
       const newState = { ...prevState };
       delete newState[fieldName];
       saveInteractionState(newState);
@@ -211,7 +212,7 @@ return;
     try {
       await AsyncStorage.removeItem(storageKey);
     } catch (error) {
-      logger.error('Tracker', 'Failed to clear interaction state:', error);
+      logger.error('Tracker', `Failed to clear interaction state: ${error}`);
     }
   }, [storageKey]);
 

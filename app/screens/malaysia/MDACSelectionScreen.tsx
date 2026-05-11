@@ -17,7 +17,8 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  const { t } = useLocale();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t } = useLocale() as any;
 
   const goToGuide = () => {
     navigation.navigate('MDACGuide', { passport, destination, travelInfo });

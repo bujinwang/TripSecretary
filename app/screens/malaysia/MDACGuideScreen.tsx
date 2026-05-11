@@ -17,7 +17,8 @@ import UserDataService from '../../services/data/UserDataService';
 const MDACGuideScreen = ({ navigation, route }: any) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  const { t } = useLocale();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t } = useLocale() as any;
 
   const steps = useMemo(
     () =>

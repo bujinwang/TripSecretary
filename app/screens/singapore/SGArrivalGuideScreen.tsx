@@ -24,7 +24,8 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
     travelInfo = null,
   } = route.params ?? {};
   const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
-  const { t } = useLocale();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t } = useLocale() as any;
 
   const steps = useMemo(
     () =>

@@ -19,7 +19,8 @@ type SGArrivalSelectionProps = RootStackScreenProps<'SGArrivalSelection'>;
 const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigation, route }) => {
   const { passport: rawPassport, destination = null, travelInfo = null } = route.params ?? {};
   const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
-  const { t } = useLocale();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t } = useLocale() as any;
 
   const goToGuide = () => {
     navigation.navigate('SGArrivalGuide', { passport, destination, travelInfo });
