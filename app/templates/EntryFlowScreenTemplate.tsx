@@ -38,7 +38,9 @@
  * );
  */
 
+import { EntryFlowConfig } from '../config/destinations/types';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+// @ts-expect-error - prop-types lacks type declarations
 import PropTypes from 'prop-types';
 import { ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -57,7 +59,7 @@ import {
   Text as TamaguiText,
 } from '../components/tamagui';
 
-const mapDestinationId = (id) => {
+const mapDestinationId = (id: string): string => {
   if (id === 'us') {
 return 'usa';
 }
@@ -82,10 +84,32 @@ return 'tw';
   return id;
 };
 
+// Context value type
+interface EntryFlowTemplateContextValue {
+  config: EntryFlowConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, options?: any) => any;
+  navigation: { goBack: () => void; navigate: (screen: string, params?: unknown) => void } | null;
+  route: { params?: Record<string, unknown> } | null;
+  passport: Record<string, unknown> | null;
+  destination: Record<string, unknown> | null;
+  userId: string | null;
+  isLoading: boolean;
+  refreshing: boolean;
+  completionPercent: number;
+  completionStatus: string;
+  categories: Array<Record<string, unknown>>;
+  userData: Record<string, unknown> | null;
+  arrivalDate: string | null;
+  loadData: () => void;
+  onRefresh: () => void;
+}
+
 // Provide a resilient default context so dependent components don't crash
-const defaultEntryFlowContextValue = {
-  config: {},
-  t: (key, options = {}) => options?.defaultValue ?? key,
+const defaultEntryFlowContextValue: EntryFlowTemplateContextValue = {
+  config: {} as EntryFlowConfig,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, options: any = {}) => options?.defaultValue ?? key,
   navigation: {
     goBack: () => {},
     navigate: () => {},
@@ -106,10 +130,10 @@ const defaultEntryFlowContextValue = {
 };
 
 // Template Context
-const EntryFlowTemplateContext = createContext(defaultEntryFlowContextValue);
+const EntryFlowTemplateContext = createContext<EntryFlowTemplateContextValue>(defaultEntryFlowContextValue);
 
 const useEntryFlowTemplate = () => {
-  const context = useContext(EntryFlowTemplateContext);
+  const context = useContext<EntryFlowTemplateContextValue>(EntryFlowTemplateContext);
   if (!context) {
     if (__DEV__) {
       console.error(
@@ -125,6 +149,7 @@ const useEntryFlowTemplate = () => {
 /**
  * Main Template Component
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EntryFlowScreenTemplate = ({
   children,
   config,
@@ -132,7 +157,7 @@ const EntryFlowScreenTemplate = ({
   navigation,
   // Optional custom data loader
   useDataLoaderHook, // eslint-disable-line @typescript-eslint/no-unused-vars
-}) => {
+}: any) => {
   // Get translation function early - needed for context value
   const { t } = useLocale();
 
@@ -207,7 +232,7 @@ const EntryFlowScreenTemplate = ({
   const [completionPercent, setCompletionPercent] = useState(0);
   const [completionStatus, setCompletionStatus] = useState('incomplete');
   const [categories, setCategories] = useState([]);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<Record<string, unknown> | null>(null);
   const [arrivalDate, setArrivalDate] = useState(null);
 
   // Load data function
@@ -249,9 +274,9 @@ const EntryFlowScreenTemplate = ({
       }
 
       if (config?.categories) {
-        const categoryData = config.categories.map((category) => {
-          const summaryKey = category.id === 'personal' ? 'personalInfo' : category.id;
-          const summary = completionSummary.categorySummary[summaryKey];
+        const categoryData = config.categories.map((category: any) => {
+          const summaryKey: string = category.id === 'personal' ? 'personalInfo' : category.id;
+          const summary = (completionSummary.categorySummary as any)[summaryKey];
           if (!summary) {
             return null;
           }
@@ -263,7 +288,7 @@ const EntryFlowScreenTemplate = ({
             status: summary.state,
             completedCount: summary.completed || summary.validFunds || 0,
             totalCount: summary.total || 1,
-            missingFields: completionSummary.missingFields[summaryKey] || [],
+            missingFields: (completionSummary.missingFields as any)[summaryKey] || [],
           };
         }).filter(Boolean);
 
@@ -319,7 +344,7 @@ const EntryFlowScreenTemplate = ({
   if (!config) {
     console.error('[EntryFlowScreenTemplate] config is required');
     return (
-      <EntryFlowTemplateContext.Provider value={{ config: {}, t, navigation: null, route: null }}>
+      <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
           {children}
         </SafeAreaView>
@@ -330,7 +355,7 @@ const EntryFlowScreenTemplate = ({
   if (!route) {
     console.error('[EntryFlowScreenTemplate] route is required');
     return (
-      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route: null }}>
+      <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, config, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
           {children}
         </SafeAreaView>
@@ -341,7 +366,7 @@ const EntryFlowScreenTemplate = ({
   if (!navigation) {
     console.error('[EntryFlowScreenTemplate] navigation is required');
     return (
-      <EntryFlowTemplateContext.Provider value={{ config, t, navigation: null, route }}>
+      <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, config, t, navigation: null, route }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
           {children}
         </SafeAreaView>
@@ -362,7 +387,8 @@ const EntryFlowScreenTemplate = ({
 /**
  * Header Component
  */
-EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent }: any) => {
   const { t, navigation, config } = useEntryFlowTemplate();
 
   const translationKey =
@@ -399,7 +425,7 @@ EntryFlowScreenTemplate.Header = ({ title, titleKey, onBackPress, rightComponent
       elevation={10}
     >
       <BackButton
-        onPress={onBackPress || (() => navigation.goBack())}
+        onPress={onBackPress || (() => navigation?.goBack())}
         label={t('common.back', { defaultValue: 'Back' })}
       />
       <TamaguiText fontSize="$5" fontWeight="600" color="$textPrimary" flex={1} textAlign="center">
@@ -420,20 +446,23 @@ EntryFlowScreenTemplate.StatusBanner = () => {
   const rawDestinationId = config.destinationId || 'japan';
   const destinationId = mapDestinationId(rawDestinationId);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = config.status as any;
+
   const statusConfig = {
     ready: {
       color: '#E6F9E6',
       icon: '✅',
       title: t(
-        config.status?.ready?.titleKey || `${destinationId}.entryFlow.status.ready.title`,
+        s?.ready?.titleKey || `${destinationId}.entryFlow.status.ready.title`,
         {
-          defaultValue: config.status?.ready?.defaultTitle || 'Ready to Submit!'
+          defaultValue: s?.ready?.defaultTitle || 'Ready to Submit!'
         }
       ),
       subtitle: t(
-        config.status?.ready?.subtitleKey || `${destinationId}.entryFlow.status.ready.subtitle`,
+        s?.ready?.subtitleKey || `${destinationId}.entryFlow.status.ready.subtitle`,
         {
-          defaultValue: config.status?.ready?.defaultSubtitle || 'All information complete'
+          defaultValue: s?.ready?.defaultSubtitle || 'All information complete'
         }
       ),
     },
@@ -441,15 +470,15 @@ EntryFlowScreenTemplate.StatusBanner = () => {
       color: '#FFF9E6',
       icon: '⏳',
       title: t(
-        config.status?.mostly_complete?.titleKey || `${destinationId}.entryFlow.status.mostlyComplete.title`,
+        s?.mostly_complete?.titleKey || `${destinationId}.entryFlow.status.mostlyComplete.title`,
         {
-          defaultValue: config.status?.mostly_complete?.defaultTitle || 'Almost There'
+          defaultValue: s?.mostly_complete?.defaultTitle || 'Almost There'
         }
       ),
       subtitle: t(
-        config.status?.mostly_complete?.subtitleKey || `${destinationId}.entryFlow.status.mostlyComplete.subtitle`,
+        s?.mostly_complete?.subtitleKey || `${destinationId}.entryFlow.status.mostlyComplete.subtitle`,
         {
-          defaultValue: config.status?.mostly_complete?.defaultSubtitle || `${completionPercent}% complete`,
+          defaultValue: s?.mostly_complete?.defaultSubtitle || `${completionPercent}% complete`,
           percent: completionPercent
         }
       ),
@@ -458,21 +487,21 @@ EntryFlowScreenTemplate.StatusBanner = () => {
       color: '#FFE6E6',
       icon: '📝',
       title: t(
-        config.status?.needs_improvement?.titleKey || `${destinationId}.entryFlow.status.needsImprovement.title`,
+        s?.needs_improvement?.titleKey || `${destinationId}.entryFlow.status.needsImprovement.title`,
         {
-          defaultValue: config.status?.needs_improvement?.defaultTitle || 'Please Complete'
+          defaultValue: s?.needs_improvement?.defaultTitle || 'Please Complete'
         }
       ),
       subtitle: t(
-        config.status?.needs_improvement?.subtitleKey || `${destinationId}.entryFlow.status.needsImprovement.subtitle`,
+        s?.needs_improvement?.subtitleKey || `${destinationId}.entryFlow.status.needsImprovement.subtitle`,
         {
-          defaultValue: config.status?.needs_improvement?.defaultSubtitle || 'More information needed'
+          defaultValue: s?.needs_improvement?.defaultSubtitle || 'More information needed'
         }
       ),
     },
   };
 
-  const status = statusConfig[completionStatus] || statusConfig.needs_improvement;
+  const status = (statusConfig as any)[completionStatus] || statusConfig.needs_improvement;
 
   return (
     <YStack paddingHorizontal="$md" paddingTop="$md">
@@ -496,7 +525,7 @@ EntryFlowScreenTemplate.StatusBanner = () => {
 /**
  * Scrollable Content Container
  */
-EntryFlowScreenTemplate.ScrollContainer = ({ children }) => {
+EntryFlowScreenTemplate.ScrollContainer = ({ children }: any) => {
   const { refreshing, onRefresh } = useEntryFlowTemplate();
 
   return (
@@ -541,7 +570,7 @@ EntryFlowScreenTemplate.AutoContent = () => {
     return <EntryFlowScreenTemplate.LoadingIndicator />;
   }
 
-  const minPercent = config.completion?.minPercent || 80;
+  const minPercent = (config.completion?.minPercent as number) || 80;
   const isReady = completionPercent >= 100;
   const isAlmost = !isReady && completionPercent >= minPercent;
   const hasSubmitScreen = Boolean(config.screens?.submit);
@@ -600,12 +629,13 @@ EntryFlowScreenTemplate.AutoContent = () => {
         primaryActionIsEdit={primaryActionIsEdit}
       />
 
-      <HelpCard t={t} />
+      <HelpCard />
     </EntryFlowScreenTemplate.ScrollContainer>
   );
 };
 
-function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }: any) {
   const accentColor = isReady ? '#0AA35C' : isAlmost ? '#FF8C00' : '#1E88E5';
   const backgroundColor = isReady ? '#E5F8EE' : isAlmost ? '#FFF6E6' : '#E6F1FF';
   const remaining = Math.max(0, 100 - percent);
@@ -706,6 +736,7 @@ function ProgressHeroCard({ percent, t, destination, isReady, isAlmost, config }
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PrimaryActionCard({
   t,
   navigation,
@@ -716,7 +747,7 @@ function PrimaryActionCard({
   destination,
   userData,
   primaryActionIsEdit, // eslint-disable-line @typescript-eslint/no-unused-vars
-}) {
+}: any) {
   const hasSubmitScreen = Boolean(config.screens?.submit);
   const entryGuideScreen = config.screens?.entryGuide;
 
@@ -727,19 +758,19 @@ function PrimaryActionCard({
   const handlePress = () => {
     if (isReady) {
       if (hasSubmitScreen) {
-        navigation.navigate(config.screens.submit, route.params);
+        navigation?.navigate(config.screens?.submit, route?.params);
         return;
       }
       if (useEntryGuideAsPrimary && entryGuideScreen) {
-        navigation.navigate(entryGuideScreen, {
-          ...route.params,
+        navigation?.navigate(entryGuideScreen, {
+          ...route?.params,
           userData,
         });
         return;
       }
     }
     const travelInfoScreen = config.screens?.travelInfo || 'VietnamTravelInfo';
-    navigation.navigate(travelInfoScreen, route.params);
+    navigation?.navigate(travelInfoScreen, route?.params);
   };
 
   const gradientColors = useEntryGuideAsPrimary
@@ -830,7 +861,8 @@ function PrimaryActionCard({
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function SecondaryEditActionCard({ t, navigation, route, config }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function SecondaryEditActionCard({ t, navigation, route, config }: any) {
   // Map 'us' to 'usa' for translation keys
   const rawDestinationId = config.destinationId || 'japan';
   const destinationId = mapDestinationId(rawDestinationId);
@@ -882,7 +914,8 @@ function SecondaryEditActionCard({ t, navigation, route, config }) {
   );
 }
 
-function CountdownCard({ arrivalDate, t, config }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CountdownCard({ arrivalDate, t, config }: any) {
   const { language } = useLocale();
 
   if (!arrivalDate) {
@@ -893,9 +926,9 @@ function CountdownCard({ arrivalDate, t, config }) {
   const rawDestinationId = config.destinationId || 'japan';
   const destinationId = rawDestinationId === 'us' ? 'usa' : rawDestinationId;
 
-  const arrival = new Date(arrivalDate);
+  const arrival = new Date(arrivalDate as string);
   const now = new Date();
-  const diff = arrival - now;
+  const diff = arrival.getTime() - now.getTime();
 
   if (Number.isNaN(diff)) {
     return null;
@@ -982,6 +1015,7 @@ function CountdownCard({ arrivalDate, t, config }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function QuickActionsRow({
   t,
   navigation,
@@ -990,7 +1024,7 @@ function QuickActionsRow({
   config,
   useEntryGuideAsPrimary,
   primaryActionIsEdit,
-}) {
+}: any) {
   const rawDestinationId = config.destinationId || 'japan';
   const destinationId = mapDestinationId(rawDestinationId);
   const showPreviewQuickAction = config.features?.disablePreviewQuickAction !== true;
@@ -1238,9 +1272,9 @@ EntryFlowScreenTemplate.SubmissionCountdown = () => {
   }
 
   // Calculate days until arrival
-  const arrival = new Date(arrivalDate);
+  const arrival = new Date(arrivalDate as string);
   const now = new Date();
-  const daysUntilArrival = Math.ceil((arrival - now) / (1000 * 60 * 60 * 24));
+  const daysUntilArrival = Math.ceil((arrival.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   if (daysUntilArrival < 0) {
     return null; // Already arrived
@@ -1277,11 +1311,11 @@ EntryFlowScreenTemplate.ActionButtons = () => {
 
   const handleContinueEditing = () => {
     const travelInfoScreen = config.screens?.travelInfo || 'VietnamTravelInfo';
-    navigation.navigate(travelInfoScreen, route.params);
+    navigation?.navigate(travelInfoScreen, route?.params);
   };
 
   const handleSubmit = () => {
-    if (completionPercent < (config.completion?.minPercent || 80)) {
+    if (completionPercent < ((config.completion?.minPercent as number) || 80)) {
       Alert.alert(
         t(`${config.destinationId}.entryFlow.actions.incomplete.title`, { defaultValue: 'Incomplete Information' }),
         t(`${config.destinationId}.entryFlow.actions.incomplete.message`, {
@@ -1293,7 +1327,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
 
     // Navigate to submission screen if exists
     if (config.screens?.submit) {
-      navigation.navigate(config.screens.submit, route.params);
+      navigation?.navigate(config.screens?.submit, route?.params);
     } else {
       Alert.alert(
         t(`${config.destinationId}.entryFlow.actions.success.title`, { defaultValue: 'Ready!' }),
@@ -1311,7 +1345,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
         size="lg"
         onPress={handleSubmit}
         fullWidth
-        disabled={completionPercent < (config.completion?.minPercent || 80)}
+        disabled={completionPercent < ((config.completion?.minPercent as number) || 80)}
       >
         {completionPercent >= 100
           ? t(`${destinationId}.entryFlow.actions.submit`, { defaultValue: 'Submit Entry Card' })
@@ -1320,7 +1354,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
       </BaseButton>
 
       <BaseButton
-        variant="outline"
+        variant="outlined"
         size="lg"
         onPress={handleContinueEditing}
         fullWidth
@@ -1334,7 +1368,7 @@ EntryFlowScreenTemplate.ActionButtons = () => {
 /**
  * Loading Indicator Component
  */
-EntryFlowScreenTemplate.LoadingIndicator = ({ message }) => {
+EntryFlowScreenTemplate.LoadingIndicator = ({ message }: any) => {
   const { t, isLoading } = useEntryFlowTemplate();
 
   if (!isLoading) {
