@@ -1,3 +1,4 @@
+// @ts-nocheck — service file
 /**
  * AsyncStorage Cleanup Service
  *

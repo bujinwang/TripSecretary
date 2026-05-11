@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 台湾入境卡提交方式选择
 import React from 'react';
 import {

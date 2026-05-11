@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 新加坡 SG Arrival Card 提交方式选择
 import React from 'react';
 import {

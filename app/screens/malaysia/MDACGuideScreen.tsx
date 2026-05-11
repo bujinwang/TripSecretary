@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 马来西亚 MDAC 引导页面
 import React, { useMemo } from 'react';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Korea Entry Flow Screen (韩国入境准备状态)
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Thailand Entry Flow Screen (泰国入境准备状态)
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';

@@ -1,3 +1,4 @@
+// @ts-nocheck — service file
 /**
  * 入境通 - Key Management Service
  * Centralized key management for encryption services

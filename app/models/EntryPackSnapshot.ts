@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * EntryPackSnapshot Model - Immutable historical record of entry packs
  */

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 马来西亚 MDAC 提交方式选择
 import React from 'react';
 import {

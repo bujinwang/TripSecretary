@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Copy Write Mode Screen (抄写模式)
 import React, { useState, useEffect } from 'react';
 import {

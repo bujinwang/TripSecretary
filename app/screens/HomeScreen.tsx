@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Home Screen
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {

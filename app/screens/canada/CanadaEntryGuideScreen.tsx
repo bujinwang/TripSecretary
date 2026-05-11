@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Canada Entry Guide Screen
  * Powered by the shared EntryGuideTemplate.

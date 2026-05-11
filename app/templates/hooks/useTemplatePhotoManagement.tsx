@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';

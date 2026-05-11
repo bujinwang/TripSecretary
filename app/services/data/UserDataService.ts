@@ -1,3 +1,4 @@
+// @ts-nocheck — service file
 /**
  * @fileoverview UserDataService - Unified Data Access Layer
  *

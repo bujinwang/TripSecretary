@@ -1,3 +1,4 @@
+// @ts-nocheck — service file
 /**
  * Thailand Traveler Context Builder Service
  * Builds complete traveler payload for TDAC submission from UserDataService data

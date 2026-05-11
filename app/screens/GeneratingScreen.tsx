@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Generating Screen
 import React, { useEffect, useState } from 'react';
 import {

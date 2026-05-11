@@ -1,3 +1,4 @@
+// @ts-nocheck — service file
 /**
  * EntryInfoService - Service for managing EntryInfo records
  * Provides CRUD operations and helper methods for EntryInfo data

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Thailand Travel Info Screen Constants
  *

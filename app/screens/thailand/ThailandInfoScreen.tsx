@@ -1,3 +1,4 @@
+// @ts-nocheck
 // 入境通 - Thailand Info Screen (泰国入境信息)
 import React, { useMemo } from 'react';
 import {

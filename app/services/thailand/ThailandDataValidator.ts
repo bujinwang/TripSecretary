@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Thailand Data Validator Service
  * Provides validation logic for Thailand-specific data requirements

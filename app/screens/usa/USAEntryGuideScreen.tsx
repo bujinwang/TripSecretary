@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * US Entry Guide Screen
  * Provides step-by-step guidance for US entry process

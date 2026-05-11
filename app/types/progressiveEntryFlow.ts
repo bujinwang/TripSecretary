@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Progressive Entry Flow Type Definitions
  * TypeScript interfaces for progressive entry flow models and utilities

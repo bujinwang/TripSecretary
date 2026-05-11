@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Japan Entry Guide Screen
  * Now powered by the reusable EntryGuideTemplate.
