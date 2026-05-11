@@ -7,7 +7,7 @@ import TemplateFieldStateManager from '../utils/TemplateFieldStateManager';
 /**
  * Validate email format
  */
-const isValidEmail = (email) => {
+const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
@@ -15,7 +15,7 @@ const isValidEmail = (email) => {
 /**
  * Validate date is in the future
  */
-const isFutureDate = (dateString) => {
+const isFutureDate = (dateString: string): boolean => {
   const date = new Date(dateString);
   const now = new Date();
   return date > now;
@@ -24,7 +24,7 @@ const isFutureDate = (dateString) => {
 /**
  * Validate date is in the past
  */
-const isPastDate = (dateString) => {
+const isPastDate = (dateString: string): boolean => {
   const date = new Date(dateString);
   const now = new Date();
   return date < now;
@@ -33,7 +33,7 @@ const isPastDate = (dateString) => {
 /**
  * Validate date has minimum months of validity
  */
-const hasMinMonthsValidity = (dateString, minMonths) => {
+const hasMinMonthsValidity = (dateString: string, minMonths: number): boolean => {
   const date = new Date(dateString);
   const now = new Date();
   const monthsDiff = (date.getFullYear() - now.getFullYear()) * 12 + (date.getMonth() - now.getMonth());
@@ -53,6 +53,7 @@ const hasMinMonthsValidity = (dateString, minMonths) => {
  * @param {string} params.destinationId - Destination ID for translation keys (optional)
  * @returns {Object} Validation functions and state
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTemplateValidation = ({
   config,
   formState,
@@ -61,11 +62,11 @@ export const useTemplateValidation = ({
   debouncedSave,
   t,
   destinationId,
-}) => {
+}: any) => {
   /**
    * Validate a single field based on config rules
    */
-  const validateField = useCallback((fieldName, fieldValue, fieldConfig) => {
+  const validateField = useCallback((fieldName: string, fieldValue: any, fieldConfig: any) => {
     if (!fieldConfig) {
 return { isValid: true, isWarning: false, errorMessage: '' };
 }
@@ -147,7 +148,7 @@ return { isValid: true, isWarning: false, errorMessage: '' };
   /**
    * Get field config from template config
    */
-  const getFieldConfig = useCallback((fieldName) => {
+  const getFieldConfig = useCallback((fieldName: string) => {
     if (!config?.sections) {
 return null;
 }
@@ -176,7 +177,7 @@ continue;
   /**
    * Handle field blur with validation
    */
-  const handleFieldBlur = useCallback(async (fieldName, fieldValue) => {
+  const handleFieldBlur = useCallback(async (fieldName: string, fieldValue: any) => {
     try {
       // Mark field as user-modified
       if (userInteractionTracker) {
@@ -189,12 +190,12 @@ continue;
         const { isValid, isWarning, errorMessage } = validateField(fieldName, fieldValue, fieldConfig);
 
         // Update errors and warnings state
-        formState.setErrors?.(prev => ({
+        formState.setErrors?.((prev: any) => ({
           ...prev,
           [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
         }));
 
-        formState.setWarnings?.(prev => ({
+        formState.setWarnings?.((prev: any) => ({
           ...prev,
           [fieldName]: isWarning ? errorMessage : ''
         }));
@@ -235,7 +236,7 @@ continue;
   /**
    * Calculate field count for a section
    */
-  const getFieldCount = useCallback((sectionKey) => {
+  const getFieldCount = useCallback((sectionKey: string) => {
     const sectionConfig = config.sections?.[sectionKey];
     if (!sectionConfig) {
 return { filled: 0, total: 0 };
@@ -319,7 +320,7 @@ return 0;
   /**
    * Get smart button configuration
    */
-  const getSmartButtonConfig = useCallback(() => {
+  const getSmartButtonConfig = useCallback((): { label: string; variant: string; icon: string } => {
     const completionPercent = calculateCompletionPercent();
     const buttonConfig = config.navigation?.submitButton;
 
