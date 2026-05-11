@@ -26,8 +26,7 @@ import React from 'react';
 import { EntryFlowScreenTemplate } from '../../templates';
 import { vietnamEntryFlowConfig } from '../../config/destinations/vietnam/entryFlowConfig';
 
-const VietnamEntryFlowScreen = ({ navigation, route }) => {
-  return (
+const VietnamEntryFlowScreen = ({ navigation, route }) => (
     <EntryFlowScreenTemplate
       config={vietnamEntryFlowConfig}
       route={route}
@@ -38,7 +37,6 @@ const VietnamEntryFlowScreen = ({ navigation, route }) => {
       <EntryFlowScreenTemplate.AutoContent />
     </EntryFlowScreenTemplate>
   );
-};
 
 export default VietnamEntryFlowScreen;
 

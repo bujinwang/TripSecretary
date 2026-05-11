@@ -12,8 +12,7 @@ const HeroCard = ({
   metaLabel,
   progressLabel,
   onPress,
-}) => {
-  return (
+}) => (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.progressButton}
@@ -32,7 +31,6 @@ const HeroCard = ({
       </View>
     </View>
   );
-};
 
 const styles = StyleSheet.create({
   container: {

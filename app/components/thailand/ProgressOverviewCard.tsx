@@ -5,8 +5,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const ProgressOverviewCard = ({ totalCompletionPercent, styles }) => {
-  return (
+const ProgressOverviewCard = ({ totalCompletionPercent, styles }) => (
     <View style={styles.progressOverviewCard}>
       <Text style={styles.progressTitle}>准备进度</Text>
       <View style={styles.progressSteps}>
@@ -37,6 +36,5 @@ const ProgressOverviewCard = ({ totalCompletionPercent, styles }) => {
       </View>
     </View>
   );
-};
 
 export default ProgressOverviewCard;

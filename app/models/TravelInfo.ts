@@ -239,7 +239,7 @@ class TravelInfo {
       if (!this.userId) {
         throw new Error('User ID is required to save travel info');
       }
-      const userId = this.userId;
+      const {userId} = this;
 
       const result = await SecureStorageService.saveTravelInfo({
         id: this.id,

@@ -332,7 +332,7 @@ export const useUSDataPersistence = ({
         // Create new entry_info
         await UserDataService.createEntryInfo({
           passportId: passport?.id || userId,
-          destinationId: destinationId,
+          destinationId,
           status: 'draft',
         });
       }

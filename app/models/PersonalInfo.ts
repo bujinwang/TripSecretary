@@ -188,7 +188,7 @@ class PersonalInfo {
       if (!this.userId) {
         throw new Error('User ID is required to save personal info');
       }
-      const userId = this.userId;
+      const {userId} = this;
 
       const result = await SecureStorageService.savePersonalInfo({
         id: this.id,

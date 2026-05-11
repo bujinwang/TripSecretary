@@ -57,9 +57,7 @@ return 'N/A';
     }
   };
 
-  const getSectionTitle = () => {
-    return getLabel('passportInformation', 'ข้อมูลหนังสือเดินทาง');
-  };
+  const getSectionTitle = () => getLabel('passportInformation', 'ข้อมูลหนังสือเดินทาง');
 
   return (
     <View style={styles.infoSection}>

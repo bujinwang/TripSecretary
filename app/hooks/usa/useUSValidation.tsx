@@ -322,9 +322,7 @@ export const useUSValidation = ({
    * Check if form is valid for submission
    * No hard errors should exist
    */
-  const isFormValid = useMemo(() => {
-    return Object.keys(formState.errors).length === 0;
-  }, [formState.errors]);
+  const isFormValid = useMemo(() => Object.keys(formState.errors).length === 0, [formState.errors]);
 
   // ============================================================
   // UI HELPER FUNCTIONS

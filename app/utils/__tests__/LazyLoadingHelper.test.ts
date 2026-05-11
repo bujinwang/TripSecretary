@@ -47,7 +47,7 @@ describe('LazyLoadingHelper', () => {
 
     it('should generate correct getItemLayout function', () => {
       const props = LazyLoadingHelper.getOptimizedFlatListProps({ itemHeight: 100 });
-      const getItemLayout = props.getItemLayout;
+      const {getItemLayout} = props;
       
       const layout0 = getItemLayout([], 0);
       expect(layout0).toEqual({ length: 100, offset: 0, index: 0 });
@@ -58,7 +58,7 @@ describe('LazyLoadingHelper', () => {
 
     it('should generate keyExtractor function', () => {
       const props = LazyLoadingHelper.getOptimizedFlatListProps();
-      const keyExtractor = props.keyExtractor;
+      const {keyExtractor} = props;
       
       expect(keyExtractor({ id: 'test123' }, 0)).toBe('test123');
       expect(keyExtractor({ key: 'key456' }, 0)).toBe('key456');

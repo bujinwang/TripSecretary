@@ -298,8 +298,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   const rotation = useSharedValue(isExpanded ? 180 : 0);
 
-  const arrowStyle = useAnimatedStyle(() => {
-    return {
+  const arrowStyle = useAnimatedStyle(() => ({
       transform: [
         {
           rotate: withTiming(`${rotation.value}deg`, {
@@ -308,11 +307,12 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           }),
         },
       ],
-    };
-  });
+    }));
 
   const handleToggle = () => {
-    if (disabled) return;
+    if (disabled) {
+return;
+}
 
     const newExpanded = !isExpanded;
 

@@ -104,8 +104,8 @@ class DigitalArrivalCard {
 
   async save(): Promise<SaveResult> {
     try {
-      const entryInfoId = this.entryInfoId;
-      const userId = this.userId;
+      const {entryInfoId} = this;
+      const {userId} = this;
       if (!entryInfoId) {
         throw new Error('DigitalArrivalCard.save requires entryInfoId');
       }

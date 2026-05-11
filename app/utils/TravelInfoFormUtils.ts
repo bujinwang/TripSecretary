@@ -134,7 +134,7 @@ export const useTravelInfoForm = (destination, options = {}) => {
 
     // Migrate passport data
     if (userData.passport) {
-      const passport = userData.passport;
+      const {passport} = userData;
       if (passport.passportNumber) {
 existingDataToMigrate.passportNo = passport.passportNumber;
 }
@@ -157,7 +157,7 @@ existingDataToMigrate.sex = passport.gender;
 
     // Migrate personal info data
     if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
+      const {personalInfo} = userData;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -180,7 +180,7 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
 
     // Migrate travel info data
     if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
+      const {travelInfo} = userData;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -443,7 +443,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       // Create summary object compatible with existing code
       const summary = {
-        totalPercent: totalPercent,
+        totalPercent,
         metrics: {
           passport: {
             completed: metrics.requiredFieldsCompleted,
@@ -472,7 +472,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       console.log(`=== COMPLETION METRICS FOR ${destination.toUpperCase()} ===`);
       console.log('User modified fields:', metrics.userModifiedFields);
-      console.log('Total completion:', summary.totalPercent + '%');
+      console.log('Total completion:', `${summary.totalPercent  }%`);
       console.log('Metrics:', summary.metrics);
       
       return summary;
@@ -565,9 +565,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 /**
  * Get destination configuration
  */
-export const getDestinationConfig = (destination) => {
-  return DESTINATION_CONFIGS[destination] || DESTINATION_CONFIGS.thailand;
-};
+export const getDestinationConfig = (destination) => DESTINATION_CONFIGS[destination] || DESTINATION_CONFIGS.thailand;
 
 /**
  * Validate field value based on destination requirements

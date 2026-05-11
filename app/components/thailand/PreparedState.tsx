@@ -219,7 +219,7 @@ const PreparedState = ({
               style={styles.entryGuideButton}
               onPress={() => navigation.navigate('ThailandEntryGuide', {
                 passport: passportParam,
-                destination: destination,
+                destination,
                 completionData: userData,
                 showSubmittedTips: true
               })}
@@ -277,7 +277,7 @@ const PreparedState = ({
             style={styles.entryGuideButton}
             onPress={() => navigation.navigate('ThailandEntryGuide', {
               passport: passportParam,
-              destination: destination,
+              destination,
               completionData: userData,
               showSubmittedTips: false
             })}

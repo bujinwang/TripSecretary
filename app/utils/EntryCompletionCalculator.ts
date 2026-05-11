@@ -54,7 +54,7 @@ class EntryCompletionCalculator {
     const result = {
       hasValue: false,
       isValid: false,
-      value: value
+      value
     };
 
     // Check if value exists and is not empty
@@ -305,7 +305,7 @@ return false;
       percentage: hasValidFunds ? 100 : 0,
       details: {
         validFunds: validFunds.length,
-        totalFunds: totalFunds,
+        totalFunds,
         hasMinimumFunds: hasValidFunds
       }
     };
@@ -677,7 +677,7 @@ return false;
     }
 
     this.cache.set(cacheKey, {
-      result: result,
+      result,
       timestamp: Date.now()
     });
   }
@@ -1012,7 +1012,7 @@ return false;
     }
 
     this.destinationProgressCache.set(cacheKey, {
-      result: result,
+      result,
       timestamp: Date.now()
     });
   }

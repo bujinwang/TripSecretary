@@ -127,14 +127,12 @@ return;
   /**
    * Cleanup interval on unmount
    */
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-    };
-  }, []);
+    }, []);
 
   return [setRef, isVisible];
 };
@@ -220,13 +218,11 @@ export const useViewportImpression = (onImpression, options = {}) => {
   });
 
   // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
-    };
-  }, []);
+    }, []);
 
   return ref;
 };

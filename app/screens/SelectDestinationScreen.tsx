@@ -25,8 +25,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
   const { t, language } = useLocale();
 
   // Get all countries (enabled and disabled) for this screen
-  const countries = useMemo(() => {
-    return getAllCountries({ enabledOnly: false, includeFallbacks: true })
+  const countries = useMemo(() => getAllCountries({ enabledOnly: false, includeFallbacks: true })
       .map(country => ({
         ...country,
         displayName: language === 'zh-CN' || language === 'zh-TW'
@@ -43,8 +42,7 @@ const SelectDestinationScreen = ({ navigation, route }) => {
           return b.enabled ? 1 : -1;
         }
         return (a.priority || 99) - (b.priority || 99);
-      });
-  }, [language, t]);
+      }), [language, t]);
 
   const handleCountrySelect = (country) => {
     // Check if country is enabled

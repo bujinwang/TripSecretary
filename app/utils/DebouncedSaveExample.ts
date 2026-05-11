@@ -19,19 +19,19 @@ class AutoSaveExample {
     
     // Create debounced save functions for different data types
     this.savePassport = DebouncedSave.debouncedSave(
-      'passport_' + userId,
+      `passport_${  userId}`,
       (passportData) => UserDataService.savePassport(passportData, userId),
       300 // 300ms delay
     );
     
     this.savePersonalInfo = DebouncedSave.debouncedSave(
-      'personalInfo_' + userId,
+      `personalInfo_${  userId}`,
       (personalData) => UserDataService.upsertPersonalInfo(userId, personalData),
       300
     );
     
     this.saveTravelInfo = DebouncedSave.debouncedSave(
-      'travelInfo_' + userId,
+      `travelInfo_${  userId}`,
       (travelData) => UserDataService.saveTravelInfo(travelData, userId),
       300
     );
@@ -47,7 +47,7 @@ class AutoSaveExample {
     this.savePassport(passportData);
     
     // Get current save state for UI feedback
-    const saveState = DebouncedSave.getSaveState('passport_' + this.userId);
+    const saveState = DebouncedSave.getSaveState(`passport_${  this.userId}`);
     console.log('Save state:', saveState); // 'pending', 'saving', 'saved', 'error', or null
   }
 
@@ -82,7 +82,7 @@ class AutoSaveExample {
 
   // Example: Get save state for UI indicators
   getSaveStateForField(fieldType) {
-    const key = fieldType + '_' + this.userId;
+    const key = `${fieldType  }_${  this.userId}`;
     return DebouncedSave.getSaveState(key);
   }
 

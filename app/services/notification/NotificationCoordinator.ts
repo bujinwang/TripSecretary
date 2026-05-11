@@ -851,9 +851,9 @@ class NotificationCoordinator {
       const notificationId = await this.templateService.scheduleSupersededNotification(
         entryPackId,
         {
-          userId: userId,
-          destination: destination,
-          supersededInfo: supersededInfo,
+          userId,
+          destination,
+          supersededInfo,
           urgent: true // Superseded notifications should be high priority
         }
       );
@@ -902,10 +902,10 @@ class NotificationCoordinator {
         new Date(), // Send immediately
         {
           type: 'archival',
-          entryPackId: entryPackId,
-          userId: userId,
-          destination: destination,
-          archivalInfo: archivalInfo,
+          entryPackId,
+          userId,
+          destination,
+          archivalInfo,
           deepLink: `entryPack/${entryPackId}`,
           actions: [
             {

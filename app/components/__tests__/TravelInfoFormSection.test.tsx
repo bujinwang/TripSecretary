@@ -144,7 +144,7 @@ describe('TravelInfoFormSection', () => {
       const suggestionsProps = { 
         ...defaultProps, 
         showSuggestions: true,
-        suggestions: suggestions
+        suggestions
       };
       
       expect(suggestionsProps.showSuggestions).toBe(true);
@@ -157,7 +157,7 @@ describe('TravelInfoFormSection', () => {
       const noSuggestionsProps = { 
         ...defaultProps, 
         showSuggestions: false,
-        suggestions: suggestions
+        suggestions
       };
       
       expect(noSuggestionsProps.showSuggestions).toBe(false);
@@ -182,7 +182,7 @@ describe('TravelInfoFormSection', () => {
       const onChangeText = jest.fn();
       const interactionProps = { 
         ...defaultProps, 
-        onChangeText: onChangeText
+        onChangeText
       };
       
       // Simulate the callback being called
@@ -194,7 +194,7 @@ describe('TravelInfoFormSection', () => {
       const onUserInteraction = jest.fn();
       const interactionProps = { 
         ...defaultProps, 
-        onUserInteraction: onUserInteraction
+        onUserInteraction
       };
       
       // Simulate the callback being called
@@ -207,8 +207,8 @@ describe('TravelInfoFormSection', () => {
       const onUserInteraction = jest.fn();
       const bothCallbacksProps = { 
         ...defaultProps, 
-        onChangeText: onChangeText,
-        onUserInteraction: onUserInteraction
+        onChangeText,
+        onUserInteraction
       };
       
       // Simulate both callbacks being called
@@ -233,8 +233,8 @@ describe('TravelInfoFormSection', () => {
       testCases.forEach(({ fieldName, label }) => {
         const contextProps = {
           ...defaultProps,
-          fieldName: fieldName,
-          label: label
+          fieldName,
+          label
         };
 
         expect(contextProps.fieldName).toBe(fieldName);
@@ -319,7 +319,7 @@ describe('TravelInfoFormSection', () => {
       testCases.forEach(value => {
         const valueProps = { 
           ...defaultProps, 
-          value: value
+          value
         };
 
         expect(valueProps.value).toBe(value);

@@ -545,9 +545,7 @@ class NotificationActionService {
       ]);
       
       // Calculate summary statistics
-      const totalActions = Object.values(stats).reduce((total, typeStats) => {
-        return total + Object.values(typeStats).reduce((sum, action) => sum + action.count, 0);
-      }, 0);
+      const totalActions = Object.values(stats).reduce((total, typeStats) => total + Object.values(typeStats).reduce((sum, action) => sum + action.count, 0), 0);
       
       const mostUsedActions: Record<string, { actionId: string | null; count: number }> = {};
       Object.entries(stats).forEach(([type, typeStats]) => {

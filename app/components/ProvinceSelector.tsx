@@ -51,12 +51,10 @@ const ProvinceSelector: React.FC<ProvinceSelectorProps> = ({
     return regionsData;
   }, [regionsData]);
 
-  const options = useMemo<SearchableOption[]>(() => {
-    return provinces.map((province) => ({
+  const options = useMemo<SearchableOption[]>(() => provinces.map((province) => ({
       label: `${province.name} - ${province.nameZh}`,
       value: String(province.code ?? province.id ?? ''),
-    }));
-  }, [provinces]);
+    })), [provinces]);
 
   const getDisplayValue: GetDisplayValueFn = (val) => {
     if (!val) {

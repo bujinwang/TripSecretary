@@ -384,9 +384,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
   }, [t, config?.destinationId, destinationId]);
 
   // Memoize passport and userId
-  const passport = useMemo(() => {
-    return UserDataService.toSerializablePassport(rawPassport);
-  }, [rawPassport?.id, rawPassport?.passportNo]);
+  const passport = useMemo(() => UserDataService.toSerializablePassport(rawPassport), [rawPassport?.id, rawPassport?.passportNo]);
 
   const userId = useMemo(() => {
     const candidateIds = [
@@ -516,7 +514,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
     Object.entries(config.sections).forEach(([sectionKey, sectionConfig]) => {
       if (sectionConfig.enabled && sectionConfig.fields) {
         Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
-          const fieldName = fieldConfig.fieldName;
+          const {fieldName} = fieldConfig;
           const isArrivalField = arrivalFieldNames.includes(fieldName);
           const isDepartureField = departureFieldNames.includes(fieldName);
           initialState[fieldName] = '';
@@ -1012,7 +1010,7 @@ initialState.visaNumber = passport.visaNumber;
       // Passport fields - filter based on user interaction
       const allPassportFields = {
         id: formState.passportId, // CRITICAL: Pass ID to update existing record
-        fullName: fullName, // Combine name parts into fullName
+        fullName, // Combine name parts into fullName
         passportNumber: formState.passportNo,
         nationality: formState.nationality,
         dateOfBirth: formState.dob,
@@ -1889,8 +1887,7 @@ const LastEditedTimestamp = ({ time }) => {
 };
 
 // Privacy Notice
-const PrivacyNotice = ({ t }) => {
-  return (
+const PrivacyNotice = ({ t }) => (
     <YStack paddingHorizontal="$md" marginBottom="$md">
       <BaseCard variant="flat" padding="md">
         <XStack gap="$sm" alignItems="center">
@@ -1902,14 +1899,13 @@ const PrivacyNotice = ({ t }) => {
       </BaseCard>
     </YStack>
   );
-};
 
 // Smart Submit Button
 const SmartButton = ({ config, validation, onPress }) => {
   const buttonConfig = validation.getSmartButtonConfig();
   
   // Label is already translated by the validation hook
-  const label = buttonConfig.label;
+  const {label} = buttonConfig;
 
   return (
     <BaseButton

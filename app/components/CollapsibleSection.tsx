@@ -66,9 +66,7 @@ const CollapsibleSection = ({
     }
   };
 
-  const getChevronRotation = () => {
-    return isExpanded ? '180deg' : '0deg';
-  };
+  const getChevronRotation = () => isExpanded ? '180deg' : '0deg';
 
   return (
     <View style={[styles.container, style]}>

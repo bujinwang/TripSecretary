@@ -45,7 +45,9 @@ const chinaCities = [
 ]
 
 export function getDistrictsByProvince(provinceCode) {
-  if (!provinceCode) return []
+  if (!provinceCode) {
+return []
+}
   return chinaCities.filter((c) => c.provinceCode === provinceCode)
 }
 

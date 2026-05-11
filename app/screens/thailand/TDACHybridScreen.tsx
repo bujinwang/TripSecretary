@@ -92,7 +92,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
         case 'CLOUDFLARE_TOKEN_POLLING':
           const remainingSeconds = Math.ceil((message.maxPolls - message.pollCount) * 0.5);
           if (showCloudflare) {
-            setProgress('等待验证完成... (还剩 ' + remainingSeconds + ' 秒)');
+            setProgress(`等待验证完成... (还剩 ${  remainingSeconds  } 秒)`);
           }
           break;
 
@@ -138,7 +138,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       const validationResult = TDACValidationService.validateTravelerData(travelerInfo);
 
       if (!validationResult.isValid) {
-        throw new Error('数据验证失败：' + validationResult.errors.join(', '));
+        throw new Error(`数据验证失败：${  validationResult.errors.join(', ')}`);
       }
 
       setProgress('步骤 2/9: 初始化...');
@@ -319,7 +319,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
         `${errorDialog.icon} ${errorDialog.title}`,
         `${errorResult.userMessage}\n\n错误ID: ${errorResult.errorId}${
           errorResult.suggestions.length > 0 
-            ? '\n\n建议:\n• ' + errorResult.suggestions.slice(0, 3).join('\n• ')
+            ? `\n\n建议:\n• ${  errorResult.suggestions.slice(0, 3).join('\n• ')}`
             : ''
         }`,
         buttons
@@ -536,7 +536,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
    * Test success flow (Development Only)
    */
   const testSuccessFlow = () => {
-    const mockArrCardNo = 'TEST-' + Date.now().toString().slice(-8);
+    const mockArrCardNo = `TEST-${  Date.now().toString().slice(-8)}`;
     const mockTotalTime = '5.23';
 
     setArrCardNo(mockArrCardNo);
@@ -921,8 +921,7 @@ const styles = StyleSheet.create({
  * This is a debugging tool - only shown in development mode (__DEV__ = true)
  * In production, submission proceeds automatically without user confirmation
  */
-const showSubmissionConfirmation = (travelerData) => {
-  return new Promise((resolve) => {
+const showSubmissionConfirmation = (travelerData) => new Promise((resolve) => {
     // 创建详细的确认信息
     const confirmationDetails = `
 🔍 即将提交的信息：
@@ -992,7 +991,6 @@ const showSubmissionConfirmation = (travelerData) => {
       }
     );
   });
-};
 
 /**
  * 显示更详细的日志信息 (DEV MODE ONLY)

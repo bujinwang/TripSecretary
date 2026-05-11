@@ -42,7 +42,7 @@ class ArrivalWindowCalculator {
     return {
       isWithin72Hours: true, // Always true for Hong Kong (no restriction)
       hoursRemaining: Math.max(0, hoursUntilArrival),
-      canSubmit: canSubmit,
+      canSubmit,
       arrivalDate: arrival,
       submissionWindowStart: null, // No window start for Hong Kong
       daysRemaining: Math.max(0, Math.ceil(daysUntilArrival)),

@@ -386,10 +386,10 @@ return '';
     [loadMultiDestinationData, t]
   );
 
-  const getMockHistory = () => {
+  const getMockHistory = () => 
     // 返回空数组，不使用mock数据
-    return [];
-  };
+     []
+  ;
 
   const handleScanPassport = () => {
     navigation.navigate('ScanPassport');
@@ -543,9 +543,7 @@ return '';
     [language, t]
   );
 
-  const getDestinationFlag = (destinationId: string | null) => {
-    return getCountryFlag(destinationId);
-  };
+  const getDestinationFlag = (destinationId: string | null) => getCountryFlag(destinationId);
 
   const confirmLeaveEntry = useCallback(
     (destination: InProgressDestinationItem) => {
@@ -713,7 +711,7 @@ return null;
                 destination: {
                   id: pack.destinationId,
                   name: destinationName,
-                  flag: flag
+                  flag
                 },
                 passport: passportData ? {
                   id: 'user_001', // TODO: Get from auth context
@@ -829,7 +827,7 @@ return null;
                   destination: {
                     id: destination.destinationId,
                     name: destinationName,
-                    flag: flag
+                    flag
                   },
                   passport: passportData ? {
                     type: t('home.passport.type'),

@@ -159,9 +159,7 @@ export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, o
  * @param {string} uri - Image URI
  * @returns {Promise<Object>} Compressed image result
  */
-export const compressPassportPhoto = async (uri) => {
-  return compressImage(uri, CompressionPresets.PASSPORT, { rotate: true });
-};
+export const compressPassportPhoto = async (uri) => compressImage(uri, CompressionPresets.PASSPORT, { rotate: true });
 
 /**
  * Compress a document photo (ticket, receipt, etc.)
@@ -170,9 +168,7 @@ export const compressPassportPhoto = async (uri) => {
  * @param {string} uri - Image URI
  * @returns {Promise<Object>} Compressed image result
  */
-export const compressDocumentPhoto = async (uri) => {
-  return compressImage(uri, CompressionPresets.DOCUMENT, { rotate: true });
-};
+export const compressDocumentPhoto = async (uri) => compressImage(uri, CompressionPresets.DOCUMENT, { rotate: true });
 
 /**
  * Compress a fund proof photo
@@ -181,9 +177,7 @@ export const compressDocumentPhoto = async (uri) => {
  * @param {string} uri - Image URI
  * @returns {Promise<Object>} Compressed image result
  */
-export const compressFundProofPhoto = async (uri) => {
-  return compressImage(uri, CompressionPresets.PROOF, { rotate: true });
-};
+export const compressFundProofPhoto = async (uri) => compressImage(uri, CompressionPresets.PROOF, { rotate: true });
 
 /**
  * Generate a thumbnail for preview
@@ -192,9 +186,7 @@ export const compressFundProofPhoto = async (uri) => {
  * @param {string} uri - Image URI
  * @returns {Promise<Object>} Thumbnail result
  */
-export const generateThumbnail = async (uri) => {
-  return compressImage(uri, CompressionPresets.THUMBNAIL, { rotate: true });
-};
+export const generateThumbnail = async (uri) => compressImage(uri, CompressionPresets.THUMBNAIL, { rotate: true });
 
 /**
  * Get estimated file size reduction

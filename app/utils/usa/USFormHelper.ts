@@ -414,7 +414,7 @@ return '';
    * @returns {Object} - Badge style information
    */
   static getSectionBadgeStyle(fieldCount) {
-    const isComplete = fieldCount.isComplete;
+    const {isComplete} = fieldCount;
 
     return {
       style: isComplete ? 'complete' : 'incomplete',

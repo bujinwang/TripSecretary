@@ -40,7 +40,7 @@ describe('Login Screen Translations', () => {
   test('should handle interpolation in popularityText', () => {
     supportedLanguages.forEach(language => {
       const langTranslations = translations[language];
-      const popularityText = langTranslations.login.popularityText;
+      const {popularityText} = langTranslations.login;
       
       expect(popularityText).toContain('{{percent}}');
     });

@@ -358,7 +358,7 @@ const EntryPackDisplay = ({
     };
   }, [tdacPdfCandidate]);
 
-  const fallbackHotelText = config.fallbackHotelText;
+  const {fallbackHotelText} = config;
 
   // Handle photo viewer
   const handleOpenPhotoViewer = (photoUri) => {

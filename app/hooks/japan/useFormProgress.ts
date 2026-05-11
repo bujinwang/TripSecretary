@@ -68,14 +68,12 @@ return field;
 };
 
 export const useFormProgress = (formData) => {
-  const sectionProgress = useMemo(() => {
-    return {
+  const sectionProgress = useMemo(() => ({
       passport: getFieldCount('passport', formData),
       personal: getFieldCount('personal', formData),
       funds: getFieldCount('funds', formData),
       travel: getFieldCount('travel', formData),
-    };
-  }, [
+    }), [
     formData.fullName,
     formData.nationality,
     formData.passportNo,
@@ -113,12 +111,10 @@ export const useFormProgress = (formData) => {
   const remainingItems = Math.max(totalFields - totalFilled, 0);
   const isReadyForTravel = completionPercent >= 100;
 
-  const isFormValid = () => {
-    return sectionProgress.passport.filled === sectionProgress.passport.total &&
+  const isFormValid = () => sectionProgress.passport.filled === sectionProgress.passport.total &&
            sectionProgress.personal.filled === sectionProgress.personal.total &&
            sectionProgress.funds.filled === sectionProgress.funds.total &&
            sectionProgress.travel.filled === sectionProgress.travel.total;
-  };
 
   return {
     sectionProgress,

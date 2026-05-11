@@ -100,9 +100,15 @@ class USEntryGuideService {
     this.loadProgress();
   }
 
-  getGuide(): GuideConfig { return this.guide; }
-  getStep(stepId: string): Step | undefined { return this.guide.steps.find(step => step.id === stepId); }
-  getAllSteps(): Step[] { return this.guide.steps; }
+  getGuide(): GuideConfig {
+ return this.guide; 
+}
+  getStep(stepId: string): Step | undefined {
+ return this.guide.steps.find(step => step.id === stepId); 
+}
+  getAllSteps(): Step[] {
+ return this.guide.steps; 
+}
 
   getProgress(): Progress {
     const total = this.guide.steps.length;
@@ -128,18 +134,24 @@ class USEntryGuideService {
   }
 
   getNextStep(): Step | null {
-    if (!this.currentStep) return this.guide.steps.length > 0 ? this.guide.steps[0] : null;
+    if (!this.currentStep) {
+return this.guide.steps.length > 0 ? this.guide.steps[0] : null;
+}
     const idx = this.guide.steps.findIndex(s => s.id === this.currentStep);
     return idx < this.guide.steps.length - 1 ? this.guide.steps[idx + 1] : null;
   }
 
   getPreviousStep(): Step | null {
-    if (!this.currentStep) return null;
+    if (!this.currentStep) {
+return null;
+}
     const idx = this.guide.steps.findIndex(s => s.id === this.currentStep);
     return idx > 0 ? this.guide.steps[idx - 1] : null;
   }
 
-  getESTAInfo(): any { return this.guide.esta || null; }
+  getESTAInfo(): any {
+ return this.guide.esta || null; 
+}
 
   getVWPInfo(): any {
     return {
@@ -174,14 +186,30 @@ class USEntryGuideService {
     };
   }
 
-  getBiometricInfo(): any { return this.guide.biometric || null; }
-  getEntryCardInfo(): any { return this.guide.entryCard || null; }
-  getCustomsInfo(): any { return this.guide.customs || null; }
-  getTransportInfo(): any { return this.guide.transport || null; }
-  getCurrencyInfo(): any { return this.guide.currency || null; }
-  getEmergencyContacts(): any { return this.guide.emergency; }
-  getCultureTips(): any { return this.guide.cultureTips; }
-  getImportantNotes(): string[] | undefined { return this.guide.importantNotes; }
+  getBiometricInfo(): any {
+ return this.guide.biometric || null; 
+}
+  getEntryCardInfo(): any {
+ return this.guide.entryCard || null; 
+}
+  getCustomsInfo(): any {
+ return this.guide.customs || null; 
+}
+  getTransportInfo(): any {
+ return this.guide.transport || null; 
+}
+  getCurrencyInfo(): any {
+ return this.guide.currency || null; 
+}
+  getEmergencyContacts(): any {
+ return this.guide.emergency; 
+}
+  getCultureTips(): any {
+ return this.guide.cultureTips; 
+}
+  getImportantNotes(): string[] | undefined {
+ return this.guide.importantNotes; 
+}
 
   checkESTAApplicationTime(arrivalDateTime: Date | string): ESTAApplicationTimeCheck {
     const now = new Date();
@@ -197,8 +225,12 @@ class USEntryGuideService {
   }
 
   private _getApplicationTimeMessage(days: number): string {
-    if (days <= 0) return '航班已抵达，请尽快完成入境流程';
-    if (days <= 3) return `可在${Math.round(days)}天后申请ESTA`;
+    if (days <= 0) {
+return '航班已抵达，请尽快完成入境流程';
+}
+    if (days <= 3) {
+return `可在${Math.round(days)}天后申请ESTA`;
+}
     return `请在抵达前72小时内申请ESTA，目前还需等待${Math.round(days - 3)}天`;
   }
 
@@ -227,15 +259,21 @@ class USEntryGuideService {
   }
 
   private _parseTimeToMinutes(timeStr: string | undefined): number {
-    if (!timeStr) return 0;
+    if (!timeStr) {
+return 0;
+}
     const m = timeStr.match(/(\d+)\s*(分钟|小时|min|hour)/);
-    if (!m) return 0;
+    if (!m) {
+return 0;
+}
     const v = parseInt(m[1], 10);
     return (m[2].includes('小时') || m[2].includes('hour')) ? v * 60 : v;
   }
 
   private _formatMinutesToTime(minutes: number): string {
-    if (minutes < 60) return `${minutes}分钟`;
+    if (minutes < 60) {
+return `${minutes}分钟`;
+}
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return m > 0 ? `${h}小时${m}分钟` : `${h}小时`;
@@ -273,8 +311,12 @@ class USEntryGuideService {
   }
 
   getStepStatus(stepId: string): 'completed' | 'current' | 'pending' {
-    if (this.completedSteps.has(stepId)) return 'completed';
-    if (this.currentStep === stepId) return 'current';
+    if (this.completedSteps.has(stepId)) {
+return 'completed';
+}
+    if (this.currentStep === stepId) {
+return 'current';
+}
     return 'pending';
   }
 
@@ -284,9 +326,13 @@ class USEntryGuideService {
 
   canProceedToStep(stepId: string): boolean {
     const idx = this.guide.steps.findIndex(s => s.id === stepId);
-    if (idx === 0) return true;
+    if (idx === 0) {
+return true;
+}
     for (let i = 0; i < idx; i++) {
-      if (!this.completedSteps.has(this.guide.steps[i].id)) return false;
+      if (!this.completedSteps.has(this.guide.steps[i].id)) {
+return false;
+}
     }
     return true;
   }

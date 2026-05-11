@@ -636,7 +636,7 @@ class ThailandEntryGuideService {
       return result;
     }
 
-    const travelInfo = travelerProfile.travelInfo;
+    const {travelInfo} = travelerProfile;
 
     // 处理基础问题
     if (questions?.basic) {
@@ -756,7 +756,7 @@ class ThailandEntryGuideService {
       answer,
       category: questionConfig.category || '',
       required: questionConfig.required || false,
-      tips: tips,
+      tips,
       suggestedAnswers: questionConfig.suggestedAnswers ?
         questionConfig.suggestedAnswers.map(sa => sa[language] || sa.en || '') :
         []

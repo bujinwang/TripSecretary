@@ -319,15 +319,13 @@ export const PreviewHaptics = {
  * Hook for using haptics in components
  * @returns {Object} Haptic feedback functions
  */
-export const useHaptics = () => {
-  return {
+export const useHaptics = () => ({
     trigger: (type) => hapticsManager.trigger(type),
     enable: () => hapticsManager.enable(),
     disable: () => hapticsManager.disable(),
     isEnabled: () => hapticsManager.isHapticsEnabled(),
     ...PreviewHaptics,
-  };
-};
+  });
 
 /**
  * Higher-order component to add haptic feedback to touchables
@@ -335,8 +333,7 @@ export const useHaptics = () => {
  * @param {string} hapticType - Type of haptic to trigger
  * @returns {Function} Enhanced component
  */
-export const withHapticFeedback = (Component, hapticType = HapticType.LIGHT) => {
-  return (props) => {
+export const withHapticFeedback = (Component, hapticType = HapticType.LIGHT) => (props) => {
     const handlePress = async (event) => {
       await hapticsManager.trigger(hapticType);
       if (props.onPress) {
@@ -346,7 +343,6 @@ export const withHapticFeedback = (Component, hapticType = HapticType.LIGHT) => 
 
     return <Component {...props} onPress={handlePress} />;
   };
-};
 
 // Export singleton instance and types
 export { hapticsManager, HapticType };

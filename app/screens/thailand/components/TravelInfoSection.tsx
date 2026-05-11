@@ -10,8 +10,7 @@ import { safeGet, safeString } from '../helpers';
  * Displays travel information including flight details, accommodation, and visit purpose
  * for immigration officer presentation mode
  */
-const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) => {
-  return (
+const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) => (
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>
         {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.travelInformation') :
@@ -213,7 +212,6 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }) =>
       </View>
     </View>
   );
-};
 
 const styles = StyleSheet.create({
   infoSection: {

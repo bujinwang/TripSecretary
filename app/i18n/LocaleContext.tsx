@@ -55,7 +55,7 @@ const normalizeLanguage = (code: string): string => {
 
 const detectDeviceLanguage = (): string => {
   try {
-    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+    const {locale} = Intl.DateTimeFormat().resolvedOptions();
     return normalizeLanguage(locale);
   } catch (error) {
     return DEFAULT_LANGUAGE;

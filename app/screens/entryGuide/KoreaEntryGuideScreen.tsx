@@ -93,8 +93,7 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
     }
   };
 
-  const renderStepIndicator = () => {
-    return (
+  const renderStepIndicator = () => (
       <View style={styles.stepIndicatorContainer}>
         <Text style={styles.stepIndicatorTitle}>
           {language?.startsWith('zh') ? '入境步骤进度' : 'Entry Steps Progress'}
@@ -141,7 +140,6 @@ const KoreaEntryGuideScreen: React.FC<KoreaEntryGuideScreenProps> = ({ navigatio
         </ScrollView>
       </View>
     );
-  };
 
   const handleOpenEntryPack = () => {
     if (!completionData) {
@@ -382,10 +380,10 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   stepIndicatorCompleted: {
-    backgroundColor: colors.success + '20',
+    backgroundColor: `${colors.success  }20`,
   },
   stepIndicatorCurrent: {
-    backgroundColor: colors.primary + '20',
+    backgroundColor: `${colors.primary  }20`,
   },
   stepIndicatorPending: {
     backgroundColor: colors.backgroundLight,
@@ -482,7 +480,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   stepRequiredYes: {
-    backgroundColor: colors.error + '20',
+    backgroundColor: `${colors.error  }20`,
     color: colors.error,
   },
   stepRequiredNo: {

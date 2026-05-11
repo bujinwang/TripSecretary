@@ -168,7 +168,7 @@ continue;
       for (const field of Object.values(section.fields || {})) {
         const fieldObj = field as any;
         if (fieldObj.customFieldName === fieldName) {
-          return { ...fieldObj, fieldName: fieldName, required: false };
+          return { ...fieldObj, fieldName, required: false };
         }
       }
     }

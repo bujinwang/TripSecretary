@@ -874,7 +874,7 @@ return false;
           amount: fundItem.amount,
           currency: fundItem.currency,
           details: fundItem.description || fundItem.details,
-          photoUri: photoUri,
+          photoUri,
         };
 
         // Get userId from fundItem or use default
@@ -1097,7 +1097,7 @@ return null;
         {shouldShowAmountFields && (
           <View style={styles.section}>
             <Input
-              label={t('fundItem.fields.amount', { defaultValue: 'Amount' }) + ' *'}
+              label={`${t('fundItem.fields.amount', { defaultValue: 'Amount' })  } *`}
               value={editedAmount}
               onChangeText={(text) => {
                 setEditedAmount(text);

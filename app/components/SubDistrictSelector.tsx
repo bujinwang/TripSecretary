@@ -76,8 +76,7 @@ const SubDistrictSelector: React.FC<SubDistrictSelectorProps> = ({
     return `${labelText}${postalDisplay}`;
   };
 
-  const options = useMemo<SubDistrictOption[]>(() => {
-    return subDistricts.map((subDistrict) => ({
+  const options = useMemo<SubDistrictOption[]>(() => subDistricts.map((subDistrict) => ({
       label: getDisplayLabel(subDistrict),
       value: subDistrict.id,
       _subDistrictData: {
@@ -87,8 +86,7 @@ const SubDistrictSelector: React.FC<SubDistrictSelectorProps> = ({
         nameZh: subDistrict.nameZh,
         postalCode: subDistrict.postalCode,
       },
-    }));
-  }, [subDistricts, isChinese]);
+    })), [subDistricts, isChinese]);
 
   const getDisplayValue: GetDisplayValueFn = (val) => {
     if (!val) {

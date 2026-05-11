@@ -310,9 +310,7 @@ export const AnimationHelpers = {
    * @param {number} maxDelay - Maximum total delay (default: 300ms)
    * @returns {number} Delay in milliseconds
    */
-  staggerDelay: (index, baseDelay = 50, maxDelay = 300) => {
-    return Math.min(index * baseDelay, maxDelay);
-  },
+  staggerDelay: (index, baseDelay = 50, maxDelay = 300) => Math.min(index * baseDelay, maxDelay),
 
   /**
    * Convert milliseconds to seconds (for some animation libraries)
@@ -327,9 +325,7 @@ export const AnimationHelpers = {
    * @param {Object} reducedConfig - Reduced motion alternative
    * @returns {Object} Appropriate config based on user preference
    */
-  withReduceMotion: (normalConfig, reducedConfig = null) => {
-    return ReduceMotionManager.getConfig(normalConfig, reducedConfig);
-  },
+  withReduceMotion: (normalConfig, reducedConfig = null) => ReduceMotionManager.getConfig(normalConfig, reducedConfig),
 };
 
 /**

@@ -98,7 +98,7 @@ const PDFViewer = ({
 
           // Try with file:// prefix
           try {
-            const pdfFileWithPrefix = new FileSystem.File('file://' + fileUri);
+            const pdfFileWithPrefix = new FileSystem.File(`file://${  fileUri}`);
             base64Data = await pdfFileWithPrefix.base64();
             console.log('✅ PDF read with file:// prefix');
           } catch (secondError) {
@@ -107,13 +107,13 @@ const PDFViewer = ({
               console.log('⚠️ HTTP URL detected, downloading PDF...');
               const downloadResult = await FileSystem.downloadAsync(
                 source.uri,
-                FileSystem.documentDirectory + 'temp_pdf.pdf'
+                `${FileSystem.documentDirectory  }temp_pdf.pdf`
               );
               const downloadedFile = new FileSystem.File(downloadResult.uri);
               base64Data = await downloadedFile.base64();
               console.log('✅ PDF downloaded and read');
             } else {
-              throw new Error('PDF file not found or cannot be read: ' + source.uri);
+              throw new Error(`PDF file not found or cannot be read: ${  source.uri}`);
             }
           }
         }
@@ -198,8 +198,7 @@ const PDFViewer = ({
   /**
    * Generate HTML for PDF viewing
    */
-  const getHTMLContent = () => {
-    return `
+  const getHTMLContent = () => `
       <!DOCTYPE html>
       <html>
         <head>
@@ -338,7 +337,6 @@ const PDFViewer = ({
         </body>
       </html>
     `;
-  };
 
   /**
    * Render PDF via WebView

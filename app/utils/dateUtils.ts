@@ -136,11 +136,11 @@ export function formatChineseDate(dateValue) {
   }
 
   try {
-    return date.toLocaleDateString('zh-CN', {
+    return `${date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
-    }).replace(/\//g, '年').replace(/年(\d+)年/, '年$1月') + '日';
+    }).replace(/\//g, '年').replace(/年(\d+)年/, '年$1月')  }日`;
   } catch (e) {
     // Fallback to manual formatting
     const year = date.getFullYear();

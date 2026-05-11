@@ -140,7 +140,7 @@ class DataDiffCalculator {
 
     return {
       hasChanges: changes.length > 0,
-      changes: changes,
+      changes,
       category: 'passport'
     };
   }
@@ -184,7 +184,7 @@ class DataDiffCalculator {
 
     return {
       hasChanges: changes.length > 0,
-      changes: changes,
+      changes,
       category: 'personalInfo'
     };
   }
@@ -246,7 +246,7 @@ class DataDiffCalculator {
 
     return {
       hasChanges: changes.length > 0,
-      changes: changes,
+      changes,
       category: 'funds'
     };
   }
@@ -339,7 +339,7 @@ class DataDiffCalculator {
 
     return {
       hasChanges: changes.length > 0,
-      changes: changes,
+      changes,
       category: 'travel'
     };
   }
@@ -360,10 +360,10 @@ class DataDiffCalculator {
     if (normalizedOld !== normalizedNew) {
       return {
         field: fieldName,
-        oldValue: oldValue,
-        newValue: newValue,
+        oldValue,
+        newValue,
         changeType: 'modified',
-        significance: significance,
+        significance,
         description: this.getChangeDescription(fieldName, oldValue, newValue)
       };
     }
@@ -443,7 +443,7 @@ class DataDiffCalculator {
     }
     
     if (typeof value === 'string' && value.length > 50) {
-      return value.substring(0, 50) + '...';
+      return `${value.substring(0, 50)  }...`;
     }
     
     return String(value);

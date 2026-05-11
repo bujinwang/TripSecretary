@@ -67,7 +67,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
     hotelAddress: travelerInfo.accAddress || ''
   };
 
-  const destination = params.destination;
+  const {destination} = params;
 
   const [showHelper, setShowHelper] = useState(false); // 控制浮动助手显示
   const [copiedField, setCopiedField] = useState(null);
@@ -89,13 +89,13 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   React.useEffect(() => {
     console.log('📦 TDACWebViewScreen received data:', {
       hasTravelerInfo: !!travelerInfo && Object.keys(travelerInfo).length > 0,
-      travelerInfo: travelerInfo,
+      travelerInfo,
       hasPassport: !!passport,
-      passport: passport,
+      passport,
       hasTravelInfo: !!travelInfo,
-      travelInfo: travelInfo,
+      travelInfo,
       hasDestination: !!destination,
-      destination: destination
+      destination
     });
   }, []);
 
@@ -731,15 +731,17 @@ const TDACWebViewScreen = ({ navigation, route }) => {
 
   // Compare entry data with TDAC submission data
   const compareEntryDataWithTDAC = React.useCallback(() => {
-    if (!__DEV__) return;
+    if (!__DEV__) {
+return;
+}
 
     try {
       // Get original entry data
       const originalData = {
-        passport: passport,
-        destination: destination,
-        travelInfo: travelInfo,
-        formFields: formFields
+        passport,
+        destination,
+        travelInfo,
+        formFields
       };
 
       // Generate what will be submitted to TDAC
@@ -749,7 +751,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
       const comparison = {
         timestamp: new Date().toISOString(),
         originalEntryData: originalData,
-        tdacSubmissionData: tdacSubmissionData,
+        tdacSubmissionData,
         fieldMappings: createFieldMappingReport(originalData, tdacSubmissionData),
         validationResults: validateDataTransformation(originalData, tdacSubmissionData),
         summary: generateComparisonSummary(originalData, tdacSubmissionData)
@@ -1206,8 +1208,7 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   };
 
   // 🛑 显示WebView自动填充确认对话框
-  const showWebViewFillConfirmation = () => {
-    return new Promise((resolve) => {
+  const showWebViewFillConfirmation = () => new Promise((resolve) => {
       const personalFields = formFields.filter(f => f.section === 'personal');
       const tripFields = formFields.filter(f => f.section === 'trip');
       const accommodationFields = formFields.filter(f => f.section === 'accommodation');
@@ -1261,7 +1262,6 @@ ${accommodationFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
         { cancelable: false }
       );
     });
-  };
 
   // 显示WebView字段详情
   const showWebViewFieldDetails = (resolve) => {
@@ -1350,7 +1350,7 @@ ${index + 1}. ${field.labelCn} (${field.label})
       console.error('❌ 自动填充失败:', error);
       Alert.alert(
         '❌ 自动填充失败',
-        '无法执行自动填充，请使用手动复制方式。\n\n错误信息: ' + error.message,
+        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${  error.message}`,
         [{ text: '好的' }]
       );
     }
@@ -1550,7 +1550,7 @@ ${index + 1}. ${field.labelCn} (${field.label})
       console.error('❌ 自动填充失败:', error);
       Alert.alert(
         '❌ 自动填充失败',
-        '无法执行自动填充，请使用手动复制方式。\n\n错误信息: ' + error.message,
+        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${  error.message}`,
         [{ text: '好的' }]
       );
     }

@@ -60,8 +60,7 @@ const ShimmerEffect = ({ children, style }) => {
  * StatusCardSkeleton
  * Loading placeholder for StatusCard component
  */
-export const StatusCardSkeleton = ({ style }) => {
-  return (
+export const StatusCardSkeleton = ({ style }) => (
     <View style={[styles.statusCardContainer, style]}>
       <ShimmerEffect>
         {/* Header skeleton */}
@@ -85,14 +84,12 @@ export const StatusCardSkeleton = ({ style }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * StepperSkeleton
  * Loading placeholder for ProgressStepper component
  */
-export const StepperSkeleton = ({ style, stepCount = 4 }) => {
-  return (
+export const StepperSkeleton = ({ style, stepCount = 4 }) => (
     <View style={[styles.stepperContainer, style]}>
       <ShimmerEffect>
         {Array.from({ length: stepCount }).map((_, index) => (
@@ -113,14 +110,12 @@ export const StepperSkeleton = ({ style, stepCount = 4 }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * DocumentPreviewSkeleton
  * Loading placeholder for DocumentPreviewCard component
  */
-export const DocumentPreviewSkeleton = ({ style }) => {
-  return (
+export const DocumentPreviewSkeleton = ({ style }) => (
     <View style={[styles.documentContainer, style]}>
       <ShimmerEffect>
         {/* Header */}
@@ -148,14 +143,12 @@ export const DocumentPreviewSkeleton = ({ style }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * PreviewBadgeSkeleton
  * Loading placeholder for PreviewBadge component
  */
-export const PreviewBadgeSkeleton = ({ style }) => {
-  return (
+export const PreviewBadgeSkeleton = ({ style }) => (
     <View style={[styles.badgeContainer, style]}>
       <ShimmerEffect>
         <View style={styles.badgeIconSkeleton} />
@@ -163,14 +156,12 @@ export const PreviewBadgeSkeleton = ({ style }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * InfoAlertSkeleton
  * Loading placeholder for InfoAlert component
  */
-export const InfoAlertSkeleton = ({ style }) => {
-  return (
+export const InfoAlertSkeleton = ({ style }) => (
     <View style={[styles.alertContainer, style]}>
       <ShimmerEffect>
         <View style={styles.alertIconSkeleton} />
@@ -181,14 +172,12 @@ export const InfoAlertSkeleton = ({ style }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * ActionButtonGroupSkeleton
  * Loading placeholder for ActionButtonGroup component
  */
-export const ActionButtonGroupSkeleton = ({ style, showSecondary = false }) => {
-  return (
+export const ActionButtonGroupSkeleton = ({ style, showSecondary = false }) => (
     <View style={[styles.buttonGroupContainer, style]}>
       <ShimmerEffect>
         <View style={styles.primaryButtonSkeleton} />
@@ -196,15 +185,13 @@ export const ActionButtonGroupSkeleton = ({ style, showSecondary = false }) => {
       </ShimmerEffect>
     </View>
   );
-};
 
 /**
  * FullPreviewSkeleton
  * Complete preview screen skeleton
  * Shows all components in loading state
  */
-export const FullPreviewSkeleton = ({ style }) => {
-  return (
+export const FullPreviewSkeleton = ({ style }) => (
     <View style={[styles.fullPreviewContainer, style]}>
       <PreviewBadgeSkeleton style={styles.section} />
       <StatusCardSkeleton style={styles.section} />
@@ -213,7 +200,6 @@ export const FullPreviewSkeleton = ({ style }) => {
       <InfoAlertSkeleton style={styles.section} />
     </View>
   );
-};
 
 const styles = StyleSheet.create({
   // Shimmer effect styles

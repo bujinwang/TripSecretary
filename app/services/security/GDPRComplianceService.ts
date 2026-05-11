@@ -285,7 +285,7 @@ class GDPRComplianceService {
         success: true,
         deletionId,
         reason,
-        finalExport: finalExport,
+        finalExport,
         deletedAt: timestamp,
         gdprCompliant: true
       };

@@ -205,7 +205,7 @@ class BiometricAuthService {
       // Handle failed authentication
       // TypeScript type narrowing: if success is false, error must exist
       const failedResult = authResult as Extract<typeof authResult, { success: false }>;
-      const error = failedResult.error;
+      const {error} = failedResult;
       console.log('Biometric authentication failed:', error);
       
       // Record failed attempt

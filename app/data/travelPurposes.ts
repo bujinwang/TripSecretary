@@ -120,19 +120,15 @@ return code;
 };
 
 export const getTravelPurposeCode = (displayName, locale = 'en') => {
-  const entry = Object.entries(TRAVEL_PURPOSES).find(([code, translations]) => {
-    return translations[locale] === displayName || translations.en === displayName;
-  });
+  const entry = Object.entries(TRAVEL_PURPOSES).find(([code, translations]) => translations[locale] === displayName || translations.en === displayName);
   return entry ? entry[0] : displayName;
 };
 
-export const getAllTravelPurposes = (locale = 'en') => {
-  return Object.entries(TRAVEL_PURPOSES).map(([code, translations]) => ({
+export const getAllTravelPurposes = (locale = 'en') => Object.entries(TRAVEL_PURPOSES).map(([code, translations]) => ({
     code,
     name: translations[locale] || translations.en,
     displayName: `${translations[locale] || translations.en} (${code})`
   }));
-};
 
 export const getBasicTravelPurposes = (locale = 'en') => {
   // Return the basic purposes including Transit and Other

@@ -224,7 +224,7 @@ class TravelerDataTransformer {
       if (sanitized[field]) {
         const value = String(sanitized[field]);
         if (value.length > 4) {
-          sanitized[field] = value.substring(0, 2) + '****' + value.substring(value.length - 2);
+          sanitized[field] = `${value.substring(0, 2)  }****${  value.substring(value.length - 2)}`;
         } else {
           sanitized[field] = '****';
         }

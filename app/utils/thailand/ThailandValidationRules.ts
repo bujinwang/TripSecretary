@@ -21,9 +21,7 @@ const thailandValidator = new ValidationRuleEngine(THAILAND_VALIDATION_RULES);
  * @param {Object} context - Additional context (e.g., other field values)
  * @returns {Object} - Validation result {isValid, isWarning, errorMessage}
  */
-export const validateField = (fieldName, fieldValue, context = {}) => {
-  return thailandValidator.validate(fieldName, fieldValue, context);
-};
+export const validateField = (fieldName, fieldValue, context = {}) => thailandValidator.validate(fieldName, fieldValue, context);
 
 /**
  * Export the validation engine instance for advanced use cases

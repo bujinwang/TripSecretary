@@ -316,8 +316,8 @@ class DeadlineNotificationService {
         return false;
       }
 
-      const userId: UserId | undefined = (entryInfo as any).userId;
-      const destinationId: string | undefined = (entryInfo as any).destinationId;
+      const {userId} = (entryInfo as any);
+      const {destinationId} = (entryInfo as any);
 
       // Check if DAC is already submitted
       const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
@@ -557,7 +557,7 @@ class DeadlineNotificationService {
       };
 
       Object.values(notifications).forEach(notification => {
-        const status = notification.status;
+        const {status} = notification;
         if (status in stats) {
           stats[status as keyof ServiceStats] = (stats[status as keyof ServiceStats] || 0) + 1;
         }

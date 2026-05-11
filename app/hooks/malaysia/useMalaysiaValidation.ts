@@ -331,7 +331,7 @@ export const useMalaysiaValidation = ({
         funds: fundsCount,
         travel: travelCount,
         total: { filled: filledFields, total: totalFields },
-        percent: percent
+        percent
       };
     } catch (error) {
       console.error('Error calculating completion metrics:', error);
@@ -342,9 +342,7 @@ export const useMalaysiaValidation = ({
   /**
    * Check if form is valid for submission
    */
-  const isFormValid = useMemo(() => {
-    return Object.keys(formState.errors).length === 0;
-  }, [formState.errors]);
+  const isFormValid = useMemo(() => Object.keys(formState.errors).length === 0, [formState.errors]);
 
   /**
    * Get smart button configuration based on completion

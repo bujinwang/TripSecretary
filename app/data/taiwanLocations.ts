@@ -143,9 +143,7 @@ export const taiwanCities = [
 /**
  * Get city by ID
  */
-export const getCityById = (id) => {
-  return taiwanCities.find(city => city.id === id);
-};
+export const getCityById = (id) => taiwanCities.find(city => city.id === id);
 
 /**
  * Get city by English name (case-insensitive, partial match)
@@ -164,20 +162,14 @@ return null;
 /**
  * Get all special municipalities (6 major cities)
  */
-export const getSpecialMunicipalities = () => {
-  return taiwanCities.filter(city => city.type === 'special_municipality');
-};
+export const getSpecialMunicipalities = () => taiwanCities.filter(city => city.type === 'special_municipality');
 
 /**
  * Get all provincial cities
  */
-export const getProvincialCities = () => {
-  return taiwanCities.filter(city => city.type === 'provincial_city');
-};
+export const getProvincialCities = () => taiwanCities.filter(city => city.type === 'provincial_city');
 
 /**
  * Get all counties
  */
-export const getCounties = () => {
-  return taiwanCities.filter(city => city.type === 'county');
-};
+export const getCounties = () => taiwanCities.filter(city => city.type === 'county');

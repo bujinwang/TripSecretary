@@ -279,7 +279,7 @@ class UrgentReminderNotificationService {
         return false;
       }
 
-      const userId: UserId | undefined = (entryInfo as any).userId;
+      const {userId} = (entryInfo as any);
 
       // Check if DAC is already submitted
       const digitalArrivalCards = await UserDataService.getDigitalArrivalCardsByEntryInfo(entryInfoId);
@@ -480,7 +480,7 @@ class UrgentReminderNotificationService {
       };
 
       Object.values(notifications).forEach(notification => {
-        const status = notification.status;
+        const {status} = notification;
         if (status in stats) {
           stats[status as keyof ServiceStats] = (stats[status as keyof ServiceStats] || 0) + 1;
         }

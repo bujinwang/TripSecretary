@@ -46,9 +46,7 @@ export const useSingaporeDataPersistence = ({
 
   // ========== Session State Management ==========
 
-  const getSessionStateKey = useCallback(() => {
-    return `session_state_singapore_${userId}`;
-  }, [userId]);
+  const getSessionStateKey = useCallback(() => `session_state_singapore_${userId}`, [userId]);
 
   const saveSessionState = useCallback(async () => {
     const currentState = formStateRef.current;
@@ -164,9 +162,7 @@ export const useSingaporeDataPersistence = ({
       console.log('fieldOverrides:', fieldOverrides);
 
       // Get current values with overrides applied
-      const getCurrentValue = (fieldName, currentValue) => {
-        return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
-      };
+      const getCurrentValue = (fieldName, currentValue) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
 
       // Build all fields object for filtering
       const allFields = {
@@ -570,7 +566,7 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
             state.setPassportData(passportInfo);
           }
 
-          const personalInfo = userData.personalInfo;
+          const {personalInfo} = userData;
           if (personalInfo) {
             state.setOccupation(personalInfo.occupation || state.occupation);
             state.setCityOfResidence(personalInfo.provinceCity || state.cityOfResidence);
@@ -601,16 +597,14 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
   }, [navigation, userId, destination, passport, migrateExistingDataToInteractionState, refreshFundItems]);
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       try {
         DebouncedSave.flushPendingSave('singapore_travel_info');
         saveSessionState();
       } catch (error) {
         console.error('Failed to save on unmount:', error);
       }
-    };
-  }, [saveSessionState]);
+    }, [saveSessionState]);
 
   return {
     // Data loading

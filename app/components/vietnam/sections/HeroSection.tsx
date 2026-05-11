@@ -16,8 +16,7 @@ type VietnamHeroSectionProps = {
   t: TranslationFn;
 };
 
-const HeroSection: React.FC<VietnamHeroSectionProps> = ({ t }) => {
-  return (
+const HeroSection: React.FC<VietnamHeroSectionProps> = ({ t }) => (
     <LinearGradient
       colors={['#da251c', '#aa1e17']}
       start={{ x: 0, y: 0 }}
@@ -55,7 +54,6 @@ const HeroSection: React.FC<VietnamHeroSectionProps> = ({ t }) => {
       </View>
     </LinearGradient>
   );
-};
 
 const styles = StyleSheet.create({
   heroSection: {

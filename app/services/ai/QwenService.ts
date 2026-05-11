@@ -288,12 +288,10 @@ ${stopsText}`;
 
     const hotelList = hotels
       .slice(0, 5)
-      .map((hotel, index) => {
-        return `${index + 1}. ${hotel.name ?? '未知酒店'}
+      .map((hotel, index) => `${index + 1}. ${hotel.name ?? '未知酒店'}
 位置：${hotel.location ?? '未知'}
 评分：${hotel.rating ?? '未知'}/5 (${hotel.reviews ?? 0} 条评价)
-价格：¥${hotel.pricePerNight ?? '未知'}/晚`;
-      })
+价格：¥${hotel.pricePerNight ?? '未知'}/晚`)
       .join('\n\n');
 
     const prompt = `总结以下酒店选项，突出性价比最好的：\n\n${hotelList}`;

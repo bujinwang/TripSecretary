@@ -565,7 +565,7 @@ const ThailandEntryFlowScreen: React.FC<ThailandEntryFlowScreenProps> = ({ navig
             if (contextResult.warnings && contextResult.warnings.length > 0) {
               Alert.alert(
                 '⚠️ 数据提醒',
-                '以下信息需要注意：\n\n• ' + contextResult.warnings.join('\n• ') + '\n\n数据验证通过，可以继续提交。',
+                `以下信息需要注意：\n\n• ${  contextResult.warnings.join('\n• ')  }\n\n数据验证通过，可以继续提交。`,
                 [
                   {
                     text: '完善信息',
@@ -600,9 +600,9 @@ const ThailandEntryFlowScreen: React.FC<ThailandEntryFlowScreenProps> = ({ navig
             const errors = contextResult.errors?.length ? contextResult.errors : ['请检查并完善所有必填信息'];
             Alert.alert(
               '❌ TDAC提交要求严格',
-              '泰国入境卡(TDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ' +
-                errors.join('\n• ') +
-                '\n\n请返回完善所有必需信息后再提交。',
+              `泰国入境卡(TDAC)要求所有信息必须完整准确，不能使用默认值。\n\n必须完善的信息：\n\n• ${ 
+                errors.join('\n• ') 
+                }\n\n请返回完善所有必需信息后再提交。`,
               [
                 {
                   text: '立即完善',

@@ -32,14 +32,14 @@ const FundsInfoSection = ({ fundData, language, t }) => {
     }
   };
 
-  const formatCurrency = (amount, currency) => {
+  const formatCurrency = (amount, currency) => 
     // Use centralized helper with no decimals for cleaner display
-    return formatCurrencyHelper(amount, currency, {
+     formatCurrencyHelper(amount, currency, {
       decimals: 0,
       showSymbol: true,
       defaultValue: `${amount || 0} ${currency || ''}`,
-    });
-  };
+    })
+  ;
 
   const formatAmount = (amount) => {
     try {

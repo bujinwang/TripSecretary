@@ -387,7 +387,7 @@ class ExpiryWarningNotificationService {
         triggeredBy: 'notification_action',
         metadata: {
           archivedVia: 'expiry_notification',
-          userId: userId
+          userId
         }
       });
 
@@ -541,7 +541,7 @@ class ExpiryWarningNotificationService {
       };
 
       Object.values(notifications).forEach(notification => {
-        const status = notification.status;
+        const {status} = notification;
         if (status in stats) {
           stats[status as keyof ServiceStats] = (stats[status as keyof ServiceStats] || 0) + 1;
         }

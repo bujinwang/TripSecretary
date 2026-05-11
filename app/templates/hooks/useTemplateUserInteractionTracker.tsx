@@ -8,9 +8,7 @@ const STORAGE_KEY_PREFIX = 'user_interaction_state_';
 /**
  * Generate a unique session ID
  */
-const generateSessionId = () => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * useTemplateUserInteractionTracker Hook
@@ -144,13 +142,11 @@ return true;
   /**
    * Get field interaction details
    */
-  const getFieldInteractionDetails = useCallback((fieldName: string) => {
-    return interactionState[fieldName] || {
+  const getFieldInteractionDetails = useCallback((fieldName: string) => interactionState[fieldName] || {
       isUserModified: false,
       lastModified: null,
       initialValue: null
-    };
-  }, [interactionState]);
+    }, [interactionState]);
 
   /**
    * Mark a field as pre-filled (not user-modified)
@@ -199,11 +195,9 @@ return;
   /**
    * Get all user-modified fields
    */
-  const getUserModifiedFields = useCallback(() => {
-    return Object.keys(interactionState).filter(fieldName =>
+  const getUserModifiedFields = useCallback(() => Object.keys(interactionState).filter(fieldName =>
       interactionState[fieldName]?.isUserModified
-    );
-  }, [interactionState]);
+    ), [interactionState]);
 
   /**
    * Clear all interaction state

@@ -177,22 +177,18 @@ export const NATIONALITIES = {
 };
 
 // Helper functions
-export const getNationalityDisplayName = (code) => {
-  return NATIONALITIES[code] || code;
-};
+export const getNationalityDisplayName = (code) => NATIONALITIES[code] || code;
 
 export const getNationalityCode = (displayName) => {
   const entry = Object.entries(NATIONALITIES).find(([code, name]) => name === displayName);
   return entry ? entry[0] : displayName;
 };
 
-export const getAllNationalities = () => {
-  return Object.entries(NATIONALITIES).map(([code, name]) => ({
+export const getAllNationalities = () => Object.entries(NATIONALITIES).map(([code, name]) => ({
     code,
     name,
     displayName: `${name} (${code})`
   }));
-};
 
 export const getDestinationNationalities = () => {
   // Return prioritized countries for the nationality selector

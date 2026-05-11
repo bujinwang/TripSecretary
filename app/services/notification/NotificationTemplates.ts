@@ -296,9 +296,7 @@ export function interpolateTemplate(template, variables = {}) {
     return template;
   }
 
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    return variables[key] !== undefined ? variables[key] : match;
-  });
+  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => variables[key] !== undefined ? variables[key] : match);
 }
 
 /**

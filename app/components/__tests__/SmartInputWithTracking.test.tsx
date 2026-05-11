@@ -170,7 +170,7 @@ describe('SmartInputWithTracking', () => {
         value: '',
         onChangeText: jest.fn(),
         onUserInteraction: jest.fn(),
-        context: context
+        context
       };
 
       new MockSmartInputWithTracking(props);
@@ -307,7 +307,7 @@ describe('SmartInputWithTracking', () => {
         value: '',
         onChangeText: jest.fn(),
         onUserInteraction: jest.fn(),
-        context: context
+        context
       };
 
       const component = new MockSmartInputWithTracking(props);

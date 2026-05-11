@@ -509,10 +509,10 @@ export const thailandComprehensiveTravelInfoConfig = {
       // China province validation for cityOfResidence
       cityOfResidence: {
         when: (formState: any) => formState.countryOfResidence === 'CHN',
-validate: (value: string) => {
+validate: (value: string) => 
           // Validate against China provinces
-          return findChinaProvince(value) !== null;
-        },
+           findChinaProvince(value) !== null
+        ,
         message: '请输入有效的中国省份',
       },
     },

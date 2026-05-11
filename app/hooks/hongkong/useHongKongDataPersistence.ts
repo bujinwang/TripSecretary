@@ -136,9 +136,7 @@ export const useHongKongDataPersistence = ({
   }, [userId, destination]);
 
   // Session state management
-  const getSessionStateKey = useCallback(() => {
-    return `session_state_hongkong_${userId}`;
-  }, [userId]);
+  const getSessionStateKey = useCallback(() => `session_state_hongkong_${userId}`, [userId]);
 
   const saveSessionState = useCallback(async () => {
     const state = formStateRef.current;
@@ -207,7 +205,7 @@ export const useHongKongDataPersistence = ({
 
     // Migrate passport data
     if (userData.passport) {
-      const passport = userData.passport;
+      const {passport} = userData;
       if (passport.passportNumber) {
 existingDataToMigrate.passportNo = passport.passportNumber;
 }
@@ -230,7 +228,7 @@ existingDataToMigrate.sex = passport.gender;
 
     // Migrate personal info data
     if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
+      const {personalInfo} = userData;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -253,7 +251,7 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
 
     // Migrate travel info data
     if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
+      const {travelInfo} = userData;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -577,9 +575,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         entryInfoId, passportData, personalInfoData, funds
       } = currentState;
 
-      const getCurrentValue = (fieldName, currentValue) => {
-        return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
-      };
+      const getCurrentValue = (fieldName, currentValue) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
 
       // Save passport data
       const allPassportFields = {

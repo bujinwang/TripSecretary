@@ -362,7 +362,7 @@ class EntryInfoService {
           submittedEntryPacks.push({
             id: entryInfo.id,
             destinationId: entryInfo.destinationId,
-            destinationName: destinationName,
+            destinationName,
             status: 'submitted',
             arrivalDate,
             submittedAt: latestDAC.submittedAt,
@@ -379,8 +379,8 @@ class EntryInfoService {
           // This ensures user can see destinations they started working on
           inProgressDestinations.push({
             destinationId: entryInfo.destinationId,
-            destinationName: destinationName,
-            completionPercent: completionPercent,
+            destinationName,
+            completionPercent,
             isReady: completionPercent >= 80, // Consider ready if 80%+ complete
             entryInfoId: entryInfo.id, // Add ID for navigation
             // Include arrival date for submission countdown

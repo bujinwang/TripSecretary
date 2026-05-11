@@ -77,23 +77,21 @@ export const SecurityUtils = {
    * @param {string} key - Key to validate
    * @returns {boolean} - Is valid key
    */
-  isValidEncryptionKey: (key) => {
-    return typeof key === 'string' &&
+  isValidEncryptionKey: (key) => typeof key === 'string' &&
            key.length >= 32 &&
-           /^[a-f0-9]+$/i.test(key);
-  },
+           /^[a-f0-9]+$/i.test(key),
 
   /**
    * Check if data appears to be encrypted
    * @param {string} data - Data to check
    * @returns {boolean} - Likely encrypted
    */
-  isEncryptedData: (data) => {
+  isEncryptedData: (data) => 
     // Heuristic: encrypted data is usually longer than 50 chars
-    return typeof data === 'string' &&
+     typeof data === 'string' &&
            data.length > 50 &&
-           /^[A-Za-z0-9+/=]+$/.test(data);
-  },
+           /^[A-Za-z0-9+/=]+$/.test(data)
+  ,
 
   /**
    * Sanitize data for logging (remove sensitive fields)
@@ -125,15 +123,13 @@ return data;
    * Get security headers for API requests
    * @returns {Object} - Security headers
    */
-  getSecurityHeaders: () => {
-    return {
+  getSecurityHeaders: () => ({
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'X-XSS-Protection': '1; mode=block',
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
       'Content-Security-Policy': "default-src 'self'",
-    };
-  },
+    }),
 
   /**
    * Check GDPR consent status
@@ -154,7 +150,7 @@ return data;
       const consents = JSON.parse(consentData);
       return {
         hasConsented: true,
-        consents: consents,
+        consents,
         timestamp: consents.timestamp
       };
     } catch (error) {

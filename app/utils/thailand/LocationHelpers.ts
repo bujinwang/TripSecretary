@@ -25,9 +25,7 @@ import { getDistrictsByProvince, getSubDistrictsByDistrictId } from '../../data/
  * normalizeLocationValue(null)
  * // Returns: ""
  */
-export const normalizeLocationValue = (value) => {
-  return (value || '').toString().trim().toLowerCase();
-};
+export const normalizeLocationValue = (value) => (value || '').toString().trim().toLowerCase();
 
 /**
  * Finds a district option by matching against English, Thai, and Chinese names.

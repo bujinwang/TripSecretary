@@ -147,8 +147,8 @@ class DataImportService {
   tempDirectory: string;
 
   constructor() {
-    this.exportDirectory = FileSystem.documentDirectory + 'exports/';
-    this.tempDirectory = FileSystem.documentDirectory + 'temp/import/';
+    this.exportDirectory = `${FileSystem.documentDirectory  }exports/`;
+    this.tempDirectory = `${FileSystem.documentDirectory  }temp/import/`;
   }
 
   /**
@@ -231,13 +231,11 @@ class DataImportService {
           warnings: [],
           importedEntryInfoId: null,
           importedAt: new Date().toISOString(),
-          resolveConflicts: async (resolutions: Record<string, string>) => {
-            return await this.importFromJSON(filePath, {
+          resolveConflicts: async (resolutions: Record<string, string>) => await this.importFromJSON(filePath, {
               ...options,
               resolveConflicts: true,
               conflictResolutions: resolutions
-            });
-          }
+            })
         };
       }
 
@@ -720,10 +718,10 @@ class DataImportService {
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `fund_${fundId}_${timestamp}.jpg`;
-      const photoPath = FileSystem.documentDirectory + 'funds/' + filename;
+      const photoPath = `${FileSystem.documentDirectory  }funds/${  filename}`;
 
       // Ensure funds directory exists
-      await this.ensureDirectoryExists(FileSystem.documentDirectory + 'funds/');
+      await this.ensureDirectoryExists(`${FileSystem.documentDirectory  }funds/`);
 
       // Write base64 data to file
       // Convert base64 string to bytes and write

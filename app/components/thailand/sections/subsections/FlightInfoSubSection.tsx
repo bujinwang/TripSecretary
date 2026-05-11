@@ -54,8 +54,7 @@ const FlightInfoSubSection: React.FC<ThailandFlightInfoSubSectionProps> = ({
   handleFieldBlur,
   handleFlightTicketPhotoUpload,
   handleDepartureFlightTicketPhotoUpload,
-}) => {
-  return (
+}) => (
     <>
       <YStack marginTop="$lg" marginBottom="$md" paddingBottom="$sm" borderBottomWidth={1} borderBottomColor="$borderColor">
         <TamaguiText fontSize="$2" fontWeight="600" color="$text">
@@ -262,6 +261,5 @@ const FlightInfoSubSection: React.FC<ThailandFlightInfoSubSectionProps> = ({
       </BaseCard>
     </>
   );
-};
 
 export default FlightInfoSubSection;

@@ -1127,7 +1127,7 @@ return null;
                         tranModeId: '',
 
                         // Accommodation
-                        accommodationType: accommodationType,
+                        accommodationType,
                         province: travelInfo?.province || '',
                         // Only include district, subDistrict, and postCode for non-hotel accommodations
                         ...(isHotelType ? {} : {

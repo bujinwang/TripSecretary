@@ -18,9 +18,7 @@ const createThailandLocationLoaders = () => {
   };
 
   // Transform sub-districts to array format
-  const getSubDistricts = (districtId) => {
-    return getSubDistrictsByDistrictId(districtId);
-  };
+  const getSubDistricts = (districtId) => getSubDistrictsByDistrictId(districtId);
 
   return {
     provinces: thailandProvinces,

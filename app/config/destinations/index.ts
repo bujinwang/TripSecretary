@@ -91,17 +91,13 @@ export const getDestination = (destinationId: string): any => {
  *   console.log(`${dest.name} (${dest.id})`);
  * });
  */
-export const getActiveDestinations = (): any[] => {
-  return Object.values(DESTINATIONS).filter(dest => dest.enabled !== false);
-};
+export const getActiveDestinations = (): any[] => Object.values(DESTINATIONS).filter(dest => dest.enabled !== false);
 
 /**
  * Get all destinations (including disabled ones)
  * @returns {Array<any>} Array of all destination configurations
  */
-export const getAllDestinations = (): any[] => {
-  return Object.values(DESTINATIONS);
-};
+export const getAllDestinations = (): any[] => Object.values(DESTINATIONS);
 
 /**
  * Check if a destination exists and is enabled

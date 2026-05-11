@@ -4,8 +4,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { typography, spacing } from '../../theme';
 
-const TipsChips = ({ tips }) => {
-  return (
+const TipsChips = ({ tips }) => (
     <View style={styles.container}>
       {tips.map((tip) => (
         <View key={tip.id} style={styles.tipChip}>
@@ -15,7 +14,6 @@ const TipsChips = ({ tips }) => {
       ))}
     </View>
   );
-};
 
 const styles = StyleSheet.create({
   container: {

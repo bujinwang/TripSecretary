@@ -147,8 +147,7 @@ export const useMalaysiaFormState = (passport, destination) => {
   /**
    * Get all form data as a single object for saving
    */
-  const getFormData = useCallback(() => {
-    return {
+  const getFormData = useCallback(() => ({
       // Passport section
       passportNo,
       fullName,
@@ -184,8 +183,7 @@ export const useMalaysiaFormState = (passport, destination) => {
 
       // Entry info
       entryInfoId,
-    };
-  }, [
+    }), [
     passportNo, fullName, nationality, dob, expiryDate, sex,
     occupation, customOccupation, residentCountry, phoneCode, phoneNumber, email,
     funds,

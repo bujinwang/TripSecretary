@@ -76,8 +76,7 @@ const DistrictSelector: React.FC<DistrictSelectorProps> = ({
     return `${district.nameEn} - ${secondary}`;
   };
 
-  const options = useMemo<DistrictOption[]>(() => {
-    return districts.map((district) => ({
+  const options = useMemo<DistrictOption[]>(() => districts.map((district) => ({
       label: getDisplayLabel(district),
       value: district.id,
       _districtData: {
@@ -86,8 +85,7 @@ const DistrictSelector: React.FC<DistrictSelectorProps> = ({
         nameTh: district.nameTh,
         nameZh: district.nameZh,
       },
-    }));
-  }, [districts, isChinese]);
+    })), [districts, isChinese]);
 
   const getDisplayValue: GetDisplayValueFn = (val) => {
     if (!val) {

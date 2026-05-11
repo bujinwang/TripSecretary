@@ -174,14 +174,14 @@ class DataEncryptionService {
       logger.info('DataEncryptionService', 'Snapshot data encrypted successfully', {
         snapshotId,
         originalSize: serializedData.length,
-        encryptedSize: encryptedSize
+        encryptedSize
       });
 
       return {
         encrypted: true,
         filePath: encryptedFilePath,
         encryptionMethod: 'AES-256-GCM',
-        fieldType: fieldType,
+        fieldType,
         originalSize: serializedData.length,
         encryptedSize
       };
@@ -218,7 +218,7 @@ class DataEncryptionService {
 
       logger.info('DataEncryptionService', 'Snapshot data decrypted successfully', {
         snapshotId,
-        encryptedSize: encryptedSize,
+        encryptedSize,
         decryptedSize: decryptedData.length
       });
 
@@ -287,7 +287,7 @@ class DataEncryptionService {
             encryptedPath: encryptedPhotoPath,
             encrypted: true,
             encryptionMethod: 'AES-256-GCM',
-            fieldType: fieldType,
+            fieldType,
             originalSize: photoData.length,
             encryptedSize: encryptedPhotoSize
           });
@@ -452,7 +452,7 @@ class DataEncryptionService {
         originalPath: filePath,
         encryptedPath: encryptedFilePath,
         originalSize: exportData.length,
-        encryptedSize: encryptedSize
+        encryptedSize
       });
 
       return {
@@ -460,7 +460,7 @@ class DataEncryptionService {
         originalPath: filePath,
         encryptedPath: encryptedFilePath,
         encryptionMethod: 'AES-256-GCM',
-        fieldType: fieldType,
+        fieldType,
         originalSize: exportData.length,
         encryptedSize,
         passwordProtected: !!password
@@ -510,7 +510,7 @@ class DataEncryptionService {
       logger.info('DataEncryptionService', 'Export file decrypted successfully', {
         encryptedPath: encryptedFilePath,
         decryptedPath: decryptedFilePath,
-        decryptedSize: decryptedSize
+        decryptedSize
       });
 
       return {

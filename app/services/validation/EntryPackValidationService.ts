@@ -124,7 +124,7 @@ class EntryPackValidationService {
         section.missingFields.forEach(field => {
           missingFields.push({
             section: sectionKey,
-            field: field,
+            field,
             message: this.getFieldLabel(sectionKey, field, country)
           });
         });
@@ -242,9 +242,7 @@ class EntryPackValidationService {
 
     // At least one fund entry required
     // Each fund should have type and amount
-    const invalidFunds = funds.filter(fund => {
-      return !fund.type || !fund.amount || fund.amount <= 0;
-    });
+    const invalidFunds = funds.filter(fund => !fund.type || !fund.amount || fund.amount <= 0);
 
     if (invalidFunds.length > 0) {
       missingFields.push('validFundEntries');

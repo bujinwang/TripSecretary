@@ -117,8 +117,7 @@ const TravelDetailsSection: React.FC<SingaporeTravelDetailsSectionProps> = ({
   handleUserInteraction,
   t,
   styles,
-}) => {
-  return (
+}) => (
     <CollapsibleSection
       title={t('singapore.travelInfo.sections.travel', { defaultValue: '🛫 行程信息' })}
       isExpanded={isExpanded}
@@ -376,6 +375,5 @@ const TravelDetailsSection: React.FC<SingaporeTravelDetailsSectionProps> = ({
       ) : null}
     </CollapsibleSection>
   );
-};
 
 export default TravelDetailsSection;

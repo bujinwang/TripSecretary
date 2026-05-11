@@ -71,15 +71,13 @@ export const useNavigationPersistence = ({
   }, [navigation, saveKey, ...dependencies]);
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       try {
         DebouncedSave.flushPendingSave(saveKey);
       } catch (error) {
         console.error(`[${saveKey}] Failed to flush saves on unmount:`, error);
       }
-    };
-  }, [saveKey]);
+    }, [saveKey]);
 };
 
 export default useNavigationPersistence;

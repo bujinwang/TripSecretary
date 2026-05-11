@@ -243,8 +243,7 @@ return null;
     );
   };
 
-  const renderPerformanceTab = () => {
-    return (
+  const renderPerformanceTab = () => (
       <ScrollView style={styles.tabContent}>
         <View style={styles.performanceSection}>
           <Text style={styles.sectionTitle}>{t('notificationLog.performance.title')}</Text>
@@ -290,7 +289,6 @@ return null;
         </View>
       </ScrollView>
     );
-  };
 
   const renderFilterModal = () => (
     <Modal

@@ -11,15 +11,33 @@ const normalizeLang = (language?: string) => (language || '').toLowerCase().star
 
 const normalizeCode = (v?: string) => {
   const x = (v || '').toString().trim().toUpperCase()
-  if (!x) return ''
-  if (x === 'CN' || x === 'CHN' || x.includes('CHINA')) return 'CHN'
-  if (x === 'US' || x === 'USA' || x.includes('UNITED STATES')) return 'USA'
-  if (x === 'GB' || x === 'GBR' || x.includes('UNITED KINGDOM') || x.includes('UK')) return 'GBR'
-  if (x === 'JP' || x === 'JPN' || x.includes('JAPAN')) return 'JPN'
-  if (x === 'KR' || x === 'KOR' || x.includes('KOREA')) return 'KOR'
-  if (x === 'TW' || x === 'TWN' || x.includes('TAIWAN')) return 'TWN'
-  if (x === 'HK' || x === 'HKG' || x.includes('HONG KONG')) return 'HKG'
-  if (x.length === 2) return x
+  if (!x) {
+return ''
+}
+  if (x === 'CN' || x === 'CHN' || x.includes('CHINA')) {
+return 'CHN'
+}
+  if (x === 'US' || x === 'USA' || x.includes('UNITED STATES')) {
+return 'USA'
+}
+  if (x === 'GB' || x === 'GBR' || x.includes('UNITED KINGDOM') || x.includes('UK')) {
+return 'GBR'
+}
+  if (x === 'JP' || x === 'JPN' || x.includes('JAPAN')) {
+return 'JPN'
+}
+  if (x === 'KR' || x === 'KOR' || x.includes('KOREA')) {
+return 'KOR'
+}
+  if (x === 'TW' || x === 'TWN' || x.includes('TAIWAN')) {
+return 'TWN'
+}
+  if (x === 'HK' || x === 'HKG' || x.includes('HONG KONG')) {
+return 'HKG'
+}
+  if (x.length === 2) {
+return x
+}
   return x
 }
 

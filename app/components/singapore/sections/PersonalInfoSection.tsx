@@ -73,8 +73,7 @@ const PersonalInfoSection: React.FC<SingaporePersonalInfoSectionProps> = ({
   warnings,
   t,
   styles,
-}) => {
-  return (
+}) => (
     <CollapsibleSection
       title={t('singapore.travelInfo.sections.personal', { defaultValue: '🙋 个人信息' })}
       isExpanded={isExpanded}
@@ -184,6 +183,5 @@ const PersonalInfoSection: React.FC<SingaporePersonalInfoSectionProps> = ({
       </View>
     </CollapsibleSection>
   );
-};
 
 export default PersonalInfoSection;

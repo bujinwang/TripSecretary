@@ -54,10 +54,10 @@ class LazyLoadingHelper {
       viewabilityConfig: this.viewabilityConfig,
       
       // Key extractor optimization
-      keyExtractor: (item, index) => {
+      keyExtractor: (item, index) => 
         // Use item.id if available, otherwise use index
-        return item?.id?.toString() || item?.key?.toString() || index.toString();
-      },
+         item?.id?.toString() || item?.key?.toString() || index.toString()
+      ,
       
       // Scroll optimization
       scrollEventThrottle: 16,

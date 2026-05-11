@@ -279,7 +279,7 @@ class KeyManagementService {
   async createKeyBackup(userId: string, suffix: string = ''): Promise<string> {
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupName = `${this.BACKUP_PREFIX}${userId}_${timestamp}${suffix ? '_' + suffix : ''}.json`;
+      const backupName = `${this.BACKUP_PREFIX}${userId}_${timestamp}${suffix ? `_${  suffix}` : ''}.json`;
 
       // Use Paths helper for path construction
       const backupDir = `${Paths.document}key_backups/`;

@@ -151,7 +151,7 @@ export const DEFAULT_RULES = {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? (context.fieldLabel || 'Date') + ' is required' : ''
+        errorMessage: required ? `${context.fieldLabel || 'Date'  } is required` : ''
       };
     }
 
@@ -233,7 +233,7 @@ export const DEFAULT_RULES = {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? (context.fieldLabel || 'This field') + ' is required' : ''
+        errorMessage: required ? `${context.fieldLabel || 'This field'  } is required` : ''
       };
     }
 
@@ -289,7 +289,7 @@ export const DEFAULT_RULES = {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? (context.fieldLabel || 'This field') + ' is required' : ''
+        errorMessage: required ? `${context.fieldLabel || 'This field'  } is required` : ''
       };
     }
 

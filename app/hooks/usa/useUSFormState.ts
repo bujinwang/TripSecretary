@@ -122,8 +122,7 @@ export const useUSFormState = (passport) => {
   /**
    * Get all form data as a single object
    */
-  const getFormData = useCallback(() => {
-    return {
+  const getFormData = useCallback(() => ({
       // Passport
       passportNo,
       fullName,
@@ -152,8 +151,7 @@ export const useUSFormState = (passport) => {
 
       // Funds
       funds,
-    };
-  }, [
+    }), [
     passportNo, fullName, nationality, dob, expiryDate, gender,
     occupation, cityOfResidence, residentCountry, phoneCode, phoneNumber, email,
     travelPurpose, customTravelPurpose, arrivalFlightNumber, arrivalDate,

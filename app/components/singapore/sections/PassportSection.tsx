@@ -82,8 +82,7 @@ const PassportSection: React.FC<SingaporePassportSectionProps> = ({
   handleFieldBlur,
   t,
   styles,
-}) => {
-  return (
+}) => (
     <CollapsibleSection
       title={t('singapore.travelInfo.sections.passport', { defaultValue: '📘 护照信息' })}
       isExpanded={isExpanded}
@@ -225,6 +224,5 @@ const PassportSection: React.FC<SingaporePassportSectionProps> = ({
       </View>
     </CollapsibleSection>
   );
-};
 
 export default PassportSection;

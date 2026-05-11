@@ -45,6 +45,4 @@ export const PHONE_CODES = {
   'TUR': '+90', // Turkey
 };
 
-export const getPhoneCode = (countryCode) => {
-  return PHONE_CODES[countryCode] || '';
-};
+export const getPhoneCode = (countryCode) => PHONE_CODES[countryCode] || '';

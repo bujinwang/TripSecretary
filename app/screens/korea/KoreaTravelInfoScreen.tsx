@@ -14,15 +14,13 @@ import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { koreaComprehensiveTravelInfoConfig } from '../../config/destinations/korea/comprehensiveTravelInfoConfig';
 
-const KoreaTravelInfoScreen = ({ navigation, route }) => {
-  return (
+const KoreaTravelInfoScreen = ({ navigation, route }) => (
     <EnhancedTravelInfoTemplate
       config={koreaComprehensiveTravelInfoConfig}
       route={route}
       navigation={navigation}
     />
   );
-};
 
 KoreaTravelInfoScreen.propTypes = {
   navigation: PropTypes.object.isRequired,

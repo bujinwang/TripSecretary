@@ -25,11 +25,9 @@ export const useQRCodeHandler = ({ passport, route }) => {
   const { t } = useTranslation();
 
   // Cleanup on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       isMountedRef.current = false;
-    };
-  }, []);
+    }, []);
 
   /**
    * Save QR code image to photo album
@@ -141,7 +139,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
         submissionMethod: 'webview',
         // TDAC submission metadata for EntryPackService
         arrCardNo: cardNo,
-        cardNo: cardNo,
+        cardNo,
         qrUri: qrData.src,
         pdfPath: qrData.src,
         timestamp: Date.now(),
@@ -225,13 +223,13 @@ export const useQRCodeHandler = ({ passport, route }) => {
 
         // Create digital arrival card record in database
         const dacData = {
-          userId: userId,
-          entryInfoId: entryInfoId,
+          userId,
+          entryInfoId,
           cardType: 'TDAC',
           destinationId: 'THA',
           arrCardNo: finalArrCardNo,
           qrUri: qrData.src,
-          pdfUrl: pdfUrl, // Will be null if PDF download failed or not available
+          pdfUrl, // Will be null if PDF download failed or not available
           submittedAt: new Date().toISOString(),
           submissionMethod: 'webview',
           status: 'success',

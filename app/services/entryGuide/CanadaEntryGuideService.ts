@@ -122,9 +122,15 @@ class CanadaEntryGuideService {
     this.loadProgress();
   }
 
-  getGuide(): GuideConfig { return this.guide; }
-  getStep(stepId: string): Step | undefined { return this.guide.steps.find(step => step.id === stepId); }
-  getAllSteps(): Step[] { return this.guide.steps; }
+  getGuide(): GuideConfig {
+ return this.guide; 
+}
+  getStep(stepId: string): Step | undefined {
+ return this.guide.steps.find(step => step.id === stepId); 
+}
+  getAllSteps(): Step[] {
+ return this.guide.steps; 
+}
 
   getProgress(): Progress {
     const total = this.guide.steps.length;
@@ -150,18 +156,24 @@ class CanadaEntryGuideService {
   }
 
   getNextStep(): Step | null {
-    if (!this.currentStep) return this.guide.steps.length > 0 ? this.guide.steps[0] : null;
+    if (!this.currentStep) {
+return this.guide.steps.length > 0 ? this.guide.steps[0] : null;
+}
     const idx = this.guide.steps.findIndex(s => s.id === this.currentStep);
     return idx < this.guide.steps.length - 1 ? this.guide.steps[idx + 1] : null;
   }
 
   getPreviousStep(): Step | null {
-    if (!this.currentStep) return null;
+    if (!this.currentStep) {
+return null;
+}
     const idx = this.guide.steps.findIndex(s => s.id === this.currentStep);
     return idx > 0 ? this.guide.steps[idx - 1] : null;
   }
 
-  getETAInfo(): any { return this.guide.eta || null; }
+  getETAInfo(): any {
+ return this.guide.eta || null; 
+}
 
   getVisaExemptInfo(): any {
     return {
@@ -196,14 +208,30 @@ class CanadaEntryGuideService {
     };
   }
 
-  getTravelPlanRequirements(): any { return this.guide.travelPlanRequirements || null; }
-  getFundingRequirements(): any { return this.guide.fundingRequirements || null; }
-  getCustomsInfo(): any { return this.guide.customs || null; }
-  getTransportInfo(): any { return this.guide.transport || null; }
-  getCurrencyInfo(): any { return this.guide.currency || null; }
-  getEmergencyContacts(): any { return this.guide.emergency; }
-  getCultureTips(): any { return this.guide.cultureTips; }
-  getImportantNotes(): string[] | undefined { return this.guide.importantNotes; }
+  getTravelPlanRequirements(): any {
+ return this.guide.travelPlanRequirements || null; 
+}
+  getFundingRequirements(): any {
+ return this.guide.fundingRequirements || null; 
+}
+  getCustomsInfo(): any {
+ return this.guide.customs || null; 
+}
+  getTransportInfo(): any {
+ return this.guide.transport || null; 
+}
+  getCurrencyInfo(): any {
+ return this.guide.currency || null; 
+}
+  getEmergencyContacts(): any {
+ return this.guide.emergency; 
+}
+  getCultureTips(): any {
+ return this.guide.cultureTips; 
+}
+  getImportantNotes(): string[] | undefined {
+ return this.guide.importantNotes; 
+}
 
   checkETAApplicationTime(arrivalDateTime: Date | string): ETAApplicationTimeCheck {
     const now = new Date();
@@ -219,8 +247,12 @@ class CanadaEntryGuideService {
   }
 
   private _getApplicationTimeMessage(days: number): string {
-    if (days <= 0) return '航班已抵达，请尽快完成入境流程';
-    if (days <= 3) return `可在${Math.round(days)}天后申请eTA`;
+    if (days <= 0) {
+return '航班已抵达，请尽快完成入境流程';
+}
+    if (days <= 3) {
+return `可在${Math.round(days)}天后申请eTA`;
+}
     return `请在抵达前72小时内申请eTA，目前还需等待${Math.round(days - 3)}天`;
   }
 
@@ -241,7 +273,9 @@ class CanadaEntryGuideService {
 
   checkFundingAdequacy(fundingAmount: number, groupSize: number = 1): FundingAdequacyCheck {
     const req = this.guide.fundingRequirements?.minimumAmount;
-    if (!req) throw new Error('Funding requirements not configured');
+    if (!req) {
+throw new Error('Funding requirements not configured');
+}
     const required = groupSize > 1 ? (req.family || 0) : (req.perPerson || 0);
     return {
       isAdequate: fundingAmount >= required,
@@ -334,15 +368,21 @@ class CanadaEntryGuideService {
   }
 
   private _parseTimeToMinutes(timeStr: string | undefined): number {
-    if (!timeStr) return 0;
+    if (!timeStr) {
+return 0;
+}
     const m = timeStr.match(/(\d+)\s*(分钟|小时|min|hour)/);
-    if (!m) return 0;
+    if (!m) {
+return 0;
+}
     const v = parseInt(m[1], 10);
     return (m[2].includes('小时') || m[2].includes('hour')) ? v * 60 : v;
   }
 
   private _formatMinutesToTime(minutes: number): string {
-    if (minutes < 60) return `${minutes}分钟`;
+    if (minutes < 60) {
+return `${minutes}分钟`;
+}
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return m > 0 ? `${h}小时${m}分钟` : `${h}小时`;
@@ -380,8 +420,12 @@ class CanadaEntryGuideService {
   }
 
   getStepStatus(stepId: string): 'completed' | 'current' | 'pending' {
-    if (this.completedSteps.has(stepId)) return 'completed';
-    if (this.currentStep === stepId) return 'current';
+    if (this.completedSteps.has(stepId)) {
+return 'completed';
+}
+    if (this.currentStep === stepId) {
+return 'current';
+}
     return 'pending';
   }
 
@@ -391,9 +435,13 @@ class CanadaEntryGuideService {
 
   canProceedToStep(stepId: string): boolean {
     const idx = this.guide.steps.findIndex(s => s.id === stepId);
-    if (idx === 0) return true;
+    if (idx === 0) {
+return true;
+}
     for (let i = 0; i < idx; i++) {
-      if (!this.completedSteps.has(this.guide.steps[i].id)) return false;
+      if (!this.completedSteps.has(this.guide.steps[i].id)) {
+return false;
+}
     }
     return true;
   }

@@ -337,7 +337,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
    * Test success flow (Development Only)
    */
   const testSuccessFlow = () => {
-    const mockArrCardNo = 'TEST-' + Date.now().toString().slice(-8);
+    const mockArrCardNo = `TEST-${  Date.now().toString().slice(-8)}`;
     const mockDuration = '3.45';
 
     setResultData({

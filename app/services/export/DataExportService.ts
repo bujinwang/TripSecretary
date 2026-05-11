@@ -239,8 +239,8 @@ class DataExportService {
   private tempDirectory: string;
 
   constructor() {
-    this.exportDirectory = FileSystem.documentDirectory + 'exports/';
-    this.tempDirectory = FileSystem.documentDirectory + 'temp/';
+    this.exportDirectory = `${FileSystem.documentDirectory  }exports/`;
+    this.tempDirectory = `${FileSystem.documentDirectory  }temp/`;
   }
 
   /**
@@ -391,7 +391,7 @@ class DataExportService {
         format: 'json',
         filename,
         filePath,
-        fileSize: fileSize,
+        fileSize,
         dataSize: jsonString.length,
         exportData: options.returnData ? exportData : null,
         sharingOptions: await this.getSharingOptions(filePath, 'application/json')
@@ -447,7 +447,7 @@ class DataExportService {
         format: 'pdf',
         filename,
         filePath,
-        fileSize: fileSize,
+        fileSize,
         sharingOptions: await this.getSharingOptions(filePath, 'application/pdf')
       };
     } catch (error: unknown) {
@@ -656,7 +656,7 @@ class DataExportService {
         type: 'qr',
         filename,
         filePath,
-        fileSize: fileSize,
+        fileSize,
         source: exportedFromSource || undefined,
         qrData: {
           arrCardNo: latestDAC.arrCardNo,
@@ -710,7 +710,7 @@ class DataExportService {
         type: 'summary',
         filename,
         filePath,
-        fileSize: fileSize,
+        fileSize,
         summaryData: {
           destination: this.getDestinationName(entryInfo.destinationId),
           arrivalDate: travel?.arrivalDate,
@@ -1640,8 +1640,8 @@ class DataExportService {
                 originalPath: fund.photoUri,
                 filename: fund.photoUri.split('/').pop(),
                 mimeType: 'image/jpeg',
-                base64Data: base64Data,
-                fileSize: fileSize,
+                base64Data,
+                fileSize,
                 exportedAt: new Date().toISOString()
               });
             } else {
@@ -1778,9 +1778,7 @@ class DataExportService {
         filePath,
         mimeType,
         isImage,
-        saveToAlbum: isImage ? async () => {
-          return await this.saveImageToAlbum(filePath);
-        } : null,
+        saveToAlbum: isImage ? async () => await this.saveImageToAlbum(filePath) : null,
         share: async (shareOptions: SharingShareOptions = {}) => {
           const defaultTitle = mimeType === 'application/pdf' ? 
             'Share Entry Pack PDF' : 
@@ -2038,7 +2036,7 @@ class DataExportService {
         success: true,
         filename: zipFilename,
         filePath: zipFilePath,
-        fileSize: fileSize,
+        fileSize,
         entryPackCount: successfulExports.length,
         failureCount: (archiveData.failures as unknown[]).length,
         format: 'json-archive' // Since we're creating a JSON archive instead of true ZIP
@@ -2198,7 +2196,7 @@ class DataExportService {
             filename,
             filePath,
             size: await file.size(),
-            modificationTime: modificationTime,
+            modificationTime,
             createdAt: new Date(modificationTime).toISOString(),
             isBatchExport: filename.includes('batch-export')
           });

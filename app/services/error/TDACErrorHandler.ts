@@ -138,7 +138,7 @@ class TDACErrorHandler {
         message: error.message,
         attempt: attemptNumber + 1,
         maxRetries: this.retryConfig.maxRetries,
-        context: context
+        context
       });
 
       // Log the error
@@ -158,8 +158,8 @@ class TDACErrorHandler {
         userMessage: errorCategory.userMessage,
         technicalMessage: error.message,
         recoverable: errorCategory.recoverable,
-        shouldRetry: shouldRetry,
-        retryDelay: retryDelay,
+        shouldRetry,
+        retryDelay,
         attemptNumber: attemptNumber + 1,
         maxRetries: this.retryConfig.maxRetries,
         suggestions: this.getRecoverySuggestions(errorCategory, error, context),
@@ -366,8 +366,8 @@ class TDACErrorHandler {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        context: context,
-        attemptNumber: attemptNumber,
+        context,
+        attemptNumber,
         userAgent: context.userAgent || 'unknown',
         submissionMethod: context.submissionMethod || 'unknown'
       };

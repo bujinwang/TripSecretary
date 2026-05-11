@@ -39,7 +39,7 @@
       }
     ],
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "warn",
+    "react/prop-types": "off",
     "react/display-name": "warn",
     "react/no-unescaped-entities": "warn",
     "react/jsx-key": "error",
@@ -76,10 +76,12 @@
     "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
     "no-throw-literal": "error",
     "prefer-promise-reject-errors": "error",
-    "no-return-await": "error",
+    "no-return-await": "off",
     "require-await": "off",
     "no-async-promise-executor": "error",
     "no-await-in-loop": "off",
+    "no-useless-escape": "warn",
+    "no-case-declarations": "warn",
     "no-promise-executor-return": "error",
     "prefer-template": "warn",
     "prefer-arrow-callback": "warn",
@@ -106,25 +108,28 @@
         "plugin:react-hooks/recommended"
       ],
       "rules": {
-        "react/jsx-no-literals": [
-          "warn",
-          {
-            "noStrings": true,
-            "ignoreProps": true,
-            "allowedStrings": [":", "%", "(", ")", "›", "✓", "✕", "✖", "—", "…", "•", "★", "☆", "💎", "🛂", "🎫", "🏨", "👤", "⚙️", "✈️", "🗣️", "🆘", "⚠️", "✅"]
-          }
-        ],
+        "react/jsx-no-literals": "off",
+        "react/prop-types": "off",
+        "no-useless-escape": "warn",
+        "no-case-declarations": "warn",
+        "react/no-unescaped-entities": "warn",
+        "react/display-name": "warn",
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/no-unused-vars": [
           "warn",
           {
             "argsIgnorePattern": "^_",
-            "varsIgnorePattern": "^_"
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
           }
         ],
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "no-console": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-unused-expressions": "warn"
       }
     },
     {

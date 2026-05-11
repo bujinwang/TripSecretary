@@ -21,9 +21,7 @@ const STORAGE_KEY_PREFIX = 'user_interaction_state_';
 /**
  * Generate a unique session ID
  */
-const generateSessionId = () => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * UserInteractionTracker Hook
@@ -201,20 +199,16 @@ export const useUserInteractionTracker = (screenId) => {
    * @param {string} fieldName - Name of the field
    * @returns {boolean} True if field has been user-modified
    */
-  const isFieldUserModified = useCallback((fieldName) => {
-    return interactionState[fieldName]?.isUserModified || false;
-  }, [interactionState]);
+  const isFieldUserModified = useCallback((fieldName) => interactionState[fieldName]?.isUserModified || false, [interactionState]);
 
   /**
    * Get list of all user-modified field names
    * 
    * @returns {string[]} Array of field names that have been user-modified
    */
-  const getModifiedFields = useCallback(() => {
-    return Object.keys(interactionState).filter(fieldName => 
+  const getModifiedFields = useCallback(() => Object.keys(interactionState).filter(fieldName => 
       interactionState[fieldName]?.isUserModified
-    );
-  }, [interactionState]);
+    ), [interactionState]);
 
   /**
    * Reset a field's interaction state
@@ -291,9 +285,7 @@ export const useUserInteractionTracker = (screenId) => {
    * @param {string} fieldName - Name of the field
    * @returns {Object|null} Interaction details or null if not tracked
    */
-  const getFieldInteractionDetails = useCallback((fieldName) => {
-    return interactionState[fieldName] || null;
-  }, [interactionState]);
+  const getFieldInteractionDetails = useCallback((fieldName) => interactionState[fieldName] || null, [interactionState]);
 
   /**
    * Clear all interaction state

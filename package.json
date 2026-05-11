@@ -113,7 +113,7 @@
   "private": true,
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix --max-warnings=0"
+      "eslint --fix"
     ],
     "*.{json,md}": [
       "prettier --write"

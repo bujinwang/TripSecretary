@@ -159,8 +159,7 @@ const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
     return (loc: LocationRecord) => formatter(loc, isChinese);
   }, [displayFormat, getDisplayLabel, isChinese, showPostalCode]);
 
-  const options = useMemo<LocationOption[]>(() => {
-    return locations.map((location) => {
+  const options = useMemo<LocationOption[]>(() => locations.map((location) => {
       const uniqueValue =
         (location.id as string | undefined) ??
         location.code ??
@@ -173,8 +172,7 @@ const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
         value: String(uniqueValue),
         _locationData: location,
       };
-    });
-  }, [locations, getLabelForLocation]);
+    }), [locations, getLabelForLocation]);
 
   const getDisplayValue: GetDisplayValueFn = (val) => {
     if (!val) {
@@ -254,7 +252,7 @@ const LocationHierarchySelector: React.FC<LocationHierarchySelectorProps> = ({
       const nameTh = normalize(location.nameTh ?? location.nameLocal);
       const nameZh = normalize(location.nameZh);
       const code = normalize(location.code);
-      const id = location.id;
+      const {id} = location;
 
       return (
         id === value ||

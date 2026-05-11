@@ -172,8 +172,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
     });
   }, [currentStepIndex, stepLayouts, stepScrollWidth, stepContentWidth]);
 
-  const renderStepIndicator = () => {
-    return (
+  const renderStepIndicator = () => (
       <View style={styles.stepIndicatorContainer}>
         <Text style={styles.stepIndicatorTitle}>
           {language?.startsWith('zh') ? '入境步骤进度' : 'Entry Steps Progress'}
@@ -188,7 +187,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
           ]}
           ref={stepScrollRef}
           onLayout={({ nativeEvent }) => {
-            const width = nativeEvent.layout.width;
+            const {width} = nativeEvent.layout;
             if (Math.abs(width - stepScrollWidth) > 0.5) {
               setStepScrollWidth(width);
             }
@@ -236,7 +235,6 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
     );
-  };
 
   const handleOpenEntryPack = () => {
     if (!completionData) {
@@ -495,10 +493,10 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   stepIndicatorCompleted: {
-    backgroundColor: colors.success + '20',
+    backgroundColor: `${colors.success  }20`,
   },
   stepIndicatorCurrent: {
-    backgroundColor: colors.primary + '20',
+    backgroundColor: `${colors.primary  }20`,
     borderWidth: 2,
     borderColor: colors.primary,
   },
@@ -640,7 +638,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
+    backgroundColor: `${colors.primary  }10`,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,

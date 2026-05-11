@@ -223,7 +223,7 @@ class SecureStorageService {
       await this.ensureUser(userId);
       this.activeUserId = userId;
 
-      console.log('✅ Secure storage initialized with schema v' + this.DB_VERSION);
+      console.log(`✅ Secure storage initialized with schema v${  this.DB_VERSION}`);
     } catch (error) {
       console.error('Failed to initialize secure storage:', error);
       throw error;

@@ -139,8 +139,7 @@ const TravelDetailsSection = ({
 
   // Styles
   styles,
-}: TravelDetailsSectionProps) => {
-  return (
+}: TravelDetailsSectionProps) => (
     <CollapsibleSection
       title={t('singapore.travelInfo.sections.travel', { defaultValue: '🛫 行程信息' })}
       isExpanded={isExpanded}
@@ -411,6 +410,5 @@ const TravelDetailsSection = ({
       )}
     </CollapsibleSection>
   );
-};
 
 export default TravelDetailsSection;

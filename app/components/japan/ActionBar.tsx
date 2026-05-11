@@ -4,8 +4,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 
-const ActionBar = ({ onEdit, onShare, onPrint, editLabel, shareLabel, printLabel }) => {
-  return (
+const ActionBar = ({ onEdit, onShare, onPrint, editLabel, shareLabel, printLabel }) => (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.actionButton, styles.actionButtonSecondary]}
@@ -33,7 +32,6 @@ const ActionBar = ({ onEdit, onShare, onPrint, editLabel, shareLabel, printLabel
       </TouchableOpacity>
     </View>
   );
-};
 
 const styles = StyleSheet.create({
   container: {

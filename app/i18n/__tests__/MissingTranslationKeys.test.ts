@@ -92,7 +92,7 @@ describe('Progressive Entry Flow Translation Keys', () => {
       try {
         return new Intl.NumberFormat(locale, {
           style: 'currency',
-          currency: currency
+          currency
         }).format(amount);
       } catch (error) {
         return `${currency} ${amount}`;

@@ -141,7 +141,7 @@ class EncryptionService {
         {
           name: 'PBKDF2',
           salt: saltBuffer,
-          iterations: iterations,
+          iterations,
           hash: 'SHA-256'
         },
         keyMaterial,
@@ -247,7 +247,7 @@ class EncryptionService {
 
       // Encrypt using AES-GCM
       const ciphertext = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv: iv },
+        { name: 'AES-GCM', iv },
         key,
         encodedBuffer
       );
@@ -293,7 +293,7 @@ class EncryptionService {
 
       // Decrypt using AES-GCM
       const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: iv },
+        { name: 'AES-GCM', iv },
         key,
         ciphertextBuffer
       );

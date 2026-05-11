@@ -16,8 +16,7 @@ type HongKongHeroSectionProps = {
   t: TranslationFn;
 };
 
-const HeroSection: React.FC<HongKongHeroSectionProps> = ({ t }) => {
-  return (
+const HeroSection: React.FC<HongKongHeroSectionProps> = ({ t }) => (
     <LinearGradient
       colors={['#1a3568', '#102347']}
       start={{ x: 0, y: 0 }}
@@ -56,7 +55,6 @@ const HeroSection: React.FC<HongKongHeroSectionProps> = ({ t }) => {
       </View>
     </LinearGradient>
   );
-};
 
 const styles = StyleSheet.create({
   heroSection: {

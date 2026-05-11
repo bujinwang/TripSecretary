@@ -173,9 +173,9 @@ class TDACSessionManager {
     const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
     return {
-      sessionId: 'fallback-session-' + now.getTime(),
+      sessionId: `fallback-session-${  now.getTime()}`,
       fetchedAt: now,
-      expiresAt: expiresAt,
+      expiresAt,
       isDynamic: false, // Using fallback, not dynamically fetched
 
       // Gender IDs (extracted 2024-Q1)
@@ -401,7 +401,9 @@ class TDACSessionManager {
   }
 
   getCloudflareTokenAgeMs(): number | null {
-    if (!this.cloudflareTokenAt) return null;
+    if (!this.cloudflareTokenAt) {
+return null;
+}
     return Date.now() - this.cloudflareTokenAt;
   }
 }

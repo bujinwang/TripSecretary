@@ -32,7 +32,9 @@ const TDACSelectionScreen = ({ navigation, route }) => {
    * Masks passport numbers, emails, and phone numbers for security
    */
   const sanitizeForLogging = (data) => {
-    if (!data) return data;
+    if (!data) {
+return data;
+}
 
     const sanitized = { ...data };
     const sensitiveFields = ['passportNo', 'email', 'phoneNumber'];
@@ -41,7 +43,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
       if (sanitized[field]) {
         const value = String(sanitized[field]);
         if (value.length > 4) {
-          sanitized[field] = value.substring(0, 2) + '****' + value.substring(value.length - 2);
+          sanitized[field] = `${value.substring(0, 2)  }****${  value.substring(value.length - 2)}`;
         } else {
           sanitized[field] = '****';
         }

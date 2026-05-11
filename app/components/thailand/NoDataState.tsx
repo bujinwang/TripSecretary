@@ -19,8 +19,7 @@ import Button from '../Button';
  * @param {Function} props.onGetStarted - Callback when user clicks start button
  * @returns {JSX.Element}
  */
-const NoDataState = ({ styles, onGetStarted }) => {
-  return (
+const NoDataState = ({ styles, onGetStarted }) => (
     <View style={styles.noDataContainer}>
       <Text style={styles.noDataIcon}>📝</Text>
       <Text style={styles.noDataTitle}>
@@ -51,6 +50,5 @@ const NoDataState = ({ styles, onGetStarted }) => {
       />
     </View>
   );
-};
 
 export default NoDataState;

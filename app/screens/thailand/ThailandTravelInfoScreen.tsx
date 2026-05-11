@@ -13,14 +13,12 @@ import React from 'react';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { thailandComprehensiveTravelInfoConfig } from '../../config/destinations/thailand/comprehensiveTravelInfoConfig';
 
-const ThailandTravelInfoScreen = ({ navigation, route }) => {
-  return (
+const ThailandTravelInfoScreen = ({ navigation, route }) => (
     <EnhancedTravelInfoTemplate
       config={thailandComprehensiveTravelInfoConfig}
       route={route}
       navigation={navigation}
     />
   );
-};
 
 export default ThailandTravelInfoScreen;

@@ -62,17 +62,17 @@ const ConnectivityTestRunner = () => {
           addResult({
             client: 'fetch',
             endpoint: endpoint.name,
-            timeout: timeout
+            timeout
           }, {
             success: true,
             status: response.status,
-            duration: duration
+            duration
           });
         } catch (error) {
           addResult({
             client: 'fetch',
             endpoint: endpoint.name,
-            timeout: timeout
+            timeout
           }, {
             success: false,
             error: `${error.name}: ${error.message}`
@@ -112,7 +112,7 @@ const ConnectivityTestRunner = () => {
           const config = {
             method: endpoint.method,
             url: endpoint.url,
-            timeout: timeout,
+            timeout,
             headers: {
               'Content-Type': 'application/json',
               'Accept': '*/*',
@@ -130,22 +130,22 @@ const ConnectivityTestRunner = () => {
           addResult({
             client: 'axios',
             endpoint: endpoint.name,
-            timeout: timeout
+            timeout
           }, {
             success: true,
             status: response.status,
-            duration: duration
+            duration
           });
         } catch (error) {
           const duration = Date.now() - start;
           addResult({
             client: 'axios',
             endpoint: endpoint.name,
-            timeout: timeout
+            timeout
           }, {
             success: false,
             error: `${error.code || error.name}: ${error.message}`,
-            duration: duration
+            duration
           });
         }
       }
@@ -155,7 +155,7 @@ const ConnectivityTestRunner = () => {
   const testTDACInitActionToken = async () => {
     console.log('🔍 Starting TDAC initActionToken specific tests...');
     const testToken = "test_token_placeholder";
-    const submitId = 'test' + Math.random().toString(36).substring(2, 15);
+    const submitId = `test${  Math.random().toString(36).substring(2, 15)}`;
 
     // Test with axios (if available)
     if (axios) {

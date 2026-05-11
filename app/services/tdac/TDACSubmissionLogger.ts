@@ -50,7 +50,7 @@ class TDACSubmissionLogger {
       
       // 保存到本地存储
       await this.saveSubmissionLog('hybrid', travelerData, {
-        cloudflareToken: cloudflareToken?.substring(0, 50) + '...',
+        cloudflareToken: `${cloudflareToken?.substring(0, 50)  }...`,
         tokenLength: cloudflareToken?.length
       });
       
@@ -193,7 +193,7 @@ class TDACSubmissionLogger {
    */
   static logTechnicalInfo(travelerData, cloudflareToken) {
     console.log('\n🔧 === 技术信息 Technical Information ===');
-    console.log('🔑 Cloudflare Token 预览:', cloudflareToken?.substring(0, 50) + '...');
+    console.log('🔑 Cloudflare Token 预览:', `${cloudflareToken?.substring(0, 50)  }...`);
     console.log('⚙️ 传输模式ID (Trans Mode ID):', travelerData.tranModeId || '(自动)', '→ TDAC字段: tranModeId');
     console.log('\n🆔 === 签证信息 Visa Information ===');
     console.log('📋 签证号 (Visa No):', travelerData.visaNo || '(免签)', '→ TDAC字段: visaNo');

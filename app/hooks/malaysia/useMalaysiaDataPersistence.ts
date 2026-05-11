@@ -68,7 +68,7 @@ existingDataToMigrate.sex = passportData.gender;
 
     // Migrate personal info data
     if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
+      const {personalInfo} = userData;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -88,7 +88,7 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
 
     // Migrate travel info data
     if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
+      const {travelInfo} = userData;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -144,15 +144,15 @@ existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
       formState.populateForm({
         passport: allUserData.passport,
         personalInfo: allUserData.personalInfo,
-        travelInfo: travelInfo,
-        fundItems: fundItems,
+        travelInfo,
+        fundItems,
       });
 
       // Migrate existing data to interaction state
       const userData = {
         passport: allUserData.passport,
         personalInfo: allUserData.personalInfo,
-        travelInfo: travelInfo
+        travelInfo
       };
       await migrateExistingDataToInteractionState(userData);
 
@@ -277,9 +277,7 @@ existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
   /**
    * Get session state key
    */
-  const getSessionStateKey = useCallback(() => {
-    return `malaysia_session_${passport?.id}_${destination?.id}`;
-  }, [passport, destination]);
+  const getSessionStateKey = useCallback(() => `malaysia_session_${passport?.id}_${destination?.id}`, [passport, destination]);
 
   /**
    * Save session state to AsyncStorage

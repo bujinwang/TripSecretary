@@ -33,7 +33,7 @@ describe('Login Traditional Chinese Translations', () => {
 
   test('should handle interpolation placeholders correctly', () => {
     const zhTWTranslations = translations['zh-TW'];
-    const popularityText = zhTWTranslations.login.popularityText;
+    const {popularityText} = zhTWTranslations.login;
     
     // Should preserve the interpolation placeholder
     expect(popularityText).toContain('{{percent}}');

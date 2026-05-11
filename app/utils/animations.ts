@@ -99,9 +99,7 @@ export const ANIMATIONS = {
  * @param {Object} config - Animation configuration
  * @returns {Animated.Value} - Animated value
  */
-export const createAnimationValue = (initialValue = 0) => {
-  return new Animated.Value(initialValue);
-};
+export const createAnimationValue = (initialValue = 0) => new Animated.Value(initialValue);
 
 /**
  * Animate a single value with predefined config
@@ -109,8 +107,7 @@ export const createAnimationValue = (initialValue = 0) => {
  * @param {Object} config - Animation config (to, duration, easing, etc.)
  * @returns {Promise} - Animation promise
  */
-export const animateValue = (animatedValue, config) => {
-  return new Promise((resolve) => {
+export const animateValue = (animatedValue, config) => new Promise((resolve) => {
     Animated.timing(animatedValue, {
       toValue: config.to,
       duration: config.duration || ANIMATION_DURATION.normal,
@@ -118,7 +115,6 @@ export const animateValue = (animatedValue, config) => {
       useNativeDriver: config.useNativeDriver !== false,
     }).start(resolve);
   });
-};
 
 /**
  * Animate multiple values simultaneously
@@ -126,14 +122,12 @@ export const animateValue = (animatedValue, config) => {
  * @returns {Promise} - Animation promise
  */
 export const animateParallel = (animations) => {
-  const animatedConfigs = animations.map(([value, config]) => {
-    return Animated.timing(value, {
+  const animatedConfigs = animations.map(([value, config]) => Animated.timing(value, {
       toValue: config.to,
       duration: config.duration || ANIMATION_DURATION.normal,
       easing: config.easing || EASING.standard,
       useNativeDriver: config.useNativeDriver !== false,
-    });
-  });
+    }));
 
   return new Promise((resolve) => {
     Animated.parallel(animatedConfigs).start(resolve);
@@ -146,14 +140,12 @@ export const animateParallel = (animations) => {
  * @returns {Promise} - Animation promise
  */
 export const animateSequence = (animations) => {
-  const animatedConfigs = animations.map(([value, config]) => {
-    return Animated.timing(value, {
+  const animatedConfigs = animations.map(([value, config]) => Animated.timing(value, {
       toValue: config.to,
       duration: config.duration || ANIMATION_DURATION.normal,
       easing: config.easing || EASING.standard,
       useNativeDriver: config.useNativeDriver !== false,
-    });
-  });
+    }));
 
   return new Promise((resolve) => {
     Animated.sequence(animatedConfigs).start(resolve);
@@ -166,8 +158,7 @@ export const animateSequence = (animations) => {
  * @param {Object} config - Spring config
  * @returns {Promise} - Animation promise
  */
-export const animateSpring = (animatedValue, config) => {
-  return new Promise((resolve) => {
+export const animateSpring = (animatedValue, config) => new Promise((resolve) => {
     Animated.spring(animatedValue, {
       toValue: config.to,
       friction: config.friction || 7,
@@ -175,7 +166,6 @@ export const animateSpring = (animatedValue, config) => {
       useNativeDriver: config.useNativeDriver !== false,
     }).start(resolve);
   });
-};
 
 /**
  * Create a looped animation
@@ -183,9 +173,7 @@ export const animateSpring = (animatedValue, config) => {
  * @param {number} iterations - Number of iterations (-1 for infinite)
  * @returns {Animated.CompositeAnimation} - Looped animation
  */
-export const createLoop = (animation, iterations = -1) => {
-  return Animated.loop(animation, { iterations });
-};
+export const createLoop = (animation, iterations = -1) => Animated.loop(animation, { iterations });
 
 /**
  * Interpolate animation values
@@ -195,14 +183,12 @@ export const createLoop = (animation, iterations = -1) => {
  * @param {Object} options - Interpolation options
  * @returns {Animated.AnimatedInterpolation} - Interpolated value
  */
-export const interpolate = (animatedValue, inputRange, outputRange, options = {}) => {
-  return animatedValue.interpolate({
+export const interpolate = (animatedValue, inputRange, outputRange, options = {}) => animatedValue.interpolate({
     inputRange,
     outputRange,
     extrapolate: options.extrapolate || 'clamp',
     ...options,
   });
-};
 
 /**
  * Create a progress animation for circular progress rings
@@ -211,14 +197,12 @@ export const interpolate = (animatedValue, inputRange, outputRange, options = {}
  * @param {number} duration - Animation duration
  * @returns {Promise} - Animation promise
  */
-export const animateProgress = (progressValue, targetProgress, duration = ANIMATION_DURATION.slow) => {
-  return animateValue(progressValue, {
+export const animateProgress = (progressValue, targetProgress, duration = ANIMATION_DURATION.slow) => animateValue(progressValue, {
     to: targetProgress,
     duration,
     easing: EASING.standard,
     useNativeDriver: true,
   });
-};
 
 /**
  * Create a staggered animation for lists
@@ -228,11 +212,7 @@ export const animateProgress = (progressValue, targetProgress, duration = ANIMAT
  * @returns {Promise} - Animation promise
  */
 export const animateStagger = (items, animationCreator, staggerDelay = 100) => {
-  const animations = items.map((item, index) => {
-    return Animated.delay(index * staggerDelay).start(() => {
-      return animationCreator(item, index);
-    });
-  });
+  const animations = items.map((item, index) => Animated.delay(index * staggerDelay).start(() => animationCreator(item, index)));
 
   return Promise.all(animations);
 };

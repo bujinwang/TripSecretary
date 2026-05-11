@@ -305,7 +305,7 @@ class NotificationService {
     });
 
     const data = response.notification.request.content.data as NotificationData;
-    const actionIdentifier = response.actionIdentifier;
+    const {actionIdentifier} = response;
 
     // Handle action button clicks
     if (actionIdentifier && actionIdentifier !== 'default') {
@@ -817,7 +817,7 @@ class NotificationService {
       const preparedActions: any[] = [];
       
       for (const action of actions) {
-        let title = action.title;
+        let {title} = action;
         
         // If action has a translation key, use it
         if (action.titleKey) {
@@ -828,7 +828,7 @@ class NotificationService {
         if (Platform.OS === 'ios') {
           preparedActions.push({
             identifier: action.id,
-            title: title,
+            title,
             options: {
               foreground: action.foreground !== false, // Default to foreground
               destructive: action.destructive === true,
@@ -839,7 +839,7 @@ class NotificationService {
           // Android format
           preparedActions.push({
             identifier: action.id,
-            title: title,
+            title,
             icon: action.icon || null
           });
         }
@@ -921,9 +921,7 @@ class NotificationService {
         actionStats,
         remindLaterActions: remindLaterActions ? JSON.parse(remindLaterActions) : [],
         ignoreActions: ignoreActions ? JSON.parse(ignoreActions) : {},
-        totalActions: Object.values(actionStats).reduce((total, typeStats) => {
-          return total + Object.values(typeStats).reduce((sum: number, count: number) => sum + count, 0);
-        }, 0)
+        totalActions: Object.values(actionStats).reduce((total, typeStats) => total + Object.values(typeStats).reduce((sum: number, count: number) => sum + count, 0), 0)
       };
       
     } catch (error) {
@@ -1197,7 +1195,7 @@ class NotificationService {
           const entryInfoId = data.entryPackId || data.entryInfoId;
           if (entryInfoId) {
             navigation.navigate('EntryInfoDetail', {
-              entryInfoId: entryInfoId,
+              entryInfoId,
               fromNotification: true,
               notificationData: data
             });

@@ -80,8 +80,8 @@ class TDACSubmissionService {
         // Note: Currently qrUri and pdfUrl both point to PDF file path
         // Future: qrUri should point to extracted QR image, pdfUrl to full PDF
         const digitalArrivalCard = await UserDataService.saveDigitalArrivalCard({
-          userId: userId,                     // Required by repository
-          entryInfoId: entryInfoId,
+          userId,                     // Required by repository
+          entryInfoId,
           cardType: 'TDAC',
           arrCardNo: tdacSubmission.arrCardNo,
           qrUri: tdacSubmission.qrUri,        // Currently: PDF path (should be QR image)
@@ -173,7 +173,7 @@ class TDACSubmissionService {
       arrCardNo: submissionData.arrCardNo || submissionData.cardNo,
       // TODO: Once QR extraction implemented, qrUri should be separate QR image path
       qrUri: submissionData.qrUri || pdfPath || submissionData.src,  // Currently same as PDF
-      pdfPath: pdfPath,  // Full PDF document path
+      pdfPath,  // Full PDF document path
       submittedAt: submissionData.submittedAt || submissionData.timestamp
         ? new Date(submissionData.submittedAt || submissionData.timestamp).toISOString()
         : new Date().toISOString(),
@@ -290,8 +290,8 @@ class TDACSubmissionService {
       if (snapshot) {
         console.log('✅ Entry info snapshot created successfully:', {
           snapshotId: snapshot.snapshotId,
-          entryInfoId: entryInfoId,
-          reason: reason,
+          entryInfoId,
+          reason,
           photoCount: snapshot.getPhotoCount(),
           createdAt: snapshot.createdAt
         });
@@ -553,7 +553,7 @@ class TDACSubmissionService {
         // Mask the value, keeping only first and last 2 characters
         const value = String(sanitized[field]);
         if (value.length > 4) {
-          sanitized[field] = value.substring(0, 2) + '****' + value.substring(value.length - 2);
+          sanitized[field] = `${value.substring(0, 2)  }****${  value.substring(value.length - 2)}`;
         } else {
           sanitized[field] = '****';
         }

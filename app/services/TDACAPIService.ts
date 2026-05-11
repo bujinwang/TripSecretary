@@ -208,7 +208,7 @@ class TDACAPIService {
           langague: 'EN'
         });
         console.log('   Request Body size:', requestBody.length, 'bytes');
-        console.log('   Request Body preview:', requestBody.substring(0, 100) + '...');
+        console.log('   Request Body preview:', `${requestBody.substring(0, 100)  }...`);
         console.log('Full Cloudflare Token:', cloudflareToken);
     
         const requestStartTime = Date.now();
@@ -242,12 +242,12 @@ class TDACAPIService {
           console.error('   Error name:', error.name);
           console.error('   Error message:', error.message);
           console.error('   Error type:', typeof error);
-          console.error('   Error stack:', error.stack?.substring(0, 200) + '...');
+          console.error('   Error stack:', `${error.stack?.substring(0, 200)  }...`);
           
           if (error.name === 'AbortError') {
             console.error('⏰ TIMEOUT DETECTED:');
-            console.error('   Configured timeout:', timeoutMs + 'ms (' + timeoutSeconds + 's)');
-            console.error('   Actual duration:', actualDuration + 'ms (' + Math.round(actualDuration/1000) + 's)');
+            console.error('   Configured timeout:', `${timeoutMs  }ms (${  timeoutSeconds  }s)`);
+            console.error('   Actual duration:', `${actualDuration  }ms (${  Math.round(actualDuration/1000)  }s)`);
             
             // Check if timeout is close to our configured timeout
             const timeoutDiff = Math.abs(actualDuration - timeoutMs);
@@ -292,7 +292,7 @@ class TDACAPIService {
           const errorText = await response.text();
           console.error('❌ Step 1 failed with status:', response.status);
           console.error('   error body:', errorText);
-          throw new Error('initActionToken failed: ' + response.status + ' - ' + errorText);
+          throw new Error(`initActionToken failed: ${  response.status  } - ${  errorText}`);
         }
     
         // Check if response has content
@@ -314,7 +314,7 @@ class TDACAPIService {
         } catch (parseError) {
           console.error('❌ Step 1: JSON parse error');
           console.error('   response text:', responseText);
-          throw new Error('initActionToken returned invalid JSON: ' + parseError.message);
+          throw new Error(`initActionToken returned invalid JSON: ${  parseError.message}`);
         }
     
         console.log('✅ Step 1: initActionToken success');
@@ -322,9 +322,10 @@ class TDACAPIService {
     
         // Store the action token for subsequent requests
         this.actionToken = data.data.actionToken;
-        console.log('   stored actionToken:', this.actionToken ? 'Yes (' + this.actionToken.length + ' chars)' : 'No');
+        console.log('   stored actionToken:', this.actionToken ? `Yes (${  this.actionToken.length  } chars)` : 'No');
     
-        return data;  }
+        return data;  
+}
 
   /**
    * Step 2: Go to add page
@@ -351,7 +352,7 @@ class TDACAPIService {
       const errorText = await response.text();
       console.error('❌ Step 2 failed with status:', response.status);
       console.error('   error body:', errorText);
-      throw new Error('gotoAdd failed: ' + response.status + ' - ' + errorText);
+      throw new Error(`gotoAdd failed: ${  response.status  } - ${  errorText}`);
     }
 
     const responseText = await response.text();
@@ -369,7 +370,7 @@ class TDACAPIService {
     } catch (parseError) {
       console.error('❌ Step 2: JSON parse error');
       console.error('   response text:', responseText);
-      throw new Error('gotoAdd returned invalid JSON: ' + parseError.message);
+      throw new Error(`gotoAdd returned invalid JSON: ${  parseError.message}`);
     }
 
     if (data?.messageCode !== 'X00000') {
@@ -545,18 +546,28 @@ class TDACAPIService {
     }
 
     const registerRow = (map, keys, row) => {
-      if (!row) return;
+      if (!row) {
+return;
+}
       const candidateKeys = (keys || [])
         .map((k) => this.normalizeInput(k))
         .filter(Boolean);
       const valuePrefix = this.normalizeInput((row.value || '').split(':')[0]);
-      if (valuePrefix) candidateKeys.push(valuePrefix);
+      if (valuePrefix) {
+candidateKeys.push(valuePrefix);
+}
       const rowKey = this.normalizeInput(row.key);
-      if (rowKey) candidateKeys.push(rowKey);
+      if (rowKey) {
+candidateKeys.push(rowKey);
+}
       const rowCode = this.normalizeInput(row.code);
-      if (rowCode) candidateKeys.push(rowCode);
+      if (rowCode) {
+candidateKeys.push(rowCode);
+}
       candidateKeys.forEach((key) => {
-        if (key) map[key] = row;
+        if (key) {
+map[key] = row;
+}
       });
     };
 
@@ -606,7 +617,7 @@ class TDACAPIService {
       const errorText = await response.text();
       console.error('❌ Step 4 failed with status:', response.status);
       console.error('   error body:', errorText);
-      throw new Error('checkHealthDeclaration failed: ' + response.status + ' - ' + errorText);
+      throw new Error(`checkHealthDeclaration failed: ${  response.status  } - ${  errorText}`);
     }
 
     const responseText = await response.text();
@@ -623,7 +634,7 @@ class TDACAPIService {
     } catch (parseError) {
       console.error('❌ Step 4: JSON parse error');
       console.error('   response text:', responseText.substring(0, 500));
-      throw new Error('checkHealthDeclaration returned invalid JSON: ' + parseError.message);
+      throw new Error(`checkHealthDeclaration returned invalid JSON: ${  parseError.message}`);
     }
 
     console.log('✅ Step 4: checkHealthDeclaration success');
@@ -715,7 +726,7 @@ class TDACAPIService {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({
-          hiddenToken: hiddenToken,
+          hiddenToken,
           sendTo: email,
           checkedDecalraion: true,
           bluetoothName: ''
@@ -788,7 +799,7 @@ class TDACAPIService {
     try {
       console.log('🚀 Starting complete TDAC submission...', {
         attempt: attemptNumber + 1,
-        maxRetries: maxRetries
+        maxRetries
       });
       
       const startTime = Date.now();
@@ -876,7 +887,7 @@ class TDACAPIService {
       // Validate TDAC submission metadata
       const tdacSubmission = {
         arrCardNo: result.arrCardNo,
-        qrUri: 'data:application/pdf;base64,' + (result.pdfBlob ? 'valid' : 'invalid'),
+        qrUri: `data:application/pdf;base64,${  result.pdfBlob ? 'valid' : 'invalid'}`,
         pdfPath: result.pdfBlob ? 'blob://pdf' : null,
         submittedAt: result.submittedAt,
         submissionMethod: 'api'
@@ -925,7 +936,7 @@ class TDACAPIService {
         recoverable: errorResult.recoverable,
         suggestions: errorResult.suggestions,
         attemptNumber: attemptNumber + 1,
-        maxRetries: maxRetries
+        maxRetries
       };
     }
   }
@@ -1032,12 +1043,12 @@ class TDACAPIService {
       if (!traveler[field]) {
         console.error('❌ Missing required field:', field);
         console.error('   Traveler data:', JSON.stringify(traveler, null, 2));
-        throw new Error('Missing required field: ' + field);
+        throw new Error(`Missing required field: ${  field}`);
       }
     }
     
     // Parse birthDate if it's a string
-    let birthDate = traveler.birthDate;
+    let {birthDate} = traveler;
     if (typeof birthDate === 'string') {
       // Assume format: YYYY-MM-DD or DD/MM/YYYY
       const parts = birthDate.includes('/') ? birthDate.split('/') : birthDate.split('-');
@@ -1051,12 +1062,12 @@ class TDACAPIService {
           birthDate = { day: parts[0], month: parts[1], year: parts[2] };
         }
       } else {
-        throw new Error('Invalid birthDate format. Expected YYYY-MM-DD or DD/MM/YYYY, got: ' + traveler.birthDate);
+        throw new Error(`Invalid birthDate format. Expected YYYY-MM-DD or DD/MM/YYYY, got: ${  traveler.birthDate}`);
       }
     }
     
     if (!birthDate || !birthDate.day || !birthDate.month || !birthDate.year) {
-      throw new Error('Invalid birthDate object: ' + JSON.stringify(birthDate));
+      throw new Error(`Invalid birthDate object: ${  JSON.stringify(birthDate)}`);
     }
     
     console.log('✅ All required fields present');
@@ -1092,14 +1103,14 @@ class TDACAPIService {
     const genderId = this.getGenderId(traveler.gender);
     if (!genderId) {
       throw new Error(
-        'Gender information is required for TDAC submission. ' +
-        'Please ensure your passport information includes a valid gender (Male or Female). ' +
-        'Current gender value: ' + (traveler.gender || '(not provided)')
+        `Gender information is required for TDAC submission. ` +
+        `Please ensure your passport information includes a valid gender (Male or Female). ` +
+        `Current gender value: ${  traveler.gender || '(not provided)'}`
       );
     }
 
     const dyn = this.dynamicData || {};
-    const purposeRow = dyn.purposeRow;
+    const {purposeRow} = dyn;
     const purposeId = purposeRow?.key || this.getPurposeId(traveler.purpose);
     const cityResName = dyn.stateRow?.value || this.normalizeInput(traveler.cityResidence);
     const provinceName = dyn.provinceRow?.value || this.normalizeInput(traveler.province);
@@ -1285,7 +1296,9 @@ class TDACAPIService {
 
   lookupWithCache(cacheKey, value, fallbackMap, defaultKey) {
     const normalized = this.normalizeInput(value);
-    if (!normalized) return defaultKey;
+    if (!normalized) {
+return defaultKey;
+}
     const altNormalized = normalized.replace(/_/g, ' ');
     const simplified = this.simplify(normalized);
 
@@ -1340,16 +1353,26 @@ class TDACAPIService {
       .filter(Boolean);
 
     const tryMatch = (row) => {
-      if (!row) return false;
+      if (!row) {
+return false;
+}
       const rowValue = this.normalizeInput(row.value);
       const rowSimplified = this.simplify(rowValue);
       const rowCode = this.normalizeInput(row.code);
       const rowKey = this.normalizeInput(row.key);
 
-      if (normalizedKeys.includes(rowKey)) return true;
-      if (normalizedCodes.includes(rowCode)) return true;
-      if (simplifiedValues.includes(rowSimplified)) return true;
-      if (normalizedValues.some((candidate) => candidate && rowValue.includes(candidate))) return true;
+      if (normalizedKeys.includes(rowKey)) {
+return true;
+}
+      if (normalizedCodes.includes(rowCode)) {
+return true;
+}
+      if (simplifiedValues.includes(rowSimplified)) {
+return true;
+}
+      if (normalizedValues.some((candidate) => candidate && rowValue.includes(candidate))) {
+return true;
+}
       return false;
     };
 
@@ -1507,14 +1530,18 @@ class TDACAPIService {
     const { allowEmpty = false } = options;
 
     if (value === undefined || value === null) {
-      if (allowEmpty) return null;
+      if (allowEmpty) {
+return null;
+}
       throw new Error(`Missing ${fieldName}`);
     }
 
     if (typeof value === 'string') {
       const trimmed = value.trim();
       if (!trimmed) {
-        if (allowEmpty) return null;
+        if (allowEmpty) {
+return null;
+}
         throw new Error(`${fieldName} cannot be empty`);
       }
 
@@ -1585,19 +1612,25 @@ class TDACAPIService {
   }
 
   getProvinceId(province) {
-    if (!province) return ID_MAPS.province.BANGKOK;
+    if (!province) {
+return ID_MAPS.province.BANGKOK;
+}
     const upperProvince = province.toUpperCase().replace(/\s+/g, '_');
     return ID_MAPS.province[upperProvince] || ID_MAPS.province.BANGKOK;
   }
 
   getDistrictId(district) {
-    if (!district) return ID_MAPS.district.BANG_BON;
+    if (!district) {
+return ID_MAPS.district.BANG_BON;
+}
     const upperDistrict = district.toUpperCase().replace(/\s+/g, '_');
     return ID_MAPS.district[upperDistrict] || ID_MAPS.district.BANG_BON;
   }
 
   getSubDistrictId(subDistrict) {
-    if (!subDistrict) return ID_MAPS.subDistrict.BANG_BON_NUEA;
+    if (!subDistrict) {
+return ID_MAPS.subDistrict.BANG_BON_NUEA;
+}
     const upperSubDistrict = subDistrict.toUpperCase().replace(/\s+/g, '_');
     return ID_MAPS.subDistrict[upperSubDistrict] || ID_MAPS.subDistrict.BANG_BON_NUEA;
   }

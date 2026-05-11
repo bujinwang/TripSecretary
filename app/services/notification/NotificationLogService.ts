@@ -258,7 +258,7 @@ class NotificationLogService {
       const analytics: Analytics = analyticsData ? JSON.parse(analyticsData) : this.getDefaultAnalytics();
 
       const notificationType = logEntry.notification.type || 'unknown';
-      const eventType = logEntry.eventType;
+      const {eventType} = logEntry;
 
       // Initialize type analytics if not exists
       if (!analytics.byType[notificationType]) {

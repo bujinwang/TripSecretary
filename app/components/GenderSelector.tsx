@@ -27,8 +27,7 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({
   options,
   style,
   disabled = false,
-}) => {
-  return (
+}) => (
     <XStack gap="$sm" style={style}>
       {options.map((option) => {
         const isActive = value === option.value;
@@ -69,7 +68,6 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({
       })}
     </XStack>
   );
-};
 
 export default GenderSelector;
 

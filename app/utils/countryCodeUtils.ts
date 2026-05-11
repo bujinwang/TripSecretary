@@ -86,9 +86,7 @@ export const isValidCountryCode = (countryCode) => {
  * 
  * @returns {string[]} Array of ISO 3166-1 alpha-2 codes
  */
-export const getSupportedCountryCodes = () => {
-  return ['th', 'my', 'sg', 'vn', 'hk', 'us', 'tw', 'jp', 'kr'];
-};
+export const getSupportedCountryCodes = () => ['th', 'my', 'sg', 'vn', 'hk', 'us', 'tw', 'jp', 'kr'];
 
 /**
  * Default export

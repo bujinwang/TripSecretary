@@ -337,9 +337,7 @@ export const useThailandDataPersistence = ({
   ]);
 
   // Session state management
-  const getSessionStateKey = useCallback(() => {
-    return `session_state_thailand_${userId}`;
-  }, [userId]);
+  const getSessionStateKey = useCallback(() => `session_state_thailand_${userId}`, [userId]);
 
   const saveSessionState = useCallback(async () => {
     try {
@@ -400,7 +398,7 @@ export const useThailandDataPersistence = ({
 
     // Migrate passport data
     if (userData.passport) {
-      const passport = userData.passport;
+      const {passport} = userData;
       if (passport.passportNumber) {
 existingDataToMigrate.passportNo = passport.passportNumber;
 }
@@ -423,7 +421,7 @@ existingDataToMigrate.sex = passport.gender;
 
     // Migrate personal info data
     if (userData.personalInfo) {
-      const personalInfo = userData.personalInfo;
+      const {personalInfo} = userData;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -446,7 +444,7 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
 
     // Migrate travel info data
     if (userData.travelInfo) {
-      const travelInfo = userData.travelInfo;
+      const {travelInfo} = userData;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -884,9 +882,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         flightTicketPhoto, departureFlightTicketPhoto, hotelReservationPhoto
       } = currentState;
 
-      const getCurrentValue = (fieldName, currentValue) => {
-        return fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
-      };
+      const getCurrentValue = (fieldName, currentValue) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
 
       // Save passport data
       const allPassportFields = {
@@ -1117,7 +1113,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
           // Save updated metrics back to database
           await entryInfo.save();
-          console.log('✅ Updated entry_info completion metrics:', entryInfo.getTotalCompletionPercent() + '%');
+          console.log('✅ Updated entry_info completion metrics:', `${entryInfo.getTotalCompletionPercent()  }%`);
         }
       } catch (metricsError) {
         // Don't fail the entire save operation if metrics update fails
