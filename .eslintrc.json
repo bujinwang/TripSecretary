@@ -130,7 +130,9 @@
         "no-console": "off",
         "@typescript-eslint/no-require-imports": "off",
         "@typescript-eslint/no-unused-expressions": "warn",
-        "react-hooks/rules-of-hooks": "warn"
+        "react-hooks/rules-of-hooks": "warn",
+        "no-promise-executor-return": "warn",
+        "no-control-regex": "warn"
       }
     },
     {

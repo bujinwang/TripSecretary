@@ -203,7 +203,7 @@ describe('UserDataService - Batch Operations', () => {
         personalInfo: {
           id: 'personal_1',
           userId: testUserId,
-
+        },
       };
 
       const updates = {
