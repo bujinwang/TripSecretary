@@ -1,4 +1,5 @@
-// @ts-nocheck
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiPayload = Record<string, any>;
 
 /**
  * TDAC (Thailand Digital Arrival Card) API Service

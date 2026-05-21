@@ -1,4 +1,18 @@
-// @ts-nocheck — Complex modal with fund item CRUD; full typing deferred
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FundItem = Record<string, any>;
+
+interface FundItemDetailModalProps {
+  visible: boolean;
+  fundItem: FundItem | null;
+  onClose: () => void;
+  onUpdate: (item: FundItem) => void;
+  onDelete: (item: FundItem) => void;
+  onManageAll: () => void;
+  isCreateMode?: boolean;
+  createItemType?: string | null;
+  onCreate?: ((item: FundItem) => void) | null;
+}
+
 // 入境通 - Fund Item Detail Modal Component
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -24,7 +38,7 @@ import Button from './Button';
 import Input from './Input';
 import OptimizedImage from './OptimizedImage';
 
-const FundItemDetailModal = ({
+const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
   visible,
   fundItem,
   onClose,

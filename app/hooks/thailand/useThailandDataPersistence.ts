@@ -1,4 +1,6 @@
-// @ts-nocheck — Complex data persistence hook; full typing deferred
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type HookParams = Record<string, any>;
+
 /**
  * useThailandDataPersistence Hook
  *
@@ -91,7 +93,7 @@ export const useThailandDataPersistence = ({
   formState,
   userInteractionTracker,
   navigation,
-}) => {
+}: HookParams) => {
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
   const interactionTrackerRef = useRef(userInteractionTracker);

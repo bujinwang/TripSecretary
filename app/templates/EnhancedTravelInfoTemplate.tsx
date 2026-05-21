@@ -1,4 +1,6 @@
-// @ts-nocheck — V2 template with complex hook composition; full typing deferred
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TravelInfoConfig = any;
+
 /**
  * Enhanced Travel Info Template
  *
