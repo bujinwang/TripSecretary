@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * TDAC Error Handler Tests

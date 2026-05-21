@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Complex cross-destination calculation; full typing deferred
 /**
  * EntryCompletionCalculator - Utility for calculating entry information completion status
  * Computes completion metrics for passport, personal info, funds, and travel categories

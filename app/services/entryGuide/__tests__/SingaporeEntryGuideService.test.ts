@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 // 新加坡入境指引服务测试
 import SingaporeEntryGuideService from '../SingaporeEntryGuideService';

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Address validation helpers shared across TDAC-related flows.
  */

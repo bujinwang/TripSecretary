@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Completion Summary Card Component
 import React from 'react';
 import {

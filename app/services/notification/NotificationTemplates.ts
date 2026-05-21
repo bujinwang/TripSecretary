@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * NotificationTemplates - Defines notification types and templates for the progressive entry flow

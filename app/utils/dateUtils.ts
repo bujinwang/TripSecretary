@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Date utility functions to handle timezone-safe date parsing and formatting.
  *

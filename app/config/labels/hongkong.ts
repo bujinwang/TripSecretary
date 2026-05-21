@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Hong Kong Labels Configuration
  *

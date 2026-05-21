@@ -1,20 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { japanComprehensiveTravelInfoConfig } from '../../config/destinations/japan/comprehensiveTravelInfoConfig';
 
-const JapanTravelInfoScreen = ({ navigation, route }) => (
-  <EnhancedTravelInfoTemplate
-    config={japanComprehensiveTravelInfoConfig}
-    navigation={navigation}
-    route={route}
-  />
-);
+interface JapanTravelInfoScreenProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
 
-JapanTravelInfoScreen.propTypes = {
-  navigation: PropTypes.object.isRequired,
-  route: PropTypes.object.isRequired,
-};
+const JapanTravelInfoScreen = ({ navigation, route }: JapanTravelInfoScreenProps) => (
+  <EnhancedTravelInfoTemplate config={japanComprehensiveTravelInfoConfig} navigation={navigation} route={route} />
+);
 
 export default JapanTravelInfoScreen;

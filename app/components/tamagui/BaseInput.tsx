@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * BaseInput - Reusable input component with validation built on Tamagui
  *

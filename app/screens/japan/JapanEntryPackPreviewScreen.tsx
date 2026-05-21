@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Japan Entry Pack Preview Screen
  *

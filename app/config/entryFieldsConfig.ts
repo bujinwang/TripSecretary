@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Entry Fields Configuration
  * Defines required field metadata for each category in the progressive entry flow

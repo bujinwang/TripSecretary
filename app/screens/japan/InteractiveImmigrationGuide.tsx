@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 入境通 - Interactive Immigration Guide (互动入境指南)
 import React, { useState } from 'react';
 import {

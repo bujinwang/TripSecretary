@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Taiwan Travel Info Validation Rules
  * Centralized validation logic for Taiwan travel information fields

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 出境通 - Scan Passport Screen
 import React, { useState, useEffect, useRef } from 'react';
 import {

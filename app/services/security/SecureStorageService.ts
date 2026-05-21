@@ -1,4 +1,4 @@
-// @ts-nocheck — service file
+
 /**
  * 入境通 - Secure Storage Service (Refactored)
  * Encrypted local storage for sensitive user data

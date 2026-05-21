@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // useMalaysiaFormState.js
 // Consolidates all form state management for Malaysia Travel Info Screen
 import { useState, useCallback } from 'react';

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 加拿大入境指引配置文件 - 多伦多机场YYZ/温哥华机场YVR完整流程
 // 基于实际机场体验和eTA电子旅行许可系统
 
@@ -8,7 +6,7 @@ export const canadaEntryGuide = {
   countryName: '加拿大',
   countryNameZh: '加拿大',
   airports: ['YYZ', 'YVR', 'YUL', 'YYC'], // 多伦多、温哥华、蒙特利尔、卡尔加里
-  currency: 'CAD',
+  currencyCode: 'CAD',
   language: ['en', 'fr'], // 英语、法语
 
   // 重要提醒

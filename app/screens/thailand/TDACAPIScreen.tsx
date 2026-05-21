@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * TDAC API Screen - Direct API submission (no WebView)

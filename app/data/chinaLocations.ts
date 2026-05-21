@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const chinaProvinces = [
   { id: 'BJ', code: 'BJ', nameEn: 'Beijing', nameZh: '北京市', region: 'north' },
   { id: 'SH', code: 'SH', nameEn: 'Shanghai', nameZh: '上海市', region: 'east' },

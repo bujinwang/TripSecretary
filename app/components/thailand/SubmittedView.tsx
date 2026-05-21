@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * SubmittedView Component - Post-submission success interface
  * Shows when TDAC has been successfully submitted

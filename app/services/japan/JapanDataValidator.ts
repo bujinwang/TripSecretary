@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Japan Data Validator Service
  * Provides validation logic for Japan-specific data requirements

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // useMalaysiaDataPersistence.js
 // Handles all data loading, saving, and persistence logic for Malaysia Travel Info Screen
 import { useCallback, useRef } from 'react';

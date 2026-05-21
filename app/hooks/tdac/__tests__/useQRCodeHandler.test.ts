@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Unit tests for useQRCodeHandler - File API Migration
  * Testing migration to new expo-file-system SDK 54 API

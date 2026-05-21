@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * OCR Processing Utilities for Thailand Travel
  * Handles ticket and hotel OCR result processing

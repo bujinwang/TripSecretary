@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * TDAC Language Detection Utility
  *

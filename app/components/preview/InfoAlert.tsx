@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - InfoAlert Component
 // Shows important notices, warnings, or time-sensitive information
 

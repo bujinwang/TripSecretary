@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * useViewportVisibility Hook
  *

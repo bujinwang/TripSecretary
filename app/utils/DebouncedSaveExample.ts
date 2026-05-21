@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Example usage of DebouncedSave with UserDataService
  * This demonstrates how to integrate the debounced save utility

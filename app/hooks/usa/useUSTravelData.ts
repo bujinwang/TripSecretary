@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import UserDataService from '../../services/data/UserDataService';

@@ -103,16 +103,16 @@ export const hongkongEntryFlowConfig = {
   entryFlow: {
     progress: {
       headline: {
-        ready: 'hk.entryFlow.progress.headline.ready',
-        almost: 'hk.entryFlow.progress.headline.almost',
-        start: 'hk.entryFlow.progress.headline.start',
+        ready: '香港行程准备就绪！🇭🇰',
+        almost: '快完成了，继续加油！',
+        start: '开始整理香港入境资料吧',
       },
       subtitle: {
-        ready: 'hk.entryFlow.progress.subtitle.ready',
-        almost: 'hk.entryFlow.progress.subtitle.almost',
-        start: 'hk.entryFlow.progress.subtitle.start',
+        ready: '所有必填信息已完成，可随时应对入境问询。',
+        almost: '还差 {{remaining}}%，完善后即可安心过关。',
+        start: '填写护照、资金与行程信息，让入境问询更从容。',
       },
-      label: 'hk.entryFlow.progress.label',
+      label: '准备进度',
     },
     submissionWindow: 'hk.entryFlow.submissionWindow',
     titleKey: 'hk.entryFlow.title',

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Country Selection Card Component
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { translations } from '../locales';
 import { convertToTraditional } from '../chineseConverter';

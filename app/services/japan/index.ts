@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Japan Services Index

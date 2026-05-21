@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * InputWithUserTracking Component Tests
  * 

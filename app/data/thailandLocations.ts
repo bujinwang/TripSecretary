@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand administrative divisions (province → district → sub-district)
  * Source: https://github.com/kongvut/thai-province-data (raw data snapshot)

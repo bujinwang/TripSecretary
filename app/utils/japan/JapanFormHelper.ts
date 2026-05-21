@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Japan Form Helper Utility
  * Provides utilities for Japan manual entry form completion

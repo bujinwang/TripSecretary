@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Animation utilities for ThailandEntryFlowScreen redesign
  * Provides consistent animation patterns and easing functions

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Destination countries for nationality selection in TripSecretary
 // Maps ISO-3166 codes to Chinese display names
 
@@ -170,10 +168,6 @@ export const NATIONALITIES = {
   'GUF': '法属圭亚那',
   'GUY': '圭亚那',
   'PER': '秘鲁',
-  'SUR': '苏里南',
-  'URY': '乌拉圭',
-  'VEN': '委内瑞拉',
-  'PRY': '巴拉圭',
 };
 
 // Helper functions

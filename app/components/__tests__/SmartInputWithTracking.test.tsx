@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * SmartInputWithTracking Component Tests
  * 

@@ -1,13 +1,9 @@
-// @ts-nocheck
-
 /**
  * EntryPackPreviewTemplate
  *
  * Reusable template for entry pack preview modals.
- * Extracted from VietnamEntryPackPreviewScreen to enable config-driven screens.
+ * Config-driven via EntryPackPreviewConfig.
  */
-
-/* eslint-disable react/prop-types */
 
 import React, {
   createContext,
@@ -30,11 +26,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import UserDataService from '../services/data/UserDataService';
 import EntryPackDisplay from '../components/EntryPackDisplay';
+import LoggingService from '../services/LoggingService';
 import { useLocale } from '../i18n/LocaleContext';
 
-const EntryPackPreviewTemplateContext = createContext(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PreviewContextValue = any;
 
-const useEntryPackPreviewTemplate = () => {
+const EntryPackPreviewTemplateContext = createContext<PreviewContextValue | null>(null);
+
+const useEntryPackPreviewTemplate = (): PreviewContextValue => {
   const context = useContext(EntryPackPreviewTemplateContext);
   if (!context) {
     throw new Error(
@@ -44,12 +44,22 @@ const useEntryPackPreviewTemplate = () => {
   return context;
 };
 
+interface PreviewTemplateProps {
+  children?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
 const EntryPackPreviewTemplate = ({
   children,
   config,
   navigation,
   route,
-}) => {
+}: PreviewTemplateProps) => {
   const { userData, passport: rawPassport, destination, entryPackData } =
     route?.params || {};
   const passport = useMemo(
@@ -111,7 +121,7 @@ const EntryPackPreviewTemplate = ({
           }
         }
       } catch (error) {
-        console.error('Failed to load preview data:', error);
+        LoggingService.error('EntryPackPreviewTemplate', 'Failed to load preview data', { error });
         if (isMounted) {
           setLoadError(error);
         }
@@ -335,7 +345,7 @@ const EntryPackPreviewTemplate = ({
             entryPackData,
           });
         } catch (error) {
-          console.error('EntryPackPreviewTemplate onActionPress hook failed:', error);
+          LoggingService.error('EntryPackPreviewTemplate', 'onActionPress hook failed', { error });
         }
       }
 
@@ -439,10 +449,7 @@ const EntryPackPreviewTemplate = ({
         try {
           return <OverrideComponent {...templateProps} />;
         } catch (error) {
-          console.error(
-            `EntryPackPreviewTemplate ${slot} component renderer failed:`,
-            error
-          );
+          LoggingService.error('EntryPackPreviewTemplate', `${slot} component renderer failed`, { error });
         }
       }
       return typeof defaultRenderer === 'function'
@@ -459,10 +466,7 @@ const EntryPackPreviewTemplate = ({
         try {
           return renderer(buildTemplateProps());
         } catch (error) {
-          console.error(
-            `EntryPackPreviewTemplate ${slot} slot renderer failed:`,
-            error
-          );
+          LoggingService.error('EntryPackPreviewTemplate', `${slot} slot renderer failed`, { error });
           return null;
         }
       }
@@ -481,10 +485,7 @@ const EntryPackPreviewTemplate = ({
       try {
         hook({ ...ctx, ...extraPayload });
       } catch (error) {
-        console.error(
-          `EntryPackPreviewTemplate ${hookName} hook failed:`,
-          error
-        );
+        LoggingService.error('EntryPackPreviewTemplate', `${hookName} hook failed`, { error });
       }
     }
   }, []);

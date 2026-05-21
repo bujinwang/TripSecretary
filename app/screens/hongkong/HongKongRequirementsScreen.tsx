@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryRequirementsTemplate } from '../../templates';
 import { hongkongRequirementsScreenConfig } from '../../config/destinations/hongkong/requirementsScreenConfig';
+import type { RequirementsScreenConfig } from '../../config/destinations/types';
 
-const HongKongRequirementsScreen = ({ navigation, route }) => (
-  <EntryRequirementsTemplate
-    config={hongkongRequirementsScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface HongKongRequirementsScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const HongKongRequirementsScreen = ({ navigation, route }: HongKongRequirementsScreenProps) => (
+  <EntryRequirementsTemplate config={hongkongRequirementsScreenConfig as RequirementsScreenConfig} navigation={navigation} route={route} />
 );
-
-HongKongRequirementsScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default HongKongRequirementsScreen;

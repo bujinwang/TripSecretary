@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * LocationHierarchySelector - Working Examples
  *

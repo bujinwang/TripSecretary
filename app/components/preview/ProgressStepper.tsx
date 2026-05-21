@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - ProgressStepper Component
 // Vertical progress indicator replacing horizontal tabs
 

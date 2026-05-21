@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * ExpiryWarningNotificationExample - Demonstrates expiry warning notification functionality

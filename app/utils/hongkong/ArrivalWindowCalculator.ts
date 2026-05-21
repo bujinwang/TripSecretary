@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Arrival Window Calculator Utility for Hong Kong
  * Hong Kong doesn't have a specific submission window like Thailand's 72-hour rule

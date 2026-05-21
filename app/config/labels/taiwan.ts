@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Taiwan Labels Configuration
  * Chinese (Simplified) labels for travel info sections

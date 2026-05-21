@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 香港 HDAC 内嵌网页助手 (Hong Kong Digital Arrival Card WebView)
 import React, { useRef, useState } from 'react';
 import {

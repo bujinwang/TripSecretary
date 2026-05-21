@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * useThailandLocationCascade Hook
  *

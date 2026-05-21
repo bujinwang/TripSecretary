@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Singapore Entry Pack Preview Screen
  * Refactored to use the shared EntryPackPreviewTemplate.

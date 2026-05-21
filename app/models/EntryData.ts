@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Class needs explicit field declarations; types deferred
 /**
  * 入境通 - Entry Data Model
  * Defines the structure and validation for immigration entry data

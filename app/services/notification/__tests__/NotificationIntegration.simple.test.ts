@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * NotificationIntegration.simple.test.js - Simple integration tests for notification system

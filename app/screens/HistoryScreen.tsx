@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 入境通 - History Screen
 import React, { useCallback, useState } from 'react';
 import {

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 新加坡入境指引配置文件 - 樟宜机场SIN完整流程
 // 基于实际机场体验和SGAC数字入境卡系统
 
@@ -8,7 +6,7 @@ export const singaporeEntryGuide = {
   countryName: '新加坡',
   countryNameZh: '新加坡',
   airport: 'SIN', // 樟宜机场
-  currency: 'SGD',
+  currencyCode: 'SGD',
   language: ['en', 'zh', 'ms', 'ta'], // 英语、华语、马来语、泰米尔语
 
   // 重要提醒

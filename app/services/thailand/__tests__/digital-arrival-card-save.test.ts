@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Integration test for digital_arrival_cards saving

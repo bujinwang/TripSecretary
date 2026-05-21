@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Malaysia Entry Guide Screen
  * Refactored to use the shared EntryGuideTemplate.

@@ -1,4 +1,4 @@
-// @ts-nocheck — service file
+
 // API Client Service for BorderBuddy
 import SecureTokenService from './security/SecureTokenService';
 import logger from './LoggingService';

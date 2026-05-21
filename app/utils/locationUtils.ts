@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Location Formatting and Display Utilities
  *

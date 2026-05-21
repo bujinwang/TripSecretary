@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 入境通 - Present to Customs Screen (向海关出示)
 import React from 'react';
 import {

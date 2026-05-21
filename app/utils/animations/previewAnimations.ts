@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Animation utilities for TDAC Entry Pack Preview
 // Provides reusable animation configs, timing constants, and easing functions
 // Follows front-end-spec.md Section 9: Animation & Micro-interactions

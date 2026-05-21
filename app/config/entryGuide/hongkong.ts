@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 香港入境指引配置文件 - 香港国际机场HKG完整流程
 // 基于实际机场体验
 
@@ -8,7 +6,7 @@ export const hongkongEntryGuide = {
   countryName: '香港',
   countryNameZh: '香港',
   airport: 'HKG', // 香港国际机场
-  currency: 'HKD',
+  currencyCode: 'HKD',
   language: ['zh', 'en'],
 
   // 重要提醒

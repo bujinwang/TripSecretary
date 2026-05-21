@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * NotificationTemplateService - High-level service for scheduling notifications using templates
  * 

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Submission Countdown Component
 import React, { useState, useEffect } from 'react';
 import {

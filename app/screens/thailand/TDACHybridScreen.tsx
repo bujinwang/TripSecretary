@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * TDAC Hybrid Screen - Best of both worlds

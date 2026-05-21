@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * NotificationTemplatesExample - Example usage of notification templates

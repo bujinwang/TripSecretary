@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - LoadingStates Component
 // Skeleton loading states for preview components
 // Provides better perceived performance during data loading

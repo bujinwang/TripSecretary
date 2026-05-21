@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * SnapshotIntegration.test.js - Integration tests for snapshot creation and management

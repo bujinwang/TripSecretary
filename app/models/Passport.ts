@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * 入境通 - Passport Data Model
  * Defines the structure and validation for passport information

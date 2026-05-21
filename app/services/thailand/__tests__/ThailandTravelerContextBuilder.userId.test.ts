@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Tests for ThailandTravelerContextBuilder - userId inclusion fix

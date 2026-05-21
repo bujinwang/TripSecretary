@@ -1,4 +1,4 @@
-// @ts-nocheck — service file
+
 /**
  * @fileoverview UserDataService - Unified Data Access Layer
  *
@@ -72,12 +72,17 @@ import type {
   PassportOptions,
 } from '../../types/data';
 
+import FundItem from '../../models/FundItem';
+import EntryInfo from '../../models/EntryInfo';
+import TravelInfo from '../../models/TravelInfo';
+
 // Type definitions for complex model types (to be refined later)
-type PassportModel = any; // Passport class instance
-type PersonalInfoModel = any; // PersonalInfo class instance
-type PassportCountryModel = any; // PassportCountry class instance
-type FundItemModel = any; // FundItem class instance
-type EntryInfoModel = any; // EntryInfo class instance
+type PassportModel = Passport; // Passport class instance
+type PersonalInfoModel = PersonalInfo; // PersonalInfo class instance
+type PassportCountryModel = PassportCountry; // PassportCountry class instance
+type FundItemModel = FundItem; // FundItem class instance
+type EntryInfoModel = EntryInfo; // EntryInfo class instance
+type TravelInfoModel = TravelInfo; // TravelInfo class instance
 
 interface DigitalArrivalCardData {
   userId: UserId;

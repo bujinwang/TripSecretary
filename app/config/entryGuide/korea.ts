@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 韩国入境指引配置文件 - 仁川机场ICN/金浦机场GMP完整流程
 // 基于实际机场体验和K-ETA电子旅行许可系统
 
@@ -8,7 +6,7 @@ export const koreaEntryGuide = {
   countryName: '韩国',
   countryNameZh: '韩国',
   airports: ['ICN', 'GMP', 'PUS'], // 仁川、金浦、釜山机场
-  currency: 'KRW',
+  currencyCode: 'KRW',
   language: ['ko', 'en', 'zh'], // 韩语、英语、汉语
 
   // 重要提醒

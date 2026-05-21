@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * NotificationNavigationHelper - Utility functions for handling navigation from notifications
  * 

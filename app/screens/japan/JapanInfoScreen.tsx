@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryInfoScreenTemplate } from '../../templates';
 import { japanInfoScreenConfig } from '../../config/destinations/japan/infoScreenConfig';
+import type { InfoScreenConfig } from '../../config/destinations/types';
 
-const JapanInfoScreen = ({ navigation, route }) => (
-  <EntryInfoScreenTemplate
-    config={japanInfoScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface JapanInfoScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const JapanInfoScreen = ({ navigation, route }: JapanInfoScreenProps) => (
+  <EntryInfoScreenTemplate config={japanInfoScreenConfig as InfoScreenConfig} navigation={navigation} route={route} />
 );
-
-JapanInfoScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default JapanInfoScreen;

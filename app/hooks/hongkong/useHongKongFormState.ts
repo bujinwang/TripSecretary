@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * useHongKongFormState - Consolidates all form state for Hong Kong Travel Info Screen
  *

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Malaysia Labels Configuration
  * English/Chinese/Malay trilingual labels

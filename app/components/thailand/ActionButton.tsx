@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ActionButton Component - Enhanced button with micro-interactions
  * Supports primary, secondary, success, and warning variants with optional gradients

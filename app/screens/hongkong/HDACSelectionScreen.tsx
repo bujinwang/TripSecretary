@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 香港 HDAC 提交方式选择 (Hong Kong Digital Arrival Card Selection)
 import React from 'react';
 import {

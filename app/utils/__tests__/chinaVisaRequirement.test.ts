@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { getVisaRequirement, getCountryForDisplay, getVisaPriority } from '../countriesService';
 

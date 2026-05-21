@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Bug Fix Verification Tests - 2025-10-28

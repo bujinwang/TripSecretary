@@ -1,5 +1,5 @@
-// @ts-nocheck
 
+// @ts-nocheck — TDAC validation service; full typing deferred
 /**
  * TDAC Validation Service
  * Comprehensive validation and error handling for TDAC submission metadata

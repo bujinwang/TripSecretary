@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * DeadlineNotificationExample - Example usage of DeadlineNotificationService

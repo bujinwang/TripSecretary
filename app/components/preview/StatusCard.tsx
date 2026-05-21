@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - StatusCard Component
 // Displays submission status and required actions
 

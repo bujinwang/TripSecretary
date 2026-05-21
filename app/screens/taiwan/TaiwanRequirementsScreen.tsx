@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryRequirementsTemplate } from '../../templates';
 import { taiwanRequirementsScreenConfig } from '../../config/destinations/taiwan/requirementsScreenConfig';
+import type { RequirementsScreenConfig } from '../../config/destinations/types';
 
-const TaiwanRequirementsScreen = ({ navigation, route }) => (
-  <EntryRequirementsTemplate
-    config={taiwanRequirementsScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface TaiwanRequirementsScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const TaiwanRequirementsScreen = ({ navigation, route }: TaiwanRequirementsScreenProps) => (
+  <EntryRequirementsTemplate config={taiwanRequirementsScreenConfig as RequirementsScreenConfig} navigation={navigation} route={route} />
 );
-
-TaiwanRequirementsScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default TaiwanRequirementsScreen;

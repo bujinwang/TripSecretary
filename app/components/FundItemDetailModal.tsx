@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Complex modal with fund item CRUD; full typing deferred
 // 入境通 - Fund Item Detail Modal Component
 import React, { useState, useEffect, useRef } from 'react';
 import {

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Singapore Labels Configuration  
  * English/Chinese (Simplified) bilingual labels

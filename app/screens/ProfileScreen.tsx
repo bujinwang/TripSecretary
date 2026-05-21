@@ -1,4 +1,3 @@
-// @ts-nocheck
 // RuJingTong - Profile Screen
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {

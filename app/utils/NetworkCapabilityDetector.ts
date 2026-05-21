@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Network Capability Detector
  * Detects network connectivity and API compatibility

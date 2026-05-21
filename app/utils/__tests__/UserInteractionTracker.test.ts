@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * UserInteractionTracker.test.js - Tests for user interaction tracking hook

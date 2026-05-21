@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ProgressRing Component - Circular progress indicator
  * Enhanced with gradient ring and animated particles for visual appeal

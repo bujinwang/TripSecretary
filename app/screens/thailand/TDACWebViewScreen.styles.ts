@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Styles for TDACWebViewScreen

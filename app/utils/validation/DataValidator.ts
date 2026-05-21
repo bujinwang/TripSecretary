@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Data validation utility; full typing deferred
 /**
  * 入境通 - Data Validation Utility
  * Comprehensive validation for all data types with security considerations

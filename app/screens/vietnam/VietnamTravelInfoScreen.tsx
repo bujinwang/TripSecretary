@@ -1,30 +1,21 @@
-// @ts-nocheck
 /**
  * Vietnam Travel Info Screen - Template Implementation
- *
  * PRODUCTION VERSION using EnhancedTravelInfoTemplate
- *
- * This is the main Vietnam travel info screen used by the app.
- * It leverages the enhanced template to provide Thailand-grade features
- * with minimal code.
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { vietnamComprehensiveTravelInfoConfig } from '../../config/destinations/vietnam/comprehensiveTravelInfoConfig';
 
-const VietnamTravelInfoScreen = ({ navigation, route }) => (
-    <EnhancedTravelInfoTemplate
-      config={vietnamComprehensiveTravelInfoConfig}
-      route={route}
-      navigation={navigation}
-    />
-  );
+interface VietnamTravelInfoScreenProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
 
-VietnamTravelInfoScreen.propTypes = {
-  navigation: PropTypes.object.isRequired,
-  route: PropTypes.object.isRequired,
-};
+const VietnamTravelInfoScreen = ({ navigation, route }: VietnamTravelInfoScreenProps) => (
+  <EnhancedTravelInfoTemplate config={vietnamComprehensiveTravelInfoConfig} route={route} navigation={navigation} />
+);
 
 export default VietnamTravelInfoScreen;

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * NotificationActionFeedback - Component to display feedback when users interact with notification actions
  * 

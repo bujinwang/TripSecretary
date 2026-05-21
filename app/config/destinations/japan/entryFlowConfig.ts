@@ -98,14 +98,14 @@ export const japanEntryFlowConfig: EntryFlowConfig = {
   entryFlow: {
     progress: {
       headline: {
-        ready: null,
-        almost: null,
-        start: null,
+        ready: '日本行程准备就绪！🇯🇵',
+        almost: '快完成了，继续加油！',
+        start: '开始整理日本入境资料吧',
       },
       subtitle: {
-        ready: null,
-        almost: null,
-        start: null,
+        ready: '所有必填信息已完成，可随时应对入境问询。',
+        almost: '还差 {{remaining}}%，完善后即可安心过关。',
+        start: '填写护照、资金与行程信息，让入境问询更从容。',
       },
     },
   },

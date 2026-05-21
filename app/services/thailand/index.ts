@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Thailand Services Index

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 // 韩国入境指引服务测试
 import KoreaEntryGuideService from '../KoreaEntryGuideService';

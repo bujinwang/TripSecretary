@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // useThailandFundManagement.js
 // Custom hook for managing fund items in Thailand Travel Info Screen
 import { useCallback } from 'react';

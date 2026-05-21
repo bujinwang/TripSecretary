@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 马来西亚入境指引配置文件 - 吉隆坡机场KUL/亚庇机场BKI完整流程
 // 基于实际机场体验和MDAC数字入境卡系统
 
@@ -8,7 +6,7 @@ export const malaysiaEntryGuide = {
   countryName: 'Malaysia',
   countryNameZh: '马来西亚',
   airports: ['KUL', 'BKI', 'PEN'], // 吉隆坡、亚庇、槟城机场
-  currency: 'MYR',
+  currencyCode: 'MYR',
   language: ['ms', 'en', 'zh'], // 马来语、英语、华语
 
   // Navigation targets for related screens

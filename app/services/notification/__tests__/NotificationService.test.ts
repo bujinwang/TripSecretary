@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import NotificationService from '../NotificationService';
 import * as Notifications from 'expo-notifications';

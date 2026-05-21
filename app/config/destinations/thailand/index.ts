@@ -7,6 +7,7 @@
  * - Emergency contacts (police, embassy, hospitals)
  * - Entry guide (separate file - existing)
  * - Validation rules (to be migrated)
+ * - Entry flow, info screen, requirements screen configs
  *
  * This serves as the single source of truth for Thailand configuration.
  */
@@ -17,9 +18,12 @@ import emergencyInfo from './emergencyInfo';
 import accommodationTypes from './accommodationTypes';
 import travelPurposes from './travelPurposes';
 import validationRules from './validationRules';
+import entryFlowConfig from './entryFlowConfig';
+import infoScreenConfig from './infoScreenConfig';
+import requirementsScreenConfig from './requirementsScreenConfig';
+import entryPackPreviewConfig from './entryPackPreviewConfig';
 
 // Entry guide is kept in its existing location for now
-// Will be migrated as part of Phase 1.5
 import entryGuideConfig from '../../entryGuide/thailand';
 
 /**
@@ -48,8 +52,13 @@ const thailandConfig = {
   // Validation Rules
   validation: validationRules,
 
+  // Screen configs
+  entryFlow: entryFlowConfig,
+  infoScreen: infoScreenConfig,
+  requirementsScreen: requirementsScreenConfig,
+  entryPackPreview: entryPackPreviewConfig,
+
   // Location Data (provinces, districts, sub-districts)
-  // Kept in existing location for now: app/data/thailandProvinces.js
   dataPath: {
     provinces: '@data/thailandProvinces',
     locations: '@data/thailandLocations',
@@ -57,15 +66,12 @@ const thailandConfig = {
 
   // Service Mappings
   services: {
-    // Digital arrival card service
     digitalCard: {
       serviceClass: 'TDACAPIService',
       submissionService: 'TDACSubmissionService',
       validationService: 'TDACValidationService',
       contextBuilder: 'ThailandTravelerContextBuilder',
     },
-
-    // Entry info service (generic, not Thailand-specific)
     entryInfo: {
       serviceClass: 'EntryInfoService',
     },
@@ -88,8 +94,8 @@ const thailandConfig = {
     digitalArrivalCard: true,
     entryGuide: true,
     multiLanguageSupport: true,
-    offlineMode: false, // TDAC requires internet
-    qrCodeExtraction: false, // Not yet implemented
+    offlineMode: false,
+    qrCodeExtraction: false,
   },
 };
 

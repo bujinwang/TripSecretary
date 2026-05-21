@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * CollapsibleSection Component Unit Tests
  * Tests expand/collapse functionality, field count badges, and completion status indicators

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * 入境通 - UserDataService Consistency Tests

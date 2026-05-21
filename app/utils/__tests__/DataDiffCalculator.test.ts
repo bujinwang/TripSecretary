@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * DataDiffCalculator.test.js - Tests for data difference calculation

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - DocumentPreviewCard Component
 // Displays preview of the TDAC card that will be generated
 

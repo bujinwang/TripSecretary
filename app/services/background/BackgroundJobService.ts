@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * BackgroundJobService - Handles background tasks for the progressive entry flow
  *

@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Complex data persistence hook; full typing deferred
 /**
  * useThailandDataPersistence Hook
  *

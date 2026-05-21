@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * EmptyStateView Component - Welcome screen for new users
  * Displays when user has no entry data yet

@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Thailand-specific arrival window; full typing deferred
 /**
  * Arrival Window Calculator Utility
  * Handles 72-hour window calculations and messaging for Thailand TDAC submissions

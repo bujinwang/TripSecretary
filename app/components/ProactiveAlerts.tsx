@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Proactive Alerts Component
 // Shows important travel alerts and reminders for busy travelers
 import React, { useMemo } from 'react';

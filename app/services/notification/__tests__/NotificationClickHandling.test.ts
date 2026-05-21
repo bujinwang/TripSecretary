@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * NotificationClickHandling.test.js - Tests for notification click handling functionality

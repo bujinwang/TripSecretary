@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 export { default as NotificationService } from './NotificationService';
 export { default as NotificationPreferencesService } from './NotificationPreferencesService';

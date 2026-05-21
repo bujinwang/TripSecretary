@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Form validation utilities; full typing deferred
 /**
  * Form Validation Helper
  * Provides comprehensive validation utilities for TDAC forms and user input

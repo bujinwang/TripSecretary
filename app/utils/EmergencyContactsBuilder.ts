@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 type BuildParams = {
   destination: string

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * LocationHierarchySelector - Basic Tests
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Test suite for Progressive Entry Flow translations

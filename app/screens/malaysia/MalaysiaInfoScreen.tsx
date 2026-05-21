@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryInfoScreenTemplate } from '../../templates';
 import { malaysiaInfoScreenConfig } from '../../config/destinations/malaysia/infoScreenConfig';
+import type { InfoScreenConfig } from '../../config/destinations/types';
 
-const MalaysiaInfoScreen = ({ navigation, route }) => (
-  <EntryInfoScreenTemplate
-    config={malaysiaInfoScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface MalaysiaInfoScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const MalaysiaInfoScreen = ({ navigation, route }: MalaysiaInfoScreenProps) => (
+  <EntryInfoScreenTemplate config={malaysiaInfoScreenConfig as InfoScreenConfig} navigation={navigation} route={route} />
 );
-
-MalaysiaInfoScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default MalaysiaInfoScreen;

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Singapore Travel Info Hooks
  *

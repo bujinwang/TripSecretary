@@ -1,4 +1,4 @@
-// @ts-nocheck — service file
+
 /**
  * DataExportService - Service for exporting entry info data
  * Supports JSON, PDF, and image export formats

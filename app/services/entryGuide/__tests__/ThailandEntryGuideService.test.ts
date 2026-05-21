@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 // 泰国入境指引服务测试
 import ThailandEntryGuideService from '../ThailandEntryGuideService';

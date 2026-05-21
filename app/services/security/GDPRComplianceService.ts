@@ -1,4 +1,4 @@
-// @ts-nocheck — service file
+
 /**
  * 入境通 - GDPR Compliance Service
  * Handles GDPR and PIPL compliance operations

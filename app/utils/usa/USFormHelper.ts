@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * US Form Helper Utility
  * Provides utilities for US manual entry form completion

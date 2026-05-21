@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * DataChangeAlert - Component for displaying data change alerts and resubmission warnings
  * Shows when user data has changed after TDAC submission

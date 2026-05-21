@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Input sanitization utility; full typing deferred
 /**
  * 入境通 - Input Sanitization Utility
  * Security-focused input sanitization and cleaning

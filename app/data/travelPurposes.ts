@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Travel purposes for TripSecretary
 // Standardized travel purpose options with internationalization support
 

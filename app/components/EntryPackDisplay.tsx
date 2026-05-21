@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Modal, Image, Platform } from 'react-native';
 import { colors } from '../theme/colors';

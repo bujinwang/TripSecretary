@@ -3,6 +3,7 @@
  *
  * Aggregates all South Korea-specific configuration including:
  * - Metadata (IDs, names, currency)
+ * - Entry flow, info screen, requirements screen, entry pack preview
  * - Entry guide configuration
  *
  * This serves as the single source of truth for South Korea configuration.
@@ -10,6 +11,9 @@
  */
 
 import metadata from './metadata';
+import entryFlowConfig from './entryFlowConfig';
+import infoScreenConfig from './infoScreenConfig';
+import requirementsScreenConfig from './requirementsScreenConfig';
 import entryPackPreviewConfig from './entryPackPreviewConfig';
 
 // Entry guide is kept in its existing location
@@ -22,6 +26,11 @@ import entryGuideConfig from '../../entryGuide/korea';
 const koreaConfig = {
   // Core Metadata
   ...metadata,
+
+  // Screen configs
+  entryFlow: entryFlowConfig,
+  infoScreen: infoScreenConfig,
+  requirementsScreen: requirementsScreenConfig,
 
   // Entry pack preview configuration
   entryPackPreview: entryPackPreviewConfig,
@@ -65,4 +74,3 @@ const koreaConfig = {
 };
 
 export default koreaConfig;
-

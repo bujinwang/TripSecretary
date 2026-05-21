@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 
 if (typeof AbortSignal.timeout !== 'function') {

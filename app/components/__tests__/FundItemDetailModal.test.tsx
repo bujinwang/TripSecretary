@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * FundItemDetailModal Component Unit Tests
  * Tests rendering, mode switching, save/delete operations, and error handling

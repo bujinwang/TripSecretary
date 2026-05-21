@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * StatusCard Component - Category completion cards
  * Enhanced with better visual hierarchy, progress bar, and hover states

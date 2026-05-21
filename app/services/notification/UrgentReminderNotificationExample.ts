@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * UrgentReminderNotificationExample - Examples of using UrgentReminderNotificationService

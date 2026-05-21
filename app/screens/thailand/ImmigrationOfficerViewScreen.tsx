@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 入境通 - Immigration Officer View Screen (Presentation Mode)
 // Full-screen presentation mode optimized for showing to immigration officers
 import React, { useEffect, useRef, useState, useCallback } from 'react';

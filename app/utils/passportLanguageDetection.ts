@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Detect preferred app language based on passport nationality
  */

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 入境通 - Select Destination Screen
 import React, { useState, useMemo } from 'react';
 import {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * WindowOpenNotificationExample - Example usage of the window open notification system

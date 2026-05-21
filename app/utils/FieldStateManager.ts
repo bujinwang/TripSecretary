@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * FieldStateManager Utility Class
  * 

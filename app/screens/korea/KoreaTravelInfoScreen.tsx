@@ -1,30 +1,26 @@
-// @ts-nocheck
 /**
  * Korea Travel Info Screen - Template Implementation
  *
  * PRODUCTION VERSION using EnhancedTravelInfoTemplate
- *
- * This is the main Korea travel info screen used by the app.
- * It leverages the enhanced template to provide Thailand-grade features
- * with minimal code.
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { koreaComprehensiveTravelInfoConfig } from '../../config/destinations/korea/comprehensiveTravelInfoConfig';
 
-const KoreaTravelInfoScreen = ({ navigation, route }) => (
-    <EnhancedTravelInfoTemplate
-      config={koreaComprehensiveTravelInfoConfig}
-      route={route}
-      navigation={navigation}
-    />
-  );
+interface KoreaTravelInfoScreenProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
 
-KoreaTravelInfoScreen.propTypes = {
-  navigation: PropTypes.object.isRequired,
-  route: PropTypes.object.isRequired,
-};
+const KoreaTravelInfoScreen = ({ navigation, route }: KoreaTravelInfoScreenProps) => (
+  <EnhancedTravelInfoTemplate
+    config={koreaComprehensiveTravelInfoConfig}
+    route={route}
+    navigation={navigation}
+  />
+);
 
 export default KoreaTravelInfoScreen;

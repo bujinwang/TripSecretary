@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Provinces (77 provinces)
  * Source: Official Thailand administrative divisions

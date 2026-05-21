@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * China Province Validator
  * Provides helpers for validating and normalizing Chinese province-level inputs.

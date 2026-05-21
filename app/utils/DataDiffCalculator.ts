@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * DataDiffCalculator - Utility for calculating differences between entry pack data
  * Used for detecting changes between current data and snapshots

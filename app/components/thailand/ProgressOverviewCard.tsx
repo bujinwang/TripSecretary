@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // ProgressOverviewCard.js
 // Progress overview component for Thailand Travel Info Screen
 import React from 'react';

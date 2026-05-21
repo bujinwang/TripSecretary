@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Passport Repository
  * Data access layer for passport records

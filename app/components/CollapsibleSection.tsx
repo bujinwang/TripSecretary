@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - CollapsibleSection Component
 // Collapsible section with field count badge and completion status indicators
 import React, { useState, useEffect } from 'react';

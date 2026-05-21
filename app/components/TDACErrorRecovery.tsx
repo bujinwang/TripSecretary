@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * TDAC Error Recovery Component
  * Provides user-friendly error reporting and recovery options for TDAC submissions

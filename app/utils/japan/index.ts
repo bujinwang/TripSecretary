@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Japan Utilities Index
  * Exports all Japan-specific utilities

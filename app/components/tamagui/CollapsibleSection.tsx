@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CollapsibleSection - Expandable/collapsible section component
  *

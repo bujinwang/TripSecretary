@@ -1,24 +1,20 @@
-// @ts-nocheck
 /**
  * Thailand Travel Info Screen - Template Implementation
- *
  * PRODUCTION VERSION using EnhancedTravelInfoTemplate
- *
- * This is the main Thailand travel info screen used by the app.
- * It leverages the enhanced template to provide Thailand-grade features
- * with minimal code.
  */
-
 import React from 'react';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { thailandComprehensiveTravelInfoConfig } from '../../config/destinations/thailand/comprehensiveTravelInfoConfig';
 
-const ThailandTravelInfoScreen = ({ navigation, route }) => (
-    <EnhancedTravelInfoTemplate
-      config={thailandComprehensiveTravelInfoConfig}
-      route={route}
-      navigation={navigation}
-    />
-  );
+interface ThailandTravelInfoScreenProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const ThailandTravelInfoScreen = ({ navigation, route }: ThailandTravelInfoScreenProps) => (
+  <EnhancedTravelInfoTemplate config={thailandComprehensiveTravelInfoConfig} route={route} navigation={navigation} />
+);
 
 export default ThailandTravelInfoScreen;

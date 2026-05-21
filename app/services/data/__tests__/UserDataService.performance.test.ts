@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * UserDataService Performance Tests

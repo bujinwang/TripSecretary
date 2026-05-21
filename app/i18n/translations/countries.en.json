@@ -887,6 +887,73 @@
         "title": "Entry Pack Preview",
         "subtitle": "Check readiness before TDAC submission"
       }
+    },
+    "entryFlow": {
+      "title": "Thailand Entry Preparation",
+      "progress": {
+        "headline": {
+          "ready": "Thailand trip is ready! 🇹🇭",
+          "almost": "Almost there!",
+          "start": "Let's get started!"
+        },
+        "subtitle": {
+          "ready": "All required info complete",
+          "almost": "Finish the remaining fields",
+          "start": "Fill passport, travel and accommodation details"
+        },
+        "label": "Preparation progress"
+      },
+      "status": {
+        "ready": {
+          "title": "Ready",
+          "subtitle": "Everything looks complete"
+        },
+        "mostlyComplete": {
+          "title": "Almost complete",
+          "subtitle": "A few more fields needed"
+        },
+        "needsImprovement": {
+          "title": "Please complete",
+          "subtitle": "More information needed"
+        }
+      },
+      "countdown": {
+        "title": "Submission countdown",
+        "subtitle": "Finish any remaining steps before arrival.",
+        "time": "{{days}}d {{hours}}h {{minutes}}m {{seconds}}s remaining",
+        "arrival": "Arrival date {{date}}",
+        "days": "{{days}} days until arrival"
+      },
+      "actions": {
+        "previewPack": "Preview entry pack",
+        "previewPackSubtitle": "See everything you've already prepared",
+        "entryGuide": "Entry guide",
+        "entryGuideSubtitle": "View the paper card & customs walkthrough",
+        "startEntryGuide": "Start entry guide",
+        "submit": "Submit entry card",
+        "submitSubtitle": "All set! Submit your Thailand entry card now.",
+        "edit": "Edit travel information",
+        "editSubtitle": "Review or update any details before submitting.",
+        "editThai": "Edit travel information",
+        "editThaiSubtitle": "Jump back to make changes",
+        "help": {
+          "title": "Need help?",
+          "message": "Run into an issue? Share a screenshot and we'll help.",
+          "share": "Share screenshot",
+          "contact": "Contact support",
+          "callout": "Need assistance?",
+          "calloutSubtitle": "Tap to get help"
+        },
+        "incomplete": {
+          "title": "More information needed",
+          "message": "Please complete at least 80% of the sections before submitting."
+        },
+        "success": {
+          "title": "Ready!",
+          "message": "Your Thailand entry information is complete."
+        },
+        "continue": "Continue editing"
+      }
     }
   },
   "my": {

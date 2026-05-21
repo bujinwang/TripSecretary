@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { useCallback, useMemo } from 'react';
 
 /**

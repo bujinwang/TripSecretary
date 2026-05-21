@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ErrorHandler - Centralized Error Handling Service
  *

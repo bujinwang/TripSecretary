@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Hong Kong Entry Guide Screen
  * Refactored to use the shared EntryGuideTemplate.

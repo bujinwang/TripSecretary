@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryRequirementsTemplate } from '../../templates';
 import { malaysiaRequirementsScreenConfig } from '../../config/destinations/malaysia/requirementsScreenConfig';
+import type { RequirementsScreenConfig } from '../../config/destinations/types';
 
-const MalaysiaRequirementsScreen = ({ navigation, route }) => (
-  <EntryRequirementsTemplate
-    config={malaysiaRequirementsScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface MalaysiaRequirementsScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const MalaysiaRequirementsScreen = ({ navigation, route }: MalaysiaRequirementsScreenProps) => (
+  <EntryRequirementsTemplate config={malaysiaRequirementsScreenConfig as RequirementsScreenConfig} navigation={navigation} route={route} />
 );
-
-MalaysiaRequirementsScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default MalaysiaRequirementsScreen;

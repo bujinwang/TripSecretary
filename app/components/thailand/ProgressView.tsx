@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ProgressView Component - Main progress tracking interface
  * Shows completion status, category cards, countdown, and actions

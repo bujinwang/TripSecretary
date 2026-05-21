@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * TravelInfoFormSection Component Tests
  * 

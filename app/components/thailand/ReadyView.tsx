@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * ReadyView Component - Pre-submission confirmation interface
  * Shows when user is 100% ready to submit TDAC

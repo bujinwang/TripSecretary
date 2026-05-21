@@ -1,4 +1,3 @@
-// @ts-nocheck — service file
 /**
  * BackupService - Service for automatic backup and recovery
  * Supports periodic automatic backup, backup management, data recovery, and cloud backup

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Utilities Index
  * Exports all Thailand-specific utilities

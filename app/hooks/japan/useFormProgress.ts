@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { useMemo } from 'react';
 
 const getFieldCount = (section, formData) => {

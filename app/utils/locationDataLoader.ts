@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Location data loader utility for Thailand and other countries
 import { thailandProvinces } from '../data/thailandProvinces';
 import { thailandDistricts, thailandSubDistricts, getSubDistrictsByDistrictId } from '../data/thailandLocations';

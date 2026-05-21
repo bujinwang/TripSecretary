@@ -1,23 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import { EntryRequirementsTemplate } from '../../templates';
 import { japanRequirementsScreenConfig } from '../../config/destinations/japan/requirementsScreenConfig';
+import type { RequirementsScreenConfig } from '../../config/destinations/types';
 
-const JapanRequirementsScreen = ({ navigation, route }) => (
-  <EntryRequirementsTemplate
-    config={japanRequirementsScreenConfig}
-    navigation={navigation}
-    route={route}
-  />
+interface JapanRequirementsScreenProps {
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
+
+const JapanRequirementsScreen = ({ navigation, route }: JapanRequirementsScreenProps) => (
+  <EntryRequirementsTemplate config={japanRequirementsScreenConfig as RequirementsScreenConfig} navigation={navigation} route={route} />
 );
-
-JapanRequirementsScreen.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.object,
-};
 
 export default JapanRequirementsScreen;

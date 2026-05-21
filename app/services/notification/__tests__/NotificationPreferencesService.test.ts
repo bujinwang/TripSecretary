@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import NotificationPreferencesService from '../NotificationPreferencesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';

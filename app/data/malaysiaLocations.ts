@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Malaysia Location Data
  * States and major cities/districts (2-level hierarchy)

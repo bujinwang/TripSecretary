@@ -1,37 +1,36 @@
-// @ts-nocheck
-
 /**
  * EntryInfoScreenTemplate
  *
- * Reusable layout for country-specific “Entry Info” overview screens.
- * Extracted from Thailand/Vietnam info screens to reduce duplication.
- *
- * Usage:
- *  <EntryInfoScreenTemplate
- *    config={vietnamInfoScreenConfig}
- *    navigation={navigation}
- *    route={route}
- *  />
+ * Reusable layout for country-specific "Entry Info" overview screens.
+ * Config-driven via InfoScreenConfig.
  */
-
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextStyle,
+  ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import BackButton from '../components/BackButton';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
+import { InfoScreenConfig, InfoScreenSectionConfig } from '../config/destinations/types';
 
 const DEFAULT_VARIANT = 'info';
 
-const cardVariants = {
+interface VariantStyles {
+  containerStyle: ViewStyle;
+  textStyle: TextStyle;
+}
+
+type VariantMap = Record<string, VariantStyles>;
+
+const cardVariants: VariantMap = {
   info: {
     containerStyle: {
       backgroundColor: colors.white,
@@ -67,7 +66,16 @@ const cardVariants = {
   },
 };
 
-const normalizeItems = (value) => {
+interface ResolvedSection {
+  key: string;
+  title: string;
+  items: string[];
+  containerStyle: ViewStyle;
+  textStyle: TextStyle;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const normalizeItems = (value: any): string[] => {
   if (Array.isArray(value)) {
     return value;
   }
@@ -77,7 +85,17 @@ const normalizeItems = (value) => {
   return [];
 };
 
-const EntryInfoScreenTemplate = ({ navigation, route, config }) => {
+interface EntryInfoScreenTemplateProps {
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  config: InfoScreenConfig;
+}
+
+const EntryInfoScreenTemplate = ({ navigation, route, config }: EntryInfoScreenTemplateProps) => {
   const { t } = useLocale();
   const { passport: rawPassport, destination } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
@@ -98,12 +116,12 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }) => {
     ? t(config.subtitleKey, { defaultValue: config.subtitleDefault })
     : config?.subtitle || '';
 
-  const sections = useMemo(() => {
+  const sections: ResolvedSection[] = useMemo(() => {
     if (!Array.isArray(config?.sections)) {
       return [];
     }
 
-    return config.sections.map((section) => {
+    return config.sections.map((section: InfoScreenSectionConfig) => {
       const title =
         section.titleKey
           ? t(section.titleKey, { defaultValue: section.titleDefault })
@@ -135,12 +153,9 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }) => {
 
     const params = typeof config.primaryAction.buildParams === 'function'
       ? config.primaryAction.buildParams({ passport, destination, routeParams: route.params })
-      : {
-          passport,
-          destination,
-        };
+      : { passport, destination };
 
-    navigation.navigate(config.primaryAction.screen, params);
+    navigation.navigate(config.primaryAction.screen as string, params);
   };
 
   return (
@@ -162,11 +177,11 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }) => {
           {subtitleText ? <Text style={styles.subtitle}>{subtitleText}</Text> : null}
         </View>
 
-        {sections.map((section) => (
+        {sections.map((section: ResolvedSection) => (
           <View key={section.key} style={styles.section}>
             {section.title ? <Text style={styles.sectionTitle}>{section.title}</Text> : null}
             <View style={[styles.cardBase, section.containerStyle]}>
-              {section.items.map((item, index) => (
+              {section.items.map((item: string, index: number) => (
                 <Text style={[styles.textBase, section.textStyle]} key={`${section.key}-${index}`}>
                   {item}
                 </Text>
@@ -193,59 +208,8 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }) => {
   );
 };
 
-EntryInfoScreenTemplate.defaultProps = {
-  config: {},
-};
-
-EntryInfoScreenTemplate.propTypes = {
-  navigation: PropTypes.shape({
-    goBack: PropTypes.func,
-    navigate: PropTypes.func,
-  }).isRequired,
-  route: PropTypes.shape({
-    params: PropTypes.object,
-  }),
-  config: PropTypes.shape({
-    flag: PropTypes.string,
-    headerTitleKey: PropTypes.string,
-    headerTitleDefault: PropTypes.string,
-    headerTitle: PropTypes.string,
-    backLabelKey: PropTypes.string,
-    backLabelDefault: PropTypes.string,
-    backLabel: PropTypes.string,
-    titleKey: PropTypes.string,
-    titleDefault: PropTypes.string,
-    title: PropTypes.string,
-    subtitleKey: PropTypes.string,
-    subtitleDefault: PropTypes.string,
-    subtitle: PropTypes.string,
-    sections: PropTypes.arrayOf(
-      PropTypes.shape({
-        key: PropTypes.string.isRequired,
-        titleKey: PropTypes.string,
-        titleDefault: PropTypes.string,
-        title: PropTypes.string,
-        itemsKey: PropTypes.string,
-        itemsDefault: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
-        items: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
-        variant: PropTypes.string,
-      })
-    ),
-    primaryAction: PropTypes.shape({
-      labelKey: PropTypes.string,
-      labelDefault: PropTypes.string,
-      label: PropTypes.string,
-      screen: PropTypes.string,
-      buildParams: PropTypes.func,
-    }),
-  }),
-};
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -256,70 +220,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backButton: {
-    marginLeft: -spacing.sm,
-  },
-  headerTitle: {
-    ...typography.body2,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  headerRight: {
-    width: 40,
-  },
-  titleSection: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.md,
-  },
-  flag: {
-    fontSize: 64,
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.h2,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  subtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  section: {
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.primary,
-    marginBottom: spacing.md,
-    fontWeight: 'bold',
-  },
-  cardBase: {
-    padding: spacing.lg,
-    borderRadius: 12,
-  },
-  textBase: {
-    marginBottom: spacing.sm,
-    lineHeight: 24,
-  },
-  buttonContainer: {
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
+  backButton: { marginLeft: -spacing.sm },
+  headerTitle: { ...typography.body2, fontWeight: '600', color: colors.text },
+  headerRight: { width: 40 },
+  titleSection: { alignItems: 'center', paddingVertical: spacing.xl, paddingHorizontal: spacing.md },
+  flag: { fontSize: 64, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.primary, marginBottom: spacing.xs, textAlign: 'center' },
+  subtitle: { ...typography.body1, color: colors.textSecondary, textAlign: 'center' },
+  section: { paddingHorizontal: spacing.md, marginBottom: spacing.lg },
+  sectionTitle: { ...typography.h3, color: colors.primary, marginBottom: spacing.md, fontWeight: 'bold' },
+  cardBase: { padding: spacing.lg, borderRadius: 12 },
+  textBase: { ...typography.body1, color: colors.text, marginBottom: spacing.sm, lineHeight: 24 },
+  buttonContainer: { paddingHorizontal: spacing.md, marginTop: spacing.lg },
   primaryButton: {
     backgroundColor: colors.primary,
+    paddingVertical: spacing.lg,
     borderRadius: 12,
-    paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  primaryButtonText: {
-    ...typography.body1,
-    color: colors.white,
-    fontWeight: '700',
-  },
+  primaryButtonText: { ...typography.h3, color: colors.white, fontWeight: 'bold' },
 });
 
 export default EntryInfoScreenTemplate;

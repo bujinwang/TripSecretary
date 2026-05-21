@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - ActionButtonGroup Component
 // Primary and secondary CTAs for main user actions
 

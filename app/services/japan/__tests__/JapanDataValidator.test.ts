@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import JapanDataValidator from '../JapanDataValidator';
 

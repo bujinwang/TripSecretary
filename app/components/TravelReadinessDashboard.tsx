@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Travel Readiness Dashboard Component
 // Shows at-a-glance travel status for busy travelers
 import React, { useMemo } from 'react';

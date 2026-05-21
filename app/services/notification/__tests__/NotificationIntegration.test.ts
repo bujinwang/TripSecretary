@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * NotificationIntegration.test.js - Tests for notification system integration with EntryPackService

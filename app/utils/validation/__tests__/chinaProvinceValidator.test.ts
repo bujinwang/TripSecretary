@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { findChinaProvince, isValidChinaProvince } from '../chinaProvinceValidator';
 

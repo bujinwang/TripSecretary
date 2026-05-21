@@ -1,27 +1,41 @@
-// @ts-nocheck
-
 import { useCallback } from 'react';
 import logger from '../../services/LoggingService';
 import UserDataService from '../../services/data/UserDataService';
 
-/**
- * useTemplateFundManagement Hook
- *
- * @param {Object} params - Hook parameters
- * @param {Object} params.config - Template configuration
- * @param {Object} params.formState - Form state
- * @param {Function} params.setFormState - Set form state function
- * @param {Function} params.debouncedSave - Debounced save function
- * @param {string} params.userId - User ID
- * @returns {Object} Fund management methods
- */
+interface FundManagementParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formState: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setFormState: (update: any) => void;
+  debouncedSave: () => void;
+  userId: string;
+}
+
+interface FundItem {
+  id?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface FundManagementResult {
+  addFund: (fundType: string) => void;
+  handleFundItemPress: (fundItem: FundItem) => void;
+  handleFundItemModalClose: () => void;
+  handleFundItemUpdate: (updatedFundItem: FundItem) => Promise<void>;
+  handleFundItemCreate: (newFundItem: FundItem) => Promise<void>;
+  handleFundItemDelete: (fundItemId: string) => Promise<void>;
+  refreshFundItems: () => Promise<void>;
+}
+
 export const useTemplateFundManagement = ({
   config,
   formState,
   setFormState,
   debouncedSave,
   userId,
-}) => {
+}: FundManagementParams): FundManagementResult => {
   /**
    * Add new fund (opens modal)
    */

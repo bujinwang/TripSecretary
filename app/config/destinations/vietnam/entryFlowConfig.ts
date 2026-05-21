@@ -221,16 +221,16 @@ export const vietnamEntryFlowConfig: EntryFlowConfig = {
     titleKey: 'vietnam.entryFlow.title',
     progress: {
       headline: {
-        ready: 'vietnam.entryFlow.progress.headline.ready',
-        almost: 'vietnam.entryFlow.progress.headline.almost',
-        start: 'vietnam.entryFlow.progress.headline.start',
+        ready: '越南行程准备就绪！🇻🇳',
+        almost: '快完成了，继续加油！',
+        start: '开始整理越南入境资料吧',
       },
       subtitle: {
-        ready: 'vietnam.entryFlow.progress.subtitle.ready',
-        almost: 'vietnam.entryFlow.progress.subtitle.almost',
-        start: 'vietnam.entryFlow.progress.subtitle.start',
+        ready: '所有必填信息已完成，可随时应对入境问询。',
+        almost: '还差 {{remaining}}%，完善后即可安心过关。',
+        start: '填写护照、资金与行程信息，让入境问询更从容。',
       },
-      label: 'vietnam.entryFlow.progress.label',
+      label: '准备进度',
     },
   },
 

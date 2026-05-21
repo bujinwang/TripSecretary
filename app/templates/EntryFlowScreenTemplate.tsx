@@ -1,48 +1,13 @@
-// @ts-nocheck
-
 /**
  * EntryFlowScreenTemplate
  *
  * Reusable template for country-specific entry preparation status screens.
- * Shows completion progress, missing fields, and submission readiness.
- *
- * Extracts common patterns from ThailandEntryFlowScreen (1196 lines → ~200 lines per country).
- *
- * Usage:
- *   <EntryFlowScreenTemplate config={vietnamEntryFlowConfig}>
- *     <EntryFlowScreenTemplate.StatusBanner />
- *     <EntryFlowScreenTemplate.CompletionCard />
- *     <EntryFlowScreenTemplate.Categories />
- *     <EntryFlowScreenTemplate.ActionButtons />
- *   </EntryFlowScreenTemplate>
- *
- * @example
- * // Vietnam implementation (< 150 lines)
- * import { EntryFlowScreenTemplate } from '../../templates';
- * import { vietnamEntryFlowConfig } from '../../config/destinations/vietnam';
- *
- * const VietnamEntryFlowScreen = ({ route, navigation }) => (
- *   <EntryFlowScreenTemplate
- *     config={vietnamEntryFlowConfig}
- *     route={route}
- *     navigation={navigation}
- *   >
- *     <EntryFlowScreenTemplate.Header />
- *     <EntryFlowScreenTemplate.StatusBanner />
- *     <EntryFlowScreenTemplate.ScrollContainer>
- *       <EntryFlowScreenTemplate.CompletionCard />
- *       <EntryFlowScreenTemplate.Categories />
- *       <EntryFlowScreenTemplate.SubmissionCountdown />
- *       <EntryFlowScreenTemplate.ActionButtons />
- *     </EntryFlowScreenTemplate.ScrollContainer>
- *   </EntryFlowScreenTemplate>
- * );
+ * Config-driven via EntryFlowConfig. Shows completion progress,
+ * missing fields, and submission readiness.
  */
 
 import { EntryFlowConfig } from '../config/destinations/types';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-// @ts-expect-error - prop-types lacks type declarations
-import PropTypes from 'prop-types';
 import { ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -51,6 +16,7 @@ import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 import EntryCompletionCalculator from '../utils/EntryCompletionCalculator';
 import { getDefaultArrivalDate } from '../utils/defaultTravelDates';
+import LoggingService from '../services/LoggingService';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   YStack,
@@ -137,9 +103,7 @@ const useEntryFlowTemplate = () => {
   const context = useContext<EntryFlowTemplateContextValue>(EntryFlowTemplateContext);
   if (!context) {
     if (__DEV__) {
-      console.error(
-        '[EntryFlowScreenTemplate] useEntryFlowTemplate accessed outside provider. ' +
-          'Returning default context to prevent crash.'
+      LoggingService.warn('EntryFlowScreenTemplate', 'useEntryFlowTemplate accessed outside provider. Returning default context to prevent crash.'
       );
     }
     return defaultEntryFlowContextValue;
@@ -150,15 +114,23 @@ const useEntryFlowTemplate = () => {
 /**
  * Main Template Component
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EntryFlowScreenTemplateProps {
+  children?: React.ReactNode;
+  config: EntryFlowConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  useDataLoaderHook?: never;
+}
+
 const EntryFlowScreenTemplate = ({
   children,
   config,
   route,
   navigation,
-  // Optional custom data loader
-  useDataLoaderHook, // eslint-disable-line @typescript-eslint/no-unused-vars
-}: any) => {
+  useDataLoaderHook,
+}: EntryFlowScreenTemplateProps) => {
   // Get translation function early - needed for context value
   const { t } = useLocale();
 
@@ -196,7 +168,7 @@ const EntryFlowScreenTemplate = ({
       candidateIds.find((value) => value && value.trim().length > 0) || 'user_001';
 
     if (__DEV__ && (!resolvedId || resolvedId === 'user_001')) {
-      console.log('[EntryFlowScreenTemplate] userId fallback applied:', resolvedId, {
+      LoggingService.debug('EntryFlowScreenTemplate', 'userId fallback applied', { resolvedId,
         routeUserId,
         routeUserDataUserId: routeUserData?.userId,
         routeUserIdField: routeUser?.id,
@@ -296,7 +268,7 @@ const EntryFlowScreenTemplate = ({
         setCategories(categoryData);
       }
     } catch (error) {
-      console.error('Failed to load entry flow data:', error);
+      LoggingService.error('EntryFlowScreenTemplate', 'Failed to load entry flow data', { error });
       Alert.alert('Error', 'Failed to load entry preparation status. Please try again.');
     } finally {
       setIsLoading(false);
@@ -343,7 +315,7 @@ const EntryFlowScreenTemplate = ({
 
   // Validate required props AFTER hooks — render fallback UI when missing
   if (!config) {
-    console.error('[EntryFlowScreenTemplate] config is required');
+    LoggingService.error('EntryFlowScreenTemplate', 'config is required');
     return (
       <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
@@ -354,7 +326,7 @@ const EntryFlowScreenTemplate = ({
   }
 
   if (!route) {
-    console.error('[EntryFlowScreenTemplate] route is required');
+    LoggingService.error('EntryFlowScreenTemplate', 'route is required');
     return (
       <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, config, t, navigation: null, route: null }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
@@ -365,7 +337,7 @@ const EntryFlowScreenTemplate = ({
   }
 
   if (!navigation) {
-    console.error('[EntryFlowScreenTemplate] navigation is required');
+    LoggingService.error('EntryFlowScreenTemplate', 'navigation is required');
     return (
       <EntryFlowTemplateContext.Provider value={{ ...defaultEntryFlowContextValue, config, t, navigation: null, route }}>
         <SafeAreaView style={{ flex: 1, backgroundColor: config.colors?.background || '#F9FAFB' }}>
@@ -1258,8 +1230,99 @@ EntryFlowScreenTemplate.CompletionCard = () => {
 
 /**
  * Categories Component
+ *
+ * Renders each category as a card with icon, name, completion status badge,
+ * and a list of missing fields when the category is not yet complete.
+ * Data is derived from the template context's categories array,
+ * which is populated by loadData() using EntryCompletionCalculator
+ * and the config's category definitions.
  */
-EntryFlowScreenTemplate.Categories = () => null;
+EntryFlowScreenTemplate.Categories = () => {
+  const { categories, t, config } = useEntryFlowTemplate();
+
+  if (!categories || categories.length === 0) {
+    return null;
+  }
+
+  const destinationId = mapDestinationId(config.destinationId || 'japan');
+
+  return (
+    <YStack paddingHorizontal="$md" marginTop="$lg" gap="$md">
+      <TamaguiText fontSize="$4" fontWeight="700">
+        {t(`${destinationId}.entryFlow.categories.title`, { defaultValue: 'Preparation Categories' })}
+      </TamaguiText>
+
+      {categories.map((cat: any) => {
+        const isComplete = cat.status === 'completed';
+        const isPartiallyComplete = cat.status === 'partially_complete';
+
+        return (
+          <BaseCard
+            key={cat.id}
+            variant="flat"
+            borderWidth={1}
+            borderColor={isComplete ? '#C8E6C9' : isPartiallyComplete ? '#FFF9C4' : '#FFCDD2'}
+            padding="md"
+          >
+            <XStack alignItems="center" gap="$md" marginBottom={cat.missingFields.length > 0 ? '$sm' : 0}>
+              {/* Icon */}
+              <TamaguiText fontSize={28}>{cat.icon}</TamaguiText>
+
+              {/* Name + counts */}
+              <YStack flex={1}>
+                <TamaguiText fontSize="$4" fontWeight="600">
+                  {cat.name}
+                </TamaguiText>
+                <TamaguiText fontSize="$2" color="$textSecondary">
+                  {cat.completedCount} / {cat.totalCount}
+                </TamaguiText>
+              </YStack>
+
+              {/* Status badge */}
+              <XStack
+                backgroundColor={isComplete ? '#E8F5E9' : isPartiallyComplete ? '#FFF8E1' : '#FFEBEE'}
+                paddingHorizontal="$sm"
+                paddingVertical={4}
+                borderRadius={12}
+                alignItems="center"
+                gap={4}
+              >
+                <TamaguiText fontSize={14}>
+                  {isComplete ? '✅' : isPartiallyComplete ? '⏳' : '📝'}
+                </TamaguiText>
+                <TamaguiText
+                  fontSize="$1"
+                  fontWeight="600"
+                  color={isComplete ? '#2E7D32' : isPartiallyComplete ? '#F57F17' : '#C62828'}
+                >
+                  {isComplete
+                    ? t(`${destinationId}.entryFlow.categories.complete`, { defaultValue: 'Complete' })
+                    : isPartiallyComplete
+                    ? t(`${destinationId}.entryFlow.categories.partial`, { defaultValue: 'Partial' })
+                    : t(`${destinationId}.entryFlow.categories.incomplete`, { defaultValue: 'Incomplete' })}
+                </TamaguiText>
+              </XStack>
+            </XStack>
+
+            {/* Missing fields */}
+            {cat.missingFields.length > 0 && (
+              <YStack marginTop="$sm" paddingLeft={44}>
+                <TamaguiText fontSize="$2" color="$danger" fontWeight="500" marginBottom={4}>
+                  {t(`${destinationId}.entryFlow.categories.missingFields`, { defaultValue: 'Missing:' })}
+                </TamaguiText>
+                {cat.missingFields.map((field: string, idx: number) => (
+                  <TamaguiText key={idx} fontSize="$2" color="$textSecondary" marginBottom={2}>
+                    · {field}
+                  </TamaguiText>
+                ))}
+              </YStack>
+            )}
+          </BaseCard>
+        );
+      })}
+    </YStack>
+  );
+};
 
 /**
  * Submission Countdown Component (optional - for countries with submission windows)
@@ -1389,35 +1452,5 @@ EntryFlowScreenTemplate.LoadingIndicator = ({ message }: any) => {
 
 // Export hook for advanced usage
 EntryFlowScreenTemplate.useTemplate = useEntryFlowTemplate;
-
-EntryFlowScreenTemplate.propTypes = {
-  children: PropTypes.node,
-  config: PropTypes.shape({
-    destinationId: PropTypes.string,
-    country: PropTypes.string,
-    name: PropTypes.string,
-    nameZh: PropTypes.string,
-    colors: PropTypes.shape({
-      background: PropTypes.string,
-      primary: PropTypes.string,
-    }),
-    categories: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    })),
-    entryFlow: PropTypes.object,
-    screens: PropTypes.object,
-    features: PropTypes.object,
-    completion: PropTypes.object,
-  }).isRequired,
-  route: PropTypes.shape({
-    params: PropTypes.object,
-  }).isRequired,
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func,
-    goBack: PropTypes.func,
-  }).isRequired,
-  useDataLoaderHook: PropTypes.func,
-};
 
 export default EntryFlowScreenTemplate;

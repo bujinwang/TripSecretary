@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * FieldStateManager.test.js - Tests for field state management utility

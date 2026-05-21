@@ -1,29 +1,15 @@
-// @ts-nocheck
-
+// @ts-nocheck — V2 template with complex hook composition; full typing deferred
 /**
  * Enhanced Travel Info Template
  *
- * Production-grade template with Thailand-level features:
- * - Field state tracking (user-modified vs pre-filled)
- * - Validation engine (config-driven)
- * - Smart button (dynamic label)
- * - Fund management (CRUD with modal)
- * - Field filtering (only save user-modified)
- * - Immediate save for critical fields
- *
- * Features:
- * ✅ User interaction tracker
- * ✅ Validation with warnings/errors
- * ✅ Smart button
- * ✅ Fund modal management
- * ✅ Field state filtering on save
- * ✅ Production-grade implementation
+ * Production-grade V2 template with field state tracking, validation engine,
+ * fund management, field filtering, and immediate save for critical fields.
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LoggingService from '../services/LoggingService';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
@@ -406,7 +392,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
       candidateIds.find((value) => value && value.trim().length > 0) || 'user_001';
 
     if (!resolvedId || resolvedId === 'user_001') {
-      console.log('[Template] userId fallback applied:', resolvedId, {
+      LoggingService.debug('Template', 'userId fallback applied', { resolvedId,
         routeUserId,
         routeUserDataUserId: routeUserData?.userId,
         routeUserIdField: routeUser?.id,
@@ -420,7 +406,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
         rawPassportUserId: rawPassport?.userId,
       });
     } else {
-      console.log('[Template] userId resolved:', resolvedId);
+      LoggingService.debug('Template', 'userId resolved', { resolvedId });
     }
 
     return resolvedId;
@@ -506,7 +492,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
 
     // Build state object from config sections
     if (!config?.sections) {
-      console.warn('[Template] config.sections is undefined, skipping form initialization');
+      LoggingService.warn('Template', 'config.sections is undefined, skipping form initialization');
       setFormState(initialState);
       return;
     }
@@ -560,7 +546,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
 
     // Pre-fill with passport data from route params if available
     if (passport) {
-      console.log('[Template] Pre-filling from route.params passport:', passport);
+      LoggingService.debug('Template', 'Pre-filling from route.params passport', { passport });
       if (passport.surname) {
 initialState.surname = passport.surname;
 }
@@ -613,7 +599,7 @@ initialState.visaNumber = passport.visaNumber;
     // Scroll position state
     initialState.scrollPosition = 0;
 
-    console.log('[Template] Initializing formState with fields:', Object.keys(initialState));
+    LoggingService.debug('Template', 'Initializing formState', { fieldCount: Object.keys(initialState).length });
     setFormState(initialState);
   }, [config, passport]);
 
@@ -634,7 +620,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   const ensureEntryInfoRecord = useCallback(async (overrides = {}) => {
     if (!destinationId) {
-      console.warn('[Template] Entry info sync skipped: destinationId is missing');
+      LoggingService.warn('Template', 'Entry info sync skipped: destinationId is missing');
       return null;
     }
 
@@ -669,7 +655,7 @@ initialState.visaNumber = passport.visaNumber;
           try {
             return record.toJSON();
           } catch (jsonError) {
-            console.warn('[Template] Failed to normalize record via toJSON:', jsonError);
+            LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
           }
         }
 
@@ -689,8 +675,11 @@ initialState.visaNumber = passport.visaNumber;
 
       // Filter entries for this destination
       const destinationEntries = (entryInfos || []).filter((info) => info.destinationId === destinationId);
-      console.log(`[Template] Found ${destinationEntries.length} entry(ies) for destination ${destinationId}:`, 
-        destinationEntries.map(e => ({ id: e.id, created_at: e.createdAt, last_updated_at: e.lastUpdatedAt })));
+      LoggingService.debug('Template', `Found ${destinationEntries.length} entry(ies) for destination ${destinationId}`, {
+        entryCount: destinationEntries.length,
+        destinationId,
+        entries: destinationEntries.map(e => ({ id: e.id, created_at: e.createdAt, last_updated_at: e.lastUpdatedAt }))
+      });
 
       let entryInfo = null;
       
@@ -698,9 +687,9 @@ initialState.visaNumber = passport.visaNumber;
       if (formState.entryInfoId) {
         entryInfo = destinationEntries.find((info) => info.id === formState.entryInfoId);
         if (entryInfo) {
-          console.log(`[Template] Using entry from formState.entryInfoId: ${entryInfo.id}`);
+          LoggingService.debug('Template', `Using entry from formState.entryInfoId` , { entryInfoId: entryInfo.id });
         } else {
-          console.log(`[Template] formState.entryInfoId (${formState.entryInfoId}) not found in destination entries, will use most recent`);
+          LoggingService.debug('Template', 'formState.entryInfoId not found in destination entries, will use most recent', { entryInfoId: formState.entryInfoId });
         }
       }
       
@@ -711,13 +700,13 @@ initialState.visaNumber = passport.visaNumber;
           const bTime = new Date(b.lastUpdatedAt || b.createdAt || 0).getTime();
           return bTime - aTime; // Most recent first
         })[0];
-        console.log(`[Template] Using most recent entry: ${entryInfo.id} (last_updated: ${entryInfo.lastUpdatedAt || entryInfo.createdAt})`);
+        LoggingService.debug('Template', 'Using most recent entry', { entryInfoId: entryInfo.id, lastUpdatedAt: entryInfo.lastUpdatedAt || entryInfo.createdAt });
       }
       
       // Strategy 3: Fallback to first entry (legacy behavior)
       if (!entryInfo && destinationEntries.length > 0) {
         entryInfo = destinationEntries[0];
-        console.log(`[Template] Using first entry (fallback): ${entryInfo.id}`);
+        LoggingService.debug('Template', 'Using first entry (fallback)', { entryInfoId: entryInfo.id });
       }
       
       const timestamp = new Date().toISOString();
@@ -737,7 +726,7 @@ initialState.visaNumber = passport.visaNumber;
         };
 
         if (entryInfoCreationPromiseRef.current) {
-          console.log('[Template] Awaiting in-flight entry info creation for destination:', destinationId);
+          LoggingService.debug('Template', 'Awaiting in-flight entry info creation', { destinationId });
           entryInfo = await entryInfoCreationPromiseRef.current;
         } else {
           entryInfoCreationPromiseRef.current = (async () => {
@@ -792,7 +781,7 @@ initialState.visaNumber = passport.visaNumber;
 
       return entryInfo;
     } catch (error) {
-      console.error('[Template] Failed to ensure entry info record:', error);
+      LoggingService.error('Template', 'Failed to ensure entry info record', { error });
       updateFormState({ entryInfoInitialized: false });
       return null;
     }
@@ -803,7 +792,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   const loadDataFromUserDataService = useCallback(async () => {
     try {
-      console.log('[Template] Loading data from UserDataService for user:', userId);
+      LoggingService.debug('Template', 'Loading data from UserDataService', { userId });
       updateFormState({ isLoading: true });
 
       await UserDataService.initialize(userId);
@@ -820,19 +809,19 @@ initialState.visaNumber = passport.visaNumber;
       if (!resolvedTravelData && destinationId) {
         const legacyTravelData = await UserDataService.getTravelInfo(userId);
         if (legacyTravelData && !legacyTravelData.destination) {
-          console.log('[Template] Found legacy travel info without destination; using fallback record');
+          LoggingService.debug('Template', 'Found legacy travel info without destination; using fallback record');
           resolvedTravelData = { ...legacyTravelData };
           try {
             await UserDataService.saveTravelInfo(userId, { destination: destinationId });
             resolvedTravelData.destination = destinationId;
-            console.log('[Template] Migrated legacy travel info to destination:', destinationId);
+            LoggingService.debug('Template', 'Migrated legacy travel info to destination', { destinationId });
           } catch (migrationError) {
-            console.warn('[Template] Failed to migrate legacy travel info destination:', migrationError);
+            LoggingService.warn('Template', 'Failed to migrate legacy travel info destination', { error: migrationError });
           }
         }
       }
 
-      console.log('[Template] Loaded data:', { passportData, personalData, fundsData, travelData: resolvedTravelData });
+      LoggingService.debug('Template', 'Loaded data', { passportData, personalData, fundsData, travelData: resolvedTravelData });
 
       // Parse fullName into individual name parts
       let surname = '', middleName = '', givenName = '';
@@ -959,12 +948,14 @@ initialState.visaNumber = passport.visaNumber;
         travelInfo: resolvedTravelData,
         funds: fundsData,
       });
-      console.log('[Template] Data loaded successfully. Fields with data:',
-        Object.entries(loadedData).filter(([k, v]) => v && v !== '' && k !== 'funds').map(([k]) => k),
-        'Funds count:', loadedData.funds?.length || 0
-      );
+      LoggingService.debug('Template', 'Data loaded successfully', {
+        fieldsWithData: Object.entries(loadedData)
+          .filter(([k, v]) => v && v !== '' && k !== 'funds')
+          .map(([k]) => k),
+        fundsCount: loadedData.funds?.length || 0,
+      });
     } catch (error) {
-      console.error('[Template] Error loading data:', error);
+      LoggingService.error('Template', 'Error loading data', { error });
       updateFormState({ isLoading: false });
     }
   }, [userId, destinationId, userInteractionTracker.isInitialized, userInteractionTracker.isFieldUserModified, userInteractionTracker.markFieldAsPreFilled, updateFormState, ensureEntryInfoRecord]);
@@ -972,7 +963,7 @@ initialState.visaNumber = passport.visaNumber;
   // Load data when user ID is available and tracker is initialized
   useEffect(() => {
     if (userId && userInteractionTracker.isInitialized) {
-      console.log('[Template] Triggering data load - userId:', userId, 'tracker initialized:', userInteractionTracker.isInitialized);
+      LoggingService.debug('Template', 'Triggering data load', { userId, trackerInitialized: userInteractionTracker.isInitialized });
       loadDataFromUserDataService();
     }
   }, [userId, userInteractionTracker.isInitialized]);
@@ -982,7 +973,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   const saveDataToUserDataService = useCallback(async () => {
     try {
-      console.log('[Template] Saving data to UserDataService');
+      LoggingService.debug('Template', 'Saving data to UserDataService');
       updateFormState({ saveStatus: 'saving' });
 
       await UserDataService.initialize(userId);
@@ -1031,7 +1022,7 @@ initialState.visaNumber = passport.visaNumber;
         updateFormState({
           passportId: passportResult?.id || formState.passportId || null,
         });
-        console.log('[Template] Saved passport fields:', Object.keys(passportUpdates));
+        LoggingService.debug('Template', 'Saved passport fields', { fieldCount: Object.keys(passportUpdates).length });
       }
 
       // Personal info - filter based on user interaction
@@ -1057,7 +1048,7 @@ initialState.visaNumber = passport.visaNumber;
         updateFormState({
           personalInfoId: personalInfoResult?.id || formState.personalInfoId || null,
         });
-        console.log('[Template] Saved personal info fields:', Object.keys(personalInfoUpdates));
+        LoggingService.debug('Template', 'Saved personal info fields', { fieldCount: Object.keys(personalInfoUpdates).length });
       }
 
       // Travel info - filter based on user interaction
@@ -1110,7 +1101,7 @@ initialState.visaNumber = passport.visaNumber;
         updateFormState({
           travelInfoId: travelInfoResult?.id || formState.travelInfoId || null,
         });
-        console.log('[Template] Saved travel info fields:', Object.keys(travelInfoUpdates));
+        LoggingService.debug('Template', 'Saved travel info fields', { fieldCount: Object.keys(travelInfoUpdates).length });
       }
 
       const ensureOverrides = {};
@@ -1137,20 +1128,20 @@ initialState.visaNumber = passport.visaNumber;
           updateFormState({ saveStatus: null });
         } catch (error) {
           if (error?.message?.includes('useEntryFlowTemplate')) {
-            console.error('[Template] CRITICAL: useEntryFlowTemplate error in setTimeout callback');
-            console.error('[Template] Stack trace:', error.stack);
+            LoggingService.error('Template', 'CRITICAL: useEntryFlowTemplate error in setTimeout callback');
+            LoggingService.error('Template', 'Stack trace', { stack: error.stack });
           }
           throw error; // Re-throw to see original error
         }
       }, 2000);
 
-      console.log('[Template] Data saved successfully');
+      LoggingService.debug('Template', 'Data saved successfully');
     } catch (error) {
-      console.error('[Template] Error saving data:', error);
+      LoggingService.error('Template', 'Error saving data', { error });
       // Check if this is the useEntryFlowTemplate error
       if (error?.message?.includes('useEntryFlowTemplate')) {
-        console.error('[Template] CRITICAL: useEntryFlowTemplate called outside EntryFlowScreenTemplate context');
-        console.error('[Template] Stack trace:', error.stack);
+        LoggingService.error('Template', 'CRITICAL: useEntryFlowTemplate called outside EntryFlowScreenTemplate context');
+        LoggingService.error('Template', 'Stack trace', { stack: error.stack });
       }
       updateFormState({ saveStatus: 'error' });
     }
@@ -1303,7 +1294,7 @@ initialState.visaNumber = passport.visaNumber;
 
       navigation.navigate(nextRouteName, nextParams);
     } else {
-      console.warn('[Template] No next navigation route configured');
+      LoggingService.warn('Template', 'No next navigation route configured');
       navigation.goBack();
     }
   }, [
@@ -1369,7 +1360,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   // Early validation - config is required (AFTER hooks)
   if (!config) {
-    console.error('[Template] ERROR: config prop is required but not provided');
+    LoggingService.error('Template', 'ERROR: config prop is required but not provided');
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <TamaguiText fontSize="$5" color="$error" textAlign="center" marginBottom="$md">
@@ -1713,7 +1704,7 @@ initialState.visaNumber = passport.visaNumber;
         {/* Fund Item Modal */}
         {(() => {
           const isCreateMode = !formState.currentFundItem && !!formState.newFundItemType;
-          console.log('[Template] Fund Modal Render Check:', {
+          LoggingService.debug('Template', 'Fund Modal Render Check', {
             fundItemModalVisible: formState.fundItemModalVisible,
             hasCurrentFundItem: !!formState.currentFundItem,
             newFundItemType: formState.newFundItemType,
@@ -1919,28 +1910,7 @@ const SmartButton = ({ config, validation, onPress }) => {
   );
 };
 
-EnhancedTravelInfoTemplate.propTypes = {
-  config: PropTypes.shape({
-    country: PropTypes.string.isRequired,
-    fields: PropTypes.object,
-    validation: PropTypes.object,
-    colors: PropTypes.shape({
-      background: PropTypes.string,
-      primary: PropTypes.string,
-    }),
-  }).isRequired,
-  route: PropTypes.shape({
-    params: PropTypes.shape({
-      passport: PropTypes.object,
-      destination: PropTypes.string,
-    }),
-  }).isRequired,
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func,
-    goBack: PropTypes.func,
-  }).isRequired,
-  children: PropTypes.node,
-};
+// PropTypes removed: type checking handled by EnhancedTravelInfoTemplateProps interface
 
 // Export
 export default EnhancedTravelInfoTemplate;

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Passport Name Utilities
 // Provides helpers for parsing and formatting passport full names consistently.
 

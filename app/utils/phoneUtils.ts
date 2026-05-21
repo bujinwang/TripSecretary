@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Phone Number Parsing and Formatting Utilities
  *

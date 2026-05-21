@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import NotificationTemplates, {
   NOTIFICATION_TYPES,

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - PreviewBadge Component
 // Indicates to user they're in preview mode
 

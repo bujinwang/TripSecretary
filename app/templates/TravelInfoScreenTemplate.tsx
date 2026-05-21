@@ -1,39 +1,12 @@
-// @ts-nocheck
-
 /**
  * TravelInfoScreenTemplate
  *
- * Reusable template for country-specific travel information screens.
- * Extracts common patterns from Thailand/Malaysia/Singapore screens.
- *
- * Usage:
- *   <TravelInfoScreenTemplate config={vietnamConfig}>
- *     <TravelInfoScreenTemplate.Section name="passport">
- *       <PassportFields />
- *     </TravelInfoScreenTemplate.Section>
- *   </TravelInfoScreenTemplate>
- *
- * @example
- * // Vietnam implementation (< 100 lines)
- * import { TravelInfoScreenTemplate } from '../../templates';
- * import { vietnamConfig } from '../../config/destinations/vietnam';
- *
- * const VietnamTravelInfoScreen = ({ route, navigation }) => (
- *   <TravelInfoScreenTemplate
- *     config={vietnamConfig}
- *     route={route}
- *     navigation={navigation}
- *   >
- *     <TravelInfoScreenTemplate.PassportSection />
- *     <TravelInfoScreenTemplate.PersonalSection />
- *     <TravelInfoScreenTemplate.FundsSection />
- *     <TravelInfoScreenTemplate.TravelSection />
- *   </TravelInfoScreenTemplate>
- * );
+ * Reusable V1 template for country-specific travel information screens.
+ * Superseded by EnhancedTravelInfoTemplate for new implementations.
+ * Maintained for backward compatibility with existing country screens.
  */
 
 import React, { createContext, useContext, useState, useRef, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../components/BackButton';
@@ -46,10 +19,13 @@ import {
   Text as TamaguiText,
 } from '../components/tamagui';
 
-// Template Context - shares state between template and children
-const TravelInfoTemplateContext = createContext(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TravelInfoContextValue = any;
 
-const useTravelInfoTemplate = () => {
+// Template Context - shares state between template and children
+const TravelInfoTemplateContext = createContext<TravelInfoContextValue | null>(null);
+
+const useTravelInfoTemplate = (): TravelInfoContextValue => {
   const context = useContext(TravelInfoTemplateContext);
   if (!context) {
     throw new Error('useTravelInfoTemplate must be used within TravelInfoScreenTemplate');
@@ -60,16 +36,32 @@ const useTravelInfoTemplate = () => {
 /**
  * Main Template Component
  */
+interface TemplateProps {
+  children?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // Optional hooks for custom behavior — remove once all countries migrate to EnhancedTravelInfoTemplate
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useFormStateHook?: (...args: any[]) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useValidationHook?: (...args: any[]) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  usePersistenceHook?: (...args: any[]) => any;
+}
+
 const TravelInfoScreenTemplate = ({
   children,
   config,
   route,
   navigation,
-  // Optional hooks for custom behavior
   useFormStateHook,
   useValidationHook,
   usePersistenceHook,
-}) => {
+}: TemplateProps) => {
   const { t } = useLocale();
   const { passport, destination } = route.params || {};
 
@@ -131,6 +123,11 @@ TravelInfoScreenTemplate.Header = ({
   titleKey,
   onBackPress,
   rightComponent,
+}: {
+  title?: string;
+  titleKey?: string;
+  onBackPress?: () => void;
+  rightComponent?: React.ReactNode;
 }) => {
   const { t, navigation, config } = useTravelInfoTemplate();
 
@@ -165,7 +162,7 @@ TravelInfoScreenTemplate.Header = ({
 /**
  * Hero Section Component
  */
-TravelInfoScreenTemplate.HeroSection = ({ flag, title, subtitle }) => {
+TravelInfoScreenTemplate.HeroSection = ({ flag, title, subtitle }: { flag?: string; title?: string; subtitle?: string }) => {
   const { t, config } = useTravelInfoTemplate();
 
   return (
@@ -409,30 +406,5 @@ return null;
 
 // Export hook for advanced usage
 TravelInfoScreenTemplate.useTemplate = useTravelInfoTemplate;
-
-TravelInfoScreenTemplate.propTypes = {
-  children: PropTypes.node,
-  config: PropTypes.shape({
-    country: PropTypes.string.isRequired,
-    fields: PropTypes.object,
-    colors: PropTypes.shape({
-      background: PropTypes.string,
-      primary: PropTypes.string,
-    }),
-  }).isRequired,
-  route: PropTypes.shape({
-    params: PropTypes.shape({
-      passport: PropTypes.object,
-      destination: PropTypes.string,
-    }),
-  }).isRequired,
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func,
-    goBack: PropTypes.func,
-  }).isRequired,
-  useFormStateHook: PropTypes.func,
-  useValidationHook: PropTypes.func,
-  usePersistenceHook: PropTypes.func,
-};
 
 export default TravelInfoScreenTemplate;

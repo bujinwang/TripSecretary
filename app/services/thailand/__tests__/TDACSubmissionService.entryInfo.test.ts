@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Tests for TDACSubmissionService - Entry Info Creation with userId fix

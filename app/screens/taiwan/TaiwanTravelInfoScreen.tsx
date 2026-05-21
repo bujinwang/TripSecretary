@@ -1,20 +1,16 @@
-// @ts-nocheck
 import React from 'react';
-import PropTypes from 'prop-types';
 import EnhancedTravelInfoTemplate from '../../templates/EnhancedTravelInfoTemplate';
 import { taiwanComprehensiveTravelInfoConfig } from '../../config/destinations/taiwan/comprehensiveTravelInfoConfig';
 
-const TaiwanTravelInfoScreen = ({ navigation, route }) => (
-  <EnhancedTravelInfoTemplate
-    config={taiwanComprehensiveTravelInfoConfig}
-    navigation={navigation}
-    route={route}
-  />
-);
+interface TaiwanTravelInfoScreenProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+}
 
-TaiwanTravelInfoScreen.propTypes = {
-  navigation: PropTypes.object.isRequired,
-  route: PropTypes.object.isRequired,
-};
+const TaiwanTravelInfoScreen = ({ navigation, route }: TaiwanTravelInfoScreenProps) => (
+  <EnhancedTravelInfoTemplate config={taiwanComprehensiveTravelInfoConfig} navigation={navigation} route={route} />
+);
 
 export default TaiwanTravelInfoScreen;

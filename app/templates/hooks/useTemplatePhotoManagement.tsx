@@ -1,17 +1,40 @@
-// @ts-nocheck
 import { useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 import logger from '../../services/LoggingService';
 import { useLocale } from '../../i18n/LocaleContext';
 
+interface PhotoManagementParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formState: any;
+  updateField: (fieldName: string, value: unknown) => void;
+  debouncedSave: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t?: (key: string, options?: any) => string;
+}
+
+interface PhotoResult {
+  success: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error?: any;
+}
+
+interface PhotoManagementResult {
+  handleFlightTicketPhotoUpload: () => Promise<void>;
+  handleDepartureFlightTicketPhotoUpload: () => Promise<void>;
+  handleHotelReservationPhotoUpload: () => Promise<void>;
+  savePhoto: (photoType: string, photoUri: string) => Promise<PhotoResult>;
+}
+
 export const useTemplatePhotoManagement = ({
-  config: _config, // Prefixed with _ to indicate intentionally unused
-  formState: _formState, // Prefixed with _ to indicate intentionally unused
+  config: _config,
+  formState: _formState,
   updateField,
   debouncedSave,
   t,
-}) => {
+}: PhotoManagementParams): PhotoManagementResult => {
   const localeContext = useLocale();
   const localeT = localeContext?.t;
   const translationFn = t || localeT;

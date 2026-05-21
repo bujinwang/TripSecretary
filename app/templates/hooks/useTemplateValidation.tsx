@@ -1,39 +1,24 @@
-// @ts-nocheck
 import { useCallback, useMemo } from 'react';
 import logger from '../../services/LoggingService';
 import TemplateFieldStateManager from '../utils/TemplateFieldStateManager';
 
-// @ts-ignore - Remove when field type definitions are added
-
-/**
- * Validate email format
- */
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-/**
- * Validate date is in the future
- */
 const isFutureDate = (dateString: string): boolean => {
   const date = new Date(dateString);
   const now = new Date();
   return date > now;
 };
 
-/**
- * Validate date is in the past
- */
 const isPastDate = (dateString: string): boolean => {
   const date = new Date(dateString);
   const now = new Date();
   return date < now;
 };
 
-/**
- * Validate date has minimum months of validity
- */
 const hasMinMonthsValidity = (dateString: string, minMonths: number): boolean => {
   const date = new Date(dateString);
   const now = new Date();
@@ -41,19 +26,95 @@ const hasMinMonthsValidity = (dateString: string, minMonths: number): boolean =>
   return monthsDiff >= minMonths;
 };
 
-/**
- * useTemplateValidation Hook
- *
- * @param {Object} params - Hook parameters
- * @param {Object} params.config - Template configuration
- * @param {Object} params.formState - Form state
- * @param {Object} params.userInteractionTracker - User interaction tracker instance
- * @param {Function} params.saveDataToUserDataService - Save function
- * @param {Function} params.debouncedSave - Debounced save function
- * @param {Function} params.t - Translation function (optional)
- * @param {string} params.destinationId - Destination ID for translation keys (optional)
- * @returns {Object} Validation functions and state
- */
+interface TemplateFieldConfig {
+  fieldName?: string;
+  required?: boolean;
+  countable?: boolean;
+  validationMessage?: string;
+  pattern?: RegExp;
+  warning?: boolean;
+  format?: string;
+  type?: string;
+  futureOnly?: boolean;
+  pastOnly?: boolean;
+  minMonthsValid?: number;
+  maxLength?: number;
+  immediateSave?: boolean;
+  customFieldName?: string;
+  [key: string]: any;
+}
+
+interface TemplateSectionConfig {
+  enabled?: boolean;
+  minRequired?: number;
+  fields?: Record<string, TemplateFieldConfig>;
+  [key: string]: any;
+}
+
+interface TemplateConfig {
+  sections?: Record<string, TemplateSectionConfig>;
+  features?: {
+    autoSave?: {
+      immediateSaveFields?: string[];
+      [key: string]: any;
+    };
+    [key: string]: any;
+  };
+  tracking?: {
+    trackFieldModifications?: boolean;
+    [key: string]: any;
+  };
+  validation?: {
+    minCompletionPercent?: number;
+    requiredSections?: string[];
+    [key: string]: any;
+  };
+  navigation?: {
+    submitButton?: {
+      dynamic?: boolean;
+      default?: string | { key: string; default?: string };
+      thresholds?: {
+        incomplete?: number;
+        almostDone?: number;
+        ready?: number;
+      };
+      labels?: Record<string, string | { key: string; default?: string }>;
+    };
+    submitButtonLabel?: {
+      default?: string;
+      key?: string;
+    };
+  };
+  [key: string]: any;
+}
+
+interface FormState {
+  entryInfoId?: string;
+  entryInfoInitialized?: boolean;
+  lastEntryInfoUpdate?: string;
+  funds?: any[];
+  setErrors?: (prev: any) => void;
+  setWarnings?: (prev: any) => void;
+  setLastEditedAt?: (date: Date) => void;
+  isLoading?: boolean;
+  [key: string]: any;
+}
+
+interface UserInteractionTracker {
+  markFieldAsModified: (fieldName: string, fieldValue: any) => void;
+  interactionState: any;
+}
+
+interface ValidationParams {
+  config: TemplateConfig;
+  formState: FormState;
+  userInteractionTracker: UserInteractionTracker | null | undefined;
+  saveDataToUserDataService?: (...args: any[]) => Promise<any>;
+  debouncedSave?: () => void;
+  t?: (key: string, options?: any) => string;
+  destinationId?: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTemplateValidation = ({
   config,
@@ -63,7 +124,7 @@ export const useTemplateValidation = ({
   debouncedSave,
   t,
   destinationId,
-}: any) => {
+}: ValidationParams) => {
   /**
    * Validate a single field based on config rules
    */

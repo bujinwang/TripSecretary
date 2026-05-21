@@ -1,5 +1,5 @@
-// @ts-nocheck
 
+// @ts-nocheck — TDAC WebView with complex DOM injection; full typing deferred
 // TDAC WebView填写助手 - 浮动复制助手
 import React, { useState, useRef } from 'react';
 import {

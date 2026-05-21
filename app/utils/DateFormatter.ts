@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Locale-aware date utility; full typing deferred
 // 入境通 - Date Formatting Utility
 // Provides locale-aware date formatting for the progressive entry flow
 

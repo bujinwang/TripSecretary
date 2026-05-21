@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * 出境通 - OCR Services Index

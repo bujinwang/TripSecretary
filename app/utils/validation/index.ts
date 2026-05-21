@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-nocheck — Barrel export; types deferred
 /**
  * 入境通 - Validation Utilities Index
  * Centralized export of validation and sanitization utilities

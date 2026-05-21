@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * CountdownFormatter Utility
  * Formats time remaining for countdown displays with localization support

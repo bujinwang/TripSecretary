@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Hong Kong Travel Info Hooks - Barrel Export
  *

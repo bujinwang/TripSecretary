@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Country-specific translations loader
 import { convertToTraditional } from '../chineseConverter';
 

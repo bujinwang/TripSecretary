@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Travel Info Validation Rules
  * Centralized validation logic for Thailand travel information fields

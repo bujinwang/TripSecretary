@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 新加坡 SG Arrival Card 引导页面
 import React, { useMemo } from 'react';
 import {

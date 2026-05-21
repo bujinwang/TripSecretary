@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
   * TDAC Selection Screen - Redesigned for User Experience

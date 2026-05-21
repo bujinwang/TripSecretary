@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * BackgroundJobService Simple Tests

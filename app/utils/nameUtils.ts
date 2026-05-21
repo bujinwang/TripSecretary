@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Name Parsing and Formatting Utilities
  *

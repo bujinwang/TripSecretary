@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 香港 HDAC 引导页面 (Hong Kong Digital Arrival Card Guide)
 import React, { useMemo } from 'react';
 import {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 // 加拿大入境指引服务测试
 import CanadaEntryGuideService from '../CanadaEntryGuideService';

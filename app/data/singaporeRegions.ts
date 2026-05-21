@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Singapore Regions and Planning Areas
  * Source: Urban Redevelopment Authority (URA) Planning Regions

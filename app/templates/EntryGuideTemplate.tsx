@@ -1,13 +1,9 @@
-// @ts-nocheck
-
 /**
  * EntryGuideTemplate
  *
  * Reusable template for interactive entry guides.
- * Extracted from VietnamEntryGuideScreen to enable config-driven implementations.
+ * Config-driven with steps, progress tracking, and multilingual support.
  */
-
-/* eslint-disable react/prop-types */
 
 import React, {
   createContext,
@@ -32,9 +28,16 @@ import Button from '../components/Button';
 import { useLocale } from '../i18n/LocaleContext';
 import { colors, typography, spacing } from '../theme';
 
-const EntryGuideTemplateContext = createContext(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GuideConfig = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GuideStep = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GuideContext = any;
 
-const useEntryGuideTemplate = () => {
+const EntryGuideTemplateContext = createContext<GuideContext | null>(null);
+
+const useEntryGuideTemplate = (): GuideContext => {
   const context = useContext(EntryGuideTemplateContext);
   if (!context) {
     throw new Error('useEntryGuideTemplate must be used within EntryGuideTemplate');
@@ -42,7 +45,8 @@ const useEntryGuideTemplate = () => {
   return context;
 };
 
-const resolveLabel = (label, isChinese, fallbackZh, fallbackEn) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const resolveLabel = (label: any, isChinese: boolean, fallbackZh: string, fallbackEn: string): string => {
   if (!label) {
     return isChinese ? fallbackZh : fallbackEn;
   }
@@ -75,13 +79,23 @@ const resolveLabel = (label, isChinese, fallbackZh, fallbackEn) => {
   );
 };
 
+interface EntryGuideTemplateProps {
+  children?: React.ReactNode;
+  config: GuideConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  onComplete?: (result: { steps: GuideStep[]; currentStep: GuideStep; completedSteps: string[] }) => void;
+}
+
 const EntryGuideTemplate = ({
   children,
   config,
   navigation,
   route,
   onComplete,
-}) => {
+}: EntryGuideTemplateProps) => {
   const { language, t } = useLocale();
   const configSteps = config?.steps;
   const steps = useMemo(
@@ -221,6 +235,16 @@ const EntryGuideTemplate = ({
 
 EntryGuideTemplate.useTemplate = useEntryGuideTemplate;
 
+interface HeaderProps {
+  title?: string;
+  titleEn?: string;
+  titleZh?: string;
+  backLabel?: string;
+  backLabelEn?: string;
+  backLabelZh?: string;
+  rightComponent?: React.ReactNode;
+}
+
 const EntryGuideTemplateHeader = ({
   title,
   titleEn,
@@ -229,7 +253,7 @@ const EntryGuideTemplateHeader = ({
   backLabelEn,
   backLabelZh,
   rightComponent = null,
-}) => {
+}: HeaderProps) => {
   const { isChinese, navigation } = useEntryGuideTemplate();
 
   const resolvedTitle = title
@@ -263,7 +287,7 @@ const EntryGuideTemplateHeader = ({
   );
 };
 
-const EntryGuideTemplateProgressBar = ({ color }) => {
+const EntryGuideTemplateProgressBar = ({ color }: { color?: string }) => {
   const { progress, config } = useEntryGuideTemplate();
   const progressColor =
     color ||

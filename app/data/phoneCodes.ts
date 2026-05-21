@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Phone country codes mapped to ISO-3166 codes
 export const PHONE_CODES = {
   'CHN': '+86', // China

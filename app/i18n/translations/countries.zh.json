@@ -316,6 +316,73 @@
         "title": "通关包预览",
         "subtitle": "提交前检查准备情况"
       }
+    },
+    "entryFlow": {
+      "title": "泰国入境准备",
+      "progress": {
+        "headline": {
+          "ready": "泰国行程准备就绪！🇹🇭",
+          "almost": "进度很棒，继续加油！",
+          "start": "开始整理泰国入境资料吧"
+        },
+        "subtitle": {
+          "ready": "所有必填信息已完成",
+          "almost": "还差 {{remaining}}%，完善后即可安心过关。",
+          "start": "填写护照、资金与行程信息，让入境问询更从容。"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时出示。"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "补齐剩余资料即可。"
+        },
+        "needsImprovement": {
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料以免入境受阻。"
+        }
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看入境与海关申报步骤",
+        "startEntryGuide": "开始入境指引",
+        "submit": "提交入境卡",
+        "submitSubtitle": "准备好！现在提交资料。",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "incomplete": {
+          "title": "需要更多信息",
+          "message": "请至少完成 80% 的信息后再提交。"
+        },
+        "success": {
+          "title": "准备好了！",
+          "message": "你的泰国入境信息已完整。"
+        },
+        "continue": "继续编辑"
+      }
     }
   },
   "cn": {

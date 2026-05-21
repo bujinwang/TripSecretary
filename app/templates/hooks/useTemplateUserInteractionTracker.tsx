@@ -1,22 +1,11 @@
-// @ts-nocheck
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from '../../services/LoggingService';
 
 const STORAGE_KEY_PREFIX = 'user_interaction_state_';
 
-/**
- * Generate a unique session ID
- */
 const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-/**
- * useTemplateUserInteractionTracker Hook
- *
- * @param {string} screenId - Unique identifier for the screen/form (from config.destinationId)
- * @param {Object} config - Template configuration
- * @returns {Object} Hook interface with tracking methods
- */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTemplateUserInteractionTracker = (screenId: string, config: any) => {
   const [interactionState, setInteractionState] = useState<Record<string, any>>({});

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Taiwan Travel Screen Helper Components
  * Reusable UI components for Taiwan travel info screen

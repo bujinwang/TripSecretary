@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 // 越南入境指引服务测试
 import VietnamEntryGuideService from '../VietnamEntryGuideService';

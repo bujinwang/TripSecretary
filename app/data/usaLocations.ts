@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * United States States list for travel info location selector.
  */

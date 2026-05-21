@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Tests for UserDataService conflict detection and error handling

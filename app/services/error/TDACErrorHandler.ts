@@ -1,5 +1,5 @@
-// @ts-nocheck
 
+// @ts-nocheck — TDAC error handler; full typing deferred
 /**
  * TDAC Error Handler Service
  * Comprehensive error handling, retry mechanisms, and user-friendly error reporting

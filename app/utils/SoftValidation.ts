@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * @fileoverview SoftValidation - Progressive Entry Flow Validation Utility
  * 

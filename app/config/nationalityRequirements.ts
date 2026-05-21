@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export const nationalityRequirements = {
   // Destination -> Nationality -> Requirements
   'us': {

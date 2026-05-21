@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
 // 入境通 - App Navigator
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';

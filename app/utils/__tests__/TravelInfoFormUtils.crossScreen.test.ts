@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * TravelInfoFormUtils Cross-Screen Consistency Tests

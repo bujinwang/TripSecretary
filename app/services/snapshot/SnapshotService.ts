@@ -5,7 +5,6 @@
  * Requirements: 11.1-11.7, 14.1-14.5, 15.1-15.7, 19.1-19.5
  */
 
-// @ts-nocheck — expo-file-system API type mismatches
 import EntryPackSnapshot from '../../models/EntryPackSnapshot';
 import * as FileSystem from 'expo-file-system';
 import DataEncryptionService, { type PhotoFile } from '../security/DataEncryptionService';

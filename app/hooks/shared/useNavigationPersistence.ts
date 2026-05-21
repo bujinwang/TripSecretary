@@ -1,43 +1,32 @@
-// @ts-nocheck
-
 /**
  * useNavigationPersistence Hook
  *
  * Manages data persistence during navigation lifecycle events.
  * Handles automatic data reloading on screen focus and saving on blur.
- *
- * @example
- * useNavigationPersistence({
- *   navigation,
- *   saveKey: 'thailand_travel_info',
- *   onFocus: async () => {
- *     await reloadData();
- *   }
- * });
  */
-
 import { useEffect } from 'react';
 import DebouncedSave from '../../utils/DebouncedSave';
 
-/**
- * Custom hook to handle navigation-based data persistence
- *
- * @param {Object} params - Hook parameters
- * @param {Object} params.navigation - React Navigation object
- * @param {string} params.saveKey - Unique key for DebouncedSave
- * @param {Function} params.onFocus - Optional callback when screen comes into focus
- * @param {Function} params.onBlur - Optional callback when screen loses focus
- * @param {Array} params.dependencies - Additional dependencies for useEffect
- */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Navigation = any;
+
+interface UseNavigationPersistenceParams {
+  navigation: Navigation;
+  saveKey: string;
+  onFocus?: () => Promise<void> | void;
+  onBlur?: () => Promise<void> | void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dependencies?: any[];
+}
+
 export const useNavigationPersistence = ({
   navigation,
   saveKey,
   onFocus,
   onBlur,
-  dependencies = []
-}) => {
+  dependencies = [],
+}: UseNavigationPersistenceParams) => {
   useEffect(() => {
-    // Focus listener - reload data when screen comes into focus
     const unsubscribeFocus = navigation.addListener('focus', async () => {
       if (onFocus) {
         try {
@@ -48,13 +37,9 @@ export const useNavigationPersistence = ({
       }
     });
 
-    // Blur listener - save data when leaving screen
     const unsubscribeBlur = navigation.addListener('blur', async () => {
       try {
-        // Flush any pending saves
         await DebouncedSave.flushPendingSave(saveKey);
-
-        // Call custom blur handler if provided
         if (onBlur) {
           await onBlur();
         }
@@ -70,7 +55,6 @@ export const useNavigationPersistence = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, saveKey, ...dependencies]);
 
-  // Cleanup on unmount
   useEffect(() => () => {
       try {
         DebouncedSave.flushPendingSave(saveKey);

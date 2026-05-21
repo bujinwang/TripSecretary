@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - DocumentFullScreenModal Component
 // Full-screen modal viewer for document preview with pinch-to-zoom and sharing
 

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // useMalaysiaValidation.js
 // Handles all validation, completion tracking, and field blur logic for Malaysia Travel Info Screen
 import { useCallback, useMemo } from 'react';

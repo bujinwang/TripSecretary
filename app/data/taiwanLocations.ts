@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Taiwan Cities and Counties
  * Major cities and counties in Taiwan for travel information

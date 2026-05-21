@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Hong Kong administrative divisions (Region → District)
  * Hong Kong has 18 districts organized into 3 main regions

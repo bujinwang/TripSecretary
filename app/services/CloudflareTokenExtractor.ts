@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 /**
  * Cloudflare Token Extractor

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Arrival Window Calculator Utility for Singapore SGAC
  * Handles 72-hour window calculations and messaging for Singapore SGAC submissions

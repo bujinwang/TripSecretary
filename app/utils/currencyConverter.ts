@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Currency Converter Utility
  *

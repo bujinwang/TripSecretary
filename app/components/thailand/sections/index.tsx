@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Thailand Form Sections Barrel Export
  *
