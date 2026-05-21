@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // 入境通 - Number Formatting Utility
 // Provides locale-aware number formatting for the progressive entry flow
 
@@ -15,7 +13,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted number string
    */
-  static formatNumber(number, locale = 'en', options = {}) {
+  static formatNumber(number: number | null | undefined, locale = 'en', options: Record<string, unknown> = {}): string {
     if (number === null || number === undefined || isNaN(number)) {
       return '';
     }
@@ -51,7 +49,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted number string
    */
-  static formatNumberFallback(number, locale, options = {}) {
+  static formatNumberFallback(number: number, locale: string, options: Record<string, unknown> = {}): string {
     const { maximumFractionDigits = 2, useGrouping = true } = options;
     
     // Round to specified decimal places
@@ -79,7 +77,7 @@ class NumberFormatter {
    * @param {string} locale - Locale code
    * @returns {string} Thousands separator character
    */
-  static getThousandsSeparator(locale) {
+  static getThousandsSeparator(locale: string): string {
     const separators = {
       'zh-CN': ',',
       'zh-TW': ',',
@@ -98,7 +96,7 @@ class NumberFormatter {
    * @param {string} locale - Locale code
    * @returns {string} Decimal separator character
    */
-  static getDecimalSeparator(locale) {
+  static getDecimalSeparator(locale: string): string {
     const separators = {
       'zh-CN': '.',
       'zh-TW': '.',
@@ -119,7 +117,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted percentage string
    */
-  static formatPercentage(number, locale = 'en', options = {}) {
+  static formatPercentage(number: number, locale = 'en', options: Record<string, unknown> = {}): string {
     if (number === null || number === undefined || isNaN(number)) {
       return '';
     }
@@ -152,7 +150,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted percentage string
    */
-  static formatPercentageFallback(number, locale, options = {}) {
+  static formatPercentageFallback(number: number, locale: string, options: Record<string, unknown> = {}): string {
     const { maximumFractionDigits = 1 } = options;
     const percentage = number * 100;
     const rounded = Math.round(percentage * Math.pow(10, maximumFractionDigits)) / Math.pow(10, maximumFractionDigits);
@@ -178,7 +176,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted number with units
    */
-  static formatLargeNumber(number, locale = 'en', options = {}) {
+  static formatLargeNumber(number: number, locale = 'en', options: Record<string, unknown> = {}): string {
     if (number === null || number === undefined || isNaN(number)) {
       return '';
     }
@@ -242,7 +240,7 @@ class NumberFormatter {
    * @param {string} locale - Locale code
    * @returns {string} Formatted ordinal number
    */
-  static formatOrdinal(number, locale = 'en') {
+  static formatOrdinal(number: number, locale = 'en'): string {
     if (number === null || number === undefined || isNaN(number)) {
       return '';
     }
@@ -295,7 +293,7 @@ class NumberFormatter {
    * @param {string} locale - Locale code
    * @returns {string} Formatted ordinal number
    */
-  static formatOrdinalFallback(number, locale) {
+  static formatOrdinalFallback(number: number, locale: string): string {
     const normalizedLocale = this.normalizeLocale(locale);
 
     if (normalizedLocale.startsWith('zh')) {
@@ -329,7 +327,7 @@ class NumberFormatter {
    * @param {string} locale - Locale code
    * @returns {number|null} Parsed number or null if invalid
    */
-  static parseNumber(formattedNumber, locale = 'en') {
+  static parseNumber(formattedNumber: string, locale = 'en'): number | null {
     if (!formattedNumber || typeof formattedNumber !== 'string') {
       return null;
     }
@@ -359,7 +357,7 @@ class NumberFormatter {
    * @param {Object} options - Formatting options
    * @returns {string} Formatted range string
    */
-  static formatRange(start, end, locale = 'en', options = {}) {
+  static formatRange(start: number, end: number, locale = 'en', options: Record<string, unknown> = {}): string {
     if (start === null || start === undefined || end === null || end === undefined) {
       return '';
     }
@@ -386,7 +384,7 @@ class NumberFormatter {
    * @param {string} locale - Input locale code
    * @returns {string} Normalized locale code
    */
-  static normalizeLocale(locale) {
+  static normalizeLocale(locale: string): string {
     if (!locale) {
 return 'en';
 }
@@ -410,7 +408,7 @@ return 'en';
    * @param {Object} options - Formatting options
    * @returns {string} Formatted currency string
    */
-  static formatCurrency(amount, currency, locale = 'en', options = {}) {
+  static formatCurrency(amount: number, currency: string, locale = 'en', options: Record<string, unknown> = {}): string {
     if (amount === null || amount === undefined || isNaN(amount)) {
       return '';
     }
@@ -457,7 +455,7 @@ return 'en';
    * @param {string} currency - Currency code
    * @returns {number} Default fraction digits
    */
-  static getCurrencyFractionDigits(currency) {
+  static getCurrencyFractionDigits(currency: string): number {
     const fractionDigits = {
       // Major currencies
       'USD': 2, 'EUR': 2, 'GBP': 2, 'JPY': 0, 'CNY': 2, 'KRW': 0,
@@ -480,7 +478,7 @@ return 'en';
    * @param {Object} options - Formatting options
    * @returns {string} Formatted currency string
    */
-  static formatCurrencyFallback(amount, currency, locale, options = {}) {
+  static formatCurrencyFallback(amount: number, currency: string, locale: string, options: Record<string, unknown> = {}): string {
     const { currencyDisplay = 'symbol' } = options;
     const normalizedLocale = this.normalizeLocale(locale);
     
@@ -510,7 +508,7 @@ return 'en';
    * @param {string} display - Display type ('symbol', 'code', 'name')
    * @returns {string} Currency symbol or code
    */
-  static getCurrencyInfo(currency, display = 'symbol') {
+  static getCurrencyInfo(currency: string, display = 'symbol'): string {
     const currencyData = {
       'USD': { symbol: '$', code: 'USD', name: 'US Dollar' },
       'EUR': { symbol: '€', code: 'EUR', name: 'Euro' },
@@ -548,7 +546,7 @@ return 'en';
    * @param {string} locale - Locale code
    * @returns {string} Position ('before' or 'after')
    */
-  static getCurrencySymbolPosition(currency, locale) {
+  static getCurrencySymbolPosition(currency: string, locale: string): string {
     // Most Western currencies go before the amount
     const beforeCurrencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'SGD', 'HKD', 'TWD'];
     
@@ -571,7 +569,7 @@ return 'en';
    * @param {Object} options - Formatting options
    * @returns {string} Formatted multi-currency string
    */
-  static formatMultipleCurrencies(amounts, locale = 'en', options = {}) {
+  static formatMultipleCurrencies(amounts: Array<{ amount: number; currency: string }>, locale = 'en', options: Record<string, unknown> = {}): string {
     if (!amounts || !Array.isArray(amounts) || amounts.length === 0) {
       return '';
     }
@@ -615,7 +613,7 @@ return 'en';
    * @param {string} locale - Locale code
    * @returns {string} Localized "Total" label
    */
-  static getTotalLabel(locale) {
+  static getTotalLabel(locale: string): string {
     const labels = {
       'zh-CN': '总计',
       'zh-TW': '總計',
@@ -635,7 +633,7 @@ return 'en';
    * @param {string} locale - Locale code
    * @returns {Object|null} {amount, currency} or null if invalid
    */
-  static parseCurrency(currencyString, locale = 'en') {
+  static parseCurrency(currencyString: string, locale = 'en'): { amount: number; currency: string } | null {
     if (!currencyString || typeof currencyString !== 'string') {
       return null;
     }
