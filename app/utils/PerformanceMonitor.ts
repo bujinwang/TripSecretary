@@ -1,4 +1,5 @@
-// @ts-nocheck
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MetricsRecord = Record<string, any>;
 
 /**
  * PerformanceMonitor - Utility for monitoring and optimizing app performance
@@ -29,7 +30,7 @@ class PerformanceMonitor {
    * @param {Object} metadata - Additional metadata
    * @returns {string} - Operation ID for ending the timing
    */
-  startTiming(operationName, metadata = {}) {
+  startTiming(operationName: string, metadata: MetricsRecord = {}): string {
     if (!this.isEnabled) {
 return null;
 }
@@ -54,7 +55,7 @@ return null;
    * @param {Object} additionalMetadata - Additional metadata
    * @returns {Object} - Performance metrics for the operation
    */
-  endTiming(operationId, additionalMetadata = {}) {
+  endTiming(operationId: string, additionalMetadata: MetricsRecord = {}): MetricsRecord | null {
     if (!this.isEnabled || !operationId) {
 return null;
 }
@@ -104,7 +105,7 @@ return null;
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<*>} - Function result with timing
    */
-  async timeFunction(operationName, fn, metadata = {}) {
+  async timeFunction<T>(operationName: string, fn: () => Promise<T>, metadata: MetricsRecord = {}): Promise<T> {
     const operationId = this.startTiming(operationName, metadata);
     
     try {
@@ -122,7 +123,7 @@ return null;
    * @param {string} context - Context where memory is being measured
    * @param {Object} metadata - Additional metadata
    */
-  recordMemoryUsage(context, metadata = {}) {
+  recordMemoryUsage(context: string, metadata: MetricsRecord = {}): MetricsRecord | null {
     if (!this.isEnabled) {
 return;
 }
@@ -156,7 +157,7 @@ return;
    * Store performance metrics
    * @param {Object} metrics - Performance metrics
    */
-  storeMetrics(metrics) {
+  storeMetrics(metrics: MetricsRecord): void {
     const operationType = this.getOperationType(metrics.operationName);
     
     if (!this.metrics.has(operationType)) {
@@ -177,7 +178,7 @@ return;
    * @param {string} operationName - Operation name
    * @returns {string} - Operation type
    */
-  getOperationType(operationName) {
+  getOperationType(operationName: string): string {
     const lowerName = operationName.toLowerCase();
     
     if (lowerName.includes('load') || lowerName.includes('fetch') || lowerName.includes('get')) {
@@ -205,7 +206,7 @@ return;
    * @param {number} duration - Duration in milliseconds
    * @returns {boolean} - Whether operation is slow
    */
-  isSlowOperation(operationName, duration) {
+  isSlowOperation(operationName: string, duration: number): boolean {
     const operationType = this.getOperationType(operationName);
     const threshold = this.performanceThresholds[operationType];
     return threshold && duration > threshold;
@@ -216,7 +217,7 @@ return;
    * @param {string} operationType - Optional operation type filter
    * @returns {Object} - Performance summary
    */
-  getPerformanceSummary(operationType = null) {
+  getPerformanceSummary(operationType: string | null = null): MetricsRecord {
     const summary = {
       totalOperations: 0,
       slowOperations: 0,
@@ -271,7 +272,7 @@ continue;
    * Get memory usage summary
    * @returns {Object} - Memory usage summary
    */
-  getMemoryUsageSummary() {
+  getMemoryUsageSummary(): MetricsRecord {
     return {
       totalSnapshots: this.memorySnapshots.length,
       recentSnapshots: this.memorySnapshots.slice(-10),
@@ -283,7 +284,7 @@ continue;
   /**
    * Clear all metrics and snapshots
    */
-  clearMetrics() {
+  clearMetrics(): void {
     this.metrics.clear();
     this.operationTimings.clear();
     this.memorySnapshots = [];
@@ -294,7 +295,7 @@ continue;
    * Enable or disable performance monitoring
    * @param {boolean} enabled - Whether to enable monitoring
    */
-  setEnabled(enabled) {
+  setEnabled(enabled: boolean): void {
     this.isEnabled = enabled;
     console.log(`[Performance] Monitoring ${enabled ? 'enabled' : 'disabled'}`);
   }
@@ -303,7 +304,7 @@ continue;
    * Update performance thresholds
    * @param {Object} thresholds - New thresholds
    */
-  updateThresholds(thresholds) {
+  updateThresholds(thresholds: MetricsRecord): void {
     this.performanceThresholds = { ...this.performanceThresholds, ...thresholds };
     console.log('[Performance] Thresholds updated:', this.performanceThresholds);
   }
@@ -312,7 +313,7 @@ continue;
    * Export metrics for analysis
    * @returns {Object} - Exported metrics data
    */
-  exportMetrics() {
+  exportMetrics(): MetricsRecord {
     return {
       metrics: Object.fromEntries(this.metrics),
       memorySnapshots: this.memorySnapshots,
@@ -327,7 +328,7 @@ continue;
    * Get performance recommendations
    * @returns {Array} - Array of performance recommendations
    */
-  getRecommendations() {
+  getRecommendations(): string[] {
     const recommendations = [];
     const summary = this.getPerformanceSummary();
 

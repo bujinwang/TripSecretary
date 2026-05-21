@@ -1,4 +1,3 @@
-// @ts-nocheck — Locale-aware date utility; full typing deferred
 // 入境通 - Date Formatting Utility
 // Provides locale-aware date formatting for the progressive entry flow
 
@@ -14,7 +13,7 @@ class DateFormatter {
    * @param {string} format - Format type: 'short', 'long', 'relative', 'time'
    * @returns {string} Formatted date string
    */
-  static formatDate(date, locale = 'en', format = 'short') {
+  static formatDate(date: string | Date | null | undefined, locale = 'en', format = 'short'): string {
     if (!date) {
 return '';
 }
@@ -50,7 +49,7 @@ return '';
   /**
    * Format date in short format (e.g., 2024-10-20, Oct 20, 2024, 20/10/2024)
    */
-  static formatShortDate(date, locale) {
+  static formatShortDate(date: string | Date, locale: string): string {
     const formatOptions = {
       'zh-CN': { year: 'numeric', month: '2-digit', day: '2-digit' },
       'zh-TW': { year: 'numeric', month: '2-digit', day: '2-digit' },
@@ -74,7 +73,7 @@ return '';
   /**
    * Format date in long format (e.g., 2024年10月20日, October 20, 2024)
    */
-  static formatLongDate(date, locale) {
+  static formatLongDate(date: string | Date, locale: string): string {
     const formatOptions = {
       'zh-CN': { year: 'numeric', month: 'long', day: 'numeric' },
       'zh-TW': { year: 'numeric', month: 'long', day: 'numeric' },
@@ -91,7 +90,7 @@ return '';
   /**
    * Format relative time (e.g., "2 days ago", "2天前", "hace 2 días")
    */
-  static formatRelativeTime(date, locale) {
+  static formatRelativeTime(date: string | Date, locale: string): string {
     const now = new Date();
     const diffMs = date.getTime() - now.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -117,7 +116,7 @@ return '';
   /**
    * Fallback relative time formatting for unsupported locales
    */
-  static formatRelativeTimeFallback(diffDays, diffHours, diffMinutes, locale) {
+  static formatRelativeTimeFallback(diffDays: number, diffHours: number, diffMinutes: number, locale: string): string {
     const templates = {
       'zh-CN': {
         daysAgo: (n) => `${Math.abs(n)}天前`,
@@ -164,7 +163,7 @@ return '';
   /**
    * Format time only (e.g., 14:30, 2:30 PM)
    */
-  static formatTime(date, locale) {
+  static formatTime(date: string | Date, locale: string): string {
     const formatOptions = {
       'zh-CN': { hour: '2-digit', minute: '2-digit', hour12: false },
       'zh-TW': { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -181,7 +180,7 @@ return '';
   /**
    * Format date and time together
    */
-  static formatDateTime(date, locale) {
+  static formatDateTime(date: string | Date, locale: string): string {
     const dateStr = this.formatShortDate(date, locale);
     const timeStr = this.formatTime(date, locale);
     
@@ -201,7 +200,7 @@ return '';
   /**
    * Format time periods for grouping (Today, Yesterday, This Week, etc.)
    */
-  static formatTimePeriod(date, locale) {
+  static formatTimePeriod(date: string | Date, locale: string): string {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -272,7 +271,7 @@ return '';
   /**
    * Parse date string in various formats
    */
-  static parseDate(dateString) {
+  static parseDate(dateString: string): Date | null {
     if (!dateString) {
 return null;
 }
@@ -307,7 +306,7 @@ return null;
   /**
    * Get user's preferred date format based on locale
    */
-  static getPreferredFormat(locale) {
+  static getPreferredFormat(locale: string): string {
     const formats = {
       'zh-CN': 'YYYY-MM-DD',
       'zh-TW': 'YYYY-MM-DD',
@@ -326,7 +325,7 @@ return null;
    * @param {string} locale - Locale code
    * @returns {string} Formatted notification timestamp
    */
-  static formatNotificationTime(date, locale = 'en') {
+  static formatNotificationTime(date: string | Date, locale = 'en'): string {
     if (!date) {
 return '';
 }
@@ -407,7 +406,7 @@ return '';
    * @param {string} locale - Locale code
    * @returns {Object} Formatted countdown with color hint
    */
-  static formatCountdown(milliseconds, locale = 'en') {
+  static formatCountdown(milliseconds: number, locale = 'en'): string {
     if (milliseconds <= 0) {
       const expiredText = {
         'zh-CN': '已过期',
