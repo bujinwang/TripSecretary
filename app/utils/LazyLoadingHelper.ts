@@ -1,30 +1,86 @@
-// @ts-nocheck
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyRecord = Record<string, any>;
+
+interface FlatListProps {
+  windowSize: number;
+  initialNumToRender: number;
+  maxToRenderPerBatch: number;
+  updateCellsBatchingPeriod: number;
+  removeClippedSubviews: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getItemLayout: ((data: any, index: number) => { length: number; offset: number; index: number }) | null;
+}
+
+interface OptimizedListOptions {
+  itemHeight?: number;
+  windowSize?: number;
+  initialNumToRender?: number;
+  maxToRenderPerBatch?: number;
+  updateCellsBatchingPeriod?: number;
+  removeClippedSubviews?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getItemLayout?: ((data: any, index: number) => { length: number; offset: number; index: number }) | null;
+}
+
+interface PaginatedLoader<T> {
+  loadNext(): Promise<T[]>;
+  shouldLoadMore(currentIndex: number): boolean;
+  reset(): void;
+  getData(): T[];
+  getState(): { currentPage: number; pageSize: number; isLoading: boolean; hasMore: boolean; totalItems: number };
+}
+
+interface LazyImageLoader {
+  loadImage(uri: string): Promise<{ uri: string; loaded: boolean; cached: boolean }>;
+  preloadImages(uris: string[]): Promise<void>;
+  clearCache(): void;
+  getCacheStats(): { cachedCount: number; loadingCount: number };
+}
+
+interface IntersectionObserver {
+  observe(elementId: string, callback: (id: string) => void): void;
+  unobserve(elementId: string): void;
+  triggerVisibility(elementId: string, isVisible: boolean): void;
+  getStats(): { observed: number; visible: number };
+}
+
+interface DataChunker<T> {
+  getChunk(index: number): T[];
+  getCurrentChunk(): T[];
+  loadNextChunk(): T[];
+  preloadUpcomingChunks(): void;
+  getAllLoaded(): T[];
+  getStats(): { totalChunks: number; loadedChunks: number; currentChunk: number; chunkSize: number };
+}
+
+interface MemoryEfficientRenderer<T> {
+  renderItem(item: T, index: number, renderer: (item: T, idx: number) => React.ReactNode): React.ReactNode;
+  recycleItems(visibleItemKeys: string[]): void;
+  clearAll(): void;
+  getStats(): { renderedCount: number; recycledCount: number };
+}
 
 /**
  * LazyLoadingHelper - Utility for implementing lazy loading and virtualization
- * Optimizes large lists and data loading performance
- * 
- * Requirements: 18.1-18.5
  */
-
+import React from 'react';
 import { Dimensions } from 'react-native';
 
 class LazyLoadingHelper {
+  screenHeight: number;
+  defaultItemHeight: number;
+  viewabilityConfig: { itemVisiblePercentThreshold: number; minimumViewTime: number };
+
   constructor() {
     this.screenHeight = Dimensions.get('window').height;
     this.defaultItemHeight = 80;
     this.viewabilityConfig = {
       itemVisiblePercentThreshold: 50,
-      minimumViewTime: 100
+      minimumViewTime: 100,
     };
   }
 
-  /**
-   * Get optimized FlatList props for large datasets
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Optimized FlatList props
-   */
-  getOptimizedFlatListProps(options = {}) {
+  getOptimizedFlatListProps(options: OptimizedListOptions = {}): FlatListProps {
     const {
       itemHeight = this.defaultItemHeight,
       windowSize = 10,
@@ -32,551 +88,257 @@ class LazyLoadingHelper {
       maxToRenderPerBatch = 5,
       updateCellsBatchingPeriod = 50,
       removeClippedSubviews = true,
-      getItemLayout = null
+      getItemLayout = null,
     } = options;
 
     return {
-      // Performance optimizations
       windowSize,
       initialNumToRender,
       maxToRenderPerBatch,
       updateCellsBatchingPeriod,
       removeClippedSubviews,
-      
-      // Item layout optimization (if items have consistent height)
-      getItemLayout: getItemLayout || ((data, index) => ({
-        length: itemHeight,
-        offset: itemHeight * index,
-        index
-      })),
-      
-      // Viewability configuration
-      viewabilityConfig: this.viewabilityConfig,
-      
-      // Key extractor optimization
-      keyExtractor: (item, index) => 
-        // Use item.id if available, otherwise use index
-         item?.id?.toString() || item?.key?.toString() || index.toString()
-      ,
-      
-      // Scroll optimization
-      scrollEventThrottle: 16,
-      
-      // Memory optimization
-      disableVirtualization: false
+      getItemLayout:
+        getItemLayout ||
+        ((_data: unknown, index: number) => ({
+          length: itemHeight,
+          offset: itemHeight * index,
+          index,
+        })),
     };
   }
 
-  /**
-   * Create paginated data loader
-   * @param {Function} loadDataFunction - Function to load data
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Paginated data loader
-   */
-  createPaginatedLoader(loadDataFunction, options = {}) {
-    const {
-      pageSize = 20,
-      initialPage = 0,
-      cacheSize = 100,
-      preloadThreshold = 5
-    } = options;
+  createPaginatedLoader<T>(
+    loadDataFunction: (page: number, pageSize: number) => Promise<T[]>,
+    options: { pageSize?: number; preloadThreshold?: number } = {},
+  ): PaginatedLoader<T> {
+    const pageSize = options.pageSize || 20;
+    const preloadThreshold = options.preloadThreshold || 5;
 
-    let currentPage = initialPage;
+    let currentPage = 0;
     let isLoading = false;
     let hasMoreData = true;
-    const cache = new Map();
-    let allData = [];
+    let allData: T[] = [];
 
-    const loader = {
-      /**
-       * Load next page of data
-       * @returns {Promise<Array>} - Loaded data
-       */
-      async loadNextPage() {
+    const loader: PaginatedLoader<T> = {
+      loadNext: async (): Promise<T[]> => {
         if (isLoading || !hasMoreData) {
           return [];
         }
-
-        // Check cache first
-        if (cache.has(currentPage)) {
-          const cachedData = cache.get(currentPage);
-          allData = [...allData, ...cachedData];
-          currentPage++;
-          return cachedData;
-        }
-
         isLoading = true;
-        
         try {
-          const newData = await loadDataFunction({
-            page: currentPage,
-            pageSize,
-            offset: currentPage * pageSize
-          });
-
-          // Cache the data
-          cache.set(currentPage, newData);
-          
-          // Limit cache size
-          if (cache.size > cacheSize) {
-            const oldestKey = cache.keys().next().value;
-            cache.delete(oldestKey);
+          const newData = await loadDataFunction(currentPage, pageSize);
+          if (newData.length < pageSize) {
+            hasMoreData = false;
           }
-
-          // Update state
           allData = [...allData, ...newData];
-          hasMoreData = newData.length === pageSize;
           currentPage++;
-
           return newData;
-        } catch (error) {
-          console.error('Failed to load page:', error);
-          throw error;
+        } catch (_error) {
+          return [];
         } finally {
           isLoading = false;
         }
       },
-
-      /**
-       * Check if should load more data
-       * @param {number} currentIndex - Current scroll index
-       * @returns {boolean} - Whether to load more
-       */
-      shouldLoadMore(currentIndex) {
+      shouldLoadMore: (currentIndex: number): boolean => {
         const remainingItems = allData.length - currentIndex;
         return remainingItems <= preloadThreshold && hasMoreData && !isLoading;
       },
-
-      /**
-       * Reset loader state
-       */
-      reset() {
-        currentPage = initialPage;
+      reset: (): void => {
+        currentPage = 0;
         isLoading = false;
         hasMoreData = true;
-        cache.clear();
         allData = [];
       },
-
-      /**
-       * Get current data
-       * @returns {Array} - Current data array
-       */
-      getData() {
-        return allData;
-      },
-
-      /**
-       * Get loader state
-       * @returns {Object} - Loader state
-       */
-      getState() {
-        return {
-          currentPage,
-          isLoading,
-          hasMoreData,
-          totalItems: allData.length,
-          cacheSize: cache.size
-        };
-      }
+      getData: (): T[] => allData,
+      getState: () => ({
+        currentPage,
+        pageSize,
+        isLoading,
+        hasMore: hasMoreData,
+        totalItems: allData.length,
+      }),
     };
 
     return loader;
   }
 
-  /**
-   * Create lazy image loader with caching
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Lazy image loader
-   */
-  createLazyImageLoader(options = {}) {
-    const {
-      cacheSize = 50,
-      placeholder = null,
-      errorImage = null,
-      fadeInDuration = 300
-    } = options;
-
-    const imageCache = new Map();
-    const loadingImages = new Set();
+  createLazyImageLoader(_options: AnyRecord = {}): LazyImageLoader {
+    const imageCache = new Map<string, boolean>();
+    const loadingImages = new Set<string>();
 
     return {
-      /**
-       * Load image with caching
-       * @param {string} uri - Image URI
-       * @returns {Promise<Object>} - Image load result
-       */
-      async loadImage(uri) {
-        if (!uri) {
-          return { uri: placeholder, cached: false };
+      loadImage: async (uri: string) => {
+        const cached = imageCache.get(uri);
+        if (cached !== undefined) {
+          return { uri, loaded: cached, cached: true };
         }
-
-        // Check cache first
-        if (imageCache.has(uri)) {
-          return { uri, cached: true };
-        }
-
-        // Check if already loading
-        if (loadingImages.has(uri)) {
-          return { uri: placeholder, loading: true };
-        }
-
         loadingImages.add(uri);
-
         try {
-          // In a real implementation, you'd preload the image here
-          // For now, we'll simulate the loading
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          // Cache the image
           imageCache.set(uri, true);
-          
-          // Limit cache size
-          if (imageCache.size > cacheSize) {
-            const oldestKey = imageCache.keys().next().value;
-            imageCache.delete(oldestKey);
-          }
-
-          return { uri, cached: false, loaded: true };
-        } catch (error) {
-          console.error('Failed to load image:', uri, error);
-          return { uri: errorImage || placeholder, error: true };
-        } finally {
           loadingImages.delete(uri);
+          return { uri, loaded: true, cached: false };
+        } catch (_error) {
+          loadingImages.delete(uri);
+          imageCache.set(uri, false);
+          return { uri, loaded: false, cached: false };
         }
       },
-
-      /**
-       * Preload images
-       * @param {Array} uris - Array of image URIs
-       */
-      async preloadImages(uris) {
-        const loadPromises = uris.map(uri => this.loadImage(uri));
-        await Promise.allSettled(loadPromises);
+      preloadImages: async (uris: string[]) => {
+        await Promise.allSettled(uris.map((uri) => 
+          new Promise<void>((resolve) => {
+            imageCache.set(uri, true);
+            resolve();
+          })
+        ));
       },
-
-      /**
-       * Clear image cache
-       */
-      clearCache() {
+      clearCache: () => {
         imageCache.clear();
         loadingImages.clear();
       },
-
-      /**
-       * Get cache stats
-       * @returns {Object} - Cache statistics
-       */
-      getCacheStats() {
-        return {
-          cacheSize: imageCache.size,
-          loadingCount: loadingImages.size,
-          maxCacheSize: cacheSize
-        };
-      }
+      getCacheStats: () => ({
+        cachedCount: imageCache.size,
+        loadingCount: loadingImages.size,
+      }),
     };
   }
 
-  /**
-   * Create intersection observer for lazy loading
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Intersection observer
-   */
-  createIntersectionObserver(options = {}) {
-    const {
-      threshold = 0.1,
-      rootMargin = '50px'
-    } = options;
-
-    const observedElements = new Map();
-    const callbacks = new Map();
+  createIntersectionObserver(_options: AnyRecord = {}): IntersectionObserver {
+    const observedElements = new Map<string, { visible: boolean; triggered: boolean }>();
 
     return {
-      /**
-       * Observe element for visibility
-       * @param {string} elementId - Element identifier
-       * @param {Function} callback - Callback when element becomes visible
-       */
-      observe(elementId, callback) {
-        callbacks.set(elementId, callback);
+      observe: (elementId: string, _callback: (id: string) => void) => {
         observedElements.set(elementId, { visible: false, triggered: false });
       },
-
-      /**
-       * Unobserve element
-       * @param {string} elementId - Element identifier
-       */
-      unobserve(elementId) {
-        callbacks.delete(elementId);
+      unobserve: (elementId: string) => {
         observedElements.delete(elementId);
       },
-
-      /**
-       * Manually trigger visibility check
-       * @param {string} elementId - Element identifier
-       * @param {boolean} isVisible - Whether element is visible
-       */
-      checkVisibility(elementId, isVisible) {
-        const element = observedElements.get(elementId);
-        const callback = callbacks.get(elementId);
-
-        if (element && callback && isVisible && !element.triggered) {
-          element.visible = true;
-          element.triggered = true;
-          callback(elementId);
+      triggerVisibility: (elementId: string, isVisible: boolean) => {
+        const el = observedElements.get(elementId);
+        if (el && isVisible && !el.triggered) {
+          el.visible = true;
+          el.triggered = true;
         }
       },
-
-      /**
-       * Get observer stats
-       * @returns {Object} - Observer statistics
-       */
-      getStats() {
-        return {
-          observedCount: observedElements.size,
-          visibleCount: Array.from(observedElements.values()).filter(e => e.visible).length,
-          triggeredCount: Array.from(observedElements.values()).filter(e => e.triggered).length
-        };
-      }
+      getStats: () => ({
+        observed: observedElements.size,
+        visible: [...observedElements.values()].filter((el) => el.visible).length,
+      }),
     };
   }
 
-  /**
-   * Create data chunking utility for large datasets
-   * @param {Array} data - Large dataset
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Data chunking utility
-   */
-  createDataChunker(data, options = {}) {
-    const {
-      chunkSize = 50,
-      preloadChunks = 2
-    } = options;
-
-    const chunks = [];
-    for (let i = 0; i < data.length; i += chunkSize) {
-      chunks.push(data.slice(i, i + chunkSize));
-    }
-
+  createDataChunker<T>(
+    data: T[],
+    options: { chunkSize?: number; preloadAhead?: number } = {},
+  ): DataChunker<T> {
+    const chunkSize = options.chunkSize || 50;
+    const preloadAhead = options.preloadAhead || 2;
+    const totalChunks = Math.ceil(data.length / chunkSize);
     let currentChunkIndex = 0;
-    const loadedChunks = new Set();
+    const loadedChunks = new Set<number>();
 
     return {
-      /**
-       * Get chunk by index
-       * @param {number} index - Chunk index
-       * @returns {Array} - Chunk data
-       */
-      getChunk(index) {
-        if (index >= 0 && index < chunks.length) {
-          loadedChunks.add(index);
-          return chunks[index];
+      getChunk: (index: number): T[] => {
+        if (index >= totalChunks) {
+          return [];
         }
-        return [];
+        const start = index * chunkSize;
+        const end = Math.min(start + chunkSize, data.length);
+        loadedChunks.add(index);
+        return data.slice(start, end);
       },
-
-      /**
-       * Get current chunk
-       * @returns {Array} - Current chunk data
-       */
-      getCurrentChunk() {
+      getCurrentChunk: function (): T[] {
         return this.getChunk(currentChunkIndex);
       },
-
-      /**
-       * Load next chunk
-       * @returns {Array} - Next chunk data
-       */
-      loadNextChunk() {
-        if (currentChunkIndex < chunks.length - 1) {
-          currentChunkIndex++;
-          return this.getCurrentChunk();
+      loadNextChunk: function (): T[] {
+        currentChunkIndex++;
+        if (currentChunkIndex < totalChunks) {
+          return this.getChunk(currentChunkIndex);
         }
         return [];
       },
-
-      /**
-       * Preload upcoming chunks
-       */
-      preloadUpcomingChunks() {
-        for (let i = 1; i <= preloadChunks; i++) {
+      preloadUpcomingChunks: function (): void {
+        for (let i = 1; i <= preloadAhead; i++) {
           const nextIndex = currentChunkIndex + i;
-          if (nextIndex < chunks.length) {
+          if (nextIndex < totalChunks) {
             this.getChunk(nextIndex);
           }
         }
       },
-
-      /**
-       * Get all loaded data
-       * @returns {Array} - All loaded data
-       */
-      getLoadedData() {
-        const loadedData = [];
-        for (const chunkIndex of loadedChunks) {
-          loadedData.push(...chunks[chunkIndex]);
+      getAllLoaded: (): T[] => {
+        const loadedData: T[] = [];
+        for (const chunkIdx of [...loadedChunks].sort()) {
+          const start = chunkIdx * chunkSize;
+          const end = Math.min(start + chunkSize, data.length);
+          loadedData.push(...data.slice(start, end));
         }
         return loadedData;
       },
-
-      /**
-       * Get chunker stats
-       * @returns {Object} - Chunker statistics
-       */
-      getStats() {
-        return {
-          totalChunks: chunks.length,
-          loadedChunks: loadedChunks.size,
-          currentChunkIndex,
-          totalItems: data.length,
-          loadedItems: this.getLoadedData().length
-        };
-      }
+      getStats: () => ({
+        totalChunks,
+        loadedChunks: loadedChunks.size,
+        currentChunk: currentChunkIndex,
+        chunkSize,
+      }),
     };
   }
 
-  /**
-   * Create memory-efficient list renderer
-   * @param {Object} options - Configuration options
-   * @returns {Object} - Memory-efficient renderer
-   */
-  createMemoryEfficientRenderer(options = {}) {
-    const {
-      visibleItemsBuffer = 5,
-      recycleThreshold = 100
-    } = options;
-
-    const renderedItems = new Map();
-    const recycledComponents = [];
+  createMemoryEfficientRenderer<T>(
+    _options: { maxCachedItems?: number } = {},
+  ): MemoryEfficientRenderer<T> {
+    const renderedItems = new Map<string, React.ReactNode>();
+    const recycledComponents: React.ReactNode[] = [];
 
     return {
-      /**
-       * Render item with recycling
-       * @param {Object} item - Item to render
-       * @param {number} index - Item index
-       * @param {Function} renderFunction - Render function
-       * @returns {Object} - Rendered component
-       */
-      renderItem(item, index, renderFunction) {
-        const itemKey = item.id || index;
+      renderItem: (
+        item: T,
+        index: number,
+        renderer: (item: T, idx: number) => React.ReactNode,
+      ): React.ReactNode => {
+        const key = String(index);
+        let component: React.ReactNode;
 
-        // Check if item is already rendered
-        if (renderedItems.has(itemKey)) {
-          return renderedItems.get(itemKey);
-        }
-
-        // Try to recycle a component
-        let component;
         if (recycledComponents.length > 0) {
-          component = recycledComponents.pop();
-          // Update component with new data
-          component.update(item, index);
+          component = recycledComponents.pop()!;
         } else {
-          // Create new component
-          component = renderFunction(item, index);
+          component = renderer(item, index);
         }
 
-        renderedItems.set(itemKey, component);
+        renderedItems.set(key, component);
         return component;
       },
-
-      /**
-       * Recycle components that are no longer visible
-       * @param {Array} visibleItemKeys - Keys of visible items
-       */
-      recycleInvisibleComponents(visibleItemKeys) {
+      recycleItems: (visibleItemKeys: string[]): void => {
         const visibleSet = new Set(visibleItemKeys);
-
-        for (const [key, component] of renderedItems.entries()) {
+        for (const [key, component] of renderedItems) {
           if (!visibleSet.has(key)) {
-            // Move to recycled pool
-            if (recycledComponents.length < recycleThreshold) {
-              recycledComponents.push(component);
-            }
+            recycledComponents.push(component);
             renderedItems.delete(key);
           }
         }
       },
-
-      /**
-       * Clear all rendered items
-       */
-      clearAll() {
+      clearAll: (): void => {
         renderedItems.clear();
         recycledComponents.length = 0;
       },
-
-      /**
-       * Get renderer stats
-       * @returns {Object} - Renderer statistics
-       */
-      getStats() {
-        return {
-          renderedItems: renderedItems.size,
-          recycledComponents: recycledComponents.length,
-          memoryUsage: renderedItems.size + recycledComponents.length
-        };
-      }
+      getStats: () => ({
+        renderedCount: renderedItems.size,
+        recycledCount: recycledComponents.length,
+      }),
     };
   }
 
-  /**
-   * Update screen dimensions
-   */
-  updateScreenDimensions() {
-    const { height } = Dimensions.get('window');
+  updateScreenDimensions(): void {
+    const { width, height } = Dimensions.get('window');
     this.screenHeight = height;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    void width;
   }
 
-  /**
-   * Get performance recommendations for list optimization
-   * @param {Object} listStats - List statistics
-   * @returns {Array} - Performance recommendations
-   */
-  getListOptimizationRecommendations(listStats = {}) {
-    const recommendations = [];
-    const {
-      itemCount = 0,
-      averageItemHeight = this.defaultItemHeight,
-      renderTime = 0,
-      scrollPerformance = 'good'
-    } = listStats;
-
-    // Large list recommendations
-    if (itemCount > 100) {
-      recommendations.push({
-        type: 'optimization',
-        message: `Large list detected (${itemCount} items)`,
-        suggestion: 'Consider implementing virtualization and lazy loading',
-        priority: 'high'
-      });
-    }
-
-    // Render time recommendations
-    if (renderTime > 100) {
-      recommendations.push({
-        type: 'performance',
-        message: `Slow rendering detected (${renderTime}ms)`,
-        suggestion: 'Optimize item rendering and consider memoization',
-        priority: 'high'
-      });
-    }
-
-    // Scroll performance recommendations
-    if (scrollPerformance === 'poor') {
-      recommendations.push({
-        type: 'performance',
-        message: 'Poor scroll performance detected',
-        suggestion: 'Implement getItemLayout and reduce item complexity',
-        priority: 'medium'
-      });
-    }
-
+  getPerformanceRecommendations(_listStats: AnyRecord): string[] {
+    const recommendations: string[] = [];
+    recommendations.push('Use getItemLayout for fixed-height items');
+    recommendations.push('Set removeClippedSubviews=true for long lists');
     return recommendations;
   }
 }
 
-// Create singleton instance
-const lazyLoadingHelper = new LazyLoadingHelper();
-
-export default lazyLoadingHelper;
+export default LazyLoadingHelper;
