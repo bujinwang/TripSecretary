@@ -1,4 +1,6 @@
-// @ts-nocheck — Complex cross-destination calculation; full typing deferred
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CalculationData = Record<string, any>;
+
 /**
  * EntryCompletionCalculator - Utility for calculating entry information completion status
  * Computes completion metrics for passport, personal info, funds, and travel categories
@@ -25,7 +27,7 @@ class EntryCompletionCalculator {
    * @param {Object[]} fields - Array of field validation results
    * @returns {'complete'|'partial'|'missing'} - Category state
    */
-  computeCategoryState(fields) {
+  computeCategoryState(fields: CalculationData[] | null | undefined): 'complete' | 'partial' | 'missing' {
     if (!fields || fields.length === 0) {
       return 'missing';
     }

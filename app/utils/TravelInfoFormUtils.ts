@@ -1,4 +1,13 @@
-// @ts-nocheck
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FieldValues = Record<string, any>;
+
+interface DestinationFormConfig {
+  requiredFields: string[];
+  optionalFields: string[];
+  fieldWeights: Record<string, number>;
+  defaultValues: Record<string, unknown>;
+  predefinedOptions: Record<string, string[]>;
+}
 
 /**
  * TravelInfoFormUtils
@@ -113,7 +122,7 @@ const DESTINATION_CONFIGS = {
  * @param {Object} options - Configuration options
  * @returns {Object} Form management utilities and state
  */
-export const useTravelInfoForm = (destination, options = {}) => {
+export const useTravelInfoForm = (destination: string, options: Record<string, unknown> = {}) => {
   const screenId = `${destination}_travel_info`;
   const userInteractionTracker = useUserInteractionTracker(screenId);
   
@@ -565,7 +574,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 /**
  * Get destination configuration
  */
-export const getDestinationConfig = (destination) => DESTINATION_CONFIGS[destination] || DESTINATION_CONFIGS.thailand;
+export const getDestinationConfig = (destination: string): DestinationFormConfig => DESTINATION_CONFIGS[destination] || DESTINATION_CONFIGS.thailand as DestinationFormConfig;
 
 /**
  * Validate field value based on destination requirements
