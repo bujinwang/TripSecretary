@@ -35,7 +35,7 @@ export const PATTERNS = {
   ALPHA_SPACE_COMMA: /^[A-Za-z\s,.-]+$/,
   ALPHANUMERIC: /^[A-Za-z0-9]+$/,
   NUMERIC: /^\d+$/,
-  PHONE: /^[\+]?[\d\s\-()]{7,}$/,
+  PHONE: /^[+]?[\d\s-()]{7,}$/,
   COUNTRY_CODE: /^\+\d{1,4}$/,
   DATE_ISO: /^\d{4}-\d{2}-\d{2}$/,
   FLIGHT_NUMBER: /^[A-Z]{2,3}\d{1,4}[A-Z]?$/i,

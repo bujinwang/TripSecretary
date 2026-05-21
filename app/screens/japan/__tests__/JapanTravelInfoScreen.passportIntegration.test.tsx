@@ -7,7 +7,7 @@ import UserDataService from '../../../services/data/UserDataService';
 import Passport from '../../../models/Passport';
 
 describe('JapanTravelInfoScreen - Passport Data Integration', () => {
-  const TEST_USER_ID = 'test_japan_user_' + Date.now();
+  const TEST_USER_ID = `test_japan_user_${  Date.now()}`;
 
   beforeAll(async () => {
     // Initialize the service

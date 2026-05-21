@@ -224,7 +224,7 @@ describe('TDAC to EntryPack E2E Flow', () => {
         id: 'entry_pack_123',
         status: 'submitted',
         hasValidTDACSubmission: () => true,
-        tdacSubmission: tdacSubmission
+        tdacSubmission
       });
 
       const result = await EntryPackService.createOrUpdatePack(
@@ -248,17 +248,17 @@ describe('TDAC to EntryPack E2E Flow', () => {
       // Data from TDAC submission
       const tdacResult = {
         success: true,
-        arrCardNo: arrCardNo,
-        submittedAt: submittedAt
+        arrCardNo,
+        submittedAt
       };
 
       // Data passed to EntryPackService
       const tdacSubmission = {
-        arrCardNo: arrCardNo,
+        arrCardNo,
         qrUri: `/path/to/tdac_${arrCardNo}.pdf`,
         pdfPath: `/path/to/tdac_${arrCardNo}.pdf`,
-        submittedAt: submittedAt,
-        submissionMethod: submissionMethod
+        submittedAt,
+        submissionMethod
       };
 
       // Verify data consistency

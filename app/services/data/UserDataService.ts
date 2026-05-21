@@ -1065,11 +1065,9 @@ class UserDataService {
       const startTime = Date.now();
       logger.debug('UserDataService', `Loading all user data for user ${userId}`, { batch: useBatchLoad });
 
-      let passport: PassportModel | null, personalInfo: PersonalInfoModel | null;
-
       // Fall back to parallel loading (original implementation)
       // This is more efficient than sequential loading but less efficient than batch
-      [passport, personalInfo] = await Promise.all([
+      const [passport, personalInfo] = await Promise.all([
         this.getPassport(userId).catch(() => null),
         this.getPersonalInfo(userId).catch(() => null)
       ]);

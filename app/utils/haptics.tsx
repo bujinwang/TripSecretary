@@ -1,3 +1,4 @@
+import React from 'react';
 // Haptic Feedback Utilities for TDAC Entry Pack Preview
 // Provides consistent haptic feedback across iOS and Android
 // Follows front-end-spec.md guidelines for tactile feedback

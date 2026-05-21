@@ -111,7 +111,7 @@ jest.mock('expo-file-system', () => {
 
     list() {
       const files = [];
-      const prefix = this.uri + '/';
+      const prefix = `${this.uri  }/`;
       for (const [path, data] of mockFiles.entries()) {
         if (path.startsWith(prefix)) {
           const filename = path.substring(prefix.length);

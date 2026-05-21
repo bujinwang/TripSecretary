@@ -91,7 +91,7 @@ const PDFViewer = ({
           const pdfFile = new FileSystem.File(fileUri);
           base64Data = await pdfFile.base64();
           console.log('✅ PDF read successfully, size:', Math.round(base64Data.length / 1024), 'KB');
-        } catch (readError) {
+        } catch (_readError) {
           console.log('⚠️ Direct read failed, trying with file:// prefix...');
 
           // Try with file:// prefix
@@ -99,7 +99,7 @@ const PDFViewer = ({
             const pdfFileWithPrefix = new FileSystem.File(`file://${  fileUri}`);
             base64Data = await pdfFileWithPrefix.base64();
             console.log('✅ PDF read with file:// prefix');
-          } catch (secondError) {
+          } catch (_secondError) {
             // Last attempt: try original URI as-is if it had http/https
             if (source.uri.startsWith('http://') || source.uri.startsWith('https://')) {
               console.log('⚠️ HTTP URL detected, downloading PDF...');

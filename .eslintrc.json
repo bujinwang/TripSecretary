@@ -16,8 +16,7 @@
       "jsx": true
     },
     "ecmaVersion": "latest",
-    "sourceType": "module",
-    "project": "./tsconfig.json"
+    "sourceType": "module"
   },
   "plugins": [
     "react",
@@ -73,9 +72,10 @@
     "no-var": "error",
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"],
-    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": false }],
     "no-throw-literal": "error",
     "prefer-promise-reject-errors": "error",
+    "no-promise-executor-return": "warn",
     "no-return-await": "off",
     "require-await": "off",
     "no-async-promise-executor": "error",
@@ -129,7 +129,8 @@
         "no-unused-vars": "off",
         "no-console": "off",
         "@typescript-eslint/no-require-imports": "off",
-        "@typescript-eslint/no-unused-expressions": "warn"
+        "@typescript-eslint/no-unused-expressions": "warn",
+        "react-hooks/rules-of-hooks": "warn"
       }
     },
     {

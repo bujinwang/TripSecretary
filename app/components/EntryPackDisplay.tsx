@@ -341,7 +341,7 @@ const EntryPackDisplay = ({
         if (isMounted) {
           setResolvedTdacPdfUri(result.uri || tdacPdfCandidate);
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('EntryPackDisplay', 'Failed to resolve TDAC PDF path', error);
         if (isMounted) {
           setResolvedTdacPdfUri(tdacPdfCandidate);
@@ -439,11 +439,7 @@ return raw;
     return value || '';
   };
 
-  if (!entryPack) {
-    return null;
-  }
-
-  const formatBilingualDate = (dateString) => {
+  const formatBilingualDate = (dateString: string): string => {
     if (!dateString) {
 return '';
 }
@@ -474,7 +470,7 @@ return '';
       });
 
       return `${date1} / ${date2}`;
-    } catch (error) {
+    } catch (_error) {
       return dateString;
     }
   };
@@ -1267,6 +1263,10 @@ return config.notProvided;
   korea: '출입국 심사관을 위한 중요한 정보',
   vietnam: 'Thông tin quan trọng dành cho cán bộ nhập cảnh'
 };
+
+  if (!entryPack) {
+    return null;
+  }
 
   return (
     <View style={[styles.container, isModal && styles.modalContainer]}>

@@ -66,7 +66,7 @@ const ConnectivityTestRunner = () => {
             status: response.status,
             duration
           });
-        } catch (error) {
+        } catch (_error) {
           addResult({
             client: 'fetch',
             endpoint: endpoint.name,
@@ -134,7 +134,7 @@ const ConnectivityTestRunner = () => {
             status: response.status,
             duration
           });
-        } catch (error) {
+        } catch (_error) {
           const duration = Date.now() - start;
           addResult({
             client: 'axios',
@@ -184,7 +184,7 @@ const ConnectivityTestRunner = () => {
           status: response.status,
           duration: Date.now() - start
         });
-      } catch (error) {
+      } catch (_error) {
         addResult({
           client: 'axios',
           endpoint: 'TDAC initActionToken',
@@ -240,7 +240,7 @@ const ConnectivityTestRunner = () => {
         status: response.status,
         duration: Date.now() - start
       });
-    } catch (error) {
+    } catch (_error) {
       addResult({
         client: 'fetch+AbortController',
         endpoint: 'TDAC initActionToken',
@@ -275,7 +275,7 @@ const ConnectivityTestRunner = () => {
       
       console.log('✅ All tests completed');
       Alert.alert('Tests Complete', `Completed ${totalTests} connectivity tests. Check results below.`);
-    } catch (error) {
+    } catch (_error) {
       console.error('❌ Test error:', error);
       Alert.alert('Test Error', error.message);
     } finally {

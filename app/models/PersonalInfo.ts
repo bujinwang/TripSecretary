@@ -159,8 +159,8 @@ class PersonalInfo {
 
   hasCompleteContactInfo(): boolean {
     return (
-      (this.email != null && this.isValidEmail(this.email)) ||
-      (this.phoneNumber != null && this.isValidPhoneNumber(this.phoneNumber))
+      (this.email !== null && this.isValidEmail(this.email)) ||
+      (this.phoneNumber !== null && this.isValidPhoneNumber(this.phoneNumber))
     );
   }
 

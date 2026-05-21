@@ -212,7 +212,7 @@ class InputSanitizer {
     }
 
     // Remove all non-numeric and non-dash characters
-    const sanitized = dateStr.replace(/[^0-9\-]/g, '');
+    const sanitized = dateStr.replace(/[^0-9-]/g, '');
 
     // Ensure YYYY-MM-DD format
     const parts = sanitized.split('-');
@@ -263,7 +263,7 @@ class InputSanitizer {
     }
 
     // Allow numbers, commas, periods, spaces, and currency symbols
-    let sanitized = amount.replace(/[^0-9\s\.,¥$€£THBUSD]/g, '');
+    let sanitized = amount.replace(/[^0-9\s.,¥$€£THBUSD]/g, '');
 
     // Remove multiple spaces
     sanitized = sanitized.replace(/\s+/g, ' ');

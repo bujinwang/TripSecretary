@@ -187,7 +187,7 @@ describe('ExpiryWarningNotificationService', () => {
           triggeredBy: 'notification_action',
           metadata: {
             archivedVia: 'expiry_notification',
-            userId: userId
+            userId
           }
         }
       );

@@ -322,7 +322,7 @@ describe('TDACErrorHandler', () => {
       expect(TDACErrorHandler.errorLog).toHaveLength(1);
       expect(TDACErrorHandler.errorLog[0]).toMatchObject({
         message: 'Test error',
-        context: context,
+        context,
         attemptNumber: 0
       });
       expect(TDACErrorHandler.errorLog[0].id).toBeDefined();

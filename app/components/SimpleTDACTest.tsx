@@ -47,7 +47,7 @@ const SimpleTDACTest = () => {
       console.log(`✅ Fetch completed in ${duration}ms`);
       
       addResult('Fetch TDAC', true, duration);
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
       console.log(`❌ Fetch failed after ${duration}ms:`, error.message);
       addResult('Fetch TDAC', false, duration, error.message);
@@ -61,7 +61,7 @@ const SimpleTDACTest = () => {
     let axios;
     try {
       axios = require('axios');
-    } catch (error) {
+    } catch (_error) {
       console.log('⚠️ Axios not available');
       addResult('Axios TDAC', false, 0, 'Axios not available');
       return;
@@ -90,7 +90,7 @@ const SimpleTDACTest = () => {
       console.log(`✅ Axios completed in ${duration}ms`);
       
       addResult('Axios TDAC', true, duration);
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
       console.log(`❌ Axios failed after ${duration}ms:`, error.message);
       addResult('Axios TDAC', false, duration, error.message);
@@ -111,7 +111,7 @@ const SimpleTDACTest = () => {
       console.log(`✅ Google completed in ${duration}ms`);
       
       addResult('Google Control', true, duration);
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
       console.log(`❌ Google failed after ${duration}ms:`, error.message);
       addResult('Google Control', false, duration, error.message);
@@ -131,7 +131,7 @@ const SimpleTDACTest = () => {
       
       console.log('✅ All tests completed');
       Alert.alert('Tests Complete', 'Check console and results below');
-    } catch (error) {
+    } catch (_error) {
       console.error('❌ Test suite error:', error);
       Alert.alert('Test Error', error.message);
     } finally {

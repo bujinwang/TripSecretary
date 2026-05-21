@@ -220,7 +220,7 @@ describe('Bug Fixes - 2025-10-28', () => {
       const userId = travelerInfo?.userId || 'current_user';
 
       const dacData = {
-        userId: userId,              // ← THE FIX
+        userId,              // ← THE FIX
         entryInfoId: 'entry_123',
         cardType: 'TDAC',
         arrCardNo: '387778D',

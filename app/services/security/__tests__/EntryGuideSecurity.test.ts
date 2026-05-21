@@ -361,7 +361,7 @@ describe('EntryGuide Security Assessment', () => {
       const securityReport = SecurityAuditor.generateSecurityReport(auditResults);
 
       console.log('\n=== 入境指引系统安全评估报告 ===');
-      console.log('合规评分:', securityReport.summary.complianceScore + '/100');
+      console.log('合规评分:', `${securityReport.summary.complianceScore  }/100`);
       console.log('问题统计:', securityReport.summary);
       console.log('建议措施:', securityReport.recommendations);
 

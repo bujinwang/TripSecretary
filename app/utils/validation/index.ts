@@ -54,7 +54,7 @@ export const ValidationUtils = {
         },
         validationDetails: validationResult.validationDetails
       };
-    } catch (error) {
+    } catch (_error) {
       console.error('Validation pipeline error:', error);
       return {
         success: false,
@@ -133,7 +133,7 @@ result.errors.push('Name must be at least 2 characters');
         result.errors.push('Input contains suspicious patterns');
       }
 
-    } catch (error) {
+    } catch (_error) {
       result.isValid = false;
       result.errors.push('Validation error');
     }
@@ -240,7 +240,7 @@ result.errors.push('Name must be at least 2 characters');
             fieldResult.isValid = false;
             fieldResult.errors.push(customResult);
           }
-        } catch (error) {
+        } catch (_error) {
           fieldResult.isValid = false;
           fieldResult.errors.push('Validation error');
         }

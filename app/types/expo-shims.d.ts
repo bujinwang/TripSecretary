@@ -173,4 +173,5 @@ declare const TextDecoder: {
   new (label?: string, options?: { fatal?: boolean; ignoreBOM?: boolean }): TextDecoder;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CryptoKey {}

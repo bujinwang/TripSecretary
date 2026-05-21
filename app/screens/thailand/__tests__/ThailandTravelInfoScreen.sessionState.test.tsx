@@ -209,7 +209,7 @@ describe('ThailandTravelInfoScreen Session State', () => {
         expandedSection: 'passport',
         scrollPosition: 100,
         lastEditedField: 'fullName',
-        timestamp: timestamp,
+        timestamp,
       };
 
       // Verify timestamp is in ISO format

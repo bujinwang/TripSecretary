@@ -116,8 +116,8 @@ describe('Digital Arrival Card Save Flow', () => {
       const entryInfoId = 'entry_123';
 
       const dacData = {
-        userId: userId,
-        entryInfoId: entryInfoId,
+        userId,
+        entryInfoId,
         cardType: 'TDAC',
         arrCardNo: '387778D',
         qrUri: 'file://path/to/pdf.pdf',
