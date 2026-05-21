@@ -50,41 +50,42 @@ return '';
    * Format date in short format (e.g., 2024-10-20, Oct 20, 2024, 20/10/2024)
    */
   static formatShortDate(date: string | Date, locale: string): string {
-    const formatOptions = {
+    const formatOptions: Record<string, Intl.DateTimeFormatOptions> = {
       'zh-CN': { year: 'numeric', month: '2-digit', day: '2-digit' },
       'zh-TW': { year: 'numeric', month: '2-digit', day: '2-digit' },
-      'en': { year: 'numeric', month: 'short', day: 'numeric' },
-      'es': { day: '2-digit', month: '2-digit', year: 'numeric' },
-      'fr': { day: '2-digit', month: '2-digit', year: 'numeric' },
-      'de': { day: '2-digit', month: '2-digit', year: 'numeric' }
+      en: { year: 'numeric', month: 'short', day: 'numeric' },
+      es: { day: '2-digit', month: '2-digit', year: 'numeric' },
+      fr: { day: '2-digit', month: '2-digit', year: 'numeric' },
+      de: { day: '2-digit', month: '2-digit', year: 'numeric' },
     };
 
-    const options = formatOptions[locale] || formatOptions['en'];
+    const options = formatOptions[locale] || formatOptions.en;
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
     
     if (locale.startsWith('zh')) {
-      // Chinese format: 2024年10月20日
-      const formatted = new Intl.DateTimeFormat(locale, options).format(date);
-      return formatted.replace(/\//g, '-'); // Ensure consistent separator
+      const formatted = new Intl.DateTimeFormat(locale, options).format(dateObj);
+      return formatted.replace(/\//g, '-');
     }
     
-    return new Intl.DateTimeFormat(locale, options).format(date);
+    return new Intl.DateTimeFormat(locale, options).format(dateObj);
   }
 
   /**
    * Format date in long format (e.g., 2024年10月20日, October 20, 2024)
    */
   static formatLongDate(date: string | Date, locale: string): string {
-    const formatOptions = {
+    const formatOptions: Record<string, Intl.DateTimeFormatOptions> = {
       'zh-CN': { year: 'numeric', month: 'long', day: 'numeric' },
       'zh-TW': { year: 'numeric', month: 'long', day: 'numeric' },
-      'en': { year: 'numeric', month: 'long', day: 'numeric' },
-      'es': { day: 'numeric', month: 'long', year: 'numeric' },
-      'fr': { day: 'numeric', month: 'long', year: 'numeric' },
-      'de': { day: 'numeric', month: 'long', year: 'numeric' }
+      en: { year: 'numeric', month: 'long', day: 'numeric' },
+      es: { day: 'numeric', month: 'long', year: 'numeric' },
+      fr: { day: 'numeric', month: 'long', year: 'numeric' },
+      de: { day: 'numeric', month: 'long', year: 'numeric' },
     };
 
-    const options = formatOptions[locale] || formatOptions['en'];
-    return new Intl.DateTimeFormat(locale, options).format(date);
+    const options = formatOptions[locale] || formatOptions.en;
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat(locale, options).format(dateObj);
   }
 
   /**
@@ -164,17 +165,18 @@ return '';
    * Format time only (e.g., 14:30, 2:30 PM)
    */
   static formatTime(date: string | Date, locale: string): string {
-    const formatOptions = {
+    const formatOptions: Record<string, Intl.DateTimeFormatOptions> = {
       'zh-CN': { hour: '2-digit', minute: '2-digit', hour12: false },
       'zh-TW': { hour: '2-digit', minute: '2-digit', hour12: false },
-      'en': { hour: 'numeric', minute: '2-digit', hour12: true },
-      'es': { hour: '2-digit', minute: '2-digit', hour12: false },
-      'fr': { hour: '2-digit', minute: '2-digit', hour12: false },
-      'de': { hour: '2-digit', minute: '2-digit', hour12: false }
+      en: { hour: 'numeric', minute: '2-digit', hour12: true },
+      es: { hour: '2-digit', minute: '2-digit', hour12: false },
+      fr: { hour: '2-digit', minute: '2-digit', hour12: false },
+      de: { hour: '2-digit', minute: '2-digit', hour12: false },
     };
 
-    const options = formatOptions[locale] || formatOptions['en'];
-    return new Intl.DateTimeFormat(locale, options).format(date);
+    const options = formatOptions[locale] || formatOptions.en;
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat(locale, options).format(dateObj);
   }
 
   /**
