@@ -7,7 +7,7 @@
  * experience without keeping a Thailand-specific screen implementation.
  */
 
-import React from 'react';
+import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   EntryPackPreviewTemplateHeader as HeaderBase,
@@ -20,9 +20,9 @@ import { initializeAnimations } from '../../../utils/animations/previewAnimation
 import { PreviewHaptics } from '../../../utils/haptics';
 import { useTranslation } from '../../../i18n/LocaleContext';
 
-const getTemplateContext = (props = {}) => props.templateContext || props || {};
+const getTemplateContext = (props: any = {}): any => props.templateContext || props || {};
 
-const formatDate = (dateString, locale = 'en') => {
+const formatDate = (dateString: string | null | undefined, locale: string = 'en'): string | null => {
   if (!dateString) {
     return null;
   }
@@ -40,7 +40,7 @@ const formatDate = (dateString, locale = 'en') => {
   }
 };
 
-const ThailandHeader = (props = {}) => {
+const ThailandHeader = (props: any) => {
   const { config } = getTemplateContext(props);
   return <HeaderBase title={config?.header?.title} subtitle={config?.header?.subtitle} />;
 };

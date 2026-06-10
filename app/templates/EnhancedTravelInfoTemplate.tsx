@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TravelInfoConfig = any;
-
 /**
  * Enhanced Travel Info Template
  *
@@ -8,7 +5,7 @@ type TravelInfoConfig = any;
  * fund management, field filtering, and immediate save for critical fields.
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { TravelInfoSectionConfig, TravelInfoFieldConfig, TravelInfoConfig } from '../types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LoggingService from '../services/LoggingService';
@@ -49,7 +46,7 @@ import { useTemplatePhotoManagement } from './hooks/useTemplatePhotoManagement';
 import TemplateFieldStateManager from './utils/TemplateFieldStateManager';
 
 type EnhancedTravelInfoTemplateProps = {
-  config: any;
+  config: TravelInfoConfig;
   route: any;
   navigation: any;
   children?: React.ReactNode;
@@ -112,9 +109,9 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
     return null;
   }, [config?.destinationId, destination]);
 
-  // Helper function to resolve section labels using i18n
-  const resolveSectionLabels = useCallback((sectionKey, sectionConfig, labelSource = {}) => {
-    const resolvedLabels = { ...labelSource };
+// Helper function to resolve section labels using i18n
+const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: TravelInfoSectionConfig, labelSource: Record<string, any> = {}) => {
+  const resolvedLabels: Record<string, any> = { ...labelSource };
     const destId = config?.destinationId || destinationId || 'hongkong';
     
     // Resolve title using titleKey if available
@@ -139,10 +136,10 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
       resolvedLabels.subtitle = t(subtitleKey, { defaultValue: labelSource.subtitle });
     }
     
-    // Resolve field labels from config
-    if (sectionConfig?.fields) {
-      Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
-        if (fieldConfig?.labelKey) {
+     // Resolve field labels from config
+     if (sectionConfig?.fields) {
+       Object.entries(sectionConfig.fields as Record<string, TravelInfoFieldConfig>).forEach(([fieldKey, fieldConfig]) => {
+         if (fieldConfig?.labelKey) {
           // Map field keys to component label keys
           const labelKeyMap = {
             // Passport fields
@@ -472,11 +469,44 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
   // ============================================
   // FORM STATE (dynamically created from config)
   // ============================================
-  const [formState, setFormState] = useState({
+// ============================================
+// FORM STATE (dynamically created from config)
+// ============================================
+interface FormState {
+  expandedSections: Record<string, boolean>;
+  errors: Record<string, string>;
+  warnings: Record<string, string>;
+  isLoading: boolean;
+  saveStatus: 'pending' | 'saving' | 'saved' | 'error' | null;
+  lastEditedAt: string | null;
+  lastEditedField: string | null;
+  travelInfoId: string | null;
+  entryInfoId: string | null;
+  entryInfoInitialized: boolean;
+  lastEntryInfoUpdate: string | null;
+  fundItemModalVisible: boolean;
+  currentFundItem: any;
+  newFundItemType: string | null;
+  scrollPosition: number;
+  [key: string]: any; // for dynamic form fields from config
+}
+
+  const [formState, setFormState] = useState<FormState>({
     expandedSections: {},
     errors: {},
     warnings: {},
     isLoading: true,
+    saveStatus: null,
+    lastEditedAt: null,
+    lastEditedField: null,
+    travelInfoId: null,
+    entryInfoId: null,
+    entryInfoInitialized: false,
+    lastEntryInfoUpdate: null,
+    fundItemModalVisible: false,
+    currentFundItem: null,
+    newFundItemType: null,
+    scrollPosition: 0,
   });
 
   // Helper to update form state
@@ -486,7 +516,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
 
   // Initialize form state from config
   useEffect(() => {
-    const initialState = {};
+    let initialState: any = {};
     const arrivalFieldNames = ['arrivalDate', 'arrivalArrivalDate'];
     const departureFieldNames = ['departureDate', 'departureDepartureDate'];
     const defaultArrivalDate = getDefaultArrivalDate();
@@ -499,45 +529,46 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
       return;
     }
 
-    Object.entries(config.sections).forEach(([sectionKey, sectionConfig]) => {
-      if (sectionConfig.enabled && sectionConfig.fields) {
-        Object.entries(sectionConfig.fields).forEach(([fieldKey, fieldConfig]) => {
-          const {fieldName} = fieldConfig;
-          const isArrivalField = arrivalFieldNames.includes(fieldName);
-          const isDepartureField = departureFieldNames.includes(fieldName);
-          initialState[fieldName] = '';
+      Object.entries(config.sections as Record<string, TravelInfoSectionConfig>).forEach(([sectionKey, sectionConfig]) => {
+        if (sectionConfig.enabled && sectionConfig.fields && typeof sectionConfig.fields === 'object' && !Array.isArray(sectionConfig.fields)) {
+          const fieldsTyped = sectionConfig.fields as Record<string, TravelInfoFieldConfig>;
+          Object.entries(fieldsTyped).forEach(([fieldKey, fieldConfig]) => {
+           const {fieldName} = fieldConfig;
+           const isArrivalField = arrivalFieldNames.includes(fieldName);
+           const isDepartureField = departureFieldNames.includes(fieldName);
+           initialState[fieldName] = '';
 
-          // Set smart defaults
-          if (fieldConfig.smartDefault && !isArrivalField && !isDepartureField) {
-            if (fieldConfig.smartDefault === 'tomorrow') {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              initialState[fieldName] = tomorrow.toISOString().split('T')[0];
-            } else if (fieldConfig.smartDefault === 'nextWeek') {
-              const nextWeek = new Date();
-              nextWeek.setDate(nextWeek.getDate() + 7);
-              initialState[fieldName] = nextWeek.toISOString().split('T')[0];
-            }
-          }
+           // Set smart defaults
+           if (fieldConfig.smartDefault && !isArrivalField && !isDepartureField) {
+             if (fieldConfig.smartDefault === 'tomorrow') {
+               const tomorrow = new Date();
+               tomorrow.setDate(tomorrow.getDate() + 1);
+               initialState[fieldName] = tomorrow.toISOString().split('T')[0];
+             } else if (fieldConfig.smartDefault === 'nextWeek') {
+               const nextWeek = new Date();
+               nextWeek.setDate(nextWeek.getDate() + 7);
+               initialState[fieldName] = nextWeek.toISOString().split('T')[0];
+             }
+           }
 
-          // Set default values
-          if (fieldConfig.default !== undefined && !isArrivalField && !isDepartureField) {
-            initialState[fieldName] = fieldConfig.default;
-          }
+           // Set default values
+           if (fieldConfig.default !== undefined && !isArrivalField && !isDepartureField) {
+             initialState[fieldName] = fieldConfig.default;
+           }
 
-          if (isArrivalField) {
-            initialState[fieldName] = defaultArrivalDate;
-          } else if (isDepartureField) {
-            initialState[fieldName] = defaultDepartureDate;
-          }
-        });
+           if (isArrivalField) {
+             initialState[fieldName] = defaultArrivalDate;
+           } else if (isDepartureField) {
+             initialState[fieldName] = defaultDepartureDate;
+           }
+         });
 
-        // Handle custom fields (e.g., customOccupation, customTravelPurpose)
-        Object.values(sectionConfig.fields || {}).forEach(field => {
-          if (field.allowCustom && field.customFieldName) {
-            initialState[field.customFieldName] = '';
-          }
-        });
+         // Handle custom fields (e.g., customOccupation, customTravelPurpose)
+         Object.values(sectionConfig.fields as Record<string, TravelInfoFieldConfig>).forEach(field => {
+           if (field.allowCustom && field.customFieldName) {
+             initialState[field.customFieldName] = '';
+           }
+         });
 
         // Handle funds section
         if (sectionConfig.sectionKey === 'funds') {
@@ -617,10 +648,10 @@ initialState.visaNumber = passport.visaNumber;
   // multiple ensure calls run in parallel (e.g., StrictMode double renders)
   const entryInfoCreationPromiseRef = useRef(null);
 
-  // ============================================
-  // ENTRY INFO MANAGEMENT
-  // ============================================
-  const ensureEntryInfoRecord = useCallback(async (overrides = {}) => {
+   // ============================================
+   // ENTRY INFO MANAGEMENT
+   // ============================================
+   const ensureEntryInfoRecord = useCallback(async (overrides: Record<string, any> = {}) => {
     if (!destinationId) {
       LoggingService.warn('Template', 'Entry info sync skipped: destinationId is missing');
       return null;
@@ -634,39 +665,39 @@ initialState.visaNumber = passport.visaNumber;
       const hasTravelOverride = Object.prototype.hasOwnProperty.call(overrides, 'travelInfo');
       const hasFundsOverride = Object.prototype.hasOwnProperty.call(overrides, 'funds');
 
-      const [
-        entryInfos,
-        passportRaw,
-        personalInfoRaw,
-        fundsRaw,
-        travelRaw,
-      ] = await Promise.all([
-        UserDataService.getAllEntryInfosForUser(userId),
-        hasPassportOverride ? Promise.resolve(overrides.passport) : UserDataService.getPassport(userId),
-        hasPersonalOverride ? Promise.resolve(overrides.personalInfo) : UserDataService.getPersonalInfo(userId),
-        hasFundsOverride ? Promise.resolve(overrides.funds) : UserDataService.getFundItems(userId),
-        hasTravelOverride ? Promise.resolve(overrides.travelInfo) : UserDataService.getTravelInfo(userId, destinationId),
-      ]);
+       const [
+         entryInfos,
+         passportRaw,
+         personalInfoRaw,
+         fundsRaw,
+         travelRaw,
+       ] = await Promise.all([
+         UserDataService.getAllEntryInfosForUser(userId),
+         hasPassportOverride ? Promise.resolve(overrides['passport']) : UserDataService.getPassport(userId),
+         hasPersonalOverride ? Promise.resolve(overrides['personalInfo']) : UserDataService.getPersonalInfo(userId),
+         hasFundsOverride ? Promise.resolve(overrides['funds']) : UserDataService.getFundItems(userId),
+         hasTravelOverride ? Promise.resolve(overrides['travelInfo']) : UserDataService.getTravelInfo(userId, destinationId),
+       ]);
 
-      const normalizeRecord = (record) => {
-        if (!record) {
-          return record;
-        }
+       const normalizeRecord = (record: any) => {
+         if (!record) {
+           return record;
+         }
 
-        if (typeof record.toJSON === 'function') {
-          try {
-            return record.toJSON();
-          } catch (jsonError) {
-            LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
-          }
-        }
+         if (typeof record.toJSON === 'function') {
+           try {
+             return record.toJSON();
+           } catch (jsonError) {
+             LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
+           }
+         }
 
-        if (typeof record === 'object') {
-          return { ...record };
-        }
+         if (typeof record === 'object') {
+           return { ...record };
+         }
 
-        return record;
-      };
+         return record;
+       };
 
       const passportData = normalizeRecord(passportRaw) || {};
       const personalInfoData = normalizeRecord(personalInfoRaw) || {};
@@ -1106,16 +1137,20 @@ initialState.visaNumber = passport.visaNumber;
         LoggingService.debug('Template', 'Saved travel info fields', { fieldCount: Object.keys(travelInfoUpdates).length });
       }
 
-      const ensureOverrides = {};
-      if (savedPassport) {
-        ensureOverrides.passport = savedPassport;
-      }
-      if (savedPersonalInfo) {
-        ensureOverrides.personalInfo = savedPersonalInfo;
-      }
-      if (savedTravelInfo) {
-        ensureOverrides.travelInfo = savedTravelInfo;
-      }
+       const ensureOverrides: {
+         passport?: any;
+         personalInfo?: any;
+         travelInfo?: any;
+       } = {};
+       if (savedPassport) {
+         ensureOverrides.passport = savedPassport;
+       }
+       if (savedPersonalInfo) {
+         ensureOverrides.personalInfo = savedPersonalInfo;
+       }
+       if (savedTravelInfo) {
+         ensureOverrides.travelInfo = savedTravelInfo;
+       }
 
       await ensureEntryInfoRecord(ensureOverrides);
 

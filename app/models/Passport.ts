@@ -20,6 +20,7 @@ interface PassportInit {
   issueDate?: string | null;
   issuePlace?: string | null;
   photoUri?: string | null;
+  visaNumber?: string | null;
   isPrimary?: boolean | number | string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -98,6 +99,7 @@ class Passport {
   issueDate?: string | null;
   issuePlace?: string | null;
   photoUri?: string | null;
+  visaNumber?: string | null;
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
@@ -114,6 +116,7 @@ class Passport {
     this.issueDate = data.issueDate ?? null;
     this.issuePlace = data.issuePlace ?? null;
     this.photoUri = data.photoUri ?? null;
+    this.visaNumber = data.visaNumber ?? null;
     this.isPrimary = Passport.normalizePrimaryFlag(data.isPrimary);
     this.createdAt = data.createdAt ?? new Date().toISOString();
     this.updatedAt = data.updatedAt ?? new Date().toISOString();
