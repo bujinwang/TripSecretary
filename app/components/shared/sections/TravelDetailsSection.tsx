@@ -140,9 +140,9 @@ export interface TravelDetailsSectionProps {
   warnings?: WarningMap;
   handleFieldBlur?: (field: string, value: unknown) => void;
   debouncedSaveData?: () => void;
-  getProvinceData?: LocationDataSource;
-  getDistrictData?: GetByParentFn;
-  getSubDistrictData?: GetByParentFn;
+  getProvinceData?: unknown;
+  getDistrictData?: unknown;
+  getSubDistrictData?: unknown;
   handleFlightTicketPhotoUpload?: () => void;
   handleDepartureFlightTicketPhotoUpload?: () => void;
   handleHotelReservationPhotoUpload?: () => void;
@@ -536,7 +536,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
               {/* Location Selection */}
               {c.locationDepth >= 1 && getProvinceData && (
                 <LocationHierarchySelector
-                  dataSource={typeof getProvinceData === 'function' ? getProvinceData() : getProvinceData}
+                  dataSource={typeof getProvinceData === 'function' ? (getProvinceData as () => LocationEntry[])() : getProvinceData as LocationEntry[]}
                   label={l.province}
                   placeholder={l.provincePlaceholder}
                   value={province}
@@ -558,7 +558,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
 
               {c.locationDepth >= 2 && getDistrictData && province && !hideDistrict && (
                 <LocationHierarchySelector
-                  getDataByParent={getDistrictData}
+                  getDataByParent={getDistrictData as GetByParentFn}
                   parentId={province}
                   label={l.district}
                   placeholder={l.districtPlaceholder}
@@ -580,7 +580,7 @@ const TravelDetailsSection: React.FC<TravelDetailsSectionProps> = ({
 
               {c.locationDepth >= 3 && getSubDistrictData && districtId && !hideSubDistrict && (
                 <LocationHierarchySelector
-                  getDataByParent={getSubDistrictData}
+                  getDataByParent={getSubDistrictData as GetByParentFn}
                   parentId={districtId}
                   label={l.subDistrict}
                   placeholder={l.subDistrictPlaceholder}

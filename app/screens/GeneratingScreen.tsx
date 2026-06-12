@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
 import api from '../services/api';
 
-const GeneratingScreen = ({ navigation, route }) => {
+const GeneratingScreen = ({ navigation, route }: { navigation: Record<string, unknown> & { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void }; route: { params?: Record<string, unknown> } }) => {
   const {
     passport,
     destination,

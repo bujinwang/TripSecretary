@@ -1657,7 +1657,7 @@ initialState.visaNumber = passport.visaNumber;
             <TypedFundsSection
               isExpanded={formState.expandedSections.funds}
               onToggle={() => toggleSection('funds')}
-              fieldCount={validation.getFieldCount('funds') as unknown as number}
+              fieldCount={validation.getFieldCount('funds')}
               funds={(formState.funds as unknown[] | undefined) || []}
               setFunds={(v: unknown[]) => updateField('funds', v as unknown as string)}
               addFund={fundManagement.addFund}
@@ -1719,9 +1719,9 @@ initialState.visaNumber = passport.visaNumber;
               handleProvinceSelect={handleProvinceSelect}
               handleDistrictSelect={handleDistrictSelect as (districtName: string, districtId: string) => void}
               handleSubDistrictSelect={handleSubDistrictSelect}
-              getProvinceData={locationData.provinces as any}
-              getDistrictData={locationData.getDistricts as any}
-              getSubDistrictData={locationData.getSubDistricts as any}
+              getProvinceData={locationData.provinces}
+              getDistrictData={locationData.getDistricts}
+              getSubDistrictData={locationData.getSubDistricts}
               handleFlightTicketPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.flightTicket?.enabled) ? photoManagement.handleFlightTicketPhotoUpload : undefined}
               handleDepartureFlightTicketPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.departureTicket?.enabled) ? photoManagement.handleDepartureFlightTicketPhotoUpload : undefined}
               handleHotelReservationPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.hotelReservation?.enabled) ? photoManagement.handleHotelReservationPhotoUpload : undefined}

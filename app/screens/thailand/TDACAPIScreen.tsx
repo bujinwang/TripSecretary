@@ -30,7 +30,7 @@ import EntryInfoService from '../../services/EntryInfoService';
 import PDFManagementService from '../../services/PDFManagementService';
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 
-const TDACAPIScreen = ({ navigation, route }) => {
+const TDACAPIScreen = ({ navigation, route }: { navigation: Record<string, unknown> & { pop: (n: number) => void }; route: { params?: Record<string, unknown> } }) => {
   const params = route.params || {};
   // Use pure user data directly - no mock data fallbacks
   const travelerInfo = params.travelerInfo || {};

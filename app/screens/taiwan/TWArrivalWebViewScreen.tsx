@@ -1,5 +1,6 @@
 // 台湾电子入境卡内嵌网页助手
 import React, { useRef, useState } from 'react';
+import type { WebViewNavigation } from 'react-native-webview';
 import {
   View,
   Text,
@@ -17,14 +18,14 @@ import { useLocale } from '../../i18n/LocaleContext';
 
 const TAIWAN_ARRIVAL_URL = 'https://twac.immigration.gov.tw/submit';
 
-const TWArrivalWebViewScreen = ({ navigation }) => {
+const TWArrivalWebViewScreen = ({ navigation }: { navigation: Record<string, unknown> & { goBack: () => void } }) => {
   const { t } = useLocale();
-  const webViewRef = useRef(null);
+  const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const handleNavigationStateChange = (state) => {
+  const handleNavigationStateChange = (state: WebViewNavigation) => {
     setCanGoBack(state.canGoBack);
     setCanGoForward(state.canGoForward);
   };

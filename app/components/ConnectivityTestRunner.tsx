@@ -106,7 +106,7 @@ const ConnectivityTestRunner = () => {
         console.log(`⏱️  Axios ${endpoint.name} with ${timeout}ms timeout...`);
         const start = Date.now();
         try {
-          const config = {
+          const config: Record<string, unknown> = {
             method: endpoint.method,
             url: endpoint.url,
             timeout,
@@ -286,7 +286,7 @@ const ConnectivityTestRunner = () => {
     setTestResults([]);
   };
 
-  const getStatusColor = (result) => {
+  const getStatusColor = (result: Record<string, unknown>) => {
     if (result.success) {
 return '#4CAF50';
 } // Green
@@ -320,34 +320,37 @@ return '#FF9800';
       </View>
 
       <ScrollView style={styles.resultsContainer}>
-        {testResults.map((result, index) => (
+        {testResults.map((item, index) => {
+          const result = item as Record<string, unknown>;
+          return (
           <View key={index} style={styles.resultItem}>
             <View style={styles.resultHeader}>
               <Text style={styles.resultTitle}>
-                {result.client} → {result.endpoint}
+                {result.client as string} → {result.endpoint as string}
               </Text>
               <View style={[styles.statusIndicator, { backgroundColor: getStatusColor(result) }]} />
             </View>
 
             <Text style={styles.resultDetails}>
-              Timeout: {result.timeout}ms
+              Timeout: {result.timeout as number}ms
             </Text>
 
             {result.success ? (
               <Text style={styles.successText}>
-                ✓ Status: {result.status}, Duration: {result.duration}ms
+                ✓ Status: {result.status as number}, Duration: {result.duration as number}ms
               </Text>
             ) : (
               <Text style={styles.errorText}>
-                ✗ {result.error}
+                ✗ {result.error as string}
               </Text>
             )}
 
             <Text style={styles.timestamp}>
-              {result.timestamp.toLocaleTimeString()}
+              {(result.timestamp as Date).toLocaleTimeString()}
             </Text>
           </View>
-        ))}
+          );
+        })}
 
         {testResults.length === 0 && !isRunning && (
           <Text style={styles.noResults}>No test results yet. Tap "Run Tests" to start.</Text>

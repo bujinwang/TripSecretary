@@ -71,7 +71,7 @@ export interface FundSectionConfig {
 export interface FundsSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
-  fieldCount?: number;
+  fieldCount?: number | { filled: number; total: number };
   funds?: FundSummary[];
   addFund?: (type: FundType) => void;
   handleFundItemPress?: (fund: FundSummary) => void;

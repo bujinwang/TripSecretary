@@ -313,8 +313,8 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
     allFieldNames.forEach(fieldName => {
       interactionState[fieldName] = {
         isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+        lastModified: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.lastModified || null,
+        initialValue: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.initialValue || null
       };
     });
 
@@ -447,8 +447,8 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       allFieldNames.forEach(fieldName => {
         interactionState[fieldName] = {
           isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-          lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-          initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+          lastModified: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.lastModified || null,
+          initialValue: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.initialValue || null
         };
       });
 
@@ -557,8 +557,8 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
     allFieldNames.forEach(fieldName => {
       interactionState[fieldName] = {
         isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
-        initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
+        lastModified: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.lastModified || null,
+        initialValue: (userInteractionTracker.getFieldInteractionDetails(fieldName) as Record<string, unknown>)?.initialValue || null
       };
     });
 
