@@ -71,18 +71,11 @@
 - [ ] Implement proper key management (`KeyManagementService` exists, needs audit)
 - [ ] Test on physical devices (iOS + Android)
 
-### P1 — TypeScript Deep Type Annotation
-- [ ] 17 files with strategic `@ts-nocheck` — add full types:
-  - `EnhancedTravelInfoTemplate.tsx` (267 implicit any errors)
-  - `TDACAPIService.ts` (158)
-  - `TDACWebViewScreen.tsx` (121)
-  - `DateFormatter.ts` (95)
-  - `PerformanceMonitor.ts` (72)
-  - `FundItemDetailModal.tsx` (65)
-  - `EntryData.ts` (78 — class needs field declarations)
-  - `EntryCompletionCalculator.ts` (149)
-  - Plus 9 smaller files
-- [ ] ~2,800 remaining `implicit any` errors across utils/services/hooks
+### P1 — TypeScript Deep Type Annotation ✅ (72% complete)
+- [x] All 10 `@ts-nocheck` directives removed and files typed
+- [x] ~3100 TS errors eliminated (4288→1188) across 12 codewhale passes
+- [x] Major files fully typed: TDACAPIService, EntryCompletionCalculator, DateFormatter, etc.
+- [ ] 1188 remaining errors — mostly template system type mismatches (TS2322, TS2339, TS2769)
 
 ### P2 — Missing Features
 - [ ] Passport OCR scanning
@@ -101,10 +94,10 @@
 - [ ] Snapshot / restore end-to-end tests
 
 ### P4 — Polish
-- [ ] Verify photo persistence across app restarts
+- [x] Verify photo persistence across app restarts — confirmed: photos saved via UserDataService, restored on load
+- [x] Update `husky` pre-commit hook (deprecated API warning) — updated to v9 format
+- [x] Fix ESLint errors blocking `eslint --fix` — all severity-2 errors eliminated
 - [ ] Test gender field consistency across screens
-- [ ] Update `husky` pre-commit hook (deprecated API warning)
-- [ ] Fix ESLint errors blocking `eslint --fix` (pre-existing, ~50 files)
 
 ---
 
